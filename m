@@ -1,14 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Feb 2018 17:40:49 +0100
-Message-ID: <1579093.AxJxHVZVZT@prime>
-In-Reply-To: <20171226141401.13046-1-sven@narfation.org>
-References: <20171226141401.13046-1-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue, 27 Feb 2018 09:10:15 +0100
+Message-Id: <20180227081016.13122-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4538987.eB448S5pYM";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix internal interface
- indices types
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add DAT cache netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,66 +17,290 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4538987.eB448S5pYM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Dump the list of DAT cache entries via the netlink socket.
 
-On Tuesday, December 26, 2017 3:14:01 PM CET Sven Eckelmann wrote:
-> batman-adv uses internal indices for each enabled and active interface.
-> It is currently used by the B.A.T.M.A.N. IV algorithm to identifify the
-> correct position in the ogm_cnt bitmaps.
-> 
-> The type for the number of enabled interfaces (which defines the next
-> interface index) was set to char. This type can be (depending on the
-> architecture) either signed (limiting batman-adv to 127 active slave
-> interfaces) or unsigned (limiting batman-adv to 255 active slave
-> interfaces).
-> 
-> This limit was not correctly checked when an interface was enabled and thus
-> an overflow happened. This was only catched on systems with the signed char
-> type when the B.A.T.M.A.N. IV code tried to resize its counter arrays with
-> a negative size.
-> 
-> The if_num interface index was only a s16 and therefore significantly
-> smaller than the ifindex (int) used by the code net code.
-> 
-> Both &batadv_hard_iface->if_num and &batadv_priv->num_ifaces must be
-> (unsigned) int to support the same number of slave interfaces as the net
-> core code. And the interface activation code must check the number of
-> active slave interfaces to avoid integer overflows.
-> 
-> Fixes: d1fbb61d0534 ("raw socket operations added: create / destroy / bind /
-> send broadcast of own OGMs implemented orig interval configurable via
-> /proc/net/batman-adv/orig_interval") Fixes: ea6f8d42a595 ("batman-adv: move
-> /proc interface handling to /sys") Signed-off-by: Sven Eckelmann
-> <sven@narfation.org>
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ include/uapi/linux/batman_adv.h        |  20 +++++
+ net/batman-adv/distributed-arp-table.c | 151 +++++++++++++++++++++++++++++++++
+ net/batman-adv/distributed-arp-table.h |   7 ++
+ net/batman-adv/netlink.c               |  10 +++
+ 4 files changed, 188 insertions(+)
 
-Applied in d5db560d. As discussed, I've applied this into the master branch to 
-avoid merge conflicts, since we are about to release anyway.
-
-Thank you!
-      Simon
---nextPart4538987.eB448S5pYM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUOJEACgkQoSvjmEKS
-nqH8Vg/+LAY9QzkN9akKqlF+GEuxNb5iItmQ787JsxvAXTIxD4FrVUO5R09uglKe
-zueh7lCobsTECP7a5i8Pa2/5I5UdlNr5w4jCyY0n8tMHaWm6oe80GK49kVCQFc03
-OTc2GL3VT6EUFssE1SGRjKTYy9iBedzDbsdWgm5C4UiZG8awU0Hb3uUelJu075no
-otYVuxc7y3CF6YGIE+gue+urUhnN0MpUF2eCViCegjQr9Lk23WEnaBtTyiXnBcTT
-1QycvOIGXRGlG35L61a2Rg+EBWc/EYZ2agvASpeLIjqAiQJlcD8oFTrjZUmdPLG8
-yILaUaTPpCM8+FwZLs2srf84udM+mDRAMGKr4jzObcnkYOg7HiBExjqPx5d/6vqA
-sPtlmAcG6AltU8VU/fb38QilvaRL1Mxd0m+fykG8ko5mmeVe82YdAGPZm1GQdUks
-dlxoM8cBKLDlnBItx57CS6YYb2wqp48CHIDFf8fXvL29Fuxnb2t0yzavLlqitBXK
-eGKhErP5jOD0gUh+PnRtRZZ0z2J3+P2dNVKiF60r32NkE9L2o7iMyizFIg2jErCi
-OIXx/S61Yok69pe+JW8ezGhmDPY+uO3UdQuvV55fOpK1UFzK2arj0qVerQXl3mFq
-NFVtOiAlPRIbv7YtKVBiJpGhuHrpx5MiXzDVKPCbypdidDIr2UE=
-=dK+N
------END PGP SIGNATURE-----
-
---nextPart4538987.eB448S5pYM--
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index 56ae2893..85c9fe8a 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -272,6 +272,21 @@ enum batadv_nl_attrs {
+ 	 */
+ 	BATADV_ATTR_BLA_CRC,
+ 
++	/**
++	 * @BATADV_ATTR_DC_ADDRESS: Client IPv4 address
++	 */
++	BATADV_ATTR_DC_ADDRESS,
++
++	/**
++	 * @BATADV_ATTR_DC_HWADDRESS: Client MAC address
++	 */
++	BATADV_ATTR_DC_HWADDRESS,
++
++	/**
++	 * @BATADV_ATTR_DC_VID: VLAN ID
++	 */
++	BATADV_ATTR_DC_VID,
++
+ 	/* add attributes above here, update the policy in netlink.c */
+ 
+ 	/**
+@@ -361,6 +376,11 @@ enum batadv_nl_commands {
+ 	 */
+ 	BATADV_CMD_GET_BLA_BACKBONE,
+ 
++	/**
++	 * @BATADV_CMD_GET_DAT_CACHE: Query list of DAT cache entries
++	 */
++	BATADV_CMD_GET_DAT_CACHE,
++
+ 	/* add new commands above here */
+ 
+ 	/**
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 19b15de4..aca34e95 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -43,13 +43,18 @@
+ #include <linux/string.h>
+ #include <linux/workqueue.h>
+ #include <net/arp.h>
++#include <net/genetlink.h>
++#include <net/netlink.h>
++#include <net/sock.h>
+ 
+ #include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
++#include "netlink.h"
+ #include "originator.h"
+ #include "send.h"
++#include "soft-interface.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+ 
+@@ -852,6 +857,152 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ #endif
+ 
+ /**
++ * batadv_dat_cache_dump_entry() - dump one entry of the DAT cache table to a
++ *  netlink socket
++ * @msg: buffer for the message
++ * @portid: netlink port
++ * @seq: Sequence number of netlink message
++ * @dat_entry: entry to dump
++ *
++ * Return: 0 or error code.
++ */
++static int
++batadv_dat_cache_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			    struct batadv_dat_entry *dat_entry)
++{
++	int msecs;
++	void *hdr;
++	u32 ip;
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
++			  NLM_F_MULTI, BATADV_CMD_GET_DAT_CACHE);
++	if (!hdr)
++		return -ENOBUFS;
++
++	msecs = jiffies_to_msecs(jiffies - dat_entry->last_update);
++	ip = ntohl(dat_entry->ip);
++
++	if (nla_put_u32(msg, BATADV_ATTR_DC_ADDRESS, ip) ||
++	    nla_put(msg, BATADV_ATTR_DC_HWADDRESS, ETH_ALEN,
++		    dat_entry->mac_addr) ||
++	    nla_put_u16(msg, BATADV_ATTR_DC_VID, dat_entry->vid) ||
++	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS, msecs)) {
++		genlmsg_cancel(msg, hdr);
++		return -EMSGSIZE;
++	}
++
++	genlmsg_end(msg, hdr);
++	return 0;
++}
++
++/**
++ * batadv_dat_cache_dump_bucket() - dump one bucket of the DAT cache table to
++ *  a netlink socket
++ * @msg: buffer for the message
++ * @portid: netlink port
++ * @seq: Sequence number of netlink message
++ * @head: bucket to dump
++ * @idx_skip: How many entries to skip
++ *
++ * Return: 0 or error code.
++ */
++static int
++batadv_dat_cache_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++			     struct hlist_head *head, int *idx_skip)
++{
++	struct batadv_dat_entry *dat_entry;
++	int idx = 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(dat_entry, head, hash_entry) {
++		if (idx < *idx_skip)
++			goto skip;
++
++		if (batadv_dat_cache_dump_entry(msg, portid, seq,
++						dat_entry)) {
++			rcu_read_unlock();
++			*idx_skip = idx;
++
++			return -EMSGSIZE;
++		}
++
++skip:
++		idx++;
++	}
++	rcu_read_unlock();
++
++	return 0;
++}
++
++/**
++ * batadv_dat_cache_dump() - dump DAT cache table to a netlink socket
++ * @msg: buffer for the message
++ * @cb: callback structure containing arguments
++ *
++ * Return: message length.
++ */
++int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
++{
++	struct batadv_hard_iface *primary_if = NULL;
++	int portid = NETLINK_CB(cb->skb).portid;
++	struct net *net = sock_net(cb->skb->sk);
++	struct net_device *soft_iface;
++	struct batadv_hashtable *hash;
++	struct batadv_priv *bat_priv;
++	int bucket = cb->args[0];
++	struct hlist_head *head;
++	int idx = cb->args[1];
++	int ifindex;
++	int ret = 0;
++
++	ifindex = batadv_netlink_get_ifindex(cb->nlh,
++					     BATADV_ATTR_MESH_IFINDEX);
++	if (!ifindex)
++		return -EINVAL;
++
++	soft_iface = dev_get_by_index(net, ifindex);
++	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
++		ret = -ENODEV;
++		goto out;
++	}
++
++	bat_priv = netdev_priv(soft_iface);
++	hash = bat_priv->dat.hash;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
++		ret = -ENOENT;
++		goto out;
++	}
++
++	while (bucket < hash->size) {
++		head = &hash->table[bucket];
++
++		if (batadv_dat_cache_dump_bucket(msg, portid,
++						 cb->nlh->nlmsg_seq, head,
++						 &idx))
++			break;
++
++		bucket++;
++		idx = 0;
++	}
++
++	cb->args[0] = bucket;
++	cb->args[1] = idx;
++
++	ret = msg->len;
++
++out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++
++	if (soft_iface)
++		dev_put(soft_iface);
++
++	return ret;
++}
++
++/**
+  * batadv_arp_get_type() - parse an ARP packet and gets the type
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: packet to analyse
+diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+index e24aa960..23d11494 100644
+--- a/net/batman-adv/distributed-arp-table.h
++++ b/net/batman-adv/distributed-arp-table.h
+@@ -81,6 +81,7 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
+ int batadv_dat_init(struct batadv_priv *bat_priv);
+ void batadv_dat_free(struct batadv_priv *bat_priv);
+ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb);
+ 
+ /**
+  * batadv_dat_inc_counter() - increment the correct DAT packet counter
+@@ -169,6 +170,12 @@ static inline void batadv_dat_free(struct batadv_priv *bat_priv)
+ {
+ }
+ 
++static inline int
++batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
++{
++	return -EOPNOTSUPP;
++}
++
+ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+ 					  u8 subtype)
+ {
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 129af56b..7812b531 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -45,6 +45,7 @@
+ 
+ #include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
++#include "distributed-arp-table.h"
+ #include "gateway_client.h"
+ #include "hard-interface.h"
+ #include "originator.h"
+@@ -97,6 +98,9 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_BLA_VID]		= { .type = NLA_U16 },
+ 	[BATADV_ATTR_BLA_BACKBONE]	= { .len = ETH_ALEN },
+ 	[BATADV_ATTR_BLA_CRC]		= { .type = NLA_U16 },
++	[BATADV_ATTR_DC_ADDRESS]	= { .type = NLA_U32 },
++	[BATADV_ATTR_DC_HWADDRESS]	= { .len = ETH_ALEN },
++	[BATADV_ATTR_DC_VID]		= { .type = NLA_U16 },
+ };
+ 
+ /**
+@@ -604,6 +608,12 @@ static const struct genl_ops batadv_netlink_ops[] = {
+ 		.policy = batadv_netlink_policy,
+ 		.dumpit = batadv_bla_backbone_dump,
+ 	},
++	{
++		.cmd = BATADV_CMD_GET_DAT_CACHE,
++		.flags = GENL_ADMIN_PERM,
++		.policy = batadv_netlink_policy,
++		.dumpit = batadv_dat_cache_dump,
++	},
+ 
+ };
+ 
+-- 
+2.11.0
 
