@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  2 Mar 2018 18:57:43 +0100
-Message-Id: <20180302175745.12551-4-sw@simonwunderlich.de>
+Date: Fri,  2 Mar 2018 18:57:44 +0100
+Message-Id: <20180302175745.12551-5-sw@simonwunderlich.de>
 In-Reply-To: <20180302175745.12551-1-sw@simonwunderlich.de>
 References: <20180302175745.12551-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: Fix indentation of
- batadv_seq_before
+Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Avoid relation operator
+ comparison with bool
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,39 +20,33 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Also multiline macros should have their statements start on a tabstop. This
-was detected by checkpatch.pl after commit a134f8de9f40 ("checkpatch:
-improve the TABSTOP test to include declarations").
+commit 785ea1144182 ("batman-adv: Distributed ARP Table - create DHT helper
+functions") introduced a return check of batadv_compare_eth which uses a
+boolean return value since commit 16af73458aca ("batman-adv: main,
+batadv_compare_eth return bool"). A relational (<, >, <= or >=) operator
+is not the right one for such a check.
 
+Reported-by: David Binderman <dcb314@hotmail.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.h | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index d5d65999207e..057a28a9fe88 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -331,11 +331,13 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
-  *
-  * Return: true when x is a predecessor of y, false otherwise
-  */
--#define batadv_seq_before(x, y) ({typeof(x)_d1 = (x); \
--				 typeof(y)_d2 = (y); \
--				 typeof(x)_dummy = (_d1 - _d2); \
--				 (void)(&_d1 == &_d2); \
--				 _dummy > batadv_smallest_signed_int(_dummy); })
-+#define batadv_seq_before(x, y) ({ \
-+	typeof(x)_d1 = (x); \
-+	typeof(y)_d2 = (y); \
-+	typeof(x)_dummy = (_d1 - _d2); \
-+	(void)(&_d1 == &_d2); \
-+	_dummy > batadv_smallest_signed_int(_dummy); \
-+})
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 19b15de455ab..4469dcc1558f 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -495,7 +495,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	 * the one with the lowest address
+ 	 */
+ 	if (tmp_max == max && max_orig_node &&
+-	    batadv_compare_eth(candidate->orig, max_orig_node->orig) > 0)
++	    batadv_compare_eth(candidate->orig, max_orig_node->orig))
+ 		goto out;
  
- /**
-  * batadv_seq_after() - Checks if a sequence number x is a successor of y
+ 	ret = true;
 -- 
 2.11.0
 
