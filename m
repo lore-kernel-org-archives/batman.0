@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  2 Mar 2018 18:51:37 +0100
-Message-Id: <20180302175142.11838-3-sw@simonwunderlich.de>
+Date: Fri,  2 Mar 2018 18:51:38 +0100
+Message-Id: <20180302175142.11838-4-sw@simonwunderlich.de>
 In-Reply-To: <20180302175142.11838-1-sw@simonwunderlich.de>
 References: <20180302175142.11838-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/7] batman-adv: invalidate checksum on
- fragment reassembly
+Subject: [B.A.T.M.A.N.] [PATCH 3/7] batman-adv: Ignore invalid batadv_iv_gw
+ during netlink send
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +16,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@openmesh.com>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-A more sophisticated implementation could try to combine fragment checksums
-when all fragments have CHECKSUM_COMPLETE and are split at even offsets.
-For now, we just set ip_summed to CHECKSUM_NONE to avoid "hw csum failure"
-warnings in the kernel log when fragmented frames are received. In
-consequence, skb_pull_rcsum() can be replaced with skb_pull().
+The function batadv_iv_gw_dump stops the processing loop when
+batadv_iv_gw_dump_entry returns a non-0 return code. This should only
+happen when the buffer is full. Otherwise, an empty message may be
+returned by batadv_gw_dump. This empty message will then stop the netlink
+dumping of gateway entries. At worst, not a single entry is returned to
+userspace even when plenty of possible gateways exist.
 
-Note that in usual setups, packets don't reach batman-adv with
-CHECKSUM_COMPLETE (I assume NICs bail out of checksumming when they see
-batadv's ethtype?), which is why the log messages do not occur on every
-system using batman-adv. I could reproduce this issue by stacking
-batman-adv on top of a VXLAN interface.
-
-Fixes: 610bfc6bc99b ("batman-adv: Receive fragmented packets and merge")
-Tested-by: Maximilian Wilhelm <max@sdn.clinic>
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: efb766af06e3 ("batman-adv: add B.A.T.M.A.N. IV bat_gw_dump implementations")
+Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/fragmentation.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 22dde42fd80e..5afe641ee4b0 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -288,7 +288,8 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 	/* Move the existing MAC header to just before the payload. (Override
- 	 * the fragment header.)
- 	 */
--	skb_pull_rcsum(skb_out, hdr_size);
-+	skb_pull(skb_out, hdr_size);
-+	skb_out->ip_summed = CHECKSUM_NONE;
- 	memmove(skb_out->data - ETH_HLEN, skb_mac_header(skb_out), ETH_HLEN);
- 	skb_set_mac_header(skb_out, -ETH_HLEN);
- 	skb_reset_network_header(skb_out);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 79e326383726..8f64439647e3 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2729,7 +2729,7 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+ 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
+ 	struct batadv_neigh_node *router;
+ 	struct batadv_gw_node *curr_gw;
+-	int ret = -EINVAL;
++	int ret = 0;
+ 	void *hdr;
+ 
+ 	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
 -- 
 2.11.0
 
