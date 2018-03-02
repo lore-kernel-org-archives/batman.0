@@ -1,11 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  2 Mar 2018 18:51:36 +0100
-Message-Id: <20180302175142.11838-2-sw@simonwunderlich.de>
-In-Reply-To: <20180302175142.11838-1-sw@simonwunderlich.de>
-References: <20180302175142.11838-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: fix packet checksum in
- receive path
+Date: Fri,  2 Mar 2018 18:51:35 +0100
+Message-Id: <20180302175142.11838-1-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/7] pull request for net: batman-adv
+ 2018-03-02
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,49 +17,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+Hi David,
 
-eth_type_trans() internally calls skb_pull(), which does not adjust the
-skb checksum; skb_postpull_rcsum() is necessary to avoid log spam of the
-form "bat0: hw csum failure" when packets with CHECKSUM_COMPLETE are
-received.
+here are some bugfixes which we would like to see integrated into net.
 
-Note that in usual setups, packets don't reach batman-adv with
-CHECKSUM_COMPLETE (I assume NICs bail out of checksumming when they see
-batadv's ethtype?), which is why the log messages do not occur on every
-system using batman-adv. I could reproduce this issue by stacking
-batman-adv on top of a VXLAN interface.
+Please pull or let me know of any problem!
 
-Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
-Tested-by: Maximilian Wilhelm <max@sdn.clinic>
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/soft-interface.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+Thank you,
+      Simon
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 900c5ce21cd4..367a81fb785f 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -459,13 +459,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 
- 	/* skb->dev & skb->pkt_type are set here */
- 	skb->protocol = eth_type_trans(skb, soft_iface);
--
--	/* should not be necessary anymore as we use skb_pull_rcsum()
--	 * TODO: please verify this and remove this TODO
--	 * -- Dec 21st 2009, Simon Wunderlich
--	 */
--
--	/* skb->ip_summed = CHECKSUM_UNNECESSARY; */
-+	skb_postpull_rcsum(skb, eth_hdr(skb), ETH_HLEN);
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
--- 
-2.11.0
+The following changes since commit 7928b2cbe55b2a410a0f5c1f154610059c57b1b2:
 
+  Linux 4.16-rc1 (2018-02-11 15:04:29 -0800)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180302
+
+for you to fetch changes up to f22e08932c2960f29b5e828e745c9f3fb7c1bb86:
+
+  batman-adv: Fix internal interface indices types (2018-02-25 20:19:34 +0100)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - fix skb checksum issues, by Matthias Schiffer (2 patches)
+
+ - fix exception handling when dumping data objects through netlink,
+   by Sven Eckelmann (4 patches)
+
+ - fix handling of interface indices, by Sven Eckelmann
+
+----------------------------------------------------------------
+Matthias Schiffer (2):
+      batman-adv: fix packet checksum in receive path
+      batman-adv: invalidate checksum on fragment reassembly
+
+Sven Eckelmann (5):
+      batman-adv: Ignore invalid batadv_iv_gw during netlink send
+      batman-adv: Ignore invalid batadv_v_gw during netlink send
+      batman-adv: Fix netlink dumping of BLA claims
+      batman-adv: Fix netlink dumping of BLA backbones
+      batman-adv: Fix internal interface indices types
+
+ net/batman-adv/bat_iv_ogm.c            | 26 +++++++++++++++-----------
+ net/batman-adv/bat_v.c                 |  2 +-
+ net/batman-adv/bridge_loop_avoidance.c | 22 ++++++++++++++--------
+ net/batman-adv/fragmentation.c         |  3 ++-
+ net/batman-adv/hard-interface.c        |  9 +++++++--
+ net/batman-adv/originator.c            |  4 ++--
+ net/batman-adv/originator.h            |  4 ++--
+ net/batman-adv/soft-interface.c        |  8 +-------
+ net/batman-adv/types.h                 | 11 ++++++-----
+ 9 files changed, 50 insertions(+), 39 deletions(-)
