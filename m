@@ -1,11 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  2 Mar 2018 18:51:39 +0100
-Message-Id: <20180302175142.11838-5-sw@simonwunderlich.de>
+Date: Fri,  2 Mar 2018 18:51:40 +0100
+Message-Id: <20180302175142.11838-6-sw@simonwunderlich.de>
 In-Reply-To: <20180302175142.11838-1-sw@simonwunderlich.de>
 References: <20180302175142.11838-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: Ignore invalid batadv_v_gw
- during netlink send
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Fix netlink dumping of BLA
+ claims
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,37 +19,66 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@openmesh.com>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven@narfation.org>
 
-The function batadv_v_gw_dump stops the processing loop when
-batadv_v_gw_dump_entry returns a non-0 return code. This should only
-happen when the buffer is full. Otherwise, an empty message may be
-returned by batadv_gw_dump. This empty message will then stop the netlink
-dumping of gateway entries. At worst, not a single entry is returned to
-userspace even when plenty of possible gateways exist.
+The function batadv_bla_claim_dump_bucket must be able to handle
+non-complete dumps of a single bucket. It tries to do that by saving the
+latest dumped index in *idx_skip to inform the caller about the current
+state.
 
-Fixes: b71bb6f924fe ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations")
-Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
+But the caller only assumes that buckets were not completely dumped when
+the return code is non-zero. This function must therefore also return a
+non-zero index when the dumping of an entry failed. Otherwise the caller
+will just skip all remaining buckets.
+
+And the function must also reset *idx_skip back to zero when it finished a
+bucket. Otherwise it will skip the same number of entries in the next
+bucket as the previous one had.
+
+Fixes: 04f3f5bf1883 ("batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink")
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bridge_loop_avoidance.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 27e165ac9302..c74f81341dab 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -928,7 +928,7 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
- 	struct batadv_neigh_node *router;
- 	struct batadv_gw_node *curr_gw;
--	int ret = -EINVAL;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index fad47853ad3c..20b548ea5a0a 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -2161,22 +2161,25 @@ batadv_bla_claim_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+ {
+ 	struct batadv_bla_claim *claim;
+ 	int idx = 0;
 +	int ret = 0;
- 	void *hdr;
  
- 	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(claim, head, hash_entry) {
+ 		if (idx++ < *idx_skip)
+ 			continue;
+-		if (batadv_bla_claim_dump_entry(msg, portid, seq,
+-						primary_if, claim)) {
++
++		ret = batadv_bla_claim_dump_entry(msg, portid, seq,
++						  primary_if, claim);
++		if (ret) {
+ 			*idx_skip = idx - 1;
+ 			goto unlock;
+ 		}
+ 	}
+ 
+-	*idx_skip = idx;
++	*idx_skip = 0;
+ unlock:
+ 	rcu_read_unlock();
+-	return 0;
++	return ret;
+ }
+ 
+ /**
 -- 
 2.11.0
 
