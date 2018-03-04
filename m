@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 04 Mar 2018 18:15:57 +0100
-Message-ID: <3781180.yC8v9ux37Y@sven-edge>
-In-Reply-To: <20180304140408.7015-1-linus.luessing@c0d3.blue>
-References: <20180304140408.7015-1-linus.luessing@c0d3.blue>
+Date: Sun, 04 Mar 2018 18:34:27 +0100
+Message-ID: <2479551.zDrGEAAfck@sven-edge>
+In-Reply-To: <3744465.nJcBpx8pQg@sven-edge>
+References: <20180227081016.13122-1-linus.luessing@c0d3.blue>
+ <3744465.nJcBpx8pQg@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1751204.8irNP708TB";
+Content-Type: multipart/signed; boundary="nextPart2391846.OdKlY8ig8n";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Avoid redundant multicast
- TT entries
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add DAT cache netlink
+ support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,54 +21,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1751204.8irNP708TB
+--nextPart2391846.OdKlY8ig8n
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Sonntag, 4. M=E4rz 2018 15:04:08 CET Linus L=FCssing wrote:
-> +static bool batadv_mcast_addr_is_ipv4(const u8 *addr)
-> +{
-> +       const unsigned char prefix[] =3D {0x01, 0x00, 0x5E};
+On Sonntag, 4. M=E4rz 2018 17:41:26 CET Sven Eckelmann wrote:
+> On Dienstag, 27. Februar 2018 09:10:15 CET Linus L=FCssing wrote:
+> > +       if (nla_put_u32(msg, BATADV_ATTR_DC_ADDRESS, ip) ||
+> > +           nla_put(msg, BATADV_ATTR_DC_HWADDRESS, ETH_ALEN,
+> > +                   dat_entry->mac_addr) ||
+> > +           nla_put_u16(msg, BATADV_ATTR_DC_VID, dat_entry->vid) ||
+> > +           nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS, msecs)) {
+> > +               genlmsg_cancel(msg, hdr);
+> > +               return -EMSGSIZE;
+>=20
+> Just found that there is a function to send IPv4 addresses=20
+> (BATADV_ATTR_DC_ADDRESS) to userspace: nla_put_in_addr. It requires that =
+you=20
+> provide the IPv4 address in __be32 format and not in host format.  It is =
+maybe=20
+> a good idea to use it and keep it more consistent with the rest of the ke=
+rnel.=20
 
-This should most likely be
-
-  static const u8 prefix[] =3D {0x01, 0x00, 0x5E};
-
-[...]
-> + */
-> +static bool batadv_mcast_addr_is_ipv6(const u8 *addr)
-> +{
-> +       const unsigned char prefix[] =3D {0x33, 0x33};
-
-This should most likely be
-
-  static const u8 prefix[] =3D {0x33, 0x33};
+Btw. this function was introduced with linux-4.1 [1] and older kernels will=
+=20
+need compat code for it.
 
 Kind regards,
 	Sven
 
-
---nextPart1751204.8irNP708TB
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
+it/?id=3D930345ea630405aa6e6f42efcb149c3f360a6b67
+--nextPart2391846.OdKlY8ig8n
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqcKc0ACgkQXYcKB8Em
-e0ZGIxAAhKYGhgdh8b6GKpvKdGx3xVQBOzDitHX3Uk/llNnZ8/NEReKcUQUww303
-eWrv+dogyGAOkZ1IOJu1Pv3go7etnoMFrfsSg2kUYIK1isZB7qg6PCZuj1JtdACA
-FWyu8xhw5m1ENrKzIsCNG14pY+p2eXHx9lA/meeuPOTyPw37zuYOn4QbF4Yn3vDn
-wCgv8BiEtKj2z8fRSl4SEUuuGv42aEu4zenY0fXPwoHvYD5VU0Xtz4HlCvW24bcA
-qC+zHPe7nF3HcfrmolULdZTGjkKe8MFTr5nL/hPW8du3tmyiIN/0OtvNNURkqA4k
-upOfMo3q/KJLr+tjpEAM12S/EmkW4BoLnxDeEg+SKD54P5vgFHuABGMOP4H+E8At
-q1JtqslQYRRq9ujh5fXH29hpImmKxgxkw7dA3OzkPny+PJhtLARcFZjHNgYZBqhW
-MHgPrPMYcwasdJtGaAFmTi614Fmo+tWS4tuQw9F1yve2Tbnk8LvpgK6u5iKv9L7O
-FawZrtwV5HwmRoADV5mFEY8JtXbwtkDRx50Q+5ver7L9wyVfjlywJQ9IYA9+Q3xt
-0LHgDR1yuAgmh2jDFo0y1MnU7pQP99ro67cPDs0Ob6pQxWYHhUnbUo/NVuJhKxv1
-jTAPJqAo2wlgktthLy2NYGbkZJ6vbvOFXkHcRdRKbpXEEDZPPQk=
-=+zMf
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqcLiMACgkQXYcKB8Em
+e0aMqw/9Gld4jk3Hx9OWFbgiBQdJTJu5j2lVj+b6AfNh6vgxq7gT5Z5+NIcvMNAm
+4ITRFh2ZyD2EpcXRM1+jqD63JCby1dWcYsbWtXBlEz4H+dpBozjkKmVcDStp8Imr
+koHdkJpVhSgMKiB+l+a1en3QACHvr1RtQbgqxi2dUoyhBdOgRIwqsjIao9qvvPsA
+3GE4fH+a/o3gic6A+CDMYheYom3DSRx5n2iwi4prWLKu/sEw5bPIFSUI0s+jzveW
+1ELCUzqLPOKACxF+YM2IlkfEQsknIQpLPuah0i3VnfvrqF/MnXVaQuIY5mRmmmO4
+ItENvfxlZl4zMMrddACxRJz/pXWxm81rnFoenMCUzSuhI1Hi8f7Ga0DhaoyceV6g
+0xfSU0ySMh9TbxTlJG+pXxLiI0vmJk6cV3z+GI3uspYB7LCMTkclNSAlVYjDWwku
+QhW+uHOtA1KOLbAv3uodSpf0U5rfEfpva9av+iY5y/tgnnN5AYqGwfK2hRi7rgfX
+C5F5vx/1mh+C8xCkAhasknP0INhbtc0lP7FWj4Q/HN2efIRmPmPLGp+BfbBEJ3/l
+hHbuVdP2PbU7tgtwtXomx69cE+Hhl2VOma5s6k6g/nasxRYrVG7j0krFuP+WM3if
+TrESnGJKBKeynU8I5iAC70KwbdX0pn9mbfJzDhqOFvhyRWVWLrQ=
+=l4Ad
 -----END PGP SIGNATURE-----
 
---nextPart1751204.8irNP708TB--
+--nextPart2391846.OdKlY8ig8n--
 
