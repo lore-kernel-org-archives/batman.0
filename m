@@ -1,12 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun,  4 Mar 2018 12:45:30 +0100
-Message-Id: <20180304114530.4339-1-linus.luessing@c0d3.blue>
+Date: Sun,  4 Mar 2018 12:53:29 +0100
+Message-Id: <20180304115329.4520-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix multicast packet loss
- with a single WANT_ALL_IPV4/6 flag
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Fix multicast packet
+ loss with a single WANT_ALL_IPV4/6 flag
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -25,11 +25,13 @@ are present.
 Unfortunately, the current code even skips adding multicast TT entries
 if only either the WANT_ALL_IPV4 or WANT_ALL_IPV6 is present.
 
-This could lead to IPv6 multicast packet loss if only an IGMP but non an
+This could lead to IPv6 multicast packet loss if only an IGMP but not an
 MLD querier is present for instance or vice versa.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
+v2: Fixed typo in last sentence: "non" -> "not"
+
  net/batman-adv/multicast.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
