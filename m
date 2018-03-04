@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun,  4 Mar 2018 13:08:17 +0100
-Message-Id: <20180304120817.4852-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 04 Mar 2018 13:36:30 +0100
+Message-ID: <10439742.yrGnshK4dX@sven-edge>
+In-Reply-To: <20180227081016.13122-1-linus.luessing@c0d3.blue>
+References: <20180227081016.13122-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: Fix multicast packet
- loss with a single WANT_ALL_IPV4/6 flag
+Content-Type: multipart/signed; boundary="nextPart6108307.WkqsnKbJNM";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: add DAT cache netlink
+ support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,40 +20,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-As the kernel doc describes too the code is supposed to skip adding
-multicast TT entries if both the WANT_ALL_IPV4 and WANT_ALL_IPV6 flags
-are present.
+--nextPart6108307.WkqsnKbJNM
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Unfortunately, the current code even skips adding multicast TT entries
-if only either the WANT_ALL_IPV4 or WANT_ALL_IPV6 is present.
+> diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+> index 19b15de4..aca34e95 100644
+> --- a/net/batman-adv/distributed-arp-table.c
+> +++ b/net/batman-adv/distributed-arp-table.c
+> @@ -43,13 +43,18 @@
+>  #include <linux/string.h>
+>  #include <linux/workqueue.h>
+>  #include <net/arp.h>
+> +#include <net/genetlink.h>
+> +#include <net/netlink.h>
+> +#include <net/sock.h>
+>  
+>  #include "bridge_loop_avoidance.h"
+>  #include "hard-interface.h"
+>  #include "hash.h"
+>  #include "log.h"
+> +#include "netlink.h"
+>  #include "originator.h"
+>  #include "send.h"
+> +#include "soft-interface.h"
+>  #include "translation-table.h"
+>  #include "tvlv.h"
 
-This could lead to IPv6 multicast packet loss if only an IGMP but not an
-MLD querier is present for instance or vice versa.
+Please also add:
 
-Fixes: 391b59cdb111 ("batman-adv: Add multicast optimization support for bridged setups")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
-v3: Added "Fixes:" line
-v2: Fixed typo in last sentence: "non" -> "not"
+* #include <linux/netlink.h> for
+  - netlink_callback
+  - NETLINK_CB
+* #include <uapi/linux/batman_adv.h>
+  - for all the new batadv genl attributes
 
- net/batman-adv/multicast.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+> index e24aa960..23d11494 100644
+> --- a/net/batman-adv/distributed-arp-table.h
+> +++ b/net/batman-adv/distributed-arp-table.h
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 6eaffe50..15a7b314 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -543,8 +543,8 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 		bat_priv->mcast.enabled = true;
- 	}
- 
--	return !(mcast_data.flags &
--		 (BATADV_MCAST_WANT_ALL_IPV4 | BATADV_MCAST_WANT_ALL_IPV6));
-+	return !(mcast_data.flags & BATADV_MCAST_WANT_ALL_IPV4 &&
-+		 mcast_data.flags & BATADV_MCAST_WANT_ALL_IPV6);
- }
- 
- /**
--- 
-2.11.0
+Please also add forward declaration for "struct netlink_callback;" (above 
+"struct seq_file;").
+
+Kind regards,
+	Sven
+--nextPart6108307.WkqsnKbJNM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqb6E4ACgkQXYcKB8Em
+e0afHg/9F2QGOFqSl4aIsmRX91RVFBgRiXQvBGQEzSRR5JbRb+wUCgNyU2v6WJms
+WM51M8GKOSGvlyFekYde62gV14yOhg1+p9ZNoUII8aZ/XGLTR7RVH2akoV3SmS3P
+w0jcHnXVjXbSwIALzgD153rA7Js+ZIZCFuuJevIAt61I7iC5xprFUmIlJUta8uoP
+ZrGF1VnDRZG2SNjJDwkHofdN6yjtVVD33SSBSdgJjtGe6NO22Px2ryngUvse5V5C
+1eNViMNad7BDI1eJv0zwTcQHc4WnFfoP2bQ6gO2Vp+g8HCzkRi3j0fn0pWcDaf0c
+sf2V2jDhCBNCrti/ME57CDeEdVC29Qttdf+uKhM1+CxTuA9QfOduJR8hAbz0eUkI
+siInlxSB3vOIOhGx5UNZ/jA32w4o/wVTvngOu6W5CyVvmIHml48MtPVidWViTyMY
+bmEtpPFgn+sVBeDSZNYhEOa+RpJJ74ywnMM/s5yEuTXxSVQhxUwrqokaZs+K1D2u
+1ssfsqJYzJvh3Jw9kbbFJisMcVdtPissRGQWM1fmrEkpcIiGr7g5Ey2B6Js4YZLj
+SLyHsGogmgaeocQs0cpP0PQYWH7Epmtde56W7aiZx4k3TmBPMl2oI+PqO5tEi+KJ
+d2C7OHcUKlr/mSdGQ5YzU4pToo55lvzZFzZIVYQ1vqpzponWyH8=
+=apX4
+-----END PGP SIGNATURE-----
+
+--nextPart6108307.WkqsnKbJNM--
 
