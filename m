@@ -1,11 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  2 Mar 2018 18:57:45 +0100
-Message-Id: <20180302175745.12551-6-sw@simonwunderlich.de>
-In-Reply-To: <20180302175745.12551-1-sw@simonwunderlich.de>
-References: <20180302175745.12551-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: always assume 2-byte packet
- alignment
+Return-Path: <davem@davemloft.net>
+Date: Sat, 03 Mar 2018 23:53:50 -0500 (EST)
+Message-Id: <20180303.235350.933292928260447116.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180302175142.11838-1-sw@simonwunderlich.de>
+References: <20180302175142.11838-1-sw@simonwunderlich.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/7] pull request for net: batman-adv
+ 2018-03-02
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,94 +18,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: sw@simonwunderlich.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri,  2 Mar 2018 18:51:35 +0100
 
-NIC drivers generally try to ensure that the "network header" is aligned
-to a 4-byte boundary. This is not always possible: When Ethernet frames are
-encapsulated in other packets with 4-byte aligned headers, the inner
-Ethernet header will have 4-byte alignment, and in consequence, the inner
-network header is aligned to 2, but not to 4 bytes.
+> here are some bugfixes which we would like to see integrated into net.
+> 
+> Please pull or let me know of any problem!
 
-Most parts of batman-adv only care about 2-byte alignment; in particular,
-no unaligned accesses occur in performance-critical paths that handle
-actual payload data. This is not true for OGM handling: the seqno and crc
-fields are accessed as 32-bit values. To avoid these unaligned accesses,
-this patch reduces the expected packet alignment to 2 bytes for all of
-batadv's packet types.
-
-As no unaligned accesses existed on the performance-critical paths anyways,
-this chance does have any (positive or negative) effect on performance, but
-it still makes sense to avoid these accesses to prevent log noise when
-examining other unaligned accesses in the kernel while batman-adv is
-active.
-
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- include/uapi/linux/batadv_packet.h | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
-
-diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-index daefd7283896..894d8d2f713d 100644
---- a/include/uapi/linux/batadv_packet.h
-+++ b/include/uapi/linux/batadv_packet.h
-@@ -196,8 +196,6 @@ struct batadv_bla_claim_dst {
- 	__be16 group;		/* group id */
- };
- 
--#pragma pack()
--
- /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
-  * @packet_type: batman-adv packet type, part of the general header
-@@ -222,9 +220,6 @@ struct batadv_ogm_packet {
- 	__u8   reserved;
- 	__u8   tq;
- 	__be16 tvlv_len;
--	/* __packed is not needed as the struct size is divisible by 4,
--	 * and the largest data type in this struct has a size of 4.
--	 */
- };
- 
- #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
-@@ -249,9 +244,6 @@ struct batadv_ogm2_packet {
- 	__u8   orig[ETH_ALEN];
- 	__be16 tvlv_len;
- 	__be32 throughput;
--	/* __packed is not needed as the struct size is divisible by 4,
--	 * and the largest data type in this struct has a size of 4.
--	 */
- };
- 
- #define BATADV_OGM2_HLEN sizeof(struct batadv_ogm2_packet)
-@@ -405,7 +397,6 @@ struct batadv_icmp_packet_rr {
-  * misalignment of the payload after the ethernet header. It may also lead to
-  * leakage of information when the padding it not initialized before sending.
-  */
--#pragma pack(2)
- 
- /**
-  * struct batadv_unicast_packet - unicast packet for network payload
-@@ -533,8 +524,6 @@ struct batadv_coded_packet {
- 	__be16 coded_len;
- };
- 
--#pragma pack()
--
- /**
-  * struct batadv_unicast_tvlv_packet - generic unicast packet with tvlv payload
-  * @packet_type: batman-adv packet type, part of the general header
-@@ -641,4 +630,6 @@ struct batadv_tvlv_mcast_data {
- 	__u8 reserved[3];
- };
- 
-+#pragma pack()
-+
- #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
--- 
-2.11.0
-
+Pulled, thanks Simon.
