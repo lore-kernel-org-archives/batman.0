@@ -1,14 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 05 Mar 2018 07:32:35 +0100
-Message-ID: <2065896.eJjkvJvhLt@sven-edge>
-In-Reply-To: <0272f809d25b41fcab4ec5c4b66014f5e341d424.1516792897.git.mschiffer@universe-factory.net>
-References: <0272f809d25b41fcab4ec5c4b66014f5e341d424.1516792897.git.mschiffer@universe-factory.net>
+Date: Mon, 05 Mar 2018 20:28:13 +0100
+Message-ID: <2010709.fvC8HbtXRd@sven-edge>
+In-Reply-To: <b0d20913-2ee7-499e-02b6-796d542c5951@gmail.com>
+References: <b0d20913-2ee7-499e-02b6-796d542c5951@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1715139.anJIEOCtbX";
+Content-Type: multipart/signed; boundary="nextPart4202079.LQ3ES6GMtR";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH RFC] batman-adv: always assume 2-byte
- packet alignment
+Subject: Re: [B.A.T.M.A.N.] Questions about hardware
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,66 +17,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Paul Becue <paul.becue@gmail.com>
+Cc: dries.berckmans@soundtalks.com, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1715139.anJIEOCtbX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart4202079.LQ3ES6GMtR
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Mittwoch, 24. Januar 2018 12:21:37 CET Matthias Schiffer wrote:
-> NIC drivers generally try to ensure that the "network header" is aligned
-> to a 4-byte boundary. This is not always possible: When Ethernet frames are
-> encapsulated in other packets with 4-byte aligned headers, the inner
-> Ethernet header will have 4-byte alignment, and in consequence, the inner
-> network header is aligned to 2, but not to 4 bytes.
-> 
-> Most parts of batman-adv only care about 2-byte alignment; in particular,
-> no unaligned accesses occur in performance-critical paths that handle
-> actual payload data. This is not true for OGM handling: the seqno and crc
-> fields are accessed as 32-bit values. To avoid these unaligned accesses,
-> this patch reduces the expected packet alignment to 2 bytes for all of
-> batadv's packet types.
-> 
-> As no unaligned accesses existed on the performance-critical paths anyways,
-> this chance does have any (positive or negative) effect on performance, but
-> it still makes sense to avoid these accesses to prevent log noise when
-> examining other unaligned accesses in the kernel while batman-adv is
-> active.
-> 
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> ---
->  include/uapi/linux/batadv_packet.h | 13 ++-----------
->  1 file changed, 2 insertions(+), 11 deletions(-)
+[Please try to not contact me directly when it is about B.A.T.M.A.N. relate=
+d=20
+ things and at least Cc the official mailing list]
 
-As discussed earlier, this was applied as 0509fc0c128b [1] after David Miller 
-pulled it in net-next.
+On Montag, 5. M=E4rz 2018 19:04:29 CET Paul Becue wrote:
+> We are working on a device with a mesh network. We are doing tests with=20
+> WiFi ad-hoc networks, and we tested last week BATMAN-adv and also babeld=
+=20
+> on a Raspberry Pi 3 with a Ralink dongle attached to it. The results=20
+> were very good.
+[..]
+> Could you give me some hints where I have to look for hardware and what=20
+> kind of hardware I have to look for? I have the impression that there is=
+=20
+> something that I don't see in the whole story. I hope ad-hoc WiFi is=20
+> still a technology that is up to date. Or is there a technology that=20
+> replaces it?
+
+Yes, IBSS is becoming a problem at the moment. You can try QCA ath10k hardw=
+are=20
+with Ben Greears firmware [1] or Mediathek with the mt76 driver [2] when yo=
+u=20
+want up-to-date HW. There is still some ath9k based stuff around when 802.1=
+1n=20
+is enough.
+
+Otherwise you might try to replace IBSS with meshpoint interfaces. Just set=
+up=20
+it like 802.11s but with forwarding disabled [3]. This works at least with=
+=20
+ath10k based HW and the official QCA ath10k firmware.
+
+But HW which uses ath10k and other things which uses special firmware which=
+=20
+prevents you from using your "own" rate control algorith are a no-go when=20
+you want to use throughput based metrics (as in B.A.T.M.A.N. V or olsrd2).=
+=20
+Then you should stick either with ath9k or mt76 compatible HW.
+
+Btw. my tests of mt76 showed performance and stability problems in the past=
+=2E=20
+This may have changed by recent fixes in the driver but I don't know the
+current state.
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/0509fc0c128ba2891770305c57c9b6a3a61ea7bd
-
---nextPart1715139.anJIEOCtbX
+[1] https://www.candelatech.com/ath10k.php
+[2] https://github.com/openwrt/mt76
+[3] http://openwrt-devel.openwrt.narkive.com/Bieu1aRR/ath10k-mesh-with-open=
+wrt-question
+--nextPart4202079.LQ3ES6GMtR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqc5IMACgkQXYcKB8Em
-e0Y0JBAAo9aOg7HemG056p0LAdE+VdT9MK/kW6UGWNi2915/qyYHcHFmjIfAj+Yk
-KY3l3AXNJrQTPp+X+JzvM9tC+ykXA9l0ls8y8OcnpTkUU/Kuib1uFOAd7xOhL4DT
-kXF7muxEoOOY7xlyu9+ccH1wTNEF+D9JvRfJZDbfgGwW7dQGJOdLeMlGcOXtuuBL
-sN4nCSt47DWJQWIAQ9sUJNyMBgD7Rm2dHQQsbLsgh8Ino82cxPf6EHSg98ObKudY
-IpsaDh5OwNz5s69Kz3/Q37crFd5nnzdRyQrfV280znb2Bu5zPmlFItb5Xz3UR1rP
-bzZs7cqMNjcpzEZFdVoHmLsELDypxhQ0sqeoeEMixD5NQMNRIDGyq1EFZ/ahK4IP
-IM3oQCb1mReR13H0nh0MKHMRxfrvPn2fa2NXFUzm/iF7c7/hSr2ZL+Hn1WcbUhtB
-d5YsiP5Iy9J9yl2jYgKbhzo9dnu78S67g+uuvlbRsH821dlEWfElf8GW8cSARzWZ
-ddKynto9LxFFsXWHRlxmbht75y3D5qQLmuZQDWpITpw5eFHooaFWMgfrrxPAzWMl
-9MRdW9kuu1H4RbWbdGHQBvwXkg471eZZXR3oCl1Fltos4d3k6KIMVCHdxPemv1e5
-x1Ol1b0zUSHq4YcOFuCYRf2wlNrAfHDp5Pft5eqJubr3Sa8SkFg=
-=Agjf
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqdmk0ACgkQXYcKB8Em
+e0bmbRAAiIph3bIc0rs3emC6O+9ZvEjBwg+j5R+Dv9qZpQc6dCPMAo4eaUWtTpJz
+R26VZazvPkaXEs455VNb3KaRXkb0VyfezPMegH8rpUjS4MMESbsRkAadDeLxTQU4
+f/T5kFwj9WyPPquNGqOUY9ejAp0S6o9CNnDC9YXF8ai5iSbOVHaJrQFTsnuIu+p7
+qsJGWywqr8n0DFYbIv3Cw86kLQvEFJbspHTjIxLgpnMgpsQYuJgFjBAwRGYpIeUu
+GWwc2QsT9rhvlVLs0d+2IuvoVp3ziSCUfsKdI0b7oTZlSGUDbiNPfHUe4izia+BC
+WxBPUiOcNO379MdnsKghptJs9gzGXabErIpVjAnDgBN8KrdnenhqaHJwsRlXrg0A
+RIw5QLU6XxzYL0oDR8Kh3qVO0H3DysXGBNnjurouY9mYnOmxaGIGLb9jLdmik80I
+v/uG8BEv1/5Tqn2KPfk+AlulaL/xGYKT3ADowRVG0zdwjNXV+fKyW5p3N+vTh9Bx
+Ox2D3F6Zn4b1/gNxgp5F9k1jEnitlJIF1bk3LAhK84FQlxOEfcM/Arowy2hEOsoq
+6dGYlOPDQAMe5fhcWhtGi6WOPZLV8hYKT+CKzxKKmG7O8dNDg5bLYrMAiYiXU013
+b6p3YM3cvbDB42FGYHJu5tXA/FdTG4gaOw1Rtqa/EX7PSnnxNfI=
+=Ib7O
 -----END PGP SIGNATURE-----
 
---nextPart1715139.anJIEOCtbX--
+--nextPart4202079.LQ3ES6GMtR--
 
