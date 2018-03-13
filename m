@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 13 Mar 2018 09:52:17 +0100
-Message-ID: <1855089.zoMRxsqiDl@bentobox>
-In-Reply-To: <18a25277-37bb-82f8-924b-273bf6369270@unstable.cc>
+Return-Path: <a@unstable.cc>
 References: <20180310235321.1324-1-linus.luessing@c0d3.blue>
  <2162965.7E0QXh8GzM@bentobox>
  <18a25277-37bb-82f8-924b-273bf6369270@unstable.cc>
+ <1855089.zoMRxsqiDl@bentobox>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <de7cb5e3-55d3-998a-81e1-fe47d7b37628@unstable.cc>
+Date: Tue, 13 Mar 2018 16:53:51 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3112843.eoSsai9u6H";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <1855089.zoMRxsqiDl@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="KaxmcpAibL1pMjMI1f2oqnIa6b2XZ5I6d"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: netlink support for
  DAT and MCAST
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,44 +22,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
 
---nextPart3112843.eoSsai9u6H
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--KaxmcpAibL1pMjMI1f2oqnIa6b2XZ5I6d
+Content-Type: multipart/mixed; boundary="ZY5MHXAwXI0ejDc4DGva8K7EZIRcpePfn";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?Q?Linus_L=c3=bcssing?=
+ <linus.luessing@c0d3.blue>
+Message-ID: <de7cb5e3-55d3-998a-81e1-fe47d7b37628@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: netlink support for DAT
+ and MCAST
+References: <20180310235321.1324-1-linus.luessing@c0d3.blue>
+ <2162965.7E0QXh8GzM@bentobox>
+ <18a25277-37bb-82f8-924b-273bf6369270@unstable.cc>
+ <1855089.zoMRxsqiDl@bentobox>
+In-Reply-To: <1855089.zoMRxsqiDl@bentobox>
+
+--ZY5MHXAwXI0ejDc4DGva8K7EZIRcpePfn
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 13. M=E4rz 2018 16:22:24 CET Antonio Quartulli wrote:
-[...]
-> (if we wanted to, we could still rename all the attrs pointing to the
-> very same data type and unify them, but I don't have a strong opinion
-> about it at this time).
 
-This would break backwards compatibility.
 
-Kind regards,
-	Sven
---nextPart3112843.eoSsai9u6H
+On 13/03/18 16:52, Sven Eckelmann wrote:
+> On Dienstag, 13. M=E4rz 2018 16:22:24 CET Antonio Quartulli wrote:
+> [...]
+>> (if we wanted to, we could still rename all the attrs pointing to the
+>> very same data type and unify them, but I don't have a strong opinion
+>> about it at this time).
+>=20
+> This would break backwards compatibility.
+
+Ah right, those names are exported to user space too with the same
+header file.
+
+We'll live with that then.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--ZY5MHXAwXI0ejDc4DGva8K7EZIRcpePfn--
+
+--KaxmcpAibL1pMjMI1f2oqnIa6b2XZ5I6d
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqnkUEACgkQXYcKB8Em
-e0b1iBAAs/dUGDG9d08SibV9gxNRMRcxoVjLgOLX0IoZpNRr2LJ9IZ1qzy8f9m6w
-jxMurZMZ7dl9a4Y8wd+j+6Ah+/WvY5MVkTDj5djJYH5UlC2SFflmh7JvXQe3zL9n
-gskBE4cGDqRfCGzSrWY9/p0fpEBQPRPi6MzGXo1YRCq+pivuESFLWNowCBHCJ45s
-hw3S8IJTkhB/nqNCUaWCMHJfIboK7VIMpMOtZyGcQP0IwjvhplzTdq2ELw+nR6DM
-AsBX+KQPMkae5fG24ws+EPmdyED3abxhOSslDYzzXRhM9eWOfPq8Q7tb59FrE2PA
-IXkzY9QzSiDf1ZY/fHDrI1Br23NLxvs/1Uj0nSRSwH3CWlR9mb9Ji48WGqNsSGax
-lWFUjww/ARLjYNJb6skbfVyLcb4Q5pLaZQnLeTPGVJrTTI5sths3HzsT3TH9p1b8
-shLbvXsM1TZt4ahthSUKJj/VtObdtFax0pByt7l9tfNDGE2Ma6uyh2aKNNLnmYQ6
-19DkdSOkfh9frhFZ3lf0uvkM88iKqsxr+04d5FA7NGuzCMPmvc0cyMFkDnbKosXD
-s+CzXqWxqTWRDlanPdzx8DHDcRm3iCKFIBbXSmKXgFo1ow0I9Tht/nJckX1CWIdR
-kPRf+SowSKsqE9uIs+9pI3Qe+XHy8tx2jl6w7YEenOO8hjlWyN4=
-=iB4z
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlqnkZ8ACgkQB6U8WA7y
+zXQJ/xAAmiIForgftDxyVKedxOIOW3wdqn0IuJ2R+EGkGDxlU8Ow6ph5c3qa4KkL
+HUynBP3RsSN+VyNGJPR+1Xdmrm/nswjZY4k1XoV1BGtPI15LKaEqSG7Q753aVLo/
+0lr6hl5G5MHorlyrigATNa/Z/0CbR7yib9FierdWnlJ1audINdfc/hdjZpWtiPoX
+TLmDMwl/cVnTLhUJYZpDqDIn0cQiiQhnCT0nPYLlGQ+D9PXM0I3tozEl1/hzvxAH
+tgqIr2KW/P+bKjmmCP7GhNDlvWuyJRjnowYOr7kTxzkmxVggSktXtcMEXTM4/IyS
+rdRnyi51Wu7GABVuEX1qyikTPhKFacxgFvGpMuREoVwIzoO1K3yzTytiyk0TndrL
+G7xLnxCkaPDxlh2a1CtYcCKpAgPI91YzlQsu0QGrtw6BWz3EQEwp4wmmAN7cGR9x
+JpyfwopZL7x1GMNKVYRxChOg5gpQ36zMZe3cw1qgjp1SQv1qbP2NVu9gabTfDqDc
+V+YKSO8+Rn52fmMiYV2f5rZwwyXMxOUaz8NP0xuXJnBn4AMrXVFaYaTr9ZVfrwmK
+gYmgGmC+CgNxv45o9xDs9XEXpZ8+a1rnk4twjNf2g8bRmXm/cKPk3/PI+6ofMjqA
+FteSAT70dl1pe1eiEHpX+6G3mhBbax6KVfk+XjHh7g9htqsEGHM=
+=mt+H
 -----END PGP SIGNATURE-----
 
---nextPart3112843.eoSsai9u6H--
-
+--KaxmcpAibL1pMjMI1f2oqnIa6b2XZ5I6d--
