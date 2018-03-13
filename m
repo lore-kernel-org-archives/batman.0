@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 13 Mar 2018 09:20:37 +0100
-Message-ID: <2162965.7E0QXh8GzM@bentobox>
-In-Reply-To: <8d6c7fcc-7681-721b-554d-9110574ed5b6@unstable.cc>
+Return-Path: <a@unstable.cc>
 References: <20180310235321.1324-1-linus.luessing@c0d3.blue>
  <2042233.hTAz9L1TrL@sven-edge>
  <8d6c7fcc-7681-721b-554d-9110574ed5b6@unstable.cc>
+ <2162965.7E0QXh8GzM@bentobox>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <18a25277-37bb-82f8-924b-273bf6369270@unstable.cc>
+Date: Tue, 13 Mar 2018 16:22:24 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9002136.UbB3neMqGj";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <2162965.7E0QXh8GzM@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="iH6fYiKG0Yw6gVE5u7VnjAWf6KCmowt99"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: netlink support for
  DAT and MCAST
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +22,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
 
---nextPart9002136.UbB3neMqGj
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--iH6fYiKG0Yw6gVE5u7VnjAWf6KCmowt99
+Content-Type: multipart/mixed; boundary="puf3ioqQxI8dv9z4GnaTVYxIZpTQl14U9";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?Q?Linus_L=c3=bcssing?=
+ <linus.luessing@c0d3.blue>
+Message-ID: <18a25277-37bb-82f8-924b-273bf6369270@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: netlink support for DAT
+ and MCAST
+References: <20180310235321.1324-1-linus.luessing@c0d3.blue>
+ <2042233.hTAz9L1TrL@sven-edge>
+ <8d6c7fcc-7681-721b-554d-9110574ed5b6@unstable.cc>
+ <2162965.7E0QXh8GzM@bentobox>
+In-Reply-To: <2162965.7E0QXh8GzM@bentobox>
+
+--puf3ioqQxI8dv9z4GnaTVYxIZpTQl14U9
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 13. M=E4rz 2018 16:02:34 CET Antonio Quartulli wrote:
-[...]
-> Another observation: do these attributes need to be DAT specific? or can
-> we just define (or reuse) a generic HWADDRESS attribute that we might
-> already be using somewhere else (i.e. for TT)?
 
-I've asked myself the same but we have BLA_- and TT_ADDRESS and these are=20
-named in a way which connects them to these specific subsystems. Using one =
-of=20
-them for DAT seems to be a little bit odd.
 
-Kind regards,
-	Sven
---nextPart9002136.UbB3neMqGj
+On 13/03/18 16:20, Sven Eckelmann wrote:
+> On Dienstag, 13. M=E4rz 2018 16:02:34 CET Antonio Quartulli wrote:
+> [...]
+>> Another observation: do these attributes need to be DAT specific? or c=
+an
+>> we just define (or reuse) a generic HWADDRESS attribute that we might
+>> already be using somewhere else (i.e. for TT)?
+>=20
+> I've asked myself the same but we have BLA_- and TT_ADDRESS and these a=
+re=20
+> named in a way which connects them to these specific subsystems. Using =
+one of=20
+> them for DAT seems to be a little bit odd.
+
+Oh ok. In this case it makes sense to have DAT specific attrs.
+
+(if we wanted to, we could still rename all the attrs pointing to the
+very same data type and unify them, but I don't have a strong opinion
+about it at this time).
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--puf3ioqQxI8dv9z4GnaTVYxIZpTQl14U9--
+
+--iH6fYiKG0Yw6gVE5u7VnjAWf6KCmowt99
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqnidUACgkQXYcKB8Em
-e0YWAhAAtYsQK9CGFm1/ettxT3FJqOb+OpqLrJs9EZ7UYBWFJZ2ZfuPP9L3Ryd/l
-VH+BE03wvGV67H7QeUMMX+0tljmfWzy/y6ZjWArzR/X/+ehNaEqEFoH5excquieJ
-MOCBiCjEH6EspiAuUuSfBqbPNC74qE0GMhF31Sgf1hx8KDUuc+ob05QTwIIkVUFQ
-8WNIQZ5jQZqwx94JA+Qz/2nh1UIV31xCv7+TmvtXYnQrF6L7J+RhDz0oPUP73bqW
-PIzx8YJD0rw5xLMvkIg4N1PPeBIQvIQ1MBpeR279aMOguu5PDSgnCJcj9tJkS2/s
-a0RMWlKvUFwgDU6cuMxOAqVdH0uof9z5W3PIrkt38rWt+DYLpanfkmcoQ+RD+h0O
-Y8tWlm8IeNvERul1Ln3XVC5ic/aUKiF76qN2G55hL6hHwuQbUSUEBSvwam61K8Xy
-W2NKYsbWG68jIQ2IV+rfhqAsOnLtRwd0JOyPtWE9AAPhP/CpYiU+S52QwYF9/GLD
-xtoEUL6SGItZUm9/VO9wyal9WuplYzc/DcWVNiftoMC9jQCfy40HBi7Jiaqu83nQ
-jN/nJv0FB97mY/S+hxSwk/iLsBW5L1p3uxkzYOf+1ldmRtHScF78DABOfVWsD7iu
-+fB5eDOoeo/xfMfKuvUqnpI69KXhnO4R13ZiLUOPrYAVF4lHPKg=
-=TU+S
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlqnikAACgkQB6U8WA7y
+zXS7yBAAw2TDUnbOnFufDBbfVMgtciCO8hNE0LiENq51BrKaN8Xa09EKlWgJqVsR
+Z5cehro7qtU1+emwS3LiyvgwgRdlnLavgiYOSM4SAqMPjIiZixIvyPDzrT+/l8iD
+iORD8twloKIlHrxsTppMP12GlWXqjBhFZ0CZm9y8Gqm+tE5BHvA/kjfmjXfICUJN
+50gvBJ6A58RmXepPc1P1moa8AyFyncbeILsiq/QOj8UC4iRGU4YeXLZynFVNO5kL
+ypk8CliGOcN0GjPbSiCprKD9F8KN5aDGk0VJqRGi9NnPfgPVpJV41S9HH/i9TsBl
+LqyW7E5wrvrb9QzOtf3jmYni4MfGIjMuXFlo6MDZJvKt9/GQKN+3Akc8gZ1bFXvF
+q6oZDfUSRLU6QVXIvbY7jIw04/eEAvQUWKRhIk7bWuPa/5oPDnSwlAvxWreINlNy
+QYO3+rhZJ/62yvo7DHQ5VfUF2tv9jQtvkJdAvmz/6JYbWTWLG+vOuj7EZOKogsKo
+kvvH19H59SGamNqNPVw67soJAUuYGDXB2C2edftFQQSLIZDm0tBMcXHuf/x4Nmah
+da4tRrYNInkMA8VGUcRFYvbwe+vIy1T+Y469vLFmSQcEp4AVYX4TPkvefdGIe36e
+gFezhu/eJgwWTFP2d3mg5ccNxifa5BBYSLzTmfSYBhGzk8YoIG0=
+=+n3B
 -----END PGP SIGNATURE-----
 
---nextPart9002136.UbB3neMqGj--
-
+--iH6fYiKG0Yw6gVE5u7VnjAWf6KCmowt99--
