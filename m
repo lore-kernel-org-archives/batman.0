@@ -1,17 +1,15 @@
-Return-Path: <mschiffer@universe-factory.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 16 Mar 2018 21:24:32 +0100
+Message-ID: <4626296.strlS8ikrF@sven-edge>
+In-Reply-To: <c09f296ac6e85467147096e656d12ddf05713216.1521196151.git.mschiffer@universe-factory.net>
 References: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
- <3cc8fb9bb6b983a5b7972af2fd803041095d8c90.1521196151.git.mschiffer@universe-factory.net>
- <1575600.30KXpZVktj@bentobox>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Message-ID: <37901fe9-d320-b181-8aa3-9213fd308307@universe-factory.net>
-Date: Fri, 16 Mar 2018 16:05:39 +0100
+ <c09f296ac6e85467147096e656d12ddf05713216.1521196151.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-In-Reply-To: <1575600.30KXpZVktj@bentobox>
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="Ljwfa1pXaxdaBgz80Orkjykz8C54IvqZ5"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/3] batman-adv: fix header size
- check in batadv_dbg_arp()
+Content-Type: multipart/signed; boundary="nextPart1639984.4Es2WcuOp0";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 3/3] batman-adv: do not modify
+ batadv packet header before pulling it
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,75 +19,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Ljwfa1pXaxdaBgz80Orkjykz8C54IvqZ5
-Content-Type: multipart/mixed; boundary="1uE6TSKnYi869Z0Lm20v7ZMqSk1bVFqnq";
- protected-headers="v1"
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <37901fe9-d320-b181-8aa3-9213fd308307@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/3] batman-adv: fix header size
- check in batadv_dbg_arp()
-References: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
- <3cc8fb9bb6b983a5b7972af2fd803041095d8c90.1521196151.git.mschiffer@universe-factory.net>
- <1575600.30KXpZVktj@bentobox>
-In-Reply-To: <1575600.30KXpZVktj@bentobox>
-
---1uE6TSKnYi869Z0Lm20v7ZMqSk1bVFqnq
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+--nextPart1639984.4Es2WcuOp0
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On 03/16/2018 12:31 PM, Sven Eckelmann wrote:
-> On Freitag, 16. M=C3=A4rz 2018 11:29:10 CET Matthias Schiffer wrote:
->> Checking for 0 is insufficient: when an SKB without a batadv header, b=
-ut
->> with a VLAN header is received, hdr_size will be 4, making the followi=
-ng
->> code interpret the Ethernet header as a batadv header.
->>
->> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
->> ---
->=20
-> Fixes: 0591c25abca9 ("batman-adv: Distributed ARP Table - add ARP parsi=
-ng functions")
+On Freitag, 16. M=E4rz 2018 11:29:11 CET Matthias Schiffer wrote:
+> +       skb_push_rcsum(skb, hdr_size);
 
-I think this one would be more appropriate:
+This function is only available since Linux 4.7. Compat code support must=20
+be added to avoid build problems with oler kernels. An example can be
+found in=20
+https://git.open-mesh.org/batman-adv.git/commit/9f2b23430dec8caceedf996eb8e=
+c75d3f8674144
 
-Fixes: 3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan awa=
-re")
-
->=20
-> Kind regards,
-> 	Sven
->=20
-
-
-
---1uE6TSKnYi869Z0Lm20v7ZMqSk1bVFqnq--
-
---Ljwfa1pXaxdaBgz80Orkjykz8C54IvqZ5
+Kind regards,
+	Sven
+--nextPart1639984.4Es2WcuOp0
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEZmTnvaa2aYgexS51Fu8/ZMsgHZwFAlqr3UMACgkQFu8/ZMsg
-HZzKuRAAkqj/8imtfZQ54oRJYO6/Gu+6xWzJgBoj298DULECbTqJEvzhBlArHcqV
-kkSCbgTGQdQO9RKv5YDjz6rlTzM7jsQd2tMS3X/GaYpAyL3C3pxMgASlrqjd1Ova
-xYj/1Z/8osCmKWfZAFlITZPFIxrKPjd7H9GH5zoNHtw1Vp28VdhwbqzVXwFDnHjD
-sMqspS7Vqn9UULEmumLS28SXB8pL2Ii/BovGNPSBORxv8NxiE2W277KO1mwqcwn4
-sf5s8lCgLPzu5ejQsorHqFTqrzs3cB0BrRPh2oaHfW9wdSNdDNL54pSI/1wY52b+
-PHMURpM8p4AgPLj8abNTPY4fW2GHSi1jp7LlSckUHEI0+x7i1uQBILRy70+BWxxF
-VOEPRZtO7z2pxGCGqiz1nZSF2Gm5/3T3EmbWQnS87X6neb0XcJBTn17TJOvjSbBu
-4SUgZACFw9Pu0ggUNMYZC0iNtlV4bZr9dldWbs17jbMpqKsNbHbBXQgHTvB3+BDH
-+r1J65Og2phryBbxE2I6SsZKk+UVPKpy1ZhAjppqrLXnYK1OYt1DbBVc39+tjJcS
-Fdw82b9YYXSHst/WFbNbyjhUXUqq2T2xmoj0mwyRWZXp139LWhTXiMUD23PvigIw
-qNw3+WKbfH7x+a3guElD8id7EjhmOH0NjGGe6SckDisziRwvoA0=
-=DD5D
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqsKAAACgkQXYcKB8Em
+e0bb/w//T/nJLIHAE5lZdTJGE0i/rP7dpE+Cx/Ds+T5MvHB8FP8+B2RwJuTEBwKB
+Z/9ie9k+p0s+dYazPX7N3oFPK7wmZUmFT2sCcPx2gXVnYWZ0Z/+99zT/F73U1tTM
+NrtIDAneDu9PQupQHhVUUdbTzvppXwzZYJtNaI1tug9kxt9ZIxQiQHsMSKl/dpFK
+AVNuYIlZhJt9xXHkINrD/qckCI3g5nvX0rTxVhYYufOq/n+Um45CtHXyM7wM5I9h
+7O6BTDCl4U4ZG8X4nRGIl4OIvlN+7Oxplg8P48gHgTDBB7RfSmYcPrBpY99WO1jK
+jJhWsnwkzDoM1HvxC33j04oeRdAhgByWsJ6FnLOjTnwXzxvXo1I5YcGBagd8cjH+
+dy33AhxjbMwgkn4bwLFhU0EZFeZLxkWbG3U3zllOuR/LQ5wAfqoE95reBKKF/xiG
+GolkiHPq2YMcH/AwPGwVGwcmD25Pd+h5qXHeU8FzfpXhJS0vMAubPU4IDPFphWSF
+BW4zEQc2ymo4KXR5rywCpaVXJToikJ0LoAzTWt4mzghH9esxWAG3KF02wbCAgIss
+QS++IVmcXCaqGf/u2Qt4vEidjYm0br4FLtHlr5PVHkMpd2oJ1lr75qsytdy37BIM
+s7aeT9CMNaqj3/sdSrt5IPIXThUbPKnJ8I8Eh6QtX0HDe0ZZyaQ=
+=pKWP
 -----END PGP SIGNATURE-----
 
---Ljwfa1pXaxdaBgz80Orkjykz8C54IvqZ5--
+--nextPart1639984.4Es2WcuOp0--
+
