@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 18 Mar 2018 09:31:09 +0100
-Message-ID: <8549185.kVvKlLQMVg@sven-edge>
-In-Reply-To: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
-References: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2580788.gFpNCNQbVg";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/3] batman-adv: update data
- pointers after skb_cow()
+Date: Sun, 18 Mar 2018 10:34:29 +0100
+Message-Id: <20180318093429.18752-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Disable
+ CONFIG_BATMAN_ADV_DEBUGFS by default
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,48 +15,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2580788.gFpNCNQbVg
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+All tools which were known to the batman-adv development team are
+supporting the batman-adv netlink interface since a while. Also debugfs is
+not supported for batman-adv interfaces in any non-default netns. Thus
+disabling CONFIG_BATMAN_ADV_DEBUGFS by default should not cause problems on
+most systems. It is still possible to enable it in case it is still
+required in a specific setup.
 
-On Freitag, 16. M=E4rz 2018 11:29:09 CET Matthias Schiffer wrote:
-> batadv_check_unicast_ttvn() calls skb_cow(), so pointers into the SKB data
-> must be (re)set after calling it. The ethhdr variable is dropped
-> altogether.
->=20
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> ---
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Was already submitted as RFC in https://patchwork.open-mesh.org/patch/16498/
+---
+ Makefile               | 2 +-
+ README.external.rst    | 2 +-
+ gen-compat-autoconf.sh | 2 +-
+ net/batman-adv/Kconfig | 4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-The first two patches were applied in a155327b..7dfe729b [1]
-
-Thanks,
-	Sven
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/64d22c76a207ed313b2496f=
-0709b2567719452c4
-    https://git.open-mesh.org/batman-adv.git/commit/7dfe729b169b1217f47744e=
-dbd1616f473340fda
---nextPart2580788.gFpNCNQbVg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlquI80ACgkQXYcKB8Em
-e0ZLqxAAo9bjzKdZO4E0jmHIBLKEa/+Bbh5ehXQ4vg2Us/Iqj77+bAEf+yrUQOU3
-265ZyGHTdIf3syJ179kZ2STf1/5FQ16A84o7ji3Yw7pA9y0p3OswkftVasfWWvNu
-Oq8J0YDsH2ilkGFYnhPVtkjfctMOJ3lM9fY0YCyzUohQNO6gfjHNCvX8kHRK91RV
-O59gXsBbc6Insc8GaiWVb3O0JlJAVOiv8U5ZV1MeFhcVVnVx25QXFv7P2T76vhSI
-oJsj4Y9GNN7tVa/P3ufav2L65/iE8MitfVLCfmC/I4OfnZtFSsl1i7sMoQgQF1Eo
-1AgZ4ThzxOJGSFRuFuz3ys8SVule3WgGDc2QZ4KMW/mmj0QYiSltrBSKURcpmwQn
-MLg+Mvlyln7bcGLtISGh3fX3KW/+IKLakWmMth99Mf6Pv7E1XNXOw1QLfbU7ovfh
-UDDzotseaw3xN+zOOu865ia4YSG2seFCoBimIbbPrkQTA7GSUDbgpUmzDFd5oOYq
-vUf9SX8zleZ8hbhYQG2+aDF0uYBBeKqI4tW/DoFORmWDYjaQ+psH1rlHp+RljbF1
-4fdmfQTtWMurZmHC1SUidJLIIW6pEDV8TnU60Suq6ZmwpcgDfUP2z8D4hSsf2peq
-/2q95l5rr+d47O6BuBF7fhHvPo3S1yOX+7QSo7C9klaWaZjYgyo=
-=nLK4
------END PGP SIGNATURE-----
-
---nextPart2580788.gFpNCNQbVg--
+diff --git a/Makefile b/Makefile
+index fe97d0aa..de607ad9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -18,7 +18,7 @@
+ 
+ # read README.external for more information about the configuration
+ # batman-adv DebugFS entries:
+-export CONFIG_BATMAN_ADV_DEBUGFS=y
++export CONFIG_BATMAN_ADV_DEBUGFS=n
+ # B.A.T.M.A.N. debugging:
+ export CONFIG_BATMAN_ADV_DEBUG=n
+ # B.A.T.M.A.N. bridge loop avoidance:
+diff --git a/README.external.rst b/README.external.rst
+index 6379b4f5..4a2e9f6a 100644
+--- a/README.external.rst
++++ b/README.external.rst
+@@ -43,7 +43,7 @@ option  can be set to to y (enabled), n (disabled) or m (build as
+ module).  Available  options  and  their    possible   values are
+ (default marked with an "*")
+ 
+- * ``CONFIG_BATMAN_ADV_DEBUGFS=[y*|n]`` (B.A.T.M.A.N. debugfs entries)
++ * ``CONFIG_BATMAN_ADV_DEBUGFS=[y|n*]`` (B.A.T.M.A.N. debugfs entries)
+  * ``CONFIG_BATMAN_ADV_DEBUG=[y|n*]`` (B.A.T.M.A.N. debugging)
+  * ``CONFIG_BATMAN_ADV_BLA=[y*|n]`` (B.A.T.M.A.N. bridge loop avoidance)
+  * ``CONFIG_BATMAN_ADV_DAT=[y*|n]`` (B.A.T.M.A.N. Distributed ARP Table)
+diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
+index 5a4cdefc..071b6ccf 100755
+--- a/gen-compat-autoconf.sh
++++ b/gen-compat-autoconf.sh
+@@ -52,7 +52,7 @@ gen_config() {
+ }
+ 
+ # write config variables
+-gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="y"} >> "${TMP}"
++gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="n"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index e4e2e02b..bee034a9 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -94,13 +94,13 @@ config BATMAN_ADV_DEBUGFS
+ 	bool "batman-adv debugfs entries"
+ 	depends on BATMAN_ADV
+ 	depends on DEBUG_FS
+-	default y
++	default n
+ 	help
+ 	  Enable this to export routing related debug tables via debugfs.
+ 	  The information for each soft-interface and used hard-interface can be
+ 	  found under batman_adv/
+ 
+-	  If unsure, say Y.
++	  If unsure, say N.
+ 
+ config BATMAN_ADV_DEBUG
+ 	bool "B.A.T.M.A.N. debugging"
+-- 
+2.16.2
 
