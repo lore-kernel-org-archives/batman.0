@@ -1,9 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 18 Mar 2018 10:34:29 +0100
-Message-Id: <20180318093429.18752-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Disable
- CONFIG_BATMAN_ADV_DEBUGFS by default
+Return-Path: <mschiffer@universe-factory.net>
+References: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
+ <c09f296ac6e85467147096e656d12ddf05713216.1521196151.git.mschiffer@universe-factory.net>
+ <2516855.xl4cPWQeEn@sven-edge>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Message-ID: <032705b9-b1b5-0656-cd56-8cb1791aff53@universe-factory.net>
+Date: Sun, 18 Mar 2018 11:45:07 +0100
+MIME-Version: 1.0
+In-Reply-To: <2516855.xl4cPWQeEn@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="PBOVy43GGqHO1b3UAzXp2oCWWxQW4MBYq"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 3/3] batman-adv: do not modify
+ batadv packet header before pulling it
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,84 +21,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-All tools which were known to the batman-adv development team are
-supporting the batman-adv netlink interface since a while. Also debugfs is
-not supported for batman-adv interfaces in any non-default netns. Thus
-disabling CONFIG_BATMAN_ADV_DEBUGFS by default should not cause problems on
-most systems. It is still possible to enable it in case it is still
-required in a specific setup.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--PBOVy43GGqHO1b3UAzXp2oCWWxQW4MBYq
+Content-Type: multipart/mixed; boundary="Wal8BCZtp12nilfeFlx36aHpahxa1V591";
+ protected-headers="v1"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <032705b9-b1b5-0656-cd56-8cb1791aff53@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 3/3] batman-adv: do not modify batadv
+ packet header before pulling it
+References: <b512c268fbe9f9d61eadc579457d6b825fcf3638.1521196151.git.mschiffer@universe-factory.net>
+ <c09f296ac6e85467147096e656d12ddf05713216.1521196151.git.mschiffer@universe-factory.net>
+ <2516855.xl4cPWQeEn@sven-edge>
+In-Reply-To: <2516855.xl4cPWQeEn@sven-edge>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Was already submitted as RFC in https://patchwork.open-mesh.org/patch/16498/
----
- Makefile               | 2 +-
- README.external.rst    | 2 +-
- gen-compat-autoconf.sh | 2 +-
- net/batman-adv/Kconfig | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+--Wal8BCZtp12nilfeFlx36aHpahxa1V591
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Makefile b/Makefile
-index fe97d0aa..de607ad9 100644
---- a/Makefile
-+++ b/Makefile
-@@ -18,7 +18,7 @@
- 
- # read README.external for more information about the configuration
- # batman-adv DebugFS entries:
--export CONFIG_BATMAN_ADV_DEBUGFS=y
-+export CONFIG_BATMAN_ADV_DEBUGFS=n
- # B.A.T.M.A.N. debugging:
- export CONFIG_BATMAN_ADV_DEBUG=n
- # B.A.T.M.A.N. bridge loop avoidance:
-diff --git a/README.external.rst b/README.external.rst
-index 6379b4f5..4a2e9f6a 100644
---- a/README.external.rst
-+++ b/README.external.rst
-@@ -43,7 +43,7 @@ option  can be set to to y (enabled), n (disabled) or m (build as
- module).  Available  options  and  their    possible   values are
- (default marked with an "*")
- 
-- * ``CONFIG_BATMAN_ADV_DEBUGFS=[y*|n]`` (B.A.T.M.A.N. debugfs entries)
-+ * ``CONFIG_BATMAN_ADV_DEBUGFS=[y|n*]`` (B.A.T.M.A.N. debugfs entries)
-  * ``CONFIG_BATMAN_ADV_DEBUG=[y|n*]`` (B.A.T.M.A.N. debugging)
-  * ``CONFIG_BATMAN_ADV_BLA=[y*|n]`` (B.A.T.M.A.N. bridge loop avoidance)
-  * ``CONFIG_BATMAN_ADV_DAT=[y*|n]`` (B.A.T.M.A.N. Distributed ARP Table)
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 5a4cdefc..071b6ccf 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -52,7 +52,7 @@ gen_config() {
- }
- 
- # write config variables
--gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="y"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index e4e2e02b..bee034a9 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -94,13 +94,13 @@ config BATMAN_ADV_DEBUGFS
- 	bool "batman-adv debugfs entries"
- 	depends on BATMAN_ADV
- 	depends on DEBUG_FS
--	default y
-+	default n
- 	help
- 	  Enable this to export routing related debug tables via debugfs.
- 	  The information for each soft-interface and used hard-interface can be
- 	  found under batman_adv/
- 
--	  If unsure, say Y.
-+	  If unsure, say N.
- 
- config BATMAN_ADV_DEBUG
- 	bool "B.A.T.M.A.N. debugging"
--- 
-2.16.2
+On 03/18/2018 09:15 AM, Sven Eckelmann wrote:
+> On Freitag, 16. M=C3=A4rz 2018 11:29:11 CET Matthias Schiffer wrote:
+>> batadv_check_unicast_ttvn() may modify the batadv header, leading to
+>> checksum errors in the following processing of the packet.
+>>
+>> Rather than fixing up the checksum, simply pull the batadv header befo=
+re
+>> modifying it (and push it back in case the packet is rerouted).
+>>
+>> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+>> ---
+>=20
+> This patch is so invasive that it breaks the batadv_dbg_arp check which=
+ you've=20
+> just fixed a patch before.
+>=20
+> Kind regards,
+> 	Sven
+>=20
 
+Yes, it's the main reason I improved the check; I should have mentioned
+that in the commit message. As mentioned on IRC, batadv_dbg_arp will stil=
+l
+print what information is added to the DAT cache, but it can't tell which=
+
+batadv packet type the ARP packet was encapsulated in anymore (this
+information is still available through `batctl td`).
+
+In my further cleanup patches, I plan to
+
+* make the broadcast case match as well (pull before calling snooping
+functions)
+* move snooping calls to batadv_interface_rx
+* remove header size argument from incoming snooping functions (will alwa=
+ys
+be 0)
+* remove the now dead code from batadv_dbg_arp
+
+This will improve symmetry between the incoming and outgoing snooping pat=
+hs.
+
+Matthias
+
+
+--Wal8BCZtp12nilfeFlx36aHpahxa1V591--
+
+--PBOVy43GGqHO1b3UAzXp2oCWWxQW4MBYq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEZmTnvaa2aYgexS51Fu8/ZMsgHZwFAlquQzMACgkQFu8/ZMsg
+HZyUOBAAng00obs5vSaoZOnv+BoZbYh9qifNFIgrWVBC/w1iPpUkF4OXa36WfSNb
+/zbxbzRGwU1bLg/fiPpkOfkTlz7KXqS9svV872tbZiaGJ3wldplME8Jm39A7D304
+yzcpIfcCupFYA8qgIMRc2RTqGSkWLhsXeC52G8ET22U765sVp9KRKAaJnPHIoo5L
+ujTwdPKVd/6eTS5WAw4hWNC88uikXdGqIaRV6ENqDsp8Y7q+3adu4DV1V7ksX26c
+XH3PDInd1Ami7NczxKebOH0pqr7b4n6PchxaPbNAx0xuhror0r7mVCfx/8ac45Ak
+DNNd5rCaAxuty1A0d3B3W3PhUY/1KKGQtbEvXGRfkS8McQ0cEK/EtR9SsreIESzz
+Aa1bcwjMzRP4zbC996OjY6uvTib0ZB++jnwP92iZ9jDCFQmlcy6z803fsGkTPfqL
+mkDEtDcrtXHF7kcbExA8/2VLHmoZI5csMMSgqNaZGqbJudVXOPZLgB4Rfzl1LnS+
+4arpJVaD6vSORUxlQrVuoHzbdVhPyF2VMybPxXLkN7XX8qOaiPE80vs82cddz84r
+GcqoyMKKGsJXvWoZBbglcUuv9iPP0I5qKYh5KPthIUkxkfLJ6NhXebU3FTeSgHpp
+WwpO7hVoPWUn/tojFBuQzVjsOA3CdzZ/j5EJn7eWzxNq63lEjQM=
+=cBBR
+-----END PGP SIGNATURE-----
+
+--PBOVy43GGqHO1b3UAzXp2oCWWxQW4MBYq--
