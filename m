@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 19 Mar 2018 17:37:24 +0100
-Message-Id: <20180319163726.10921-4-sw@simonwunderlich.de>
+Date: Mon, 19 Mar 2018 17:37:25 +0100
+Message-Id: <20180319163726.10921-5-sw@simonwunderlich.de>
 In-Reply-To: <20180319163726.10921-1-sw@simonwunderlich.de>
 References: <20180319163726.10921-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: fix header size check in
- batadv_dbg_arp()
+Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Add missing include for
+ EPOLL* constants
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,35 +16,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Sven Eckelmann <sven@narfation.org>
 
-Checking for 0 is insufficient: when an SKB without a batadv header, but
-with a VLAN header is received, hdr_size will be 4, making the following
-code interpret the Ethernet header as a batadv header.
-
-Fixes: be1db4f6615b ("batman-adv: make the Distributed ARP Table vlan aware")
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Fixes: a9a08845e9ac ("vfs: do bulk POLL* -> EPOLL* replacement")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/icmp_socket.c | 1 +
+ net/batman-adv/log.c         | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 9703c791ffc5..87cd962d28d5 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -393,7 +393,7 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   batadv_arp_hw_src(skb, hdr_size), &ip_src,
- 		   batadv_arp_hw_dst(skb, hdr_size), &ip_dst);
- 
--	if (hdr_size == 0)
-+	if (hdr_size < sizeof(struct batadv_unicast_packet))
- 		return;
- 
- 	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index e91f29c7c638..5daa3d50da17 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -24,6 +24,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
++#include <linux/eventpoll.h>
+ #include <linux/export.h>
+ #include <linux/fcntl.h>
+ #include <linux/fs.h>
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index dc9fa37ddd14..cdbe0e5e208b 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -22,6 +22,7 @@
+ #include <linux/compiler.h>
+ #include <linux/debugfs.h>
+ #include <linux/errno.h>
++#include <linux/eventpoll.h>
+ #include <linux/export.h>
+ #include <linux/fcntl.h>
+ #include <linux/fs.h>
 -- 
 2.11.0
 
