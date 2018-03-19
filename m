@@ -1,12 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 19 Mar 2018 17:41:50 +0100
-Message-Id: <20180319164153.11536-1-sw@simonwunderlich.de>
+Date: Mon, 19 Mar 2018 17:41:51 +0100
+Message-Id: <20180319164153.11536-2-sw@simonwunderlich.de>
+In-Reply-To: <20180319164153.11536-1-sw@simonwunderlich.de>
+References: <20180319164153.11536-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/3] pull request for net-next: batman-adv
- 2018-03-19
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Avoid redundant multicast TT
+ entries
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,47 +19,139 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-here is another late feature/cleanup pull request of batman-adv to go into net-next.
+If a node signals that it wants all traffic for a specific protocol
+family then there is no need to announce individual multicast addresses
+via TT.
 
-Please pull or let me know of any problem!
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/multicast.c | 56 ++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 52 insertions(+), 4 deletions(-)
 
-Thank you,
-      Simon
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 6eaffe50335a..c7a1305ca7e7 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -102,7 +102,36 @@ static struct net_device *batadv_mcast_get_bridge(struct net_device *soft_iface)
+ }
+ 
+ /**
++ * batadv_mcast_addr_is_ipv4() - check if multicast MAC is IPv4
++ * @addr: the MAC address to check
++ *
++ * Return: True, if MAC address is one reserved for IPv4 multicast, false
++ * otherwise.
++ */
++static bool batadv_mcast_addr_is_ipv4(const u8 *addr)
++{
++	static const u8 prefix[] = {0x01, 0x00, 0x5E};
++
++	return memcmp(prefix, addr, sizeof(prefix)) == 0;
++}
++
++/**
++ * batadv_mcast_addr_is_ipv6() - check if multicast MAC is IPv6
++ * @addr: the MAC address to check
++ *
++ * Return: True, if MAC address is one reserved for IPv6 multicast, false
++ * otherwise.
++ */
++static bool batadv_mcast_addr_is_ipv6(const u8 *addr)
++{
++	static const u8 prefix[] = {0x33, 0x33};
++
++	return memcmp(prefix, addr, sizeof(prefix)) == 0;
++}
++
++/**
+  * batadv_mcast_mla_softif_get() - get softif multicast listeners
++ * @bat_priv: the bat priv with all the soft interface information
+  * @dev: the device to collect multicast addresses from
+  * @mcast_list: a list to put found addresses into
+  *
+@@ -119,9 +148,12 @@ static struct net_device *batadv_mcast_get_bridge(struct net_device *soft_iface)
+  * Return: -ENOMEM on memory allocation error or the number of
+  * items added to the mcast_list otherwise.
+  */
+-static int batadv_mcast_mla_softif_get(struct net_device *dev,
++static int batadv_mcast_mla_softif_get(struct batadv_priv *bat_priv,
++				       struct net_device *dev,
+ 				       struct hlist_head *mcast_list)
+ {
++	bool all_ipv4 = bat_priv->mcast.flags & BATADV_MCAST_WANT_ALL_IPV4;
++	bool all_ipv6 = bat_priv->mcast.flags & BATADV_MCAST_WANT_ALL_IPV6;
+ 	struct net_device *bridge = batadv_mcast_get_bridge(dev);
+ 	struct netdev_hw_addr *mc_list_entry;
+ 	struct batadv_hw_addr *new;
+@@ -129,6 +161,12 @@ static int batadv_mcast_mla_softif_get(struct net_device *dev,
+ 
+ 	netif_addr_lock_bh(bridge ? bridge : dev);
+ 	netdev_for_each_mc_addr(mc_list_entry, bridge ? bridge : dev) {
++		if (all_ipv4 && batadv_mcast_addr_is_ipv4(mc_list_entry->addr))
++			continue;
++
++		if (all_ipv6 && batadv_mcast_addr_is_ipv6(mc_list_entry->addr))
++			continue;
++
+ 		new = kmalloc(sizeof(*new), GFP_ATOMIC);
+ 		if (!new) {
+ 			ret = -ENOMEM;
+@@ -193,6 +231,7 @@ static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
+ 
+ /**
+  * batadv_mcast_mla_bridge_get() - get bridged-in multicast listeners
++ * @bat_priv: the bat priv with all the soft interface information
+  * @dev: a bridge slave whose bridge to collect multicast addresses from
+  * @mcast_list: a list to put found addresses into
+  *
+@@ -204,10 +243,13 @@ static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
+  * Return: -ENOMEM on memory allocation error or the number of
+  * items added to the mcast_list otherwise.
+  */
+-static int batadv_mcast_mla_bridge_get(struct net_device *dev,
++static int batadv_mcast_mla_bridge_get(struct batadv_priv *bat_priv,
++				       struct net_device *dev,
+ 				       struct hlist_head *mcast_list)
+ {
+ 	struct list_head bridge_mcast_list = LIST_HEAD_INIT(bridge_mcast_list);
++	bool all_ipv4 = bat_priv->mcast.flags & BATADV_MCAST_WANT_ALL_IPV4;
++	bool all_ipv6 = bat_priv->mcast.flags & BATADV_MCAST_WANT_ALL_IPV6;
+ 	struct br_ip_list *br_ip_entry, *tmp;
+ 	struct batadv_hw_addr *new;
+ 	u8 mcast_addr[ETH_ALEN];
+@@ -221,6 +263,12 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
+ 		goto out;
+ 
+ 	list_for_each_entry(br_ip_entry, &bridge_mcast_list, list) {
++		if (all_ipv4 && br_ip_entry->addr.proto == htons(ETH_P_IP))
++			continue;
++
++		if (all_ipv6 && br_ip_entry->addr.proto == htons(ETH_P_IPV6))
++			continue;
++
+ 		batadv_mcast_mla_br_addr_cpy(mcast_addr, &br_ip_entry->addr);
+ 		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
+ 			continue;
+@@ -568,11 +616,11 @@ static void __batadv_mcast_mla_update(struct batadv_priv *bat_priv)
+ 	if (!batadv_mcast_mla_tvlv_update(bat_priv))
+ 		goto update;
+ 
+-	ret = batadv_mcast_mla_softif_get(soft_iface, &mcast_list);
++	ret = batadv_mcast_mla_softif_get(bat_priv, soft_iface, &mcast_list);
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	ret = batadv_mcast_mla_bridge_get(soft_iface, &mcast_list);
++	ret = batadv_mcast_mla_bridge_get(bat_priv, soft_iface, &mcast_list);
+ 	if (ret < 0)
+ 		goto out;
+ 
+-- 
+2.11.0
 
-The following changes since commit a163dc22d515d17844435c8217ff66193d35b3fa:
-
-  batman-adv: always assume 2-byte packet alignment (2018-02-27 13:02:54 +0100)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20180319
-
-for you to fetch changes up to 53dd9a68ba683986ec90497586f94b941bb748a0:
-
-  batman-adv: add multicast flags netlink support (2018-03-14 10:15:34 +0100)
-
-----------------------------------------------------------------
-This feature/cleanup patchset includes the following patches:
-
- - avoid redundant multicast TT entries, by Linus Luessing
-
- - add netlink support for distributed arp table cache and multicast flags,
-   by Linus Luessing (2 patches)
-
-----------------------------------------------------------------
-Linus Lüssing (3):
-      batman-adv: Avoid redundant multicast TT entries
-      batman-adv: add DAT cache netlink support
-      batman-adv: add multicast flags netlink support
-
- include/uapi/linux/batman_adv.h        |  82 +++++++++
- net/batman-adv/distributed-arp-table.c | 152 +++++++++++++++++
- net/batman-adv/distributed-arp-table.h |   8 +
- net/batman-adv/multicast.c             | 293 ++++++++++++++++++++++++++++++++-
- net/batman-adv/multicast.h             |  18 ++
- net/batman-adv/netlink.c               |  88 ++++++----
- 6 files changed, 604 insertions(+), 37 deletions(-)
