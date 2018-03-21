@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu, 22 Mar 2018 00:18:12 +0100
-Message-Id: <20180321231812.15063-1-linus.luessing@c0d3.blue>
+Date: Thu, 22 Mar 2018 00:21:32 +0100
+Message-Id: <20180321232132.15176-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix packet loss for
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: fix packet loss for
  broadcasted DHCP packets to a server
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -67,6 +67,8 @@ a full DHCP handshake between A and B was possible again.
 Fixes: afae4e42aae6 ("batman-adv: refactoring gateway handling code")
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
+Changes since v1:
+- now really fixing orig_dst_node initialization
 
 Changes since RFC:
 
@@ -75,13 +77,22 @@ Changes since RFC:
 - Verified the issue and tested the fix in VMs, added the test
   setup description to the commit message
 ---
- net/batman-adv/gateway_client.c | 3 +++
- 1 file changed, 3 insertions(+)
+ net/batman-adv/gateway_client.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index c294f6fd..e7a245bd 100644
+index c294f6fd..8b198ee7 100644
 --- a/net/batman-adv/gateway_client.c
 +++ b/net/batman-adv/gateway_client.c
+@@ -746,7 +746,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_neigh_node *neigh_curr = NULL;
+ 	struct batadv_neigh_node *neigh_old = NULL;
+-	struct batadv_orig_node *orig_dst_node;
++	struct batadv_orig_node *orig_dst_node = NULL;
+ 	struct batadv_gw_node *gw_node = NULL;
+ 	struct batadv_gw_node *curr_gw = NULL;
+ 	struct batadv_neigh_ifinfo *curr_ifinfo, *old_ifinfo;
 @@ -757,6 +757,9 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
  
  	vid = batadv_get_vid(skb, 0);
