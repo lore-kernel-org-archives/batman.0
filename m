@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 20 Mar 2018 08:11:25 +0100
-Message-ID: <6449718.Qs0OEB85sk@bentobox>
-In-Reply-To: <20180320011924.28287-1-linus.luessing@c0d3.blue>
-References: <20180320011924.28287-1-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Thu, 22 Mar 2018 00:18:12 +0100
+Message-Id: <20180321231812.15063-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1855822.0v87oRv3Ra";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: netlink: fix resetting
- mcast_flags_priv to unsupported state
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix packet loss for
+ broadcasted DHCP packets to a server
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,49 +18,80 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1855822.0v87oRv3Ra
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+DHCP connectivity issues can currently occur if the following conditions
+are met:
 
-On Dienstag, 20. M=E4rz 2018 02:19:24 CET Linus L=FCssing wrote:
-> This fixes a copy & paste error detected by Coverity.
->=20
-> Fixes: b56061058113 ("batctl: add netlink dump function for multicast fla=
-gs table")
-> Reported-by: scan-admin@coverity.com
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  netlink.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+1) A DHCP packet from a client to a server
+2) This packet has a multicast destination
+3) This destination has a matching entry in the translation table
+   (FF:FF:FF:FF:FF:FF for IPv4, 33:33:00:01:00:02/33:33:00:01:00:03
+    for IPv6)
+4) The orig-node determined by TT for the multicast destination
+   does not match the orig-node determined by best-gateway-selection
 
-Applied as 15f6d90 [1].
+In this case the DHCP packet will be dropped.
 
-Thanks,
-	Sven
+The "gateway-out-of-range" check is supposed to only be applied to
+unicasted DHCP packets to a specific DHCP server.
 
-[1] https://git.open-mesh.org/batctl.git/commit/15f6d908fe3d152fc7a4c682231=
-d13fbf1b8751e
---nextPart1855822.0v87oRv3Ra
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+In that case dropping the the unicasted frame forces the client to
+retry via a broadcasted one, but now directed to the new best
+gateway.
 
------BEGIN PGP SIGNATURE-----
+A DHCP packet with broadcast/multicast destination is already ensured to
+always be delivered to the best gateway. Dropping a multicasted
+DHCP packet here will only prevent completing DHCP as there is no
+other fallback.
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqwtB0ACgkQXYcKB8Em
-e0YOVw//f2GAyJYTt/rKhZ9EWLlqnXAupO+ePGLSWWkeIgRMI13mYolqmqoyj5h+
-LSKDuyB3Xd9x1GeVhx2mTLHpOYS6l/2yHv9BuYrXlr/c7S4fZaVggIWmBHounXVz
-RxQqy24bsmn331qDczhb5qR200MyufVBKZROt3p4iy6zpgopi2FnRFZhCw3cfqCV
-+Nobo2fMkI4vgI+7kd04kkVBov1Van6wWR2A0Y9dfroOInbdZ4wFSkeZgZYogRUa
-8LPVP+CJfGS88T/P0SSHaWDBwXaK8CeJ6F4hKo58ReQniPnckwmFHEUq31Hp9jFz
-nH/oqOt4zM7UtA+gOvykCuKWAJr3AASGCIY5M8kmKd5q3uwc6GYBiEX2PVowkofl
-dmO9ba9eSScw6m2aKIPCtSIdxEcgmPyxAUdNIzjqmy11twPMnxA3KZTSv7Slnqbu
-dDJAaTM5ZjhZdS1rHX6KjJJTU0psGtsk8l3KPEA8TDUgxVOWWZgwCLu+3ZAGtN+m
-icB9Z3iap34zSFtPB8WXc6pQ8NOjDP/7BTR+Xc7W/UeNv9IwO/FhHz0aSLGVxk6+
-+cn2vUEchdbFoOtfdoVjIfbCqsmpfCUvHK1HOFaiOGIJCdJs0M0r/vwqcA0mjcoj
-mo7xwqUVfs7I2QjTYvu3j/bOmHREImR4PzOipTRvQ4q6YZ/2CbY=
-=qkf6
------END PGP SIGNATURE-----
+So far, it seems the unicast check was implicitly performed by
+expecting the batadv_transtable_search() to return NULL for multicast
+destinations. However, a multicast address could have always ended up in
+the translation table and in fact is now common.
 
---nextPart1855822.0v87oRv3Ra--
+To fix this potential loss of a DHCP client-to-server packet to a
+multicast address this patch adds an explicit multicast destination
+check to reliably bail out of the gateway-out-of-range check for such
+destinations.
+
+The issue and fix were tested in the following three node setup:
+
+- Line topology, A-B-C
+- A: gateway client, DHCP client
+- B: gateway server, hop-penalty increased: 30->60, DHCP server
+- C: gateway server, code modifications to announce FF:FF:FF:FF:FF:FF
+
+Without this patch, A would never transmit its DHCP Discover packet
+due to an always "out-of-range" condition. With this patch,
+a full DHCP handshake between A and B was possible again.
+
+Fixes: afae4e42aae6 ("batman-adv: refactoring gateway handling code")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+
+Changes since RFC:
+
+- fixed an uninitialized variable error for orig_dst_node by
+  initializing it to NULL
+- Verified the issue and tested the fix in VMs, added the test
+  setup description to the commit message
+---
+ net/batman-adv/gateway_client.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index c294f6fd..e7a245bd 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -757,6 +757,9 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ 
+ 	vid = batadv_get_vid(skb, 0);
+ 
++	if (is_multicast_ether_addr(ethhdr->h_dest))
++		goto out;
++
+ 	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
+ 						 ethhdr->h_dest, vid);
+ 	if (!orig_dst_node)
+-- 
+2.11.0
 
