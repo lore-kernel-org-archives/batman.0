@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 Mar 2018 10:36:15 +0100
-Message-ID: <1552330.yTaGxcYA6e@sven-edge>
-In-Reply-To: <20180323225350.7350-1-colin.king@canonical.com>
-References: <20180323225350.7350-1-colin.king@canonical.com>
+Date: Sat, 24 Mar 2018 10:41:42 +0100
+Message-ID: <1790898.vTTmh1kdvY@sven-edge>
+In-Reply-To: <20180320021327.30877-1-linus.luessing@c0d3.blue>
+References: <20180320021327.30877-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1524434.qlbeyyzbMd";
+Content-Type: multipart/signed; boundary="nextPart5476954.Vscsdb36XS";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH][next] batman-adv: don't pass a NULL
- hard_iface to batadv_hardif_put
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix
+ multicast-via-unicast transmission with AP isolation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,58 +19,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Colin King <colin.king@canonical.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S . Miller" <davem@davemloft.net>, netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nextPart1524434.qlbeyyzbMd
+--nextPart5476954.Vscsdb36XS
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Freitag, 23. M=E4rz 2018 23:53:50 CET Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Dienstag, 20. M=E4rz 2018 03:13:27 CET Linus L=FCssing wrote:
+> For multicast frames AP isolation is only supposed to be checked on
+> the receiving nodes and never on the originating one.
 >=20
-> In the case where hard_iface is NULL, the error path may pass a null
-> pointer to batadv_hardif_put causing a null pointer dereference error.
-> Avoid this by only calling the function if  hard_iface not null.
+> Furthermore, the isolation or wifi flag bits should only be intepreted
+> as such for unicast and never multicast TT entries.
 >=20
-> Detected by CoverityScan, CID#1466456 ("Explicit null dereferenced")
+> By injecting flags to the multicast TT entry claimed by a single
+> target node it was verified in tests that this multicast address
+> becomes unreachable, leading to packet loss.
 >=20
-> Fixes: 53dd9a68ba68 ("batman-adv: add multicast flags netlink support")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Omitting the "src" parameter to the batadv_transtable_search() call
+> successfully skipped the AP isolation check and made the target
+> reachable again.
+>=20
+> Fixes: 405cc1e5a81e ("batman-adv: Modified forwarding behaviour for multi=
+cast packets")
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+>=20
 > ---
->  net/batman-adv/multicast.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> This issue currently cannot appear in the wild. See explanation here:
+>=20
+> https://www.open-mesh.org/issues/335#note-16
+>=20
+> However if we were to legitimately start using these flags for
+> multicast's own purposes then we would start to see issues in AP
+> isolation setups. Therefore, and because the fix is tiny and "obvious",
+> I think it would still make sense to send it through stable@.
+> ---
+>  net/batman-adv/multicast.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
 
-Queued up for David in batadv/net-next as d5863c47d725 [1]
-
-Now I only have to find out why I didn't receive the mail about this=20
-from coverity.
+Applied as 67a50c93bceb [1].
 
 Thanks,
 	Sven
 
-[1] https://git.open-mesh.org/linux-merge.git/commit/d5863c47d7255448ec0171=
-3cbdb4f94b370d86ad
---nextPart1524434.qlbeyyzbMd
+[1] https://git.open-mesh.org/batman-adv.git/commit/67a50c93bceb534937d6a18=
+8eded79272ff6d55d
+
+--nextPart5476954.Vscsdb36XS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlq2HA8ACgkQXYcKB8Em
-e0a3UhAA1jf+py/wrYYigdPHLlWb8Sbh6grH14VWxKIvqbAoTegxIp6i97/HuoJ/
-CHZoOzFzzGm7zpuNDTLIMhn9ltRKiYLdG4gOWqc/zQnwQvegaA9GGxUN6rn2qCo9
-B49zyESlAS7AReauoGJVycydYvp7RspbMRamYOd2g6HE0J1N8BquHdyJqIhYUs8c
-lXSZ90GCrguSjWIOzJfm2YOqKKDNRLxqOLEuO+UsqjEN9T/ZA6wn8pdWcH32aRPt
-sG2RuP4p1mEPpsRksxPr4XbNvqfWnQfybuqLf3WCq/4yMbkA9s4O2hRiqKc/wj5o
-fcQXd3fobm+5dHHd9uhBqz0Pop30lmrULhwv3zrzysu+yVHekGMlHf9696wsuXAD
-ibOhgFOCkFELgDVAkrDZWVM9r2igFYMbc5igmNZx7gzRPWk04IBWAEyi28K/ptrN
-AsieFJ13vbfSGcvCK972MUTKrUJSuYhyd67GToMvN3fx/l2gaiwFllh1jMeTIU5B
-Xc0zhtOWocBqJaw4UKPJ5OodxBKINmfJ0JJYyrb7LejIWksxBygcxHeGUnJPmrYu
-MsOnQDmq5fgeeQz6KUZRxC1dNu3CTetXFWOC2cep7Isl1P3qBmnxwUIVSoXXVNEw
-OdIPtMwX1NLwVSz+wVAWRQE0JriUbSR/R/5J8/AdzsdpSjQ9WS4=
-=IINO
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlq2HVYACgkQXYcKB8Em
+e0Y9Dw/+JcJRU+zW8HpS8CeNiuDWntqIbcLKx8wsWCSAR78hlszWgFQ2iDQxJJqs
+nQyv2IyFqEQc3XCFiO3G6Yu6fFUhPqD0bKr6NLcfNjKCJBlwtwSzYn61OaWPi98+
+JCwIA3VJPk+fZ8vg+a+ZKmaEO7PSjaFejV+u/Fr9jzocGgNnyUZuMegnbACfKDZ6
+vnDgl5cjG7zmbP2oS7KFq+kvl8HjafqC/AEnIT/offSH3DHWLf3d5NEOl6SGu2Be
+cqsJGNGEfkcAqtxqKTnAM6USxucJJ9I8zPlx7SUjIX8vZRT0rv2nJB9BhyVjxmzY
+6J9G0Bo2iyIEWQV76BrnVeAQEokvoL5/i8AZFMiuWBbRHtBKhtuQ0Ro8gEo37mS0
+eV3xhc9YJykikV8nCQ++F1ZfoBZj4VCYDvzhb6ZDASN3zQiXWiFMmmOFeFn9JHjV
+uWTfbROjGRI2iwZjGVS0yEP3XqQ82XrwTSP7/FxxwTttXOPLbhgTD9qAJVGhNOz2
+/wUM+rpGRgCy+3frFm7IPfjbOBNqbazh29DBDaj5L6qrMhOYHVxcoJbZE7z+Nb3h
+kUI8DC/ONomXipyWEPM55fJWiYPCEcbohJqsQTKAkn61SswmLV2RIdNW4yRbh/av
+bGwVPc19gmxDUzTU9wv30eJqVTaQ4LONED9tIWRhv2uKCiwUjWY=
+=YXHN
 -----END PGP SIGNATURE-----
 
---nextPart1524434.qlbeyyzbMd--
+--nextPart5476954.Vscsdb36XS--
 
