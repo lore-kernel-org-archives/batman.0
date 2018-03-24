@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 Mar 2018 10:42:10 +0100
-Message-ID: <5008749.PhXIyr9qhG@sven-edge>
-In-Reply-To: <20180321232132.15176-1-linus.luessing@c0d3.blue>
-References: <20180321232132.15176-1-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Sun, 25 Mar 2018 00:32:04 +0100
+Message-Id: <20180324233204.27430-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4439531.b3DcnRJm8E";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: fix packet loss for
- broadcasted DHCP packets to a server
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid old nodes disabling
+ multicast optimizations completely
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,54 +18,111 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4439531.b3DcnRJm8E
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Instead of disabling multicast optimizations mesh-wide once a node with
+no multicast optimizations capabilities joins the mesh, do the
+following:
 
-On Donnerstag, 22. M=E4rz 2018 00:21:32 CET Linus L=FCssing wrote:
-> DHCP connectivity issues can currently occur if the following conditions
-> are met:
->=20
-> 1) A DHCP packet from a client to a server
-> 2) This packet has a multicast destination
-> 3) This destination has a matching entry in the translation table
->    (FF:FF:FF:FF:FF:FF for IPv4, 33:33:00:01:00:02/33:33:00:01:00:03
->     for IPv6)
-> 4) The orig-node determined by TT for the multicast destination
->    does not match the orig-node determined by best-gateway-selection
-[...]
-> ---
->  net/batman-adv/gateway_client.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+Just insert such nodes into the WANT_ALL_IPV4/IPV6 lists. This is
+sufficient to avoid multicast packet loss to such unsupportive nodes.
 
-Applied as 49b2132f0fe2 [1].
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/multicast.c      | 29 ++++++-----------------------
+ net/batman-adv/soft-interface.c |  1 -
+ net/batman-adv/types.h          |  3 ---
+ 3 files changed, 6 insertions(+), 27 deletions(-)
 
-Thanks,
-	Sven
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/49b2132f0fe2753a3b46103=
-db9719898c5cd44aa
---nextPart4439531.b3DcnRJm8E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlq2HXIACgkQXYcKB8Em
-e0bEQQ/+JXTtxm0bUwtC+0cbwCvYkHia4RHQbXC5DPraDfa90RPH2OvyoRQsBpA2
-wc4svGxt5qJmRVrgS7bDhbQiR1wOUXiT4n/3LjtBohgekw7oQJuL90Fw4EPB9rVJ
-iMHvEda8j+vl9b9pOMvWCRrmNWYfh45t7fK2n6ODU26som3l8tZdJ7AaeZuy+HvZ
-i+cGrZANU+wGbWnAeq8fRJhjamxD4tiqey+SfPWf7HGxmyIBDUUIuycXAM6WmFok
-pmM57skj37omqe3F0SuVB8TFQz19WsfOjc2TuWtLSMkIPKv7hvsXlMGITCxLrBKl
-QEmHLbGEYzHyCdCn0Iwu0+DdIho0kTC3J0tTA94cZid6yggzdDDqUJJNOYQV9rEM
-0YjK6ThgK909B364XgxduLdfqtVE4mYjNkrwD/C7v4lGX2C7fC425q0axsFS43IP
-Ivx/I4vxLbQeRRVpnBfn97xGQtJqfFQ3tP/LUAz9QhtMC+2tIlvXBIHeElXL/OGZ
-hkXFj+S6pvm+sUCJMISUtZUWTccLIdu0tdO2mWaQn9DQrwrgPRYgmXufCom4ELUZ
-WWDJggaY9G17juUOcsjdREHBi2HZLKnsP76mSmJXRqakuEMUOlXE6YGqy1WTo7Bc
-XOJ5uNJcBZRANohEfU33YiLXYIrM5/U1392FPQBOmZWXclVy0xw=
-=IXxL
------END PGP SIGNATURE-----
-
---nextPart4439531.b3DcnRJm8E--
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index a35f597e..86725d79 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -815,9 +815,6 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ 	if (!atomic_read(&bat_priv->multicast_mode))
+ 		return -EINVAL;
+ 
+-	if (atomic_read(&bat_priv->mcast.num_disabled))
+-		return -EINVAL;
+-
+ 	switch (ntohs(ethhdr->h_proto)) {
+ 	case ETH_P_IP:
+ 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
+@@ -1183,33 +1180,23 @@ static void batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
+ {
+ 	bool orig_mcast_enabled = !(flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
+ 	u8 mcast_flags = BATADV_NO_FLAGS;
+-	bool orig_initialized;
+ 
+ 	if (orig_mcast_enabled && tvlv_value &&
+ 	    tvlv_value_len >= sizeof(mcast_flags))
+ 		mcast_flags = *(u8 *)tvlv_value;
+ 
++	if (!orig_mcast_enabled) {
++		mcast_flags |= BATADV_MCAST_WANT_ALL_IPV4;
++		mcast_flags |= BATADV_MCAST_WANT_ALL_IPV6;
++	}
++
+ 	spin_lock_bh(&orig->mcast_handler_lock);
+-	orig_initialized = test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
+-				    &orig->capa_initialized);
+ 
+-	/* If mcast support is turned on decrease the disabled mcast node
+-	 * counter only if we had increased it for this node before. If this
+-	 * is a completely new orig_node no need to decrease the counter.
+-	 */
+ 	if (orig_mcast_enabled &&
+ 	    !test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) {
+-		if (orig_initialized)
+-			atomic_dec(&bat_priv->mcast.num_disabled);
+ 		set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
+-	/* If mcast support is being switched off or if this is an initial
+-	 * OGM without mcast support then increase the disabled mcast
+-	 * node counter.
+-	 */
+ 	} else if (!orig_mcast_enabled &&
+-		   (test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) ||
+-		    !orig_initialized)) {
+-		atomic_inc(&bat_priv->mcast.num_disabled);
++		   test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) {
+ 		clear_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
+ 	}
+ 
+@@ -1595,10 +1582,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
+ 
+ 	spin_lock_bh(&orig->mcast_handler_lock);
+ 
+-	if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) &&
+-	    test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized))
+-		atomic_dec(&bat_priv->mcast.num_disabled);
+-
+ 	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
+ 	batadv_mcast_want_ipv4_update(bat_priv, orig, BATADV_NO_FLAGS);
+ 	batadv_mcast_want_ipv6_update(bat_priv, orig, BATADV_NO_FLAGS);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index edeffcb9..67065e35 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -796,7 +796,6 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	bat_priv->mcast.querier_ipv6.shadowing = false;
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
+ 	atomic_set(&bat_priv->multicast_mode, 1);
+-	atomic_set(&bat_priv->mcast.num_disabled, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_ipv4, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_ipv6, 0);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 476b052a..0174f79e 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1212,9 +1212,6 @@ struct batadv_priv_mcast {
+ 	/** @bridged: whether the soft interface has a bridge on top */
+ 	bool bridged;
+ 
+-	/** @num_disabled: number of nodes that have no mcast tvlv */
+-	atomic_t num_disabled;
+-
+ 	/**
+ 	 * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP
+ 	 *  traffic
+-- 
+2.11.0
 
