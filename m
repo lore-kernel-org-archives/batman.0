@@ -1,12 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Mar 2018 14:47:52 +0200
-Message-Id: <20180326124754.5897-1-sw@simonwunderlich.de>
+Date: Mon, 26 Mar 2018 14:47:53 +0200
+Message-Id: <20180326124754.5897-2-sw@simonwunderlich.de>
+In-Reply-To: <20180326124754.5897-1-sw@simonwunderlich.de>
+References: <20180326124754.5897-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
- 2018-03-26
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix multicast-via-unicast
+ transmission with AP isolation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,41 +19,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-here are two late bugfixes for batman-adv which we would like to have in net
-if still possible.
+For multicast frames AP isolation is only supposed to be checked on
+the receiving nodes and never on the originating one.
 
-Please pull or let me know of any problem!
+Furthermore, the isolation or wifi flag bits should only be intepreted
+as such for unicast and never multicast TT entries.
 
-Thank you,
-      Simon
+By injecting flags to the multicast TT entry claimed by a single
+target node it was verified in tests that this multicast address
+becomes unreachable, leading to packet loss.
 
-The following changes since commit fc04fdb2c8a894283259f5621d31d75610701091:
+Omitting the "src" parameter to the batadv_transtable_search() call
+successfully skipped the AP isolation check and made the target
+reachable again.
 
-  batman-adv: Fix skbuff rcsum on packet reroute (2018-03-18 13:20:32 +0100)
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/multicast.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-are available in the git repository at:
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index d70640135e3a..ee56af5c43e0 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -814,8 +814,8 @@ static struct batadv_orig_node *
+ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
+ 			      struct ethhdr *ethhdr)
+ {
+-	return batadv_transtable_search(bat_priv, ethhdr->h_source,
+-					ethhdr->h_dest, BATADV_NO_FLAGS);
++	return batadv_transtable_search(bat_priv, NULL, ethhdr->h_dest,
++					BATADV_NO_FLAGS);
+ }
+ 
+ /**
+-- 
+2.11.0
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180326
-
-for you to fetch changes up to a752c0a4524889cdc0765925258fd1fd72344100:
-
-  batman-adv: fix packet loss for broadcasted DHCP packets to a server (2018-03-24 10:25:49 +0100)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - fix multicast-via-unicast transmissions for AP isolation and gateway
-   extension, by Linus Luessing (2 patches)
-
-----------------------------------------------------------------
-Linus Lüssing (2):
-      batman-adv: fix multicast-via-unicast transmission with AP isolation
-      batman-adv: fix packet loss for broadcasted DHCP packets to a server
-
- net/batman-adv/gateway_client.c | 5 ++++-
- net/batman-adv/multicast.c      | 4 ++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
