@@ -1,12 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun, 25 Mar 2018 00:32:04 +0100
-Message-Id: <20180324233204.27430-1-linus.luessing@c0d3.blue>
+Return-Path: <xbing6@gmail.com>
+From: Xuebing Wang <xbing6@gmail.com>
+Message-ID: <79817dd4-1fb2-a491-fa9f-9056906cab00@gmail.com>
+Date: Mon, 26 Mar 2018 17:02:42 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="utf-8"; format="flowed"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid old nodes disabling
- multicast optimizations completely
+Content-Language: en-US
+Subject: [B.A.T.M.A.N.] [hostapd] [batman-adv] Is dot11RSNAConfigPMKLifetime
+ the correct setting to configure IBSS reauth timer?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,113 +17,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: hostap@lists.infradead.org
+Cc: j@w1.fi, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, mareklindner@neomailbox.ch
 
-Instead of disabling multicast optimizations mesh-wide once a node with
-no multicast optimizations capabilities joins the mesh, do the
-following:
+Hi community,
 
-Just insert such nodes into the WANT_ALL_IPV4/IPV6 lists. This is
-sufficient to avoid multicast packet loss to such unsupportive nodes.
+We have batman-adv mesh network of 136 nodes perfectly running for about 
+6 months.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/multicast.c      | 29 ++++++-----------------------
- net/batman-adv/soft-interface.c |  1 -
- net/batman-adv/types.h          |  3 ---
- 3 files changed, 6 insertions(+), 27 deletions(-)
+Our configure is:
+- OpenWRT tag 15.05.1
+- wpa_supplicant hostap_2_4
+- 802.11 IBSS
+- proto=WPA2
+- key_mgmt=WPA-PSK
+- pairwise=CCMP
+- group=CCMP
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index a35f597e..86725d79 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -815,9 +815,6 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
- 	if (!atomic_read(&bat_priv->multicast_mode))
- 		return -EINVAL;
- 
--	if (atomic_read(&bat_priv->mcast.num_disabled))
--		return -EINVAL;
--
- 	switch (ntohs(ethhdr->h_proto)) {
- 	case ETH_P_IP:
- 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
-@@ -1183,33 +1180,23 @@ static void batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
- {
- 	bool orig_mcast_enabled = !(flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
- 	u8 mcast_flags = BATADV_NO_FLAGS;
--	bool orig_initialized;
- 
- 	if (orig_mcast_enabled && tvlv_value &&
- 	    tvlv_value_len >= sizeof(mcast_flags))
- 		mcast_flags = *(u8 *)tvlv_value;
- 
-+	if (!orig_mcast_enabled) {
-+		mcast_flags |= BATADV_MCAST_WANT_ALL_IPV4;
-+		mcast_flags |= BATADV_MCAST_WANT_ALL_IPV6;
-+	}
-+
- 	spin_lock_bh(&orig->mcast_handler_lock);
--	orig_initialized = test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
--				    &orig->capa_initialized);
- 
--	/* If mcast support is turned on decrease the disabled mcast node
--	 * counter only if we had increased it for this node before. If this
--	 * is a completely new orig_node no need to decrease the counter.
--	 */
- 	if (orig_mcast_enabled &&
- 	    !test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) {
--		if (orig_initialized)
--			atomic_dec(&bat_priv->mcast.num_disabled);
- 		set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
--	/* If mcast support is being switched off or if this is an initial
--	 * OGM without mcast support then increase the disabled mcast
--	 * node counter.
--	 */
- 	} else if (!orig_mcast_enabled &&
--		   (test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) ||
--		    !orig_initialized)) {
--		atomic_inc(&bat_priv->mcast.num_disabled);
-+		   test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) {
- 		clear_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
- 	}
- 
-@@ -1595,10 +1582,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
- 
- 	spin_lock_bh(&orig->mcast_handler_lock);
- 
--	if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) &&
--	    test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized))
--		atomic_dec(&bat_priv->mcast.num_disabled);
--
- 	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
- 	batadv_mcast_want_ipv4_update(bat_priv, orig, BATADV_NO_FLAGS);
- 	batadv_mcast_want_ipv6_update(bat_priv, orig, BATADV_NO_FLAGS);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index edeffcb9..67065e35 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -796,7 +796,6 @@ static int batadv_softif_init_late(struct net_device *dev)
- 	bat_priv->mcast.querier_ipv6.shadowing = false;
- 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
- 	atomic_set(&bat_priv->multicast_mode, 1);
--	atomic_set(&bat_priv->mcast.num_disabled, 0);
- 	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
- 	atomic_set(&bat_priv->mcast.num_want_all_ipv4, 0);
- 	atomic_set(&bat_priv->mcast.num_want_all_ipv6, 0);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 476b052a..0174f79e 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1212,9 +1212,6 @@ struct batadv_priv_mcast {
- 	/** @bridged: whether the soft interface has a bridge on top */
- 	bool bridged;
- 
--	/** @num_disabled: number of nodes that have no mcast tvlv */
--	atomic_t num_disabled;
--
- 	/**
- 	 * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP
- 	 *  traffic
--- 
-2.11.0
+The minor issue we have is that memory is fragmented after running 6 
+months for a large network of 136 nodes. I am speculating that it is 
+because of the periodical RNSA  reauthentication.
+
+If I read 802.11 spec "11.5.10 RSNA authentication in an IBSS" 
+correctly, there is reauth timer.  Is dot11RSNAConfigPMKLifetime in 
+wpa_supplicant.conf the setting for the reauthentication timer?
+
+The default value is 43200 (12 hours). What about I change this value to 
+be 2 weeks or a year?
+
+Thanks.
+Xuebing Wang
 
