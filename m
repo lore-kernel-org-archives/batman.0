@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Mar 2018 14:47:54 +0200
-Message-Id: <20180326124754.5897-3-sw@simonwunderlich.de>
-In-Reply-To: <20180326124754.5897-1-sw@simonwunderlich.de>
-References: <20180326124754.5897-1-sw@simonwunderlich.de>
+Date: Mon, 26 Mar 2018 14:57:02 +0200
+Message-ID: <6736928.QjjYfqFu7x@prime>
+In-Reply-To: <20180323225350.7350-1-colin.king@canonical.com>
+References: <20180323225350.7350-1-colin.king@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix packet loss for
- broadcasted DHCP packets to a server
+Content-Type: multipart/signed; boundary="nextPart8955457.PBE51fOHfl";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH][next] batman-adv: don't pass a NULL
+ hard_iface to batadv_hardif_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,88 +18,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: Colin King <colin.king@canonical.com>, "David S . Miller" <davem@davemloft.net>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+--nextPart8955457.PBE51fOHfl
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-DHCP connectivity issues can currently occur if the following conditions
-are met:
+Hi,
 
-1) A DHCP packet from a client to a server
-2) This packet has a multicast destination
-3) This destination has a matching entry in the translation table
-   (FF:FF:FF:FF:FF:FF for IPv4, 33:33:00:01:00:02/33:33:00:01:00:03
-    for IPv6)
-4) The orig-node determined by TT for the multicast destination
-   does not match the orig-node determined by best-gateway-selection
+this looks good. David, would you pick this patch directly? Otherwise, I can 
+send a pull request, but right now we would only have this single patch for 
+net-next.
 
-In this case the DHCP packet will be dropped.
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-The "gateway-out-of-range" check is supposed to only be applied to
-unicasted DHCP packets to a specific DHCP server.
+(just discussed with Sven offline)
 
-In that case dropping the the unicasted frame forces the client to
-retry via a broadcasted one, but now directed to the new best
-gateway.
+Thank you,
+     Simon
 
-A DHCP packet with broadcast/multicast destination is already ensured to
-always be delivered to the best gateway. Dropping a multicasted
-DHCP packet here will only prevent completing DHCP as there is no
-other fallback.
+On Friday, March 23, 2018 10:53:50 PM CEST Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> In the case where hard_iface is NULL, the error path may pass a null
+> pointer to batadv_hardif_put causing a null pointer dereference error.
+> Avoid this by only calling the function if  hard_iface not null.
+> 
+> Detected by CoverityScan, CID#1466456 ("Explicit null dereferenced")
+> 
+> Fixes: 53dd9a68ba68 ("batman-adv: add multicast flags netlink support")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  net/batman-adv/multicast.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+> index de3a055f7dd8..bd0ea374d043 100644
+> --- a/net/batman-adv/multicast.c
+> +++ b/net/batman-adv/multicast.c
+> @@ -1536,7 +1536,7 @@ batadv_mcast_netlink_get_primary(struct
+> netlink_callback *cb,
+> 
+>  	if (!ret && primary_if)
+>  		*primary_if = hard_iface;
+> -	else
+> +	else if (hard_iface)
+>  		batadv_hardif_put(hard_iface);
+> 
+>  	return ret;
 
-So far, it seems the unicast check was implicitly performed by
-expecting the batadv_transtable_search() to return NULL for multicast
-destinations. However, a multicast address could have always ended up in
-the translation table and in fact is now common.
 
-To fix this potential loss of a DHCP client-to-server packet to a
-multicast address this patch adds an explicit multicast destination
-check to reliably bail out of the gateway-out-of-range check for such
-destinations.
+--nextPart8955457.PBE51fOHfl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-The issue and fix were tested in the following three node setup:
+-----BEGIN PGP SIGNATURE-----
 
-- Line topology, A-B-C
-- A: gateway client, DHCP client
-- B: gateway server, hop-penalty increased: 30->60, DHCP server
-- C: gateway server, code modifications to announce FF:FF:FF:FF:FF:FF
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlq47h4ACgkQoSvjmEKS
+nqFH1w//Yp5bHP7Izw/DndQ3ekThi16/0qDVMjbRWWQPTgBehexeXSA9snveR/rU
+PK1i7EVE0Eu4HSfjTDWJK/X3Ea2gGq4Z7HcHIgEz4nj3TCwhlAOuoGsEKSgE2GLw
+kfHHQGbIOMjHpjpkqV4r9vIaUwf45SrV5tSZYVmAoycpZ44r9hUVPFOFVCr3qnMe
+i2h33lEm2rvS80T2gmi/OUmDM9nnBc17F0nYQnYP8UfO9tDihohKcRIZjCueRA8g
+mtC7S+KGqW3GpeToiuM4gpEaqqUDdHU103Nx8/M+g/JZ3eT1ZsD8oyYax822hz0G
+/x9r2ISIOMzqh9+8ZrmroyLR2roPvlp09Id8iBQrMdlJFKittm86WB4enc27q3vi
+Pp3azGy6MK0hcKxwYd59QnTsW2lqSR+S7EABD97MH7uOlGDJj4is1ql/KQuHljIT
+XZsgQQcrjaxaMHrNbbCFRyu30jm/FG0dkihBYssfvEhQmy2G8P33IvXN1p+7lit2
+IDRuEjmEBl3mN+FI4eexHF7MKthH+BM3Md4gh7k8E9B2vin+AzgD/zoFA1dCKI0h
+x6TyX4J2Jk85Rqm9wSx3FxkdmrTCgLC2Bn9qU0N3AO07gh2RjejdBKNcMzNRjCGF
+gIsHTNgDI7JlXxjffFhE5dSx4HHXnAZm7s1g2VOk2hO7kPtWhyQ=
+=rBOg
+-----END PGP SIGNATURE-----
 
-Without this patch, A would never transmit its DHCP Discover packet
-due to an always "out-of-range" condition. With this patch,
-a full DHCP handshake between A and B was possible again.
-
-Fixes: be7af5cf9cae ("batman-adv: refactoring gateway handling code")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/gateway_client.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 37fe9a644f22..808d2dd4a839 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -746,7 +746,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- {
- 	struct batadv_neigh_node *neigh_curr = NULL;
- 	struct batadv_neigh_node *neigh_old = NULL;
--	struct batadv_orig_node *orig_dst_node;
-+	struct batadv_orig_node *orig_dst_node = NULL;
- 	struct batadv_gw_node *gw_node = NULL;
- 	struct batadv_gw_node *curr_gw = NULL;
- 	struct batadv_neigh_ifinfo *curr_ifinfo, *old_ifinfo;
-@@ -757,6 +757,9 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- 
- 	vid = batadv_get_vid(skb, 0);
- 
-+	if (is_multicast_ether_addr(ethhdr->h_dest))
-+		goto out;
-+
- 	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
- 						 ethhdr->h_dest, vid);
- 	if (!orig_dst_node)
--- 
-2.11.0
+--nextPart8955457.PBE51fOHfl--
 
