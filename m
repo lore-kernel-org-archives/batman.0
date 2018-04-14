@@ -1,16 +1,13 @@
 Return-Path: <a@unstable.cc>
 References: <20180413181618.24144-1-sven@narfation.org>
- <1658833.3ZLkxubxK8@sven-edge>
- <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
- <6325045.lEza1471pb@sven-edge>
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <9baeefb2-74ea-f448-7d45-216b10494778@unstable.cc>
-Date: Sat, 14 Apr 2018 17:35:24 +0800
+Message-ID: <cf2ad8e6-202a-f8f0-29a5-e9dee517167d@unstable.cc>
+Date: Sat, 14 Apr 2018 17:36:11 +0800
 MIME-Version: 1.0
-In-Reply-To: <6325045.lEza1471pb@sven-edge>
+In-Reply-To: <20180413181618.24144-1-sven@narfation.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="rupHYRDFpg1B0m6sexuha8Pkb7SMQgzlw"
+ boundary="qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,94 +18,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Andre Kasper <Andre.Kasper@gmx.de>, linus.luessing@c0d3.blue
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Andre Kasper <Andre.Kasper@gmx.de>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---rupHYRDFpg1B0m6sexuha8Pkb7SMQgzlw
-Content-Type: multipart/mixed; boundary="28V5Bsw5m00bU1LgWN3pqcipgONoVsrdv";
+--qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ
+Content-Type: multipart/mixed; boundary="7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2";
  protected-headers="v1"
 From: Antonio Quartulli <a@unstable.cc>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Andre Kasper <Andre.Kasper@gmx.de>,
- linus.luessing@c0d3.blue
-Message-ID: <9baeefb2-74ea-f448-7d45-216b10494778@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Andre Kasper <Andre.Kasper@gmx.de>
+Message-ID: <cf2ad8e6-202a-f8f0-29a5-e9dee517167d@unstable.cc>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
 References: <20180413181618.24144-1-sven@narfation.org>
- <1658833.3ZLkxubxK8@sven-edge>
- <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
- <6325045.lEza1471pb@sven-edge>
-In-Reply-To: <6325045.lEza1471pb@sven-edge>
+In-Reply-To: <20180413181618.24144-1-sven@narfation.org>
 
---28V5Bsw5m00bU1LgWN3pqcipgONoVsrdv
-Content-Type: text/plain; charset=windows-1252
+--7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 14/04/18 17:20, Sven Eckelmann wrote:
-> On Samstag, 14. April 2018 10:11:28 CEST Antonio Quartulli wrote:
->> An error message like like "returned invalid all-zero mac address" (or=
+On 14/04/18 02:16, Sven Eckelmann wrote:
+> The IP translation layer is using the neighbor table of the kernel to g=
+et
+> the unicast link layer (mac) address for IP(v4|v6) addresses. The kerne=
+l
+> can not only return unicast mac addresses to such an RTM_GETNEIGH reque=
+st
+> but also zero mac address. Such an address must be considered invalid
+> because the global translation table may not only contain a unique clie=
+nt
+> mac address entry for it. The translation from client mac to originator=
 
->> "multicast address") might help to distinguish similar "ambiguities" i=
-n
->> the future. No?
+> will therefore most likely return an unexpected originator.
 >=20
-> The current interface for the translation is "give me a string and I re=
-turn=20
-> NULL or a mac address". The resolving of the IPs for hostnames and the =
-check=20
-> of the neighbor table are done on an "I take what I get first" approach=
-=2E Your=20
-> suggestion would involve a change of this interface and parsing of addi=
-tional=20
-> information and tracking of states to make sure that the "best" result =
-is=20
-> returned (or a special error state). This is nothing which I will imple=
-ment=20
-> now.
-
-Oh ok, I went through the code and now I better understand what you meant=
-=2E
-
+> Dropping these kind of (bogus) results avoids confusions while using th=
+ings
+> like batctl's ping or traceroute.
 >=20
-> Should I drop the patch for now?
->=20
+> Reported-by: Andre Kasper <Andre.Kasper@gmx.de>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-I'd suggest to still consider it for merging.
-Even if we can't be specific about the error, it is still better to stop
-the translation rather than generating unexpected results.
+Acked-by: Antonio Quartulli <a@unstable.cc>
 
-Cheers,
+
 
 --=20
 Antonio Quartulli
 
 
---28V5Bsw5m00bU1LgWN3pqcipgONoVsrdv--
+--7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2--
 
---rupHYRDFpg1B0m6sexuha8Pkb7SMQgzlw
+--qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlrRy1wACgkQB6U8WA7y
-zXQveQ//Ql6tmb0sB6rUBDBV80FryeZjn4QI2V0URKHc3U0kIpSAm09glhHI+xtu
-i70c/32utNbYFNxgfdffzRp7Q7JmmMt6ncbxHRrfdK5de6NDqD8HMlCEWl5GcLdO
-t58yAmtZOK6n9Vf941Pdew9NcIhknX7BdDxTpxSnFMpMipOJ3u9+24X/9um2w8C9
-JuonR/z5O2lP3mOfxqHj3kp68agD/jzVRYDYuuAj6gmtePwKdfdQUEPGDulkK2uT
-ATaQJrbrxX/IVqnIgyobSdeFnRILjmsHw98gskwNEADtmIgmOTJcP8HLUW5OprVI
-RBcerxfjDo75GALSwOyUXTIlOD2DyWkU2hQhfdOGYrSH/b93ajLSqVH+BGRQzHO3
-LS2cvHC2ftzvwH9hEXoFbNiLGVGktFxdl1IjFE0ZXZRi5N/8XI/SNC/mA3dJNUnc
-QoNebdanqQez9c6UzpY5inIov3eyu7ZL81k9DtBVxJdosmeD0+jrtwXsHKWNV6d1
-J7J60gYknbp1nLW6HExU7oE0go3/UbK+PSOt7wqvaHFhRzTQrNIeRYgcl2ulv6AU
-qJ1jgCsDwNxD332aB+6moTZMTx082/elQreJn/CusHubdJrJllMa/61zwJDYpie0
-V9cuQjEfUkquXr8hHi09f1eoAWJPfsILVeP8idcM5zpIak+Vc9U=
-=ZxlY
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlrRy4wACgkQB6U8WA7y
+zXR54xAAtVZub1eMXD5AhRX4PH5eKjScnFbz0E5xiiomvKRYmmKXFuIuWmhHGkNl
+6ozAX5WrXMDw7LzZyP8xZoVAS1STADh+WgAqe40XEMeApR1WFl5tYBDZv2cSOOdo
+0WnqlwPIA6Ujxi7CFvY58g/vRg3Yfx7i9HyPqE0AojputjZ/F0HdsYuOHqQnI8h8
+eVVT7hhZjyN9JcY0XZMTCSclnFg1Xrkcxeck/fI4YwZDL+2uoWkoN2rYgXP8xiXr
+MD+wwePuqlXxSJ9RsTKZnSWNTvvu9hggzQnlNoUNuxUs+4YBO0nN3EdX18ze9bCa
+fx7kAJ0yQoN/gqDwY3sfbxyR1sv7Rhytmp83tKlkHWhBvDloQaiPOxuO3jha5tCH
+k6/2kYFuK2pZrdlipauko0rgIautdgg8xqS1n2NlXMp8cQtYubHOy81U9ME4NFmi
+COC/6HhtbS8xkZ4JOEl6lkEDXYtQnAFYPu0he8fTH1Sd6p4c/U+pp+AZv3ZDTBCA
+Kz41VZTK6hPsjKNpraH8oHgzgkoFEpCa8ERzGs7k7MmzbrlNeerWMl4xwaktg52p
+PSkRleZU6fG3S0q+Sm2BZPpet3ZIzNFkst78gfOprN9TIaSzTb9JNKLSHtfsmPWZ
+ROCUeGNrOD3cQo00h5e4ADn6NxF9CBoN+YKA0GJH1dyYpMommnU=
+=F9TK
 -----END PGP SIGNATURE-----
 
---rupHYRDFpg1B0m6sexuha8Pkb7SMQgzlw--
+--qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ--
