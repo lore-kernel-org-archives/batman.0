@@ -1,15 +1,14 @@
-Return-Path: <a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 14 Apr 2018 11:20:06 +0200
+Message-ID: <6325045.lEza1471pb@sven-edge>
+In-Reply-To: <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
 References: <20180413181618.24144-1-sven@narfation.org>
- <78ec0422-9046-3db1-6a81-4c1c7d0c9968@unstable.cc>
  <1658833.3ZLkxubxK8@sven-edge>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
-Date: Sat, 14 Apr 2018 16:11:28 +0800
+ <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
 MIME-Version: 1.0
-In-Reply-To: <1658833.3ZLkxubxK8@sven-edge>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="tyRd6pWtka3IUFsNWRJdykft4yY2VP5r8"
+Content-Type: multipart/signed; boundary="nextPart7156158.9y9tYxycar";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,134 +19,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Andre Kasper <Andre.Kasper@gmx.de>, linus.luessing@c0d3.blue
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---tyRd6pWtka3IUFsNWRJdykft4yY2VP5r8
-Content-Type: multipart/mixed; boundary="9Hanvker29eHvdwZGhuVpuU6yqtmKzrag";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Andre Kasper <Andre.Kasper@gmx.de>,
- linus.luessing@c0d3.blue
-Message-ID: <af29c3fe-d25e-51d2-7ca1-47738f25ab7a@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
-References: <20180413181618.24144-1-sven@narfation.org>
- <78ec0422-9046-3db1-6a81-4c1c7d0c9968@unstable.cc>
- <1658833.3ZLkxubxK8@sven-edge>
-In-Reply-To: <1658833.3ZLkxubxK8@sven-edge>
+--nextPart7156158.9y9tYxycar
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---9Hanvker29eHvdwZGhuVpuU6yqtmKzrag
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+On Samstag, 14. April 2018 10:11:28 CEST Antonio Quartulli wrote:
+> An error message like like "returned invalid all-zero mac address" (or
+> "multicast address") might help to distinguish similar "ambiguities" in
+> the future. No?
 
+The current interface for the translation is "give me a string and I return 
+NULL or a mac address". The resolving of the IPs for hostnames and the check 
+of the neighbor table are done on an "I take what I get first" approach. Your 
+suggestion would involve a change of this interface and parsing of additional 
+information and tracking of states to make sure that the "best" result is 
+returned (or a special error state). This is nothing which I will implement 
+now.
 
+Should I drop the patch for now?
 
-On 14/04/18 15:10, Sven Eckelmann wrote:
-> On Samstag, 14. April 2018 04:34:42 CEST Antonio Quartulli wrote:
->>
->> On 14/04/18 02:16, Sven Eckelmann wrote:
-> [...]
->> We already handle the case of multiple originators handling the same M=
-AC
->> address, no? In that case I think we pick the "best" originator.
->=20
-> Yes, but this doesn't make a lot of sense for multicast and zero mac=20
-> addresses. The translate layer of batctl is usually used to ping/tracer=
-oute to=20
-> some originator. But multicast and zero mac addresses don't represent a=
-=20
-> "client" which can be used to identify some originator. So it doesn't s=
-eem to=20
-> make sense to allow them here.
-
-Right.
-
->=20
-> Or even without the ping/traceroute stuff, the concept of calling `batc=
-tl=20
-> translate` should give you an answer which you can understand. So it sh=
-ould=20
-> tell you that batman-adv is very likely to transmit a unicast packet wi=
-th this=20
-> destination address to this originator. But this cannot work for multic=
-ast=20
-> destination addresses because multiple answer should be given here - wh=
-ich is=20
-> out of scope for this command. Which reminds me that I should propose a=
- second=20
-> patch which checks whether the input for translate_mac is "valid" befor=
-e=20
-> trying to translate it.
->=20
->> This case sounds more like a validity check because "a zero MAC should=
-
->> not be in the translation table", or am I wrong?
->=20
-> Partially, yes. I personally don't care (at the moment) whether there i=
-s a=20
-> zero mac address in the translation table. The current translation tabl=
-e code=20
-> (batadv_tt_local_add) doesn't check whether there is a zero mac address=
-=20
-> (is_zero_ether_addr). But Linus had some ideas when zero mac addresses =
-can be=20
-> useful - maybe he tell us whether it makes sense/problems to have them =
-in the=20
-> translation table.
-
-Yeah, I agree that zero "may appear" in the table and therefore we have
-to "check" what we are getting back and whether it makes sense for us in
-this context.
-
-
-Actually my comment was not about changing your approach, but just
-making it more explicit in the commit and in the error message.
-
-An error message like like "returned invalid all-zero mac address" (or
-"multicast address") might help to distinguish similar "ambiguities" in
-the future. No?
-
-
-
-Cheers,
-
-
-
->=20
-> Kind regards,
-> 	Sven
->=20
-
---=20
-Antonio Quartulli
-
-
---9Hanvker29eHvdwZGhuVpuU6yqtmKzrag--
-
---tyRd6pWtka3IUFsNWRJdykft4yY2VP5r8
+Kind regards,
+	Sven
+--nextPart7156158.9y9tYxycar
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlrRt7AACgkQB6U8WA7y
-zXTpAw//b4rcU9XolEms6BdyONSbSyD4WNZXiXe2vhGwUORvvGpB/CXTgVWewHCV
-+WYhuoqZ2IRgQuLo+a2zkrMN1d4zgK5D/hc+m/yhExciP6WWffg3QqL5kSIMHXkd
-LwnW9upg0KAbaLHhkfdtZoGdp8z8Hi8qpwisagOMy9x7BA0rOlUwlRX6HtruJpbg
-nkTyIRm3I4fDlBxGEt/XOvzfx9b10MP2dhdzBB9tFadwssaRkVJHvG6wzDDgAoY6
-xFU83QVl3Ins3KiaQR7qGLpRydzA5bc+CLhO89mV2TTF0YFFDbto6hoq0V5v1PMl
-EtLCfhC4If2fpD8n43xRQK4q7zm0eydooInkguMrlbNg1gF3IFsBiZg06BUwAvTj
-mUFIB+7B7LYDHVzT8UbuNx4Zh3OSYOUOCHhVDLfujpwfXGvqTkmTwaYEwbPLJD9b
-wvOSjaZyXSXa08ydF10FuGzEjncNmevqZVTUjhRSXXvGHABxTOQtQaOw3ssGyeKD
-9hxb0DbJhMYqe2fahlW7XlOmSsNgavndUfBeaZu2KqPzUCDSOx/3nAoVNfrHJI5+
-s1vadN3oAEkXz3p4fwgOKG6whlcZ4vqfJj5vWhrV1mdIiyvX/3oofpQrYoZn/6Fk
-q0+R6OkLlEF4l4k2Y1ZK6dCLhCtqPsKsfrEYXhrmAn74L75mBaY=
-=evEE
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrRx8YACgkQXYcKB8Em
+e0ZX/A//WAGGsAi9R4QjTpUPNHrkyKtDuut8g+roJPYyqdn27CDl7SvPwVMmo1uR
+WV41FxLYlHb179W28Lqb5SKwkd+40acbsJB8DEKDDcutoXm/3ZtXiCR8UqMkac20
+Xn4yKJL3LBM9R1nY09td97rrUPHjXLnbt3MiYkoQJd9hEzhDTD7M91UHUk0CN4Vo
+OG/q4bDYzOLzDtCFLKrnrZynzyqxq2BQHY85ry+pDevg/clTIz4vz6ieuFt6q4eQ
+G+yi1zHE5Fh8TFvHTUAimS3+Id6y34baIZsfweOppknrtNaRcfLlBLXWnGe2dPgh
+H6MLQuIwRsa1/pbx/0R6KKGZfQrovZtTD240jSFPWBTtIT517onr/VSuOkvRTg62
+uvzzMNMrYOc4PhZ/dJQkitPld11Absms5EgMEkWF4Z1Rrf67gRqWkgFSlGN6Bl52
+qaTzqNwI5S0fqDrKhdC+AlCslAX74CI1bvJ2BAosbU1TFXu3K4IVhw6WPFF/LOgp
+LUnLHMXn2fYtAR6PSNfEdoKome/UwZi/hZUUkNRsBc3XA1u9AG3e1H4TaBPjbjHE
+f5VMXPaYiiO8E+8WsmXkQHR2fhYH6OqVyXpzpscejtPm9qixj+rNX/NqxI3u6c9L
+mYkz8bdFZ3dpJYuf7gyH7kHFQyCLIDFqNXuut4eWesYnduZ5N4c=
+=3vz1
 -----END PGP SIGNATURE-----
 
---tyRd6pWtka3IUFsNWRJdykft4yY2VP5r8--
+--nextPart7156158.9y9tYxycar--
+
+
+
