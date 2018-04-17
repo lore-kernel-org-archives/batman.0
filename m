@@ -1,13 +1,12 @@
-Return-Path: <a@unstable.cc>
-References: <20180413181618.24144-1-sven@narfation.org>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <cf2ad8e6-202a-f8f0-29a5-e9dee517167d@unstable.cc>
-Date: Sat, 14 Apr 2018 17:36:11 +0800
-MIME-Version: 1.0
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 17 Apr 2018 10:35:15 +0200
+Message-ID: <6026006.aG0Bno4Z56@bentobox>
 In-Reply-To: <20180413181618.24144-1-sven@narfation.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ"
+References: <20180413181618.24144-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1714779.KUJ6TP1Sej";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,80 +17,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Andre Kasper <Andre.Kasper@gmx.de>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ
-Content-Type: multipart/mixed; boundary="7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
-Cc: Andre Kasper <Andre.Kasper@gmx.de>
-Message-ID: <cf2ad8e6-202a-f8f0-29a5-e9dee517167d@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Validate translated mac addresses
-References: <20180413181618.24144-1-sven@narfation.org>
-In-Reply-To: <20180413181618.24144-1-sven@narfation.org>
+--nextPart1714779.KUJ6TP1Sej
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-
-
-On 14/04/18 02:16, Sven Eckelmann wrote:
-> The IP translation layer is using the neighbor table of the kernel to g=
-et
-> the unicast link layer (mac) address for IP(v4|v6) addresses. The kerne=
-l
-> can not only return unicast mac addresses to such an RTM_GETNEIGH reque=
-st
+On Freitag, 13. April 2018 20:16:18 CEST Sven Eckelmann wrote:
+> The IP translation layer is using the neighbor table of the kernel to get
+> the unicast link layer (mac) address for IP(v4|v6) addresses. The kernel
+> can not only return unicast mac addresses to such an RTM_GETNEIGH request
 > but also zero mac address. Such an address must be considered invalid
-> because the global translation table may not only contain a unique clie=
-nt
-> mac address entry for it. The translation from client mac to originator=
-
+> because the global translation table may not only contain a unique client
+> mac address entry for it. The translation from client mac to originator
 > will therefore most likely return an unexpected originator.
->=20
-> Dropping these kind of (bogus) results avoids confusions while using th=
-ings
+> 
+> Dropping these kind of (bogus) results avoids confusions while using things
 > like batctl's ping or traceroute.
->=20
+> 
 > Reported-by: Andre Kasper <Andre.Kasper@gmx.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Cc: Andre Kasper <Andre.Kasper@gmx.de>
+> 
+> See https://www.open-mesh.org/issues/353
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+Applied in 9f22e3d0ed2a [1]. But the ticket is not marked as resolved but it 
+seems like the reporter wants a different behavior.
 
+Kind regards,
+	Sven
 
-
---=20
-Antonio Quartulli
-
-
---7VvzBhytUCKuyqCowh9GwbI04hD6YTTG2--
-
---qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ
+[1] https://git.open-mesh.org/batctl.git/commit/9f22e3d0ed2a3d83479f3db3b570f49218024249
+--nextPart1714779.KUJ6TP1Sej
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlrRy4wACgkQB6U8WA7y
-zXR54xAAtVZub1eMXD5AhRX4PH5eKjScnFbz0E5xiiomvKRYmmKXFuIuWmhHGkNl
-6ozAX5WrXMDw7LzZyP8xZoVAS1STADh+WgAqe40XEMeApR1WFl5tYBDZv2cSOOdo
-0WnqlwPIA6Ujxi7CFvY58g/vRg3Yfx7i9HyPqE0AojputjZ/F0HdsYuOHqQnI8h8
-eVVT7hhZjyN9JcY0XZMTCSclnFg1Xrkcxeck/fI4YwZDL+2uoWkoN2rYgXP8xiXr
-MD+wwePuqlXxSJ9RsTKZnSWNTvvu9hggzQnlNoUNuxUs+4YBO0nN3EdX18ze9bCa
-fx7kAJ0yQoN/gqDwY3sfbxyR1sv7Rhytmp83tKlkHWhBvDloQaiPOxuO3jha5tCH
-k6/2kYFuK2pZrdlipauko0rgIautdgg8xqS1n2NlXMp8cQtYubHOy81U9ME4NFmi
-COC/6HhtbS8xkZ4JOEl6lkEDXYtQnAFYPu0he8fTH1Sd6p4c/U+pp+AZv3ZDTBCA
-Kz41VZTK6hPsjKNpraH8oHgzgkoFEpCa8ERzGs7k7MmzbrlNeerWMl4xwaktg52p
-PSkRleZU6fG3S0q+Sm2BZPpet3ZIzNFkst78gfOprN9TIaSzTb9JNKLSHtfsmPWZ
-ROCUeGNrOD3cQo00h5e4ADn6NxF9CBoN+YKA0GJH1dyYpMommnU=
-=F9TK
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrVscMACgkQXYcKB8Em
+e0bLyw/+M/fP4wQjKxl79zpovuDQ7XFMJ3xdQ9tdJtRXy8fwH9/bBvv8gBRPwhQC
+nxp7Xhmu+NTB7S1Ak+xLIeUtb36dRlpTqjh0xYaLMUoMk+0w8AyLmvVe2jyKkUyk
+vebe1UlEHBlAoSUD5AqcyGg4ikuLLuvLUp1kGcqU9KDiu1J99Os/XgDDzGtNslhB
+gsrSKNvXG9wUzeForeZOM9Jd5ovbn1wYtyT2zIMPlpdSe9fLBpgfHoB0UMOt6702
+az8vc7AH35mRBxrnoX9501Ttlvr44GJap7AQW/fP0Ef4yITfGaXOc9UbWVkpoAN2
+4SGFn5APAvuEqXbvzfNlWsa4/1mPp6uo3Mt5/YT/L2A3PxJDcKoya0bFgAaPamTq
+98UOu6PFmpzRkjkh8KArvAHJQD6AMzX2ceykN96RWyHJYtxI7d63+FbFHjQ1/k1V
+vgNh1FHLEHWNwMej4Bxa1yXyFyQtyY005EUy3R4KAypc+bvpXQ+u1yS/lPJIZo44
+P3cEugEP+S6N4DpYoblsbNGc1DGtLrOSueH7GYwoDG/4y9rToz1jNsW+iiL5sVtD
+mmV0ZNHfDMjuFHb3hpcOPImBvckLg8dyHxUvx6Hi7YkMMBxzYhsHPsu7ifM9hF/m
+6L5BUhxHbzspEw7zYlDrJGmCukufy8svueKajlxvTdS9U7axVRE=
+=D82s
 -----END PGP SIGNATURE-----
 
---qXD2yUkDY9m3Sxn8mrV9AWiqPtdM58eKZ--
+--nextPart1714779.KUJ6TP1Sej--
+
