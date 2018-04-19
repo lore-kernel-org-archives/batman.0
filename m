@@ -1,9 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 19 Apr 2018 20:14:20 +0200
-Message-Id: <20180419181420.3167-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Don't translate multicast and zero
- mac addresses
+Date: Thu, 19 Apr 2018 21:01:07 +0200
+Message-Id: <20180419190108.11396-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Avoid bool in structures
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,74 +14,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The IP to mac translation code already skips zero and multicast mac
-addressses because there might be multiple entries in the global
-translation table which would match this entry. There is no "best" entry
-originator for such an entry and such the result is basically a random
-pick.
+Using the bool type for structure member is considered inappropriate [1]
+for the kernel. Its size is not well defined (but usually 1 byte but maybe
+also 4 byte).
 
-Translating such an input mac address (from ping/traceoute/translate) to a
-single originator address is therefore not appropriate.
+[1] https://lkml.org/lkml/2017/11/21/384
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ net/batman-adv/types.h | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index 3c340a2..e0e9978 100644
---- a/functions.c
-+++ b/functions.c
-@@ -194,6 +194,19 @@ static int str_is_mcast_addr(char *addr)
- 		mac_addr->ether_addr_octet[0] & 0x01;
- }
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 0174f79e..3b3fc146 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1160,13 +1160,13 @@ struct batadv_priv_dat {
+  */
+ struct batadv_mcast_querier_state {
+ 	/** @exists: whether a querier exists in the mesh */
+-	bool exists;
++	unsigned char exists:1;
  
-+static bool ether_addr_valid(const uint8_t *addr)
-+{
-+	/* no multicast address */
-+	if (addr[0] & 0x01)
-+		return false;
-+
-+	/* no zero address */
-+	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
-+		return false;
-+
-+	return true;
-+}
-+
- int read_file(const char *dir, const char *fname, int read_opt,
- 	      float orig_timeout, float watch_interval, size_t header_lines)
- {
-@@ -475,6 +488,9 @@ struct ether_addr *translate_mac(const char *mesh_iface,
- 	memcpy(&out_mac, mac, sizeof(out_mac));
- 	mac_result = &out_mac;
- 
-+	if (!ether_addr_valid(in_mac.ether_addr_octet))
-+		return mac_result;
-+
- 	ret = translate_mac_netlink(mesh_iface, &in_mac, mac_result);
- 
- 	if (ret == -EOPNOTSUPP)
-@@ -571,19 +587,6 @@ static struct nla_policy neigh_policy[NDA_MAX+1] = {
- 	[NDA_PROBES]    = { .type = NLA_U32 },
+ 	/**
+ 	 * @shadowing: if a querier exists, whether it is potentially shadowing
+ 	 *  multicast listeners (i.e. querier is behind our own bridge segment)
+ 	 */
+-	bool shadowing;
++	unsigned char shadowing:1;
  };
  
--static bool ether_addr_valid(const uint8_t *addr)
--{
--	/* no multicast address */
--	if (addr[0] & 0x01)
--		return false;
--
--	/* no zero address */
--	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
--		return false;
--
--	return true;
--}
--
- static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
- {
- 	struct nlattr *tb[NDA_MAX + 1];
+ /**
+@@ -1207,10 +1207,10 @@ struct batadv_priv_mcast {
+ 	u8 flags;
+ 
+ 	/** @enabled: whether the multicast tvlv is currently enabled */
+-	bool enabled;
++	unsigned char enabled:1;
+ 
+ 	/** @bridged: whether the soft interface has a bridge on top */
+-	bool bridged;
++	unsigned char bridged:1;
+ 
+ 	/**
+ 	 * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP
+@@ -1389,7 +1389,7 @@ struct batadv_tp_vars {
+ 	atomic_t dup_acks;
+ 
+ 	/** @fast_recovery: true if in Fast Recovery mode */
+-	bool fast_recovery;
++	unsigned char fast_recovery:1;
+ 
+ 	/** @recover: last sent seqno when entering Fast Recovery */
+ 	u32 recover;
+@@ -2046,10 +2046,10 @@ struct batadv_skb_cb {
+ 	 * @decoded: Marks a skb as decoded, which is checked when searching for
+ 	 *  coding opportunities in network-coding.c
+ 	 */
+-	bool decoded;
++	unsigned char decoded:1;
+ 
+ 	/** @num_bcasts: Counter for broadcast packet retransmissions */
+-	unsigned int num_bcasts;
++	unsigned char num_bcasts;
+ };
+ 
+ /**
 -- 
 2.17.0
 
