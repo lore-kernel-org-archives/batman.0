@@ -1,11 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 19 Apr 2018 21:01:08 +0200
-Message-Id: <20180419190108.11396-2-sven@narfation.org>
-In-Reply-To: <20180419190108.11396-1-sven@narfation.org>
-References: <20180419190108.11396-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Remove unused dentry without
- DEBUGFS
+Return-Path: <luc.vanoostenryck@gmail.com>
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+Date: Tue, 24 Apr 2018 15:18:46 +0200
+Message-Id: <20180424131847.5469-1-luc.vanoostenryck@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix batadv_interface_tx()'s
+ return type
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,58 +13,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: linux-kernel@vger.kernel.org
+Cc: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-The debug_dir variable in the main structures is only accessed when
-CONFIG_BATMAN_ADV_DEBUGFS is enabled. It can be dropped to potentially save
-some bytes of memory.
+The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
+which is a typedef for an enum type, but the implementation in this
+driver returns an 'int'.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fix this by returning 'netdev_tx_t' in this driver too.
+
+Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
 ---
- net/batman-adv/types.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+ net/batman-adv/soft-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 3b3fc146..360357f8 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -215,10 +215,12 @@ struct batadv_hard_iface {
- 	struct batadv_hard_iface_bat_v bat_v;
- #endif
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index edeffcb9f..e6c800b06 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -188,7 +188,7 @@ static void batadv_interface_set_rx_mode(struct net_device *dev)
+ {
+ }
  
-+#ifdef CONFIG_BATMAN_ADV_DEBUGFS
- 	/**
- 	 * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
- 	 */
- 	struct dentry *debug_dir;
-+#endif
- 
- 	/**
- 	 * @neigh_list: list of unique single hop neighbors via this interface
-@@ -1242,10 +1244,12 @@ struct batadv_priv_nc {
- 	/** @work: work queue callback item for cleanup */
- 	struct delayed_work work;
- 
-+#ifdef CONFIG_BATMAN_ADV_DEBUGFS
- 	/**
- 	 * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
- 	 */
- 	struct dentry *debug_dir;
-+#endif
- 
- 	/**
- 	 * @min_tq: only consider neighbors for encoding if neigh_tq > min_tq
-@@ -1598,8 +1602,10 @@ struct batadv_priv {
- 	/** @mesh_obj: kobject for sysfs mesh subdirectory */
- 	struct kobject *mesh_obj;
- 
-+#ifdef CONFIG_BATMAN_ADV_DEBUGFS
- 	/** @debug_dir: dentry for debugfs batman-adv subdirectory */
- 	struct dentry *debug_dir;
-+#endif
- 
- 	/** @forw_bat_list: list of aggregated OGMs that will be forwarded */
- 	struct hlist_head forw_bat_list;
+-static int batadv_interface_tx(struct sk_buff *skb,
++static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 			       struct net_device *soft_iface)
+ {
+ 	struct ethhdr *ethhdr;
 -- 
 2.17.0
 
