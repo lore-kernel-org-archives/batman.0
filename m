@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 24 Apr 2018 15:45:43 +0200
-Message-ID: <2333740.P7S8BcYFuH@bentobox>
-In-Reply-To: <20180424131847.5469-1-luc.vanoostenryck@gmail.com>
-References: <20180424131847.5469-1-luc.vanoostenryck@gmail.com>
+Date: Wed, 25 Apr 2018 19:17:46 +0200
+Message-ID: <5390250.kBDF84BrV5@sven-edge>
+In-Reply-To: <20180318143907.GO2681@otheros>
+References: <20180318093429.18752-1-sven@narfation.org>
+ <20180318143907.GO2681@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7028284.oJHuMbyaZl";
+Content-Type: multipart/signed; boundary="nextPart60989766.P4ykBrfaV3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix batadv_interface_tx()'s
- return type
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Disable
+ CONFIG_BATMAN_ADV_DEBUGFS by default
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,50 +19,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7028284.oJHuMbyaZl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart60989766.P4ykBrfaV3
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 24. April 2018 15:18:46 CEST Luc Van Oostenryck wrote:
-[...]
-> -static int batadv_interface_tx(struct sk_buff *skb,
-> +static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
->  			       struct net_device *soft_iface)
->  {
->  	struct ethhdr *ethhdr;
-> 
+On Sonntag, 18. M=E4rz 2018 15:39:07 CEST Linus L=FCssing wrote:
+> Since this patch is not urgent, would it make sentence to delay
+> this patch for after the next release maybe?
 
-CHECK: Alignment should match open parenthesis
-#76: FILE: net/batman-adv/soft-interface.c:192:
-+static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
-                               struct net_device *soft_iface)
+Patch was now added as 6f5424896782 [1].
 
 Kind regards,
 	Sven
---nextPart7028284.oJHuMbyaZl
+
+[1] https://git.open-mesh.org/batman-adv.git/commit/6f542489678248cc99131f2=
+856158bd2c3989368
+
+--nextPart60989766.P4ykBrfaV3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrfNQcACgkQXYcKB8Em
-e0ZD+A/9GMc5rOQAuWEhpa8dh3fpczfJ7E3JM30mEMbUR7+VEyW7/v3YJoIdIa9D
-xPgdy847X8i7NXrfDbbIsp1XDBXrqjOiz5WAa7sBXEFCj3ZAOLXdKpuicCRp4H5W
-xhGbOGcKCAjkvRYSVBtGjebTHmIlsCM87AUAR/ADuNrOVrAwzbNxPUFGTyyoxfpb
-f689dU5z3C3+s3Lflq3m1H/xOpBfpdbg5Ip/ZsTVFeePJGlee6oWW6VqM99hGb/H
-9cLc810PpacMQB337Lf68cNDU+m43rV0mSm+vw3HyC+ZVPDu1vxiLVZ4VZYzf1BK
-OvHU84mYQMOVIJDHC4BW+1fFcF5JBSk2cDkQ5fmTXZzcGfdL0CjlCoOCmcP7mzal
-JjXJNBc1w/KtaR9zjVe+MIp+ZJi0zJbmWQ5+51pEiXICTok4rNekii7lcklMIeoI
-z4ehD2J/rah47KGk6I/lEg1RcN77MkdyoT7RLcqCuO68jY9inMT992pDkWAxyc9Q
-tR+JkT6E22jC//opaxD4D4QGaJlVkuMxKLWfP90ETU7zG4eVW2J0WnP+1xWkZZWa
-yuVVs9eCgZWUPmMXpWbXdKWZFNlCOwSoca6tQFXTyXpxyIQQJnQDxmhfMdgHGgmj
-f17GctIlA7q+lUdhbdddFCGTJzTxzcn/hc3t/k5/Vojy/B+ySpU=
-=jB6s
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrguDoACgkQXYcKB8Em
+e0bdpRAAz9roOItPC6bhCYXAdfwdyeKOi3ZPEa//plntVPBuUfbhuC8AD9RrT4Yf
+CwF4jSqGO0dhhY3VEqF8SWWlKEiUiGvzcVyz4m/2mhKl8VBp+V7MH2eP2NKnQjJK
+aCSQKMZx1fOdPtLSqbLWXiFuNLs6QSN+rtRcuqwwWbzqETopFV93DZwqFlJCLVmg
+9PMY4hAssdQOVv/xwLOZHaedk+1T+Cp9Slbo5ThX5rUJFVNWuqDJLji8oR3lkp/b
+7mz6eA1RPABVxAT+je1/vNloxpZyGmP126PHFvYTo1j1bxuqZE7xkLTf99sVmXSd
+pZDhp/ZEycpmTltDoXJUjQMIazLb5MsMNjI2oPhLWKE6FtJzWi6z10Q8LrVfR18Q
+ePNg4uvClypiZqyRHoO3/8orJGUekIC29Ix47ORtwmutHxzQEmmtxlhAnrEU6R7+
+Z5EcdVoUGz3n1GQZ5C9u/VD259eqabVgoTw4qt5Z4gVRxzxgGYWq7b/sJvvIpYIV
+EOSSB1EiGsN0zdpGOUmgV2DaJibqql0/0191mKcM6WPcwjApavwtYfm9oJvYH/NS
+X+PEO8gP88pFuEVrwvYdl4OrTBTRBO+So6MQJcEAzAHMqoZmBaylWF4VsKPtk6Uc
+me51rEhj2YlSlgG5U1RI/e54yihDIb263sXfaELf8auHtKBsRjI=
+=JZNH
 -----END PGP SIGNATURE-----
 
---nextPart7028284.oJHuMbyaZl--
+--nextPart60989766.P4ykBrfaV3--
+
+
 
