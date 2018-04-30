@@ -1,15 +1,14 @@
-Return-Path: <luc.vanoostenryck@gmail.com>
-Date: Thu, 26 Apr 2018 22:05:11 +0200
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Message-ID: <20180426200511.j45uth6y5y6ncsj6@ltop.local>
-References: <20180424131847.5469-1-luc.vanoostenryck@gmail.com>
- <2141097.l2ETxyu3Mo@sven-edge>
+Return-Path: <kim25444@naver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2141097.l2ETxyu3Mo@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix batadv_interface_tx()'s
- return type
+Message-ID: <a9d2ad6cdccf75502119116f102e678@cweb28.nm.nhnsystem.com>
+Date: Mon, 30 Apr 2018 23:18:59 +0900
+From: =?utf-8?B?S3dhbmdNaW4gS2lt?=<kim25444@naver.com>
+In-Reply-To: <fcb08b8f86753cc2824011d5cc5349e8@cweb26.nm.nhnsystem.com>
+References: <fcb08b8f86753cc2824011d5cc5349e8@cweb26.nm.nhnsystem.com>
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
+Subject: [B.A.T.M.A.N.] =?utf-8?q?about_mesh_network_with_batman-adv?=
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,23 +18,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, Antonio Quartulli <a@unstable.cc>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Apr 25, 2018 at 07:35:00PM +0200, Sven Eckelmann wrote:
-> On Dienstag, 24. April 2018 15:18:46 CEST Luc Van Oostenryck wrote:
-> > The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-> > which is a typedef for an enum type, but the implementation in this
-> > driver returns an 'int'.
-> > 
-> > Fix this by returning 'netdev_tx_t' in this driver too.
-> > 
-> > Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-> > ---
-> >  net/batman-adv/soft-interface.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Applied as 6bf9e4d39a58 [1] but the alignment was fixed
+SGksIAoKSSBzZXQgdXAgYSB3aXJlbGVzcyBtZXNoIG5ldHdvcmsgYnkgc2V0dGluZyBiYXRtYW4t
+YWR2IG9uIHRocmVlIFJhc3BiZXJyeSBwaWVzLiAKClRoZXJlIHdhcyBubyBwcm9ibGVtIGNvbW11
+bmljYXRpbmcgd2l0aCBlYWNoIG90aGVyLiAocGluZywgaXBlcmYgY2hlY2sgY29tcGxldGVkKQoK
+SG93ZXZlciwgSSBoYXZlIGRpc2FibGVkIG9uZSBvZiB0aGVzZSBiYXRtYW4tYWR2IHNldHRpbmdz
+IGFuZCByZWpvaW5lZCB0aGUgd2lyZWxlc3MgbWVzaCBuZXR3b3JrLiAKCkFzIGEgcmVzdWx0LCBv
+bmx5IHR3byByYXNwYmVycnkgcGllcyB0aGF0IGhhdmUgc2V0IHVwIGJhdG1hbi1hZHYgY29tbXVu
+aWNhdGUuCgppcyB0aGlzIHJpZ2h0PwoKSWYgc28sIGhvdyBkbyBJIGNvbmZpZ3VyZSBpdCBzbyB0
+aGF0IG5vbi1iYXRtYW4tYWR2IG5vZGVzIGFuZCBub2RlcyB3aXRoIGJhdG1hbi1hZHYgZW5hYmxl
+ZCBjb21tdW5pY2F0ZSB3aXRoIGVhY2ggb3RoZXI/CgoKQmVzdCByZWdhcmRzLgoKLS0tCkt3YW5n
+LU1pbiBLaW0oa2ltMjU0NDRAbmF2ZXIuY29tKQorODIxMDU1MjE2Mzkz
 
-Thanks for this,
--- Luc 
+
