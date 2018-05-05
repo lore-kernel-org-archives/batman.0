@@ -1,13 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sat, 5 May 2018 17:46:29 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180505154629.GA22195@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 05 May 2018 22:23:37 +0200
+Message-ID: <4312006.8fiAyFea1e@sven-edge>
+In-Reply-To: <20180505153020.29636-1-linus.luessing@c0d3.blue>
 References: <20180505153020.29636-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="IS0zKkzwUGydFO0o"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20180505153020.29636-1-linus.luessing@c0d3.blue>
+Content-Type: multipart/signed; boundary="nextPart8525173.HkEjPzjcWO";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix TT sync flags for
  intermediate TT responses
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,135 +19,102 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Antonio Quartulli <a@unstable.cc>
+
+--nextPart8525173.HkEjPzjcWO
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+
+On Samstag, 5. Mai 2018 17:30:20 CEST Linus L=FCssing wrote:
+[...]
+> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translat=
+ion-table.c
+> index 0225616d..a95724ea 100644
+> --- a/net/batman-adv/translation-table.c
+> +++ b/net/batman-adv/translation-table.c
+> @@ -2914,6 +2914,41 @@ static bool batadv_tt_global_valid(const void *ent=
+ry_ptr,
+>  }
+> =20
+>  /**
+> + * batadv_tt_get_flags() - get TT flags for a given entry
+> + * @tt_common_entry: the TT entry to get the flags for
+> + * @orig: for a TT global entry the specific node to get the flags for
+> + *
+> + * Return: -ENOENT on error or the TT flags otherwise.
+> + */
+> +static int
+> +batadv_tt_get_flags(struct batadv_tt_common_entry *tt_common_entry,
+> +		    struct batadv_orig_node *orig)
+
+Not sure whether it is a good idea to use the return here for the error cod=
+e=20
+(< 0) and the flags (__u8/enum batadv_tt_client_flags). I will leave the=20
+decision here to Antonio.
+
+[...]
+>   * batadv_tt_tvlv_generate() - fill the tvlv buff with the tt entries fr=
+om the
+>   *  specified tt hash
+>   * @bat_priv: the bat priv with all the soft interface information
+> @@ -2934,6 +2969,7 @@ static void batadv_tt_tvlv_generate(struct batadv_p=
+riv *bat_priv,
+>  	struct batadv_tvlv_tt_change *tt_change;
+>  	struct hlist_head *head;
+>  	u16 tt_tot, tt_num_entries =3D 0;
+> +	int flags;
+>  	u32 i;
+> =20
+>  	tt_tot =3D batadv_tt_entries(tt_len);
+> @@ -2951,8 +2987,12 @@ static void batadv_tt_tvlv_generate(struct batadv_=
+priv *bat_priv,
+>  			if ((valid_cb) && (!valid_cb(tt_common_entry, cb_data)))
+>  				continue;
+> =20
+> +			flags =3D batadv_tt_get_flags(tt_common_entry, cb_data);
+> +			if (flags < 0)
+> +				continue;
+
+The second argument of batadv_tt_get_flags is a little bit tricky here. The=
+=20
+kernel-doc says that cb_data is "data passed to the filter function as=20
+argument" and is of type "void *". But you are now using it here as if woul=
+d=20
+always be of type "struct batadv_orig_node *". This doesn't make problem  f=
+or=20
+now because only two functions are using this argument - luckily they are=20
+either set it to NULL or to "batadv_orig_node *".
+
+I would propose to make it clear that this argument must be=20
+"struct batadv_orig_node *" and not an arbitrary argument which is only use=
+d=20
+by the valid_cb callback.
+
+Kind regards,
+	Sven
+--nextPart8525173.HkEjPzjcWO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlruEskACgkQXYcKB8Em
+e0bYJxAAzAuuO8qLLfIqPejLanm2hw1ty9B9L4eou0/t2TIiTMhWKuOVFJQMgzz6
+vCagFY+th9AFDFA39lb/MjraZ11YUibNjKg+BrW0Ol64IjmbZ2n+r0zXsgKuIP0i
+QRR5MBxFef/XRUqqR/0aBEP6rDQTOwmAiqI+IWl2ZjduflxV7dygvSMlBI90nktq
++ekeW8s9IMPWCk8ih8zUpwl2Bs4ISSrIz0rfrTfB+md49SinyrJfzmlsAIgNu1eW
+u+nbXWTa1b620l8If6lIeFqSKpI0A53TVhCrMREVr8sPKHfSVP19soJXZR3BN2p+
+DGq07ie0ePm6JMiUbafZlPGrvA0DYbE++UlMYQF3SVXxvzVno90lpr6jzqwXaO9R
+KFVG+V6wzV9f2I3eCBTwOrEYH/svyTONN/HTkhnfBnZynqofXeBkpZ/2aX2dTI/6
+Ke9fc7FYtlq8/6EgQiRZFls5y1IY0u4yVS5fEiguQfS6Bk9s+63ycPj/nltHU8PG
+1G5el1lyUJ3wETARkxSp+zQxmDr/A1pFMdVkXRR4ZkaHfdSfxcu9R4ju+Srp52cp
+5G+MNyLYAjwvjIv5PoeCf6n1yZy0Q97oscV5vgV+Hb1fvOSylO6pQiz5kI63st53
+y+9e+tSqM9GsAZ4+lus8A40o7hFa2gR/fvgaH6eJLalTUIsxFhs=
+=cful
+-----END PGP SIGNATURE-----
+
+--nextPart8525173.HkEjPzjcWO--
 
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 
-On Sat, May 05, 2018 at 05:30:20PM +0200, Linus Lüssing wrote:
-> I was able to reproduce the issue with intermediate TT responses in a
-> four node test setup and this patch fixes this issue by ensuring to
-> use the per originator instead of the summarized, OR'd ones.
-
-Reproduction in VMs was a little bit tricky though. I used the
-attached patch to:
-
-A) Disable TT changes attached to OGMs
-B) Enforce TT full table responses
-C) Allow injecting a 'W' flag onto multicast TT entries on
-   selected nodes
-
-With this patch applied I used the following steps to reproduce
-the issue:
-
-1) Prepare a four nodes setup with a line topology:
-   1 - 2 - 3 - 4
-2) Enable IPv6
-3) Start (patched) batman-adv
-4) Node 4: Set multicast_mode to 2
-5) Node 4: Set bat0 down & up
-   -> check that 'W' flag is present in global TT for node 4
-6) Node 3: Set bat0 down & up
-7) Node 1: Check that 'W' flag is now present on
-           multicast entries for both node 3 and 4
-
-With the fix applied step 7 shows no more 'W' flags for node 3.
-
-Regards, Linus
-
---IS0zKkzwUGydFO0o
-Content-Type: text/x-diff; charset=utf-8
-Content-Disposition: attachment; filename="tt-response-flags-debug.patch"
-
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index f2eef43b..cb79a1b8 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -687,7 +687,7 @@ static BATADV_ATTR(gw_sel_class, 0644, batadv_show_gw_sel_class,
- static BATADV_ATTR(gw_bandwidth, 0644, batadv_show_gw_bwidth,
- 		   batadv_store_gw_bwidth);
- #ifdef CONFIG_BATMAN_ADV_MCAST
--BATADV_ATTR_SIF_BOOL(multicast_mode, 0644, NULL);
-+BATADV_ATTR_SIF_UINT(multicast_mode, multicast_mode, 0644, 0, 2, NULL);
- #endif
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- BATADV_ATTR_SIF_UINT(log_level, log_level, 0644, 0, BATADV_DBG_ALL, NULL);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index f141c14e..4218597e 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -820,6 +820,15 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 
- 	ret = true;
- out:
-+	if (is_multicast_ether_addr(addr)) {
-+		if (atomic_read(&bat_priv->multicast_mode) > 1) {
-+			tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
-+			printk("~~~ %s: Forcing wifi flag on multicast entry\n", __func__);
-+		} else {
-+			printk("~~~ %s: Not forcing wifi flag on multicast entry\n", __func__);
-+		}
-+	}
-+
- 	if (in_hardif)
- 		batadv_hardif_put(in_hardif);
- 	if (in_dev)
-@@ -1170,6 +1179,15 @@ batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 	if (!hdr)
- 		return -ENOBUFS;
- 
-+	if (is_multicast_ether_addr(common->addr)) {
-+		if (atomic_read(&bat_priv->multicast_mode) > 1) {
-+			printk("~~~ %s: WIFI flag is %sset\n", __func__,
-+				common->flags & BATADV_TT_CLIENT_WIFI ? "" : "not ");
-+			printk("~~~ %s: flags: %u, WIFI: %u, NOPURGE: %u\n", __func__,
-+				common->flags, BATADV_TT_CLIENT_WIFI, BATADV_TT_CLIENT_NOPURGE);
-+		}
-+	}
-+
- 	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
- 	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
- 	    nla_put_u16(msg, BATADV_ATTR_TT_VID, common->vid) ||
-@@ -3161,8 +3179,8 @@ static bool batadv_send_tt_request(struct batadv_priv *bat_priv,
- 		tt_vlan++;
- 	}
- 
--	if (full_table)
--		tvlv_tt_data->flags |= BATADV_TT_FULL_TABLE;
-+//	if (full_table)
-+	tvlv_tt_data->flags |= BATADV_TT_FULL_TABLE;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv, "Sending TT_REQUEST to %pM [%c]\n",
- 		   dst_orig_node->orig, full_table ? 'F' : '.');
-@@ -3284,6 +3302,8 @@ static bool batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 		if (!tt_len)
- 			goto out;
- 
-+		printk("~~~ %s: generating full table TT response for %pM, req by %pM\n", __func__, req_dst, req_src);
-+
- 		/* fill the rest of the tvlv with the real TT entries */
- 		batadv_tt_tvlv_generate(bat_priv, bat_priv->tt.global_hash,
- 					tt_change, tt_len,
-@@ -3413,6 +3433,8 @@ static bool batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 		if (!tt_len || !tvlv_len)
- 			goto out;
- 
-+		printk("~~~ %s: generating full table TT response for me, req by %pM\n", __func__, req_src);
-+
- 		/* fill the rest of the tvlv with the real TT entries */
- 		batadv_tt_tvlv_generate(bat_priv, bat_priv->tt.local_hash,
- 					tt_change, tt_len,
-@@ -4230,7 +4252,8 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	num_entries = batadv_tt_entries(tvlv_value_len);
- 
- 	batadv_tt_update_orig(bat_priv, orig, tt_vlan, num_vlan, tt_change,
--			      num_entries, tt_data->ttvn);
-+			      0, tt_data->ttvn);
-+//			      num_entries, tt_data->ttvn);
- }
- 
- /**
-
---IS0zKkzwUGydFO0o--
