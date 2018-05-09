@@ -1,16 +1,14 @@
-Return-Path: <a@unstable.cc>
-References: <20180505153020.29636-1-linus.luessing@c0d3.blue>
- <4312006.8fiAyFea1e@sven-edge> <2938343.Lhb7MQrGW1@lafayette>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <8b0bb0a1-5c5b-ebeb-a9f7-23f2ad2ef6f4@unstable.cc>
-Date: Wed, 9 May 2018 03:55:17 +0800
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 09 May 2018 22:08:56 +0800
+Message-ID: <2420912.gZVJyty8xz@lafayette>
+In-Reply-To: <20180506195559.32602-1-me@irrelefant.net>
+References: <20180506195559.32602-1-me@irrelefant.net>
 MIME-Version: 1.0
-In-Reply-To: <2938343.Lhb7MQrGW1@lafayette>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="ReEDW51YoilnnrTPT3SKGdXqYoU2c0Xmb"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix TT sync flags for
- intermediate TT responses
+Content-Type: multipart/signed; boundary="nextPart2105340.yTZFibcTWB";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: mitigate issue when
+ empty vlan is received
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,116 +18,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---ReEDW51YoilnnrTPT3SKGdXqYoU2c0Xmb
-Content-Type: multipart/mixed; boundary="iWQJM9TeddQdaRpR3ECv6Rv6unIarPcBh";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
-Message-ID: <8b0bb0a1-5c5b-ebeb-a9f7-23f2ad2ef6f4@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix TT sync flags for
- intermediate TT responses
-References: <20180505153020.29636-1-linus.luessing@c0d3.blue>
- <4312006.8fiAyFea1e@sven-edge> <2938343.Lhb7MQrGW1@lafayette>
-In-Reply-To: <2938343.Lhb7MQrGW1@lafayette>
-
---iWQJM9TeddQdaRpR3ECv6Rv6unIarPcBh
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
+--nextPart2105340.yTZFibcTWB
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
+On Monday, May 7, 2018 3:55:59 AM HKT Leonardo M=F6rlein wrote:
+> -               if (!vlan)
+> -                       return false;
+> +               if (!vlan) {
+> +                       /* Due to a bug, some originators send TT
+> +                        * announcements for empty vlans. As the receiving
+> +                        * nodes will ignore those empty vlans (they do n=
+ot
+> +                        * add a batadv_orig_node_vlan into the transglob=
+al
+> +                        * for the originating node), crc check will fail
+> +                        * here. To circumvent this issue, we skip the
+> +                        * verification for the vlan if the crc is
+> +                        * equal to 0x00000000.
+> +                        */
+> +                       if (tt_vlan_tmp->crc =3D=3D 0x00000000)
+> +                               continue;
+> +                       else
+> +                               return false;
+> +               }
 
+There are some issues with this approach:
 
-On 09/05/18 03:20, Marek Lindner wrote:
-> On Sunday, May 6, 2018 4:23:37 AM HKT Sven Eckelmann wrote:
->>> * batadv_tt_tvlv_generate() - fill the tvlv buff with the tt entries =
-from
->>> the *  specified tt hash
->>> * @bat_priv: the bat priv with all the soft interface information
->>> @@ -2934,6 +2969,7 @@ static void batadv_tt_tvlv_generate(struct
->>> batadv_priv *bat_priv, struct batadv_tvlv_tt_change *tt_change;
->>> struct hlist_head *head;
->>> u16 tt_tot, tt_num_entries =3D 0;
->>> +       int flags;
->>> u32 i;
->>>
->>> tt_tot =3D batadv_tt_entries(tt_len);
->>> @@ -2951,8 +2987,12 @@ static void batadv_tt_tvlv_generate(struct
->>> batadv_priv *bat_priv, if ((valid_cb) && (!valid_cb(tt_common_entry,
->>> cb_data)))
->>> continue;
->>>
->>> +                       flags =3D batadv_tt_get_flags(tt_common_entry=
-,
->>> cb_data); +                       if (flags < 0)
->>> +                               continue;
->>
->> The second argument of batadv_tt_get_flags is a little bit tricky here=
-=2E The
->> kernel-doc says that cb_data is "data passed to the filter function as=
+ * As you might be aware, a CRC of 0x00000000 is not an invalid or=20
+uninitialized CRC. That means it is conceivable the CRC over the translatio=
+n=20
+table entries and flags results in a CRC of 0x00000000 without any bugs bei=
+ng=20
+present. Applying this patch would lead to introducing a bug in these=20
+conditions.
 
->> argument" and is of type "void *". But you are now using it here as if=
- would
->> always be of type "struct batadv_orig_node *". This doesn't make probl=
-em=20
->> for now because only two functions are using this argument - luckily t=
-hey
->> are either set it to NULL or to "batadv_orig_node *".
->>
->> I would propose to make it clear that this argument must be
->> "struct batadv_orig_node *" and not an arbitrary argument which is onl=
-y used
->> by the valid_cb callback.
->=20
-> I second that concern. An alternative suggestion: Modify=20
-> batadv_tt_local_valid() / batadv_tt_global_valid() to return the flags =
-as=20
-> those functions already distinguish between the local and global case. =
+ * The second concern is about how to deal with 'the bug' (referring to you=
+r=20
+patch comment above).  In your case 'the bug' results in missing TT entries=
+=20
+for a given VLAN plus a CRC of 0x00000000. What if the CRC was 0x00000001 d=
+ue=20
+to some other bug ? Then you're check would totally miss the mark and we're=
+=20
+back at the beginning.
+If we wish to deal with such misbehavior on a scale where we assume the cod=
+e=20
+should be able to deal with garbage values in some or all fields a differen=
+t=20
+approach is needed. Relying on a magic number (CRC 0x00000000) is as bad as=
+=20
+the current behavior (assuming each VLAN has an entry).
 
-> Moreover, you save the extra batadv_tt_global_orig_entry_find() call wh=
-ich=20
-> already happens in  batadv_tt_global_valid().
-
-I like Marek's idea, but I'd suggest to change the name of the
-tt_*_valid() functions to something a bit more generic.
-
-
-Apart from that I agree that that the flags retrieval could directly be
-done within the callback which already knows if we are in the local or
-global case.
+Shortly, I will send a patch to prevent sending an empty VLAN around. Pleas=
+e=20
+note that this patch still is more of a band-aid. We still don't know how t=
+he=20
+empty VLAN came into being in the first place. Plus, that patch won't prote=
+ct=20
+against garbage packets which certainly requires more effort.
 
 Cheers,
+Marek
 
 
---=20
-Antonio Quartulli
-
-
---iWQJM9TeddQdaRpR3ECv6Rv6unIarPcBh--
-
---ReEDW51YoilnnrTPT3SKGdXqYoU2c0Xmb
+--nextPart2105340.yTZFibcTWB
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlryAKUACgkQB6U8WA7y
-zXQh+w/+Nof6i+gdfUem6C/BWYJqaLlIR/X4lfPLjr7fB8wKxmhf2iX3x7qt5HR6
-tx/Ehqf5FSclgM/Pk/z7owQBu/7W0zoFartt98d5yKb6BKMrwmhmaKzpkcVT9VyK
-yE1pt2STu5wzP2cWT/KW7ru5DWmcWQEwGpoFM3km0nkTKj8UgYg+7qbmNhmqzqRt
-JNx6uHyp5NPlBIMdIvZWgCUPtHT/QYnb0/tP1hRZVkFoAFloqIkdkkTHHXja3I5p
-fdh3ZedYBHALvv0UUR4gVGPxjVCzVTT5+wg6iAIgeb0ne2/Bm3UBxb5O0TJ4kqv/
-emcLQthowZPMB8Il8rliPoji5kY0PlbcJRWu/lv6JBfxtPiiG3RTnz30s1IABhkV
-4lJtpWbeHA871I8ZFfeTzDaxkbDTFbdwciqaegJmxvaIlUgM2Lrk3FjhxWvo4h2i
-hZsw7b/GULYy7S4yax9vCs053iuuj7G3SNXwWB6JAVprbIEgvS44i3aCIqnyFrJY
-p21BE6twLjgGV++yCF7dgLg4ttEFCalC5S+PDpIGGbYrIMLSXSQaPjhLHR1k+XlB
-7tlxzUsCeOHPYO2kcuBBGOyvhhYLJnp6Ge5/tBbzY2vKOrwkwcV+LqW3wA8Qmkk4
-PrNJD7SNgcnMl2JS8KXkffucI5RVbHFPn3iTShfOkP7YVScmxcA=
-=uKBc
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlrzAPgACgkQU1VOj+62
+HMAYYQgAusLgHoVXRQjXq+YUUbA/w2+dmEvMDQcLU4hVRLazUIdhF8WJDztA1F3L
+r/EcMsXAGGupCsg8b7CEX4YatpKNNVUEzI2BNdqTRsTLC4V8A6ws/+s+0ct+LjoX
+iHSIPVOv03rjr4uEhULA2aV0iNgNHVGQfDueA5FSPgkW6NW8muiK8UFPgkbcJBXm
+R6BI5KdxYs99/AFMPJOkJlSfvkLqXv8NroodKnllWa9YCrvZRH7Ykxg1XJBvWzBc
+NfBa/yLVX7ctjarQd8xfKdxodeEtddA7IVuFEKR2o7FEGPobDCf+46VDEjOaCxKM
+SFw/UHPaMuOUO9RzIJ2sebZ97oQ92w==
+=ne56
 -----END PGP SIGNATURE-----
 
---ReEDW51YoilnnrTPT3SKGdXqYoU2c0Xmb--
+--nextPart2105340.yTZFibcTWB--
+
+
+
