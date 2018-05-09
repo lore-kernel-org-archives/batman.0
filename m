@@ -1,14 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 09 May 2018 22:08:56 +0800
-Message-ID: <2420912.gZVJyty8xz@lafayette>
-In-Reply-To: <20180506195559.32602-1-me@irrelefant.net>
-References: <20180506195559.32602-1-me@irrelefant.net>
+Return-Path: <me@irrelefant.net>
+References: <20180505153020.29636-1-linus.luessing@c0d3.blue>
+From: me <me@irrelefant.net>
+Message-ID: <119878b4-7ad8-9681-03cc-9c470e1c14a6@irrelefant.net>
+Date: Wed, 9 May 2018 17:08:10 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2105340.yTZFibcTWB";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: mitigate issue when
- empty vlan is received
+In-Reply-To: <20180505153020.29636-1-linus.luessing@c0d3.blue>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: de-LU
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix TT sync flags for
+ intermediate TT responses
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,88 +21,81 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2105340.yTZFibcTWB
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+I recently did a little experimentation on finding the "bad" (gluon)
+nodes from a perspective of the vpn gateways with help of the tool
+tshark. To document those procedure a little, I'll write it down in this
+mail.
 
-On Monday, May 7, 2018 3:55:59 AM HKT Leonardo M=F6rlein wrote:
-> -               if (!vlan)
-> -                       return false;
-> +               if (!vlan) {
-> +                       /* Due to a bug, some originators send TT
-> +                        * announcements for empty vlans. As the receiving
-> +                        * nodes will ignore those empty vlans (they do n=
-ot
-> +                        * add a batadv_orig_node_vlan into the transglob=
-al
-> +                        * for the originating node), crc check will fail
-> +                        * here. To circumvent this issue, we skip the
-> +                        * verification for the vlan if the crc is
-> +                        * equal to 0x00000000.
-> +                        */
-> +                       if (tt_vlan_tmp->crc =3D=3D 0x00000000)
-> +                               continue;
-> +                       else
-> +                               return false;
-> +               }
+Starting point: we have a trace of the mesh-vpn interface from gateway
+with the MAC 88:e6:40:20:50:01 which is named foo.pcap. (~10 sec)
 
-There are some issues with this approach:
+As gluon nodes do not use the "isolation" flag of the translation
+tables, the isolation flag is a good indicator to find affected packets.
+Because the flag is only obviously only inside the TT response packets,
+we need to filter for those. "(batadv.tvlv.tt.flags.type == 0x4) &&
+(batadv.tvlv.tt.change.flags.isolate == 1)"
 
- * As you might be aware, a CRC of 0x00000000 is not an invalid or=20
-uninitialized CRC. That means it is conceivable the CRC over the translatio=
-n=20
-table entries and flags results in a CRC of 0x00000000 without any bugs bei=
-ng=20
-present. Applying this patch would lead to introducing a bug in these=20
-conditions.
+The next issue, when we use only the filters above is, that we see
+forwarded responses twice, so we add a filter to only see the incomming
+responses. To which node the response is forwarded is not really
+important as those nodes are not the affected ones. So we add the filter
+"(eth.dst == 88:e6:40:20:50:01)" to filter the packets directly
+designated for us.
 
- * The second concern is about how to deal with 'the bug' (referring to you=
-r=20
-patch comment above).  In your case 'the bug' results in missing TT entries=
-=20
-for a given VLAN plus a CRC of 0x00000000. What if the CRC was 0x00000001 d=
-ue=20
-to some other bug ? Then you're check would totally miss the mark and we're=
-=20
-back at the beginning.
-If we wish to deal with such misbehavior on a scale where we assume the cod=
-e=20
-should be able to deal with garbage values in some or all fields a differen=
-t=20
-approach is needed. Relying on a magic number (CRC 0x00000000) is as bad as=
-=20
-the current behavior (assuming each VLAN has an entry).
+Now we can get the nexthop from which we are receiving the bad packets
+by observing "eth.src". To sum it up, the following command is useful
+for us:
 
-Shortly, I will send a patch to prevent sending an empty VLAN around. Pleas=
-e=20
-note that this patch still is more of a band-aid. We still don't know how t=
-he=20
-empty VLAN came into being in the first place. Plus, that patch won't prote=
-ct=20
-against garbage packets which certainly requires more effort.
+tshark -r foo.pcap  -Y "(batadv.tvlv.tt.flags.type == 0x4) \
+  && (batadv.tvlv.tt.change.flags.isolate == 1) \
+  && (eth.dst == 88:e6:40:20:50:01)" \
+  -e "eth.src" -Tfields | sort | uniq -c | sort -n
 
-Cheers,
-Marek
+In my case, the output looks like this:
 
+      2 2e:3a:10:c2:4e:5f
+      2 88:e6:40:20:20:01
+      5 88:e6:40:20:40:01
+      9 ba:50:eb:56:50:97
+     11 12:b7:57:22:e7:9f
+     68 88:e6:40:20:70:01
+    129 9e:b9:ba:ee:7e:9f
+    194 96:c5:90:5a:1e:6f
+    216 6e:34:7f:a4:90:a7
+    338 88:e6:40:20:60:01
 
---nextPart2105340.yTZFibcTWB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+So we received 974 bad packets in the capture time. The MACs
+88:e6:40:XX:XX:XX are the MACs of the other gateways, so we do not
+consider them for now, as our aim is to find the bad freifunk routers
+connected to this gateway.
 
------BEGIN PGP SIGNATURE-----
+Lets focus for now on the node 96:c5:90:5a:1e:6f. We now want to figure
+out, which node is the originating node of the TT responses. So the
+first idea would be to use the "batadv.unicast_tvlv.src" field of the
+packages from 96:c5:90:5a:1e:6f. But this is not the originating node of
+the response as intermediate nodes (which maybe answer the query) will
+send the responses on behalf of the node for which they are answering.
+So from "batadv.unicast_tvlv.src" we only receive the information, which
+node was the target of the corresponding request and not which node
+answered. But this information is valuable also as the bad node has to
+be in the path between our nextnode (96:c5:90:5a:1e:6f) and the query
+target. We may use this command:
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlrzAPgACgkQU1VOj+62
-HMAYYQgAusLgHoVXRQjXq+YUUbA/w2+dmEvMDQcLU4hVRLazUIdhF8WJDztA1F3L
-r/EcMsXAGGupCsg8b7CEX4YatpKNNVUEzI2BNdqTRsTLC4V8A6ws/+s+0ct+LjoX
-iHSIPVOv03rjr4uEhULA2aV0iNgNHVGQfDueA5FSPgkW6NW8muiK8UFPgkbcJBXm
-R6BI5KdxYs99/AFMPJOkJlSfvkLqXv8NroodKnllWa9YCrvZRH7Ykxg1XJBvWzBc
-NfBa/yLVX7ctjarQd8xfKdxodeEtddA7IVuFEKR2o7FEGPobDCf+46VDEjOaCxKM
-SFw/UHPaMuOUO9RzIJ2sebZ97oQ92w==
-=ne56
------END PGP SIGNATURE-----
+tshark -r foo.pcap  -Y "(batadv.tvlv.tt.flags.type == 0x4) \
+  && (batadv.tvlv.tt.change.flags.isolate == 1) \
+  && (eth.dst == 88:e6:40:20:50:01) \
+  && (eth.src == 96:c5:90:5a:1e:6f)" \
+  -e "batadv.unicast_tvlv.src" -Tfields | sort | uniq -c | sort -n
 
---nextPart2105340.yTZFibcTWB--
+In my dump the result of the command is:
 
+      1 7a:25:0e:c4:c1:93
+      2 02:a8:70:84:9d:fb
+    191 4a:87:fc:b6:1d:fb
 
+The interpretation of the result is, that there are 3 nodes which for
+which we receive bad packets from the nextnode. So the bad node has to
+somewhere between 96:c5:90:5a:1e:6f and one of the three nodes.
 
+Kind regards,
+Leonardo Mörlein
