@@ -1,17 +1,10 @@
-Return-Path: <freifunk@irrelefant.net>
-References: <20180506195559.32602-1-me@irrelefant.net>
- <2915136.3Ycz4JW85f@sven-edge> <1896302.CpHabpdRIs@sven-edge>
- <2913969.huEjgAY5Wz@sven-edge>
-From: lemoer <freifunk@irrelefant.net>
-Message-ID: <1da124b0-ea99-4d3a-3d55-fbaacd3754f7@irrelefant.net>
-Date: Wed, 9 May 2018 23:34:18 +0200
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <2913969.huEjgAY5Wz@sven-edge>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: de-LU
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: prevent TT request storms by
- not sending inconsistent TT TLVLs
+From: dan <dandenson@gmail.com>
+Date: Wed, 9 May 2018 17:43:56 -0600
+Message-ID: <CAA_JP8VLAE7pFH+1ztUp+ZUhJGFFeLR_cWHz=tduRFHPAYv=3g@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: [B.A.T.M.A.N.] sanity check please
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,33 +14,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On 05/09/2018 10:38 PM, Sven Eckelmann wrote:
-> Wait. When it is a problem of an intermediate node that doesn't have (for 
-> whatever reason) not a valid copy of the entries, shouldn't the intermediate
-> node just ignore the request and not answer it?
+I'm trying to see how many bits I can push across batman-adv.
 
-Yes. It's forwarded here
+My test setup is 1 Proxmox host with 3 ubuntu 16.04 VM's.
 
-https://elixir.bootlin.com/linux/v4.16.8/source/net/batman-adv/translation-table.c#L4245
+VM1
+bat0 (ens19) 192.168.5.1/24
 
-if the check here
+VM2
+bat0 (ens19,ens20) 192.168.5.2/24
 
-https://elixir.bootlin.com/linux/v4.16.8/source/net/batman-adv/translation-table.c#L3199
+VM3
+bat0 (ens20) 192.168.5.3/24
 
-fails. I also wrote a debug patch which adds counters which
-differentiate between crc misses, ttvn misses and other misses. I can
-also prepare them, when it is desired.
+So VM1 and VM3 are on different 'physical' network segments.
 
-> And the next thing is that your commit message is talking about OGMs all the 
-> time. But the OGM TVLV are not filled by the 
-> batadv_tt_prepare_tvlv_global_data but by the 
-> batadv_tt_prepare_tvlv_local_data. I am unable to find out what you actually
-> doing here and why you do it.
 
-Yes. IIRC the checksums in the OGMs are actually causing the issue. The
-checksums in the TT responses are not evaluated for now.
+I'm running iperf3 with VM1 the server and VM3 the client
 
-Kind regards,
-Leonardo Mörlein
+VM1
+iperf3 -s
+VM3
+iperf3 -c 192.168.5.1 -b 10000M -t 60 -P 1
+
+output is 1.75Gbits
+
+-P 99
+
+output is 831Mbps
+
+
+-P 99 *BUT* hitting the 'native' LAN address of 192.168.1.1 (each VM
+has an ens18 on this network)
+
+4.8Gbps
+
+-P 99 from VM2
+
+~1.67Gbps
+
+So I am definitely putting batman-adv in the way and it's having a
+clear impact of throughput.  I've also double checked that killing VM2
+breaks the connection.
+
+Based on the number of retries and how they compound with more
+parallel streams, and that the only substantial CPU used here is
+iperf3 in the VM and virtio on the host, the virtio nic is the
+bottleneck.  Hardware network should likely perform better.
+
+Ultimate goal here is to basically replicate the concept of SPB but
+with a small batman-adv node instead of a switch to replace and
+OSPF/MPLS/VPLS wISP network.
+
+I am running bat0 at mtu 1400 so I wouldn't have to switch out from
+linux bridges in prox but I don't expect that to have a substantial
+effect, maybe a couple % difference.
+
+Has anyone else performed similar tests on hardware/wired connections?
+ There would be point-to-point half-duplex and full duplex wireless
+links but no multipoint 'wifi' style links.
+
+I've also added an 8021q vlan 8 on top of bat0 (ie bat0.8, tagged) and
+batman-adv seems quite happy to transport this VLAN.  VM2 does NOT
+have the vlan config on bat0.
+
+I'm pretty happy with the results here, hoping I'm not missing some
+obvious "In a VM you get abnormally high performance and low CPU"
+situation.  Seeing >1G is great, my maximum links have 1G ports so
+that's the bar.
+
+I'm hoping to compare notes with someone before spending the cash on
+the hardware to do a field test.  That platform would likely be the
+PCEngines APU2 and/or soekris or other hardened x86 device with 3+
+ethernet ports.
