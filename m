@@ -1,9 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed,  9 May 2018 21:07:40 +0200
-Message-Id: <20180509190740.11465-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Avoid race in TT TVLV
- allocator helper
+Date: Wed, 09 May 2018 22:38:46 +0200
+Message-ID: <2913969.huEjgAY5Wz@sven-edge>
+In-Reply-To: <1896302.CpHabpdRIs@sven-edge>
+References: <20180506195559.32602-1-me@irrelefant.net>
+ <2915136.3Ycz4JW85f@sven-edge> <1896302.CpHabpdRIs@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4611914.FMcMCvFUNO";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: prevent TT request storms by
+ not sending inconsistent TT TLVLs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,82 +20,66 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The functions batadv_tt_prepare_tvlv_local_data and
-batadv_tt_prepare_tvlv_global_data are responsible for preparing a buffer
-which can be used to store the TVLV container for TT and add the VLAN
-information to it.
+--nextPart4611914.FMcMCvFUNO
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This will be done in three phases:
+On Mittwoch, 9. Mai 2018 20:20:58 CEST Sven Eckelmann wrote:
+> On Mittwoch, 9. Mai 2018 19:21:32 CEST Sven Eckelmann wrote:
+> [...]
+> > [...]
+> > > diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+> > > index 0225616d..def8d109 100644
+> > > --- a/net/batman-adv/translation-table.c
+> > > +++ b/net/batman-adv/translation-table.c
+> > > @@ -855,7 +855,8 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+> > 
+> > What about batadv_tt_prepare_tvlv_local_data?
+> 
+> Let me rephrase that: Are we sure that this is from intermediate nodes or is 
+> there still the possibility that it is from the actual originator? Regarding 
+> the latter: Should batadv_tt_prepare_tvlv_local_data be modified or will you 
+> wait for Leonardo to debug why it happens in the first place?
 
-1. count the number of VLANs and their entries
-2. allocate the buffer using the counters from the previous step and limits
-   from the caller (parameter tt_len)
-3. insert the VLAN information to the buffer
+Wait. When it is a problem of an intermediate node that doesn't have (for 
+whatever reason) not a valid copy of the entries, shouldn't the intermediate
+node just ignore the request and not answer it? Otherwise the next OGM with 
+the data from batadv_tt_prepare_tvlv_local_data from the actual node will 
+just trigger the next request by the receiver.
 
-The step 1 and 3 operate on a list which contains the VLANs. The access to
-these lists must be protected with an appropriate lock or otherwise they
-might operate on on different entries. This could for example happen when
-another context is adding VLAN entries to this list.
+And the next thing is that your commit message is talking about OGMs all the 
+time. But the OGM TVLV are not filled by the 
+batadv_tt_prepare_tvlv_global_data but by the 
+batadv_tt_prepare_tvlv_local_data. I am unable to find out what you actually
+doing here and why you do it.
 
-This could lead to a buffer overflow in these functions when enough entries
-were added between step 1 and 3 to the VLAN lists that the buffer room for
-the entries (*tt_change) is smaller then the now required extra buffer for
-new VLAN entries.
+Kind regards,
+	Sven
+--nextPart4611914.FMcMCvFUNO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2:
- - adjusted last paragraph because tt_change (third parameter "return")
-   doesn't depend on step 3
+-----BEGIN PGP SIGNATURE-----
 
-This change is completely untested. The issue for this problem can be found
-in https://www.open-mesh.org/issues/354
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrzXFYACgkQXYcKB8Em
+e0bE3hAA0v3tq/5uUZj9Y5f18DI7q4sPBlG78pC9QOhPSUxKLbPpjUwL6v2y76OR
+IVle7zlzPrSNmlrKFU1juv1zziq5hYR9xNWLQLkGhsBtsr2g7d3nmlT5i3aQcx+/
+dpdSEDFkRa88NsE/x6h8TV+rnXKdYTOKvqljAWhNLlm3wHPXrlTgLXdDW62gXb2L
+wklUsQh0IEx2BTcJKGySzvq3sDAeK7f8eNaM5mqkftARyRgsSNlpO8T8n5/SvRTU
+QSFg+KKKQ2XUjStf8YT6DEYqAQnbcgCMv369/uwfgdUIbxWu2sluppzs21XY9f9G
+tyBWIgR5t13/gXvhCKKUqCR2SHDzmKJGPFWmThbEQyU5TlCsMOXW6fwW1ws44K21
+ABtF7KpNdf1BQ6/BspO/7niDtbHA3Nl99INDEu4MPI+fc7peK92DcSa3t29gnx0p
+XLGEZ2M4hHFNFK+w1KSJE7uASHyecIltyH4Tn838NKM15PrXM5OkXgbAwne7zFFS
+LVBbUuYLVXRduuCYZueV2RG7IaHqeiHjSoBdVtAt3O7Utvz7P7juihDnKQFl/WFP
+SIaupBFwUE2+iwAuIjDYK2Cks2K8l+FhlkHAJm8a66J35tqAxzg9UKgTk2NJG+0N
+ucBvB7Kw5DoXXEjydp8OTAi6m1VJ3VTn1SqtKrSobq69yAbkOtY=
+=hqXO
+-----END PGP SIGNATURE-----
 
- net/batman-adv/translation-table.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+--nextPart4611914.FMcMCvFUNO--
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0225616d..7fa3a0a0 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -862,7 +862,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	struct batadv_orig_node_vlan *vlan;
- 	u8 *tt_change_ptr;
- 
--	rcu_read_lock();
-+	spin_lock_bh(&orig_node->vlan_list_lock);
- 	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
- 		num_vlan++;
- 		num_entries += atomic_read(&vlan->tt.num_entries);
-@@ -900,7 +900,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	*tt_change = (struct batadv_tvlv_tt_change *)tt_change_ptr;
- 
- out:
--	rcu_read_unlock();
-+	spin_unlock_bh(&orig_node->vlan_list_lock);
- 	return tvlv_len;
- }
- 
-@@ -936,7 +936,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	u8 *tt_change_ptr;
- 	int change_offset;
- 
--	rcu_read_lock();
-+	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
- 		num_vlan++;
- 		num_entries += atomic_read(&vlan->tt.num_entries);
-@@ -974,7 +974,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	*tt_change = (struct batadv_tvlv_tt_change *)tt_change_ptr;
- 
- out:
--	rcu_read_unlock();
-+	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 	return tvlv_len;
- }
- 
--- 
-2.17.0
+
 
