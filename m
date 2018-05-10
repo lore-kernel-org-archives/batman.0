@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu, 10 May 2018 18:08:04 +0200
-Message-Id: <20180510160804.6632-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 10 May 2018 18:11:35 +0200
+Message-ID: <6716451.vJRGfGX9qT@sven-edge>
+In-Reply-To: <20180510152752.2557-1-mareklindner@neomailbox.ch>
+References: <20180510152752.2557-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2 maint] batman-adv: Fix TT sync flags for
- intermediate TT responses
+Content-Type: multipart/signed; boundary="nextPart2778062.ivOHZ39yz5";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC maint] batman-adv: fix adding VLANs with
+ partial state
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,197 +19,117 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The previous TT sync fix so far only fixed TT responses issued by the
-target node directly. So far, TT responses issued by intermediate nodes
-still lead to the wrong flags being added, leading to CRC mismatches.
+--nextPart2778062.ivOHZ39yz5
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This behaviour was observed at Freifunk Hannover in a 800 nodes setup
-where a considerable amount of nodes were still infected with 'WI'
-TT flags even with (most) nodes having the previous TT sync fix applied.
+On Donnerstag, 10. Mai 2018 17:27:52 CEST Marek Lindner wrote:
+> Whenever a new VLAN is created on top of batman virtual interfaces
+> the batman-adv kernel module creates internal structures to track
+> the status of said VLAN. Amongst other things, the MAC address of
+> the VLAN interface itself has to be stored.
+> 
+> Without this change a VLAN and its infrastructure could be created
+> while the interface MAC address is not stored without triggering
+> any error, thus creating issues in other parts of the code.
+> 
+> Prevent the VLAN from being created if the MAC address can not
+> be stored.
+> 
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-I was able to reproduce the issue with intermediate TT responses in a
-four node test setup and this patch fixes this issue by ensuring to
-use the per originator instead of the summarized, OR'd ones.
+Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framework")
 
-Fixes: fa614fd04692 ("batman-adv: fix tt_global_entries flags update")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+??
 
----
-Changes v2:
-- repurpose current valid_cb callback to get the flags
-  -> saves us a second, duplicate orig-entry hash table lookup
-  -> avoids the "guessing" of TT local vs. TT global / cb_data type
----
- net/batman-adv/translation-table.c | 62 +++++++++++++++++++++++++++++---------
- 1 file changed, 47 insertions(+), 15 deletions(-)
+[....]
+> @@ -604,13 +605,18 @@ int batadv_softif_create_vlan(struct batadv_priv 
+*bat_priv, unsigned short vid)
+>  	/* add a new TT local entry. This one will be marked with the NOPURGE
+>  	 * flag
+>  	 */
+> -	batadv_tt_local_add(bat_priv->soft_iface,
+> -			    bat_priv->soft_iface->dev_addr, vid,
+> -			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+> +	client_added = batadv_tt_local_add(bat_priv->soft_iface,
+> +					   bat_priv->soft_iface->dev_addr, vid,
+> +					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+>  
+>  	/* don't return reference to new softif_vlan */
+>  	batadv_softif_vlan_put(vlan);
+>  
+> +	if (!client_added) {
+> +		batadv_softif_destroy_vlan(bat_priv, vlan);
+> +		return -ENOENT;
+> +	}
+> +
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 78993dd7..511cad0e 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1538,6 +1538,7 @@ batadv_tt_global_orig_entry_find(const struct batadv_tt_global_entry *entry,
-  *  handled by a given originator
-  * @entry: the TT global entry to check
-  * @orig_node: the originator to search in the list
-+ * @flags: a pointer to store flags to (may be NULL)
-  *
-  * find out if an orig_node is already in the list of a tt_global_entry.
-  *
-@@ -1545,7 +1546,8 @@ batadv_tt_global_orig_entry_find(const struct batadv_tt_global_entry *entry,
-  */
- static bool
- batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
--				const struct batadv_orig_node *orig_node)
-+				const struct batadv_orig_node *orig_node,
-+				u8 *flags)
- {
- 	struct batadv_tt_orig_list_entry *orig_entry;
- 	bool found = false;
-@@ -1553,6 +1555,10 @@ batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
- 	orig_entry = batadv_tt_global_orig_entry_find(entry, orig_node);
- 	if (orig_entry) {
- 		found = true;
-+
-+		if (flags)
-+			*flags = orig_entry->flags;
-+
- 		batadv_tt_orig_list_entry_put(orig_entry);
- 	}
- 
-@@ -1731,7 +1737,7 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 			if (!(common->flags & BATADV_TT_CLIENT_TEMP))
- 				goto out;
- 			if (batadv_tt_global_entry_has_orig(tt_global_entry,
--							    orig_node))
-+							    orig_node, NULL))
- 				goto out_remove;
- 			batadv_tt_global_del_orig_list(tt_global_entry);
- 			goto add_orig_entry;
-@@ -2880,27 +2886,49 @@ batadv_tt_req_node_new(struct batadv_priv *bat_priv,
- }
- 
- /**
-- * batadv_tt_local_valid() - verify that given tt entry is a valid one
-+ * batadv_tt_local_get_flags() - verify local tt entry and get flags
-  * @entry_ptr: to be checked local tt entry
-  * @data_ptr: not used but definition required to satisfy the callback prototype
-+ * @flags: a pointer to store flags to
-+ *
-+ * Checks the validity of the given local TT entry. If it is, then the provided
-+ * flags pointer is updated.
-  *
-  * Return: true if the entry is a valid, false otherwise.
-  */
--static bool batadv_tt_local_valid(const void *entry_ptr, const void *data_ptr)
-+static bool batadv_tt_local_get_flags(const void *entry_ptr,
-+				      const void *data_ptr,
-+				      u8 *flags)
- {
- 	const struct batadv_tt_common_entry *tt_common_entry = entry_ptr;
- 
- 	if (tt_common_entry->flags & BATADV_TT_CLIENT_NEW)
- 		return false;
-+
-+	*flags = tt_common_entry->flags;
-+
- 	return true;
- }
- 
--static bool batadv_tt_global_valid(const void *entry_ptr,
--				   const void *data_ptr)
-+/**
-+ * batadv_tt_global_get_flags() - verify global tt entry and get flags
-+ * @entry_ptr: to be checked global tt entry
-+ * @data_ptr: an orig_node object (may be NULL)
-+ * @flags: a pointer to store flags to
-+ *
-+ * Checks the validity of the given global TT entry. If it is, then the provided
-+ * flags pointer is updated either with the common (summed) TT flags if data_ptr
-+ * is NULL or the specific, per originator TT flags otherwise.
-+ *
-+ * Return: true if the entry is a valid, false otherwise.
-+ */
-+static bool batadv_tt_global_get_flags(const void *entry_ptr,
-+				       const void *data_ptr,
-+				       u8 *flags)
- {
- 	const struct batadv_tt_common_entry *tt_common_entry = entry_ptr;
- 	const struct batadv_tt_global_entry *tt_global_entry;
--	const struct batadv_orig_node *orig_node = data_ptr;
-+	const struct batadv_orig_node *orig = data_ptr;
- 
- 	if (tt_common_entry->flags & BATADV_TT_CLIENT_ROAM ||
- 	    tt_common_entry->flags & BATADV_TT_CLIENT_TEMP)
-@@ -2910,7 +2938,7 @@ static bool batadv_tt_global_valid(const void *entry_ptr,
- 				       struct batadv_tt_global_entry,
- 				       common);
- 
--	return batadv_tt_global_entry_has_orig(tt_global_entry, orig_node);
-+	return batadv_tt_global_entry_has_orig(tt_global_entry, orig, flags);
- }
- 
- /**
-@@ -2920,20 +2948,23 @@ static bool batadv_tt_global_valid(const void *entry_ptr,
-  * @hash: hash table containing the tt entries
-  * @tt_len: expected tvlv tt data buffer length in number of bytes
-  * @tvlv_buff: pointer to the buffer to fill with the TT data
-- * @valid_cb: function to filter tt change entries
-+ * @flags_cb: function to filter tt change entries and to return flags
-  * @cb_data: data passed to the filter function as argument
-  */
- static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 				    struct batadv_hashtable *hash,
- 				    void *tvlv_buff, u16 tt_len,
--				    bool (*valid_cb)(const void *,
--						     const void *),
-+				    bool (*flags_cb)(const void *,
-+						     const void *,
-+						     u8 *flags),
- 				    void *cb_data)
- {
- 	struct batadv_tt_common_entry *tt_common_entry;
- 	struct batadv_tvlv_tt_change *tt_change;
- 	struct hlist_head *head;
- 	u16 tt_tot, tt_num_entries = 0;
-+	u8 flags;
-+	bool ret;
- 	u32 i;
- 
- 	tt_tot = batadv_tt_entries(tt_len);
-@@ -2948,11 +2979,12 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 			if (tt_tot == tt_num_entries)
- 				break;
- 
--			if ((valid_cb) && (!valid_cb(tt_common_entry, cb_data)))
-+			ret = flags_cb(tt_common_entry, cb_data, &flags);
-+			if (!ret)
- 				continue;
- 
- 			ether_addr_copy(tt_change->addr, tt_common_entry->addr);
--			tt_change->flags = tt_common_entry->flags;
-+			tt_change->flags = flags;
- 			tt_change->vid = htons(tt_common_entry->vid);
- 			memset(tt_change->reserved, 0,
- 			       sizeof(tt_change->reserved));
-@@ -3247,7 +3279,7 @@ static bool batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 		/* fill the rest of the tvlv with the real TT entries */
- 		batadv_tt_tvlv_generate(bat_priv, bat_priv->tt.global_hash,
- 					tt_change, tt_len,
--					batadv_tt_global_valid,
-+					batadv_tt_global_get_flags,
- 					req_dst_orig_node);
- 	}
- 
-@@ -3376,7 +3408,7 @@ static bool batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 		/* fill the rest of the tvlv with the real TT entries */
- 		batadv_tt_tvlv_generate(bat_priv, bat_priv->tt.local_hash,
- 					tt_change, tt_len,
--					batadv_tt_local_valid, NULL);
-+					batadv_tt_local_get_flags, NULL);
- 	}
- 
- 	tvlv_tt_data->flags = BATADV_TT_RESPONSE;
--- 
-2.11.0
+This function (batadv_softif_destroy_vlan) is static and cannot be reached 
+from here. The definition+declaration of this function follows the function
+were you've added these changes.
+
+[...]
+> @@ -683,9 +690,14 @@ static int batadv_interface_add_vid(struct net_device 
+*dev, __be16 proto,
+>  	 * flag. This must be added again, even if the vlan object already
+>  	 * exists, because the entry was deleted by kill_vid()
+>  	 */
+> -	batadv_tt_local_add(bat_priv->soft_iface,
+> -			    bat_priv->soft_iface->dev_addr, vid,
+> -			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+> +	client_added = batadv_tt_local_add(bat_priv->soft_iface,
+> +					   bat_priv->soft_iface->dev_addr, vid,
+> +					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+> +
+> +	if (!client_added) {
+> +		batadv_softif_destroy_vlan(bat_priv, vlan);
+> +		return -ENOENT;
+> +	}
+
+This looks quite fragile to me. Wouldn't that mean that the vlan would also 
+not be created later? When I remember it correctly, then 
+batadv_interface_add_vid is the only one which would create the internal vlan 
+entries in the first place (beside this odd call in batadv_hard_if_event). The 
+VLAN functionality would therefore be completely broken when such a problem 
+happens.
+
+1. batadv_interface_add_vid is called
+2. vlan is added
+3. local entry is not added for this vlan
+3.1. vlan is removed again
+4. node tries to communicate over this vlan
+
+Btw. it is really odd to see code shared between batadv_interface_add_vid and 
+batadv_softif_create_vlan. Especially because batadv_interface_add_vid calls 
+batadv_softif_create_vlan.
+
+Kind regards,
+	Sven
+--nextPart2778062.ivOHZ39yz5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr0bzcACgkQXYcKB8Em
+e0ZcoxAAqSq7oPNNmYO7MltscPU2JfH62oQVuWDPNFr/dfcu1Cwa7hREieK3WS18
+ZQPm1wO49s+W4jgxN9DlGyRrUB1D5pEZ8zojTRsQqrRMjqwPC3wPIeH2buJ0QrYz
+WZbBSIS5RqXH40K+9L3ZwRZWl74fR3nCimHY80LlNskNFeGGCKDNurgjiNiRld2p
+RU/3Kong8OmiqQaql9ujIg9b5En4/5G8IlcC4m+OOkPrxRASewueYz9qopdJNR0E
+S+ja2QftKmgUNo9R7ZeMuF3/yOTTFEChVOsCgod5nedojHgmwpbqs/pXO1alew4b
+CEp9HaZ5rLOtribXK2Fk2/dtkQdPQ9JQqcuE31Elo3JCOKx5QZprBDlkt9obuEMI
+KMr8L6K9461kUa7zLzrJHStl0uQyMoikQYpXDnwTp0w8pQHbuXC0fuKeQ53edpdt
+ECIEpnygQRjldt0Xneq0x7P3rgtksxiGBQBZgDJa9z7s2xUDSo3Wikus3YV+T0z5
+s9DbhvaKgSZke44BI6Uh6YPD1r/zqZiwJ6HFmvU3HoinyrG63phRg0Sj8d4QiInH
+M/gPikcyAAAAM2tUt9uoQlrIbOS7BwbEZ1kHhZbDl2TlTB6ni5A2vMRsuo8tCsST
+6FCnh5HF+V7dYsjZJ74CCmEKDTUBngngye9H6deqMVhGh36mWdI=
+=DraD
+-----END PGP SIGNATURE-----
+
+--nextPart2778062.ivOHZ39yz5--
+
+
 
