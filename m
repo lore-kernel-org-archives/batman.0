@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 May 2018 16:12:19 +0200
-Message-ID: <2686715.pRiCnA5Fud@sven-edge>
-In-Reply-To: <fa30c030-a38d-904a-dd2d-a337614460ee@unstable.cc>
-References: <20180509190740.11465-1-sven@narfation.org>
- <fa30c030-a38d-904a-dd2d-a337614460ee@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3236156.iECjp2MO8i";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Avoid race in TT
- TVLV allocator helper
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 10 May 2018 22:41:37 +0800
+Message-Id: <20180510144137.32244-1-mareklindner@neomailbox.ch>
+In-Reply-To: <20180506195559.32602-1-me@irrelefant.net>
+References: <20180506195559.32602-1-me@irrelefant.net>
+Subject: [B.A.T.M.A.N.] [RFC v2] batman-adv: prevent TT request storms by
+ not sending inconsistent TT TLVLs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,48 +15,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart3236156.iECjp2MO8i
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+A translation table TVLV changset sent with an OGM consists
+of a number of headers (one per VLAN) plus the changeset
+itself (addition and/or deletion of entries).
 
-On Donnerstag, 10. Mai 2018 15:27:34 CEST Antonio Quartulli wrote:
-[...]
-> > Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> 
-> Acked-by: Antonio Quartulli <a@unstable.cc>
+The per-VLAN headers are used by OGM recipients for consistency
+checks. Said consistency check might determine that a full
+translation table request is needed to restore consistency. If
+the TT sender adds per-VLAN headers of empty VLANs into the OGM,
+recipients are led to believe to have reached an inconsistent
+state and thus request a full table update. The full table does
+not contain empty VLANs (due to missing entries) the cycle
+restarts when the next OGM is issued.
 
-Thanks, applied in 286be89a3349 [1].
+Consequently, when the translation table TVLV headers are
+composed, empty VLANs are to be excluded.
 
-Kind regards,
-	Sven
+Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/286be89a33497ba9000aa5c2960f1f4114953522
---nextPart3236156.iECjp2MO8i
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
 
------BEGIN PGP SIGNATURE-----
+v2:
+ * moved changes into batadv_tt_prepare_tvlv_local_data()
+ * updated 'fixes' commit id
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr0U0MACgkQXYcKB8Em
-e0ZdYBAA1jFs6LXLx6Eu+LCvD8rUb2wKSh7+tRb1NuGz/yibzXWXluJBS54NdTff
-//I01qEaLqA72tI9+xi1uDPFQRWTZFZPJp+PVP39t1pMavg0lmFK1OrEpby2k6tG
-XjvMs1GymHxA6GGn4a9eJsm9Ew1iMoDIKYGUmj4J9Iz+wGnAehmPQ7FUT6cg/30E
-QLILHAhE99I0iAeLebQpUk0FWZwnVf8hqebQbYavWcbL9iogy6Mq4CrD2Ro+G8a/
-Z4jd1lAUOb3SN87ouzMrSeNWVqzQgGdyt20N6Wqu4iOlqFdzTz2ymYAFOVLrJ18r
-qZrgRW3CaIUcKshioE/cdaS+mvz/jOLVCTjFjkTUSWxB6JRQGIl3eGQyY0dvZXZc
-OK5dvNpO/zxtUc5rFVkhppRfR8nrWjgvPGSQW/DTODimpg3GTY8hAS8gKySJCVsY
-OS/C3+YrltbDncCN0EEcG0oewzWMoS+Sjvae3XnCdJUYrj5948oTPKryo6AI36Y5
-tWa+yKhGNI02Om56ysbFC4iJFxAFtcF4hHzAlX9qI9oiRDRBQ9TcqiAq0CGRbZWf
-q0mO+if8qOzi0krl2nStAIP306Ly6FzfstTCKMRuqAy7o1Inyt736tMId/JxOuYS
-p3Uf9mEHV0S3auYtmCsQwxsr0lxH3ncymtxLbpkcupxX84vheio=
-=jCp6
------END PGP SIGNATURE-----
+ net/batman-adv/translation-table.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
---nextPart3236156.iECjp2MO8i--
-
-
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 0225616d..b51c034a 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -931,15 +931,20 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	struct batadv_softif_vlan *vlan;
+ 	u16 num_vlan = 0;
+-	u16 num_entries = 0;
++	u16 vlan_entries = 0;
++	u16 total_entries = 0;
+ 	u16 tvlv_len;
+ 	u8 *tt_change_ptr;
+ 	int change_offset;
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
+ 		num_vlan++;
+-		num_entries += atomic_read(&vlan->tt.num_entries);
++		total_entries += vlan_entries;
+ 	}
+ 
+ 	change_offset = sizeof(**tt_data);
+@@ -947,7 +952,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	/* if tt_len is negative, allocate the space needed by the full table */
+ 	if (*tt_len < 0)
+-		*tt_len = batadv_tt_len(num_entries);
++		*tt_len = batadv_tt_len(total_entries);
+ 
+ 	tvlv_len = *tt_len;
+ 	tvlv_len += change_offset;
+@@ -964,6 +969,10 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
+ 
+-- 
+2.17.0
 
