@@ -1,11 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 10 May 2018 22:41:37 +0800
-Message-Id: <20180510144137.32244-1-mareklindner@neomailbox.ch>
-In-Reply-To: <20180506195559.32602-1-me@irrelefant.net>
-References: <20180506195559.32602-1-me@irrelefant.net>
-Subject: [B.A.T.M.A.N.] [RFC v2] batman-adv: prevent TT request storms by
- not sending inconsistent TT TLVLs
+Date: Thu, 10 May 2018 23:27:52 +0800
+Message-Id: <20180510152752.2557-1-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [RFC maint] batman-adv: fix adding VLANs with
+ partial state
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,81 +16,83 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-A translation table TVLV changset sent with an OGM consists
-of a number of headers (one per VLAN) plus the changeset
-itself (addition and/or deletion of entries).
+Whenever a new VLAN is created on top of batman virtual interfaces
+the batman-adv kernel module creates internal structures to track
+the status of said VLAN. Amongst other things, the MAC address of
+the VLAN interface itself has to be stored.
 
-The per-VLAN headers are used by OGM recipients for consistency
-checks. Said consistency check might determine that a full
-translation table request is needed to restore consistency. If
-the TT sender adds per-VLAN headers of empty VLANs into the OGM,
-recipients are led to believe to have reached an inconsistent
-state and thus request a full table update. The full table does
-not contain empty VLANs (due to missing entries) the cycle
-restarts when the next OGM is issued.
+Without this change a VLAN and its infrastructure could be created
+while the interface MAC address is not stored without triggering
+any error, thus creating issues in other parts of the code.
 
-Consequently, when the translation table TVLV headers are
-composed, empty VLANs are to be excluded.
-
-Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+Prevent the VLAN from being created if the MAC address can not
+be stored.
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
+ net/batman-adv/soft-interface.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-v2:
- * moved changes into batadv_tt_prepare_tvlv_local_data()
- * updated 'fixes' commit id
-
- net/batman-adv/translation-table.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0225616d..b51c034a 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -931,15 +931,20 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index edeffcb9..f7c3a313 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -572,6 +572,7 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ {
  	struct batadv_softif_vlan *vlan;
- 	u16 num_vlan = 0;
--	u16 num_entries = 0;
-+	u16 vlan_entries = 0;
-+	u16 total_entries = 0;
- 	u16 tvlv_len;
- 	u8 *tt_change_ptr;
- 	int change_offset;
++	bool client_added;
+ 	int err;
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+		vlan_entries = atomic_read(&vlan->tt.num_entries);
-+		if (vlan_entries < 1)
-+			continue;
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+@@ -604,13 +605,18 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++	client_added = batadv_tt_local_add(bat_priv->soft_iface,
++					   bat_priv->soft_iface->dev_addr, vid,
++					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+ 
+ 	/* don't return reference to new softif_vlan */
+ 	batadv_softif_vlan_put(vlan);
+ 
++	if (!client_added) {
++		batadv_softif_destroy_vlan(bat_priv, vlan);
++		return -ENOENT;
++	}
 +
- 		num_vlan++;
--		num_entries += atomic_read(&vlan->tt.num_entries);
-+		total_entries += vlan_entries;
- 	}
+ 	return 0;
+ }
  
- 	change_offset = sizeof(**tt_data);
-@@ -947,7 +952,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+@@ -648,6 +654,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct batadv_softif_vlan *vlan;
++	bool client_added;
+ 	int ret;
  
- 	/* if tt_len is negative, allocate the space needed by the full table */
- 	if (*tt_len < 0)
--		*tt_len = batadv_tt_len(num_entries);
-+		*tt_len = batadv_tt_len(total_entries);
- 
- 	tvlv_len = *tt_len;
- 	tvlv_len += change_offset;
-@@ -964,6 +969,10 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 
- 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+		vlan_entries = atomic_read(&vlan->tt.num_entries);
-+		if (vlan_entries < 1)
-+			continue;
+ 	/* only 802.1Q vlans are supported.
+@@ -683,9 +690,14 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 	 * flag. This must be added again, even if the vlan object already
+ 	 * exists, because the entry was deleted by kill_vid()
+ 	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++	client_added = batadv_tt_local_add(bat_priv->soft_iface,
++					   bat_priv->soft_iface->dev_addr, vid,
++					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
 +
- 		tt_vlan->vid = htons(vlan->vid);
- 		tt_vlan->crc = htonl(vlan->tt.crc);
++	if (!client_added) {
++		batadv_softif_destroy_vlan(bat_priv, vlan);
++		return -ENOENT;
++	}
  
+ 	return 0;
+ }
 -- 
 2.17.0
 
