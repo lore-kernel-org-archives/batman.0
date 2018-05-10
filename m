@@ -1,14 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 May 2018 09:13:46 +0200
-Message-ID: <3042023.D3qD38dNFT@sven-edge>
-In-Reply-To: <eba673b5-8caa-11ad-3317-19186263e17a@irrelefant.net>
-References: <eba673b5-8caa-11ad-3317-19186263e17a@irrelefant.net>
+Return-Path: <a@unstable.cc>
+References: <20180506195559.32602-1-me@irrelefant.net>
+ <2915136.3Ycz4JW85f@sven-edge> <1896302.CpHabpdRIs@sven-edge>
+ <2913969.huEjgAY5Wz@sven-edge>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <e46dacd0-0b26-3d5a-3fc4-f15bec1da336@unstable.cc>
+Date: Thu, 10 May 2018 17:12:56 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart95373336.EsWu4fPQZH";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Bug: Missing TT entry leads to
- inconsistent but stable TT state
+In-Reply-To: <2913969.huEjgAY5Wz@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="t9xZNgW7wk844Y2jXxyLJQq6WePIbhIuv"
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: prevent TT request storms by
+ not sending inconsistent TT TLVLs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,55 +21,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: me <me@irrelefant.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart95373336.EsWu4fPQZH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--t9xZNgW7wk844Y2jXxyLJQq6WePIbhIuv
+Content-Type: multipart/mixed; boundary="9Kyk4bfUOhJuKfomvN2GSh1RNeomTxwFf";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <e46dacd0-0b26-3d5a-3fc4-f15bec1da336@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: prevent TT request storms by not
+ sending inconsistent TT TLVLs
+References: <20180506195559.32602-1-me@irrelefant.net>
+ <2915136.3Ycz4JW85f@sven-edge> <1896302.CpHabpdRIs@sven-edge>
+ <2913969.huEjgAY5Wz@sven-edge>
+In-Reply-To: <2913969.huEjgAY5Wz@sven-edge>
 
-On Donnerstag, 10. Mai 2018 03:20:42 CEST me wrote:
-> We have three nodes, which have the following topology:
-> 
-> NDS-Agenda21Haus70 <-> sn04 <-> sn03
-> 
-> Something happened, so they came into a stable (for hours) but inconsistent
-> state of their translation tables:
-> 
-> - sn03 has 11 entries in its translocal table and crc = 0x2b6d458c
-> - sn04 has only 10 entries in the table for sn03 but still crc = 0x2b6d458c
-> - NDS-Agenda21Haus70 has also 10 entries in the table for sn03 but crc = 0x74fb4f96
-> 
-> It seems as like something (erroneously) removed the entry 33:33:00:00:00:01
-> from table on node sn04 without recalculating the crc sum.
+--9Kyk4bfUOhJuKfomvN2GSh1RNeomTxwFf
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-I have copied the bug report to https://www.open-mesh.org/issues/355
 
-Kind regards,
-	Sven
---nextPart95373336.EsWu4fPQZH
+
+On 10/05/18 04:38, Sven Eckelmann wrote:
+>> Let me rephrase that: Are we sure that this is from intermediate nodes=
+ or is=20
+>> there still the possibility that it is from the actual originator? Reg=
+arding=20
+>> the latter: Should batadv_tt_prepare_tvlv_local_data be modified or wi=
+ll you=20
+>> wait for Leonardo to debug why it happens in the first place?
+>=20
+> Wait. When it is a problem of an intermediate node that doesn't have (f=
+or=20
+> whatever reason) not a valid copy of the entries, shouldn't the interme=
+diate
+> node just ignore the request and not answer it? Otherwise the next OGM =
+with=20
+> the data from batadv_tt_prepare_tvlv_local_data from the actual node wi=
+ll=20
+> just trigger the next request by the receiver.
+>=20
+> And the next thing is that your commit message is talking about OGMs al=
+l the=20
+> time. But the OGM TVLV are not filled by the=20
+> batadv_tt_prepare_tvlv_global_data but by the=20
+> batadv_tt_prepare_tvlv_local_data. I am unable to find out what you act=
+ually
+> doing here and why you do it.
+
+I believe batadv_tt_prepare_tvlv_local_data() was the actual function
+that Marek wanted to modify. But we probably spent too much time digging
+into translation-table.c these days and I managed to confuse him enough.
+
+
+Thanks for pointing this out, Sven!
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--9Kyk4bfUOhJuKfomvN2GSh1RNeomTxwFf--
+
+--t9xZNgW7wk844Y2jXxyLJQq6WePIbhIuv
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlrz8SoACgkQXYcKB8Em
-e0brTw/+KmX8QQcoNCELk5B2969dihMPXaC9gNR0ILdqi6r2Gnk7Nb10ljdFtOig
-jLZ5QwgVzxQMKDRiMxV2tXx8y5XRsJY2Zjmq55NheZ8wvB50aEvVeZ3dkFoFxX73
-IyzYPv+/JYixUJsZxz/a/QOrn63HsOTI7xCY71F/yLTUPnyC0LDQxhDfawceW0PR
-yHiyYu+muZYflQNZeC01lerJTsV0CmtR589ZkXK1C2x3AeMeBJKWyuIcvhhIyHXN
-QrrkyCPQw8aJR2JG9z8eQ2XUbaHpcp5XypFnZ6Itu++fWyb+qamJXXejQ9K5h8GJ
-5Qhnw8C9Zt2OJl5Ik1VmcSeCguKxJblUieIKTG1A8Wz0Sas6Y3KQ510yddZ3X64g
-f672VWv2jVGHT2i+g6IvX9BcGm2fm93bB4U/0TVQkhbRJ52Ds+UUu4IzSPlO42XC
-fskvnhQFwLPOAA1uwxN64PSFA9oO5g8wJH5VIX+Mn2Ak3KEeDmoo6N6Y3yIU9Qxp
-GPq4MvrhCgYnSGu2VRVk/iUUQJ19MHa65C9oPXm7+0S2R4t1U+z4TFVAh8oMz1rV
-0MIX6g4wX/qSL03KtRrintc62dPbBaGhBNKT5m9YQZeu1OvYMSGF5I057NwFx1w/
-gJM50tPnYfIm/7SBn95p9eoPswysBIT4M8MUvawgofb4k5XkJ5Y=
-=yfrN
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlr0DRwACgkQB6U8WA7y
+zXTjvg//RiwLrrlJUG+wxc6zULmSjvUPQD9E2NBQ8hdlPji0qIkSbWw6hZClyx+5
+21dsLIe8HCiNfEBDWWzzpty/XEaN+pFOtIcSBAejhG+TRRdX53yDt2SGK3n+jZfd
+rdWb2BVkOR/TwrpQpy0192sucHfNKldgkBZz6nrLHgvN4Kc1N7Q3ikhriGFt1hKF
+hIxI43+8psiTRIzU5A5+ate925SdCq+ANwlYEJrViproxhnUY9hCWGpGcP1PJZgg
+hyoIo1JhVztgFTs18ywyq3ebeSR53tEVdn8xay3pCkXUiTq/sNxMY5npFN7sulDy
++fZfZPCAvIe6m1ZrFEaWjYEJ9al/zlRrQcpnUCTPV2l9iRqnt1eQC9PDiTvRdMlv
+E41IBWCouzdyWYlgN4yg60gogbfliqkMGUZhPckk0oshAFeB04/mBgVrfD2swtnJ
+TeCV3YZVaUcbEonkuktebF/iJbcV9HMzacWcfizVuF6UUYc0lgDD63sFYoRqUvVh
+5FpCYMo3/FvLFlUUMnx7QAscgFW0iA3+TX8varhD5WCTwWdxumq1JmOe6NSxVZxx
+m6+oQpndDolUClWYkkMFab+j26B8Fiu6NhDZWPTgW6CMg9TvLr2zIWyuMgY2GwyT
+ZaTeOlL5r7+d2G9rN9ZeRAr4ci2fIRBrmY/FpDKNgl2fZtTv6dY=
+=8lf7
 -----END PGP SIGNATURE-----
 
---nextPart95373336.EsWu4fPQZH--
-
-
-
+--t9xZNgW7wk844Y2jXxyLJQq6WePIbhIuv--
