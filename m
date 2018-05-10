@@ -1,10 +1,12 @@
-Return-Path: <dandenson@gmail.com>
+Return-Path: <me@irrelefant.net>
+From: me <me@irrelefant.net>
+Message-ID: <eba673b5-8caa-11ad-3317-19186263e17a@irrelefant.net>
+Date: Thu, 10 May 2018 03:20:42 +0200
 MIME-Version: 1.0
-From: dan <dandenson@gmail.com>
-Date: Wed, 9 May 2018 17:43:56 -0600
-Message-ID: <CAA_JP8VLAE7pFH+1ztUp+ZUhJGFFeLR_cWHz=tduRFHPAYv=3g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Subject: [B.A.T.M.A.N.] sanity check please
+Content-Type: multipart/mixed; boundary="------------30A923DD93FB649A89B846F3"
+Content-Language: de-LU
+Subject: [B.A.T.M.A.N.] batman-adv: Bug: Missing TT entry leads to
+ inconsistent but stable TT state
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,78 +16,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I'm trying to see how many bits I can push across batman-adv.
+This is a multi-part message in MIME format.
+--------------30A923DD93FB649A89B846F3
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-My test setup is 1 Proxmox host with 3 ubuntu 16.04 VM's.
+We have three nodes, which have the following topology:
 
-VM1
-bat0 (ens19) 192.168.5.1/24
+NDS-Agenda21Haus70 <-> sn04 <-> sn03
 
-VM2
-bat0 (ens19,ens20) 192.168.5.2/24
+Something happened, so they came into a stable (for hours) but inconsistent
+state of their translation tables:
 
-VM3
-bat0 (ens20) 192.168.5.3/24
+- sn03 has 11 entries in its translocal table and crc = 0x2b6d458c
+- sn04 has only 10 entries in the table for sn03 but still crc = 0x2b6d458c
+- NDS-Agenda21Haus70 has also 10 entries in the table for sn03 but crc = 0x74fb4f96
 
-So VM1 and VM3 are on different 'physical' network segments.
+It seems as like something (erroneously) removed the entry 33:33:00:00:00:01
+from table on node sn04 without recalculating the crc sum.
 
+In the following are the outputs of the table states:
 
-I'm running iperf3 with VM1 the server and VM3 the client
+root@NDS-Agenda21Haus70:~# batctl tr 88:e6:40:20:30:01
+traceroute to 88:e6:40:20:30:01 (88:e6:40:20:30:01), 50 hops max, 20 byte packets
+ 1: 88:e6:40:20:40:01  16.567 ms  20.593 ms  16.324 ms
+ 2: 88:e6:40:20:30:01  20.760 ms  19.826 ms  19.840 ms
 
-VM1
-iperf3 -s
-VM3
-iperf3 -c 192.168.5.1 -b 10000M -t 60 -P 1
+root@NDS-Agenda21Haus70:~# batctl tg | grep 88:e6:40:20:30:01 
+ * 33:33:ff:06:3e:25   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+ * 33:33:ff:00:18:32   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+   33:33:00:00:00:02   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+   01:00:5e:00:00:fc   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+   01:00:5e:00:00:01   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+   33:33:ff:00:00:00   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+ * 33:33:ff:00:30:01   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+ * 2a:d7:9a:06:3e:25   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+ * 33:33:ff:00:01:08   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
+   33:33:00:01:00:03   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x74fb4f96)
 
-output is 1.75Gbits
+[root@sn04]:~ # batctl tg | grep 88:e6:40:20:30:01
+ * 33:33:ff:06:3e:25   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+ * 33:33:ff:00:18:32   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+   33:33:00:00:00:02   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+   01:00:5e:00:00:fc   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+   01:00:5e:00:00:01   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+   33:33:ff:00:00:00   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+ * 33:33:ff:00:30:01   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+ * 2a:d7:9a:06:3e:25   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+ * 33:33:ff:00:01:08   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
+   33:33:00:01:00:03   -1 [....] (  3) 88:e6:40:20:30:01 (  3) (0x2b6d458c)
 
--P 99
+[root@sn03]:~ # batctl tl
+[B.A.T.M.A.N. adv 2018.0-3-g4b2b8c68, MainIF/MAC: mesh_fastd/88:e6:40:20:30:01 (bat0/2a:d7:9a:06:3e:25 BATMAN_IV), TTVN: 3]
+Client             VID Flags    Last seen (CRC       )
+33:33:ff:06:3e:25   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:ff:00:18:32   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:00:00:00:02   -1 [.P....]   0.000   (0x2b6d458c)
+01:00:5e:00:00:fc   -1 [.P....]   0.000   (0x2b6d458c)
+01:00:5e:00:00:01   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:ff:00:00:00   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:ff:00:30:01   -1 [.P....]   0.000   (0x2b6d458c)
+2a:d7:9a:06:3e:25   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:ff:00:01:08   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:00:01:00:03   -1 [.P....]   0.000   (0x2b6d458c)
+33:33:00:00:00:01   -1 [.P....]   0.000   (0x2b6d458c)
 
-output is 831Mbps
+In the attachment, I added a capture of the received full table response from
+sn04 -> NDS-Agenda21Haus70 taken on NDS-Agenda21Haus70. I checked, that this
+is really an intermediate response of sn04 and not a direct response from sn03
+(sn03 is not receiving queries from NDS-Agenda21Haus70).
 
+Kind regards,
+Leonardo Mörlein
 
--P 99 *BUT* hitting the 'native' LAN address of 192.168.1.1 (each VM
-has an ens18 on this network)
+--------------30A923DD93FB649A89B846F3
+Content-Type: application/vnd.tcpdump.pcap;
+ name="missing_tg_entry.pcap"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="missing_tg_entry.pcap"
 
-4.8Gbps
-
--P 99 from VM2
-
-~1.67Gbps
-
-So I am definitely putting batman-adv in the way and it's having a
-clear impact of throughput.  I've also double checked that killing VM2
-breaks the connection.
-
-Based on the number of retries and how they compound with more
-parallel streams, and that the only substantial CPU used here is
-iperf3 in the VM and virtio on the host, the virtio nic is the
-bottleneck.  Hardware network should likely perform better.
-
-Ultimate goal here is to basically replicate the concept of SPB but
-with a small batman-adv node instead of a switch to replace and
-OSPF/MPLS/VPLS wISP network.
-
-I am running bat0 at mtu 1400 so I wouldn't have to switch out from
-linux bridges in prox but I don't expect that to have a substantial
-effect, maybe a couple % difference.
-
-Has anyone else performed similar tests on hardware/wired connections?
- There would be point-to-point half-duplex and full duplex wireless
-links but no multipoint 'wifi' style links.
-
-I've also added an 8021q vlan 8 on top of bat0 (ie bat0.8, tagged) and
-batman-adv seems quite happy to transport this VLAN.  VM2 does NOT
-have the vlan config on bat0.
-
-I'm pretty happy with the results here, hoping I'm not missing some
-obvious "In a VM you get abnormally high performance and low CPU"
-situation.  Seeing >1G is great, my maximum links have 1G ports so
-that's the bar.
-
-I'm hoping to compare notes with someone before spending the cash on
-the hardware to do a field test.  That platform would likely be the
-PCEngines APU2 and/or soekris or other hardened x86 device with 3+
-ethernet ports.
+1MOyoQIABAAAAAAAAAAAAAAABAABAAAAh2zzWkRDAgCqAAAAqgAAADp8+4vWN4jmQCBAAUMF
+RA8yADp8+4vWM4jmQCAwAQCIAAAEAQCEFAMAASttRYwAAAAAAAAAADMz/wY+JQAAAAAAADMz
+/wAYMgAADAAAADMzAAAAAgAAAAAAAAEAXgAA/AAADAAAAAEAXgAAAQAADAAAADMz/wAAAAAA
+AAAAADMz/wAwAQAAAAAAACrXmgY+JQAAAAAAADMz/wABCAAADAAAADMzAAEAAwAA
+--------------30A923DD93FB649A89B846F3--
