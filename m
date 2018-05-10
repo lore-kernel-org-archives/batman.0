@@ -1,15 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 10 May 2018 18:28:47 +0800
-Message-ID: <2268620.23iF8VIPSQ@lafayette>
-In-Reply-To: <1896302.CpHabpdRIs@sven-edge>
-References: <20180506195559.32602-1-me@irrelefant.net>
- <2915136.3Ycz4JW85f@sven-edge> <1896302.CpHabpdRIs@sven-edge>
+Return-Path: <a@unstable.cc>
+References: <20180509190740.11465-1-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <fa30c030-a38d-904a-dd2d-a337614460ee@unstable.cc>
+Date: Thu, 10 May 2018 21:27:34 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1597616.mgob8b9Rja";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: prevent TT request storms by
- not sending inconsistent TT TLVLs
+In-Reply-To: <20180509190740.11465-1-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="LFDVDj86dPhYpke8jEYHjhHNlix1P2stw"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Avoid race in TT
+ TVLV allocator helper
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,56 +19,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
 
---nextPart1597616.mgob8b9Rja
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--LFDVDj86dPhYpke8jEYHjhHNlix1P2stw
+Content-Type: multipart/mixed; boundary="o6Sgx0d3OZHmRSUlTIInYeooWh54TZ4yU";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Message-ID: <fa30c030-a38d-904a-dd2d-a337614460ee@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Avoid race in TT TVLV
+ allocator helper
+References: <20180509190740.11465-1-sven@narfation.org>
+In-Reply-To: <20180509190740.11465-1-sven@narfation.org>
 
-On Thursday, May 10, 2018 2:20:58 AM HKT Sven Eckelmann wrote:
-> On Mittwoch, 9. Mai 2018 19:21:32 CEST Sven Eckelmann wrote:
-> [...]
-> 
-> > [...]
-> > 
-> > > diff --git a/net/batman-adv/translation-table.c
-> > > b/net/batman-adv/translation-table.c index 0225616d..def8d109 100644
-> > > --- a/net/batman-adv/translation-table.c
-> > > +++ b/net/batman-adv/translation-table.c
-> > > @@ -855,7 +855,8 @@ batadv_tt_prepare_tvlv_global_data(struct
-> > > batadv_orig_node *orig_node,> 
-> > What about batadv_tt_prepare_tvlv_local_data?
-> 
-> Let me rephrase that: Are we sure that this is from intermediate nodes or is
-> there still the possibility that it is from the actual originator?
-> Regarding the latter: Should batadv_tt_prepare_tvlv_local_data be modified
-> or will you wait for Leonardo to debug why it happens in the first place?
+--o6Sgx0d3OZHmRSUlTIInYeooWh54TZ4yU
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-We believe to have an idea why this happens in the first place and I have 
-another patch in the works which Leonardo should test in his setup.
+On 10/05/18 03:07, Sven Eckelmann wrote:
+> The functions batadv_tt_prepare_tvlv_local_data and
+> batadv_tt_prepare_tvlv_global_data are responsible for preparing a buff=
+er
+> which can be used to store the TVLV container for TT and add the VLAN
+> information to it.
+>=20
+> This will be done in three phases:
+>=20
+> 1. count the number of VLANs and their entries
+> 2. allocate the buffer using the counters from the previous step and li=
+mits
+>    from the caller (parameter tt_len)
+> 3. insert the VLAN information to the buffer
+>=20
+> The step 1 and 3 operate on a list which contains the VLANs. The access=
+ to
+> these lists must be protected with an appropriate lock or otherwise the=
+y
+> might operate on on different entries. This could for example happen wh=
+en
+> another context is adding VLAN entries to this list.
+>=20
+> This could lead to a buffer overflow in these functions when enough ent=
+ries
+> were added between step 1 and 3 to the VLAN lists that the buffer room =
+for
+> the entries (*tt_change) is smaller then the now required extra buffer =
+for
+> new VLAN entries.
+>=20
+> Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")=
+
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Acked-by: Antonio Quartulli <a@unstable.cc>
+
+Good catch. Unfortunately this issue was caused by my misunderstanding
+of the RCU mechanism when used with lists.
+
 
 Cheers,
-Marek
 
---nextPart1597616.mgob8b9Rja
+--=20
+Antonio Quartulli
+
+
+--o6Sgx0d3OZHmRSUlTIInYeooWh54TZ4yU--
+
+--LFDVDj86dPhYpke8jEYHjhHNlix1P2stw
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlr0Ht8ACgkQU1VOj+62
-HMBPbQf/Sc42q2gadWskQ+v6y7tEc3XvrxlYO8xXkzWuUYV9w5T4SMkfxZ8i2zy5
-eXEA44M2C/vIBG5/fAB5C7qZ4Ty7yTie3XbijT+mVGXiK0bvIBpmLDd3AlA6H/f0
-fxakrmzjZS9oJP1dA+mJmlJagAkK4vOQrwUvQWIprjJyLGQmDtCtDSoupEEkw8Za
-B9eL0NlhH8eH3pQCmh0iEcMzlU+QQs+GLFtqxDyYY8OBRW8eO9cVtpa6q6xHHJac
-7H0MrXi3q9s98nUkJdwGgaavF52hK+aUnL3fIWgWYnfU5r3rrWn59S2g550b1bS1
-91jlJ3P4434jEFxlYwo+RRtYX8Ympw==
-=JsBq
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlr0SMYACgkQB6U8WA7y
+zXS6cg/+JShWRSH2It6NfoSt4kjIEY6iTaLLstprAzIy70hmcUer/rZN5efLFbNw
+kPWJFQvTQqPDOMDEqniUXOrv+D7Fb30Nn1EoOKmfhV/yrLkErQlU+RwPvrBAwH8W
+G1FFfGgsbcTWy3RE5Cirzix0KQtWHU83tG+0sw6VKHChACVC3/vx7vtL5ZNucSxl
+3Wr8RBn3jC7d5lZy7Vczqw1WoKFs3y5WTVLmRfS7BORAJumuWvb+4D67QUwBbMzO
+jiiGzX3X8IdLgB29X9eWGIf6IEiWkB//RS7cMkqaVOsugMxriD7fJwRHGfwJ/+bU
+eKOo8iwDoTO+w0zEGSf8rDs0b/0uoF1CNNbPFWvK7jp/0yNhEWtZr2vbhqQoHHW8
+GWxyt0yi1ushKzTaqFvoQmPsbQ1s9v20dS30zC5WwlOuvsJUsAIKhkyufDngzbPE
+wx2P/hgRBX5rHtMPkRFwhNOA0X/IY4JhP5YE1nrhrqqI4mNr3A5QaExFiUnRTgGM
+z4cn6osF2Ffs1YS18y5yeUnCV3pHdI2hh+JVqr0s3s4FFfR5RHb6p7Q8gMCQ3cD3
+nia4ppu+qAE8dYueyImb1oV6+s4fUIa1rikw+RfvZD0CC2LeoHmo/QplmmHHzmFI
+AgLhgbyePX47BvyotY2QN2hqZ/0XHDncFvzawT7l36OBe0JzbxE=
+=BYL8
 -----END PGP SIGNATURE-----
 
---nextPart1597616.mgob8b9Rja--
-
-
-
+--LFDVDj86dPhYpke8jEYHjhHNlix1P2stw--
