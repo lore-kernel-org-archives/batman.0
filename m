@@ -1,14 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 11 May 2018 18:41:28 +0200
-Message-ID: <2081288.OWl9LaUEiB@sven-edge>
-In-Reply-To: <20180511162307.12255-1-mareklindner@neomailbox.ch>
-References: <20180511162307.12255-1-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2290133.kEnhs37DGX";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [maint v3] batman-adv: prevent TT request storms
- by not sending inconsistent TT TLVLs
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 12 May 2018 02:57:23 +0800
+Message-Id: <20180511185723.20138-1-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [RFC maint v2] batman-adv: fix adding VLANs with
+ partial state
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,70 +16,225 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2290133.kEnhs37DGX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Whenever a new VLAN is created on top of batman virtual interfaces
+the batman-adv kernel module creates internal structures to track
+the status of said VLAN. Amongst other things, the MAC address of
+the VLAN interface itself has to be stored.
 
-On Freitag, 11. Mai 2018 18:23:07 CEST Marek Lindner wrote:
-> A translation table TVLV changset sent with an OGM consists
-> of a number of headers (one per VLAN) plus the changeset
-> itself (addition and/or deletion of entries).
-> 
-> The per-VLAN headers are used by OGM recipients for consistency
-> checks. Said consistency check might determine that a full
-> translation table request is needed to restore consistency. If
-> the TT sender adds per-VLAN headers of empty VLANs into the OGM,
-> recipients are led to believe to have reached an inconsistent
-> state and thus request a full table update. The full table does
-> not contain empty VLANs (due to missing entries) the cycle
-> restarts when the next OGM is issued.
-> 
-> Consequently, when the translation table TVLV headers are
-> composed, empty VLANs are to be excluded.
-> 
-> Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-> 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
-> 
-> v3:
->  * rebased on top of maint
-> 
-> v2:
->  * moved changes into batadv_tt_prepare_tvlv_local_data()
->  * updated 'fixes' commit id
+Without this change a VLAN and its infrastructure could be created
+while the interface MAC address is not stored without triggering
+any error, thus creating issues in other parts of the code.
 
+Prevent the VLAN from being created if the MAC address can not
+be stored.
 
-Added as e4687b4be274 [1]
+Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framework")
 
-Thanks,
-	Sven
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/hard-interface.c |   2 +-
+ net/batman-adv/soft-interface.c | 105 ++++++++++++++++++++++++--------
+ net/batman-adv/soft-interface.h |   3 +-
+ 3 files changed, 83 insertions(+), 27 deletions(-)
 
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/e4687b4be274da6180fc15b327419851fb681ec9
---nextPart2290133.kEnhs37DGX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr1x7gACgkQXYcKB8Em
-e0YkJA/8DTOGbff5BuA2aZCQLkRuWcuUrjAiiIyU+VhIcp/juhBV0l0BAxkBVN7G
-tN2L01J/nQhY4BVoRFsBsQ4/NXtv7NuEJ8xppIqffhSZT6b44zSwuFQ0e1bO2wy4
-pyAoXcl3Am350LCQXpuAeQDrab/yMCaDcbEt+TohPod4zISiI5MRHk3pSkzKZZ9d
-OTgEoqxLVrps765ZKi53+lzH3ki0TzS1pxb7y4flzQDyKgk6GZEwa+50IdXCrf+Z
-gz7nwcMr301H+NhZPJ0JvUZwNT/igRrx5CKm0kg2+lMxg7Lzf7mXTPxVa6A5oXrc
-qRgiB8JfWJp5SUsjRpMUn4uiursmAvZa9JjWOx76kE0NeEEkI9xfEPB7RmEA02yM
-X2KJO/id5TdtiMktoMxXrSs5Ex65kuV+D7O50yFqqZSHUIzJxqUNVj/WgG+Mmmy9
-7vV5EBYOoez18odgnsHZDKQ1zApKghrjFFUAq4AOYeL0/UoQdYfFEWu4dgBGNksO
-x20vinHDy3QcmV5m9NP7ERdcQQYobthH0tn9NSjxCunFzZja2RkM7oPIiDef0OVF
-V22pIueru2xtq8DeDRaLJ3+0+NLM3Ntc7ZVRSgmkrtahfu0ok+9jiB6tIdnPiQ7g
-ZqhEx4bpUM9Cs89Mbb67AkKsl8IkAVwPi6NgvTPNySnBZq3SKiw=
-=VhJ3
------END PGP SIGNATURE-----
-
---nextPart2290133.kEnhs37DGX--
-
-
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index c405d15b..0b22cc4d 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -1000,7 +1000,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	if (batadv_softif_is_valid(net_dev) && event == NETDEV_REGISTER) {
+ 		batadv_sysfs_add_meshif(net_dev);
+ 		bat_priv = netdev_priv(net_dev);
+-		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
++		batadv_softif_create_vlan_late(bat_priv, BATADV_NO_FLAGS);
+ 		return NOTIFY_DONE;
+ 	}
+ 
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index edeffcb9..728d9d40 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -563,16 +563,36 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_softif_create_vlan() - allocate the needed resources for a new vlan
++ * batadv_softif_destroy_vlan() - remove and destroy a softif_vlan object
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vlan: the object to remove
++ */
++static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
++				       struct batadv_softif_vlan *vlan)
++{
++	/* explicitly remove the associated TT local entry because it is marked
++	 * with the NOPURGE flag
++	 */
++	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
++			       vlan->vid, "vlan interface destroyed", false);
++
++	batadv_sysfs_del_vlan(bat_priv, vlan);
++	batadv_softif_vlan_put(vlan);
++}
++
++/**
++ * batadv_softif_create_vlan_early() - allocate the needed resources for a new
++ *  vlan, defer sysfs creation till later
+  * @bat_priv: the bat priv with all the soft interface information
+  * @vid: the VLAN identifier
+  *
+  * Return: 0 on success, a negative error otherwise.
+  */
+-int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
++static int batadv_softif_create_vlan_early(struct batadv_priv *bat_priv,
++					   unsigned short vid)
+ {
+ 	struct batadv_softif_vlan *vlan;
+-	int err;
++	bool client_added;
+ 
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+@@ -590,12 +610,6 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 
+ 	atomic_set(&vlan->ap_isolation, 0);
+ 
+-	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+-	if (err) {
+-		kfree(vlan);
+-		return err;
+-	}
+-
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+ 	kref_get(&vlan->refcount);
+ 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+@@ -604,32 +618,63 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++	client_added = batadv_tt_local_add(bat_priv->soft_iface,
++					   bat_priv->soft_iface->dev_addr, vid,
++					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+ 
+ 	/* don't return reference to new softif_vlan */
+ 	batadv_softif_vlan_put(vlan);
+ 
++	if (!client_added) {
++		batadv_softif_destroy_vlan(bat_priv, vlan);
++		return -ENOENT;
++	}
++
+ 	return 0;
+ }
+ 
+ /**
+- * batadv_softif_destroy_vlan() - remove and destroy a softif_vlan object
++ * batadv_softif_create_vlan_late() - complete softif vlan creation with the
++ *  sysfs entries
+  * @bat_priv: the bat priv with all the soft interface information
+- * @vlan: the object to remove
++ * @vid: the VLAN identifier
++ *
++ * Return: 0 on success, a negative error otherwise.
+  */
+-static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
+-				       struct batadv_softif_vlan *vlan)
++int batadv_softif_create_vlan_late(struct batadv_priv *bat_priv,
++				   unsigned short vid)
+ {
+-	/* explicitly remove the associated TT local entry because it is marked
+-	 * with the NOPURGE flag
+-	 */
+-	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
+-			       vlan->vid, "vlan interface destroyed", false);
++	struct batadv_softif_vlan *vlan;
++	int ret;
++
++	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (!vlan)
++		return -ENOENT;
++
++	ret = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+ 
+-	batadv_sysfs_del_vlan(bat_priv, vlan);
+ 	batadv_softif_vlan_put(vlan);
++	return ret;
++}
++
++/**
++ * batadv_softif_create_vlan() - allocate the needed resources for a new vlan
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vid: the VLAN identifier
++ *
++ * Return: 0 on success, a negative error otherwise.
++ */
++static int batadv_softif_create_vlan(struct batadv_priv *bat_priv,
++				     unsigned short vid)
++{
++	int err;
++
++	err = batadv_softif_create_vlan_early(bat_priv, vid);
++	if (err)
++		return err;
++
++	err = batadv_softif_create_vlan_late(bat_priv, vid);
++	return err;
+ }
+ 
+ /**
+@@ -648,6 +693,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct batadv_softif_vlan *vlan;
++	bool client_added;
+ 	int ret;
+ 
+ 	/* only 802.1Q vlans are supported.
+@@ -683,9 +729,14 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 	 * flag. This must be added again, even if the vlan object already
+ 	 * exists, because the entry was deleted by kill_vid()
+ 	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++	client_added = batadv_tt_local_add(bat_priv->soft_iface,
++					   bat_priv->soft_iface->dev_addr, vid,
++					   BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++
++	if (!client_added) {
++		batadv_softif_destroy_vlan(bat_priv, vlan);
++		return -ENOENT;
++	}
+ 
+ 	return 0;
+ }
+@@ -850,6 +901,10 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	if (ret < 0)
+ 		goto unreg_debugfs;
+ 
++	ret = batadv_softif_create_vlan_early(bat_priv, BATADV_NO_FLAGS);
++	if (ret < 0)
++		goto unreg_debugfs;
++
+ 	return 0;
+ 
+ unreg_debugfs:
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index daf87f07..b8a9a3c8 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -36,7 +36,8 @@ struct net_device *batadv_softif_create(struct net *net, const char *name);
+ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+ bool batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+-int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
++int batadv_softif_create_vlan_late(struct batadv_priv *bat_priv,
++				   unsigned short vid);
+ void batadv_softif_vlan_put(struct batadv_softif_vlan *softif_vlan);
+ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ 						  unsigned short vid);
+-- 
+2.17.0
 
