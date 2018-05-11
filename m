@@ -1,13 +1,9 @@
-Return-Path: <dandenson@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <9364270.jsCkp9vufn@sven-edge>
-References: <CAA_JP8VLAE7pFH+1ztUp+ZUhJGFFeLR_cWHz=tduRFHPAYv=3g@mail.gmail.com>
- <9364270.jsCkp9vufn@sven-edge>
-From: dan <dandenson@gmail.com>
-Date: Fri, 11 May 2018 10:08:19 -0600
-Message-ID: <CAA_JP8U2fg+gYmhSD+bL7ji8bDNMRi2+hEB2zJkD=t=6MDjRBg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] sanity check please
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 12 May 2018 00:23:07 +0800
+Message-Id: <20180511162307.12255-1-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [maint v3] batman-adv: prevent TT request storms by
+ not sending inconsistent TT TLVLs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +13,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-Sven, I'm not actually concerned with the performance here, it's good
-enough *if* this is actually realistic and not a weird effect of the
-virtual environment.
+A translation table TVLV changset sent with an OGM consists
+of a number of headers (one per VLAN) plus the changeset
+itself (addition and/or deletion of entries).
 
-ALL of my gear is limited by a 1Gbps port and I also basically trapped
-all the VMs and virtio ethernet devices to a single CPU.
+The per-VLAN headers are used by OGM recipients for consistency
+checks. Said consistency check might determine that a full
+translation table request is needed to restore consistency. If
+the TT sender adds per-VLAN headers of empty VLANs into the OGM,
+recipients are led to believe to have reached an inconsistent
+state and thus request a full table update. The full table does
+not contain empty VLANs (due to missing entries) the cycle
+restarts when the next OGM is issued.
 
-It's just going to cost me $400-$500 in hardware purchases to take the
-next step.
+Consequently, when the translation table TVLV headers are
+composed, empty VLANs are to be excluded.
 
-On Fri, May 11, 2018 at 12:06 AM, Sven Eckelmann <sven@narfation.org> wrote:
-> On Donnerstag, 10. Mai 2018 01:43:56 CEST dan wrote:
-> [...]
->> I'm running iperf3 with VM1 the server and VM3 the client
->>
->> VM1
->> iperf3 -s
->> VM3
->> iperf3 -c 192.168.5.1 -b 10000M -t 60 -P 1
->>
->> output is 1.75Gbits
->>
->> -P 99
->>
->> output is 831Mbps
->>
->>
->> -P 99 *BUT* hitting the 'native' LAN address of 192.168.1.1 (each VM
->> has an ens18 on this network)
->>
->> 4.8Gbps
->>
->> -P 99 from VM2
->>
->> ~1.67Gbps
-> [...]
->
-> Please make sure that you are *not* using fragmented packets and that you have
-> the flow dissector support enabled for batman-adv unicast packets [1]. And
-> check your RPS/XPS settings.
->
-> Kind regards,
->         Sven
->
-> [1] https://patchwork.open-mesh.org/cover/17240/
+Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+
+v3:
+ * rebased on top of maint
+
+v2:
+ * moved changes into batadv_tt_prepare_tvlv_local_data()
+ * updated 'fixes' commit id
+
+ net/batman-adv/translation-table.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 23f9c212..39865513 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -931,15 +931,20 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	struct batadv_softif_vlan *vlan;
+ 	u16 num_vlan = 0;
+-	u16 num_entries = 0;
++	u16 vlan_entries = 0;
++	u16 total_entries = 0;
+ 	u16 tvlv_len;
+ 	u8 *tt_change_ptr;
+ 	int change_offset;
+ 
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
+ 		num_vlan++;
+-		num_entries += atomic_read(&vlan->tt.num_entries);
++		total_entries += vlan_entries;
+ 	}
+ 
+ 	change_offset = sizeof(**tt_data);
+@@ -947,7 +952,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	/* if tt_len is negative, allocate the space needed by the full table */
+ 	if (*tt_len < 0)
+-		*tt_len = batadv_tt_len(num_entries);
++		*tt_len = batadv_tt_len(total_entries);
+ 
+ 	tvlv_len = *tt_len;
+ 	tvlv_len += change_offset;
+@@ -964,6 +969,10 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
+ 
+-- 
+2.17.0
+
