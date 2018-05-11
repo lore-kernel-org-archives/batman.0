@@ -1,16 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 11 May 2018 23:58:21 +0800
-Message-ID: <2210566.XQyRl1hKcV@lafayette>
-In-Reply-To: <2798092.n9DkCtfipy@sven-edge>
-References: <20180506195559.32602-1-me@irrelefant.net>
- <20180510144137.32244-1-mareklindner@neomailbox.ch>
- <2798092.n9DkCtfipy@sven-edge>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1802818.6iu6dTKFpL";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v2] batman-adv: prevent TT request storms
- by not sending inconsistent TT TLVLs
+In-Reply-To: <9364270.jsCkp9vufn@sven-edge>
+References: <CAA_JP8VLAE7pFH+1ztUp+ZUhJGFFeLR_cWHz=tduRFHPAYv=3g@mail.gmail.com>
+ <9364270.jsCkp9vufn@sven-edge>
+From: dan <dandenson@gmail.com>
+Date: Fri, 11 May 2018 10:08:19 -0600
+Message-ID: <CAA_JP8U2fg+gYmhSD+bL7ji8bDNMRi2+hEB2zJkD=t=6MDjRBg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [B.A.T.M.A.N.] sanity check please
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +17,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1802818.6iu6dTKFpL
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Sven, I'm not actually concerned with the performance here, it's good
+enough *if* this is actually realistic and not a weird effect of the
+virtual environment.
 
-On Thursday, May 10, 2018 11:50:48 PM HKT Sven Eckelmann wrote:
-> Please submit it on top of the maint branch before submitting it the next
-> time. The rcu_read_lock isn't there anymore.
+ALL of my gear is limited by a 1Gbps port and I also basically trapped
+all the VMs and virtio ethernet devices to a single CPU.
 
-I did not intend this patch to go into maint (hence the missing maint subject 
-prefix) as I considered that to be more of a sanity check. The "fix adding 
-VLANs with partial state" is the real fix.
+It's just going to cost me $400-$500 in hardware purchases to take the
+next step.
 
-Though, I am fine with maint too.
-
-Cheers,
-Marek
-
---nextPart1802818.6iu6dTKFpL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlr1vZ0ACgkQU1VOj+62
-HMDb6wf/eRzsg9F6+QIUuF6ZJEiVbmH6OEVI/GtkUQGJFbRlNOyQZqicpsPW4JwZ
-aA8CqmaV9e3ULoMKASaDoOaToxDkWfjtqPSqve/73vRgFIktfzjwgp7VqJTSps8I
-cyXrGyHCNNLbrnkbhsatQqtZNWnrTVPZSfLqw0ScRui9VX9jd1grlYIqs1cJvd/a
-ezhTIO9Daf6D/miECu/onZy/CZuQFUHVpa2jleY7srDfuybbE9Kg+8ZfYYCrZE4x
-fUKNYjdmwtLtxdUMP2LwblIumWu46w6nYNCdOLGyB5F5CAI9GVhNbZuG1+FcV9VR
-TuXlsQzmub9TXo/zJsURXyOPgzA4FA==
-=gP4t
------END PGP SIGNATURE-----
-
---nextPart1802818.6iu6dTKFpL--
-
-
-
+On Fri, May 11, 2018 at 12:06 AM, Sven Eckelmann <sven@narfation.org> wrote:
+> On Donnerstag, 10. Mai 2018 01:43:56 CEST dan wrote:
+> [...]
+>> I'm running iperf3 with VM1 the server and VM3 the client
+>>
+>> VM1
+>> iperf3 -s
+>> VM3
+>> iperf3 -c 192.168.5.1 -b 10000M -t 60 -P 1
+>>
+>> output is 1.75Gbits
+>>
+>> -P 99
+>>
+>> output is 831Mbps
+>>
+>>
+>> -P 99 *BUT* hitting the 'native' LAN address of 192.168.1.1 (each VM
+>> has an ens18 on this network)
+>>
+>> 4.8Gbps
+>>
+>> -P 99 from VM2
+>>
+>> ~1.67Gbps
+> [...]
+>
+> Please make sure that you are *not* using fragmented packets and that you have
+> the flow dissector support enabled for batman-adv unicast packets [1]. And
+> check your RPS/XPS settings.
+>
+> Kind regards,
+>         Sven
+>
+> [1] https://patchwork.open-mesh.org/cover/17240/
