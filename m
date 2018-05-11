@@ -1,11 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 11 May 2018 08:13:09 +0200
-Message-ID: <4477321.n6vKnkidQF@sven-edge>
-In-Reply-To: <20180510174428.8646-1-linus.luessing@c0d3.blue>
+Date: Fri, 11 May 2018 15:12:01 +0200
+Message-ID: <3502293.18K6qFWs9T@sven-edge>
+In-Reply-To: <4477321.n6vKnkidQF@sven-edge>
 References: <20180510174428.8646-1-linus.luessing@c0d3.blue>
+ <4477321.n6vKnkidQF@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2317850.DHkZhexcBF";
+Content-Type: multipart/signed; boundary="nextPart1662740.l4Y9KIIn2A";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v3 maint] batman-adv: Fix TT sync flags
  for intermediate TT responses
@@ -20,57 +21,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2317850.DHkZhexcBF
+--nextPart1662740.l4Y9KIIn2A
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Donnerstag, 10. Mai 2018 19:44:28 CEST Linus L=FCssing wrote:
-[...]
-> + * @flags: a pointer to store TT flags for the given @orig_node and @ent=
-ry to
-[...]
-> + * @flags: a pointer to store TT flags for this client to
-[...]
-> + * @flags: a pointer to store TT flags to
+On Freitag, 11. Mai 2018 08:13:09 CEST Sven Eckelmann wrote:
+> On Donnerstag, 10. Mai 2018 19:44:28 CEST Linus L=FCssing wrote:
+> [...]
+> > + * @flags: a pointer to store TT flags for the given @orig_node and @e=
+ntry to
+> [...]
+> > + * @flags: a pointer to store TT flags for this client to
+> [...]
+> > + * @flags: a pointer to store TT flags to
+>=20
+> Antonio wanted to have some changes here. From IRC:
+>=20
+> <ecsv> ordex: any objections to T_X's last patch version? https://patchwo=
+rk.open-mesh.org/patch/17355/
+> <ordex> hm is this correct: "@flags: a pointer to store TT flags for the =
+given @orig_node and @entry to" ?
+> <ordex> entry to ?
+> <ordex> the rest looks ok
+> <ecsv> maybe "@flags: a pointer to store TT flags of the given @orig_node=
+ and @entry" is better ?
+> <ordex> ecsv: maybe ""@flags: a pointer to store TT flags for the given @=
+entry received from @orig_node"
 
-Antonio wanted to have some changes here. From IRC:
+Added as d65daee8617b [1] with the requested changes to the @flags=20
+documentation from Antonio
 
-<ecsv> ordex: any objections to T_X's last patch version? https://patchwork=
-=2Eopen-mesh.org/patch/17355/
-<ordex> hm is this correct: "@flags: a pointer to store TT flags for the gi=
-ven @orig_node and @entry to" ?
-<ordex> entry to ?
-<ordex> the rest looks ok
-<ecsv> maybe "@flags: a pointer to store TT flags of the given @orig_node a=
-nd @entry" is better ?
-<ordex> ecsv: maybe ""@flags: a pointer to store TT flags for the given @en=
-try received from @orig_node"
-
-Kind regards,
+Thanks,
 	Sven
---nextPart2317850.DHkZhexcBF
+
+[1] https://git.open-mesh.org/batman-adv.git/commit/d65daee8617b29c1ddcc949=
+ce3a5ec24f7a1e1af
+--nextPart1662740.l4Y9KIIn2A
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr1NHUACgkQXYcKB8Em
-e0b5TBAAtoIZF7RTdiQb+7dbPOgZiFRVkQ5iMGGiBkqLNYgufI5wgEbS5ZzjN3er
-REzq5b8xaYo+5VEgInnZsE3UqWdSQHbrmBzc3j2PbXWxmzBH5IvWHY7SOz6PDHVW
-n3voRHWOAD+TDtFr5RZsINj1f+GJe6P2X4OrRs4YhVS9h+/Z81Ns/5ksDjoe59vn
-ufD48Wd7kcnJPbftIwb7d7fAAUXNo38/RtS0pv3QrkwpZ4C4WPnI6hvHf4hJZ4Lr
-RwuqtIm8b64DgJwg2QAtH3kPWCkhkhGwa3+rgzY7MnAHG27KEqAvJZLV2P7rAPk7
-N/1kEE+FhQVUyNED95Mx2/PkvJVQYX6uMtK+n7LJfTOi6/WA+O836ATMZ8xICtlp
-ps8yhIdBQhu9045+Io6Wv7B2fJ+Dy9K5safVdITGbwk3oeUzoJh2GiGy7PTUaiYr
-Zk0bZKN9zrBilUdP6wubVOtDoFZa0IoVzm+jCok8ARsUh0wOjLgguP1m/ZMmDctU
-BhOZ+6nRwDCWJ9c6adquQ3G1IJbtMgJ1T7nDSG8A5HVQFT4meLfDdMQSpPyI2moC
-PhjNoVruk43ybTcOXA74b1TGhS0/7h42P4L+E8OiITF1QslBdR8gV8UcmzfRqQ2j
-Z/7HqVjXBdsTnpkEIXQ6euGkjtwvIKbqS5i64ah7LWqe7YDuH3M=
-=wBmE
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr1lqEACgkQXYcKB8Em
+e0b/QA/+IGfU8djhznQTV9FqF73my4BvZ6VYeHvzYg+9iaWEeuqsdH4hpW2h9eZ+
+LGCjVigsD0nkKtWD2BquDmk0jRAxSfm5xBc135ijM9TcDwehOukDi2wlhyWfiwQ8
+O5zI4rB7VHRTw2wQzAa4H8YTEXXtEVEOn0kRceiMfYuE+35X4akZrndlYyE0Fdqd
+2GGCl/g36v8Efcv//3eWdRgehnEeIP9oEmE0e/6M4VE4UoktFUEpxvk3DKi9Rjm+
+ADV9xSphx1ydxbdNp8C5bZt6H8b72ggSHGwreuJQwce6peJHDvYLoH2L+93tIGcR
+uUdKKRv8qf7k13VAlUlMR2BQY3la3V+gGixALUEWGvfsWEAlqiaWZqyFakPgdBcJ
+KUC1c72f09o7c9KqH1ccVY+avm/67VrnH+FL1zDFKsIngSo4yDvpVvmIZ+wKVX7U
+QBFr+fa2XKuZqC/Lu/iprAPAG5hCFFdgYG9MaU4D2LriamQ3CLLu7hlQnARLV5nm
+JcNUnhwL9IFAVf6mFqK3mCI/boUDrvCMx+Pf+RNRDEhChmmkKsNooCUGVz4Xk/8j
+nwvF6OVTfzfFBVPjaSCDLBz+bSzHyDq/BDf7YVLCwdBHQLQFriG5VWobScryQ5N5
+Ut8MRQj4EcNajnaaiWr+VXHrkroVjc1bexE7uiN8eaJmwd4603U=
+=k3Hx
 -----END PGP SIGNATURE-----
 
---nextPart2317850.DHkZhexcBF--
+--nextPart1662740.l4Y9KIIn2A--
 
 
 
