@@ -1,14 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 13 May 2018 06:26:05 +0800
-Message-ID: <8297905.x1mjbtJKAa@lafayette>
-In-Reply-To: <20180507013823.739-2-linus.luessing@c0d3.blue>
-References: <20180507013823.739-1-linus.luessing@c0d3.blue>
- <20180507013823.739-2-linus.luessing@c0d3.blue>
+Return-Path: <a@unstable.cc>
+References: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <8089f30f-da72-1e7f-1d7c-5fe5249117e1@unstable.cc>
+Date: Sun, 13 May 2018 06:28:38 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1671474.3FgFobYie0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 1/2] batman-adv: Snoop DHCPACKs for DAT
+In-Reply-To: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: enable B.A.T.M.A.N. V
+ compilation by default
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,92 +19,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart1671474.3FgFobYie0
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK
+Content-Type: multipart/mixed; boundary="4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <8089f30f-da72-1e7f-1d7c-5fe5249117e1@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: enable B.A.T.M.A.N. V
+ compilation by default
+References: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+In-Reply-To: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+
+--4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday, May 7, 2018 9:38:22 AM HKT Linus L=FCssing wrote:
->  include/uapi/linux/batadv_packet.h     |  48 ++++++
->  net/batman-adv/distributed-arp-table.c | 296
-> +++++++++++++++++++++++++++++++++ net/batman-adv/distributed-arp-table.h =
-|=20
-> 11 ++
->  net/batman-adv/soft-interface.c        |  11 +-
->  4 files changed, 364 insertions(+), 2 deletions(-)
->=20
-> diff --git a/include/uapi/linux/batadv_packet.h
-> b/include/uapi/linux/batadv_packet.h index 894d8d2f..7ef7b519 100644
-> --- a/include/uapi/linux/batadv_packet.h
-> +++ b/include/uapi/linux/batadv_packet.h
-> @@ -630,6 +630,54 @@ struct batadv_tvlv_mcast_data {
->         __u8 reserved[3];
->  };
->=20
-> +enum batadv_bootpop {
-> +       BATADV_BOOTREQUEST      =3D 1,
-> +       BATADV_BOOTREPLY        =3D 2,
-> +};
-> +
-> +enum batadv_boothtype {
-> +       BATADV_HTYPE_ETHERNET   =3D 1,
-> +};
-> +
-> +enum batadv_dhcpoptioncode {
-> +       BATADV_DHCP_OPT_PAD             =3D 0,
-> +       BATADV_DHCP_OPT_MSG_TYPE        =3D 53,
-> +       BATADV_DHCP_OPT_END             =3D 255,
-> +};
-> +
-> +enum batadv_dhcptype {
-> +       BATADV_DHCPDISCOVER     =3D 1,
-> +       BATADV_DHCPOFFER        =3D 2,
-> +       BATADV_DHCPREQUEST      =3D 3,
-> +       BATADV_DHCPDECLINE      =3D 4,
-> +       BATADV_DHCPACK          =3D 5,
-> +       BATADV_DHCPNAK          =3D 6,
-> +       BATADV_DHCPRELEASE      =3D 7,
-> +       BATADV_DHCPINFORM       =3D 8,
-> +};
+On 13/05/18 06:24, Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-Can we shorten these definitions by only listing those that are used by the=
-=20
-code below ?
+Acked-by: Antonio Quartulli <a@unstable.cc>
 
 
-> @@ -1130,6 +1133,7 @@ batadv_dat_arp_create_reply(struct batadv_priv
-> *bat_priv, __be32 ip_src, return NULL;
->=20
->         skb_reset_mac_header(skb);
-> +       skb_set_network_header(skb, ETH_HLEN);
->=20
->         if (vid & BATADV_VLAN_HAS_TAG)
->                 skb =3D vlan_insert_tag(skb, htons(ETH_P_8021Q),
+Once this change will make its way through the openwrt-routing feed,
+people will finally be able to enable BATMAN_V without recompiling the
+batman-adv package!
 
-Might be better to move the skb_set_network_header() call into=20
-batadv_dat_put_pairs() where it is needed by skb_network_offset() ?
 
 Cheers,
-Marek
---nextPart1671474.3FgFobYie0
+
+--=20
+Antonio Quartulli
+
+
+--4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2--
+
+--WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlr3af0ACgkQU1VOj+62
-HMBaVAgAkWfwkpRBuvQzpCgKQMjiQGg1g/Rg7PdeZn1jjdE1xBrf+RJftsaoGEcy
-BCkTcLeOvPsiPkJhEwQKMw4u6UrGlbe3pOX6R/ZSXAxNPoVIFQQ0DGVYqlZMZMwc
-o17qFh0yp8uV8Do7XQEjEcOaDk2gs2IznGcCaHkbDvEJuHP4QNnppt5Eg9sDcE58
-uNnvzEb7Q2PnMEbFMn2mVWIdi9Qmrh/xK1nQ6gUT7a2Bz+eOnt1qeThptUd/n3ec
-NM0D07Me17zvqCwrNOGYd5uIieQkhr4dU29c06AdnLjQuqPfXAfb/O6IP6Z/Qs0B
-GZ2T8cIR2J7LV6P7t1dSS+m4ZAqevw==
-=zCQA
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlr3apYACgkQB6U8WA7y
+zXR/oA/+N6ufvkzjm+vUlGH6zBfSjt0iK6E9y3F0jRWx8FQRY6pomWk4Lck2qptt
+B0Tk4/c9UT7ue+reeyV8716qaH7sWnRk8cqjuIYvPTJz519dR8+A6ULmX5dsjwPc
+BXKGP647RGkNUCAxfcu75cR8wFAawp4GJOsukSPwrsHrMT5ZiHHFKjJoPHofpc/K
+Y3HTpvUSepDaRzUCpssGJJZd6YyAwOIkLsFRXx241t4U7IKTcyNX1Ddm1Nww9LZy
+wOCIlSfcK766ndLM6eLGCEU49BGt84GZgcYz3KOgXaD5X/FaS33zIss4pVycUqPr
+PauUDZPU0p+KAltvWPhXqtR3Kp5OjWLNGy31Ugsl4LQ85ddPtIcExwi03AAmV/nD
+feUZXBgcZIi26QlULk3ef2CuRpV8BdVCsReFBVyTFc9xwm4ghDoB61GrJD1wiHTn
+9NZTke0E8tdrvQ13iWvAGIUwH/xMO6Z0YLFgQ5TDEtlm58NpvePPxxipzR5NIDTV
+mDEpti3qv4+aCJsuSHl/EvTuRYYEQ7miyqx1nrdMizZVkLmw+c1T2tes+eBc9Nvy
+NR+ZGiyWCP4qeXZvhRk+PuiAJMjUFbiDt8kPf0Uq8R0375ueLY/ZSzAfxYv5/WtG
+dlkG9fzTd8aHkgktpsa2KdANgjzez7ooiqTL/YMiAxjL/8yRmZU=
+=yiLJ
 -----END PGP SIGNATURE-----
 
---nextPart1671474.3FgFobYie0--
-
-
-
+--WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK--
