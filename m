@@ -1,15 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 May 2018 13:47:40 +0200
-Message-ID: <1825510.S1p3h2ZCDE@sven-edge>
-In-Reply-To: <fa4a5de8-9d10-11db-b758-745ce9f187e1@unstable.cc>
-References: <20180512220223.3039-1-mareklindner@neomailbox.ch>
- <2624592.SrqEg3jeUP@sven-edge>
- <fa4a5de8-9d10-11db-b758-745ce9f187e1@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4289191.4oDlaLLeWm";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: disable ethtool link speed
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 14 May 2018 06:38:49 +0800
+Message-Id: <20180513223849.14636-1-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: disable ethtool link speed
  detection when auto negotiation off
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,66 +13,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart4289191.4oDlaLLeWm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Virtual interface drivers such as tun / tap interfaces, VLAN, etc tend
+to initialize the interface throughput with some value for the sake of
+having a throughput number to export via ethtool. This exported
+throughput leaves batman-adv to conclude the interface throughput is
+genuine (reflecting reality), thus no measurements are necessary.
 
-On Sonntag, 13. Mai 2018 11:19:52 CEST Antonio Quartulli wrote:
-> Hi Sven,
-> 
-> thanks for your comment.
-> 
-> On 13/05/18 14:56, Sven Eckelmann wrote:
-> > On Sonntag, 13. Mai 2018 00:02:23 CEST Marek Lindner wrote:
-> >> If link auto-negotiation is disabled the exported link speed can
-> >> not be relied on.
-> > 
-> > Why is a manual set speed less worth than a auto-configured one?
-[...]
-> For example, some people in the freifunk community have tested this
-> patch because they wanted to see how the tp_meter would perform on VPN
-> links. Unfortunately the tun.ko module sets 10Mbps/AUTONEG_DISABLE as
-> default settings.
-> 
-> From there we thought that, after all, if the autonegotiation is
-> disabled, we should just assume that the speed is likely to be bogus and
-> it's better to measure it.
-[...]
+Based on the observation that those interface types also tend to set
+the link auto-negotiation to 'off', batman-adv shall check this
+setting to differentiate between genuine link throughput information
+and placeholders installed by virtual interfaces.
 
-I saw the discussion with Matthias. But nothing about that wasn't mentioned in 
-the commit message. Looks like Marek already addresses these things and just 
-has to submit the patch again.
+The "default throughput" setting exported via sysfs still allows to
+configure the batman-adv throughput for the interface, thus disabling
+the measurements.
 
-And he should not forget your Acked-by (in case it still stands).
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Acked-by: Antonio Quartulli <a@unstable.cc>
+---
+v2:
+ * added ethtool compat code for Linux < 4.6
+ * additional explanation text in the commit msg & code
 
-Kind regards,
-	Sven
---nextPart4289191.4oDlaLLeWm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ compat-include/linux/ethtool.h |  2 ++
+ net/batman-adv/bat_v_elp.c     | 15 ++++++++++++++-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr4JdwACgkQXYcKB8Em
-e0aErQ//ULOdM2FrMHNHWVOuikQiWN8cXX/hmFipLFboHflqmzafoD6I6MiehsL/
-cjg79Q1Hw50pfUjQzKgqZHaxgEP96eWmlmjSAoUGwQA/yzkGfuQNf+Gxf3V2Pg+z
-ToyJ8BQq93lXSGV2wRaTqodXY6aWFiQwr7+K4xkeDS2WtJQNMN1/tXRwQggbvHEk
-DyBnpdo9Za+teVF2VCWgLsKL956TWjcF8XYsYBZA6YSMousTFyDS+Tm07tMj4AMe
-Z2R1pcvyVvxORse78PwNaQu/gJNdsAZYmcpmDmsYqdQGWR5uriW28//2Wmp0khkG
-LQeWSeWQFEJvHufDXVW8f2gEL5YgAvWh41F6q4bWObZLM2PWv937Id601uBlW2md
-xykO40Br5Z7EcFGW/MZxlBXiyJxIdvz776RRaL568ijsjlWivC41p4T/aV04KBEr
-Ktn/TTkNTcekz+sMjyu7c3cVEmXG8YbCSrLro6EBYVUJEGJGlT4+7sd9E4QP7mLh
-6iOxWaKN90ymBqHLPQZBuK9sq3VDgODZiDkRK6yBDr1h5gywCUoN5z8HhJkGuzQs
-M4enY9nx0bH4pJbOTq0IdwYke5oiQo7gA0kf+fuCMdckqa79p+jngAlLtQtPHCkb
-xXwJepDchzjF/hp/UBbQ12Um1LDiDOHgaICO7pQb03fj/fsdDC8=
-=zAO6
------END PGP SIGNATURE-----
-
---nextPart4289191.4oDlaLLeWm--
-
-
+diff --git a/compat-include/linux/ethtool.h b/compat-include/linux/ethtool.h
+index df9844d9..caa70071 100644
+--- a/compat-include/linux/ethtool.h
++++ b/compat-include/linux/ethtool.h
+@@ -33,6 +33,7 @@ struct batadv_ethtool_link_ksettings {
+ 	struct {
+ 		__u32	speed;
+ 		__u8	duplex;
++		__u8	autoneg;
+ 	} base;
+ };
+ 
+@@ -53,6 +54,7 @@ batadv_ethtool_get_link_ksettings(struct net_device *dev,
+ 		return ret;
+ 
+ 	link_ksettings->base.duplex = cmd.duplex;
++	link_ksettings->base.autoneg = cmd.autoneg;
+ 	link_ksettings->base.speed = ethtool_cmd_speed(&cmd);
+ 
+ 	return 0;
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 28687493..71c20c1d 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -127,7 +127,20 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	rtnl_lock();
+ 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
+ 	rtnl_unlock();
+-	if (ret == 0) {
++
++	/* Virtual interface drivers such as tun / tap interfaces, VLAN, etc
++	 * tend to initialize the interface throughput with some value for the
++	 * sake of having a throughput number to export via ethtool. This
++	 * exported throughput leaves batman-adv to conclude the interface
++	 * throughput is genuine (reflecting reality), thus no measurements
++	 * are necessary.
++	 *
++	 * Based on the observation that those interface types also tend to set
++	 * the link auto-negotiation to 'off', batman-adv shall check this
++	 * setting to differentiate between genuine link throughput information
++	 * and placeholders installed by virtual interfaces.
++	 */
++	if (ret == 0 && link_settings.base.autoneg == AUTONEG_ENABLE) {
+ 		/* link characteristics might change over time */
+ 		if (link_settings.base.duplex == DUPLEX_FULL)
+ 			hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
+-- 
+2.17.0
 
