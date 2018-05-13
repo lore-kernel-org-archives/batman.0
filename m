@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 May 2018 09:49:13 +0200
-Message-ID: <2732493.XFP0Y4VOh4@sven-edge>
-In-Reply-To: <20180512220223.3039-1-mareklindner@neomailbox.ch>
+Return-Path: <a@unstable.cc>
 References: <20180512220223.3039-1-mareklindner@neomailbox.ch>
+ <2624592.SrqEg3jeUP@sven-edge>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <fa4a5de8-9d10-11db-b758-745ce9f187e1@unstable.cc>
+Date: Sun, 13 May 2018 17:19:52 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2021045.fKA8ImvVj2";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <2624592.SrqEg3jeUP@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="jx7yiFZVGspn49JSufos2ojBlnf00e2CO"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: disable ethtool link speed
  detection when auto negotiation off
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,85 +20,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2021045.fKA8ImvVj2
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--jx7yiFZVGspn49JSufos2ojBlnf00e2CO
+Content-Type: multipart/mixed; boundary="fOEfhL0TNdJdCyfNTB1SYVPQNdUmS0gax";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <fa4a5de8-9d10-11db-b758-745ce9f187e1@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: disable ethtool link speed
+ detection when auto negotiation off
+References: <20180512220223.3039-1-mareklindner@neomailbox.ch>
+ <2624592.SrqEg3jeUP@sven-edge>
+In-Reply-To: <2624592.SrqEg3jeUP@sven-edge>
+
+--fOEfhL0TNdJdCyfNTB1SYVPQNdUmS0gax
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
 
-Name of failed tests
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Hi Sven,
 
-ecsv/pu
-=2D------
+thanks for your comment.
 
- * sparse linux-3.18 cfg: BLA=3Dn DAT=3Dn DEBUGFS=3Dy DEBUG=3Dy NC=3Dy MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-3.18 cfg: BLA=3Dy DAT=3Dn DEBUGFS=3Dy DEBUG=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-4.2 cfg: BLA=3Dy DAT=3Dn DEBUGFS=3Dn DEBUG=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-4.4 cfg: BLA=3Dn DAT=3Dn DEBUGFS=3Dn DEBUG=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-4.4 cfg: BLA=3Dy DAT=3Dn DEBUGFS=3Dn DEBUG=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-4.4 cfg: BLA=3Dy DAT=3Dn DEBUGFS=3Dy DEBUG=3Dy NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dy
+On 13/05/18 14:56, Sven Eckelmann wrote:
+> On Sonntag, 13. Mai 2018 00:02:23 CEST Marek Lindner wrote:
+>> If link auto-negotiation is disabled the exported link speed can
+>> not be relied on.
+>=20
+> Why is a manual set speed less worth than a auto-configured one?
+
+if the user wants to configure a "default throughput" for the interface,
+he can always use the default_throughput knob in batman-adv.
+
+The problem with autonegotiation disabled is that the advertised speed
+is likely to be a random number set by default by the driver.
+
+For example, some people in the freifunk community have tested this
+patch because they wanted to see how the tp_meter would perform on VPN
+links. Unfortunately the tun.ko module sets 10Mbps/AUTONEG_DISABLE as
+default settings.
+
+=46rom there we thought that, after all, if the autonegotiation is
+disabled, we should just assume that the speed is likely to be bogus and
+it's better to measure it.
 
 
-Output of different failed tests
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
+Does it make sense?
 
-ecsv/pu: sparse linux-4.2 cfg: BLA=3Dy DAT=3Dn DEBUGFS=3Dn DEBUG=3Dn NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
 
-    /home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batman-adv/bat_v_el=
-p.c:134:43: error: no member 'autoneg' in struct <unnamed>
-    /home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batman-adv/bat_v_el=
-p.c:134:43: warning: unknown expression (8 46)
-    /home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batman-adv/bat_v_el=
-p.c: In function =E2=80=98batadv_v_elp_get_throughput=E2=80=99:
-    /home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batman-adv/bat_v_el=
-p.c:134:36: error: =E2=80=98struct <anonymous>=E2=80=99 has no member named=
- =E2=80=98autoneg=E2=80=99
-      if (ret =3D=3D 0 && link_settings.base.autoneg =3D=3D AUTONEG_ENABLE)=
- {
-                                        ^
-    make[3]: *** [/home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batma=
-n-adv/bat_v_elp.o] Error 1
-    make[2]: *** [/home/build_test/build_env/tmp.Z3XNaFEJS1/build/net/batma=
-n-adv] Error 2
-    make[1]: *** [_module_/home/build_test/build_env/tmp.Z3XNaFEJS1/build] =
-Error 2
-    make: *** [all] Error 2
+Cheers,
 
---nextPart2021045.fKA8ImvVj2
+
+--=20
+Antonio Quartulli
+
+
+--fOEfhL0TNdJdCyfNTB1SYVPQNdUmS0gax--
+
+--jx7yiFZVGspn49JSufos2ojBlnf00e2CO
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr37fkACgkQXYcKB8Em
-e0YQJhAAzvp3mMM+R2QKb2oNIjMsFxloQ8IUAxI/TOKuT/JQUaKfeKH0VL6fsQZ2
-fZOfTz26lrlFTWMDrWWP32J5tRuDUllWVX6RhsXhHV+OMuJUhuJoVSxfN6TuEVsL
-LC6PeJnTzx70wswDgxc3JhPTIDdpqcCL8MqxCYga0h4/EAVx3aVVbocgQO0QVUeX
-wlZhTdK04n+QkI72ie2w9KCzKfeB/OBgLtCt03Hr5cwDky0Yk3nqFqG0PtfEV2NR
-7J45h1bFSIkvqP9yBxuGgNVQ5rLK2W+p0M1CZd4vfK3h8LjxBrp6XVzXuS+EIwiI
-ZTFZnASkTSVdd98+y7aKs8FpWiO1g/rl3BdRMW4N3R33yx3sd4IUfpuH+jJmq/Tc
-ioTk8iJAsHnwHzc+iwujFf9zno2KhpdbBDuzbI2zmBJiPf9AiGgyUR0Yk7dPdxqA
-cD8//TOigccWIcjqq65ONw3jIFHTq7E118+WT0E8sG8SmxUhUeu6nNU3yMndEc+g
-yyAfXFfcD+YazDXrbtmokVhUdBd4zv65/63Pjevods5mzR3rOe66cZIkFlHz+wL3
-m4GIfdE1A0lCJz933jC8xsk6Q+lSrccTHuKyebkHsSSZNSH+U+GEdWCQOPn2FnCh
-m+Ar3Hyc8N3Mcyca4zQPUW5SXQqzFmcB6HvicvG4MdccY0fYwpM=
-=2QIH
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlr4AzgACgkQB6U8WA7y
+zXT9kg/+Iho8CZdyplOWPwz4uY08/L9l0wexR2iTsaSpDQ9w24AtBX/CqiRjD6u8
+VnBIxCKPyRG6Q4cl2/h/kLYFQhRbQ5/vMDu1fbmTpuWebPsvQ/80aBHXtH3TwhSt
+g4FBL8SErBa4tjgyxltqWAVDgpibZw773yZNzm805BIzVgKcpaPkypYHGiqdtffg
+vb/HjfARnpTaVHNOBd0rAjMkeYU+U6/1gCo53+Vd9XKTJ8GAL0Dbs8Gn+L1HEIKb
+50t9EBu1cNbHvxrVB8J/PdWWs30cFBQRCVdzQju50SRJEexPzvIoUvpi+LVYqEdv
+Q8ArqHRk6u2DYxXHbmIAkGkfXRmtj90sRCN9lpZ/KKPJiqfnU0rlomR5mcLoMJSk
+qSc7JtHCPP8OBzxeVF+NZiVuFNmhV8cbDnu4/BnLCelJR/UeJNFvLxNKd2ybHFMh
+A3f+KCe2jO9wzjsAGRQZj7ouyKv0rQqhrt/FB22V+9AldUKHVpDlIuVZZtNd/WEy
+bqg/0O32bt5DSHPque6P4F/ZfRJGbewtqSWZVHrUiEKIYnftLN5grnIyKRZQ//8C
+chN00FGEcg7xcbRhNBp3hG1x/EWyuXEXLpjPR//+SF9CGHds63PiZUuw6n9z8y5l
+izQFS5kjtjFwCuSVyrjgXFGj8aBmn/UMoXwlR/Ph01ykUaSkEac=
+=9cLc
 -----END PGP SIGNATURE-----
 
---nextPart2021045.fKA8ImvVj2--
-
-
-
+--jx7yiFZVGspn49JSufos2ojBlnf00e2CO--
