@@ -1,13 +1,12 @@
-Return-Path: <a@unstable.cc>
-References: <20180512222403.4624-1-mareklindner@neomailbox.ch>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <8089f30f-da72-1e7f-1d7c-5fe5249117e1@unstable.cc>
-Date: Sun, 13 May 2018 06:28:38 +0800
-MIME-Version: 1.0
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 13 May 2018 08:55:13 +0200
+Message-ID: <2757128.GhNmQMPCGX@sven-edge>
 In-Reply-To: <20180512222403.4624-1-mareklindner@neomailbox.ch>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK"
+References: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1778975.vYe6KvTViW";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: enable B.A.T.M.A.N. V
  compilation by default
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,65 +18,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK
-Content-Type: multipart/mixed; boundary="4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
-Message-ID: <8089f30f-da72-1e7f-1d7c-5fe5249117e1@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: enable B.A.T.M.A.N. V
- compilation by default
-References: <20180512222403.4624-1-mareklindner@neomailbox.ch>
-In-Reply-To: <20180512222403.4624-1-mareklindner@neomailbox.ch>
+--nextPart1778975.vYe6KvTViW
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-On 13/05/18 06:24, Marek Lindner wrote:
+On Sonntag, 13. Mai 2018 00:24:03 CEST Marek Lindner wrote:
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
+>  Makefile               | 2 +-
+>  net/batman-adv/Kconfig | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+Please change all relevant files:
 
+* Makefile
+* README.external.rst
+* gen-compat-autoconf.sh
+* net/batman-adv/Kconfig
 
-Once this change will make its way through the openwrt-routing feed,
-people will finally be able to enable BATMAN_V without recompiling the
-batman-adv package!
+Kind regards,
+	Sven
 
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---4P92aelS39HPZi3Rr7n7OX31Jg2F7XXA2--
-
---WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK
+--nextPart1778975.vYe6KvTViW
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlr3apYACgkQB6U8WA7y
-zXR/oA/+N6ufvkzjm+vUlGH6zBfSjt0iK6E9y3F0jRWx8FQRY6pomWk4Lck2qptt
-B0Tk4/c9UT7ue+reeyV8716qaH7sWnRk8cqjuIYvPTJz519dR8+A6ULmX5dsjwPc
-BXKGP647RGkNUCAxfcu75cR8wFAawp4GJOsukSPwrsHrMT5ZiHHFKjJoPHofpc/K
-Y3HTpvUSepDaRzUCpssGJJZd6YyAwOIkLsFRXx241t4U7IKTcyNX1Ddm1Nww9LZy
-wOCIlSfcK766ndLM6eLGCEU49BGt84GZgcYz3KOgXaD5X/FaS33zIss4pVycUqPr
-PauUDZPU0p+KAltvWPhXqtR3Kp5OjWLNGy31Ugsl4LQ85ddPtIcExwi03AAmV/nD
-feUZXBgcZIi26QlULk3ef2CuRpV8BdVCsReFBVyTFc9xwm4ghDoB61GrJD1wiHTn
-9NZTke0E8tdrvQ13iWvAGIUwH/xMO6Z0YLFgQ5TDEtlm58NpvePPxxipzR5NIDTV
-mDEpti3qv4+aCJsuSHl/EvTuRYYEQ7miyqx1nrdMizZVkLmw+c1T2tes+eBc9Nvy
-NR+ZGiyWCP4qeXZvhRk+PuiAJMjUFbiDt8kPf0Uq8R0375ueLY/ZSzAfxYv5/WtG
-dlkG9fzTd8aHkgktpsa2KdANgjzez7ooiqTL/YMiAxjL/8yRmZU=
-=yiLJ
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr34VEACgkQXYcKB8Em
+e0Z9whAA1SE/Dn99BT/pTHECPx/6+14UjMkb20wryg8wek8keOIJc3nZUumZjX/a
+12cd1C2TdpxWUpwLj0LP0fH/UugibLbzEK41mmI7z4VgUOoSXtxr1+kRrMzm16xy
+ACYOpsV33MQG0rQBGafQ5uhsXQGzc4xryL2kQBY6dJgdtMira49Bjl7hoQ/mLsR2
+fJAjYZt35zEVZ43DFt9VEVKX0XQ6CWEBXXptv2hDtDTyAIVaw1Am5612qa9sp2m7
+LI6ZLerPt2+NTgy4G8c0M7XiFqeeCwD+CPxZF6HwJEYGnIA8gc1cwJLuOEJYBfMl
+qkdkiDdXf+RAd91Y0/pP34mbKtASk/YiEpGkZY9mxeow9pqKQhgcxnqk1Kwnxn5h
+ZZJUJ20eLRPyknHMpHgcv0BUeImCAqyFEd7Z3LEu1wG1f96A6nE4ojXHvqO1ATU6
+8JADrJZlJ+SVSN5HK88J9jtQPeELzNfVp1D3iC7us2b5aU1NEOB9iWG0e0N6wzfX
+I8BZxl5QqtfJj8PUdLhbc+dg/CRpRZnoB241NAkof5FLa8yaIgRZDRK5slAI1Nbg
+iyf4EL9GkogoBmVuFI6NS5GbHqvM8qjqZubDL2E9iKNaMMGzND87JgCYr5+Vp6kb
+e4Mic02rw3MeYGj2B1XZza9/4A6xkbBA1yFDN7Quqk5DEQNDTCo=
+=L5I+
 -----END PGP SIGNATURE-----
 
---WU3fcagu7njNwo6D3ZWcV0bv5iOTD4SPK--
+--nextPart1778975.vYe6KvTViW--
+
+
+
