@@ -1,9 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 14 May 2018 06:42:59 +0800
-Message-Id: <20180513224259.14876-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: enable B.A.T.M.A.N. V
- compilation by default
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 May 2018 09:35:14 +0200
+Message-ID: <3527728.6mgLYZWjGi@bentobox>
+In-Reply-To: <20180513223849.14636-1-mareklindner@neomailbox.ch>
+References: <20180513223849.14636-1-mareklindner@neomailbox.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1663633.Rj4KvFYZ46";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: disable ethtool link
+ speed detection when auto negotiation off
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,70 +21,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Acked-by: Antonio Quartulli <a@unstable.cc>
----
-v2:
- * add relevant changes to README.external.rst & gen-compat-autoconf.sh
+--nextPart1663633.Rj4KvFYZ46
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
- Makefile               | 2 +-
- README.external.rst    | 2 +-
- gen-compat-autoconf.sh | 2 +-
- net/batman-adv/Kconfig | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+On Montag, 14. Mai 2018 06:38:49 CEST Marek Lindner wrote:
+> Virtual interface drivers such as tun / tap interfaces, VLAN, etc tend
+> to initialize the interface throughput with some value for the sake of
+> having a throughput number to export via ethtool. This exported
+> throughput leaves batman-adv to conclude the interface throughput is
+> genuine (reflecting reality), thus no measurements are necessary.
+> 
+> Based on the observation that those interface types also tend to set
+> the link auto-negotiation to 'off', batman-adv shall check this
+> setting to differentiate between genuine link throughput information
+> and placeholders installed by virtual interfaces.
+> 
+> The "default throughput" setting exported via sysfs still allows to
+> configure the batman-adv throughput for the interface, thus disabling
+> the measurements.
+> 
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Acked-by: Antonio Quartulli <a@unstable.cc>
+> ---
+> v2:
+>  * added ethtool compat code for Linux < 4.6
+>  * additional explanation text in the commit msg & code
 
-diff --git a/Makefile b/Makefile
-index de607ad9..ea995216 100644
---- a/Makefile
-+++ b/Makefile
-@@ -30,7 +30,7 @@ export CONFIG_BATMAN_ADV_NC=n
- # B.A.T.M.A.N. multicast optimizations:
- export CONFIG_BATMAN_ADV_MCAST=y
- # B.A.T.M.A.N. V routing algorithm (experimental):
--export CONFIG_BATMAN_ADV_BATMAN_V=n
-+export CONFIG_BATMAN_ADV_BATMAN_V=y
- 
- PWD:=$(shell pwd)
- BUILD_DIR=$(PWD)/build
-diff --git a/README.external.rst b/README.external.rst
-index a7694bbf..a6f14a03 100644
---- a/README.external.rst
-+++ b/README.external.rst
-@@ -49,7 +49,7 @@ module).  Available  options  and  their    possible   values are
-  * ``CONFIG_BATMAN_ADV_DAT=[y*|n]`` (B.A.T.M.A.N. Distributed ARP Table)
-  * ``CONFIG_BATMAN_ADV_MCAST=[y*|n]`` (B.A.T.M.A.N. multicast optimizations)
-  * ``CONFIG_BATMAN_ADV_NC=[y|n*]`` (B.A.T.M.A.N. Network Coding)
-- * ``CONFIG_BATMAN_ADV_BATMAN_V=[y|n*]`` (B.A.T.M.A.N. V routing algorithm)
-+ * ``CONFIG_BATMAN_ADV_BATMAN_V=[y*|n]`` (B.A.T.M.A.N. V routing algorithm)
- 
- e.g., debugging can be enabled by::
- 
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 071b6ccf..5dcd875d 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -58,7 +58,7 @@ gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_MCAST' ${CONFIG_BATMAN_ADV_MCAST:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_NC' ${CONFIG_BATMAN_ADV_NC:="n"} >> "${TMP}"
--gen_config 'CONFIG_BATMAN_ADV_BATMAN_V' ${CONFIG_BATMAN_ADV_BATMAN_V:="n"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_BATMAN_V' ${CONFIG_BATMAN_ADV_BATMAN_V:="y"} >> "${TMP}"
- 
- # only regenerate compat-autoconf.h when config was changed
- diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index bee034a9..de8034d8 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -35,7 +35,7 @@ config BATMAN_ADV
- config BATMAN_ADV_BATMAN_V
- 	bool "B.A.T.M.A.N. V protocol (experimental)"
- 	depends on BATMAN_ADV && !(CFG80211=m && BATMAN_ADV=y)
--	default n
-+	default y
- 	help
- 	  This option enables the B.A.T.M.A.N. V protocol, the successor
- 	  of the currently used B.A.T.M.A.N. IV protocol. The main
--- 
-2.17.0
+
+Applied in d60b8fc69ef2 [1]
+
+Thanks,
+	Sven
+
+[1] https://git.open-mesh.org/batman-adv.git/commit/d60b8fc69ef24d56a10b85210685f6a7d15a8a08
+--nextPart1663633.Rj4KvFYZ46
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr5PDIACgkQXYcKB8Em
+e0bNBxAAvVgJC8N2+mQn/OUp636do1pLHlD/Z+r7ibSB4eXQT4ASz48FWgoqWkLS
+whQdh9xlf/nC7IoKitoxdEjhe8BSGXmu9Jz2OiWyPv/PGSqUHzK2IWsPt604xODP
+T9DCY7OdKR3cg0JtlwM/YAGU3uAdehG2+HOTObN/6auajO8j93sUyTz6rgPHfkME
+zDR3PJJhMFU/kfsgxVUCjCxE4FiGNbzuGf76nBFeknYYsBfCCHZXRS28LJI7IIph
+eOKj3vcKuG4xlnhbNI/++bVv9zGXbMsT5NV13XFTCOQeBQ6VpHsKquAeqTQaUCRa
+LTHSg1GhX1WZlWLC02lbO+sMzjgUPKer/U8ha4lAzVE9d8666b+8Rj1t9C3/32a4
+/YjUUd0fvXfCQ/us1pCAH4+9fXhRVNPDulAp114KSvTKDYgt6mzFNqBxLtXR57sn
+SJ0NrVNZ2XGtHI7AvIHsynRSslWTstDWQWY2qYA64AgsKpuWFLRQYpKgfq7x13c5
+6opb2QOaJV7gqrFlWx/g0fgy+Uh631yyMJlVRGJzM7eX17j2oiU9orytUBXyeA5G
+DIUZMZ/7+5dZ5lr0ojbaaq13W/gFFQLJTk4zIaBTk6iHxCqwhwqyqP60OUG00tIk
+DAR3QwmCB7KHQBhE2alM7TrkeAwqNeDMaH4T42gskQ/rFtOsu9s=
+=kado
+-----END PGP SIGNATURE-----
+
+--nextPart1663633.Rj4KvFYZ46--
 
