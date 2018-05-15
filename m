@@ -1,11 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 15 May 2018 17:59:08 +0200
-Message-Id: <20180515155908.23839-1-linus.luessing@c0d3.blue>
+Date: Wed, 16 May 2018 01:48:59 +0200
+Message-Id: <20180515234859.1167-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Snoop DHCPACKs for DAT
+Subject: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Increase DHCP snooped DAT
+ entry purge timeout in DHT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,506 +18,370 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-In a 1000 nodes mesh network (Freifunk Hamburg) we can still see
-30KBit/s of ARP traffic (equalling about 25% of all layer two
-specific overhead, remaining after some filtering) flooded through
-the mesh. These 30KBit/s are mainly ARP Requests from the
-gateways / DHCP servers.
+This patch increases the DAT entry purge timeout in the DHT for DHT_PUT
+messages which were triggered by DHCP snooping from 5 to 60 minutes.
 
-By snooping DHCPACKs we can learn about MAC/IP address pairs
-in the DHCP range without relying on ARP. This patch is in preparation
-to eliminate the need for mesh wide message flooding for IPv4 address
-resolution.
+DHCP snooping will ensure a timely update in case of a reassignment
+of an IP address to a new host in the DHT. This allows us to
+increase the DAT entry timeout for entries inserted via an incoming
+DHT_PUT message triggered by DHCP snooping without risking
+inconsistencies.
 
-Also this allows to quickly update a MAC/IP pair at least in the DHT when
-DHCP reassigns an IP address to a new host.
+To signalize to a remote node that a DHT_PUT message was triggered
+by DHCP snooping and that it is suitable for such an extended purge
+timeout an according flag in the unicast 4addr header was introduced.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+
 ---
 
-Changes in v4:
-* Removed @proto from kerneldoc
-* Less enum values in batadv_packet.h
-* Moved skb_set_network_header() call
-* Updated commit message
-* Removed noflood mark patch as a result of the discussions from
-  the Battlemesh: An idea which should work transparently to reduce
-  the ARP overhead (together with DHCP snooping) with no need for
-  packet marking via ebtables or tc was suggested.
+Unverified/untested so far! Expecting:
 
-Changes in v3:
-* Rebase to master
-* Shortened commit message
+Reduction of (unanswered) ARP Requests from gateways:
 
-Changes in v2:
-* Rebase to master
-* Fix compilation with CONFIG_BATMAN_ADV=n (added stubs)
+60min: 98.95%
 
-Changes in RFC -> non-RFC
+Other potential timeout periods for comparison:
 
- * Added kerneldoc
- * Added Signed-off-by
- * More IP Header checks
-   (iph->hlen considered, ip version checked, ...)
- * Parsing & checking DHCP Message Type Option,
-   only snooping DHCPACKs now
- * Moved ethernet protocol check from batadv_dat_check_dhcp to
-   batadv_dat_check_dhcp_ipudp
- * Removed buffer-length parameter from
-   batadv_dat_dhcp_get_{yiaddr,chaddr}()
- * Renamed batadv_dat_put() to batadv_dat_put_pairs()
+45min: 97.95%
+30min: 91.71%
 
-fixup DAT DHCP snooping
+https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
+
+This patch requires:
+
+"batman-adv: DHCP snooping for DAT"
 ---
- include/uapi/linux/batadv_packet.h     |  40 +++++
- net/batman-adv/distributed-arp-table.c | 295 +++++++++++++++++++++++++++++++++
- net/batman-adv/distributed-arp-table.h |  11 ++
- net/batman-adv/soft-interface.c        |  11 +-
- 4 files changed, 355 insertions(+), 2 deletions(-)
+ include/uapi/linux/batadv_packet.h     | 13 ++++-
+ net/batman-adv/distributed-arp-table.c | 86 +++++++++++++++++++++++++++-------
+ net/batman-adv/main.h                  |  1 +
+ net/batman-adv/send.c                  |  9 ++--
+ net/batman-adv/send.h                  |  3 +-
+ net/batman-adv/types.h                 |  6 +++
+ 6 files changed, 94 insertions(+), 24 deletions(-)
 
 diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-index 894d8d2f..6a48f36c 100644
+index 6a48f36c..0841ee0e 100644
 --- a/include/uapi/linux/batadv_packet.h
 +++ b/include/uapi/linux/batadv_packet.h
-@@ -630,6 +630,46 @@ struct batadv_tvlv_mcast_data {
- 	__u8 reserved[3];
+@@ -79,6 +79,15 @@ enum batadv_subtype {
+ 	BATADV_P_DAT_CACHE_REPLY	= 0x04,
  };
  
-+enum batadv_bootpop {
-+	BATADV_BOOTREPLY	= 2,
++/**
++ * enum batadv_dat_dht_put_flags - flags used in DHT_PUT messages
++ * @BATADV_DAT_EXTENDED_TIMEOUT: flag is set when the DHT_PUT receiver should
++ *  store an according DAT entry for an extended period
++ */
++enum batadv_dat_dht_put_flags {
++	BATADV_DAT_EXTENDED_TIMEOUT	= 1UL << 0,
 +};
 +
-+enum batadv_boothtype {
-+	BATADV_HTYPE_ETHERNET	= 1,
-+};
-+
-+enum batadv_dhcpoptioncode {
-+	BATADV_DHCP_OPT_PAD		= 0,
-+	BATADV_DHCP_OPT_MSG_TYPE	= 53,
-+	BATADV_DHCP_OPT_END		= 255,
-+};
-+
-+enum batadv_dhcptype {
-+	BATADV_DHCPACK		= 5,
-+};
-+
-+/* { 99, 130, 83, 99 } */
-+#define BATADV_DHCP_MAGIC 1669485411
-+
-+struct batadv_dhcp_packet {
-+	__u8 op;
-+	__u8 htype;
-+	__u8 hlen;
-+	__u8 hops;
-+	__be32 xid;
-+	__be16 secs;
-+	__be16 flags;
-+	__be32 ciaddr;
-+	__be32 yiaddr;
-+	__be32 siaddr;
-+	__be32 giaddr;
-+	__u8 chaddr[16];
-+	__u8 sname[64];
-+	__u8 file[128];
-+	__be32 magic;
-+	__u8 options[0];
-+};
-+
- #pragma pack()
+ /* this file is included by batctl which needs these defines */
+ #define BATADV_COMPAT_VERSION 15
  
- #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
+@@ -422,13 +431,13 @@ struct batadv_unicast_packet {
+  * @u: common unicast packet header
+  * @src: address of the source
+  * @subtype: packet subtype
+- * @reserved: reserved byte for alignment
++ * @flags: unicast 4addr flags
+  */
+ struct batadv_unicast_4addr_packet {
+ 	struct batadv_unicast_packet u;
+ 	__u8 src[ETH_ALEN];
+ 	__u8 subtype;
+-	__u8 reserved;
++	__u8 flags;
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+ 	 */
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index a60bacf7..5fa06ef3 100644
+index 5fa06ef3..7185319a 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -29,6 +29,7 @@
- #include <linux/if_ether.h>
- #include <linux/if_vlan.h>
- #include <linux/in.h>
-+#include <linux/ip.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-@@ -42,9 +43,11 @@
- #include <linux/spinlock.h>
- #include <linux/stddef.h>
- #include <linux/string.h>
-+#include <linux/udp.h>
- #include <linux/workqueue.h>
- #include <net/arp.h>
- #include <net/genetlink.h>
-+#include <net/ip.h>
- #include <net/netlink.h>
- #include <net/sock.h>
- #include <uapi/linux/batman_adv.h>
-@@ -1436,6 +1439,298 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+@@ -109,7 +109,9 @@ static void batadv_dat_entry_put(struct batadv_dat_entry *dat_entry)
+ static bool batadv_dat_to_purge(struct batadv_dat_entry *dat_entry)
+ {
+ 	return batadv_has_timed_out(dat_entry->last_update,
+-				    BATADV_DAT_ENTRY_TIMEOUT);
++				    BATADV_DAT_ENTRY_TIMEOUT) &&
++	       batadv_has_timed_out(dat_entry->last_extended_update,
++				    BATADV_DAT_EXT_ENTRY_TIMEOUT);
  }
  
  /**
-+ * batadv_dat_check_dhcp_ipudp() - check skb for IP+UDP headers valid for DHCP
-+ * @skb: the packet to check
-+ *
-+ * Checks whether the given skb has an IP and UDP header valid for a DHCP
-+ * message from a DHCP server.
-+ *
-+ * Return: True if valid, false otherwise.
-+ */
-+static bool batadv_dat_check_dhcp_ipudp(struct sk_buff *skb)
-+{
-+	struct iphdr *iphdr, _iphdr;
-+	struct udphdr *udphdr, _udphdr;
-+	unsigned int offset = skb_network_offset(skb);
+@@ -326,9 +328,11 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
+  * @ip: ipv4 to add/edit
+  * @mac_addr: mac address to assign to the given ipv4
+  * @vid: VLAN identifier
++ * @extended_timeout: triggered by a DHT_PUT with an extended timeout flag
+  */
+-static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+-				 u8 *mac_addr, unsigned short vid)
++static void
++batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
++		     u8 *mac_addr, unsigned short vid, bool extended_timeout)
+ {
+ 	struct batadv_dat_entry *dat_entry;
+ 	int hash_added;
+@@ -338,7 +342,12 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+ 	if (dat_entry) {
+ 		if (!batadv_compare_eth(dat_entry->mac_addr, mac_addr))
+ 			ether_addr_copy(dat_entry->mac_addr, mac_addr);
 +
-+	iphdr = skb_header_pointer(skb, offset, sizeof(_iphdr), &_iphdr);
-+	if (!iphdr || iphdr->version != 4 || ip_hdrlen(skb) < sizeof(_iphdr))
-+		return false;
+ 		dat_entry->last_update = jiffies;
 +
-+	if (iphdr->protocol != IPPROTO_UDP)
-+		return false;
++		if (extended_timeout)
++			dat_entry->last_extended_update = jiffies;
 +
-+	offset += ip_hdrlen(skb);
-+	skb_set_transport_header(skb, offset);
-+
-+	udphdr = skb_header_pointer(skb, offset, sizeof(_udphdr), &_udphdr);
-+	if (!udphdr || udphdr->source != htons(67))
-+		return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * batadv_dat_check_dhcp() - examine packet for valid DHCP message
-+ * @skb: the packet to check
-+ * @proto: ethernet protocol hint (behind a potential vlan)
-+ *
-+ * Checks whether the given skb is a valid DHCP packet.
-+ *
-+ * Caller needs to ensure that the skb network header is set correctly.
-+ *
-+ * Return: If skb is a valid DHCP packet, then returns its op code
-+ * (e.g. BOOTREPLY vs. BOOTREQUEST). Otherwise returns -EINVAL.
-+ */
-+static int batadv_dat_check_dhcp(struct sk_buff *skb, __be16 proto)
-+{
-+	u8 *op, _op;
-+	u8 *htype, _htype;
-+	u8 *hlen, _hlen;
-+	__be32 *magic, _magic;
-+	unsigned int dhcp_offset;
-+	unsigned int offset;
-+
-+	if (proto != htons(ETH_P_IP))
-+		return -EINVAL;
-+
-+	if (!batadv_dat_check_dhcp_ipudp(skb))
-+		return -EINVAL;
-+
-+	dhcp_offset = skb_transport_offset(skb) + sizeof(struct udphdr);
-+	if (skb->len < dhcp_offset + sizeof(struct batadv_dhcp_packet))
-+		return -EINVAL;
-+
-+	offset = dhcp_offset + offsetof(struct batadv_dhcp_packet, op);
-+
-+	op = skb_header_pointer(skb, offset, sizeof(_op), &_op);
-+	if (!op)
-+		return -EINVAL;
-+
-+	offset = dhcp_offset + offsetof(struct batadv_dhcp_packet, htype);
-+
-+	htype = skb_header_pointer(skb, offset, sizeof(_htype), &_htype);
-+	if (!htype || *htype != BATADV_HTYPE_ETHERNET)
-+		return -EINVAL;
-+
-+	offset = dhcp_offset + offsetof(struct batadv_dhcp_packet, hlen);
-+
-+	hlen = skb_header_pointer(skb, offset, sizeof(_hlen), &_hlen);
-+	if (!hlen || *hlen != ETH_ALEN)
-+		return -EINVAL;
-+
-+	offset = dhcp_offset + offsetof(struct batadv_dhcp_packet, magic);
-+
-+	magic = skb_header_pointer(skb, offset, sizeof(_magic), &_magic);
-+	if (!magic || *magic != htonl(BATADV_DHCP_MAGIC))
-+		return -EINVAL;
-+
-+	return *op;
-+}
-+
-+/**
-+ * batadv_dat_get_dhcp_message_type() - get message type of a DHCP packet
-+ * @skb: the DHCP packet to parse
-+ *
-+ * Iterates over the DHCP options of the given DHCP packet to find a
-+ * DHCP Message Type option and parse it.
-+ *
-+ * Caller needs to ensure that the given skb is a valid DHCP packet and
-+ * that the skb transport header is set correctly.
-+ *
-+ * Return: The found DHCP message type value, if found. -EINVAL otherwise.
-+ */
-+static int batadv_dat_get_dhcp_message_type(struct sk_buff *skb)
-+{
-+	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
-+	u8 *type, _type;
-+	struct {
-+		u8 type;
-+		u8 len;
-+	} *tl, _tl;
-+
-+	offset += sizeof(struct batadv_dhcp_packet);
-+
-+	while ((tl = skb_header_pointer(skb, offset, sizeof(_tl), &_tl))) {
-+		if (tl->type == BATADV_DHCP_OPT_MSG_TYPE)
-+			break;
-+
-+		if (tl->type == BATADV_DHCP_OPT_END)
-+			break;
-+
-+		if (tl->type == BATADV_DHCP_OPT_PAD)
-+			offset++;
-+		else
-+			offset += tl->len + sizeof(_tl);
-+	}
-+
-+	/* Option Overload Code not supported */
-+	if (!tl || tl->type != BATADV_DHCP_OPT_MSG_TYPE ||
-+	    tl->len != sizeof(_type))
-+		return -EINVAL;
-+
-+	offset += sizeof(_tl);
-+
-+	type = skb_header_pointer(skb, offset, sizeof(_type), &_type);
-+	if (!type)
-+		return -EINVAL;
-+
-+	return *type;
-+}
-+
-+/**
-+ * batadv_dat_get_dhcp_yiaddr() - get yiaddr from a DHCP packet
-+ * @skb: the DHCP packet to parse
-+ * @buffer: a buffer to store the yiaddr in (if necessary / skb is non-linear)
-+ *
-+ * Caller needs to ensure that the given skb is a valid DHCP packet and
-+ * that the skb transport header is set correctly.
-+ *
-+ * Return: A safely accessible "Your IP Address" field from the provided DHCP
-+ * packet.
-+ */
-+static __be32 *batadv_dat_dhcp_get_yiaddr(struct sk_buff *skb, __be32 *buffer)
-+{
-+	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
-+	unsigned int len = sizeof(((struct batadv_dhcp_packet *)0)->yiaddr);
-+
-+	offset += offsetof(struct batadv_dhcp_packet, yiaddr);
-+
-+	return skb_header_pointer(skb, offset, len, buffer);
-+}
-+
-+/**
-+ * batadv_dat_get_dhcp_chaddr() - get chaddr from a DHCP packet
-+ * @skb: the DHCP packet to parse
-+ * @buffer: a buffer to store the chaddr in (if necessary / skb is non-linear)
-+ *
-+ * Caller needs to ensure that the given skb is a valid DHCP packet and
-+ * that the skb transport header is set correctly.
-+ *
-+ * Return: A safely accessible "Client Hardware Address" field from the provided
-+ * DHCP packet.
-+ */
-+static u8 *batadv_dat_get_dhcp_chaddr(struct sk_buff *skb, u8 *buffer)
-+{
-+	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
-+	unsigned int len = sizeof(((struct batadv_dhcp_packet *)0)->chaddr);
-+
-+	offset += offsetof(struct batadv_dhcp_packet, chaddr);
-+
-+	return skb_header_pointer(skb, offset, len, buffer);
-+}
-+
-+/**
-+ * batadv_dat_put_pairs() - puts two MAC/IP pairs into the DHT and DAT cache
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @hw_src: first value of DHT and ARP sender MAC
-+ * @ip_src: first key of DHT and ARP sender IP
-+ * @hw_dst: second value of DHT and ARP target MAC
-+ * @ip_dst: second key of DHT and ARP target IP
-+ * @vid: VLAN identifier
-+ *
-+ * First checks whether the given MAC/IP pairs are suitable for DAT. If so, adds
-+ * them to the local DAT cache and propagates them further into the DHT.
-+ *
-+ * For the DHT propagation, hw_src/ip_src will appear as the ARP Reply
-+ * transmitter (and hw_dst/ip_dst as the target).
-+ *
-+ * Return: True on success, false otherwise.
-+ */
-+static bool batadv_dat_put_pairs(struct batadv_priv *bat_priv, u8 *hw_src,
-+				 __be32 ip_src, u8 *hw_dst, __be32 ip_dst,
-+				 unsigned short vid)
-+{
-+	struct sk_buff *skb;
-+	int hdr_size;
-+	u16 type;
-+	int ret = false;
-+
-+	skb = batadv_dat_arp_create_reply(bat_priv, ip_src, ip_dst, hw_src,
-+					  hw_dst, vid);
-+	if (!skb)
-+		return false;
-+
-+	/* Check for validity of provided addresses */
-+	skb_set_network_header(skb, ETH_HLEN);
-+	hdr_size = skb_network_offset(skb) - ETH_HLEN;
-+	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
-+	if (type != ARPOP_REPLY)
-+		goto err_skip_commit;
-+
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+
-+	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);
-+	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
-+
-+	ret = true;
-+
-+err_skip_commit:
-+	dev_kfree_skb(skb);
-+	return ret;
-+}
-+
-+/**
-+ * batadv_dat_snoop_outgoing_dhcp_ack() - snoop DHCPACK and fill DAT with it
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the packet to snoop
-+ * @proto: ethernet protocol hint (behind a potential vlan)
-+ * @vid: VLAN identifier
-+ *
-+ * This function first checks whether the given skb is a valid DHCPACK. If
-+ * so then its source MAC and IP as well as its DHCP Client Hardware Address
-+ * field and DHCP Your IP Address field are added to the local DAT cache and
-+ * propagated into the DHT.
-+ *
-+ * Caller needs to ensure that the skb mac and network headers are set
-+ * correctly.
-+ */
-+void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
-+					struct sk_buff *skb,
-+					__be16 proto,
-+					unsigned short vid)
-+{
-+	int type;
-+	u8 *chaddr, _chaddr[ETH_ALEN];
-+	__be32 *yiaddr, _yiaddr;
-+
-+	if (!atomic_read(&bat_priv->distributed_arp_table))
-+		return;
-+
-+	if (batadv_dat_check_dhcp(skb, proto) != BATADV_BOOTREPLY)
-+		return;
-+
-+	type = batadv_dat_get_dhcp_message_type(skb);
-+	if (type != BATADV_DHCPACK)
-+		return;
-+
-+	yiaddr = batadv_dat_dhcp_get_yiaddr(skb, &_yiaddr);
-+	if (!yiaddr)
-+		return;
-+
-+	chaddr = batadv_dat_get_dhcp_chaddr(skb, _chaddr);
-+	if (!chaddr)
-+		return;
-+
-+	/* ARP sender MAC + IP -> DHCP Client (chaddr+yiaddr),
-+	 * ARP target MAC + IP -> DHCP Server (ethhdr/iphdr sources)
-+	 */
-+	if (!batadv_dat_put_pairs(bat_priv, chaddr, *yiaddr,
-+				  eth_hdr(skb)->h_source, ip_hdr(skb)->saddr,
-+				  vid))
-+		return;
-+
-+	batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+		   "Snooped from DHCPACK (server-side): %pI4, %pM (vid: %i)\n",
-+		   &ip_hdr(skb)->saddr, eth_hdr(skb)->h_source,
-+		   batadv_print_vid(vid));
-+	batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+		   "Snooped from DHCPACK (client-side): %pI4, %pM (vid: %i)\n",
-+		   yiaddr, chaddr, batadv_print_vid(vid));
-+}
-+
-+/**
-  * batadv_dat_drop_broadcast_packet() - check if an ARP request has to be
-  *  dropped (because the node has already obtained the reply via DAT) or not
-  * @bat_priv: the bat priv with all the soft interface information
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index a0459602..cf58d230 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -46,6 +46,10 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size);
-+void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
-+					struct sk_buff *skb,
-+					__be16 proto,
-+					unsigned short vid);
- bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 				      struct batadv_forw_packet *forw_packet);
+ 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
+ 			   "Entry updated: %pI4 %pM (vid: %d)\n",
+ 			   &dat_entry->ip, dat_entry->mac_addr,
+@@ -354,6 +363,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+ 	dat_entry->vid = vid;
+ 	ether_addr_copy(dat_entry->mac_addr, mac_addr);
+ 	dat_entry->last_update = jiffies;
++	dat_entry->last_extended_update = extended_timeout ? jiffies : 0;
+ 	kref_init(&dat_entry->refcount);
  
-@@ -140,6 +144,13 @@ batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	return false;
+ 	kref_get(&dat_entry->refcount);
+@@ -630,6 +640,7 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
+  * @ip: the DHT key
+  * @vid: VLAN identifier
+  * @packet_subtype: unicast4addr packet subtype to use
++ * @flags: flags to set in the unicast4addr header
+  *
+  * This function copies the skb with pskb_copy() and is sent as unicast packet
+  * to each of the selected candidates.
+@@ -639,7 +650,8 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
+  */
+ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 				 struct sk_buff *skb, __be32 ip,
+-				 unsigned short vid, int packet_subtype)
++				 unsigned short vid, int packet_subtype,
++				 u8 flags)
+ {
+ 	int i;
+ 	bool ret = false;
+@@ -666,7 +678,8 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 		tmp_skb = pskb_copy_for_clone(skb, GFP_ATOMIC);
+ 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
+ 							   cand[i].orig_node,
+-							   packet_subtype)) {
++							   packet_subtype,
++							   flags)) {
+ 			kfree_skb(tmp_skb);
+ 			goto free_neigh;
+ 		}
+@@ -1182,7 +1195,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
+ 
+-	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
+ 
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
+ 	if (dat_entry) {
+@@ -1231,7 +1244,8 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	} else {
+ 		/* Send the request to the DHT */
+ 		ret = batadv_dat_send_data(bat_priv, skb, ip_dst, vid,
+-					   BATADV_P_DAT_DHT_GET);
++					   BATADV_P_DAT_DHT_GET,
++					   BATADV_NO_FLAGS);
+ 	}
+ out:
+ 	if (dat_entry)
+@@ -1275,7 +1289,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 
+ 	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
+ 
+-	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
+ 
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
+ 	if (!dat_entry)
+@@ -1339,14 +1353,42 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
+ 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
+ 
+-	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+-	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
++	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, false);
+ 
+ 	/* Send the ARP reply to the candidates for both the IP addresses that
+ 	 * the node obtained from the ARP reply
+ 	 */
+-	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);
+-	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
++	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT,
++			     BATADV_NO_FLAGS);
++	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT,
++			     BATADV_NO_FLAGS);
++}
++
++/**
++ * batadv_dat_get_dht_put_flags() - retrieves DHT_PUT flags from a 4addr packet
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: packet to check
++ * @hdr_size: size of the encapsulation header
++ *
++ * Return: The DHT_PUT flags if the provided packet contains a valid DHT_PUT
++ * message, BATADV_NO_FLAGS otherwise.
++ */
++static u8 batadv_dat_get_dht_put_flags(struct batadv_priv *bat_priv,
++				       struct sk_buff *skb, int hdr_size)
++{
++	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
++
++	if (hdr_size < sizeof(struct batadv_unicast_packet))
++		return BATADV_NO_FLAGS;
++
++	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
++
++	if (unicast_4addr_packet->u.packet_type != BATADV_UNICAST_4ADDR ||
++	    unicast_4addr_packet->subtype != BATADV_P_DAT_DHT_PUT)
++		return BATADV_NO_FLAGS;
++
++	return unicast_4addr_packet->flags;
  }
  
-+static inline void
-+batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
-+				   struct sk_buff *skb, __be16 proto,
-+				   unsigned short vid)
-+{
-+}
-+
- static inline bool
- batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 				 struct batadv_forw_packet *forw_packet)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 1485263a..a8559629 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -212,6 +212,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
- 	enum batadv_forw_mode forw_mode;
- 	struct batadv_orig_node *mcast_single_orig = NULL;
- 	int network_offset = ETH_HLEN;
-+	__be16 proto;
+ /**
+@@ -1363,11 +1405,13 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb, int hdr_size)
+ {
+ 	struct batadv_dat_entry *dat_entry = NULL;
++	bool extended_timeout = false;
+ 	u16 type;
+ 	__be32 ip_src, ip_dst;
+ 	u8 *hw_src, *hw_dst;
+ 	bool dropped = false;
+ 	unsigned short vid;
++	u8 dht_put_flags;
  
- 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
- 		goto dropped;
-@@ -223,12 +224,15 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
- 	vid = batadv_get_vid(skb, 0);
- 	ethhdr = eth_hdr(skb);
- 
--	switch (ntohs(ethhdr->h_proto)) {
-+	proto = ethhdr->h_proto;
-+
-+	switch (ntohs(proto)) {
- 	case ETH_P_8021Q:
- 		vhdr = vlan_eth_hdr(skb);
-+		proto = vhdr->h_vlan_encapsulated_proto;
- 
- 		/* drop batman-in-batman packets to prevent loops */
--		if (vhdr->h_vlan_encapsulated_proto != htons(ETH_P_BATMAN)) {
-+		if (proto != htons(ETH_P_BATMAN)) {
- 			network_offset += VLAN_HLEN;
- 			break;
- 		}
-@@ -256,6 +260,9 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
- 			goto dropped;
+ 	if (!atomic_read(&bat_priv->distributed_arp_table))
+ 		goto out;
+@@ -1400,11 +1444,15 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 		goto out;
  	}
  
-+	/* Snoop address candidates from DHCPACKs for early DAT filling */
-+	batadv_dat_snoop_outgoing_dhcp_ack(bat_priv, skb, proto, vid);
++	dht_put_flags = batadv_dat_get_dht_put_flags(bat_priv, skb, hdr_size);
++	if (dht_put_flags & BATADV_DAT_EXTENDED_TIMEOUT)
++		extended_timeout = true;
 +
- 	/* don't accept stp packets. STP does not help in meshes.
- 	 * better use the bridge loop avoidance ...
- 	 *
+ 	/* Update our internal cache with both the IP addresses the node got
+ 	 * within the ARP reply
+ 	 */
+-	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+-	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, extended_timeout);
++	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, extended_timeout);
+ 
+ 	/* If BLA is enabled, only forward ARP replies if we have claimed the
+ 	 * source of the ARP reply or if no one else of the same backbone has
+@@ -1658,11 +1706,13 @@ static bool batadv_dat_put_pairs(struct batadv_priv *bat_priv, u8 *hw_src,
+ 	if (type != ARPOP_REPLY)
+ 		goto err_skip_commit;
+ 
+-	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+-	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
++	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, false);
+ 
+-	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);
+-	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
++	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT,
++			     BATADV_DAT_EXTENDED_TIMEOUT);
++	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT,
++			     BATADV_DAT_EXTENDED_TIMEOUT);
+ 
+ 	ret = true;
+ 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 8da3c933..0227aae0 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -51,6 +51,7 @@
+ #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
+ #define BATADV_MCAST_WORK_PERIOD 500 /* 0.5 seconds */
+ #define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
++#define BATADV_DAT_EXT_ENTRY_TIMEOUT (60 * 60000) /* 60 mins in milliseconds */
+ /* sliding packet range of received originator messages in sequence numbers
+  * (should be a multiple of our word size)
+  */
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 4a35f5c2..edccfa0b 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -289,13 +289,15 @@ static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
+  * @skb: the skb containing the payload to encapsulate
+  * @orig: the destination node
+  * @packet_subtype: the unicast 4addr packet subtype to use
++ * @flags: the unicast 4addr packet flags to set
+  *
+  * Return: false if the payload could not be encapsulated or true otherwise.
+  */
+ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig,
+-					   int packet_subtype)
++					   int packet_subtype,
++					   u8 flags)
+ {
+ 	struct batadv_hard_iface *primary_if;
+ 	struct batadv_unicast_4addr_packet *uc_4addr_packet;
+@@ -317,7 +319,7 @@ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 	uc_4addr_packet->u.packet_type = BATADV_UNICAST_4ADDR;
+ 	ether_addr_copy(uc_4addr_packet->src, primary_if->net_dev->dev_addr);
+ 	uc_4addr_packet->subtype = packet_subtype;
+-	uc_4addr_packet->reserved = 0;
++	uc_4addr_packet->flags = flags;
+ 
+ 	ret = true;
+ out:
+@@ -363,7 +365,8 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	case BATADV_UNICAST_4ADDR:
+ 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, skb,
+ 							   orig_node,
+-							   packet_subtype))
++							   packet_subtype,
++							   BATADV_NO_FLAGS))
+ 			goto out;
+ 		break;
+ 	default:
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 64cce07b..278994af 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -62,7 +62,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig_node,
+-					   int packet_subtype);
++					   int packet_subtype,
++					   u8 flags);
+ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 			    struct sk_buff *skb, int packet_type,
+ 			    int packet_subtype,
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 7d5d9987..2eed2001 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -2308,6 +2308,12 @@ struct batadv_dat_entry {
+ 	 */
+ 	unsigned long last_update;
+ 
++	/**
++	 * @last_extended_update: time in jiffies when a DHT_PUT with extended
++	 *  timeout flag was last received
++	 */
++	unsigned long last_extended_update;
++
+ 	/** @hash_entry: hlist node for &batadv_priv_dat.hash */
+ 	struct hlist_node hash_entry;
+ 
 -- 
 2.11.0
 
