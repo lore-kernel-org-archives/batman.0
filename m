@@ -1,11 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 18 May 2018 09:47:54 +0800
-Message-Id: <20180518014754.23644-8-mareklindner@neomailbox.ch>
-In-Reply-To: <20180518014754.23644-1-mareklindner@neomailbox.ch>
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
- meter test duration attribute
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 18 May 2018 23:46:56 +0200
+Message-ID: <1566281.z125QuZFdt@sven-edge>
+In-Reply-To: <20180515155908.23839-1-linus.luessing@c0d3.blue>
+References: <20180515155908.23839-1-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2176817.6yEHGR4ReK";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Snoop DHCPACKs for DAT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,106 +18,99 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-When the ELP throughput meter fallback kicks in to trigger
-a throughput meter measurement the test duration can be
-configured via this attribute.
+--nextPart2176817.6yEHGR4ReK
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Default tp test duration: 1000ms
+On Dienstag, 15. Mai 2018 17:59:08 CEST Linus L=FCssing wrote:
+[...]
+> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/
+batadv_packet.h
+> index 894d8d2f..6a48f36c 100644
+> --- a/include/uapi/linux/batadv_packet.h
+> +++ b/include/uapi/linux/batadv_packet.h
+> @@ -630,6 +630,46 @@ struct batadv_tvlv_mcast_data {
+>  	__u8 reserved[3];
+>  };
+> =20
+> +enum batadv_bootpop {
+> +	BATADV_BOOTREPLY	=3D 2,
+> +};
+> +
+> +enum batadv_boothtype {
+> +	BATADV_HTYPE_ETHERNET	=3D 1,
+> +};
+> +
+> +enum batadv_dhcpoptioncode {
+> +	BATADV_DHCP_OPT_PAD		=3D 0,
+> +	BATADV_DHCP_OPT_MSG_TYPE	=3D 53,
+> +	BATADV_DHCP_OPT_END		=3D 255,
+> +};
+> +
+> +enum batadv_dhcptype {
+> +	BATADV_DHCPACK		=3D 5,
+> +};
+> +
+> +/* { 99, 130, 83, 99 } */
+> +#define BATADV_DHCP_MAGIC 1669485411
+> +
+> +struct batadv_dhcp_packet {
+> +	__u8 op;
+> +	__u8 htype;
+> +	__u8 hlen;
+> +	__u8 hops;
+> +	__be32 xid;
+> +	__be16 secs;
+> +	__be16 flags;
+> +	__be32 ciaddr;
+> +	__be32 yiaddr;
+> +	__be32 siaddr;
+> +	__be32 giaddr;
+> +	__u8 chaddr[16];
+> +	__u8 sname[64];
+> +	__u8 file[128];
+> +	__be32 magic;
+> +	__u8 options[0];
+> +};
+> +
+>  #pragma pack()
+> =20
+>  #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
- net/batman-adv/bat_v.c                               | 1 +
- net/batman-adv/bat_v_elp.c                           | 5 ++++-
- net/batman-adv/sysfs.c                               | 3 +++
- net/batman-adv/types.h                               | 3 +++
- 5 files changed, 18 insertions(+), 1 deletion(-)
+Please correct me but it doesn't look like these things have anything to do=
+=20
+with the batman-adv packet format. And userspace should also not use the=20
+bootp_pkt/batadv_dhcp_packet definition from batman-adv.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 89810684..7b3974a5 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -6,6 +6,13 @@ Description:
-                 Defines the interval in milliseconds in which batman
-                 emits probing packets for neighbor sensing (ELP).
- 
-+What:           /sys/class/net/<iface>/batman-adv/elp_tp_duration
-+Date:           May 2018
-+Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-+Description:
-+                Defines measurement duration in milliseconds upon
-+                ELP fallback throughput meter measurements.
-+
- What:           /sys/class/net/<iface>/batman-adv/iface_status
- Date:           May 2010
- Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index ec93337e..be068516 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -1084,6 +1084,7 @@ void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
- 	 */
- 	atomic_set(&hard_iface->bat_v.throughput_override, 0);
- 	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+	atomic_set(&hard_iface->bat_v.elp_tp_duration, 1000);
- }
- 
- /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 3f0d7816..818a9a6a 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -76,9 +76,12 @@ static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *neigh)
- {
- 	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	u32 elp_tp_duration;
- 
- 	neigh->bat_v.tp_meter_running = true;
--	batadv_tp_start(bat_priv, neigh->addr, neigh, 10, NULL, BATADV_TP_ELP);
-+	elp_tp_duration = atomic_read(&hard_iface->bat_v.elp_tp_duration);
-+	batadv_tp_start(bat_priv, neigh->addr, neigh, elp_tp_duration,
-+			NULL, BATADV_TP_ELP);
- }
- 
- /**
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index f2eef43b..d8d08bfa 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1128,6 +1128,8 @@ static BATADV_ATTR(iface_status, 0444, batadv_show_iface_status, NULL);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, 0644,
- 		     2 * BATADV_JITTER, INT_MAX, NULL);
-+BATADV_ATTR_HIF_UINT(elp_tp_duration, bat_v.elp_tp_duration, 0644,
-+		     1, INT_MAX, NULL);
- static BATADV_ATTR(throughput_override, 0644, batadv_show_throughput_override,
- 		   batadv_store_throughput_override);
- #endif
-@@ -1137,6 +1139,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
- 	&batadv_attr_iface_status,
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	&batadv_attr_elp_interval,
-+	&batadv_attr_elp_tp_duration,
- 	&batadv_attr_throughput_override,
- #endif
- 	NULL,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 148f23ad..8efe295a 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -117,6 +117,9 @@ struct batadv_hard_iface_bat_v {
- 	/** @elp_interval: time interval between two ELP transmissions */
- 	atomic_t elp_interval;
- 
-+	/** @elp_tp_duration: throughput meter fallback test duration */
-+	atomic_t elp_tp_duration;
-+
- 	/** @elp_seqno: current ELP sequence number */
- 	atomic_t elp_seqno;
- 
--- 
-2.17.0
+And what about the basically duplicated bootp_pkt definition in net/ipv4/
+ipconfig.c?
+
+Kind regards,
+	Sven
+--nextPart2176817.6yEHGR4ReK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr/SdAACgkQXYcKB8Em
+e0aAYA//T2Klz/tnAO+ieZpyjzYFhzFHjGY7yJsf/UUrbAhwv5sgGVbfRCYA2mVn
+JDOIax3C3TE07WakwaFEfkv9q9Y6Qj3GEtbnw4NREWjTQcvXpyDuR4uElRBu1G8a
+7qjzmKf7M47tBQyWXdaGFt+XrzFgE/ah+Kehs/VNjmR943Yr4Moz8k+uw9ZoRKla
+5Imqcz1LnQpgrVksSPFUtA45OQvXAWVNLkvxppXeJntCkAL+LWjfrsb0A+IxVArc
+IwqjBbeJmPJOnGEwv7rAfH6O9C4doGuTOTMif66PoISIByMJfKYQxzUYW01+wrJD
+BmPwHrqHOuItAs30PLLvaVxreTggZSJfdizMKJXoiJ/9/X+pMSUTisne+GcDfSlo
+Bmy/oSe/feEhxuq6eIfRYntg4XLoAasyOc0FfHTeHHGBZgjrsjQnVS00rW2eAugF
+i/oNes4WSdC5V895GSmPHO4jFb/q+cfVVDwGtc0DceEnkzJbLqqAKQZUydtQ/FoN
+o6tfFEszgGQ2VDjBr2z0Xkp9mJyDoouJe0xlAOp200qKsBJdJHYm2St+Wy5BaBQv
+bVkp6M53P4jnDJZpmco6PJ2TZZ4XUTetY/Qo7FCR+xN/mceweLzzjOK01Sy4n3N1
+UCE8bRe0QzUakAikCero1/VuSqLKp2QgYm+wr7q0/OpXbXXqaPI=
+=VnVN
+-----END PGP SIGNATURE-----
+
+--nextPart2176817.6yEHGR4ReK--
+
+
 
