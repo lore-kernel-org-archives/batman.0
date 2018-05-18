@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 18 May 2018 23:46:56 +0200
-Message-ID: <1566281.z125QuZFdt@sven-edge>
+Date: Sat, 19 May 2018 00:08:57 +0200
+Message-ID: <1526683397.ZIjaEm5zIv@sven-edge>
 In-Reply-To: <20180515155908.23839-1-linus.luessing@c0d3.blue>
 References: <20180515155908.23839-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2176817.6yEHGR4ReK";
+Content-Type: multipart/signed; boundary="nextPart1687138.rFc9t0Q1ol";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Snoop DHCPACKs for DAT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,98 +19,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2176817.6yEHGR4ReK
+--nextPart1687138.rFc9t0Q1ol
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
 On Dienstag, 15. Mai 2018 17:59:08 CEST Linus L=FCssing wrote:
+> +       magic =3D skb_header_pointer(skb, offset, sizeof(_magic), &_magic=
+);
+> +       if (!magic || *magic !=3D htonl(BATADV_DHCP_MAGIC))
+> +               return -EINVAL;
+
+I just hear a neoraider cry [1] in the background because you've added a ne=
+w=20
+potentially unaligned 4 byte access in the network packet parsing code.=20
+
+
 [...]
-> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/
-batadv_packet.h
-> index 894d8d2f..6a48f36c 100644
-> --- a/include/uapi/linux/batadv_packet.h
-> +++ b/include/uapi/linux/batadv_packet.h
-> @@ -630,6 +630,46 @@ struct batadv_tvlv_mcast_data {
->  	__u8 reserved[3];
->  };
-> =20
-> +enum batadv_bootpop {
-> +	BATADV_BOOTREPLY	=3D 2,
-> +};
+> +static __be32 *batadv_dat_dhcp_get_yiaddr(struct sk_buff *skb, __be32 *b=
+uffer)
+> +{
+> +       unsigned int offset =3D skb_transport_offset(skb) + sizeof(struct=
+ udphdr);
+> +       unsigned int len =3D sizeof(((struct batadv_dhcp_packet *)0)->yia=
+ddr);
 > +
-> +enum batadv_boothtype {
-> +	BATADV_HTYPE_ETHERNET	=3D 1,
-> +};
+> +       offset +=3D offsetof(struct batadv_dhcp_packet, yiaddr);
 > +
-> +enum batadv_dhcpoptioncode {
-> +	BATADV_DHCP_OPT_PAD		=3D 0,
-> +	BATADV_DHCP_OPT_MSG_TYPE	=3D 53,
-> +	BATADV_DHCP_OPT_END		=3D 255,
-> +};
-> +
-> +enum batadv_dhcptype {
-> +	BATADV_DHCPACK		=3D 5,
-> +};
-> +
-> +/* { 99, 130, 83, 99 } */
-> +#define BATADV_DHCP_MAGIC 1669485411
-> +
-> +struct batadv_dhcp_packet {
-> +	__u8 op;
-> +	__u8 htype;
-> +	__u8 hlen;
-> +	__u8 hops;
-> +	__be32 xid;
-> +	__be16 secs;
-> +	__be16 flags;
-> +	__be32 ciaddr;
-> +	__be32 yiaddr;
-> +	__be32 siaddr;
-> +	__be32 giaddr;
-> +	__u8 chaddr[16];
-> +	__u8 sname[64];
-> +	__u8 file[128];
-> +	__be32 magic;
-> +	__u8 options[0];
-> +};
-> +
->  #pragma pack()
-> =20
->  #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
+> +       return skb_header_pointer(skb, offset, len, buffer);
+> +}
 
-Please correct me but it doesn't look like these things have anything to do=
-=20
-with the batman-adv packet format. And userspace should also not use the=20
-bootp_pkt/batadv_dhcp_packet definition from batman-adv.
-
-And what about the basically duplicated bootp_pkt definition in net/ipv4/
-ipconfig.c?
+Same here
 
 Kind regards,
 	Sven
---nextPart2176817.6yEHGR4ReK
+
+[1] https://patchwork.open-mesh.org/patch/17253/
+--nextPart1687138.rFc9t0Q1ol
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr/SdAACgkQXYcKB8Em
-e0aAYA//T2Klz/tnAO+ieZpyjzYFhzFHjGY7yJsf/UUrbAhwv5sgGVbfRCYA2mVn
-JDOIax3C3TE07WakwaFEfkv9q9Y6Qj3GEtbnw4NREWjTQcvXpyDuR4uElRBu1G8a
-7qjzmKf7M47tBQyWXdaGFt+XrzFgE/ah+Kehs/VNjmR943Yr4Moz8k+uw9ZoRKla
-5Imqcz1LnQpgrVksSPFUtA45OQvXAWVNLkvxppXeJntCkAL+LWjfrsb0A+IxVArc
-IwqjBbeJmPJOnGEwv7rAfH6O9C4doGuTOTMif66PoISIByMJfKYQxzUYW01+wrJD
-BmPwHrqHOuItAs30PLLvaVxreTggZSJfdizMKJXoiJ/9/X+pMSUTisne+GcDfSlo
-Bmy/oSe/feEhxuq6eIfRYntg4XLoAasyOc0FfHTeHHGBZgjrsjQnVS00rW2eAugF
-i/oNes4WSdC5V895GSmPHO4jFb/q+cfVVDwGtc0DceEnkzJbLqqAKQZUydtQ/FoN
-o6tfFEszgGQ2VDjBr2z0Xkp9mJyDoouJe0xlAOp200qKsBJdJHYm2St+Wy5BaBQv
-bVkp6M53P4jnDJZpmco6PJ2TZZ4XUTetY/Qo7FCR+xN/mceweLzzjOK01Sy4n3N1
-UCE8bRe0QzUakAikCero1/VuSqLKp2QgYm+wr7q0/OpXbXXqaPI=
-=VnVN
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlr/TvkACgkQXYcKB8Em
+e0YhcA//VAv5XY2aFiQRvjMgcluVs6b1KBvzbBMrO0bTVtHOQYHz6LjyaQ5ed4Ag
+RrwJhkxw/h60XPPUF735ZJGPYZ3KCTY6DNEmTa+oYmQgz1WlZqo22t0umD89SF8h
+1RAY+ArPz4BuNIsMAumT76CO1Wx+RBJRxfrmRLjMbAEKt/U9G3M6L2Tk8YO+beYr
+HpP/4jM6oRjq6baz8WQaN3BDrYoldVsLDGE6XmKFdkXd6yrV3OFcWiRTFY+jgD6S
+qBp9DBiT4AW4i887YVvwg7bAr8spMdbgczlv6XsUaVxiZvy24ns0rTdQIYPTO1HX
+ruZTy+yo4gJTTevtJ7gDHmBPHtxvy4EeM0/XJsj4Z/8MSSltQOJWO3dwdjI4RcEW
+huz09NU432yaSX+OE2bQ/pZO7LOr9CSJEJFLrGAloKN8WjiVOhqg3/mefAEuMn+f
+d/KK8rkhypitzGQ+ZPv7mmEBpP/Chx/B2SpCSRj59icscLfUlTqvA11lmglQWIot
+Peagi8pfocxiV2DpNqq7m1mwHjJof52rWLfVXXXbF0uKGilY3IEuzc5iWtTrK6e1
+5FAhBvtP+EL9hBbSTAovp3zJmq4NjNYc1AtKDPvRSCs2FcENthc9hIuprz/BlX78
+4Jjn7tZaREd0HHUxKbH/DK7pcYXgKvragPtAGh2ExzwJU06RVuk=
+=OyLW
 -----END PGP SIGNATURE-----
 
---nextPart2176817.6yEHGR4ReK--
+--nextPart1687138.rFc9t0Q1ol--
 
 
 
