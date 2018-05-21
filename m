@@ -1,7 +1,7 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 21 May 2018 16:48:55 +0200
+Date: Mon, 21 May 2018 17:01:14 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180521144854.GO7162@otheros>
+Message-ID: <20180521150114.GP7162@otheros>
 References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
  <20180518014754.23644-7-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
@@ -23,36 +23,21 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
-> +/**
-> + * batadv_v_elp_tp_start() - start a tp meter session for a neighbor
-> + * @neigh: neighbor to run tp meter on
-> + */
-> +static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *neigh)
-> +{
-> +	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
-> +	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-> +
-> +	neigh->bat_v.tp_meter_running = true;
-> +	batadv_tp_start(bat_priv, neigh->addr, neigh, 10, NULL, BATADV_TP_ELP);
-> +}
-
-This seems racy here? We have no ordering constraints between
-the assigment and batadv_tp_start() which might lead to...
-
-> @@ -152,6 +192,25 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
->  			return throughput * 10;
->  	}
+> diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+> index 0a9bee88..148f23ad 100644
+> --- a/net/batman-adv/types.h
+> +++ b/net/batman-adv/types.h
+> @@ -583,6 +583,20 @@ struct batadv_hardif_neigh_node_bat_v {
 >  
-> +fallback_throughput:
-> +	last_tp_run_jiffies = jiffies - neigh->bat_v.last_tp_meter_run;
-> +	last_tp_run_msecs = jiffies_to_msecs(last_tp_run_jiffies);
+>  	/** @metric_work: work queue callback item for metric update */
+>  	struct work_struct metric_work;
 > +
-> +	/* check the tp_meter_running flag before checking the timestamp to
-> +	 * avoid a race condition where a new tp meter session is scheduled
-> +	 * right after the previous tp meter session has completed
+> +	/**
+> +	 * @tp_meter_running: tp meter measurements towards this neighbor in
+> +	 * progress
 > +	 */
-> +	if (!neigh->bat_v.tp_meter_running &&
-> +	    last_tp_run_msecs > BATADV_ELP_TP_RUN_INTERVAL)
-> +		batadv_v_elp_tp_start(neigh);
+> +	unsigned char tp_meter_running:1;
 
-...multiple instances potentially being started at the same time here?
+I'm currently wondering: Would it make sense to prevent parallel
+tp meter execution not only to a specific neighbor but parallel
+executions on a hard-interface in general?
