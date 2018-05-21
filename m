@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 21 May 2018 16:34:16 +0200
-Message-ID: <8211925.JcgYpGFXDF@sven-edge>
-In-Reply-To: <20180518014754.23644-8-mareklindner@neomailbox.ch>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Mon, 21 May 2018 16:43:04 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20180521144304.GN7162@otheros>
 References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <20180518014754.23644-8-mareklindner@neomailbox.ch>
+ <20180518014754.23644-7-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9666721.k45vbQlQMa";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
- meter test duration attribute
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20180518014754.23644-7-mareklindner@neomailbox.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
+ estimate the throughput if otherwise not available
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,54 +19,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart9666721.k45vbQlQMa
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
+> +fallback_throughput:
+> +	last_tp_run_jiffies = jiffies - neigh->bat_v.last_tp_meter_run;
+> +	last_tp_run_msecs = jiffies_to_msecs(last_tp_run_jiffies);
+> +
+> +	/* check the tp_meter_running flag before checking the timestamp to
+> +	 * avoid a race condition where a new tp meter session is scheduled
+> +	 * right after the previous tp meter session has completed
+> +	 */
+> +	if (!neigh->bat_v.tp_meter_running &&
+> +	    last_tp_run_msecs > BATADV_ELP_TP_RUN_INTERVAL)
+> +		batadv_v_elp_tp_start(neigh);
+> +
+> +	/* discard too old tp test results */
+> +	if (last_tp_run_msecs > 2 * BATADV_ELP_TP_RUN_INTERVAL)
+> +		neigh->bat_v.tp_meter_throughput = 0;
+> +
 
-On Freitag, 18. Mai 2018 03:47:54 CEST Marek Lindner wrote:
-> When the ELP throughput meter fallback kicks in to trigger
-> a throughput meter measurement the test duration can be
-> configured via this attribute.
-> 
-> Default tp test duration: 1000ms
-> 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
->  Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
-
-Please discuss this with Jiri [1].
-
-Kind regards,
-	Sven
-
-
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-May/017814.html
---nextPart9666721.k45vbQlQMa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsC2OgACgkQXYcKB8Em
-e0aoCxAAugI10xpZlEZoooaUhp6z48pR0vDZvdT3qgVcF+UY49QWzUonYSQFvJQL
-PRgXrdRwqOBEMg2cXn7DSaSf63tie4t0loNXHzPtzkZeY81Kh/b3N+vcoA0gyhCb
-yrjDky1oQk6F5yY4EX1AN6+kUVgWIjBx60zvTVEeF79pxJ1EKYWRUAaysWuACVj4
-A/0tTrZTRbvuFt0hcnA4mPHzgYiK0xeBi6O0rQIxOjC6PNnTzb4GA82VAsAMz2li
-UilvhBEtz8R6P4MebPq2zyDg/z3A6aG48Lzr2Em8UUr6onGbg4PIT6EaoMpNHoFl
-JY3sFQxFGN/kaGbhW56xQvsPPNvn1CIEkkwUPPEf3Iq9JQfqoeDayaBg3cNoPJKM
-5qJIz+I8H4dhRlXYb+HPIEO7jsjCFVbgi2ZT0N4Nn8CcND51jkLB9hipuTTHVU5M
-vAyx1GQw65sUIYBPYR9EuNoueyGnIX6kR/wgLsbx6TFxW74DT30ySqdX4f9elJ+I
-cWDRKltwkmiRAOIm/o55UtN0EUSz5vBaRbRTFNlVlQsPcjxOGP80DLcvnA9F5mgR
-ef6mO/RlLMVYJdx/xS3x98nlIiJJs9/No/ZrEtQ03FPY3TRm39l2EAWMabpVC6Ca
-drN9mEZvsIrbrexJMbSqj2IQ+h04Bx9PQQYcC69905TQkYJGDNI=
-=fgNP
------END PGP SIGNATURE-----
-
---nextPart9666721.k45vbQlQMa--
-
-
-
+So far we were either using time_before(), time_after_eq() or our
+own wrapper batadv_has_timed_out(). Would it make sense to use
+some of these here, too?
