@@ -1,7 +1,7 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 21 May 2018 16:43:04 +0200
+Date: Mon, 21 May 2018 16:48:55 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180521144304.GN7162@otheros>
+Message-ID: <20180521144854.GO7162@otheros>
 References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
  <20180518014754.23644-7-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
@@ -23,6 +23,26 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
+> +/**
+> + * batadv_v_elp_tp_start() - start a tp meter session for a neighbor
+> + * @neigh: neighbor to run tp meter on
+> + */
+> +static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *neigh)
+> +{
+> +	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
+> +	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+> +
+> +	neigh->bat_v.tp_meter_running = true;
+> +	batadv_tp_start(bat_priv, neigh->addr, neigh, 10, NULL, BATADV_TP_ELP);
+> +}
+
+This seems racy here? We have no ordering constraints between
+the assigment and batadv_tp_start() which might lead to...
+
+> @@ -152,6 +192,25 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+>  			return throughput * 10;
+>  	}
+>  
 > +fallback_throughput:
 > +	last_tp_run_jiffies = jiffies - neigh->bat_v.last_tp_meter_run;
 > +	last_tp_run_msecs = jiffies_to_msecs(last_tp_run_jiffies);
@@ -34,12 +54,5 @@ On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
 > +	if (!neigh->bat_v.tp_meter_running &&
 > +	    last_tp_run_msecs > BATADV_ELP_TP_RUN_INTERVAL)
 > +		batadv_v_elp_tp_start(neigh);
-> +
-> +	/* discard too old tp test results */
-> +	if (last_tp_run_msecs > 2 * BATADV_ELP_TP_RUN_INTERVAL)
-> +		neigh->bat_v.tp_meter_throughput = 0;
-> +
 
-So far we were either using time_before(), time_after_eq() or our
-own wrapper batadv_has_timed_out(). Would it make sense to use
-some of these here, too?
+...multiple instances potentially being started at the same time here?
