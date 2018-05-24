@@ -1,11 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 May 2018 13:53:25 +0200
-Message-Id: <20180524115325.15355-5-sw@simonwunderlich.de>
-In-Reply-To: <20180524115325.15355-1-sw@simonwunderlich.de>
-References: <20180524115325.15355-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: prevent TT request storms by
- not sending inconsistent TT TLVLs
+Date: Thu, 24 May 2018 13:53:21 +0200
+Message-Id: <20180524115325.15355-1-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/4] pull request for net: batman-adv
+ 2018-05-24
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,81 +17,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+Hi David,
 
-A translation table TVLV changset sent with an OGM consists
-of a number of headers (one per VLAN) plus the changeset
-itself (addition and/or deletion of entries).
+here are a couple of bugfixes which we would like to have integrated into net.
 
-The per-VLAN headers are used by OGM recipients for consistency
-checks. Said consistency check might determine that a full
-translation table request is needed to restore consistency. If
-the TT sender adds per-VLAN headers of empty VLANs into the OGM,
-recipients are led to believe to have reached an inconsistent
-state and thus request a full table update. The full table does
-not contain empty VLANs (due to missing entries) the cycle
-restarts when the next OGM is issued.
+Please pull or let me know of any problem!
 
-Consequently, when the translation table TVLV headers are
-composed, empty VLANs are to be excluded.
+Thank you,
+      Simon
 
-Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/translation-table.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+The following changes since commit 60cc43fc888428bb2f18f08997432d426a243338:
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 23f9c212ab1e..3986551397ca 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -931,15 +931,20 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
- 	struct batadv_softif_vlan *vlan;
- 	u16 num_vlan = 0;
--	u16 num_entries = 0;
-+	u16 vlan_entries = 0;
-+	u16 total_entries = 0;
- 	u16 tvlv_len;
- 	u8 *tt_change_ptr;
- 	int change_offset;
- 
- 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+		vlan_entries = atomic_read(&vlan->tt.num_entries);
-+		if (vlan_entries < 1)
-+			continue;
-+
- 		num_vlan++;
--		num_entries += atomic_read(&vlan->tt.num_entries);
-+		total_entries += vlan_entries;
- 	}
- 
- 	change_offset = sizeof(**tt_data);
-@@ -947,7 +952,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 
- 	/* if tt_len is negative, allocate the space needed by the full table */
- 	if (*tt_len < 0)
--		*tt_len = batadv_tt_len(num_entries);
-+		*tt_len = batadv_tt_len(total_entries);
- 
- 	tvlv_len = *tt_len;
- 	tvlv_len += change_offset;
-@@ -964,6 +969,10 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 
- 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+		vlan_entries = atomic_read(&vlan->tt.num_entries);
-+		if (vlan_entries < 1)
-+			continue;
-+
- 		tt_vlan->vid = htons(vlan->vid);
- 		tt_vlan->crc = htonl(vlan->tt.crc);
- 
--- 
-2.11.0
+  Linux 4.17-rc1 (2018-04-15 18:24:20 -0700)
 
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180524
+
+for you to fetch changes up to 16116dac23396e73c01eeee97b102e4833a4b205:
+
+  batman-adv: prevent TT request storms by not sending inconsistent TT TLVLs (2018-05-12 18:53:08 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - prevent hardif_put call with NULL parameter, by Colin Ian King
+
+ - Avoid race in Translation Table allocator, by Sven Eckelmann
+
+ - Fix Translation Table sync flags for intermediate Responses,
+   by Linus Luessing
+
+ - prevent sending inconsistent Translation Table TVLVs,
+   by Marek Lindner
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      batman-adv: don't pass a NULL hard_iface to batadv_hardif_put
+
+Linus Lüssing (1):
+      batman-adv: Fix TT sync flags for intermediate TT responses
+
+Marek Lindner (1):
+      batman-adv: prevent TT request storms by not sending inconsistent TT TLVLs
+
+Sven Eckelmann (1):
+      batman-adv: Avoid race in TT TVLV allocator helper
+
+ net/batman-adv/multicast.c         |  2 +-
+ net/batman-adv/translation-table.c | 84 ++++++++++++++++++++++++++++++--------
+ 2 files changed, 68 insertions(+), 18 deletions(-)
