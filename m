@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 May 2018 14:02:56 +0200
-Message-Id: <20180524120300.15829-5-sw@simonwunderlich.de>
+Date: Thu, 24 May 2018 14:02:57 +0200
+Message-Id: <20180524120300.15829-6-sw@simonwunderlich.de>
 In-Reply-To: <20180524120300.15829-1-sw@simonwunderlich.de>
 References: <20180524120300.15829-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/8] batman-adv: Avoid bool in structures
+Subject: [B.A.T.M.A.N.] [PATCH 5/8] batman-adv: Remove unused dentry without
+ DEBUGFS
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,73 +20,57 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Using the bool type for structure member is considered inappropriate [1]
-for the kernel. Its size is not well defined (but usually 1 byte but maybe
-also 4 byte).
-
-[1] https://lkml.org/lkml/2017/11/21/384
+The debug_dir variable in the main structures is only accessed when
+CONFIG_BATMAN_ADV_DEBUGFS is enabled. It can be dropped to potentially save
+some bytes of memory.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/types.h | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ net/batman-adv/types.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 0174f79e955a..3b3fc146b30d 100644
+index 3b3fc146b30d..360357f83f20 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1160,13 +1160,13 @@ struct batadv_priv_dat {
-  */
- struct batadv_mcast_querier_state {
- 	/** @exists: whether a querier exists in the mesh */
--	bool exists;
-+	unsigned char exists:1;
+@@ -215,10 +215,12 @@ struct batadv_hard_iface {
+ 	struct batadv_hard_iface_bat_v bat_v;
+ #endif
+ 
++#ifdef CONFIG_BATMAN_ADV_DEBUGFS
+ 	/**
+ 	 * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
+ 	 */
+ 	struct dentry *debug_dir;
++#endif
  
  	/**
- 	 * @shadowing: if a querier exists, whether it is potentially shadowing
- 	 *  multicast listeners (i.e. querier is behind our own bridge segment)
+ 	 * @neigh_list: list of unique single hop neighbors via this interface
+@@ -1242,10 +1244,12 @@ struct batadv_priv_nc {
+ 	/** @work: work queue callback item for cleanup */
+ 	struct delayed_work work;
+ 
++#ifdef CONFIG_BATMAN_ADV_DEBUGFS
+ 	/**
+ 	 * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
  	 */
--	bool shadowing;
-+	unsigned char shadowing:1;
- };
- 
- /**
-@@ -1207,10 +1207,10 @@ struct batadv_priv_mcast {
- 	u8 flags;
- 
- 	/** @enabled: whether the multicast tvlv is currently enabled */
--	bool enabled;
-+	unsigned char enabled:1;
- 
- 	/** @bridged: whether the soft interface has a bridge on top */
--	bool bridged;
-+	unsigned char bridged:1;
+ 	struct dentry *debug_dir;
++#endif
  
  	/**
- 	 * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP
-@@ -1389,7 +1389,7 @@ struct batadv_tp_vars {
- 	atomic_t dup_acks;
+ 	 * @min_tq: only consider neighbors for encoding if neigh_tq > min_tq
+@@ -1598,8 +1602,10 @@ struct batadv_priv {
+ 	/** @mesh_obj: kobject for sysfs mesh subdirectory */
+ 	struct kobject *mesh_obj;
  
- 	/** @fast_recovery: true if in Fast Recovery mode */
--	bool fast_recovery;
-+	unsigned char fast_recovery:1;
++#ifdef CONFIG_BATMAN_ADV_DEBUGFS
+ 	/** @debug_dir: dentry for debugfs batman-adv subdirectory */
+ 	struct dentry *debug_dir;
++#endif
  
- 	/** @recover: last sent seqno when entering Fast Recovery */
- 	u32 recover;
-@@ -2046,10 +2046,10 @@ struct batadv_skb_cb {
- 	 * @decoded: Marks a skb as decoded, which is checked when searching for
- 	 *  coding opportunities in network-coding.c
- 	 */
--	bool decoded;
-+	unsigned char decoded:1;
- 
- 	/** @num_bcasts: Counter for broadcast packet retransmissions */
--	unsigned int num_bcasts;
-+	unsigned char num_bcasts;
- };
- 
- /**
+ 	/** @forw_bat_list: list of aggregated OGMs that will be forwarded */
+ 	struct hlist_head forw_bat_list;
 -- 
 2.11.0
 
