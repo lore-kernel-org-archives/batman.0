@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 May 2018 13:53:23 +0200
-Message-Id: <20180524115325.15355-3-sw@simonwunderlich.de>
+Date: Thu, 24 May 2018 13:53:25 +0200
+Message-Id: <20180524115325.15355-5-sw@simonwunderlich.de>
 In-Reply-To: <20180524115325.15355-1-sw@simonwunderlich.de>
 References: <20180524115325.15355-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Avoid race in TT TVLV
- allocator helper
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: prevent TT request storms by
+ not sending inconsistent TT TLVLs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,79 +16,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The functions batadv_tt_prepare_tvlv_local_data and
-batadv_tt_prepare_tvlv_global_data are responsible for preparing a buffer
-which can be used to store the TVLV container for TT and add the VLAN
-information to it.
+A translation table TVLV changset sent with an OGM consists
+of a number of headers (one per VLAN) plus the changeset
+itself (addition and/or deletion of entries).
 
-This will be done in three phases:
+The per-VLAN headers are used by OGM recipients for consistency
+checks. Said consistency check might determine that a full
+translation table request is needed to restore consistency. If
+the TT sender adds per-VLAN headers of empty VLANs into the OGM,
+recipients are led to believe to have reached an inconsistent
+state and thus request a full table update. The full table does
+not contain empty VLANs (due to missing entries) the cycle
+restarts when the next OGM is issued.
 
-1. count the number of VLANs and their entries
-2. allocate the buffer using the counters from the previous step and limits
-   from the caller (parameter tt_len)
-3. insert the VLAN information to the buffer
+Consequently, when the translation table TVLV headers are
+composed, empty VLANs are to be excluded.
 
-The step 1 and 3 operate on a list which contains the VLANs. The access to
-these lists must be protected with an appropriate lock or otherwise they
-might operate on on different entries. This could for example happen when
-another context is adding VLAN entries to this list.
-
-This could lead to a buffer overflow in these functions when enough entries
-were added between step 1 and 3 to the VLAN lists that the buffer room for
-the entries (*tt_change) is smaller then the now required extra buffer for
-new VLAN entries.
-
-Fixes: 7ea7b4a14275 ("batman-adv: make the TT CRC logic VLAN specific")
+Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ net/batman-adv/translation-table.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0225616d5771..7fa3a0a0524a 100644
+index 23f9c212ab1e..3986551397ca 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -862,7 +862,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	struct batadv_orig_node_vlan *vlan;
- 	u8 *tt_change_ptr;
- 
--	rcu_read_lock();
-+	spin_lock_bh(&orig_node->vlan_list_lock);
- 	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
- 		num_vlan++;
- 		num_entries += atomic_read(&vlan->tt.num_entries);
-@@ -900,7 +900,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	*tt_change = (struct batadv_tvlv_tt_change *)tt_change_ptr;
- 
- out:
--	rcu_read_unlock();
-+	spin_unlock_bh(&orig_node->vlan_list_lock);
- 	return tvlv_len;
- }
- 
-@@ -936,7 +936,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+@@ -931,15 +931,20 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	struct batadv_softif_vlan *vlan;
+ 	u16 num_vlan = 0;
+-	u16 num_entries = 0;
++	u16 vlan_entries = 0;
++	u16 total_entries = 0;
+ 	u16 tvlv_len;
  	u8 *tt_change_ptr;
  	int change_offset;
  
--	rcu_read_lock();
-+	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
  	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
  		num_vlan++;
- 		num_entries += atomic_read(&vlan->tt.num_entries);
-@@ -974,7 +974,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	*tt_change = (struct batadv_tvlv_tt_change *)tt_change_ptr;
+-		num_entries += atomic_read(&vlan->tt.num_entries);
++		total_entries += vlan_entries;
+ 	}
  
- out:
--	rcu_read_unlock();
-+	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 	return tvlv_len;
- }
+ 	change_offset = sizeof(**tt_data);
+@@ -947,7 +952,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	/* if tt_len is negative, allocate the space needed by the full table */
+ 	if (*tt_len < 0)
+-		*tt_len = batadv_tt_len(num_entries);
++		*tt_len = batadv_tt_len(total_entries);
+ 
+ 	tvlv_len = *tt_len;
+ 	tvlv_len += change_offset;
+@@ -964,6 +969,10 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		vlan_entries = atomic_read(&vlan->tt.num_entries);
++		if (vlan_entries < 1)
++			continue;
++
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
  
 -- 
 2.11.0
