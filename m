@@ -1,12 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 May 2018 13:53:21 +0200
-Message-Id: <20180524115325.15355-1-sw@simonwunderlich.de>
+Date: Thu, 24 May 2018 14:02:52 +0200
+Message-Id: <20180524120300.15829-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/4] pull request for net: batman-adv
- 2018-05-24
+Subject: [B.A.T.M.A.N.] [PATCH 0/8] pull request for net-next: batman-adv
+ 2017-05-24
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,7 +21,7 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <s
 
 Hi David,
 
-here are a couple of bugfixes which we would like to have integrated into net.
+here is a our feature/cleanup pull request of batman-adv to go into net-next.
 
 Please pull or let me know of any problem!
 
@@ -34,38 +34,55 @@ The following changes since commit 60cc43fc888428bb2f18f08997432d426a243338:
 
 are available in the git repository at:
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180524
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20180524
 
-for you to fetch changes up to 16116dac23396e73c01eeee97b102e4833a4b205:
+for you to fetch changes up to 18cfb44cf1845d11d50f4733e039acb8b377c8eb:
 
-  batman-adv: prevent TT request storms by not sending inconsistent TT TLVLs (2018-05-12 18:53:08 +0200)
+  batman-adv: enable B.A.T.M.A.N. V compilation by default (2018-05-14 09:31:17 +0200)
 
 ----------------------------------------------------------------
-Here are some batman-adv bugfixes:
+This feature/cleanup patchset includes the following patches:
 
- - prevent hardif_put call with NULL parameter, by Colin Ian King
+ - bump version strings, by Simon Wunderlich
 
- - Avoid race in Translation Table allocator, by Sven Eckelmann
+ - Disable batman-adv debugfs by default, by Sven Eckelmann
 
- - Fix Translation Table sync flags for intermediate Responses,
+ - Improve handling mesh nodes with multicast optimizations disabled,
    by Linus Luessing
 
- - prevent sending inconsistent Translation Table TVLVs,
-   by Marek Lindner
+ - Avoid bool in structs, by Sven Eckelmann
+
+ - Allocate less memory when debugfs is disabled, by Sven Eckelmann
+
+ - Fix batadv_interface_tx return data type, by Luc Van Oostenryck
+
+ - improve link speed handling for virtual interfaces, by Marek Lindner
+
+ - Enable BATMAN V algorithm by default, by Marek Lindner
 
 ----------------------------------------------------------------
-Colin Ian King (1):
-      batman-adv: don't pass a NULL hard_iface to batadv_hardif_put
-
 Linus Lüssing (1):
-      batman-adv: Fix TT sync flags for intermediate TT responses
+      batman-adv: Avoid old nodes disabling multicast optimizations completely
 
-Marek Lindner (1):
-      batman-adv: prevent TT request storms by not sending inconsistent TT TLVLs
+Luc Van Oostenryck (1):
+      batman-adv: fix batadv_interface_tx()'s return type
 
-Sven Eckelmann (1):
-      batman-adv: Avoid race in TT TVLV allocator helper
+Marek Lindner (2):
+      batman-adv: disable ethtool link speed detection when auto negotiation off
+      batman-adv: enable B.A.T.M.A.N. V compilation by default
 
- net/batman-adv/multicast.c         |  2 +-
- net/batman-adv/translation-table.c | 84 ++++++++++++++++++++++++++++++--------
- 2 files changed, 68 insertions(+), 18 deletions(-)
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Sven Eckelmann (3):
+      batman-adv: Disable CONFIG_BATMAN_ADV_DEBUGFS by default
+      batman-adv: Avoid bool in structures
+      batman-adv: Remove unused dentry without DEBUGFS
+
+ net/batman-adv/Kconfig          |  6 +++---
+ net/batman-adv/bat_v_elp.c      | 15 ++++++++++++++-
+ net/batman-adv/main.h           |  2 +-
+ net/batman-adv/multicast.c      | 29 ++++++-----------------------
+ net/batman-adv/soft-interface.c |  5 ++---
+ net/batman-adv/types.h          | 23 +++++++++++++----------
+ 6 files changed, 39 insertions(+), 41 deletions(-)
