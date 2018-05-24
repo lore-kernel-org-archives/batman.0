@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 May 2018 14:02:58 +0200
-Message-Id: <20180524120300.15829-7-sw@simonwunderlich.de>
+Date: Thu, 24 May 2018 14:02:59 +0200
+Message-Id: <20180524120300.15829-8-sw@simonwunderlich.de>
 In-Reply-To: <20180524120300.15829-1-sw@simonwunderlich.de>
 References: <20180524120300.15829-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/8] batman-adv: fix batadv_interface_tx()'s
- return type
+Subject: [B.A.T.M.A.N.] [PATCH 7/8] batman-adv: disable ethtool link speed
+ detection when auto negotiation off
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,39 +16,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Luc Van Oostenryck <luc.vanoostenryck@gmail.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, but the implementation in this
-driver returns an 'int'.
+Virtual interface drivers such as tun / tap interfaces, VLAN, etc tend
+to initialize the interface throughput with some value for the sake of
+having a throughput number to export via ethtool. This exported
+throughput leaves batman-adv to conclude the interface throughput is
+genuine (reflecting reality), thus no measurements are necessary.
 
-Fix this by returning 'netdev_tx_t' in this driver too.
+Based on the observation that those interface types also tend to set
+the link auto-negotiation to 'off', batman-adv shall check this
+setting to differentiate between genuine link throughput information
+and placeholders installed by virtual interfaces.
 
-Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-[sven@narfation.org: fixed alignment]
+The "default throughput" setting exported via sysfs still allows to
+configure the batman-adv throughput for the interface, thus disabling
+the measurements.
+
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/soft-interface.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_v_elp.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 67065e35de51..1485263a348b 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -188,8 +188,8 @@ static void batadv_interface_set_rx_mode(struct net_device *dev)
- {
- }
- 
--static int batadv_interface_tx(struct sk_buff *skb,
--			       struct net_device *soft_iface)
-+static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
-+				       struct net_device *soft_iface)
- {
- 	struct ethhdr *ethhdr;
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 28687493599f..71c20c1d4002 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -127,7 +127,20 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	rtnl_lock();
+ 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
+ 	rtnl_unlock();
+-	if (ret == 0) {
++
++	/* Virtual interface drivers such as tun / tap interfaces, VLAN, etc
++	 * tend to initialize the interface throughput with some value for the
++	 * sake of having a throughput number to export via ethtool. This
++	 * exported throughput leaves batman-adv to conclude the interface
++	 * throughput is genuine (reflecting reality), thus no measurements
++	 * are necessary.
++	 *
++	 * Based on the observation that those interface types also tend to set
++	 * the link auto-negotiation to 'off', batman-adv shall check this
++	 * setting to differentiate between genuine link throughput information
++	 * and placeholders installed by virtual interfaces.
++	 */
++	if (ret == 0 && link_settings.base.autoneg == AUTONEG_ENABLE) {
+ 		/* link characteristics might change over time */
+ 		if (link_settings.base.duplex == DUPLEX_FULL)
+ 			hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
 -- 
 2.11.0
 
