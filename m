@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 25 May 2018 21:48:37 +0200
-Message-Id: <20180525194837.12589-2-sven@narfation.org>
-In-Reply-To: <20180525194837.12589-1-sven@narfation.org>
-References: <20180525194837.12589-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Drop "experimental" from
- BATMAN_V Kconfig
+Date: Fri, 25 May 2018 22:03:10 +0200
+Message-Id: <20180525200312.13527-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC 0/2] batman-adv: Default build sync with Kconfig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,32 +12,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, sw@simonwunderlich.de, mareklindner@neomailbox.ch, joe@perches.com, sergei.shtylyov@cogentembedded.com, Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: a@unstable.cc, linus.luessing@c0d3.blue, Sven Eckelmann <sven@narfation.org>
 
-The Kconfig option BATMAN_ADV_BATMAN_V is now enabled by default when the
-BATMAN_ADV is enabled. A feature which is enabled by default for a module
-should not be considered experimental.
+Hi,
 
-Reported-by: Joe Perches <joe@perches.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+yes, this is a rather harsh reminder that you should keep your settings in 
+Kconfig and the out-of-tree module Makefiles in sync. Please submit an 
+alternate patch (with a good commit message) for net/batman-adv/Kconfig when 
+you want to keep the feature enabled by default.
 
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index 41bb67d70c83..da0b7aa98be9 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -32,7 +32,7 @@ config BATMAN_ADV
-           tools.
- 
- config BATMAN_ADV_BATMAN_V
--	bool "B.A.T.M.A.N. V protocol (experimental)"
-+	bool "B.A.T.M.A.N. V protocol"
- 	depends on BATMAN_ADV && !(CFG80211=m && BATMAN_ADV=y)
- 	default y
- 	help
+Kind regards,
+	Sven
+
+Sven Eckelmann (2):
+  batman-adv: Disable DAT during compilation
+  batman-adv: Disable MCAST during compilation
+
+ Makefile               | 4 ++--
+ README.external.rst    | 4 ++--
+ gen-compat-autoconf.sh | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
 -- 
 2.17.0
 
