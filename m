@@ -1,10 +1,14 @@
-Return-Path: <dandenson@gmail.com>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Mon, 28 May 2018 00:08:16 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20180527220816.GB13283@otheros>
+References: <CAA_JP8XmfiYWFe71iavwSRT40MkaXcrz=k-cvvQQxD-7JLRb-Q@mail.gmail.com>
 MIME-Version: 1.0
-From: dan <dandenson@gmail.com>
-Date: Sat, 26 May 2018 19:43:03 -0600
-Message-ID: <CAA_JP8XmfiYWFe71iavwSRT40MkaXcrz=k-cvvQQxD-7JLRb-Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Subject: [B.A.T.M.A.N.] where is batman-adv on multicast? specifically IPTV
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAA_JP8XmfiYWFe71iavwSRT40MkaXcrz=k-cvvQQxD-7JLRb-Q@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] where is batman-adv on multicast? specifically
+ IPTV
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,27 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-you may have seen my other posts about wISP service for batman-adv.
-I'm looking at how batman-adv can handle multicast
+Hi Dan,
 
-the design is batman-adv running over PtP wireless links and then PtMP
-access radios bridged in.
+On Sat, May 26, 2018 at 07:43:03PM -0600, dan wrote:
+[...]
+> I see that if there is just one listener, then it basically becomes a
+> unicast stream.  But what if I have multiple sites (lets say 10) and
+> at 2 sites there are 1 listener each.
+> 
+> does this mean that all 10 sites will get the broadcast? or that just
+> the 2 sites that have listeners will get the broadcast?
 
-I'm looking at the multicast-optimizations page but I'm unclear on something.
+Currently, if 2 (or more) batman-adv nodes have 1 listener each (for
+the same multicast group) then the packet will be flooded. Meaning all
+nodes in the mesh will receive it.
 
-I see that if there is just one listener, then it basically becomes a
-unicast stream.  But what if I have multiple sites (lets say 10) and
-at 2 sites there are 1 listener each.
+I currently have two more patches for batman-adv open for further
+testing to allow not just multicast-to-unicast conversion to a
+single destination, but a multicast-to-multi-unicast conversion, too.
+They are currently burried in here:
 
-does this mean that all 10 sites will get the broadcast? or that just
-the 2 sites that have listeners will get the broadcast?
+https://github.com/freifunk-gluon/gluon/pull/1357
 
-I'm not sure how old that page is or if anything has evolved.
+If you are interested and brave enough to try them then let me
+know how that goes for you :-).
 
-The goal here would be to only send a stream to a site if there were
-at least 1 listener.
-
-I could also potentially have a device at each site handling PIM for
-multicast, but I haven't dived into how that would work on batman-adv
-or if I'd have to run a separaet VLAN between each PIM router outside
-of batman-adv.
+Regards, Linus
