@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 03 Jun 2018 15:15:29 +0200
-Message-ID: <1734570.Fz6KSbJefZ@sven-edge>
-In-Reply-To: <20180602152635.2923-2-sven@narfation.org>
-References: <20180602152635.2923-1-sven@narfation.org>
- <20180602152635.2923-2-sven@narfation.org>
+Date: Sun, 03 Jun 2018 15:16:13 +0200
+Message-ID: <2614128.j4suOHLNvE@sven-edge>
+In-Reply-To: <20180601172424.7821-1-sven@narfation.org>
+References: <20180601172424.7821-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1872403.TD00X2lkLm";
+Content-Type: multipart/signed; boundary="nextPart3605956.xFnA0IlnSa";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix bat_v best gw
- refcnt after netlink dump
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix debugfs path
+ for renamed hardif
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,58 +19,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Andreas Ziegler <github@andreas-ziegler.de>
+Cc: John Soros <sorosj@gmail.com>
 
---nextPart1872403.TD00X2lkLm
+--nextPart3605956.xFnA0IlnSa
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 2. Juni 2018 17:26:35 CEST Sven Eckelmann wrote:
-> A reference to the best gateway is taken when the list of gateways in the
-> mesh is sent via netlink. This is necessary to check whether the currently
-> dumped entry is the currently selected gateway or not. This information is
-> then transferred as flag BATADV_ATTR_FLAG_BEST.
+On Freitag, 1. Juni 2018 19:24:23 CEST Sven Eckelmann wrote:
+> batman-adv is creating special debugfs directories in the init
+> net_namespace for each valid hard-interface (net_device). But it is
+> possible to rename a net_device to a completely different name then the
+> original one.
 > 
-> After the comparison of the current entry is done,
-> batadv_v_gw_dump_entry() has to decrease the reference counter again.
-> Otherwise the reference will be held and thus prevents a proper shutdown of
-> the batman-adv interfaces (and some of the interfaces enslaved in it).
+> It can therefore happen that a user registers a new net_device which gets
+> the name "wlan0" assigned by default. batman-adv is also adding a new
+> directory under $debugfs/batman-adv/ with the name "wlan0".
 > 
-> Fixes: 15315a94ad98 ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations")
+> The user then decides to rename this device to "wl_pri" and registers a
+> different device. The kernel may now decide to use the name "wlan0" again
+> for this new device. batman-adv will detect it as a valid net_device and
+> tries to create a directory with the name "wlan0" under
+> $debugfs/batman-adv/. But there already exists one with this name under
+> this path and thus this fails. batman-adv will detect a problem and
+> rollback the registering of this device.
+> 
+> batman-adv must therefore take care of renaming the debugfs directories
+> for hard-interfaces whenever it detects such a net_device rename.
+> 
+> Fixes: 3c926a01c8e8 ("batman-adv: add debugfs structure for information per interface")
+> Reported-by: John Soros <sorosj@gmail.com>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> Cc: Andreas Ziegler <github@andreas-ziegler.de>
+> Cc: John Soros <sorosj@gmail.com>
 
-Added as 2b422b580818 [1].
+Added as 127086f503f6 [1]
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/2b422b5808183d1084b450b89d9a085a13dd6d2c
+[1] https://git.open-mesh.org/batman-adv.git/commit/127086f503f6495518b95455efebee33d328f335
 
---nextPart1872403.TD00X2lkLm
+--nextPart3605956.xFnA0IlnSa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsT6fEACgkQXYcKB8Em
-e0ZJCxAAjgasvtYX8EuUN5XYnzCG/echo1+0N3jPzVI5Xw/XgXVfsNAqRJ7LDShY
-M1+OP7Wcsv5c/Fjc5mVlg3crVQIGijm3fSuK+g9e4+ZlTX61MSogRt7hyjqfW7n8
-dpZB9wH95ReakBSJopRG2EiT9OCgJFfpe/tJA+673ZbdJXyYzTkWSKg/buzk2PrV
-cxtQ2CtV3eowQy9TzI1wFfYZBd1DIANruoRfiDtvlzjZ0UdRHbbnNqPuCJA6XXCy
-gZQJeHPmKHvNe+dlVY7jF3CUDKhHuUZHYDzzpHwQVPgrxn1tMJNJU6FElCNSq0hx
-guTOL5uNPgwrwoOMMtxDxN2pHpL4TsxMxfr3/V5A8fu05MxcW/3EVwnqq0rVSI7Y
-pBRq7BDRZdW49dICu+CLWPREOJs1oxQNjeNOtwZ42WNE8bWdejbt9Fw+Yk+lZdhI
-kM05HmBpMTH3yFgzg70hS7Eyn+C7GElEDPrxGcp53u2EisC2svxPsnfrjJsV6Yiy
-VUTb9FLTT0zDm9Yckc8/VeVhLVB+3TrprbkQbHyPg1JAjlL78I/RyQfZdRtyigY8
-+BPHhPI3Bis1RZyShSYfjbhZI0E5i7bUreXTstdWDRdNC6byxZ8cJF4RpcXM/Ar6
-hDhieIuI5rzcQ2ZM7RSbe+sMulchpsgJi+ALFx3pbgMbC4pX6YM=
-=8m1e
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsT6h0ACgkQXYcKB8Em
+e0aerBAAyzmYaC9Dej7v3WhPU5TqP9ASAR2ezw8a/H3reZxgYKlSbqs+vdpiT/Hf
+W10jejioj89F/HXQtMJSGhB57SrPdW2TLtlWLFqVZiOxiwhzQH8USwyfczdcsIW5
+Ccp4D6Yv1jEqk8YJYmkZ6yc5WfSkX5ASqB3OW4NSQUpxNEsn0ZbAqN54g71S6JZx
++6LkHz2XkPOVa+3Z7dp1oKDQofetRNswXUeDg/E5nF2QL5Fw7O0G4kDOM1Vuc6NM
+Bx3mwIUjdpgZUCRAI1zbk3A31Lzhb6uEg+6PNq+gJH9o6jjz4SPdxFD2IVJh09Z1
+viDjRd9C9Q4W4Q9ovj++BevDSFkSSWlyGR4agCRR9hP6UkdcA5fqp+rCswKwqLg8
+IybOzWwGTEK00QNQkjUKV0aytJW/zoXgBpr+oot9V7sfLPh1BjX2SJV3WpqJVLQZ
+upH4LC2KuQOxlSjOdG+kBct8aGW2QE1pOlw+KvZizFgs7cmUvfnoARw1BHRyD9sK
+WWqb+T5CqPJYZjCXva1+VSOVi0v//R9n/Qrz1lJylOxfSvODZ+0Q/iwhAhqnGLY3
+pV1z26LCkBhWidjxnZFRRy2G/j/w6tS/sS2YPEm8fWxtuY9bpf9Q9eUPB9WVQPYJ
+PHwTD/OfCjhMY6hUpo21wvYWQviAe3k/0e/mLchqqsa5OQ2xdhM=
+=svqL
 -----END PGP SIGNATURE-----
 
---nextPart1872403.TD00X2lkLm--
+--nextPart3605956.xFnA0IlnSa--
 
 
 
