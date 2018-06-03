@@ -1,11 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  2 Jun 2018 17:26:35 +0200
-Message-Id: <20180602152635.2923-2-sven@narfation.org>
-In-Reply-To: <20180602152635.2923-1-sven@narfation.org>
-References: <20180602152635.2923-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix bat_v best gw
- refcnt after netlink dump
+Date: Sun, 03 Jun 2018 11:44:53 +0200
+Message-ID: <3539597.lkrFk2ZsHA@sven-edge>
+In-Reply-To: <20180601153845.26561-1-sven@narfation.org>
+References: <20180601153845.26561-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2364214.zNnPjQiKyH";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Drop support for Linux < 3.16
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,48 +18,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Andreas Ziegler <github@andreas-ziegler.de>
 
-A reference to the best gateway is taken when the list of gateways in the
-mesh is sent via netlink. This is necessary to check whether the currently
-dumped entry is the currently selected gateway or not. This information is
-then transferred as flag BATADV_ATTR_FLAG_BEST.
+--nextPart2364214.zNnPjQiKyH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-After the comparison of the current entry is done,
-batadv_v_gw_dump_entry() has to decrease the reference counter again.
-Otherwise the reference will be held and thus prevents a proper shutdown of
-the batman-adv interfaces (and some of the interfaces enslaved in it).
+On Freitag, 1. Juni 2018 17:38:45 CEST Sven Eckelmann wrote:
+> The Linux Kernel 3.2 reached its end of life [1] after over 6 years.
+> Instead it is recommended to use at least kernel 3.16 which is also already
+> over 3 years old. All older kernels (v3.2 - v3.15) should therefore be
+> dropped to reduce the support overhead.
+> 
+> [1] https://lkml.kernel.org/r/a3d2d2b2c3559217eb8315d25df0c5883f922066.camel@decadent.org.uk
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
 
-Fixes: 15315a94ad98 ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Cc: Andreas Ziegler <github@andreas-ziegler.de>
+The servers already stopped testing these old versions. And it might also be 
+interesting for everyone that the extra "build/" directory was dropped. We 
+only needed this directory because we had to patch the sources before each 
+build. This is currently not necessary anymore.
 
- net/batman-adv/bat_v.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Unfortunately, we will have to keep compat-sources and some of the really 
+crude hacks until mid 2020.
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index ec93337e..6baec4e6 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -927,7 +927,7 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- {
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
- 	struct batadv_neigh_node *router;
--	struct batadv_gw_node *curr_gw;
-+	struct batadv_gw_node *curr_gw = NULL;
- 	int ret = 0;
- 	void *hdr;
- 
-@@ -995,6 +995,8 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 	ret = 0;
- 
- out:
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
- 	if (router_ifinfo)
- 		batadv_neigh_ifinfo_put(router_ifinfo);
- 	if (router)
--- 
-2.17.0
+Kind regards,
+	Sven
+--nextPart2364214.zNnPjQiKyH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsTuJUACgkQXYcKB8Em
+e0bidA/+IJV2TnM1ql8969FoXF7BvOGUuTGb9YFA59KGq4T0HQtbyy+4ywP0GBuW
+ggjdXo3qS21SsNr71b5sa+Ldm/ErR81r63aWZ3FGlMMFjC5YIqDF4CQ1b3GrtxT2
+jg8S/DU2JrMUojyGxeR52n2o4XtO/fEhVPSp7OBDtk4ajKXCrqVv9EENOITllRMi
+d9AnBgEsCQVmRdXg2YIfCnIwXzfmDVQ0EOWicql9FB2E/7pxVbgDNey/siTauZOb
+nln64383YkH3SAeWkBK9dlKcajhnZiZu4uUv6a1ypMlLEVQRPz3/O+pgez2Xaluy
+A6pvN9u4O034qVO4fBGHh4lQsX4l4gojFD5CrR5ADdEeT970Zg3xeWotpESeh13w
+vq+eiBceGkNw2WEjA8fGMJOE/M2q3cw20DshxMIUXhTU7Ahpev2v2G2qhl3kUhfy
+Fp0kYr3MmoDjUbwoV5ZEtDUN6uKfKUasdpK49NCHl8OerfTkeQYIEZeIWLkt58Bb
+ctvlAOVS5EzKZ1A/HM9O/+7sO+5h779L3w99wN8DW3XLMc7euR+7jMFUHsB3jvss
+mCunTU+iXOlyl5yLe7/1zbvjHTiwjw5chdO/loWy3jj9zhn1x4shjFhEaXb4OCIn
+g0YupKsA9T7q4CJ7+38XxdB6FgTJvMSXk68ZRblVfCZ3RXhxhBE=
+=7LdH
+-----END PGP SIGNATURE-----
+
+--nextPart2364214.zNnPjQiKyH--
+
+
 
