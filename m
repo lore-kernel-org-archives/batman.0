@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 03 Jun 2018 18:54:14 +0800
-Message-ID: <6822908.HhYsLP0eh1@lafayette>
-In-Reply-To: <20180602152635.2923-2-sven@narfation.org>
-References: <20180602152635.2923-1-sven@narfation.org>
- <20180602152635.2923-2-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+References: <20180601153845.26561-1-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <a54c2c09-0731-f0f6-c395-ff30a724d3a9@unstable.cc>
+Date: Sun, 3 Jun 2018 18:55:03 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4392247.GH2cdYv8QL";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix bat_v best gw
- refcnt after netlink dump
+In-Reply-To: <20180601153845.26561-1-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="TXEqDYfX5iLYthbzZpXBLCtcEGhajb2cw"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Drop support for Linux < 3.16
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +18,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
 
---nextPart4392247.GH2cdYv8QL
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--TXEqDYfX5iLYthbzZpXBLCtcEGhajb2cw
+Content-Type: multipart/mixed; boundary="8eT0AzWIVNwch6APbMdkvRZktL6xNkpqm";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Message-ID: <a54c2c09-0731-f0f6-c395-ff30a724d3a9@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Drop support for Linux < 3.16
+References: <20180601153845.26561-1-sven@narfation.org>
+In-Reply-To: <20180601153845.26561-1-sven@narfation.org>
 
-On Saturday, June 2, 2018 11:26:35 PM HKT Sven Eckelmann wrote:
-> A reference to the best gateway is taken when the list of gateways in the
-> mesh is sent via netlink. This is necessary to check whether the currently
-> dumped entry is the currently selected gateway or not. This information is
-> then transferred as flag BATADV_ATTR_FLAG_BEST.
-> 
-> After the comparison of the current entry is done,
-> batadv_v_gw_dump_entry() has to decrease the reference counter again.
-> Otherwise the reference will be held and thus prevents a proper shutdown of
-> the batman-adv interfaces (and some of the interfaces enslaved in it).
-> 
-> Fixes: 15315a94ad98 ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump
-> implementations") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+--8eT0AzWIVNwch6APbMdkvRZktL6xNkpqm
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+Hi,
+
+On 01/06/18 23:38, Sven Eckelmann wrote:
+> The Linux Kernel 3.2 reached its end of life [1] after over 6 years.
+> Instead it is recommended to use at least kernel 3.16 which is also alr=
+eady
+> over 3 years old. All older kernels (v3.2 - v3.15) should therefore be
+> dropped to reduce the support overhead.
+>=20
+> [1] https://lkml.kernel.org/r/a3d2d2b2c3559217eb8315d25df0c5883f922066.=
+camel@decadent.org.uk
+>=20
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Acked-by: Antonio Quartulli <a@unstable.cc>
+
 
 Cheers,
-Marek
 
 
---nextPart4392247.GH2cdYv8QL
+--=20
+Antonio Quartulli
+
+
+--8eT0AzWIVNwch6APbMdkvRZktL6xNkpqm--
+
+--TXEqDYfX5iLYthbzZpXBLCtcEGhajb2cw
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlsTyNYACgkQU1VOj+62
-HMB1tAgAgG8mSNSlWuGlmh155CraOC6BuCIznlidqXSzICFVvh3M0CdQ0wYbYdGm
-3MeQBxWVJXZnoqBWeJRHE6OGtkSIOalGKa8iRGT6YADKLU5UML+hE6MBxouSs9tm
-JXlwdUpS00VOcFz2yDbwsydq9WHeBMWj6IF/T7f2OhtdVgn84e9I+N9ku6m8rpb1
-w/HQiCIaKA7LAtO6DNzerSnv7W5EqF7hWe5/psQ/+Ap3qx7liyh/8wgP8SeXJ+k1
-wAHZBP+flmIjnxv8YKgpgnppLVslmwYXPzJMQBvWlcal/K1KGbWeAyjBnQJmrJ0z
-VnUKb++cig5jr6k+PoJQ6QQxH7Sm4Q==
-=MU60
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlsTyQcACgkQB6U8WA7y
+zXQ/YRAAouBqysKGLJltN3IAfgMtjtA0cwz+HdDAvmvRHi3hjtBI/Te2FJpcJJ5v
+aWq9+UdSzjkpqrdI1DeWxn+Iy3twitMVrvE7f2UwInywUMmWBg6le6DvA4jjPD7B
+RALl40U5eEx0RCct4sbBmBSKiu579TE7krvsUBlvxuGEmIV58XT8pH3bxjMAnu6P
+B+Ve0gpJsGkE+arsYf1J5ydj9IU5cJ+Q1Pb3GlgnCZYzI1jtYlbunPpZnPJCIEwr
+aqStiYksJUxXf+qOfAQTJ43icKLv4y9rr8XFhYdYpI96dv2kZR7GyOIKl778J7Av
+u2YkstBk+M+HDi+XoKr8RKtJ82mB1ooauq/uvs0vCFJr4fjutrFZv+ZHBjSigcj9
+ebk5M1tOvqOgnu5dHQH3StZZIvfoHtalz2CFlofQ9lan8TFyy6HDXzEHL5Ehwqnr
+G1j48fTGzvNZlA1TBQYv3ImfKy5qXOfTNcgvOj5FMwqzO4OPd1VoCS95euwPSmeZ
+sTQCx/bV/fIEOU7lygggzrX0u7xZa9eUCdowwZOSzzF/y5vx0EWBPCn7EV57aWw1
+37OC2bd0num4WO20yn+6bEGXA4wFHBvsBqsLD32eKIpYjZe8FaJsU5EbHNnL1Dzv
+w8dqSgWnMtlMaL08qQ0O6oNCmxCU2U42bfxY0m0JDbLh3vQxt3w=
+=S8ou
 -----END PGP SIGNATURE-----
 
---nextPart4392247.GH2cdYv8QL--
-
-
-
+--TXEqDYfX5iLYthbzZpXBLCtcEGhajb2cw--
