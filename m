@@ -1,13 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 03 Jun 2018 14:49:58 +0200
-Message-ID: <3015974.TFUEeMtuLR@sven-edge>
-In-Reply-To: <20180601153845.26561-1-sven@narfation.org>
-References: <20180601153845.26561-1-sven@narfation.org>
+Return-Path: <mail@andreas-ziegler.de>
+References: <20180602152635.2923-1-sven@narfation.org>
+ <20180602152635.2923-2-sven@narfation.org>
+From: dev@andreas-ziegler.de
+Message-ID: <47cca760-99d1-b6e5-9f5d-e91d9ad73df1@andreas-ziegler.de>
+Date: Sun, 3 Jun 2018 15:02:58 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1713228.3ZhcznCuGQ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Drop support for Linux < 3.16
+In-Reply-To: <20180602152635.2923-2-sven@narfation.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: de-DE
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix bat_v best gw
+ refcnt after netlink dump
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,52 +20,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1713228.3ZhcznCuGQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Tested-by: Andreas Ziegler <dev@andreas-ziegler.de>
 
-On Freitag, 1. Juni 2018 17:38:45 CEST Sven Eckelmann wrote:
-> The Linux Kernel 3.2 reached its end of life [1] after over 6 years.
-> Instead it is recommended to use at least kernel 3.16 which is also already
-> over 3 years old. All older kernels (v3.2 - v3.15) should therefore be
-> dropped to reduce the support overhead.
+
+Sven Eckelmann schrieb am 02.06.2018 um 17:26:
+> A reference to the best gateway is taken when the list of gateways in the
+> mesh is sent via netlink. This is necessary to check whether the currently
+> dumped entry is the currently selected gateway or not. This information is
+> then transferred as flag BATADV_ATTR_FLAG_BEST.
 > 
-> [1] https://lkml.kernel.org/r/a3d2d2b2c3559217eb8315d25df0c5883f922066.camel@decadent.org.uk
+> After the comparison of the current entry is done,
+> batadv_v_gw_dump_entry() has to decrease the reference counter again.
+> Otherwise the reference will be held and thus prevents a proper shutdown of
+> the batman-adv interfaces (and some of the interfaces enslaved in it).
 > 
+> Fixes: 15315a94ad98 ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-
-Applied as 7ab78d556b34 [1].
-
-Kind regards,
-	Sven
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/7ab78d556b343b592aa80f4d84b2dfd14019f2d8
---nextPart1713228.3ZhcznCuGQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsT4/YACgkQXYcKB8Em
-e0asug/+NmY9RWvNoJmOjRMaRgby8jtWJ0KdYt/F4tI5rUCX0QmUo1dsoZOJTVAH
-Z9qh1BjEjSFD1gsZCPAoNlIY54EJdcJJri1BEBge6VrXSNbkRGBlhl+qHriAgoP/
-L3bz0YRYQvy37VOVZY4AN0puQT1FIirADj86NRmRgY0AOE2AAobNP2L2WdBH/7gf
-IqUld6uDTieNddzajZjuwHy2/elM+6xfPgXQG4I9lNN6oyq173Q4gbsbS6QCbe0p
-imcAvC1ck6hi5D5EVCYRhyeqv8hA5HaeSDR/u1YbUUyLMOcu3T1GKGEPYnNP4ER7
-pCmfBbvRba2H3lNP7Cb4ssWnWAUr1pkm4JhHT7iVgm5jPK099a2IAMNMiYRLye5g
-KLBbXsJQlKIUE6Rq71BJYyGUiUM08nafnvuo7whT4rFeC9yrFg4YMYK67SDlBrqp
-KcKTfUIQkkypfQSewK2q1UhYU+nd4uUnIofvtc+hM3B1PQ/ZU5C33ur2fHrEsk4J
-y86CbmKMekKJEC88iZx6lpM1J2tJWb/XqGyieG9fTChLpDaQlz07TSgBYDdb1qkk
-nK+nJmmIPaUomCmd1CUenj7SF+C6DmOZdQ0k3L8W+k30wJL/s3siz2UchxRx+Ohm
-B1Xo1R3sSzOLOZw8fbsDkCB3m+74NkB2UFQoZUg0WLIqF2vvs8o=
-=MwNZ
------END PGP SIGNATURE-----
-
---nextPart1713228.3ZhcznCuGQ--
-
-
-
+> Cc: Andreas Ziegler <github@andreas-ziegler.de>
+> 
+>  net/batman-adv/bat_v.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+> index ec93337e..6baec4e6 100644
+> --- a/net/batman-adv/bat_v.c
+> +++ b/net/batman-adv/bat_v.c
+> @@ -927,7 +927,7 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+>  {
+>  	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
+>  	struct batadv_neigh_node *router;
+> -	struct batadv_gw_node *curr_gw;
+> +	struct batadv_gw_node *curr_gw = NULL;
+>  	int ret = 0;
+>  	void *hdr;
+>  
+> @@ -995,6 +995,8 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+>  	ret = 0;
+>  
+>  out:
+> +	if (curr_gw)
+> +		batadv_gw_node_put(curr_gw);
+>  	if (router_ifinfo)
+>  		batadv_neigh_ifinfo_put(router_ifinfo);
+>  	if (router)
+> 
