@@ -1,15 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Jun 2018 07:25:04 +0200
-Message-ID: <1997364.Zl644echhU@sven-edge>
-In-Reply-To: <459d2f8e-6631-d616-9daa-a706c2878789@unstable.cc>
-References: <20180605183131.4989-1-sven@narfation.org>
- <1581047.jmAOXYUeYu@sven-edge>
- <459d2f8e-6631-d616-9daa-a706c2878789@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4733706.VraSOCSPsM";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Initialize memory for
+Date: Wed,  6 Jun 2018 07:39:51 +0200
+Message-Id: <20180606053951.5314-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Initialize memory for
  station_info
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,54 +13,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: Thomas Lauer <holminateur@gmail.com>, Marcel Schmidt <ff.z-casparistrasse@mailbox.org>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4733706.VraSOCSPsM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+batadv_v_elp_get_throughput is calling cfg80211_get_station with a pointer
+(sinfo) to some uninitialized memory on the stack. But most of the
+implementations behind cfg80211_get_station will not initialize sinfo to
+zero before manipulating it. For example, the member
+&struct station_info.filled is often only modified by using a read (of
+possibly uninitialized/random memory), an OR operation and then a write of
+the new value back to the original memory address. A caller without a
+preinitialized &struct station_info.filled can then no longer decide which
+parts of sinfo were filled in by cfg80211_get_station.
 
-On Mittwoch, 6. Juni 2018 06:44:32 CEST Antonio Quartulli wrote:
-[...]
-> This looks fairly reasonable and at a first glance I can confirm that
-> even ieee80211_get_station() does not clear it up before filling it.
-> 
-> However, what do you think about zero'ing the sinfo object directly in
-> cfg80211_get_station()?
-> I think it is safe to assume that no user should store anything in this
-> object before passing it to get_station().
+The caller of cfg80211_get_station must therefore take care that sinfo (or
+at least sinfo.filled) is initialized to zero. Otherwise, the caller may
+tries to read information which was not filled in and is therefore also
+uninitialized. In batadv_v_elp_get_throughput's case, an invalid "random"
+expected throughput may be saved for this neighbor and thus the B.A.T.M.A.N
+V algorithm may switch to non-optimal neighbors for certain destinations.
 
-I understand your point. But there is the potential problem that such a change 
-requires more discussion with the Johannes/other wireless guys - while the 
-early B.A.T.M.A.N. V adopters still suffer under this problem. I will ask him 
-in IRC first about his opinion but send a second version of the patch to the 
-batman-adv mailing list. We can later decide which route we take.
+Fixes: 5c3245172c01 ("batman-adv: ELP - compute the metric based on the estimated throughput")
+Reported-by: Thomas Lauer <holminateur@gmail.com>
+Reported-by: Marcel Schmidt <ff.z-casparistrasse@mailbox.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+v2:
 
-Kind regards,
-	Sven
---nextPart4733706.VraSOCSPsM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+* rewrite commit message
 
------BEGIN PGP SIGNATURE-----
+ net/batman-adv/bat_v_elp.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsXcDAACgkQXYcKB8Em
-e0amERAAna3YvJsFjSmPFnr324hZ/MM/oGUe2imOodMGCdDh46iPkzUwoBj3zDE3
-6NyZspGqtcCvmdgOWUmaUcD0TKFaJWzOBTShdU1xvmD8Qf0D/JhMepla4YAtIKIg
-BSZK1iUB7VWZjV2ewbzx3mpUHuntocVVnkbZ1q1QlLLIYSKTgLkO5MlPCO8HIWrJ
-s3AC/X9ILWJIFDnBU3eTYLBLhd0lVuSBDdgmgjVn710MqyJRw7/uHnMW4Zy5NXJU
-A60widiNTD+Hu82zjz03p7QwR7zmTQE4rykqEidjY/v3Tpg1xvX4GMQqA1sNYSlr
-CmqZ/z8msaBGBU//EOS076cBKDpZwzXm+oi8Cbooh9/h2OuAxCereKqlG3GRcaUX
-ZSFcQck0PgnXYdlZOpJ5d5DlQ/s8xdNgJhOHYsNg7xPGggy3EwgXJwKxqEUcRfC2
-sjTinbqSR04r81M0IxBHkiKbRZv4LjlitXfHpBosS6ha9ewAum66wGz21v6oeCnb
-4vsNtNGd1aRpi505rqMKbBVOkrlA8Onyt0e6tnSOTK/FJh/zWwE9lnmZg7Wrwe04
-60g8lzZ1o/WJOmwLh5D6fEA8CCApuM+NqnsE1wmG9pdT7EDh2dJe6nJ4X9voPtxa
-uV9SQgXNHD4EG5eGPodndoylYJZz2w4uoVFWyhYFDKrBxXlCe64=
-=1+t8
------END PGP SIGNATURE-----
-
---nextPart4733706.VraSOCSPsM--
-
-
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 28687493..846316ea 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -102,6 +102,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 		if (!real_netdev)
+ 			goto default_throughput;
+ 
++		memset(&sinfo, 0, sizeof(sinfo));
+ 		ret = cfg80211_get_station(real_netdev, neigh->addr, &sinfo);
+ 
+ 		dev_put(real_netdev);
+-- 
+2.17.1
 
