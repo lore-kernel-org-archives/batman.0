@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 12 Jun 2018 21:45:53 +0200
-Message-ID: <3268372.71QmLCPILN@sven-edge>
-In-Reply-To: <20180606153529.20016-1-sven@narfation.org>
-References: <20180606153529.20016-1-sven@narfation.org>
+Date: Tue, 12 Jun 2018 21:46:49 +0200
+Message-ID: <4572540.4P5GEOrqJY@sven-edge>
+In-Reply-To: <20180606224624.10141-1-linus.luessing@c0d3.blue>
+References: <20180606224624.10141-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1671669.vjXytAXkuU";
+Content-Type: multipart/signed; boundary="nextPart2026155.HvfgsALnDt";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: compat: initialize
- sinfo in cfg80211_get_station
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Avoid storing
+ non-TT-sync flags on singular entries too
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,67 +20,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1671669.vjXytAXkuU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2026155.HvfgsALnDt
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Mittwoch, 6. Juni 2018 17:35:29 CEST Sven Eckelmann wrote:
-> Most of the implementations behind cfg80211_get_station will not initialize
-> sinfo to zero before manipulating it. For example, the member "filled",
-> which indicates the filled in parts of this struct, is often only modified
-> by enabling certain bits in the bitfield while keeping the remaining bits
-> in their original state. A caller without a preinitialized sinfo.filled can
-> then no longer decide which parts of sinfo were filled in by
-> cfg80211_get_station (or actually the underlying implementations).
-> 
-> cfg80211_get_station must therefore take care that sinfo is initialized to
-> zero. Otherwise, the caller may tries to read information which was not
-> filled in and which must therefore also be considered uninitialized. In
-> batadv_v_elp_get_throughput's case, an invalid "random" expected throughput
-> may be stored for this neighbor and thus the B.A.T.M.A.N V algorithm may
-> switch to non-optimal neighbors for certain destinations.
-> 
-> batman-adv's compat layer must take care of intializing sinfo until it is
-> fixed in the upstream kernel.
-> 
-> Fixes: 7406353d43c8 ("cfg80211: implement cfg80211_get_station cfg80211 API")
-> Reported-by: Thomas Lauer <holminateur@gmail.com>
-> Reported-by: Marcel Schmidt <ff.z-casparistrasse@mailbox.org>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Donnerstag, 7. Juni 2018 00:46:23 CEST Linus L=FCssing wrote:
+> Since commit 382d020fe3fa ("batman-adv: fix TT sync flag inconsistencies")
+> TT sync flags and TT non-sync'd flags are supposed to be stored
+> separately.
+>=20
+> The previous patch missed to apply this separation on a TT entry with
+> only a single TT orig entry.
+>=20
+> This is a minor fix because with only a single TT orig entry the DDoS
+> issue the former patch solves does not apply.
+>=20
+> Fixes: 382d020fe3fa ("batman-adv: fix TT sync flag inconsistencies")
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 > ---
->  compat-include/net/cfg80211.h | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
+>  net/batman-adv/translation-table.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
+Added as beb6246b2339 [1]
 
-Added as d7280ffad5e9 [1]
-
-Kind regards,
+Thanks,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/d7280ffad5e9025bc6c26f9ad4925fd0797fb8db
---nextPart1671669.vjXytAXkuU
+[1] https://git.open-mesh.org/batman-adv.git/commit/beb6246b2339852b6a429ae=
+9259a8eb30a685041
+--nextPart2026155.HvfgsALnDt
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsgIvEACgkQXYcKB8Em
-e0ZDFRAAqXHcfwyE1ImTSHKI45IEb7Gs+rK3je2LUICdxO21w37bCiizLVbCqgYf
-dATzTrc+d7q987uEZJdmNr9WzOxMrD1ib2Xglhzi8Nw/6CHlVIgfrhEKnHG6/80/
-hmfKklhfSB30Zs8adE//1Alp03ptm58yaRh62eUYcHs1TyMtuU8UFOMIKt4SajXP
-BaAyHUdZxn6fYjTSnjJq3VfcG7G92Amm7hIyIUk/OVws88Q5X5qE3tfjd1Z9jIB5
-b8dFKhcWOEKqKy5VYdTIYNGVJhxWEtZ9qTQGj20F9PZ6yKfLy/2hG+6Ooktdkbw9
-rrBT3Dl1u5f1F8Kx9wNi34Lz0e3VGTOoBn53Fj1IFTOrLAZbgWekK2QGkFxVmRHu
-lqCawXUtUFjfn4Ojff3eJb2svOXZQgQ6RXjHO0vfOoR+c4HJq+7F19jfUjYKopKy
-Pil076IFBo1dMczaujYaz3qrX5b59CNr3vsHZ5ExD68SHFSVSxVGgr+jZMAfg1p4
-h+khYHh4hFpSvJr1z5Svu6K6An+qOdJwOgdOO6UHUYq6hsD2fqlxKs574tb9cgUy
-QnoojZW7DYJweb4h2R0Loq3rd3PCHxpeJAtZ+2H/d2R6smNi1oF6jcdrI2vgfhgZ
-PcPjB4Gi1QdbaJYiaq+oTVEiZAqliMFv3lTeCgZlZgQfAvFpVPg=
-=aWBS
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsgIykACgkQXYcKB8Em
+e0bLgA/+PuoKvf2J8NTVXNdoJ6LnsfCZ83Z8Lz9RajXh2vtMwriipEiWzGoYERq2
+NnBpQFt0bp7Aky9c7EhC3Tdh3DmaN2qEkIbFURJinre3A8uiV7CQ4VvLR6IAfEIf
+4a3zXi7PZiILwcxzjcgG3gg95Q/k/3VJPEkGG8Dac1JvLM4Vn7nVivrI4mbZmHN4
+XGbXuFZqAj90Uo7yumhq4MFwxxqgMRL/lCxMp4IhyqzbKQyHR1yBNlFstUJFHYAf
+/477Qw+yQiIU0I4gD6gHB8tCBSZDG5CC49XxjXutXXeQijhuYCRSKRffILX8Bhfe
+V74m9QXLrt61YkTiqAHhzQS/VBTtkzTaBZy248X4s6VbkvdIa8hL3C9sOB9lU0CF
+aGjLs5IKC+mql1xLiiXneVn/8YncrdFBysUL10GG6BP2Q5/j/ukYj8cdkdRoZ85t
++qPsqCvoMy/oE5v/HnepOW2Q+Q/VTvFVPc+2/1MKcRiL6rWWwvdfknzo42KyMTSR
+Wr/x4ttdTjJ0ADBijQ3jXHVc184gHhNUyBXFURsAkh2RQP1YC7GfdPEF7r+Olpb8
+rEtq59XY5xFctt7oTJPo1AWMy1zoFJgljjkx4IxyWqmJ9gFpEoFsVNlQ3P3wReGW
+wnOFqqwU8W/pBJtW8cY0jLZ0Z5DGRGOGyJeXyOs6k0lUD/3JVC8=
+=MEJP
 -----END PGP SIGNATURE-----
 
---nextPart1671669.vjXytAXkuU--
+--nextPart2026155.HvfgsALnDt--
 
 
 
