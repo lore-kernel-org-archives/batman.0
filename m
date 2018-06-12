@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 12 Jun 2018 21:46:49 +0200
-Message-ID: <4572540.4P5GEOrqJY@sven-edge>
-In-Reply-To: <20180606224624.10141-1-linus.luessing@c0d3.blue>
+Date: Tue, 12 Jun 2018 21:47:41 +0200
+Message-ID: <2837973.EqbrSDaRnS@sven-edge>
+In-Reply-To: <20180606224624.10141-2-linus.luessing@c0d3.blue>
 References: <20180606224624.10141-1-linus.luessing@c0d3.blue>
+ <20180606224624.10141-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2026155.HvfgsALnDt";
+Content-Type: multipart/signed; boundary="nextPart4211026.D8PdUcQnky";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Avoid storing
- non-TT-sync flags on singular entries too
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix multicast TT
+ issues with bogus ROAM flags
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,57 +21,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2026155.HvfgsALnDt
+--nextPart4211026.D8PdUcQnky
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Donnerstag, 7. Juni 2018 00:46:23 CEST Linus L=FCssing wrote:
-> Since commit 382d020fe3fa ("batman-adv: fix TT sync flag inconsistencies")
-> TT sync flags and TT non-sync'd flags are supposed to be stored
-> separately.
+On Donnerstag, 7. Juni 2018 00:46:24 CEST Linus L=FCssing wrote:
+> When a (broken) node wrongly sends multicast TT entries with a ROAM
+> flag then this causes any receiving node to drop all entries for the
+> same multicast MAC address announced by other nodes, leading to
+> packet loss.
 >=20
-> The previous patch missed to apply this separation on a TT entry with
-> only a single TT orig entry.
+> Fix this DoS vector by only storing TT sync flags. For multicast TT
+> non-sync'ing flag bits like ROAM are unused so far anyway.
 >=20
-> This is a minor fix because with only a single TT orig entry the DDoS
-> issue the former patch solves does not apply.
->=20
-> Fixes: 382d020fe3fa ("batman-adv: fix TT sync flag inconsistencies")
+> Fixes: 405cc1e5a81e ("batman-adv: Modified forwarding behaviour for multi=
+cast packets")
+> Reported-by: Leonardo M=F6rlein <me@irrelefant.net>
 > Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  net/batman-adv/translation-table.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Added as beb6246b2339 [1]
+Added as c7054ffae0c3 [1]
 
 Thanks,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/beb6246b2339852b6a429ae=
-9259a8eb30a685041
---nextPart2026155.HvfgsALnDt
+[1] https://git.open-mesh.org/batman-adv.git/commit/c7054ffae0c3b08bb4bef3c=
+ffee1e0a543e14096
+--nextPart4211026.D8PdUcQnky
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsgIykACgkQXYcKB8Em
-e0bLgA/+PuoKvf2J8NTVXNdoJ6LnsfCZ83Z8Lz9RajXh2vtMwriipEiWzGoYERq2
-NnBpQFt0bp7Aky9c7EhC3Tdh3DmaN2qEkIbFURJinre3A8uiV7CQ4VvLR6IAfEIf
-4a3zXi7PZiILwcxzjcgG3gg95Q/k/3VJPEkGG8Dac1JvLM4Vn7nVivrI4mbZmHN4
-XGbXuFZqAj90Uo7yumhq4MFwxxqgMRL/lCxMp4IhyqzbKQyHR1yBNlFstUJFHYAf
-/477Qw+yQiIU0I4gD6gHB8tCBSZDG5CC49XxjXutXXeQijhuYCRSKRffILX8Bhfe
-V74m9QXLrt61YkTiqAHhzQS/VBTtkzTaBZy248X4s6VbkvdIa8hL3C9sOB9lU0CF
-aGjLs5IKC+mql1xLiiXneVn/8YncrdFBysUL10GG6BP2Q5/j/ukYj8cdkdRoZ85t
-+qPsqCvoMy/oE5v/HnepOW2Q+Q/VTvFVPc+2/1MKcRiL6rWWwvdfknzo42KyMTSR
-Wr/x4ttdTjJ0ADBijQ3jXHVc184gHhNUyBXFURsAkh2RQP1YC7GfdPEF7r+Olpb8
-rEtq59XY5xFctt7oTJPo1AWMy1zoFJgljjkx4IxyWqmJ9gFpEoFsVNlQ3P3wReGW
-wnOFqqwU8W/pBJtW8cY0jLZ0Z5DGRGOGyJeXyOs6k0lUD/3JVC8=
-=MEJP
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsgI14ACgkQXYcKB8Em
+e0Yh6Q/8Di0pMALrWMHB/w2BZZGVm33tjIusgEnf5CzwMu4SKwe1s/lXRur2+V74
+gmRmkg1PxxAKQL+BSf4RJYQcG607A1PWEy2zuVNwx49IQfWQAypGYBLCZ3HVe3Va
+Wbrd//g8sntI7I/HgGmuE7KK5T8RhfB1wcftMoSVf2ByBj3kpGe60SEp2fq9kEbV
+p5kyzyJmnfWYOYrjnRh5JRSzNwVV/l/nNbUhwqY6bJYzt0k8oUstxCvBKK8U8qvF
+s7yC08m7gnNv52Mni8iXINKSrG2EbCWUasDCQHfUcE9wooNnBhqNK0SBd+yODzNM
+enqZj6ablmmMOGHa65g9PI8pZ46zikOGkTiZ3RdFA4nPeImIY9zXEbLG19L+ISmZ
+BuEjLncJxfIcbhmXrYSw8ATx1JhzfWoGH7kOnb4e8ejBrLhYC2+LVPmTR/HZKq//
+Cs1vQX+nI7u412nrDh6NFiu1c0UeP/SoM3mj7lTtHw8i/cdZKsJ/wPwBdEVuOd3O
+xFZwRRxuH6g4MtEConuWq46eW31AuuGW9hLP3HC70HJO0ETVxGDTZfAYbfVYcOdo
+iRenLlpR94KvUtphdww6CQnFPAqAWRvNP7PeSr9HQUZ3fckuwoFVJfLOjb6conqT
+yF3LN3nAevGKdax+F0d24hT6m/bPuj7wUryhhzfkLffj6R04EK8=
+=7YjR
 -----END PGP SIGNATURE-----
 
---nextPart2026155.HvfgsALnDt--
+--nextPart4211026.D8PdUcQnky--
 
 
 
