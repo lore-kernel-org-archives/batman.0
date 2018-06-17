@@ -1,11 +1,11 @@
 Return-Path: <omer.efrat@tandemg.com>
 From: Omer Efrat <omer.efrat@tandemg.com>
-Date: Sun, 17 Jun 2018 13:05:51 +0300
-Message-Id: <1529229951-17730-1-git-send-email-omer.efrat@tandemg.com>
+Date: Sun, 17 Jun 2018 13:06:54 +0300
+Message-Id: <1529230014-17897-1-git-send-email-omer.efrat@tandemg.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH v3 0/5] use BIT_ULL for NL80211_STA_INFO_*
- attribute types
+Subject: [B.A.T.M.A.N.] [PATCH v3 3/5] batman-adv: use BIT_ULL for
+ NL80211_STA_INFO_* attribute types
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,7 +15,7 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-wireless@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, devel@driverdev.osuosl.org
+To: linux-wireless@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 Cc: Omer Efrat <omer.efrat@tandemg.com>
 
 The BIT macro uses unsigned long which some architectures handle as 32 bit
@@ -27,42 +27,27 @@ should be used with all NL80211_STA_INFO_* attribute types instead of BIT
 to prevent future possible bugs when one will use BIT macro for higher
 attributes by mistake.
 
-Note: The following patch series only does some code clean up.
-The previous versions mentioned a bug fix but it appears as a mix up
-with some local changes because NL80211_STA_INFO_TID_STATS value actually
-equals 31.
+This commit cleans up all usages of BIT macro with the above field
+in batman-adv by changing it to BIT_ULL instead.
 
-Changes in v3:
-  - Better phrasing commit messages due to the above note
-  - Align patches to latest mac80211-next
+Signed-off-by: Omer Efrat <omer.efrat@tandemg.com>
+---
+ net/batman-adv/bat_v_elp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Omer Efrat (5):
-  cfg80211: use BIT_ULL for NL80211_STA_INFO_* attribute types
-  mac80211: use BIT_ULL for NL80211_STA_INFO_* attribute types
-  batman-adv: use BIT_ULL for NL80211_STA_INFO_* attribute types
-  wireless-drivers: use BIT_ULL for NL80211_STA_INFO_ attribute types
-  staging: use BIT_ULL for NL80211_STA_INFO_* attribute types
-
- drivers/net/wireless/ath/ath10k/mac.c              |  4 +-
- drivers/net/wireless/ath/ath6kl/cfg80211.c         | 14 ++--
- drivers/net/wireless/ath/wil6210/cfg80211.c        | 18 ++---
- .../broadcom/brcm80211/brcmfmac/cfg80211.c         | 40 +++++------
- drivers/net/wireless/intel/iwlwifi/mvm/mac80211.c  |  6 +-
- drivers/net/wireless/marvell/libertas/cfg.c        | 12 ++--
- drivers/net/wireless/marvell/mwifiex/cfg80211.c    | 14 ++--
- drivers/net/wireless/quantenna/qtnfmac/commands.c  | 32 ++++-----
- drivers/net/wireless/rndis_wlan.c                  |  4 +-
- drivers/net/wireless/ti/wlcore/main.c              |  2 +-
- drivers/staging/rtl8723bs/os_dep/ioctl_cfg80211.c  | 10 +--
- drivers/staging/wilc1000/wilc_wfi_cfgoperations.c  | 14 ++--
- drivers/staging/wlan-ng/cfg80211.c                 |  4 +-
- net/batman-adv/bat_v_elp.c                         |  2 +-
- net/mac80211/ethtool.c                             |  6 +-
- net/mac80211/sta_info.c                            | 84 +++++++++++-----------
- net/wireless/nl80211.c                             | 26 +++----
- net/wireless/wext-compat.c                         | 10 +--
- 18 files changed, 151 insertions(+), 151 deletions(-)
-
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 71c20c1..71e6474 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -114,7 +114,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 		}
+ 		if (ret)
+ 			goto default_throughput;
+-		if (!(sinfo.filled & BIT(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
++		if (!(sinfo.filled & BIT_ULL(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
+ 			goto default_throughput;
+ 
+ 		return sinfo.expected_throughput / 100;
 -- 
 2.7.4
 
