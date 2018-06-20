@@ -1,15 +1,10 @@
-Return-Path: <johannes@sipsolutions.net>
-Message-ID: <1529267306.3070.0.camel@sipsolutions.net>
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Sun, 17 Jun 2018 22:28:26 +0200
-In-Reply-To: <1529229951-17730-1-git-send-email-omer.efrat@tandemg.com>
- (sfid-20180617_120607_305286_FD9A7637)
-References: <1529229951-17730-1-git-send-email-omer.efrat@tandemg.com>
- (sfid-20180617_120607_305286_FD9A7637)
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 0/5] use BIT_ULL for
+Return-Path: <omer.efrat@tandemg.com>
+From: Omer Efrat <omer.efrat@tandemg.com>
+Date: Wed, 20 Jun 2018 13:46:56 +0300
+Message-Id: <1529491616-23222-1-git-send-email-omer.efrat@tandemg.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: use BIT_ULL for
  NL80211_STA_INFO_* attribute types
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,15 +15,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Omer Efrat <omer.efrat@tandemg.com>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, devel@driverdev.osuosl.org
+To: linux-wireless@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: Omer Efrat <omer.efrat@tandemg.com>
 
-On Sun, 2018-06-17 at 13:05 +0300, Omer Efrat wrote:
-> 
-> Note: The following patch series only does some code clean up.
-> The previous versions mentioned a bug fix but it appears as a mix up
-> with some local changes because NL80211_STA_INFO_TID_STATS value actually
-> equals 31.
+The BIT macro uses unsigned long which some architectures handle as 32 bit
+and therefore might cause macro's shift to overflow when used on a value
+equals or larger than 32 (NL80211_STA_INFO_RX_DURATION and afterwards).
 
-Interesting. Thanks for checking!
+Since 'filled' member in station_info changed to u64, BIT_ULL macro
+should be used with all NL80211_STA_INFO_* attribute types instead of BIT
+to prevent future possible bugs when one will use BIT macro for higher
+attributes by mistake.
 
-johannes
+This commit cleans up all usages of BIT macro with the above field
+in batman-adv by changing it to BIT_ULL instead.
+
+Signed-off-by: Omer Efrat <omer.efrat@tandemg.com>
+---
+ net/batman-adv/bat_v_elp.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 71c20c1..2f0de55 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -114,7 +114,8 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 		}
+ 		if (ret)
+ 			goto default_throughput;
+-		if (!(sinfo.filled & BIT(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
++		if (!(sinfo.filled &
++			  BIT_ULL(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
+ 			goto default_throughput;
+ 
+ 		return sinfo.expected_throughput / 100;
+-- 
+2.7.4
+
