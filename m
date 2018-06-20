@@ -1,10 +1,13 @@
-Return-Path: <omer.efrat@tandemg.com>
-From: Omer Efrat <omer.efrat@tandemg.com>
-Date: Wed, 20 Jun 2018 13:46:56 +0300
-Message-Id: <1529491616-23222-1-git-send-email-omer.efrat@tandemg.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 20 Jun 2018 13:34:09 +0200
+Message-ID: <2698334.cOteLZxmq0@bentobox>
+In-Reply-To: <1529491616-23222-1-git-send-email-omer.efrat@tandemg.com>
+References: <1529491616-23222-1-git-send-email-omer.efrat@tandemg.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: use BIT_ULL for
+Content-Type: multipart/signed; boundary="nextPart14042354.XY0V1bUi97";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: use BIT_ULL for
  NL80211_STA_INFO_* attribute types
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,40 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-wireless@vger.kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
-Cc: Omer Efrat <omer.efrat@tandemg.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Omer Efrat <omer.efrat@tandemg.com>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org
 
-The BIT macro uses unsigned long which some architectures handle as 32 bit
-and therefore might cause macro's shift to overflow when used on a value
-equals or larger than 32 (NL80211_STA_INFO_RX_DURATION and afterwards).
+--nextPart14042354.XY0V1bUi97
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Since 'filled' member in station_info changed to u64, BIT_ULL macro
-should be used with all NL80211_STA_INFO_* attribute types instead of BIT
-to prevent future possible bugs when one will use BIT macro for higher
-attributes by mistake.
+On Mittwoch, 20. Juni 2018 13:46:56 CEST Omer Efrat wrote:
+> -               if (!(sinfo.filled & BIT(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
+> +               if (!(sinfo.filled &
+> +                         BIT_ULL(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
+>                         goto default_throughput;
 
-This commit cleans up all usages of BIT macro with the above field
-in batman-adv by changing it to BIT_ULL instead.
+Please fix the alignment:
 
-Signed-off-by: Omer Efrat <omer.efrat@tandemg.com>
----
- net/batman-adv/bat_v_elp.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+* Found wrong alignment at net/batman-adv/bat_v_elp.c:118, was 27 but expected 23
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 71c20c1..2f0de55 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -114,7 +114,8 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
- 		}
- 		if (ret)
- 			goto default_throughput;
--		if (!(sinfo.filled & BIT(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
-+		if (!(sinfo.filled &
-+			  BIT_ULL(NL80211_STA_INFO_EXPECTED_THROUGHPUT)))
- 			goto default_throughput;
- 
- 		return sinfo.expected_throughput / 100;
--- 
-2.7.4
+Kind regards,
+	Sven
+--nextPart14042354.XY0V1bUi97
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsqO7EACgkQXYcKB8Em
+e0b8lRAApAL2fVCO1fnV4c7k9WdwjsL/zCSnhCTnfrp6LO4yQg9aMDlnxySsmDlM
+UKFBMmPogfSzNlU8etLsD6BAs9GjGSwo11aynCud15JNzdr1BRWNBWAUvF6Xkavj
+6x8JRk+dl3wOR8wads6X343YorA/xsv/ycwXz1Ao3cM6FQsguvhjwzZJbuoBucNc
+JMRx1ClP/rEt3DQAj78Adpb7kxz3XBLrl3oF04qEasNlrwBJPUhIN1qYAUR+yt10
+lwRNXp3RSSz7S/HN2uMqQC3hM06NM5CwyvnvbfeFCssZi0mhLJJ8ZUku1R180g3i
+wOt4DXqNnnds2jL+47B5tU4N7JUeEKtcJr1Rni0DiWiS2MnEUKWU9uqz4/aNS/Rf
+VQfik2PfRHAp/g+bWQ1XdLsV9bqOoHJcpmVqQws+pSX3ufXrdT7fJ+/k0z6wWjbG
+fsq3oYkjEVGja/KHz9QMOFCKLahKP5cFMAzfvGrtFy3EwD617AQtUWpnQjBIi1n7
+JpM9unkb0hUo0GQhiG73hs1Ah7rGR2cJpeFhFV6noS1//7zBVf6tVg5IBYVkSbgh
+QOSNWrKwJxgUXT9aXyqeIwler6ylZp+lD9P2NWkWrHwdCKSRBxIt2ixyK2tWUzbQ
+FVp3xby6N46PdMV4kX4wu+G/3gAj1OaFz/kYyJc1lCgCwEJZHRo=
+=hxXo
+-----END PGP SIGNATURE-----
+
+--nextPart14042354.XY0V1bUi97--
 
