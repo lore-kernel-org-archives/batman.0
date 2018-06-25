@@ -1,16 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 25 Jun 2018 17:15:05 +0200
-Message-ID: <2051232.3bxOfNrTxA@bentobox>
-In-Reply-To: <VI1PR02MB36318EDC28705CFBFFF167809A4A0@VI1PR02MB3631.eurprd02.prod.outlook.com>
-References: <1529491616-23222-1-git-send-email-omer.efrat@tandemg.com>
- <2698334.cOteLZxmq0@bentobox>
- <VI1PR02MB36318EDC28705CFBFFF167809A4A0@VI1PR02MB3631.eurprd02.prod.outlook.com>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Mon, 25 Jun 2018 19:29:19 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20180625172919.GA2433@otheros>
+References: <20180515234859.1167-1-linus.luessing@c0d3.blue>
+ <2744691.dbA1SKQ1ei@lafayette>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1559518.IcFyxG2UGy";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: use BIT_ULL for
- NL80211_STA_INFO_* attribute types
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2744691.dbA1SKQ1ei@lafayette>
+Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Increase DHCP snooped
+ DAT entry purge timeout in DHT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,50 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Omer Efrat <omer.efrat@tandemg.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1559518.IcFyxG2UGy
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Marek,
 
-On Montag, 25. Juni 2018 14:31:19 CEST Omer Efrat wrote:
-> Sven Eckelmann wrote:
-> >Please fix the alignment:
-> >
-> >* Found wrong alignment at net/batman-adv/bat_v_elp.c:118, was 27 but expected 23
+Thanks for looking at this patch!
+
+On Sun, Jun 03, 2018 at 07:53:01PM +0800, Marek Lindner wrote:
+> This patch deviates from our battlemesh discussions in a major point: It 
+> appears to cater towards your specific use-case more than towards a general 
+> solution. Can you outline as to why you feel the approach below is 
+> problematic:
 > 
-> checkpatch script doesn't catch this error.
-> how do I see this?
+> When a batman-adv node retrieves a MAC-IP address combination from the DHT, it 
+> issues a DHT request to the 3 DHT candidates (owners) of this particular MAC-
+> IP address combination. Moving forward, those 3 candidates will be referred to 
+> as 'global DAT cache'. Upon reception of the requested information the 
+> requesting batman-adv node equally caches the MAC-IP address combination to 
+> speed up further lookups (the 'local cache').
+> 
+> Today, the global and local DAT cache are implemented and treated identically. 
+> In order to improve the ARP suppression success rate global and local DAT 
+> cache could be separated with the global cache having a much longer timeout.
+> The network updates the global DAT cache whenever new information becomes 
+> available. Therefore bearing little risk of returning misleading information.
+> As the network does not take care of updating the local DAT cache, its timeout 
+> should be kept short enough to ensure regular updates.
 
-I saw it with my eyes. But the script bracket_align.py [1] prints the actual 
-message.
+I'm a little worried about the following scenario:
 
-Kind regards,
-	Sven
+1) Host (A) joins the network and has the IP_X / MAC_a
+   statically assigned.
+2) Some ARP Requests reaches this host, it issues an ARP Reply
+   which populates the DHT.
+3) The host leaves the network.
+3) Another host (B) joins the network with IP_X / MAC_b
+   statically assigned.
 
-[1] https://git.open-mesh.org/build_test.git/blob/HEAD:/testhelpers/bracket_align.py
---nextPart1559518.IcFyxG2UGy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Currently, we only update the DHT on outgoing (= into the mesh)
+ARP Replies. I'm worried that an ARP Request would never reach
+this node (B) during the whole extended timeout, therefore not
+triggering the necessary ARP Reply, therefore leaving this
+node unreachable over this whole time frame. Which would probably
+result in a lot of confusion, I guess.
 
------BEGIN PGP SIGNATURE-----
+That is why I was wondering whether it might be better to stay
+on the safe side and only apply an extended timeout to entries
+created or updated via DHCP.
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlsxBvkACgkQXYcKB8Em
-e0ZBzA//aDuVebWbK3MqKBk25PBygGE1YWWMXsnX3zXK0pOyVHjzgDXe7+ZouGiQ
-jwJUJU2LEY5YZ29tuuYXXi/J22KzaME0ea3wxabNuK+biqxzu42Zyz3GBr+Y+23g
-+Ch7Zs9v7utfjclLgF2ET+bT62u4tl6V4Tqdfyb8l88+hLVJMSUjCLVCYP5hxugh
-V/zjfbwoBve8ALWEOR4oGyq0Q85cXYRnWmyAtPChh7omN5NHjCkNmx60zKyWPwx8
-RyC0SgBAcSNzKytI9pgpI1aHdk1m8L9k2QYH/Hvb2ZFh7yfGGGWDyIwOBSTmwsz4
-sujygPyNFD3dHCCo2+LxQkK2cf1ysuR/4cuN+VbDDGqHtbPZKk4uKHg16Aoe0WT8
-Tqoe+tKiIV4aTuvQCxBQnObFh9OJn80oy+uT72FsZvq1EcgbFflZcwy+EiPUy/pw
-6SujalpInnIy9WtzqhtGr1SbQL/cIQJbE/Cc/NPqtViQDDpzNjaMXLE6iIIjlyNi
-/CZc+Cm5hMCCnxHKYaTLIFqF6m197uqLpVWoNuVZRwhyCVRm2arcsvBTuEsrR4N+
-TovHCypLCkUPp2ZtQoBKRPQ5KILYHk58IDP6q6Uo6SR4iP0keEnQKFxhCHF5MlFJ
-NZLZ3VsBDWuhko75SmwEQeZkDP/+3mwT8uEihTd6MxdurkpzKPM=
-=nHuS
------END PGP SIGNATURE-----
-
---nextPart1559518.IcFyxG2UGy--
-
+Cheers, Linus
