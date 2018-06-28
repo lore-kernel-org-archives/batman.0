@@ -1,15 +1,8 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 25 Jun 2018 19:29:19 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180625172919.GA2433@otheros>
-References: <20180515234859.1167-1-linus.luessing@c0d3.blue>
- <2744691.dbA1SKQ1ei@lafayette>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2744691.dbA1SKQ1ei@lafayette>
-Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Increase DHCP snooped
- DAT entry purge timeout in DHT
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 28 Jun 2018 21:21:41 +0200
+Message-Id: <20180628192141.13112-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Don't redefine EPOLL*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,52 +12,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Andre Kasper <andre.kasper@gmx.de>
 
-Hi Marek,
+The commit 7e040726850a ("eventpoll.h: add missing epoll event masks") was
+backported to a couple of older kernels - including 4.4. The build against
+such kernel sources creates a lot of extra warnings about redefinitions of
+the different EPOLL* variables.
 
-Thanks for looking at this patch!
+Just disable the definition of these variables when they are already
+defined and drop the ones which are not used by batman-adv.
 
-On Sun, Jun 03, 2018 at 07:53:01PM +0800, Marek Lindner wrote:
-> This patch deviates from our battlemesh discussions in a major point: It 
-> appears to cater towards your specific use-case more than towards a general 
-> solution. Can you outline as to why you feel the approach below is 
-> problematic:
-> 
-> When a batman-adv node retrieves a MAC-IP address combination from the DHT, it 
-> issues a DHT request to the 3 DHT candidates (owners) of this particular MAC-
-> IP address combination. Moving forward, those 3 candidates will be referred to 
-> as 'global DAT cache'. Upon reception of the requested information the 
-> requesting batman-adv node equally caches the MAC-IP address combination to 
-> speed up further lookups (the 'local cache').
-> 
-> Today, the global and local DAT cache are implemented and treated identically. 
-> In order to improve the ARP suppression success rate global and local DAT 
-> cache could be separated with the global cache having a much longer timeout.
-> The network updates the global DAT cache whenever new information becomes 
-> available. Therefore bearing little risk of returning misleading information.
-> As the network does not take care of updating the local DAT cache, its timeout 
-> should be kept short enough to ensure regular updates.
+Reported-by: Andre Kasper <andre.kasper@gmx.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Cc: Andre Kasper <andre.kasper@gmx.de>
+---
+ compat-include/uapi/linux/eventpoll.h | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-I'm a little worried about the following scenario:
+diff --git a/compat-include/uapi/linux/eventpoll.h b/compat-include/uapi/linux/eventpoll.h
+index 1828feb4..3cf71a19 100644
+--- a/compat-include/uapi/linux/eventpoll.h
++++ b/compat-include/uapi/linux/eventpoll.h
+@@ -28,18 +28,13 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
+ 
++#ifndef EPOLLIN
+ #define EPOLLIN		(__force __poll_t)0x00000001
+-#define EPOLLPRI	(__force __poll_t)0x00000002
+-#define EPOLLOUT	(__force __poll_t)0x00000004
+-#define EPOLLERR	(__force __poll_t)0x00000008
+-#define EPOLLHUP	(__force __poll_t)0x00000010
+-#define EPOLLNVAL	(__force __poll_t)0x00000020
++#endif
++
++#ifndef EPOLLRDNORM
+ #define EPOLLRDNORM	(__force __poll_t)0x00000040
+-#define EPOLLRDBAND	(__force __poll_t)0x00000080
+-#define EPOLLWRNORM	(__force __poll_t)0x00000100
+-#define EPOLLWRBAND	(__force __poll_t)0x00000200
+-#define EPOLLMSG	(__force __poll_t)0x00000400
+-#define EPOLLRDHUP	(__force __poll_t)0x00002000
++#endif
+ 
+ #endif /* < KERNEL_VERSION(4, 12, 0) */
+ 
+-- 
+2.18.0
 
-1) Host (A) joins the network and has the IP_X / MAC_a
-   statically assigned.
-2) Some ARP Requests reaches this host, it issues an ARP Reply
-   which populates the DHT.
-3) The host leaves the network.
-3) Another host (B) joins the network with IP_X / MAC_b
-   statically assigned.
-
-Currently, we only update the DHT on outgoing (= into the mesh)
-ARP Replies. I'm worried that an ARP Request would never reach
-this node (B) during the whole extended timeout, therefore not
-triggering the necessary ARP Reply, therefore leaving this
-node unreachable over this whole time frame. Which would probably
-result in a lot of confusion, I guess.
-
-That is why I was wondering whether it might be better to stay
-on the safe side and only apply an extended timeout to entries
-created or updated via DHCP.
-
-Cheers, Linus
