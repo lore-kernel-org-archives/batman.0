@@ -1,9 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  5 Jul 2018 16:57:12 +0200
-Message-Id: <20180705145712.22287-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix checkpatch warning about
- misspelled "cache"
+Return-Path: <dandenson@gmail.com>
+MIME-Version: 1.0
+From: dan <dandenson@gmail.com>
+Date: Sat, 7 Jul 2018 13:31:16 -0600
+Message-ID: <CAA_JP8U1Y43WmPgG4g_+US-oOt+ZXEs7Wtnh9+A1a7cai8cLYg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: [B.A.T.M.A.N.] What is link throughput used for?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,29 +14,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-commit a2d4df9b673c ("spelling.txt: add more spellings to spelling.txt")
-introduced the spellcheck of "cache" for checkpatch.pl.
+I'm not finding a document describing how link throughput is used in
+routing decisions but I see in 2016.1 setting this value (and the
+default of learning it) are described:
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/debugfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Throughput override
+Available since: batman-adv 2016.1
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 87479c60..3cb82378 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -118,7 +118,7 @@ static int batadv_bla_backbone_table_open(struct inode *inode,
- 
- #ifdef CONFIG_BATMAN_ADV_DAT
- /**
-- * batadv_dat_cache_open() - Prepare file handler for reads from dat_chache
-+ * batadv_dat_cache_open() - Prepare file handler for reads from dat_cache
-  * @inode: inode which was opened
-  * @file: file handle to be initialized
-  *
--- 
-2.11.0
+Defines the throughput value to be used by B.A.T.M.A.N. V when
+estimating the link throughput for all neighbors connected to this
+interface. If the value is set to 0 then batman-adv will try to
+estimate the throughput by itself by either querying the WiFi driver
+or the Ethernet interface. B.A.T.M.A.N. IV ignores the setting
+entirely.
 
+cat /sys/class/net/eth0/batman_adv/throughput_override
+0.0 MBit
+
+
+How is this used?  Where's the documentation?
+
+Thanks.
