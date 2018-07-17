@@ -1,14 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:19:45 +0200
-Message-Id: <20180717151946.31900-6-sw@simonwunderlich.de>
-In-Reply-To: <20180717151946.31900-1-sw@simonwunderlich.de>
-References: <20180717151946.31900-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: Avoid storing non-TT-sync
- flags on singular entries too
+Date: Tue, 17 Jul 2018 17:26:42 +0200
+Message-Id: <20180717152649.32282-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 0/7] pull request for net-next: batman-adv
+ 2018-07-17
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,42 +14,62 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+Hi David,
 
-Since commit 54e22f265e87 ("batman-adv: fix TT sync flag inconsistencies")
-TT sync flags and TT non-sync'd flags are supposed to be stored
-separately.
+here is a little cleanup pull request of batman-adv to go into net-next.
 
-The previous patch missed to apply this separation on a TT entry with
-only a single TT orig entry.
+Please pull or let me know of any problem!
 
-This is a minor fix because with only a single TT orig entry the DDoS
-issue the former patch solves does not apply.
+Thank you,
+      Simon
 
-Fixes: 54e22f265e87 ("batman-adv: fix TT sync flag inconsistencies")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/translation-table.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The following changes since commit ce397d215ccd07b8ae3f71db689aedb85d56ab40:
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 3986551397ca..61ce300091f3 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1705,7 +1705,8 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 		ether_addr_copy(common->addr, tt_addr);
- 		common->vid = vid;
- 
--		common->flags = flags;
-+		common->flags = flags & (~BATADV_TT_SYNC_MASK);
-+
- 		tt_global_entry->roam_at = 0;
- 		/* node must store current time in case of roaming. This is
- 		 * needed to purge this entry out on timeout (if nobody claims
--- 
-2.11.0
+  Linux 4.18-rc1 (2018-06-17 08:04:49 +0900)
 
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20180717
+
+for you to fetch changes up to 993a4a5f7cd3aef53be3953d11f86b2d3630ebb8:
+
+  batman-adv: Convert batadv_dat_addr_t to proper type (2018-07-08 12:56:38 +0200)
+
+----------------------------------------------------------------
+This feature/cleanup patchset includes the following patches:
+
+ - Don't call BATMAN_V experimental in Kconfig anymore, by Sven Eckelmann
+
+ - Enable DAT by default at compile time, by Antonio Quartulli
+
+ - Remove obsolete default n in Kconfig, by Sven Eckelmann
+
+ - Fix checkpatch spelling errors, by Sven Eckelmann
+
+ - Unify header guards style, by Sven Eckelmann
+
+ - Consolidate batadv_purge_orig functions, by Sven Eckelmann
+
+ - Replace type define with proper typedef, by Sven Eckelmann
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: enable DAT by default at compile time
+
+Sven Eckelmann (6):
+      batman-adv: Drop "experimental" from BATMAN_V Kconfig
+      batman-adv: Remove "default n" in Kconfig
+      batman-adv: fix checkpatch warning about misspelled "cache"
+      batman-adv: Unify include guards style
+      batman-adv: Join batadv_purge_orig_ref and _batadv_purge_orig
+      batman-adv: Convert batadv_dat_addr_t to proper type
+
+ net/batman-adv/Kconfig      |  8 ++------
+ net/batman-adv/bat_iv_ogm.h |  6 +++---
+ net/batman-adv/bat_v_ogm.h  |  6 +++---
+ net/batman-adv/debugfs.c    |  2 +-
+ net/batman-adv/originator.c | 17 ++++++-----------
+ net/batman-adv/types.h      |  7 ++++---
+ 6 files changed, 19 insertions(+), 27 deletions(-)
