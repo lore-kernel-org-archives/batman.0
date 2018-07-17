@@ -1,12 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:19:40 +0200
-Message-Id: <20180717151946.31900-1-sw@simonwunderlich.de>
+Date: Tue, 17 Jul 2018 17:19:45 +0200
+Message-Id: <20180717151946.31900-6-sw@simonwunderlich.de>
+In-Reply-To: <20180717151946.31900-1-sw@simonwunderlich.de>
+References: <20180717151946.31900-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/6] pull request for net: batman-adv
- 2018-07-17
+Subject: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: Avoid storing non-TT-sync
+ flags on singular entries too
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,53 +19,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-here are some batman-adv bugfixes for net.
+Since commit 54e22f265e87 ("batman-adv: fix TT sync flag inconsistencies")
+TT sync flags and TT non-sync'd flags are supposed to be stored
+separately.
 
-Please pull or let me know of any problem!
+The previous patch missed to apply this separation on a TT entry with
+only a single TT orig entry.
 
-Thank you,
-      Simon
+This is a minor fix because with only a single TT orig entry the DDoS
+issue the former patch solves does not apply.
 
-The following changes since commit ce397d215ccd07b8ae3f71db689aedb85d56ab40:
+Fixes: 54e22f265e87 ("batman-adv: fix TT sync flag inconsistencies")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/translation-table.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-  Linux 4.18-rc1 (2018-06-17 08:04:49 +0900)
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 3986551397ca..61ce300091f3 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1705,7 +1705,8 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 		ether_addr_copy(common->addr, tt_addr);
+ 		common->vid = vid;
+ 
+-		common->flags = flags;
++		common->flags = flags & (~BATADV_TT_SYNC_MASK);
++
+ 		tt_global_entry->roam_at = 0;
+ 		/* node must store current time in case of roaming. This is
+ 		 * needed to purge this entry out on timeout (if nobody claims
+-- 
+2.11.0
 
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180717
-
-for you to fetch changes up to a44ebeff6bbd6ef50db41b4195fca87b21aefd20:
-
-  batman-adv: Fix multicast TT issues with bogus ROAM flags (2018-06-23 10:29:33 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv fixes:
-
- - Fix gateway refcounting in BATMAN IV and V, by Sven Eckelmann (2 patches)
-
- - Fix debugfs paths when renaming interfaces, by Sven Eckelmann (2 patches)
-
- - Fix TT flag issues, by Linus Luessing (2 patches)
-
-----------------------------------------------------------------
-Linus Lüssing (2):
-      batman-adv: Avoid storing non-TT-sync flags on singular entries too
-      batman-adv: Fix multicast TT issues with bogus ROAM flags
-
-Sven Eckelmann (4):
-      batman-adv: Fix bat_ogm_iv best gw refcnt after netlink dump
-      batman-adv: Fix bat_v best gw refcnt after netlink dump
-      batman-adv: Fix debugfs path for renamed hardif
-      batman-adv: Fix debugfs path for renamed softif
-
- net/batman-adv/bat_iv_ogm.c        |  4 +++-
- net/batman-adv/bat_v.c             |  4 +++-
- net/batman-adv/debugfs.c           | 40 ++++++++++++++++++++++++++++++++++++++
- net/batman-adv/debugfs.h           | 11 +++++++++++
- net/batman-adv/hard-interface.c    | 37 +++++++++++++++++++++++++++++------
- net/batman-adv/translation-table.c |  7 +++++--
- 6 files changed, 93 insertions(+), 10 deletions(-)
