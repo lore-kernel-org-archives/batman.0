@@ -1,11 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:26:46 +0200
-Message-Id: <20180717152649.32282-5-sw@simonwunderlich.de>
+Date: Tue, 17 Jul 2018 17:26:47 +0200
+Message-Id: <20180717152649.32282-6-sw@simonwunderlich.de>
 In-Reply-To: <20180717152649.32282-1-sw@simonwunderlich.de>
 References: <20180717152649.32282-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: fix checkpatch warning about
- misspelled "cache"
+Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Unify include guards style
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,28 +19,61 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-commit a2d4df9b673c ("spelling.txt: add more spellings to spelling.txt")
-introduced the spellcheck of "cache" for checkpatch.pl.
+All other include guards in batman-adv use the style:
+
+* _NET_BATMAN_ADV_$(FILENAME)_
+* uppercase only
+* "." & "-" replaced with "_"
+
+Use this also in the B.A.T.M.A.N. IV/V OGM implementation headers.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/debugfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.h | 6 +++---
+ net/batman-adv/bat_v_ogm.h  | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 4229b01ac7b5..95a94160baf8 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -117,7 +117,7 @@ static int batadv_bla_backbone_table_open(struct inode *inode,
+diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
+index 317cafd302cf..3dc6a7a43eb7 100644
+--- a/net/batman-adv/bat_iv_ogm.h
++++ b/net/batman-adv/bat_iv_ogm.h
+@@ -16,11 +16,11 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+  */
  
- #ifdef CONFIG_BATMAN_ADV_DAT
- /**
-- * batadv_dat_cache_open() - Prepare file handler for reads from dat_chache
-+ * batadv_dat_cache_open() - Prepare file handler for reads from dat_cache
-  * @inode: inode which was opened
-  * @file: file handle to be initialized
-  *
+-#ifndef _BATMAN_ADV_BATADV_IV_OGM_H_
+-#define _BATMAN_ADV_BATADV_IV_OGM_H_
++#ifndef _NET_BATMAN_ADV_BAT_IV_OGM_H_
++#define _NET_BATMAN_ADV_BAT_IV_OGM_H_
+ 
+ #include "main.h"
+ 
+ int batadv_iv_init(void);
+ 
+-#endif /* _BATMAN_ADV_BATADV_IV_OGM_H_ */
++#endif /* _NET_BATMAN_ADV_BAT_IV_OGM_H_ */
+diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
+index ed36c5e79fde..e5be14c908c6 100644
+--- a/net/batman-adv/bat_v_ogm.h
++++ b/net/batman-adv/bat_v_ogm.h
+@@ -16,8 +16,8 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+  */
+ 
+-#ifndef _BATMAN_ADV_BATADV_V_OGM_H_
+-#define _BATMAN_ADV_BATADV_V_OGM_H_
++#ifndef _NET_BATMAN_ADV_BAT_V_OGM_H_
++#define _NET_BATMAN_ADV_BAT_V_OGM_H_
+ 
+ #include "main.h"
+ 
+@@ -34,4 +34,4 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface);
+ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *if_incoming);
+ 
+-#endif /* _BATMAN_ADV_BATADV_V_OGM_H_ */
++#endif /* _NET_BATMAN_ADV_BAT_V_OGM_H_ */
 -- 
 2.11.0
 
