@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:19:41 +0200
-Message-Id: <20180717151946.31900-2-sw@simonwunderlich.de>
+Date: Tue, 17 Jul 2018 17:19:44 +0200
+Message-Id: <20180717151946.31900-5-sw@simonwunderlich.de>
 In-Reply-To: <20180717151946.31900-1-sw@simonwunderlich.de>
 References: <20180717151946.31900-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: Fix bat_ogm_iv best gw
- refcnt after netlink dump
+Subject: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Fix debugfs path for renamed
+ softif
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,48 +20,140 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-A reference for the best gateway is taken when the list of gateways in the
-mesh is sent via netlink. This is necessary to check whether the currently
-dumped entry is the currently selected gateway or not. This information is
-then transferred as flag BATADV_ATTR_FLAG_BEST.
+batman-adv is creating special debugfs directories in the init
+net_namespace for each created soft-interface (batadv net_device). But it
+is possible to rename a net_device to a completely different name then the
+original one.
 
-After the comparison of the current entry is done,
-batadv_iv_gw_dump_entry() has to decrease the reference counter again.
-Otherwise the reference will be held and thus prevents a proper shutdown of
-the batman-adv interfaces (and some of the interfaces enslaved in it).
+It can therefore happen that a user registers a new batadv net_device with
+the name "bat0". batman-adv is then also adding a new directory under
+$debugfs/batman-adv/ with the name "wlan0".
 
-Fixes: efb766af06e3 ("batman-adv: add B.A.T.M.A.N. IV bat_gw_dump implementations")
-Reported-by: Andreas Ziegler <dev@andreas-ziegler.de>
-Tested-by: Andreas Ziegler <dev@andreas-ziegler.de>
+The user then decides to rename this device to "bat1" and registers a
+different batadv device with the name "bat0". batman-adv will then try to
+create a directory with the name "bat0" under $debugfs/batman-adv/ again.
+But there already exists one with this name under this path and thus this
+fails. batman-adv will detect a problem and rollback the registering of
+this device.
+
+batman-adv must therefore take care of renaming the debugfs directories for
+soft-interfaces whenever it detects such a net_device rename.
+
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/batman-adv/debugfs.c        | 20 ++++++++++++++++++++
+ net/batman-adv/debugfs.h        |  5 +++++
+ net/batman-adv/hard-interface.c | 34 ++++++++++++++++++++++++++++------
+ 3 files changed, 53 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index be09a9883825..73bf6a93a3cf 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -2732,7 +2732,7 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 7e5de7b9f6d5..87479c60670e 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -434,6 +434,26 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ }
+ 
+ /**
++ * batadv_debugfs_rename_meshif() - Fix debugfs path for renamed softif
++ * @dev: net_device which was renamed
++ */
++void batadv_debugfs_rename_meshif(struct net_device *dev)
++{
++	struct batadv_priv *bat_priv = netdev_priv(dev);
++	const char *name = dev->name;
++	struct dentry *dir;
++	struct dentry *d;
++
++	dir = bat_priv->debug_dir;
++	if (!dir)
++		return;
++
++	d = debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
++	if (!d)
++		pr_err("Can't rename debugfs dir to %s\n", name);
++}
++
++/**
+  * batadv_debugfs_del_meshif() - Remove interface dependent debugfs entries
+  * @dev: netdev struct of the soft interface
+  */
+diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
+index 8538a7a75e93..08a592ffbee5 100644
+--- a/net/batman-adv/debugfs.h
++++ b/net/batman-adv/debugfs.h
+@@ -30,6 +30,7 @@ struct net_device;
+ void batadv_debugfs_init(void);
+ void batadv_debugfs_destroy(void);
+ int batadv_debugfs_add_meshif(struct net_device *dev);
++void batadv_debugfs_rename_meshif(struct net_device *dev);
+ void batadv_debugfs_del_meshif(struct net_device *dev);
+ int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
+ void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface);
+@@ -50,6 +51,10 @@ static inline int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	return 0;
+ }
+ 
++static inline void batadv_debugfs_rename_meshif(struct net_device *dev)
++{
++}
++
+ static inline void batadv_debugfs_del_meshif(struct net_device *dev)
  {
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
- 	struct batadv_neigh_node *router;
--	struct batadv_gw_node *curr_gw;
-+	struct batadv_gw_node *curr_gw = NULL;
- 	int ret = 0;
- 	void *hdr;
+ }
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index dc2763b11107..2f0d42f2f913 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -989,6 +989,32 @@ void batadv_hardif_remove_interfaces(void)
+ 	rtnl_unlock();
+ }
  
-@@ -2780,6 +2780,8 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 	ret = 0;
++/**
++ * batadv_hard_if_event_softif() - Handle events for soft interfaces
++ * @event: NETDEV_* event to handle
++ * @net_dev: net_device which generated an event
++ *
++ * Return: NOTIFY_* result
++ */
++static int batadv_hard_if_event_softif(unsigned long event,
++				       struct net_device *net_dev)
++{
++	struct batadv_priv *bat_priv;
++
++	switch (event) {
++	case NETDEV_REGISTER:
++		batadv_sysfs_add_meshif(net_dev);
++		bat_priv = netdev_priv(net_dev);
++		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
++		break;
++	case NETDEV_CHANGENAME:
++		batadv_debugfs_rename_meshif(net_dev);
++		break;
++	}
++
++	return NOTIFY_DONE;
++}
++
+ static int batadv_hard_if_event(struct notifier_block *this,
+ 				unsigned long event, void *ptr)
+ {
+@@ -997,12 +1023,8 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_priv *bat_priv;
  
- out:
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
- 	if (router_ifinfo)
- 		batadv_neigh_ifinfo_put(router_ifinfo);
- 	if (router)
+-	if (batadv_softif_is_valid(net_dev) && event == NETDEV_REGISTER) {
+-		batadv_sysfs_add_meshif(net_dev);
+-		bat_priv = netdev_priv(net_dev);
+-		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
+-		return NOTIFY_DONE;
+-	}
++	if (batadv_softif_is_valid(net_dev))
++		return batadv_hard_if_event_softif(event, net_dev);
+ 
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface && (event == NETDEV_REGISTER ||
 -- 
 2.11.0
 
