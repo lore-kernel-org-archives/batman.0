@@ -1,16 +1,11 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 10 Jul 2018 22:23:44 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180710202344.GB1525@otheros>
-References: <20180515234859.1167-1-linus.luessing@c0d3.blue>
- <2744691.dbA1SKQ1ei@lafayette> <20180625172919.GA2433@otheros>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20180625172919.GA2433@otheros>
-Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Increase DHCP snooped
- DAT entry purge timeout in DHT
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 17 Jul 2018 17:19:41 +0200
+Message-Id: <20180717151946.31900-2-sw@simonwunderlich.de>
+In-Reply-To: <20180717151946.31900-1-sw@simonwunderlich.de>
+References: <20180717151946.31900-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: Fix bat_ogm_iv best gw
+ refcnt after netlink dump
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,30 +15,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-On Mon, Jun 25, 2018 at 07:29:19PM +0200, Linus Lüssing wrote:
-> Currently, we only update the DHT on outgoing (= into the mesh)
-> ARP Replies. I'm worried that an ARP Request would never reach
-> this node (B) during the whole extended timeout, therefore not
-> triggering the necessary ARP Reply, therefore leaving this
-> node unreachable over this whole time frame. Which would probably
-> result in a lot of confusion, I guess.
+From: Sven Eckelmann <sven@narfation.org>
 
-Another option I was wondering about is whether we could go for
-the original, simpler idea and add snooping of outgoing hw-src/IP-src
-pairs from ARP Requests. And whether that could be frequent and
-reliable enough to avoid confusion for the previously mentioned
-scenario.
+A reference for the best gateway is taken when the list of gateways in the
+mesh is sent via netlink. This is necessary to check whether the currently
+dumped entry is the currently selected gateway or not. This information is
+then transferred as flag BATADV_ATTR_FLAG_BEST.
 
-I'm also wondering why we do not snoop outgoing ARP Requests yet,
-why we only snoop ARP Replies. Currently, in
-batadv_dat_snoop_outgoing_arp_request() there is only a:
+After the comparison of the current entry is done,
+batadv_iv_gw_dump_entry() has to decrease the reference counter again.
+Otherwise the reference will be held and thus prevents a proper shutdown of
+the batman-adv interfaces (and some of the interfaces enslaved in it).
 
-  batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+Fixes: efb766af06e3 ("batman-adv: add B.A.T.M.A.N. IV bat_gw_dump implementations")
+Reported-by: Andreas Ziegler <dev@andreas-ziegler.de>
+Tested-by: Andreas Ziegler <dev@andreas-ziegler.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_iv_ogm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-to fill the local DAT cache. But something like a
-"batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);"
-to update the DHT seems absent.
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index be09a9883825..73bf6a93a3cf 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2732,7 +2732,7 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+ {
+ 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
+ 	struct batadv_neigh_node *router;
+-	struct batadv_gw_node *curr_gw;
++	struct batadv_gw_node *curr_gw = NULL;
+ 	int ret = 0;
+ 	void *hdr;
+ 
+@@ -2780,6 +2780,8 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+ 	ret = 0;
+ 
+ out:
++	if (curr_gw)
++		batadv_gw_node_put(curr_gw);
+ 	if (router_ifinfo)
+ 		batadv_neigh_ifinfo_put(router_ifinfo);
+ 	if (router)
+-- 
+2.11.0
 
-Am I missing something?
