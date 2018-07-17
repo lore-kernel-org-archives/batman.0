@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:26:47 +0200
-Message-Id: <20180717152649.32282-6-sw@simonwunderlich.de>
+Date: Tue, 17 Jul 2018 17:26:48 +0200
+Message-Id: <20180717152649.32282-7-sw@simonwunderlich.de>
 In-Reply-To: <20180717152649.32282-1-sw@simonwunderlich.de>
 References: <20180717152649.32282-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: Unify include guards style
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: Join batadv_purge_orig_ref
+ and _batadv_purge_orig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,61 +20,56 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-All other include guards in batman-adv use the style:
-
-* _NET_BATMAN_ADV_$(FILENAME)_
-* uppercase only
-* "." & "-" replaced with "_"
-
-Use this also in the B.A.T.M.A.N. IV/V OGM implementation headers.
+The single line function batadv_purge_orig_ref has no function beside
+providing the name used by other source files. This can also be done
+simpler by just renaming _batadv_purge_orig to batadv_purge_orig_ref.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.h | 6 +++---
- net/batman-adv/bat_v_ogm.h  | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ net/batman-adv/originator.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
-index 317cafd302cf..3dc6a7a43eb7 100644
---- a/net/batman-adv/bat_iv_ogm.h
-+++ b/net/batman-adv/bat_iv_ogm.h
-@@ -16,11 +16,11 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 716e5b43acfa..1d295da3e342 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -1339,7 +1339,11 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
+ 	return false;
+ }
  
--#ifndef _BATMAN_ADV_BATADV_IV_OGM_H_
--#define _BATMAN_ADV_BATADV_IV_OGM_H_
-+#ifndef _NET_BATMAN_ADV_BAT_IV_OGM_H_
-+#define _NET_BATMAN_ADV_BAT_IV_OGM_H_
+-static void _batadv_purge_orig(struct batadv_priv *bat_priv)
++/**
++ * batadv_purge_orig_ref() - Purge all outdated originators
++ * @bat_priv: the bat priv with all the soft interface information
++ */
++void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+ 	struct hlist_node *node_tmp;
+@@ -1385,21 +1389,12 @@ static void batadv_purge_orig(struct work_struct *work)
  
- #include "main.h"
+ 	delayed_work = to_delayed_work(work);
+ 	bat_priv = container_of(delayed_work, struct batadv_priv, orig_work);
+-	_batadv_purge_orig(bat_priv);
++	batadv_purge_orig_ref(bat_priv);
+ 	queue_delayed_work(batadv_event_workqueue,
+ 			   &bat_priv->orig_work,
+ 			   msecs_to_jiffies(BATADV_ORIG_WORK_PERIOD));
+ }
  
- int batadv_iv_init(void);
+-/**
+- * batadv_purge_orig_ref() - Purge all outdated originators
+- * @bat_priv: the bat priv with all the soft interface information
+- */
+-void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
+-{
+-	_batadv_purge_orig(bat_priv);
+-}
+-
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
  
--#endif /* _BATMAN_ADV_BATADV_IV_OGM_H_ */
-+#endif /* _NET_BATMAN_ADV_BAT_IV_OGM_H_ */
-diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
-index ed36c5e79fde..e5be14c908c6 100644
---- a/net/batman-adv/bat_v_ogm.h
-+++ b/net/batman-adv/bat_v_ogm.h
-@@ -16,8 +16,8 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
- 
--#ifndef _BATMAN_ADV_BATADV_V_OGM_H_
--#define _BATMAN_ADV_BATADV_V_OGM_H_
-+#ifndef _NET_BATMAN_ADV_BAT_V_OGM_H_
-+#define _NET_BATMAN_ADV_BAT_V_OGM_H_
- 
- #include "main.h"
- 
-@@ -34,4 +34,4 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface);
- int batadv_v_ogm_packet_recv(struct sk_buff *skb,
- 			     struct batadv_hard_iface *if_incoming);
- 
--#endif /* _BATMAN_ADV_BATADV_V_OGM_H_ */
-+#endif /* _NET_BATMAN_ADV_BAT_V_OGM_H_ */
+ /**
 -- 
 2.11.0
 
