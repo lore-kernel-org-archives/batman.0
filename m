@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 19 Jul 2018 05:50:56 +0900 (KST)
-Message-Id: <20180719.055056.1933725276489979880.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20180717151946.31900-1-sw@simonwunderlich.de>
-References: <20180717151946.31900-1-sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] pull request for net: batman-adv
- 2018-07-17
+Return-Path: <f.salvatore@fabbricadigitale.it>
+From: "Francesco Salvatore [fabbricadigitale]"
+ <f.salvatore@fabbricadigitale.it>
+Date: Thu, 19 Jul 2018 09:53:26 +0000
+Message-ID: <DB5PR0301MB194454E1EE62744B735FF731E5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
+References: <DB5PR0301MB1944EFA68543572CA670633EE5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
+In-Reply-To: <DB5PR0301MB1944EFA68543572CA670633EE5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
+Content-Language: it-IT
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
+ micalg=SHA1; boundary="----=_NextPart_000_0014_01D41F57.19799040"
+MIME-Version: 1.0
+Subject: [B.A.T.M.A.N.] Issue with mesh network on different RTL chipsets
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,14 +19,149 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Jul 2018 17:19:40 +0200
+------=_NextPart_000_0014_01D41F57.19799040
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-> here are some batman-adv bugfixes for net.
-> 
-> Please pull or let me know of any problem!
+Hi,
+we are trying to build a mesh network on Raspberry Pi boards with some USB
+Wi-Fi adapters that have different Realtek chipsets and, consequently,
+different drivers. Specifically we have:
+	Gateway => driver rtl8812au  (probably the chipset is rtl8811a)
+	Client => driver rtl8821cu  (probably the chipset is rtl8811u)
 
-Pulled, thanks Simon.
+We are using Raspbian with kernel 4.14.34-v7+ and we tried using built-in
+kernel version of batman-adv (2017.3) and then with latest stable (2018.2),
+built with all compile flags active, less than network coding option.
+
+The problem is (seems to be) related to client > gateway communication,
+specifically in receive capability of the gateway if we use the scenario
+described above.
+The client is able to join the network because gateway recognises it as an
+originator and the client correctly recognises the gateway, but even so no
+client network traffic is visible on the gateway. 
+For example, the client is unable to obtain an IP address from DHCP server;
+we can see DHCPOFFER packet on the client (dumping with tcpdump) but we
+cannot see the same packet transit through the gateway.
+The client is also unable to ping or traceroute other neighbours or even the
+gateway.
+We also tried to disable, one by one, multicast optimization, bridge loop
+avoidance, fragmentation and so forth, but unfortunately without success.
+
+All test were made using batctl tools (ping, traceroute, tcpdump etc.).
+
+In other cases, i.e. if we swap the roles (using rtl8812au as client and
+rtl8821cu as gateway) or if we use same chipset both for client and gateway,
+we have no issue at all.
+
+Do you know if there's any issue related to listed hardware chipsets? If
+yes, you know of some action I can take to fix that problem?
+
+Thank you, have a nice day!
+
+------=_NextPart_000_0014_01D41F57.19799040
+Content-Type: application/pkcs7-signature;
+	name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="smime.p7s"
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIPpzCCBBow
+ggMCAhEAi1t1VoRUhQsAz684SM6xpDANBgkqhkiG9w0BAQUFADCByjELMAkGA1UEBhMCVVMxFzAV
+BgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMTow
+OAYDVQQLEzEoYykgMTk5OSBWZXJpU2lnbiwgSW5jLiAtIEZvciBhdXRob3JpemVkIHVzZSBvbmx5
+MUUwQwYDVQQDEzxWZXJpU2lnbiBDbGFzcyAxIFB1YmxpYyBQcmltYXJ5IENlcnRpZmljYXRpb24g
+QXV0aG9yaXR5IC0gRzMwHhcNOTkxMDAxMDAwMDAwWhcNMzYwNzE2MjM1OTU5WjCByjELMAkGA1UE
+BhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBO
+ZXR3b3JrMTowOAYDVQQLEzEoYykgMTk5OSBWZXJpU2lnbiwgSW5jLiAtIEZvciBhdXRob3JpemVk
+IHVzZSBvbmx5MUUwQwYDVQQDEzxWZXJpU2lnbiBDbGFzcyAxIFB1YmxpYyBQcmltYXJ5IENlcnRp
+ZmljYXRpb24gQXV0aG9yaXR5IC0gRzMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDd
+hNS5tPmn2PMEeJzePdxsExbZet0kUWbAxyZZDawGCMKU0TMf8IM1H24byN6qbhVOVCfvxG0a7Avj
+DvBEpVfHQFgeo0cfcexg9m2UyBg57f5CGFbf5ExJEHhOAXY1YxI23Wa8AQQ2o1Vo1aI2CayrISZU
+Bq0/yhTgrMqtBh2V4vid8eBg/8J/dStMzNr+h5kh6rr+PlTX0ll42zxuz6ATABq4J6HkvmeWyqDF
+s5zdyXWe6zCaX6PN2a54GT8j6VzbKb2tVcgbVIxj9uim6sc3ElyjKR4C2dsfO7TXD1ZHgRUESq+D
+J9HFWIjB3faqp6MY2miqbRFR4b9la5+WdtE9AgMBAAEwDQYJKoZIhvcNAQEFBQADggEBAKtmjdez
+useatuZV0AXxnzGNWqrZqkYmD3Htpa1TVmIBRypE6f4/dAsTm7n0TRuy0V+yttKIXLOfzcvUp9lg
+lYQ6+ME3HWHK57DF5ZHaVKasMYGul97NCKy4wJeAf25ypOdpE5VlH8STPP15jwTUPk/q957OzWd8
+T2UC/5GFVHPH/zb3hi3s0F5P/xGfcgbWuBrxTA0mZeJEgB7Hn+Pd6Ara7KUggGlooU9+4WvPB0H6
+g468ON2wLhGxa7JCzJq8+UgieUoZD7IcPiB02WrDvvIoeBNWeU9tUOobsLVXsTdmWCPz3A/fCofE
+74YF1TgUYJmjS94GlnEs8tu2H6TvP+4wggUyMIIEGqADAgECAhAB+hPl5Yx2ntM4E2YgLBNBMA0G
+CSqGSIb3DQEBCwUAMIHRMQswCQYDVQQGEwJJVDEcMBoGA1UEChMTVHJ1c3QgSXRhbGlhIFMucC5B
+LjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE9MDsGA1UECxM0VGVybXMgb2YgdXNl
+IGF0IGh0dHBzOi8vd3d3LnRydXN0aXRhbGlhLml0L3JwYSAoYykxMDFEMEIGA1UEAxM7VHJ1c3Qg
+SXRhbGlhIENsYXNzIDEgQ29uc3VtZXIgSW5kaXZpZHVhbCBTdWJzY3JpYmVyIENBIC0gRzIwHhcN
+MTgwMzA5MDAwMDAwWhcNMTkwMzA5MjM1OTU5WjCB0zEcMBoGA1UECgwTVHJ1c3QgSXRhbGlhIFMu
+cC5BLjEtMCsGA1UECwwkQ29uc3VtZXIgU2VydmljZSBDZW50ZXIgQ2xhc3MgMSAtIEcyMTYwNAYD
+VQQLDC1UZXJtcyBvZiB1c2UgYXQgd3d3LnRydXN0aXRhbGlhLml0L3JwYSAoYykgMTAxHDAaBgNV
+BAMME0ZyYW5jZXNjbyBTYWx2YXRvcmUxLjAsBgkqhkiG9w0BCQEWH2Yuc2FsdmF0b3JlQGZhYmJy
+aWNhZGlnaXRhbGUuaXQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDL/rMl5U9VzNkL
+yt9Dg4JgiNINdrG+vZFQqTHyZkAARxzkSl4ZcbGeiFcooa99dt0HOxEhV1jI1hwOAZnTlMGdVRnB
+ClRMIAThgKdig7K+IiwN2AIWzYg6d5AtPd8umA+fL0UazkMvQ44d8aj8PGDg5plD4Nr4Cz3HeBLI
+Et8uq+PlUujetc83M+B8HiOKoJ+EqbF3uZsUioLbGn03Ko1yamRBwSn4D/dXx3B6kO8c9u40mr0B
+ccydoKszE1QHx4IWF+op9a8wI5xcys/Uqk9jtEHovXY+9ViWsJetnmFlj3MrEvtxyDjANg8UOJWp
+4IvpalU3Ts5Z3aaFzqRGuWhRAgMBAAGjggEAMIH9MAkGA1UdEwQCMAAwRQYDVR0gBD4wPDA6Bgpg
+hkgBhvhFAQccMCwwKgYIKwYBBQUHAgEWHmh0dHBzOi8vd3d3LnRydXN0aXRhbGlhLml0L3JwYTAL
+BgNVHQ8EBAMCBaAwEQYJYIZIAYb4QgEBBAQDAgeAMGoGA1UdHwRjMGEwX6BdoFuGWWh0dHA6Ly9v
+bnNpdGVjcmwudHJ1c3RpdGFsaWEuaXQvVHJ1c3RJdGFsaWFTcEFDb25zdW1lclNlcnZpY2VDZW50
+ZXJDbGFzczFHMi9MYXRlc3RDUkwuY3JsMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAN
+BgkqhkiG9w0BAQsFAAOCAQEAVvmU7B2hWdXNJhOYMBFMrAPuwckkr8ZXecAwENeb0dV0mQPhWeAM
+xpuMEtEadxWgUPcOWV4ZEJGQ7oBp3DAgoCtmQsrs0I9t8LsshV2fl0X/HT4dAmOI1ICRWmWqXZL8
+JD7LQEApTIOMD2mPKqaCHvwtHT4gZgqw7DPZ+RilFrTpuGxwNjrtWbmrhkirElyV8XikS+5ZkO0p
+16x0k8ljVchJZ0ojNqKRn9rRFot8QuW8Z19GyMG6TGnIzdbFwTq7RfF8wIxhzzwciXeA5TgrD9/P
+KOKE/DGyIfl01NEv+xqepIuekw6ukB9hYfDjIPCg4EhF3aJCRgTeC053Js+fRTCCBk8wggU3oAMC
+AQICEHuWsWmD9iOYjWAX9t8Mf70wDQYJKoZIhvcNAQELBQAwgcoxCzAJBgNVBAYTAlVTMRcwFQYD
+VQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE6MDgG
+A1UECxMxKGMpIDE5OTkgVmVyaVNpZ24sIEluYy4gLSBGb3IgYXV0aG9yaXplZCB1c2Ugb25seTFF
+MEMGA1UEAxM8VmVyaVNpZ24gQ2xhc3MgMSBQdWJsaWMgUHJpbWFyeSBDZXJ0aWZpY2F0aW9uIEF1
+dGhvcml0eSAtIEczMB4XDTEwMDcwODAwMDAwMFoXDTIwMDcwNzIzNTk1OVowgdExCzAJBgNVBAYT
+AklUMRwwGgYDVQQKExNUcnVzdCBJdGFsaWEgUy5wLkEuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVz
+dCBOZXR3b3JrMT0wOwYDVQQLEzRUZXJtcyBvZiB1c2UgYXQgaHR0cHM6Ly93d3cudHJ1c3RpdGFs
+aWEuaXQvcnBhIChjKTEwMUQwQgYDVQQDEztUcnVzdCBJdGFsaWEgQ2xhc3MgMSBDb25zdW1lciBJ
+bmRpdmlkdWFsIFN1YnNjcmliZXIgQ0EgLSBHMjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
+ggEBAO4xL4Xu9s1Pk8i6RaJCK94RXrugo+BAvT7olrPvPYfLCs6c0WotoMS33MlCmJjOUeZ6ncQ6
+tfjDB+x1uqRwJECxUYCvULOEvrLhAmdQTdRxe/XE219NmY2wyqKS9zh4ZMOB5Tj+y0KfCsY5BADX
+NJit8iNGbyxJA8TiR5unan9bWX4uHk82G9HC39zsCkSeNpPJDh0YavCa59ppt0qZhk45a1Byvuvf
+Lcbq4t7xoPvgrvQ78X8CJNRF5jYm90nDicIa5tsuRovu9YgJvraMFHUJCQk6Uxr5MmvJGsSHtJuD
+K9qwheCjeiwnAcmyLuEsYUVdIn+7qZDAfGSWnja/Sd8CAwEAAaOCAiYwggIiMBIGA1UdEwEB/wQI
+MAYBAf8CAQAwdAYDVR0gBG0wazBpBgtghkgBhvhFAQcXATBaMCoGCCsGAQUFBwIBFh5odHRwczov
+L3d3dy50cnVzdGl0YWxpYS5pdC9jcHMwLAYIKwYBBQUHAgIwIBoeaHR0cHM6Ly93d3cudHJ1c3Rp
+dGFsaWEuaXQvcnBhMA4GA1UdDwEB/wQEAwIBBjAjBgNVHREEHDAapBgwFjEUMBIGA1UEAxMLQzFD
+Mi0yMDQ4LTIwHQYDVR0OBBYEFF+v9YBdqX2HI7HAFgZ4kdyA5uSPMIHxBgNVHSMEgekwgeahgdCk
+gc0wgcoxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVy
+aVNpZ24gVHJ1c3QgTmV0d29yazE6MDgGA1UECxMxKGMpIDE5OTkgVmVyaVNpZ24sIEluYy4gLSBG
+b3IgYXV0aG9yaXplZCB1c2Ugb25seTFFMEMGA1UEAxM8VmVyaVNpZ24gQ2xhc3MgMSBQdWJsaWMg
+UHJpbWFyeSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eSAtIEczghEAi1t1VoRUhQsAz684SM6xpDAv
+BgNVHR8EKDAmMCSgIqAghh5odHRwOi8vcy5zeW1jYi5jb20vcGNhMS1nMy5jcmwwHQYDVR0lBBYw
+FAYIKwYBBQUHAwIGCCsGAQUFBwMEMA0GCSqGSIb3DQEBCwUAA4IBAQCGg5xn7XUK4NpO0TYbxexz
+LFWsM3ObWlnTXekm0vV9U/9JLMIPg0AkcJ4tVYAUHNJFVqsKAIhGBXXeSa6YfRzLqQZgXaB18hJx
+0k4zNs+wHFI41P7ev/Nz5YlaYBRkY4ZBQ5CdxiBcjifqDtFWxyvWF0MgyziSUjszbAmmhRebgxVp
+drq+hgvovl4taSazy+xwNltyA0MpPEAd/CrV39qOnj16obhDEBCuZsvmLcBnRNRbmXL9+gOznmsK
+NpdfxpuRzC5Lig+8v+3VUWwLBEY80bbcuvtGOx/CPr+SOOyeJEHY1iapLfkAZF6Xf6AHVoFJ7BNg
+oy2rdJao8fPIMoLhMYIE+zCCBPcCAQEwgeYwgdExCzAJBgNVBAYTAklUMRwwGgYDVQQKExNUcnVz
+dCBJdGFsaWEgUy5wLkEuMR8wHQYDVQQLExZWZXJpU2lnbiBUcnVzdCBOZXR3b3JrMT0wOwYDVQQL
+EzRUZXJtcyBvZiB1c2UgYXQgaHR0cHM6Ly93d3cudHJ1c3RpdGFsaWEuaXQvcnBhIChjKTEwMUQw
+QgYDVQQDEztUcnVzdCBJdGFsaWEgQ2xhc3MgMSBDb25zdW1lciBJbmRpdmlkdWFsIFN1YnNjcmli
+ZXIgQ0EgLSBHMgIQAfoT5eWMdp7TOBNmICwTQTAJBgUrDgMCGgUAoIIC6TAYBgkqhkiG9w0BCQMx
+CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xODA3MTkwOTUzMjVaMCMGCSqGSIb3DQEJBDEW
+BBQdSu7gw7uY/Kf18HGxdUmDbseETjCBkwYJKoZIhvcNAQkPMYGFMIGCMAsGCWCGSAFlAwQBKjAL
+BglghkgBZQMEARYwCgYIKoZIhvcNAwcwCwYJYIZIAWUDBAECMA4GCCqGSIb3DQMCAgIAgDANBggq
+hkiG9w0DAgIBQDAHBgUrDgMCGjALBglghkgBZQMEAgMwCwYJYIZIAWUDBAICMAsGCWCGSAFlAwQC
+ATCB9wYJKwYBBAGCNxAEMYHpMIHmMIHRMQswCQYDVQQGEwJJVDEcMBoGA1UEChMTVHJ1c3QgSXRh
+bGlhIFMucC5BLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1c3QgTmV0d29yazE9MDsGA1UECxM0VGVy
+bXMgb2YgdXNlIGF0IGh0dHBzOi8vd3d3LnRydXN0aXRhbGlhLml0L3JwYSAoYykxMDFEMEIGA1UE
+AxM7VHJ1c3QgSXRhbGlhIENsYXNzIDEgQ29uc3VtZXIgSW5kaXZpZHVhbCBTdWJzY3JpYmVyIENB
+IC0gRzICEAH6E+XljHae0zgTZiAsE0EwgfkGCyqGSIb3DQEJEAILMYHpoIHmMIHRMQswCQYDVQQG
+EwJJVDEcMBoGA1UEChMTVHJ1c3QgSXRhbGlhIFMucC5BLjEfMB0GA1UECxMWVmVyaVNpZ24gVHJ1
+c3QgTmV0d29yazE9MDsGA1UECxM0VGVybXMgb2YgdXNlIGF0IGh0dHBzOi8vd3d3LnRydXN0aXRh
+bGlhLml0L3JwYSAoYykxMDFEMEIGA1UEAxM7VHJ1c3QgSXRhbGlhIENsYXNzIDEgQ29uc3VtZXIg
+SW5kaXZpZHVhbCBTdWJzY3JpYmVyIENBIC0gRzICEAH6E+XljHae0zgTZiAsE0EwDQYJKoZIhvcN
+AQEBBQAEggEAp/OUjdmphKW96Io7EC+a7OHuTs2Noy3IW7quls8DDHv5jhUEaR4iAK/Uu7HKx7Co
+VAnPf+eV1gUkrVbL2SpAPUweXgQXrhNcaQVhChI59jtCZR/F7FrJQ6gEw7fDeJOa3BUjBP/sPqwc
+lXX9emkNJL3Li7RlW+6T9AJoffJo3FMv9CgeL8ep0jPy1eWjSUV0WrkDYuKPGIakGCKUu+1NoDnw
+64STZ0ChW+XuGKG02MkZCbhCgDEnblcVaimo6UWlnRn79MCd1lnfaxOvQQx2V+fkVpaK7QZGufUb
+9VE0XlNpa5NzOWtQewcyu/28LD4/BFkBxkE9lHpxCqhGXB6WAwAAAAAAAA==
+
+------=_NextPart_000_0014_01D41F57.19799040--
