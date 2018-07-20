@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 19 Jul 2018 12:00:49 +0200
-Message-ID: <2381904.QgVrOuYyfa@bentobox>
-In-Reply-To: <DB5PR0301MB194454E1EE62744B735FF731E5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
-References: <DB5PR0301MB1944EFA68543572CA670633EE5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
- <DB5PR0301MB194454E1EE62744B735FF731E5520@DB5PR0301MB1944.eurprd03.prod.outlook.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 20 Jul 2018 12:06:14 +0800
+Message-ID: <1778848.TvDNe92q0N@rousseau>
+In-Reply-To: <20180625172919.GA2433@otheros>
+References: <20180515234859.1167-1-linus.luessing@c0d3.blue>
+ <2744691.dbA1SKQ1ei@lafayette> <20180625172919.GA2433@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3479584.BrvvzsDKzO";
+Content-Type: multipart/signed; boundary="nextPart5218767.zEvQThrSPm";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Issue with mesh network on different RTL chipsets
+Subject: Re: [B.A.T.M.A.N.] [RFC PATCH] batman-adv: Increase DHCP snooped
+ DAT entry purge timeout in DHT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,47 +21,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3479584.BrvvzsDKzO
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart5218767.zEvQThrSPm
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Donnerstag, 19. Juli 2018 09:53:26 CEST Francesco Salvatore [fabbricadigitale] wrote:
-[...]
-> Do you know if there's any issue related to listed hardware chipsets? If
-> yes, you know of some action I can take to fix that problem?
+On Tuesday, 26 June 2018 01:29:19 HKT Linus L=FCssing wrote:
+> 1) Host (A) joins the network and has the IP_X / MAC_a
+>    statically assigned.
+> 2) Some ARP Requests reaches this host, it issues an ARP Reply
+>    which populates the DHT.
+> 3) The host leaves the network.
+> 3) Another host (B) joins the network with IP_X / MAC_b
+>    statically assigned.
 
-Yes, nearly all [0] wifi USB sticks are problematic. Please get in contact 
-with the driver developers [1] because this (beside the symptoms) has nothing 
-to do with batman-adv. If broadcast or unicast tx/rx is broken for a specific 
-hardware in a specific mode, the mesh will look broken - nothing we can do 
-here.
+Let's distinguish the problems we're trying to solve:
 
-Kind regards,
-	Sven
+ * Cache consistency during updates: A local DAT cache which is not updated=
+=20
+during a cache update event, thus needs to time out faster and a global DAT=
+=20
+cache receiving regular updates with less need to update.
 
-[0] no usb stick comes to my mind at the moment which is without flaws
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/MAINTAINERS?id=024ddc0ce1049298bd3cae60ae45d9c5f0fb8b9c
---nextPart3479584.BrvvzsDKzO
+ * Timely cache update: The global cache shall be updated as soon as the=20
+information is available.
+
+My previous email focused on the former while your response is about the=20
+latter. Is that your assessment too ?
+
+Both problems require solving to fully support this dynamic environment you=
+=20
+are describing whilst reducing ARP traffic overhead.
+
+Would you mind commenting on the cache consistency issue ? Antonio will=20
+respond to your 'snoop outgoing ARP Requests' question separately.
+
+Cheers,
+Marek
+
+--nextPart5218767.zEvQThrSPm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltQYVEACgkQXYcKB8Em
-e0bMaxAAiNup0G5018x2SarNOhdXj07OFDOf1YEEd7GFx5S3tXmdSUW8utYqxKoD
-eM8OdYUmtUR+fl7Ki2vUmw0QoHp9xoKGT/EK8bEpwlyn6lo/NyTJ1RSqWxqfd0gU
-dKMJzIdLiz2JosHYxQ4voBVKI/Ukjke1oOvsepsDPD1+JiGX8ejxCGVAiI0EL8VQ
-C3vlBqRGXr7UERyrDL8m1wEck8I9SpQo065QUkp/jXET+dPPOd6e8iSvsBBgGpGQ
-XcuYeD5xbOsUXj//TflW//BLZN/To7Tqt6zIPrQ0V4SvsNmBuqm1VxslxXfD5f4S
-uKlPJggV0gMBvIgxoVqw/zJ2Rdf1uZLo8LdQlleeM/Lr67j0PJwgHlCxqyqa4mqo
-bMt5ZzZdHsWgoCNMF1GMXrYeMBm4T5GHAxyp251+clcIIQNh1jXWtGiM3iqoh58U
-bh+UNGRC2Lv8EgvJNUDqu0l2REYP9gcCNex9RwiGGsAps0wzNU1w7QYqmDU+JuDx
-lzG1LbxosWaOMk781anWALQBbvjUiDkY9QJ2lR55DDd8Du+uiZ5BdYv9ICjj3KKx
-e0U4IGoTGv4qNHWGcRq+4Btpun0TOScgAuGNnlHCgPMP8dOXMncYVbAisycPk1LP
-Cg1kN4D4npCI3ci32jdCFWb1ksFa6p/avG3C+XUslw9V7PXMYSU=
-=7ty+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAltRX7YACgkQU1VOj+62
+HMDnXwf+LusUTDwsPLrbkUcuKHo2/qLQm3OyZu9toFGRyIMo6iU2DHw3SHJfBZpt
+se0MNdIlOX86bO9Q3Pa5yDQWqUv3rz6wlosdQiE8Sf0woign//3I4FD0CRMhIO4M
+7N3R24WB66qyuUXx6j9ou8GEYbYhKm+j9HLXwkMGu2iMbCQZGl+80Q/t+z2SSRnZ
+JYC/raf9hUIcUWzqvdoot/V8IsdRQ+z9H/rCY0VPQYiWmxYMPVOj25VYXpyyKD08
++06/SXtCmhqBXOKGkleLK1AgKI5j2h2PPU9YyDTC7DvozyzUCMD+aZSbNv4qrWK4
+4UXveqLDwtI8MbXNWJs0bXG+j1REDQ==
+=6Q59
 -----END PGP SIGNATURE-----
 
---nextPart3479584.BrvvzsDKzO--
+--nextPart5218767.zEvQThrSPm--
+
+
 
