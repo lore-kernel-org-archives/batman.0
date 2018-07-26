@@ -1,12 +1,12 @@
-Return-Path: <panickiss@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <5556611.7sBE4ScoTE@rousseau>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Thu, 26 Jul 2018 09:24:01 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20180726072401.GA1557@otheros>
 References: <CALb7xhwsssLtKnT+Y8pmVch7OOUdUQ_n+yN61tUfQx7RE0KOCw@mail.gmail.com>
- <5556611.7sBE4ScoTE@rousseau>
-From: Nicu Pavel <panickiss@gmail.com>
-Date: Thu, 26 Jul 2018 09:14:14 +0300
-Message-ID: <CALb7xhz53Z+ykBxAGgEb5oixf-KVHXTc_ooECZ2ZMARxDvvnfg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CALb7xhwsssLtKnT+Y8pmVch7OOUdUQ_n+yN61tUfQx7RE0KOCw@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] ICMP6 flood or nodes limit ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,42 +19,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
+On Wed, Jul 25, 2018 at 10:50:10PM +0300, Nicu Pavel wrote:
+> root@gateway-b827ebecbfa7:~# batctl o
+> [B.A.T.M.A.N. adv 2018.2, MainIF/MAC: wlan0/b8:27:eb:ec:bf:a7 (bat0/4e:06:5f:54:e5:d5 BATMAN_IV)]
+>    Originator        last-seen (#/255) Nexthop           [outgoingIF]
+>    b8:27:eb:a7:ed:ff    0.330s   ( 24) b8:27:eb:ad:4b:7e [     wlan0]
+>    b8:27:eb:a7:ed:ff    0.330s   (  0) b8:27:eb:ec:e5:9f [     wlan0]
+>    b8:27:eb:a7:ed:ff    0.330s   ( 43) b8:27:eb:97:55:b6 [     wlan0]
+>    b8:27:eb:a7:ed:ff    0.330s   ( 38) b8:27:eb:1b:61:f0 [     wlan0]
+>    b8:27:eb:a7:ed:ff    0.330s   ( 15) b8:27:eb:91:5c:41 [     wlan0]
+[...]
 
-On Thu, Jul 26, 2018 at 4:12 AM, Marek Lindner
-<mareklindner@neomailbox.ch> wrote:
-> On Thursday, 26 July 2018 03:50:10 HKT Nicu Pavel wrote:
->> Everything works fine with 31 hosts when I add more (34 max)
->> everything stop working, hosts start to drop, I do see a lot ICMP6
->> neighbor advertisement/solicitation. I increased the default values
->> for elp_interval and orig_interval to 5 and 10 seconds. Once I power
->> down  the extra host(s) everything goes back to normal. The actual
->> traffic in the mesh beside the ICMP6 is low a few KB sent once per
->> minute.
->
-> There is no hard-coded host limit in batman-adv. It is more likely to do with
-> your wifi driver. What wifi chip & driver have you deployed ?
+Overall, the TQ values seem rather low.
 
-I'm using kernel 4.9.111 with latest brcmfmac driver which loads the
-brcmfmac43430-sdio firmware
-for this board.
-The strange part is that once I get over 31 hosts the ICMP6 "explodes"
-with no apparent reason.
+>  root@gateway-b827ebecbfa7:~# batctl n
+> [B.A.T.M.A.N. adv 2018.2, MainIF/MAC: wlan0/b8:27:eb:ec:bf:a7 (bat0/4e:06:5f:54:e5:d5 BATMAN_IV)]
+> IF             Neighbor              last-seen
+>         wlan0     b8:27:eb:ad:df:c0    1.000s
+>         wlan0     b8:27:eb:30:15:c9    0.390s
+>         wlan0     b8:27:eb:a8:22:f6    1.560s
+>         wlan0     b8:27:eb:92:eb:b8    0.650s
+[...]
+>         wlan0     b8:27:eb:bb:a1:94   11.710s
+>         wlan0     b8:27:eb:91:5c:41    1.480s
+>         wlan0     b8:27:eb:5f:eb:e8    7.600s
 
-I'm also not sure about the originators list, if you look at the
-attached file, all originators TQ is pretty low and also each
-originator has all other hosts as NextHop. Not sure if this is correct
-or can affect.
-All these 30 hosts are pretty close to one another.
+Those are quite a lot of neighbor nodes. Do you actually have any
+airtime left? I can recommend H.O.R.S.T. to check that:
 
-> If you check the mailing list archives you will see the wifi driver issue
-> coming up on a regular basis. This example discussion is merely a few days
-> old:
->
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-July/017952.html
+https://github.com/br101/horst
 
-Yes, I found that thread, but problem is quite different as with
-RealTek chipsets seems like nothing really works.
+As a rule of thumb, BATMAN IV overhead increases linear to the
+overall number of mesh nodes, but squared to the number of
+neighbor nodes a particular node has.
 
-Thanks,
-Nicu
+Also, just to be on the safe side, check that there is no MAC
+address conflict / duplicate MAC address somewhere.
+
+Regards, Linus
