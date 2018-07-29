@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Thu, 26 Jul 2018 09:24:01 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180726072401.GA1557@otheros>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 29 Jul 2018 23:38:53 +0800
+Message-ID: <1833430.pAuEAP8rMv@rousseau>
+In-Reply-To: <CALb7xhz53Z+ykBxAGgEb5oixf-KVHXTc_ooECZ2ZMARxDvvnfg@mail.gmail.com>
 References: <CALb7xhwsssLtKnT+Y8pmVch7OOUdUQ_n+yN61tUfQx7RE0KOCw@mail.gmail.com>
+ <5556611.7sBE4ScoTE@rousseau>
+ <CALb7xhz53Z+ykBxAGgEb5oixf-KVHXTc_ooECZ2ZMARxDvvnfg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CALb7xhwsssLtKnT+Y8pmVch7OOUdUQ_n+yN61tUfQx7RE0KOCw@mail.gmail.com>
+Content-Type: multipart/signed; boundary="nextPart2921347.pXAQ2IlO0X";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] ICMP6 flood or nodes limit ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,43 +19,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Jul 25, 2018 at 10:50:10PM +0300, Nicu Pavel wrote:
-> root@gateway-b827ebecbfa7:~# batctl o
-> [B.A.T.M.A.N. adv 2018.2, MainIF/MAC: wlan0/b8:27:eb:ec:bf:a7 (bat0/4e:06:5f:54:e5:d5 BATMAN_IV)]
->    Originator        last-seen (#/255) Nexthop           [outgoingIF]
->    b8:27:eb:a7:ed:ff    0.330s   ( 24) b8:27:eb:ad:4b:7e [     wlan0]
->    b8:27:eb:a7:ed:ff    0.330s   (  0) b8:27:eb:ec:e5:9f [     wlan0]
->    b8:27:eb:a7:ed:ff    0.330s   ( 43) b8:27:eb:97:55:b6 [     wlan0]
->    b8:27:eb:a7:ed:ff    0.330s   ( 38) b8:27:eb:1b:61:f0 [     wlan0]
->    b8:27:eb:a7:ed:ff    0.330s   ( 15) b8:27:eb:91:5c:41 [     wlan0]
-[...]
+--nextPart2921347.pXAQ2IlO0X
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Overall, the TQ values seem rather low.
+On Thursday, 26 July 2018 14:14:14 HKT Nicu Pavel wrote:
+> I'm also not sure about the originators list, if you look at the
+> attached file, all originators TQ is pretty low and also each
+> originator has all other hosts as NextHop. Not sure if this is correct
+> or can affect.
+> All these 30 hosts are pretty close to one another.
 
->  root@gateway-b827ebecbfa7:~# batctl n
-> [B.A.T.M.A.N. adv 2018.2, MainIF/MAC: wlan0/b8:27:eb:ec:bf:a7 (bat0/4e:06:5f:54:e5:d5 BATMAN_IV)]
-> IF             Neighbor              last-seen
->         wlan0     b8:27:eb:ad:df:c0    1.000s
->         wlan0     b8:27:eb:30:15:c9    0.390s
->         wlan0     b8:27:eb:a8:22:f6    1.560s
->         wlan0     b8:27:eb:92:eb:b8    0.650s
-[...]
->         wlan0     b8:27:eb:bb:a1:94   11.710s
->         wlan0     b8:27:eb:91:5c:41    1.480s
->         wlan0     b8:27:eb:5f:eb:e8    7.600s
+It might be (as Linus has suggested) related to poor connectivity / airtime 
+overcrowding. Though for that to be the case, I'd expect a more gradual packet 
+loss symptoms - not a complete collapse when you switch from 31 to 32 devices.
 
-Those are quite a lot of neighbor nodes. Do you actually have any
-airtime left? I can recommend H.O.R.S.T. to check that:
 
-https://github.com/br101/horst
+> > If you check the mailing list archives you will see the wifi driver issue
+> > coming up on a regular basis. This example discussion is merely a few days
+> > old:
+> > 
+> > https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-July/017952.html
+> 
+> Yes, I found that thread, but problem is quite different as with
+> RealTek chipsets seems like nothing really works.
 
-As a rule of thumb, BATMAN IV overhead increases linear to the
-overall number of mesh nodes, but squared to the number of
-neighbor nodes a particular node has.
+My point was rather to consider that the WiFi driver has its fingers in the 
+pot too. It is somewhat unlikely that your issues are exactly the same as 
+mentioned in this randomly selected thread. 
 
-Also, just to be on the safe side, check that there is no MAC
-address conflict / duplicate MAC address somewhere.
+By the way, searching for 'brcmfmac adhoc' returns quite a number of hits 
+mentioning complaints concerning Rasberry PIs. Have you tried running your 
+setup without enabling batman-adv at all ? Since all of the devices are so 
+close to each other batman-adv is not needed. Pure adhoc mode will work just 
+fine. This test will help you figuring out whether the ICMPv6 misbehavior is 
+related to batman-adv or not.
 
-Regards, Linus
+Cheers,
+Marek
+
+--nextPart2921347.pXAQ2IlO0X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAltd340ACgkQU1VOj+62
+HMBnqAf9EnJoz8CjwQdopNIHB4mEG+/gfoAL4I3FCr2XrKJz0Kac+e8ve0rdlWVB
+L0hHjO0ZR5yXRhFbuAR+gj1St8UJimEe+fRFGfqbNp7s7VVS3+OiRwFeXxdDH6Yp
+nWSkbIi2pPXjAA0rDTqkYFUQrRXV0SbPCVQphBAQ4eY6lgFlidJcPeeD75IkhRQH
+9VZA59dg9bTmLGp6tB1mbVaFHbxOkAgYRgQ+qRi+n5G4tuAH2MKbocTx/9rTRLQT
+UfCsl3b7SMbXCY/udPAlqsIwge3FZK8rYrrDipvJbJ0XSy+f5XxYR+Rj1ewmnJwF
+VhcqJeTG/cyfluY52uid0Y6qohFKMA==
+=8/sX
+-----END PGP SIGNATURE-----
+
+--nextPart2921347.pXAQ2IlO0X--
+
+
+
