@@ -1,16 +1,21 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 04 Aug 2018 17:35:22 +0800
-Message-ID: <2763057.QNa6FE6mQo@rousseau>
-In-Reply-To: <20180521144304.GN7162@otheros>
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <20180518014754.23644-7-mareklindner@neomailbox.ch>
- <20180521144304.GN7162@otheros>
+Return-Path: <jiri@resnulli.us>
+Date: Sat, 4 Aug 2018 11:36:32 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+Message-ID: <20180804093632.GB2015@nanopsycho>
+References: <20161027190150.7880-1-sw@simonwunderlich.de>
+ <20161027190150.7880-4-sw@simonwunderlich.de>
+ <20161029103301.GD1692@nanopsycho.orion>
+ <22392280.4UY6GoIrAk@sven-edge>
+ <20161029105628.GE1692@nanopsycho.orion>
+ <20180327154307.GA2052@otheros>
+ <20180520061954.GA2255@nanopsycho.orion>
+ <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1571988.zidiZlyoQQ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
- estimate the throughput if otherwise not available
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+ mcast sysfs files to README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,62 +25,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <a@unstable.cc>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Linus =?iso-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, davem@davemloft.net
 
---nextPart1571988.zidiZlyoQQ
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Sat, Aug 04, 2018 at 11:24:11AM CEST, a@unstable.cc wrote:
+>Hi Jiri,
+>
+>On 20/05/18 14:19, Jiri Pirko wrote:
+>> Tue, Mar 27, 2018 at 05:43:08PM CEST, linus.luessing@c0d3.blue wrote:
+>>> On Sat, Oct 29, 2016 at 12:56:28PM +0200, Jiri Pirko wrote:
+>>>>>> I strongly believe it is a huge mistake to use sysfs for things like
+>>>>>> this. This should be done via generic netlink api.
+>>>>>
+>>>>> This doesn't change the problem that it is already that way. This patch
+>>>>> only adds the list of available files to the README.
+>>>>
+>>>> Sure. Just found out you did it like that. Therefore I commented. I
+>>>> suggest to rework the api to use genl entirely.
+>>>
+>>> Hi Jiri,
+>>>
+>>> Thanks for sharing your thoughts!
+>>>
+>>> Could you explain a bit more on which disadvantages you see in
+>>> the usage of sysfs here?
+>> 
+>> There are 2 major disadvantages.
+>> 1) You don't have any events on a change. An app has to poll in order to
+>>    know what changed in kernel. Netlink handles this by sending
+>>    multicast messages on a specific socket while whoever is interested
+>>    gets the messages.
+>> 2) In sysfs, everything is string. There are even mixed values like
+>>    "1 (means something)". There are no well defined values. Every driver
+>>    can expose same things differently. In Netlink, you have well-defined
+>>    attributes, with typed values. You can pass multiple attributes for
+>>    the same value if needed.
+>> 
+>> In general, usage of sysfs in netdev subsystem is frowned upon. I would
+>> suggest to convert your iface to Generic Netlink API and let the
+>> existing sysfs API to rot.
+>
+>Do you have any pointer about where this discussion took place? I
+>imagine it happened in conjunction with some patches intended to other
+>drivers/netdev changes.
+>
+>Reading that could give us a sense of how strict/important/severe this
+>decision was and how to prioritize future work.
+>
+>I am asking because we have been working on a new feature since several
+>months and this feature introduces a new sysfs knob.
+>
+>Now, although I understand the recommendation of switching to netlink, I
+>find it a bit impractical to delay a new (and fairly big) feature,
+>simply because it uses a potentially obsolete, but current, API.
+>
+>Any opinion about this?
 
-On Monday, 21 May 2018 22:43:04 HKT Linus L=FCssing wrote:
-> On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
-> > +fallback_throughput:
-> > +       last_tp_run_jiffies =3D jiffies - neigh->bat_v.last_tp_meter_ru=
-n;
-> > +       last_tp_run_msecs =3D jiffies_to_msecs(last_tp_run_jiffies);
-> > +
-> > +       /* check the tp_meter_running flag before checking the timestamp
-> > to
-> > +        * avoid a race condition where a new tp meter session is
-> > scheduled
-> > +        * right after the previous tp meter session has completed
-> > +        */
-> > +       if (!neigh->bat_v.tp_meter_running &&
-> > +           last_tp_run_msecs > BATADV_ELP_TP_RUN_INTERVAL)
-> > +               batadv_v_elp_tp_start(neigh);
-> > +
-> > +       /* discard too old tp test results */
-> > +       if (last_tp_run_msecs > 2 * BATADV_ELP_TP_RUN_INTERVAL)
-> > +               neigh->bat_v.tp_meter_throughput =3D 0;
-> > +
->=20
-> So far we were either using time_before(), time_after_eq() or our
-> own wrapper batadv_has_timed_out(). Would it make sense to use
-> some of these here, too?
+I agree, that does not make sense.
 
-Good point. That changes has been staged for v3.
-
-Cheers,
-Marek
+I just wanted you to consider introducing netlink iface and migrate to
+it as it is generally the preffered way to comunicate with userspace in
+networking area (I don't have pointer any specific discussion though -
+it is just a common knowledge :)). I will be more then happy to help you
+with that. You should look at net/core/devlink.c and net/wireless/nl80211.c
+to get some inspiration.
 
 
---nextPart1571988.zidiZlyoQQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAltlc1oACgkQU1VOj+62
-HMB8dwf+OVz9TbKXynZrEUv1XmzlAQPOV13y62BNHlSrZU6nNZkNSfk7trKwP5bf
-o3EiLr5SUX8POPYDypMQLB9rx9+qxDMR7+fLMS1xB8ZK3NHebVqPBAaK9apqCR6e
-G4oqe/unrLm0CZcKMcvpjrrMnMJkkSuVXnscIOQMGGtsKxSPr+FpkfMoNFAaRrhg
-BAp+gqB9ML2zipL6Q7SI/B4bRXeVb1j42pICulMZ6Xb95DkJ89AJcfvBCsigZGoM
-BoI4P71fMppH/NKEVcX+8FxUhooS6Pg2nwlY8fmkUaEGYTQ9AxZFmMoSl0hag6iE
-AvGUvzthyeeC2DJEz6MugttsiPMZdA==
-=nZ2A
------END PGP SIGNATURE-----
-
---nextPart1571988.zidiZlyoQQ--
+>
+>
+>Thanks a lot
+>
+>
+>Regards,
+>
+>
+>-- 
+>Antonio Quartulli
+>
 
 
 
