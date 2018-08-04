@@ -1,18 +1,19 @@
 Return-Path: <a@unstable.cc>
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <8211925.JcgYpGFXDF@sven-edge>
- <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
- <2057936.2F7DdePauk@sven-edge>
+References: <20161027190150.7880-1-sw@simonwunderlich.de>
+ <20161027190150.7880-4-sw@simonwunderlich.de>
+ <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
+ <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
+ <20180520061954.GA2255@nanopsycho.orion>
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <b8b8da51-48f5-0553-ac02-4ea79c6e1389@unstable.cc>
-Date: Sat, 4 Aug 2018 17:08:42 +0800
+Message-ID: <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
+Date: Sat, 4 Aug 2018 17:24:11 +0800
 MIME-Version: 1.0
-In-Reply-To: <2057936.2F7DdePauk@sven-edge>
+In-Reply-To: <20180520061954.GA2255@nanopsycho.orion>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="IcuZg9aOu25iEFrcTEnbgMmM2jo5LYnic"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
- meter test duration attribute
+ boundary="zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+ mcast sysfs files to README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,118 +23,124 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>, Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Jiri Pirko <jiri@resnulli.us>, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
+Cc: netdev@vger.kernel.org, davem@davemloft.net
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---IcuZg9aOu25iEFrcTEnbgMmM2jo5LYnic
-Content-Type: multipart/mixed; boundary="qRVayxhZpOpJMKwt9xq6gB3HTes2zhYwB";
+--zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD
+Content-Type: multipart/mixed; boundary="7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5";
  protected-headers="v1"
 From: Antonio Quartulli <a@unstable.cc>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner
- <mareklindner@neomailbox.ch>, Jiri Pirko <jiri@resnulli.us>,
- netdev@vger.kernel.org
-Message-ID: <b8b8da51-48f5-0553-ac02-4ea79c6e1389@unstable.cc>
-Subject: Re: [PATCH v2 7/7] batman-adv: ELP - add throughput meter test
- duration attribute
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <8211925.JcgYpGFXDF@sven-edge>
- <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
- <2057936.2F7DdePauk@sven-edge>
-In-Reply-To: <2057936.2F7DdePauk@sven-edge>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Jiri Pirko <jiri@resnulli.us>,
+ =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
+Cc: netdev@vger.kernel.org, davem@davemloft.net
+Message-ID: <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+ mcast sysfs files to README
+References: <20161027190150.7880-1-sw@simonwunderlich.de>
+ <20161027190150.7880-4-sw@simonwunderlich.de>
+ <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
+ <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
+ <20180520061954.GA2255@nanopsycho.orion>
+In-Reply-To: <20180520061954.GA2255@nanopsycho.orion>
 
---qRVayxhZpOpJMKwt9xq6gB3HTes2zhYwB
-Content-Type: text/plain; charset=windows-1252
+--7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Jiri,
 
-On 04/08/18 17:02, Sven Eckelmann wrote:
-> On Samstag, 4. August 2018 10:41:09 CEST Antonio Quartulli wrote:
-> [...]
->>>>  Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
->>>
->>> Please discuss this with Jiri [1].
->>>
->>
->> After re-reading Jiri's points I can't really understand why we should=
-
->> now switch to netlink. I think all our sysfs knobs are used to inject
->> settings *to* userspace, therefore his point 1) does not really apply =
-to
->> us. Point 2) is a bit generic and does not really explain why we shoul=
-d
->> *switch*.
->=20
-> Wouldn't it have been better when Jiri would also see your reply? Now h=
-e isn't=20
-> even aware of your criticism.
->=20
->> This said, I'd rather keep this patch as it is and possibly discuss th=
+On 20/05/18 14:19, Jiri Pirko wrote:
+> Tue, Mar 27, 2018 at 05:43:08PM CEST, linus.luessing@c0d3.blue wrote:
+>> On Sat, Oct 29, 2016 at 12:56:28PM +0200, Jiri Pirko wrote:
+>>>>> I strongly believe it is a huge mistake to use sysfs for things lik=
 e
->> matter when sending this code to netdev for merging.
+>>>>> this. This should be done via generic netlink api.
+>>>>
+>>>> This doesn't change the problem that it is already that way. This pa=
+tch
+>>>> only adds the list of available files to the README.
+>>>
+>>> Sure. Just found out you did it like that. Therefore I commented. I
+>>> suggest to rework the api to use genl entirely.
 >>
->> I've discussed this with Marek too and he is fine with this approach.
+>> Hi Jiri,
+>>
+>> Thanks for sharing your thoughts!
+>>
+>> Could you explain a bit more on which disadvantages you see in
+>> the usage of sysfs here?
 >=20
-> Interesting, I don't see it this way. This patch [0] is for netdev and =
-we have=20
-> the statement that "usage of sysfs in netdev subsystem is frowned upon"=
-=2E Now=20
-> you want that we ignore that and than maybe Simon have to deal with the=
-=20
-> fallout when he forwards it to David?
-
-Nope, I'd rather step in myself, should David or anybody else complain
-about the patch once sent to netdev. But I totally understand your point.=
-
-
-Personally I did not see Jiri's statements as representative of netdev
-as a whole, but it looked like his personal opinion to me (I might be
-wrong).
-
-I will reply to [1] directly so we can take the discussion from there the=
-n.
-
-Cheers,
-
+> There are 2 major disadvantages.
+> 1) You don't have any events on a change. An app has to poll in order t=
+o
+>    know what changed in kernel. Netlink handles this by sending
+>    multicast messages on a specific socket while whoever is interested
+>    gets the messages.
+> 2) In sysfs, everything is string. There are even mixed values like
+>    "1 (means something)". There are no well defined values. Every drive=
+r
+>    can expose same things differently. In Netlink, you have well-define=
+d
+>    attributes, with typed values. You can pass multiple attributes for
+>    the same value if needed.
 >=20
-> Kind regards,
-> 	Sven
->=20
-> [0] https://patchwork.open-mesh.org/patch/17372/
->=20
->>> [1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-May/017814=
-=2Ehtml
+> In general, usage of sysfs in netdev subsystem is frowned upon. I would=
+
+> suggest to convert your iface to Generic Netlink API and let the
+> existing sysfs API to rot.
+
+Do you have any pointer about where this discussion took place? I
+imagine it happened in conjunction with some patches intended to other
+drivers/netdev changes.
+
+Reading that could give us a sense of how strict/important/severe this
+decision was and how to prioritize future work.
+
+I am asking because we have been working on a new feature since several
+months and this feature introduces a new sysfs knob.
+
+Now, although I understand the recommendation of switching to netlink, I
+find it a bit impractical to delay a new (and fairly big) feature,
+simply because it uses a potentially obsolete, but current, API.
+
+Any opinion about this?
+
+
+Thanks a lot
+
+
+Regards,
+
 
 --=20
 Antonio Quartulli
 
 
---qRVayxhZpOpJMKwt9xq6gB3HTes2zhYwB--
+--7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5--
 
---IcuZg9aOu25iEFrcTEnbgMmM2jo5LYnic
+--zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltlbRoACgkQB6U8WA7y
-zXSVNA/+Lcuhvci75tP8uTEn8bs7NX3gMTLPGxFnAXMMb9WTDzLMTMLlGD0qLoEY
-Kz0jwJcUFkd0xlsAvb/GVcmGFjvq1Oomrvj0rJGZM9p2LaETc+njCHBJEz7BFc2Z
-odyjwtKp2mIsE6YG6LAVWnzc2SV1NAHeqZph6uZtlEZPGS7cukEtJGJBYoHlinxg
-NFOOpVYg17LUNQSMdkGvxxPPpwAvQRGG54koppPwMD/Z6PwamzvCS5VuYvMO12gU
-qs9W6cuUzEB4jpdkfbyUpQiJt6/f/QLDuuDazfgebxGSVSzDxIsrgALNmijgtHgi
-YPjVt87P/xJNNaBwwiu3LnlnyJdxKj+1lqwrWVAJqBPvJf/xuNYoyArOfFZJDycV
-2thhtpj0JCxr5lgouSzmg3jOQ4iCltxxtmBk30fRzxYM0vj0KXeNc97D0WAAgtNx
-3O4LDKuJvwh4/uLCMtxLZ2xqBi+Dn97rSKx7cMgFvHSdTSxfsPIqZv5egyKEcVV7
-vjdmLRBP+wQvjvpVfiCELP00Fu/GrC+SN9iQSmOCn8Z/0lq510Tkc/zpHXFIBtHF
-JZUqtZ1pMSPR3KiBCSRSYNs9mt9vU94YP1uwiy8jol4qT8ntoKIMs49c/DEgPQoc
-qIAWqZj9ZUeRXZJ6xpWcxv98YmYjULwXPjiJZiCGr+NH0GAUVj0=
-=a4je
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltlcLsACgkQB6U8WA7y
+zXRorBAAk0cQrKKaZGW9G9FbEdMxNLftTU7dRHGTb7dzRxVclVDJG7JX9P7bOAnM
+5/vjUAwX28mZws62xNaPbgKoOIQYLlh/KhnzLOvTV+2jqotBKsakLoJUfAf1iqqi
+xiCc6IfnR5Mj9jdgzYU77/UjWN7mHSxnfNRX0Ndln+tE5O6me9pZgmNE62IKJe14
+fyFmAz02QFavlb4tyfEGqWZlDnKdA1GJZLKsA3VyFTKEs2EmfLqIn5JM005Ur91s
+xQRFtRtOct5qEOHuC86xEYDFnIO1xLlSZNPVxP/RFXNfyGEO5ff8ZJGFnVYBVnnn
+3Ic5/3Pyur+N5Ad3rw27QPJCzYNFO9tla4iLBG/0/yzi11VUVMSN6h/uHkY0A2rK
+ethb7bK/we2G+PL9V2YiagXxm1CZB3X29oGnKXyneQfpNbLe1Vs/4oTD4dT/k71S
+O05Hs7njq+t/vKo2jQ5s38CpTMocKV5F/UBl1siJTx4x0wLhPIR+6HRqt0vkse+L
+41eBhRfq28yFVdmQgdOo80APdvYKt0oqGl2m66goamLBLkVHpwkqi+TyFFczZG7T
+qESJ1Raf4yZyRnxSxos1AFOz0OtYzAPyfhGSJ42XLWPLBvxSBEMtlRCtjjoAFCH/
+QkEXIL3AyWtaJiHV+B5BPJnU3FQ/4xHHsobgGvpoWNHy9BD9SmE=
+=pvXp
 -----END PGP SIGNATURE-----
 
---IcuZg9aOu25iEFrcTEnbgMmM2jo5LYnic--
+--zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD--
