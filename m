@@ -1,13 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 31 Jul 2018 21:58:50 +0200
-Message-ID: <3944717.qnnkuJNATG@bentobox>
-In-Reply-To: <bb8d1046-af37-dab3-12ce-46455acedbbf@kkk-web.de>
-References: <bb8d1046-af37-dab3-12ce-46455acedbbf@kkk-web.de>
+Return-Path: <a@unstable.cc>
+References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
+ <20180518014754.23644-8-mareklindner@neomailbox.ch>
+ <8211925.JcgYpGFXDF@sven-edge>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
+Date: Sat, 4 Aug 2018 16:41:09 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4358975.jtxWzAc5km";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] BATMAN 2018.1 fails to compile
+In-Reply-To: <8211925.JcgYpGFXDF@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="2grUkswf9r86Ead9MTHJtvSAE0jAuBWjU"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
+ meter test duration attribute
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +21,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: MK <mailing.m1@kkk-web.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart4358975.jtxWzAc5km
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--2grUkswf9r86Ead9MTHJtvSAE0jAuBWjU
+Content-Type: multipart/mixed; boundary="pYODuKUdasrShx1cryhq6ZCKSvRBbUTJQ";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
+ meter test duration attribute
+References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
+ <20180518014754.23644-8-mareklindner@neomailbox.ch>
+ <8211925.JcgYpGFXDF@sven-edge>
+In-Reply-To: <8211925.JcgYpGFXDF@sven-edge>
+
+--pYODuKUdasrShx1cryhq6ZCKSvRBbUTJQ
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
 
-On Dienstag, 31. Juli 2018 21:24:54 CEST MK wrote:
-[...]
-> make[1]: Verzeichnis =E2=80=9E/lib/modules/4.9.0-7-amd64/build=E2=80=9C w=
-ird betreten
-> make[1]: *** Keine Regel, um =E2=80=9Emodules=E2=80=9C zu erstellen.  Sch=
-luss.
-[...]
-> This is a debian stretch installation. Someone out there with the same
-> problem? Make clean did not help.
+Hi,
 
-Looks like your kernel sources are missing the rules to build modules. Plea=
-se=20
-install the correct packages.
+On 21/05/18 22:34, Sven Eckelmann wrote:
+> On Freitag, 18. Mai 2018 03:47:54 CEST Marek Lindner wrote:
+>> When the ELP throughput meter fallback kicks in to trigger
+>> a throughput meter measurement the test duration can be
+>> configured via this attribute.
+>>
+>> Default tp test duration: 1000ms
+>>
+>> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+>> ---
+>>  Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
+>=20
+> Please discuss this with Jiri [1].
+>=20
 
-Kind regards,
-	Sven
+After re-reading Jiri's points I can't really understand why we should
+now switch to netlink. I think all our sysfs knobs are used to inject
+settings *to* userspace, therefore his point 1) does not really apply to
+us. Point 2) is a bit generic and does not really explain why we should
+*switch*.
 
---nextPart4358975.jtxWzAc5km
+This said, I'd rather keep this patch as it is and possibly discuss the
+matter when sending this code to netdev for merging.
+
+I've discussed this with Marek too and he is fine with this approach.
+
+Cheers,
+>=20
+> [1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-May/017814.h=
+tml
+>=20
+
+--=20
+Antonio Quartulli
+
+
+--pYODuKUdasrShx1cryhq6ZCKSvRBbUTJQ--
+
+--2grUkswf9r86Ead9MTHJtvSAE0jAuBWjU
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltgv3oACgkQXYcKB8Em
-e0Zk8g/8Cb1ooM7cDoAVMrrwUEyvi6JEcKoGjzHrzkFWE5zVcpXe5576rTzE3894
-k8VsRIEOZT2vHwYlcnKvCrZ5SWL0lTkuUFbGocEWGYFeb5R2JeHhLdF2jVFjFZgY
-vamu9GyT1NX/xUUifKFksHmmoBlT2ld+qZd+LQ5usfP7ktKP492x7N707KYfRhEm
-BvMfmxpzYMVKJB+pwsz/Kai/rH9Dv2t9fZg2CvaZ0Y7ssCmKkBcQQSGiJHLsCTI6
-47cb+WvmiH6yvApTvzk47Z+Q9nGEA0Flk6ts6KsoP79B6OsZIt/DleQbIHWGR/0L
-lsrRdTU5Q2MNc3tj30G5WmEDv2PPRk3kBIKP+MO+ze1tNCYrikO2A2A/PWc9bMz+
-1A1RQ9z4juCbUWfADvGuAZtUyT2hYRM0bjXewwPxLbv2XcjkERfKaqzlXz9/NgJH
-XLjIei6lnDc6nQGFcZ5A7I2lXib+eyfBnlfx0gt9PlPjVO3kBzwPq9W1DNONhvRP
-iaCFLgZ7chO8gpmLif8j1sT04FlFhRXcn1IJWwz6pZU1wzXhMhXzUz3I8MKVw2S1
-orPmCoj+1kyEt51NKf28FoahM79guNOa5MkWvnNpPAnjBe7uzfRtZKJeHskcBa1g
-inGx/Qx/Sxig7NpOSWAgdJVy7xnOy8/Z8XLdplfb5+FJRX+t2MA=
-=1Wpz
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltlZqUACgkQB6U8WA7y
+zXRl3xAAj6e1GPkow6yN6ZRmz3vriqCKYRPazEd8SofiNkQxjE4blyeGFuVtWBDb
+opDR8bfP+22fKWDHYxxonwDR2cXQnvUpe9JwXC7Qj0HxuRHvv224HTnyii3N9mu/
+fqA1mh+myDk0XLOfsqovmsg0A8oBQg3bruDdW6SI4UZcWsWi7j5NbDikzy3PH0s9
+ioim+qcFu43fc7cuSx4Bb6uCYMG0PsAM2YDdylsrgq3HieE97ETiqYRMn0o1WUH2
+gUoPZun1XVhPZe8QXTDK/Mjtiw3J3nmSWzjClsnQfJvQKocVWP8WlUAiDUXzBkBC
+cGT25S7hQPErtY4sFRSqNxTzEYmkK1cnZePpf/dB234gliKWPEGDjPpEkLz7JLW1
+r3Ob+jaqDrAixpAPQRdrM0WeYh4WPCZeUPvxw5UhYYe7JXAdt6bmpn9eAAjvUW1v
+NGEo4cnNlKG+BG7fa7pjg2r4VmRffpojuuF/3lJRx9ikCF8V8OU554rwRqhEO66c
+QH2XUYmUwsK/Cef3l33/TKsPTeI9BbBL3r13jEm3mNpL16b+s+XX7/9blVz9Tnj5
+rZo6uZVkTQU5unzjBZcuXOQRiFDJGOVE3l/A7fvDjz+AL7hgYv/YHD5mTxCPtSiC
+R1bzezS1ItUERxH2owpQUeQ6Kip8SqvB9NxD+nZ7z1maxJF/Jd8=
+=mYwx
 -----END PGP SIGNATURE-----
 
---nextPart4358975.jtxWzAc5km--
-
+--2grUkswf9r86Ead9MTHJtvSAE0jAuBWjU--
