@@ -1,13 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 04 Aug 2018 11:02:54 +0200
-Message-ID: <2057936.2F7DdePauk@sven-edge>
-In-Reply-To: <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 04 Aug 2018 17:05:42 +0800
+Message-ID: <42613698.Wqezz8BKG2@rousseau>
+In-Reply-To: <20180521134657.GL7162@otheros>
 References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <8211925.JcgYpGFXDF@sven-edge>
- <314bf0ac-4c10-da7a-d527-45afe92423fa@unstable.cc>
+ <20180518014754.23644-8-mareklindner@neomailbox.ch>
+ <20180521134657.GL7162@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13453119.uG2vYbrkmh";
+Content-Type: multipart/signed; boundary="nextPart2550308.rCgSs0HbhC";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 7/7] batman-adv: ELP - add throughput
  meter test duration attribute
@@ -20,68 +20,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>, Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart13453119.uG2vYbrkmh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2550308.rCgSs0HbhC
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Samstag, 4. August 2018 10:41:09 CEST Antonio Quartulli wrote:
-[...]
-> >>  Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
-> > 
-> > Please discuss this with Jiri [1].
-> > 
-> 
-> After re-reading Jiri's points I can't really understand why we should
-> now switch to netlink. I think all our sysfs knobs are used to inject
-> settings *to* userspace, therefore his point 1) does not really apply to
-> us. Point 2) is a bit generic and does not really explain why we should
-> *switch*.
+On Monday, 21 May 2018 21:46:57 HKT Linus L=FCssing wrote:
+> On Fri, May 18, 2018 at 09:47:54AM +0800, Marek Lindner wrote:
+> > When the ELP throughput meter fallback kicks in to trigger
+> > a throughput meter measurement the test duration can be
+> > configured via this attribute.
+> >=20
+> > Default tp test duration: 1000ms
+>=20
+> Would it make sense to note the adjusted default tp test duration
+> in the commit message, too? It is adjusted from 10ms to 1000ms
+> here, right?
 
-Wouldn't it have been better when Jiri would also see your reply? Now he isn't 
-even aware of your criticism.
+I am having a hard time following your thoughts here. The default duration =
+is=20
+part of the commit message. The user space tp meter test is not affected by=
+=20
+this change. The tp meter ELP duration of 10ms default was introduced in th=
+e=20
+previous patch only.=20
+Anyway, will change the previous patch to use 1000ms.
 
-> This said, I'd rather keep this patch as it is and possibly discuss the
-> matter when sending this code to netdev for merging.
-> 
-> I've discussed this with Marek too and he is fine with this approach.
 
-Interesting, I don't see it this way. This patch [0] is for netdev and we have 
-the statement that "usage of sysfs in netdev subsystem is frowned upon". Now 
-you want that we ignore that and than maybe Simon have to deal with the 
-fallout when he forwards it to David?
+> I'm also wondering if it would make sense to make the test
+> interval adjustable instead of the duration:
+>=20
+> With 1000ms on a 16MBit/s DSL line this would generate 864GB of
+> traffic per month and would be an issue for several existing
+> setups right now.
 
-Kind regards,
-	Sven
+Assuming you are talking about the batman-adv-over-VPN-over-internet use-ca=
+se:
+Simply set the interface throughput to 16MBit/s to disable the ELP throughp=
+ut=20
+meter measuring altogether (see throughput_override).
 
-[0] https://patchwork.open-mesh.org/patch/17372/
+ELP throughput measuring is not built to improve that use-case.
 
-> > [1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-May/017814.html
---nextPart13453119.uG2vYbrkmh
+
+> Is there some minimum test duration at which the tp meter is
+> supposed to not work realiably anymore, where an increased check
+> period would be more suitable?
+
+The ELP throughput meter test is designed to handle interface / neighbors w=
+ith=20
+fluctuating link throughput. For those setups, having up-to-date link=20
+throughput information is what makes this worthwhile.
+
+Static DSL uplinks don't fall into that category. Every regular throughput=
+=20
+check (no matter how rare) is worse than no test at all. To handle those ca=
+se,=20
+batman-adv already provides a knob.
+
+Cheers,
+Marek
+
+--nextPart2550308.rCgSs0HbhC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltla74ACgkQXYcKB8Em
-e0YV7hAAhyg76iFvp1QxsuqfTDeJH14xCaXy3CxBK1lFjiakSLmdpTMIUaPAITmR
-gNX5l1eG3+VTN7JEOYXlXqxnHUbplT7cDjVy3b3XBZ+Chk4EUZH6RFFUcrapSV3S
-h5ApaBRzM5hcPFb9pBSLwx5bNwF9CgWwvYPU2trPXW35D/iHbLX0bq4neOxOVOy5
-Y3lUzuFfzCnlDTs0pd3BYS4M4OYepUKipeOKfn7LAj4b+4kCkRxg9I/Ka4+m0ErH
-t7fI8G3rODIC5VfNkoXhMBrSXarVxeFkIWqstnQcNHecM1dMMdd/ixAU12DwFMSb
-+pO/C2Q8rtliWjQEMBK5ntKqRHLcupUUq7yr3TNAzLfKoVu37otNs46+QsphHbWU
-BLaM0KWks9mGXC5C2IzFOQW2t+k+8r/+3rqhlvySkGryJkM1lbncOqKckEqTdCPe
-ohskH4fhUcy5H3XR+0P5UIbeJPZ2XdQ1eaihUPcDn9pbLTJ0+29QCcoNOKlSNRU+
-9spfXOZuZmq+tonDhDFJJydpHqbXyiwbM8HsOqnqeELfIpg1eB/P/EpTyH9bUQpu
-v1sL0hNm3gmN6sFfUadFiTvk374etZIUcjfsW2W2sX/64owxDg1Ic+ofEyvqD3Y+
-oCyo0+0dzZ9qO4rhmB+zSulPpJOUp3O3oFdfsNJAjmjoIk10Vk4=
-=bWKz
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAltlbGYACgkQU1VOj+62
+HMAbXAf/e98oyCuSqpx6cteU8+IqFSvZ6EAcHp0qK7PRfD3uaEuIOSB5Sx3hJScQ
++SIWII9P8wEW/+iX0rI9nHdJZgFYP2M/4TNI5Hvz7U0LPi0PQbgVtCpt3uUp08f4
+UTJdoMQZZ8/awXa6HrkQy66/lTKE0huxFdpfh0ZseJZg6R3k5uyySHdcEzKgVhJB
+rScMGNvhXjtUMW1dyWdReYGFdNpn9bsiLRdcRXOKsECC9nGFh7e2Cp3IfDIVMSwu
+F38XAkrdF0JfdB3nhl66CQllvnJIxXWeu9+bz9drbTQy+REGJdGqb5Yn/10u+BU4
+AgUIc+9iowf2TxDa78ROzZZ+a8HLwQ==
+=X2Df
 -----END PGP SIGNATURE-----
 
---nextPart13453119.uG2vYbrkmh--
+--nextPart2550308.rCgSs0HbhC--
 
 
 
