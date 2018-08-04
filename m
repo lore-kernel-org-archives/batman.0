@@ -1,19 +1,17 @@
 Return-Path: <a@unstable.cc>
-References: <20161027190150.7880-1-sw@simonwunderlich.de>
- <20161027190150.7880-4-sw@simonwunderlich.de>
- <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
- <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
- <20180520061954.GA2255@nanopsycho.orion>
+References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
+ <20180518014754.23644-7-mareklindner@neomailbox.ch>
+ <20180521131711.GK7162@otheros> <1883169.6MDR23bMJo@sven-edge>
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
-Date: Sat, 4 Aug 2018 17:24:11 +0800
+Message-ID: <41a3ff9a-d673-7114-f32b-5644e21b02cc@unstable.cc>
+Date: Sat, 4 Aug 2018 17:31:27 +0800
 MIME-Version: 1.0
-In-Reply-To: <20180520061954.GA2255@nanopsycho.orion>
+In-Reply-To: <1883169.6MDR23bMJo@sven-edge>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
- mcast sysfs files to README
+ boundary="47QfXUdu38DNKhPaYexUXS397Y9xsDMRk"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
+ estimate the throughput if otherwise not available
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,124 +21,135 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Jiri Pirko <jiri@resnulli.us>, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
-Cc: netdev@vger.kernel.org, davem@davemloft.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: "txt.file" <txt.file@txtfile.eu>, Marek Lindner <mareklindner@neomailbox.ch>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD
-Content-Type: multipart/mixed; boundary="7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5";
+--47QfXUdu38DNKhPaYexUXS397Y9xsDMRk
+Content-Type: multipart/mixed; boundary="zsqnDOo0OpNlN9Py4YWHG3iJOB6wbz4X2";
  protected-headers="v1"
 From: Antonio Quartulli <a@unstable.cc>
 To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Jiri Pirko <jiri@resnulli.us>,
- =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
-Cc: netdev@vger.kernel.org, davem@davemloft.net
-Message-ID: <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
- mcast sysfs files to README
-References: <20161027190150.7880-1-sw@simonwunderlich.de>
- <20161027190150.7880-4-sw@simonwunderlich.de>
- <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
- <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
- <20180520061954.GA2255@nanopsycho.orion>
-In-Reply-To: <20180520061954.GA2255@nanopsycho.orion>
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: "txt.file" <txt.file@txtfile.eu>,
+ Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <41a3ff9a-d673-7114-f32b-5644e21b02cc@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
+ estimate the throughput if otherwise not available
+References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
+ <20180518014754.23644-7-mareklindner@neomailbox.ch>
+ <20180521131711.GK7162@otheros> <1883169.6MDR23bMJo@sven-edge>
+In-Reply-To: <1883169.6MDR23bMJo@sven-edge>
 
---7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5
-Content-Type: text/plain; charset=utf-8
+--zsqnDOo0OpNlN9Py4YWHG3iJOB6wbz4X2
+Content-Type: text/plain; charset=windows-1252
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jiri,
+Hi,
 
-On 20/05/18 14:19, Jiri Pirko wrote:
-> Tue, Mar 27, 2018 at 05:43:08PM CEST, linus.luessing@c0d3.blue wrote:
->> On Sat, Oct 29, 2016 at 12:56:28PM +0200, Jiri Pirko wrote:
->>>>> I strongly believe it is a huge mistake to use sysfs for things lik=
-e
->>>>> this. This should be done via generic netlink api.
->>>>
->>>> This doesn't change the problem that it is already that way. This pa=
-tch
->>>> only adds the list of available files to the README.
->>>
->>> Sure. Just found out you did it like that. Therefore I commented. I
->>> suggest to rework the api to use genl entirely.
+On 22/05/18 03:06, Sven Eckelmann wrote:
+> On Montag, 21. Mai 2018 15:17:11 CEST Linus L=FCssing wrote:
+>>> +               throughput =3D total_bytes * 8 >> ilog2(test_time) / =
+10;
+> [...]
+>> -----
+> [...]
 >>
->> Hi Jiri,
+>>         throughput =3D total_bytes * 8 >> log_test_time / 10;
 >>
->> Thanks for sharing your thoughts!
->>
->> Could you explain a bit more on which disadvantages you see in
->> the usage of sysfs here?
+>>         // Straightforward approach?
+>>         throughput2 =3D total_bytes * 8 / test_time * 1000 / 1024 / 10=
+0;
+> [...]
+>> -----
+>> $ ./test
+>> Result: 80000000 (log_test_time: 13)
+>> Result2: 156
+>> $ file ./test
+>> ./test: ELF 32-bit LSB pie executable ARM, EABI5 version 1 (SYSV), dyn=
+amically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.=
+0, BuildID[sha1]=3Dd18f32829cdd2bc42cf744cdcafde7cdbd315cb0, not stripped=
+
+>> -----
 >=20
-> There are 2 major disadvantages.
-> 1) You don't have any events on a change. An app has to poll in order t=
-o
->    know what changed in kernel. Netlink handles this by sending
->    multicast messages on a specific socket while whoever is interested
->    gets the messages.
-> 2) In sysfs, everything is string. There are even mixed values like
->    "1 (means something)". There are no well defined values. Every drive=
-r
->    can expose same things differently. In Netlink, you have well-define=
-d
->    attributes, with typed values. You can pass multiple attributes for
->    the same value if needed.
+> Thanks for this small example program. Yes, there are parenthesis missi=
+ng in=20
+> the calculation. Right now, following is calculated:
 >=20
-> In general, usage of sysfs in netdev subsystem is frowned upon. I would=
+>     (total_bytes * 8) >> (ilog2(test_time) / 10);
+>=20
+> But the author most likely wanted following precedence:
+>=20
+>     ((total_bytes * 8) >> ilog2(test_time)) / 10;
+>=20
+> And together with the fixed unit, you would get:
+>=20
+>     (total_bytes * 8 >> ilog2(test_time) / 100;
+>=20
+> Your example program would then show following result because the shift=
+ing=20
+> stuff is still the wrong approach:
+>=20
+>     Result: 195 (log_test_time: 13)
+>     Result2: 156
+>=20
+> The calculation still has to be changed to something like this to get=20
+>=20
+>     // when 0.1 Mbit/s =3D=3D 100 kbit/s
+>     throughput =3D total_bytes * 5;
+> 	 do_div(throughput, test_time * 64);
+>=20
+>     // when 0.1 Mbit/s =3D=3D 102.4 kbit/s
+>     throughput =3D total_bytes * 625;
+> 	 do_div(throughput, test_time * 8192);
+>=20
+>     // when 0.1 Mbit/s =3D=3D 100 kbit/s, and 1kbit/s =3D=3D 1000 bit (=
+instead of 1024 bit):
+>     throughput =3D total_bytes;
+>     do_div(throughput, test_time * 125);
+>=20
+> Please keep in mind that we must do a check of the divisor (for 0) befo=
+re=20
+> doing this do_div.
 
-> suggest to convert your iface to Generic Netlink API and let the
-> existing sysfs API to rot.
+Thanks for the code and the correction :-)
 
-Do you have any pointer about where this discussion took place? I
-imagine it happened in conjunction with some patches intended to other
-drivers/netdev changes.
+Yes, we wanted to avoid 64 bits explicit divisions and we assumed
+test_time would have been a power of 2 (otherwise we'd accept a small
+error).
 
-Reading that could give us a sense of how strict/important/severe this
-decision was and how to prioritize future work.
+Anyway, the last case brought by Sven depicts what we want to implement.
+The patch will be changed accordingly.
 
-I am asking because we have been working on a new feature since several
-months and this feature introduces a new sysfs knob.
-
-Now, although I understand the recommendation of switching to netlink, I
-find it a bit impractical to delay a new (and fairly big) feature,
-simply because it uses a potentially obsolete, but current, API.
-
-Any opinion about this?
-
-
-Thanks a lot
-
-
-Regards,
-
+Cheers,
 
 --=20
 Antonio Quartulli
 
 
---7dNBML8yO2ZstGVmnpwxMPuLThytOZ2w5--
+--zsqnDOo0OpNlN9Py4YWHG3iJOB6wbz4X2--
 
---zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD
+--47QfXUdu38DNKhPaYexUXS397Y9xsDMRk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltlcLsACgkQB6U8WA7y
-zXRorBAAk0cQrKKaZGW9G9FbEdMxNLftTU7dRHGTb7dzRxVclVDJG7JX9P7bOAnM
-5/vjUAwX28mZws62xNaPbgKoOIQYLlh/KhnzLOvTV+2jqotBKsakLoJUfAf1iqqi
-xiCc6IfnR5Mj9jdgzYU77/UjWN7mHSxnfNRX0Ndln+tE5O6me9pZgmNE62IKJe14
-fyFmAz02QFavlb4tyfEGqWZlDnKdA1GJZLKsA3VyFTKEs2EmfLqIn5JM005Ur91s
-xQRFtRtOct5qEOHuC86xEYDFnIO1xLlSZNPVxP/RFXNfyGEO5ff8ZJGFnVYBVnnn
-3Ic5/3Pyur+N5Ad3rw27QPJCzYNFO9tla4iLBG/0/yzi11VUVMSN6h/uHkY0A2rK
-ethb7bK/we2G+PL9V2YiagXxm1CZB3X29oGnKXyneQfpNbLe1Vs/4oTD4dT/k71S
-O05Hs7njq+t/vKo2jQ5s38CpTMocKV5F/UBl1siJTx4x0wLhPIR+6HRqt0vkse+L
-41eBhRfq28yFVdmQgdOo80APdvYKt0oqGl2m66goamLBLkVHpwkqi+TyFFczZG7T
-qESJ1Raf4yZyRnxSxos1AFOz0OtYzAPyfhGSJ42XLWPLBvxSBEMtlRCtjjoAFCH/
-QkEXIL3AyWtaJiHV+B5BPJnU3FQ/4xHHsobgGvpoWNHy9BD9SmE=
-=pvXp
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltlcnAACgkQB6U8WA7y
+zXTt4RAAm3jCwwskCGtkOFv/ZkGbqpCZL16UGUS4CW+XCuuu+6vvevmmfG9iVNr/
+zEmwr7Ag6VD/0wi8D1GpF+WMx3P6ZioZHcyTW4SHwG9RQRcsmrRwdn5ZSvx0spjW
+hkw8KNrzoI5B7MTX1Ur0AmhBEt1VnvCfyX39hcQdcXNM3kkUI83NV/gPiarKg7oL
+3JSlKxf5kFKY7hcu4sMGb2xXok1nI5iUy8o1Gv15isbYpBl2M8b+6XmCwVUKAUbM
+JSO3RWARw5Rz20BK0iLuD41GCQGfes+1yVMQm8CNYs8T+6GXzVMj0+RYzXvEXVCp
+zAfJrTr1P+NXpF3cK+8W7flD+lApBfBcfZ+LsB8FmDtPYVMk7ylIS3nwq+9R+cMO
+odD9llk1NzNn+pmpxv7V1i3TC76UvpGlnw1m/ZPzYHVrgBSd3dcCIGHfxZni1Nux
+f1QacMh30vW0k3LpznCUieDdB0PuaKdp10Scm2iRM4jUqIQhYES8Qm32AtlzfbeB
+oe8PKQICnl2uTaz3GKMozyTOZr5SzV2vSkHRrWA1NGCor7i0pxqlSkPTNKNMNzOO
+i7/ULSRqIoA9dswMJxZ2vAIODPcWEy/vu6R0PTPOXRi6vkpsAtHiIldYjuCHm/Xk
+YC698VNX/JtkXlxfe9K8AI4fVgtmeM2Bl4Rnola2dpPmhH/A/yU=
+=wOiE
 -----END PGP SIGNATURE-----
 
---zKEHCdxDMaW6iRhJzhjkkKXQDZ6YrpOrD--
+--47QfXUdu38DNKhPaYexUXS397Y9xsDMRk--
