@@ -1,21 +1,12 @@
-Return-Path: <a@unstable.cc>
-References: <20161027190150.7880-1-sw@simonwunderlich.de>
- <20161027190150.7880-4-sw@simonwunderlich.de>
- <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
- <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
- <20180520061954.GA2255@nanopsycho.orion>
- <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
- <20180804093632.GB2015@nanopsycho>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <f2964fca-072e-2a6c-4ce9-aa7963465195@unstable.cc>
-Date: Sat, 4 Aug 2018 19:19:39 +0800
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 04 Aug 2018 13:38:30 +0200
+Message-ID: <2791173.mX5NbDZpiX@sven-edge>
 MIME-Version: 1.0
-In-Reply-To: <20180804093632.GB2015@nanopsycho>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
- mcast sysfs files to README
+Content-Type: multipart/signed; boundary="nextPart7519786.uQctjuaDmX";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] Paper "Performance Evaluation of BATMAN-adv Wireless
+ Mesh Network Routing Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -25,116 +16,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jiri Pirko <jiri@resnulli.us>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, davem@davemloft.net
+To: ligang.liu@mail.sim.ac.cn, liujp@mail.sim.ac.cn, qianhw@mail.sim.ac.cn, zhuj@mail.sim.ac.cn
+Cc: b.a.t.m.a.n@lists.open-mesh.org, kekegai@smart-com.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS
-Content-Type: multipart/mixed; boundary="2FbyiASBSRDigE9z199I4UfusVK2RPcIr";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: Jiri Pirko <jiri@resnulli.us>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?Q?Linus_L=c3=bcssing?=
- <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, davem@davemloft.net
-Message-ID: <f2964fca-072e-2a6c-4ce9-aa7963465195@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
- mcast sysfs files to README
-References: <20161027190150.7880-1-sw@simonwunderlich.de>
- <20161027190150.7880-4-sw@simonwunderlich.de>
- <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
- <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
- <20180520061954.GA2255@nanopsycho.orion>
- <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
- <20180804093632.GB2015@nanopsycho>
-In-Reply-To: <20180804093632.GB2015@nanopsycho>
+--nextPart7519786.uQctjuaDmX
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---2FbyiASBSRDigE9z199I4UfusVK2RPcIr
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On 04/08/18 17:36, Jiri Pirko wrote:
->>
->> Do you have any pointer about where this discussion took place? I
->> imagine it happened in conjunction with some patches intended to other=
+Just saw your paper "Performance Evaluation of BATMAN-adv Wireless
+Mesh Network Routing Algorithms" [1]. Some small questions:
 
->> drivers/netdev changes.
->>
->> Reading that could give us a sense of how strict/important/severe this=
+* What is OpenWrt 1703? (you've referenced a batman-adv config tutorial here 
+  and there is no such version as OpenWrt 1703)
+* When did you want to contact the authors of the B.A.T.M.A.N. V 
+  implementation in batman-adv about your findings?
+* How did you solve the cfg80211 bug which returns uninitialized (random)
+  data when asked for the expected throughput of a station? Maybe you remember 
+  that the expected throughput is *the value* which B.A.T.M.A.N. V needs to 
+  calculate routes.
+* What batman-adv version was used?
+* Did you use the openwrt-routing feed (which exact version) for
+  batctl+batman-adv or how did you build it?
+* Did you generate graphs for the chosen best next hop and how it changes
+  over time in comparison to B.A.T.M.A.N. IV?
 
->> decision was and how to prioritize future work.
->>
->> I am asking because we have been working on a new feature since severa=
-l
->> months and this feature introduces a new sysfs knob.
->>
->> Now, although I understand the recommendation of switching to netlink,=
- I
->> find it a bit impractical to delay a new (and fairly big) feature,
->> simply because it uses a potentially obsolete, but current, API.
->>
->> Any opinion about this?
->=20
-> I agree, that does not make sense.
+Kind regards,
+	Sven
 
-Thanks for your reply, Jiri.
-
->=20
-> I just wanted you to consider introducing netlink iface and migrate to
-> it as it is generally the preffered way to comunicate with userspace in=
-
-> networking area (I don't have pointer any specific discussion though -
-> it is just a common knowledge :)).
-
-That's ok. I was asking because in the past batman-adv was using debugfs
-for dealing with settings and we were (properly) redirected to sysfs by
-David.
-Now it seems we need to migrate to the next thing :-) So I just wanted
-to be sure we have to do it, but this seems to be the case..
-
-> I will be more then happy to help you
-> with that. You should look at net/core/devlink.c and net/wireless/nl802=
-11.c
-> to get some inspiration.
-
-Actually we have already implemented a basic netlink API to be used when
-sending information to userspace (i.e. routing tables, neighbour tables,
-etc..), therefore I think we might be able to leverage on that.
-But of course, any help will be appreciated :)
-
-Thanks!
-
-Cheers,
-
-
-
---=20
-Antonio Quartulli
-
-
---2FbyiASBSRDigE9z199I4UfusVK2RPcIr--
-
---vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS
+[1] https://ieeexplore.ieee.org/document/8421863/
+--nextPart7519786.uQctjuaDmX
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltli8sACgkQB6U8WA7y
-zXSoxxAAwcfNDtPpflOL3cBw+UzrbTBGvAg+m5j0jyMs8mllnlwU7jt6W2XXYD6Z
-2WfqrhH6H2E1ODwh7Vhj1P4tat4ntKY+U8wMH6McOnn4/RH/m+cTA3Lsj//nIUS3
-D78QVYqPtBFeQSREjSM4lNCxmzpByzwm6bEVgH4HAF+PFlMdbOSqULypHpNaP1d1
-sWEudrTyxrvQrXOHRj3F9i4LDQi3Y1nisxxEU0etXS+iroQqAgT3JB0Ag8uEwRFI
-BudiHAbYG+y7AApH0ZO0vV1/O1Qug1MxybWSpPzXs5fHokvbO0DNesKB+nS/ldY1
-7hfYYUUF1muXqJHtxr8o37QNxdKK166OjB82UvBmw/jxMaD0UzEcQtrDBOvL1I4M
-8CtoGl943M8ptyvMRIpXSdOu95yOw7BEjuMcZ/5PonsjTKE3dgC1kq9zpT/PtcC2
-etwY/JMdBbbJZIyblnpmOIBeuQ5FHIb+tOFOwy90OsMienttM9K8G6Z8r+p+xQjt
-e0wAOmxLWLAsbrBdjl7xzJuQ0po5Q4sr1LBIiqZpXOaianzHbeYWfY/WcYpJkjq0
-zcS5fMwOD4U0xGDiiF+PPl5xXXeZkoDKCWTiNe4wM+QjfBe5pNDasr+BS5tigkbE
-xD7kOPYSv8vPHTeON+8Ai03H/8312mGCpBNSH1DjxRelKjoM4+g=
-=9C0J
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltlkDYACgkQXYcKB8Em
+e0Y+yhAA0BRoqdmg8hONf2zevAM6UnU7wna/F/II7NgRH9xcMHZsyy7ZrAWPw5Sg
+yqD1AR412b3KxQO4J6QwNEvGq+jNJ79QiaCEvP/nyWcs7Jr2BL0J1fqAnl8oGiha
+UCvLBX45tq6c+aZ6yQwtTOWc7iWFeTYpumV2HVziYuhXkw1jWgUlnBowZmlLSCbS
+QqQwGp82Utx2ZdM4y8S/jVT3ustNFJerzKj20V8QxcVxFK5TCGILQZ5UemQ2Pjp0
+ShargdsImemSIuYvPmRpNJbis7s6QqDVUIT4VGfdnipf3I3jJ//FKQ3HlEAG1zeJ
+77YkVjRXzP1rkZnB1CZgq6Nqtf1JENHh9GeY3bxWHJ7biO0Vz8Ubq/IuKjhBIT2V
+IgSC/cGrV9gpP8jD1MnnUI0vHSGYvdUv+Bmh1dkoChZ7CuewjesGRi17q7SzUk/a
+1iTaqyuiq+v3tyIGukYyyIbhOD8BWVex8ydOvuiF8avbGH8XSJnMJnmfcNvTyAyg
+9PcAVAU01+6Ue40fSgr+RYcZpglTeSeAekJPRiQwIUxJh4tlO/AobNmcfSOR1XUT
+BWgwFeATy3njwNHY9rA6kUiy813xP+qGIMJBEgurP+scUSgrHTSTXGDvn0vxTr1E
+hPQ5AIeFvFpA5IUoALEyI0jdVMZVQHx2m/Coq6h2MFrxG1NlCAE=
+=NBjO
 -----END PGP SIGNATURE-----
 
---vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS--
+--nextPart7519786.uQctjuaDmX--
+
+
+
