@@ -1,11 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat,  4 Aug 2018 21:48:54 +0800
-Message-Id: <20180804134854.4075-8-mareklindner@neomailbox.ch>
-In-Reply-To: <20180804134854.4075-1-mareklindner@neomailbox.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 04 Aug 2018 16:23:56 +0200
+Message-ID: <1538516.THWfRjFL1q@sven-edge>
+In-Reply-To: <20180804134854.4075-7-mareklindner@neomailbox.ch>
 References: <20180804134854.4075-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v3 7/7] batman-adv: ELP - add throughput
- meter test duration attribute
+ <20180804134854.4075-7-mareklindner@neomailbox.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3203288.MQNihGTI0Q";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 6/7] batman-adv: ELP - use tp meter to
+ estimate the throughput if otherwise not available
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,105 +22,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-When the ELP throughput meter fallback kicks in to trigger
-a throughput meter measurement the test duration can be
-configured via this attribute.
+--nextPart3203288.MQNihGTI0Q
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Default tp test duration: 1000ms
+On Samstag, 4. August 2018 15:48:53 CEST Marek Lindner wrote:
+> +               total_bytes = atomic64_read(&tp_vars->tot_sent);
+> +
+> +               /* The following calculation includes these steps:
+> +                * - divide bytes by the test length (msecs)
+> +                * - convert result from bits/ms to 0.1Mb/s (1Mb/s==1000000b/s)
+> +                */
+> +               total_bytes = atomic64_read(&tp_vars->tot_sent);
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
- net/batman-adv/bat_v.c                               | 1 +
- net/batman-adv/bat_v_elp.c                           | 6 ++++--
- net/batman-adv/sysfs.c                               | 3 +++
- net/batman-adv/types.h                               | 3 +++
- 5 files changed, 18 insertions(+), 2 deletions(-)
+Reading it once is enough :)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 89810684..7b3974a5 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -6,6 +6,13 @@ Description:
-                 Defines the interval in milliseconds in which batman
-                 emits probing packets for neighbor sensing (ELP).
- 
-+What:           /sys/class/net/<iface>/batman-adv/elp_tp_duration
-+Date:           May 2018
-+Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-+Description:
-+                Defines measurement duration in milliseconds upon
-+                ELP fallback throughput meter measurements.
-+
- What:           /sys/class/net/<iface>/batman-adv/iface_status
- Date:           May 2010
- Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 6baec4e6..1b3a250f 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -1086,6 +1086,7 @@ void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
- 	 */
- 	atomic_set(&hard_iface->bat_v.throughput_override, 0);
- 	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+	atomic_set(&hard_iface->bat_v.elp_tp_duration, 1000);
- }
- 
- /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 2d206a08..9a106fab 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -76,10 +76,12 @@ static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *neigh)
- {
- 	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	u32 elp_tp_duration;
- 
- 	neigh->bat_v.tp_meter_running = true;
--	batadv_tp_start(bat_priv, neigh->addr, neigh,
--			1000, NULL, BATADV_TP_ELP);
-+	elp_tp_duration = atomic_read(&hard_iface->bat_v.elp_tp_duration);
-+	batadv_tp_start(bat_priv, neigh->addr, neigh, elp_tp_duration,
-+			NULL, BATADV_TP_ELP);
- }
- 
- /**
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index f2eef43b..d8d08bfa 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1128,6 +1128,8 @@ static BATADV_ATTR(iface_status, 0444, batadv_show_iface_status, NULL);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, 0644,
- 		     2 * BATADV_JITTER, INT_MAX, NULL);
-+BATADV_ATTR_HIF_UINT(elp_tp_duration, bat_v.elp_tp_duration, 0644,
-+		     1, INT_MAX, NULL);
- static BATADV_ATTR(throughput_override, 0644, batadv_show_throughput_override,
- 		   batadv_store_throughput_override);
- #endif
-@@ -1137,6 +1139,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
- 	&batadv_attr_iface_status,
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	&batadv_attr_elp_interval,
-+	&batadv_attr_elp_tp_duration,
- 	&batadv_attr_throughput_override,
- #endif
- 	NULL,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index fe763410..62c9b49d 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -118,6 +118,9 @@ struct batadv_hard_iface_bat_v {
- 	/** @elp_interval: time interval between two ELP transmissions */
- 	atomic_t elp_interval;
- 
-+	/** @elp_tp_duration: throughput meter fallback test duration */
-+	atomic_t elp_tp_duration;
-+
- 	/** @elp_seqno: current ELP sequence number */
- 	atomic_t elp_seqno;
- 
--- 
-2.18.0
+Kind regards,
+	Sven
+--nextPart3203288.MQNihGTI0Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltltvwACgkQXYcKB8Em
+e0Zj4BAAg26Z+u5SV/1Gmd9lptC2juQSsbzWKUQjifpgkZH51Tf8xybgFQK88Kwh
+Q1erX3HE9lSShdq7GuLK76PSKhpgHpz6WTYb5WmTQhqprPgUnXId/fn/J6f73dtm
+t8azqup6wLBbTle9AFcPjUlQPkisbSxJEvNh2WrR05h9GUKcXdJIYooHLbpHzBhi
+EDsnZzGvmddAvOsg77pf0MjQ3eneGGGqCP2BiYMaCuMJIoV8yFGt6a8PrGKAswIw
+55JPbEvog7tfFNMqeKxnQS8/fGaB3fb0B2AMT2Og+uVwPkWZc7Yw1LAlHlsY/zYH
+X2dH5TpThF9G+s0iJFCfraD5GQy5jVjMVz6hE8ZvV6a5/VElWKYIheaJ264cwhYB
+7GFbupP3wFdLYf7kzzjJfeZkrB1HT6BwLTdCXrw6SvEkVmwBIAJJf+Y+q8xwJdrk
+lcXvT/G29o5sP+EmmC3MwfL7IQsUZmxp8q88pNk24jmBqAxbVHo1vzJUGxG1jsc0
+/ClxQ27+1ojz5BAmsVaGtDk4VEQ5rrG/cqZi21SQCO9GBOWZFjHad2/mjs1/k0dY
+n9FZp0vDYOPZrkAyMrFnjHosqouPg28kooBtMyiNFj8tFN9/Q39YKK0oj8voIvIp
+EabxKhh19Gw+PemWPH39I7VNwGvoYcN8fxXnFKmzQUr9YpvROzU=
+=HELK
+-----END PGP SIGNATURE-----
+
+--nextPart3203288.MQNihGTI0Q--
+
+
 
