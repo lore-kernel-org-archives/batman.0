@@ -1,17 +1,21 @@
 Return-Path: <a@unstable.cc>
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <20180518014754.23644-7-mareklindner@neomailbox.ch>
- <20180521144854.GO7162@otheros>
+References: <20161027190150.7880-1-sw@simonwunderlich.de>
+ <20161027190150.7880-4-sw@simonwunderlich.de>
+ <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
+ <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
+ <20180520061954.GA2255@nanopsycho.orion>
+ <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
+ <20180804093632.GB2015@nanopsycho>
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <7a8296d8-d9e2-bba3-f8cd-42cf5da4f506@unstable.cc>
-Date: Sat, 4 Aug 2018 17:39:42 +0800
+Message-ID: <f2964fca-072e-2a6c-4ce9-aa7963465195@unstable.cc>
+Date: Sat, 4 Aug 2018 19:19:39 +0800
 MIME-Version: 1.0
-In-Reply-To: <20180521144854.GO7162@otheros>
+In-Reply-To: <20180804093632.GB2015@nanopsycho>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="Tduv9NIV1KBc7PuKGVLFv6w2cduFmHVKp"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
- estimate the throughput if otherwise not available
+ boundary="vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+ mcast sysfs files to README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,82 +25,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Jiri Pirko <jiri@resnulli.us>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, davem@davemloft.net
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Tduv9NIV1KBc7PuKGVLFv6w2cduFmHVKp
-Content-Type: multipart/mixed; boundary="imPvgsZsj8zqBygoB8bg3WXNPG0szoeTR";
+--vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS
+Content-Type: multipart/mixed; boundary="2FbyiASBSRDigE9z199I4UfusVK2RPcIr";
  protected-headers="v1"
 From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
+To: Jiri Pirko <jiri@resnulli.us>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?Q?Linus_L=c3=bcssing?=
- <linus.luessing@c0d3.blue>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Message-ID: <7a8296d8-d9e2-bba3-f8cd-42cf5da4f506@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 6/7] batman-adv: ELP - use tp meter to
- estimate the throughput if otherwise not available
-References: <20180518014754.23644-1-mareklindner@neomailbox.ch>
- <20180518014754.23644-7-mareklindner@neomailbox.ch>
- <20180521144854.GO7162@otheros>
-In-Reply-To: <20180521144854.GO7162@otheros>
+ <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, davem@davemloft.net
+Message-ID: <f2964fca-072e-2a6c-4ce9-aa7963465195@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+ mcast sysfs files to README
+References: <20161027190150.7880-1-sw@simonwunderlich.de>
+ <20161027190150.7880-4-sw@simonwunderlich.de>
+ <20161029103301.GD1692@nanopsycho.orion> <22392280.4UY6GoIrAk@sven-edge>
+ <20161029105628.GE1692@nanopsycho.orion> <20180327154307.GA2052@otheros>
+ <20180520061954.GA2255@nanopsycho.orion>
+ <113e9222-3310-71c6-7cec-c253b9b5d194@unstable.cc>
+ <20180804093632.GB2015@nanopsycho>
+In-Reply-To: <20180804093632.GB2015@nanopsycho>
 
---imPvgsZsj8zqBygoB8bg3WXNPG0szoeTR
+--2FbyiASBSRDigE9z199I4UfusVK2RPcIr
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Hi Lunus,
+On 04/08/18 17:36, Jiri Pirko wrote:
+>>
+>> Do you have any pointer about where this discussion took place? I
+>> imagine it happened in conjunction with some patches intended to other=
 
-On 21/05/18 22:48, Linus L=C3=BCssing wrote:
-> On Fri, May 18, 2018 at 09:47:53AM +0800, Marek Lindner wrote:
->> +/**
->> + * batadv_v_elp_tp_start() - start a tp meter session for a neighbor
->> + * @neigh: neighbor to run tp meter on
->> + */
->> +static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *ne=
-igh)
->> +{
->> +	struct batadv_hard_iface *hard_iface =3D neigh->if_incoming;
->> +	struct batadv_priv *bat_priv =3D netdev_priv(hard_iface->soft_iface)=
-;
->> +
->> +	neigh->bat_v.tp_meter_running =3D true;
->> +	batadv_tp_start(bat_priv, neigh->addr, neigh, 10, NULL, BATADV_TP_EL=
-P);
->> +}
->=20
-> This seems racy here? We have no ordering constraints between
-> the assigment and batadv_tp_start() which might lead to...
->=20
->> @@ -152,6 +192,25 @@ static u32 batadv_v_elp_get_throughput(struct bat=
-adv_hardif_neigh_node *neigh)
->>  			return throughput * 10;
->>  	}
->> =20
->> +fallback_throughput:
->> +	last_tp_run_jiffies =3D jiffies - neigh->bat_v.last_tp_meter_run;
->> +	last_tp_run_msecs =3D jiffies_to_msecs(last_tp_run_jiffies);
->> +
->> +	/* check the tp_meter_running flag before checking the timestamp to
->> +	 * avoid a race condition where a new tp meter session is scheduled
->> +	 * right after the previous tp meter session has completed
->> +	 */
->> +	if (!neigh->bat_v.tp_meter_running &&
->> +	    last_tp_run_msecs > BATADV_ELP_TP_RUN_INTERVAL)
->> +		batadv_v_elp_tp_start(neigh);
->=20
-> ...multiple instances potentially being started at the same time here?
->=20
+>> drivers/netdev changes.
+>>
+>> Reading that could give us a sense of how strict/important/severe this=
 
-- batadv_tp_start() is only invoked by batadv_v_elp_get_throughput();
-- batadv_v_elp_get_throughput() is only invoked by
-batadv_v_elp_throughput_metric_update();
-- batadv_v_elp_throughput_metric_update() is a periodic function
-executed by a timer and we can't have concurrent executions (unless we
-use crazy interval values).
+>> decision was and how to prioritize future work.
+>>
+>> I am asking because we have been working on a new feature since severa=
+l
+>> months and this feature introduces a new sysfs knob.
+>>
+>> Now, although I understand the recommendation of switching to netlink,=
+ I
+>> find it a bit impractical to delay a new (and fairly big) feature,
+>> simply because it uses a potentially obsolete, but current, API.
+>>
+>> Any opinion about this?
+>=20
+> I agree, that does not make sense.
 
-Maybe we should add a comment to make this more clear?
+Thanks for your reply, Jiri.
+
+>=20
+> I just wanted you to consider introducing netlink iface and migrate to
+> it as it is generally the preffered way to comunicate with userspace in=
+
+> networking area (I don't have pointer any specific discussion though -
+> it is just a common knowledge :)).
+
+That's ok. I was asking because in the past batman-adv was using debugfs
+for dealing with settings and we were (properly) redirected to sysfs by
+David.
+Now it seems we need to migrate to the next thing :-) So I just wanted
+to be sure we have to do it, but this seems to be the case..
+
+> I will be more then happy to help you
+> with that. You should look at net/core/devlink.c and net/wireless/nl802=
+11.c
+> to get some inspiration.
+
+Actually we have already implemented a basic netlink API to be used when
+sending information to userspace (i.e. routing tables, neighbour tables,
+etc..), therefore I think we might be able to leverage on that.
+But of course, any help will be appreciated :)
+
+Thanks!
+
+Cheers,
 
 
 
@@ -104,28 +113,28 @@ Maybe we should add a comment to make this more clear?
 Antonio Quartulli
 
 
---imPvgsZsj8zqBygoB8bg3WXNPG0szoeTR--
+--2FbyiASBSRDigE9z199I4UfusVK2RPcIr--
 
---Tduv9NIV1KBc7PuKGVLFv6w2cduFmHVKp
+--vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltldF4ACgkQB6U8WA7y
-zXRklxAAwXTa5Rcx9Aic11WuApkkcy3LO2TRYJF6V4tcEZQCdMzljMh7WJX1b1Fl
-tLMT6qAvRdh+Mp8PcdTZuwcvFOd600Dm2BYBSR0N7d5x51YRsGlQTHn+H6XTNC4G
-/6mYRz8kWN/wUIu2yOQicF6+N8iBD9qYvldgG8qRJogiTPSwklo5akGF997Zyo2W
-p9T8z7P837+VGWyVMj8Xe+ge3k9Plj8TZhE92WHVdaVb2RGJe92wd1dpQYA1AVHG
-WITVgiYW5Ul/CxQJNY0eQpwaVxX25kLqmBES/nAQBgxUASSRUspCLa+n7SAr5Rs3
-PgvS0nGlM+CFPh3VbByTdZnRC6y+yQ5ZEwxyg5IB+tUcDvHG+0A6v5ccYROLusJf
-X6H42qI9iuyEMmH5ZR+WpSIBc2n7R+7YrH2SD/ugj2dIBUprB2omQSN067k9iq67
-0IYLnCmjunBXa3QV7D89QLGzsPH7mlZTlADbgf0ORfK/fi7/dXIKnQBBivPPfQRW
-P/tQSBJNnraCTHI5qotm8tQloVx0GPbec2wUJiZqjvMZBBZp1XlUcr7AXarCShV0
-SvSs1QTRW40j1CAVbFpFrxPJlmWJSPM34RzQsOMGn3LFj4j7ikJGfPZQpul2IR9K
-oVl04pT4WfHOepW+42SQBGKFDpm1JQaEmfiuz6vU5+GUJLyK0yI=
-=VQLi
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAltli8sACgkQB6U8WA7y
+zXSoxxAAwcfNDtPpflOL3cBw+UzrbTBGvAg+m5j0jyMs8mllnlwU7jt6W2XXYD6Z
+2WfqrhH6H2E1ODwh7Vhj1P4tat4ntKY+U8wMH6McOnn4/RH/m+cTA3Lsj//nIUS3
+D78QVYqPtBFeQSREjSM4lNCxmzpByzwm6bEVgH4HAF+PFlMdbOSqULypHpNaP1d1
+sWEudrTyxrvQrXOHRj3F9i4LDQi3Y1nisxxEU0etXS+iroQqAgT3JB0Ag8uEwRFI
+BudiHAbYG+y7AApH0ZO0vV1/O1Qug1MxybWSpPzXs5fHokvbO0DNesKB+nS/ldY1
+7hfYYUUF1muXqJHtxr8o37QNxdKK166OjB82UvBmw/jxMaD0UzEcQtrDBOvL1I4M
+8CtoGl943M8ptyvMRIpXSdOu95yOw7BEjuMcZ/5PonsjTKE3dgC1kq9zpT/PtcC2
+etwY/JMdBbbJZIyblnpmOIBeuQ5FHIb+tOFOwy90OsMienttM9K8G6Z8r+p+xQjt
+e0wAOmxLWLAsbrBdjl7xzJuQ0po5Q4sr1LBIiqZpXOaianzHbeYWfY/WcYpJkjq0
+zcS5fMwOD4U0xGDiiF+PPl5xXXeZkoDKCWTiNe4wM+QjfBe5pNDasr+BS5tigkbE
+xD7kOPYSv8vPHTeON+8Ai03H/8312mGCpBNSH1DjxRelKjoM4+g=
+=9C0J
 -----END PGP SIGNATURE-----
 
---Tduv9NIV1KBc7PuKGVLFv6w2cduFmHVKp--
+--vSaGjnBSPeYvfM4iVI2ZqdP1uqAd9BhMS--
