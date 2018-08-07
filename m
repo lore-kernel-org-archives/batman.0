@@ -1,11 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue,  7 Aug 2018 21:05:13 +0800
-Message-Id: <20180807130518.27018-3-mareklindner@neomailbox.ch>
+Date: Tue,  7 Aug 2018 21:05:14 +0800
+Message-Id: <20180807130518.27018-4-mareklindner@neomailbox.ch>
 In-Reply-To: <20180807130518.27018-1-mareklindner@neomailbox.ch>
 References: <20180807130518.27018-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v4 2/7] batman-adv: tp_meter - don't check
- for existing session
+Subject: [B.A.T.M.A.N.] [PATCH v4 3/7] batman-adv: tp_meter - allow up to 10
+ queued sessions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,68 +16,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Antonio Quartulli <a@unstable.cc>
-
-Since the conversion from kthread to queue worker it is not possible
-to run more than one "sender" session at a time.
-For this reason, checking if another session to the same destination
-is already scheduled is not useful anymore.
-
-Remove such check and allow the user to enqueue a new session to
-a previously targeted node.
-
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/tp_meter.c | 19 +------------------
- 1 file changed, 1 insertion(+), 18 deletions(-)
+ net/batman-adv/main.h     | 6 ++++--
+ net/batman-adv/tp_meter.c | 4 ++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 8da3c933..89dfaf87 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -137,9 +137,11 @@
+ #define BATADV_NC_NODE_TIMEOUT 10000 /* Milliseconds */
+ 
+ /**
+- * BATADV_TP_MAX_NUM - maximum number of simultaneously active tp sessions
++ * BATADV_TP_MAX_NUM_QUEUE - maximum number of queued (outgoing) tp sessions
++ * BATADV_TP_MAX_NUM_RECV - maximum number of simultaneous receiving streams
+  */
+-#define BATADV_TP_MAX_NUM 5
++#define BATADV_TP_MAX_NUM_QUEUE 10
++#define BATADV_TP_MAX_NUM_RECV 1
+ 
+ /**
+  * enum batadv_mesh_state - State of a soft interface
 diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index c0d27f7d..a416c36d 100644
+index a416c36d..e89d3942 100644
 --- a/net/batman-adv/tp_meter.c
 +++ b/net/batman-adv/tp_meter.c
-@@ -939,21 +939,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+@@ -939,7 +939,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
  	session_cookie = batadv_tp_session_cookie(session_id, icmp_uid);
  	*cookie = session_cookie;
  
--	/* look for an already existing test towards this node */
--	spin_lock_bh(&bat_priv->tp_list_lock);
--	tp_vars = batadv_tp_list_find(bat_priv, dst);
--	if (tp_vars) {
--		spin_unlock_bh(&bat_priv->tp_list_lock);
--		batadv_tp_vars_put(tp_vars);
--		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
--			   "Meter: test to or from the same node already ongoing, aborting\n");
--		batadv_tp_batctl_error_notify(BATADV_TP_REASON_ALREADY_ONGOING,
--					      dst, bat_priv, session_cookie);
--		return;
--	}
--
- 	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM)) {
--		spin_unlock_bh(&bat_priv->tp_list_lock);
+-	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM)) {
++	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM_QUEUE)) {
  		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
  			   "Meter: too many ongoing sessions, aborting (SEND)\n");
  		batadv_tp_batctl_error_notify(BATADV_TP_REASON_TOO_MANY, dst,
-@@ -963,10 +949,6 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+@@ -1313,7 +1313,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	if (tp_vars)
+ 		goto out_unlock;
  
- 	tp_vars = kmalloc(sizeof(*tp_vars), GFP_ATOMIC);
- 	if (!tp_vars) {
--		spin_unlock_bh(&bat_priv->tp_list_lock);
--		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
--			   "Meter: %s cannot allocate list elements\n",
--			   __func__);
- 		batadv_tp_batctl_error_notify(BATADV_TP_REASON_MEMORY_ERROR,
- 					      dst, bat_priv, session_cookie);
- 		return;
-@@ -1021,6 +1003,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
- 	spin_lock_init(&tp_vars->prerandom_lock);
- 
- 	kref_get(&tp_vars->refcount);
-+	spin_lock_bh(&bat_priv->tp_list_lock);
- 	hlist_add_head_rcu(&tp_vars->list, &bat_priv->tp_list);
- 	spin_unlock_bh(&bat_priv->tp_list_lock);
- 
+-	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM)) {
++	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM_RECV)) {
+ 		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 			   "Meter: too many ongoing sessions, aborting (RECV)\n");
+ 		goto out_unlock;
 -- 
 2.18.0
 
