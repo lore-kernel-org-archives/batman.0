@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 10 Aug 2018 23:36:15 +0200
-Message-Id: <20180810213616.23794-2-sven@narfation.org>
+Date: Fri, 10 Aug 2018 23:36:16 +0200
+Message-Id: <20180810213616.23794-3-sven@narfation.org>
 In-Reply-To: <20180810213616.23794-1-sven@narfation.org>
 References: <20180810213616.23794-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Mark debugfs functionality
- as deprecated
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Provide debug messages as
+ trace events
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,31 +17,190 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-CONFIG_BATMAN_ADV_DEBUGFS is disabled by default because debugfs is not
-supported for batman-adv interfaces in any non-default netns. Any remaining
-users of this interface should still be informed about the deprecation and
-the generic netlink alternative.
+A private debug logging infrastructure is currently provided via
+$debug_fs/batman_adv/*/log when CONFIG_BATMAN_ADV_DEBUG is enabled. This is
+not well integrated in the rest of the tracing infrastructure of the
+kernel.
+
+Other components (like mac80211 or ath10k) allow to gather the debug
+messages using generic trace events which are better integrated. This makes
+it possible to interact with them using the existing userspace tools.
+
+The tracepoint batadv:batadv_dbg will now be available when
+CONFIG_BATMAN_ADV_DEBUG and CONFIG_BATMAN_ADV_TRACING is activated. The log
+level mask is still used for filtering as usual.
+
+A full system trace for offline parsing can be created (and read) using:
+
+  $ batctl ll all
+  $ trace-cmd record -e batadv:batadv_dbg
+  $ trace-cmd report
+
+The same can also be done without recording to a file
+
+  $ batctl ll all
+  $ trace-cmd stream -e batadv:batadv_dbg
+
+The trace infrastructure is especially helpful when tracing processes:
+
+  $ batctl ll all
+  $ ./tools/perf/perf trace --event "batadv:*" batctl p 10.204.32.1
+     0.000 batadv:batadv_dbg:batman_adv bat0 Parsing outgoing ARP REQUEST
+     0.045 batadv:batadv_dbg:batman_adv bat0 ARP MSG = [src: a2:64:14:53:f8:22-10.204.32.185 dst: 00:00:00:00:00:00-10.204.32.1]
+     0.067 batadv:batadv_dbg:batman_adv bat0 Entry updated: 10.204.32.185 a2:64:14:53:f8:22 (vid: -1)
+     0.099 batadv:batadv_dbg:batman_adv bat0 batadv_dat_select_candidates(): IP=10.204.32.1 hash(IP)=48902
+     0.757 batadv:batadv_dbg:batman_adv bat0 dat_select_candidates() 0: selected fe:2c:91:68:29:2b addr=48977 dist=65460
+     1.178 batadv:batadv_dbg:batman_adv bat0 dat_select_candidates() 1: selected fe:81:ab:c5:e3:03 addr=49181 dist=65256
+     1.809 batadv:batadv_dbg:batman_adv bat0 dat_select_candidates() 2: selected 66:25:a7:48:37:fb addr=49328 dist=65109
+     1.828 batadv:batadv_dbg:batman_adv bat0 DHT_SEND for 10.204.32.1
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- compat-include/linux/fs.h    | 37 ++++++++++++++++++++++++++++++++++++
- net/batman-adv/debugfs.c     | 37 ++++++++++++++++++++++++++++++++++++
- net/batman-adv/debugfs.h     |  6 ++++++
- net/batman-adv/icmp_socket.c |  3 +++
- net/batman-adv/log.c         |  4 ++++
- 5 files changed, 87 insertions(+)
- create mode 100644 compat-include/linux/fs.h
+ Makefile                |  3 ++
+ README.external.rst     |  1 +
+ gen-compat-autoconf.sh  |  1 +
+ net/batman-adv/Kconfig  | 11 ++++++
+ net/batman-adv/Makefile |  3 ++
+ net/batman-adv/log.c    | 17 ++++++---
+ net/batman-adv/trace.c  | 22 ++++++++++++
+ net/batman-adv/trace.h  | 78 +++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 131 insertions(+), 5 deletions(-)
+ create mode 100644 net/batman-adv/trace.c
+ create mode 100644 net/batman-adv/trace.h
 
-diff --git a/compat-include/linux/fs.h b/compat-include/linux/fs.h
+diff --git a/Makefile b/Makefile
+index 7c6fa1e4..d665c0ba 100644
+--- a/Makefile
++++ b/Makefile
+@@ -29,6 +29,8 @@ export CONFIG_BATMAN_ADV_DAT=y
+ export CONFIG_BATMAN_ADV_NC=n
+ # B.A.T.M.A.N. multicast optimizations:
+ export CONFIG_BATMAN_ADV_MCAST=y
++# B.A.T.M.A.N. tracing support:
++export CONFIG_BATMAN_ADV_TRACING=n
+ # B.A.T.M.A.N. V routing algorithm (experimental):
+ export CONFIG_BATMAN_ADV_BATMAN_V=y
+ 
+@@ -75,6 +77,7 @@ BUILD_FLAGS := \
+ 	CONFIG_BATMAN_ADV_DAT=$(CONFIG_BATMAN_ADV_DAT) \
+ 	CONFIG_BATMAN_ADV_NC=$(CONFIG_BATMAN_ADV_NC) \
+ 	CONFIG_BATMAN_ADV_MCAST=$(CONFIG_BATMAN_ADV_MCAST) \
++	CONFIG_BATMAN_ADV_TRACING=$(CONFIG_BATMAN_ADV_TRACING) \
+ 	CONFIG_BATMAN_ADV_BATMAN_V=$(CONFIG_BATMAN_ADV_BATMAN_V) \
+ 	INSTALL_MOD_DIR=updates/
+ 
+diff --git a/README.external.rst b/README.external.rst
+index 2faec155..3f6539ed 100644
+--- a/README.external.rst
++++ b/README.external.rst
+@@ -49,6 +49,7 @@ module).  Available  options  and  their    possible   values are
+  * ``CONFIG_BATMAN_ADV_DAT=[y*|n]`` (B.A.T.M.A.N. Distributed ARP Table)
+  * ``CONFIG_BATMAN_ADV_MCAST=[y*|n]`` (B.A.T.M.A.N. multicast optimizations)
+  * ``CONFIG_BATMAN_ADV_NC=[y|n*]`` (B.A.T.M.A.N. Network Coding)
++ * ``CONFIG_BATMAN_ADV_TRACING=[y|n*]`` (B.A.T.M.A.N. tracing support)
+  * ``CONFIG_BATMAN_ADV_BATMAN_V=[y*|n]`` (B.A.T.M.A.N. V routing algorithm)
+ 
+ e.g., debugging can be enabled by::
+diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
+index 5dcd875d..a4eb1136 100755
+--- a/gen-compat-autoconf.sh
++++ b/gen-compat-autoconf.sh
+@@ -58,6 +58,7 @@ gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_MCAST' ${CONFIG_BATMAN_ADV_MCAST:="y"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_NC' ${CONFIG_BATMAN_ADV_NC:="n"} >> "${TMP}"
++gen_config 'CONFIG_BATMAN_ADV_TRACING' ${CONFIG_BATMAN_ADV_TRACING:="n"} >> "${TMP}"
+ gen_config 'CONFIG_BATMAN_ADV_BATMAN_V' ${CONFIG_BATMAN_ADV_BATMAN_V:="y"} >> "${TMP}"
+ 
+ # only regenerate compat-autoconf.h when config was changed
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 361116f7..f75816f5 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -106,3 +106,14 @@ config BATMAN_ADV_DEBUG
+ 	  say N here. This enables compilation of support for
+ 	  outputting debugging information to the kernel log. The
+ 	  output is controlled via the module parameter debug.
++
++config BATMAN_ADV_TRACING
++	bool "B.A.T.M.A.N. tracing support"
++	depends on BATMAN_ADV
++	depends on EVENT_TRACING
++	help
++	  This is an option for use by developers; most people should
++	  say N here. Select this option to gather traces like the debug
++	  messages using the generic tracing infrastructure of the kernel.
++	  BATMAN_ADV_DEBUG must also be selected to get trace events for
++	  batadv_dbg.
+diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
+index b97ba6fb..9b58160f 100644
+--- a/net/batman-adv/Makefile
++++ b/net/batman-adv/Makefile
+@@ -42,6 +42,9 @@ batman-adv-y += routing.o
+ batman-adv-y += send.o
+ batman-adv-y += soft-interface.o
+ batman-adv-y += sysfs.o
++batman-adv-$(CONFIG_BATMAN_ADV_TRACING) += trace.o
+ batman-adv-y += tp_meter.o
+ batman-adv-y += translation-table.o
+ batman-adv-y += tvlv.o
++
++CFLAGS_trace.o := -I$(src)
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index 1032d84e..8a3d6910 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -41,6 +41,7 @@
+ #include <stdarg.h>
+ 
+ #include "debugfs.h"
++#include "trace.h"
+ 
+ #define BATADV_LOG_BUFF_MASK (batadv_log_buff_len - 1)
+ 
+@@ -100,13 +101,19 @@ static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
+  */
+ int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
+ {
++	struct va_format vaf;
+ 	va_list args;
+-	char tmp_log_buf[256];
+ 
+ 	va_start(args, fmt);
+-	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
+-	batadv_fdebug_log(bat_priv->debug_log, "[%10u] %s",
+-			  jiffies_to_msecs(jiffies), tmp_log_buf);
++
++	vaf.fmt = fmt;
++	vaf.va = &args;
++
++	batadv_fdebug_log(bat_priv->debug_log, "[%10u] %pV",
++			  jiffies_to_msecs(jiffies), &vaf);
++
++	trace_batadv_dbg(bat_priv, &vaf);
++
+ 	va_end(args);
+ 
+ 	return 0;
+@@ -117,7 +124,7 @@ static int batadv_log_open(struct inode *inode, struct file *file)
+ 	if (!try_module_get(THIS_MODULE))
+ 		return -EBUSY;
+ 
+-	batadv_debugfs_deprecated(file, "");
++	batadv_debugfs_deprecated(file, "Use tracepoint batadv:batadv_dbg instead\n");
+ 
+ 	nonseekable_open(inode, file);
+ 	file->private_data = inode->i_private;
+diff --git a/net/batman-adv/trace.c b/net/batman-adv/trace.c
 new file mode 100644
-index 00000000..4d6bb1d7
+index 00000000..3d57f998
 --- /dev/null
-+++ b/compat-include/linux/fs.h
-@@ -0,0 +1,37 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
++++ b/net/batman-adv/trace.c
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
 + *
-+ * Marek Lindner, Simon Wunderlich
++ * Sven Eckelmann
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -54,227 +213,96 @@ index 00000000..4d6bb1d7
 + *
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/module.h>
++
++#define CREATE_TRACE_POINTS
++#include "trace.h"
+diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
+new file mode 100644
+index 00000000..3acda26a
+--- /dev/null
++++ b/net/batman-adv/trace.h
+@@ -0,0 +1,78 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
 + *
-+ * This file contains macros for maintaining compatibility with older versions
-+ * of the Linux kernel.
++ * Sven Eckelmann
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_FS_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_FS_H_
++#if !defined(_NET_BATMAN_ADV_TRACE_H_) || defined(TRACE_HEADER_MULTI_READ)
++#define _NET_BATMAN_ADV_TRACE_H_
 +
-+#include <linux/version.h>
-+#include_next <linux/fs.h>
++#include "main.h"
 +
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
++#include <linux/tracepoint.h>
 +
-+static inline struct dentry *file_dentry(const struct file *file)
-+{
-+	return file->f_path.dentry;
-+}
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM batadv
 +
-+#endif /* < KERNEL_VERSION(4, 6, 0) */
++/* provide dummy function when tracing is disabled */
++#if !defined(CONFIG_BATMAN_ADV_TRACING)
 +
-+#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_FS_H_ */
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 3cb82378..8b608a2e 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -47,8 +47,24 @@
- 
- static struct dentry *batadv_debugfs;
- 
-+/**
-+ * batadv_debugfs_deprecated() - Log use of deprecated batadv debugfs access
-+ * @file: file which was accessed
-+ * @alt: explanation what can be used as alternative
-+ */
-+void batadv_debugfs_deprecated(struct file *file, const char *alt)
-+{
-+	struct dentry *dentry = file_dentry(file);
-+	const char *name = dentry->d_name.name;
++#undef TRACE_EVENT
++#define TRACE_EVENT(name, proto, ...) \
++	static inline void trace_ ## name(proto) {}
 +
-+	pr_warn_ratelimited(DEPRECATED "%s (pid %d) Use of debugfs file \"%s\".\n%s",
-+			    current->comm, task_pid_nr(current), name, alt);
-+}
++#endif /* CONFIG_BATMAN_ADV_TRACING */
 +
- static int batadv_algorithms_open(struct inode *inode, struct file *file)
- {
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_ROUTING_ALGOS instead\n");
- 	return single_open(file, batadv_algo_seq_print_text, NULL);
- }
- 
-@@ -56,6 +72,8 @@ static int neighbors_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_NEIGHBORS instead\n");
- 	return single_open(file, batadv_hardif_neigh_seq_print_text, net_dev);
- }
- 
-@@ -63,6 +81,8 @@ static int batadv_originators_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_ORIGINATORS instead\n");
- 	return single_open(file, batadv_orig_seq_print_text, net_dev);
- }
- 
-@@ -79,6 +99,8 @@ static int batadv_originators_hardif_open(struct inode *inode,
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_HARDIFS instead\n");
- 	return single_open(file, batadv_orig_hardif_seq_print_text, net_dev);
- }
- 
-@@ -86,6 +108,8 @@ static int batadv_gateways_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_GATEWAYS instead\n");
- 	return single_open(file, batadv_gw_client_seq_print_text, net_dev);
- }
- 
-@@ -93,6 +117,8 @@ static int batadv_transtable_global_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_TRANSTABLE_GLOBAL instead\n");
- 	return single_open(file, batadv_tt_global_seq_print_text, net_dev);
- }
- 
-@@ -101,6 +127,8 @@ static int batadv_bla_claim_table_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_BLA_CLAIM instead\n");
- 	return single_open(file, batadv_bla_claim_table_seq_print_text,
- 			   net_dev);
- }
-@@ -110,6 +138,8 @@ static int batadv_bla_backbone_table_open(struct inode *inode,
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_BLA_BACKBONE instead\n");
- 	return single_open(file, batadv_bla_backbone_table_seq_print_text,
- 			   net_dev);
- }
-@@ -128,6 +158,8 @@ static int batadv_dat_cache_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_DAT_CACHE instead\n");
- 	return single_open(file, batadv_dat_cache_seq_print_text, net_dev);
- }
- #endif
-@@ -136,6 +168,8 @@ static int batadv_transtable_local_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_TRANSTABLE_LOCAL instead\n");
- 	return single_open(file, batadv_tt_local_seq_print_text, net_dev);
- }
- 
-@@ -149,6 +183,7 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file, "");
- 	return single_open(file, batadv_nc_nodes_seq_print_text, net_dev);
- }
- #endif
-@@ -165,6 +200,8 @@ static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
- 
-+	batadv_debugfs_deprecated(file,
-+				  "Use genl command BATADV_CMD_GET_MCAST_FLAGS instead\n");
- 	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
- }
- #endif
-diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
-index 08a592ff..8de018e5 100644
---- a/net/batman-adv/debugfs.h
-+++ b/net/batman-adv/debugfs.h
-@@ -21,12 +21,14 @@
- 
- #include "main.h"
- 
-+struct file;
- struct net_device;
- 
- #define BATADV_DEBUGFS_SUBDIR "batman_adv"
- 
- #if IS_ENABLED(CONFIG_BATMAN_ADV_DEBUGFS)
- 
-+void batadv_debugfs_deprecated(struct file *file, const char *alt);
- void batadv_debugfs_init(void);
- void batadv_debugfs_destroy(void);
- int batadv_debugfs_add_meshif(struct net_device *dev);
-@@ -38,6 +40,10 @@ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
- 
- #else
- 
-+static inline void batadv_debugfs_deprecated(struct file *file, const char *alt)
-+{
-+}
++#define BATADV_MAX_MSG_LEN	256
 +
- static inline void batadv_debugfs_init(void)
- {
- }
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 55c358ad..d70f363c 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -47,6 +47,7 @@
- #include <linux/wait.h>
- #include <uapi/linux/batadv_packet.h>
- 
-+#include "debugfs.h"
- #include "hard-interface.h"
- #include "log.h"
- #include "originator.h"
-@@ -74,6 +75,8 @@ static int batadv_socket_open(struct inode *inode, struct file *file)
- 	if (!try_module_get(THIS_MODULE))
- 		return -EBUSY;
- 
-+	batadv_debugfs_deprecated(file, "");
++TRACE_EVENT(batadv_dbg,
 +
- 	nonseekable_open(inode, file);
- 
- 	socket_client = kmalloc(sizeof(*socket_client), GFP_KERNEL);
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index 853773e4..1032d84e 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -40,6 +40,8 @@
- #include <linux/wait.h>
- #include <stdarg.h>
- 
-+#include "debugfs.h"
++	    TP_PROTO(struct batadv_priv *bat_priv,
++		     struct va_format *vaf),
 +
- #define BATADV_LOG_BUFF_MASK (batadv_log_buff_len - 1)
- 
- static const int batadv_log_buff_len = BATADV_LOG_BUF_LEN;
-@@ -115,6 +117,8 @@ static int batadv_log_open(struct inode *inode, struct file *file)
- 	if (!try_module_get(THIS_MODULE))
- 		return -EBUSY;
- 
-+	batadv_debugfs_deprecated(file, "");
++	    TP_ARGS(bat_priv, vaf),
 +
- 	nonseekable_open(inode, file);
- 	file->private_data = inode->i_private;
- 	return 0;
++	    TP_STRUCT__entry(
++		    __string(device, bat_priv->soft_iface->name)
++		    __string(driver, KBUILD_MODNAME)
++		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
++	    ),
++
++	    TP_fast_assign(
++		    __assign_str(device, bat_priv->soft_iface->name);
++		    __assign_str(driver, KBUILD_MODNAME);
++		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
++					   BATADV_MAX_MSG_LEN,
++					   vaf->fmt,
++					   *vaf->va) >= BATADV_MAX_MSG_LEN);
++	    ),
++
++	    TP_printk(
++		    "%s %s %s",
++		    __get_str(driver),
++		    __get_str(device),
++		    __get_str(msg)
++	    )
++);
++
++#endif /* _NET_BATMAN_ADV_TRACE_H_ || TRACE_HEADER_MULTI_READ */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
 -- 
 2.18.0
 
