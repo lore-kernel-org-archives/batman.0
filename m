@@ -1,11 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue,  7 Aug 2018 21:05:18 +0800
-Message-Id: <20180807130518.27018-8-mareklindner@neomailbox.ch>
-In-Reply-To: <20180807130518.27018-1-mareklindner@neomailbox.ch>
-References: <20180807130518.27018-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v4 7/7] batman-adv: ELP - add throughput
- meter test duration attribute
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 10 Aug 2018 23:36:14 +0200
+Message-Id: <20180810213616.23794-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] batman-adv: Continue with deprecation of
+ debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,107 +14,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-When the ELP throughput meter fallback kicks in to trigger
-a throughput meter measurement the test duration can be
-configured via this attribute.
+Hi,
 
-Default tp test duration: 1000ms
+these two changes should help batman-adv during the ongoing process of
+replacing the debugfs code. We already have:
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- Documentation/ABI/testing/sysfs-class-net-batman-adv | 7 +++++++
- net/batman-adv/bat_v.c                               | 1 +
- net/batman-adv/bat_v_elp.c                           | 6 ++++--
- net/batman-adv/sysfs.c                               | 3 +++
- net/batman-adv/types.h                               | 3 +++
- 5 files changed, 18 insertions(+), 2 deletions(-)
+* replaced most debugfs "tables" with netlink dumpit commands
+* replaced the socket file code in batctl with direct captures/injects for
+  traceroute/ping
+* made the debugfs code optional
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 89810684..7b3974a5 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -6,6 +6,13 @@ Description:
-                 Defines the interval in milliseconds in which batman
-                 emits probing packets for neighbor sensing (ELP).
- 
-+What:           /sys/class/net/<iface>/batman-adv/elp_tp_duration
-+Date:           May 2018
-+Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-+Description:
-+                Defines measurement duration in milliseconds upon
-+                ELP fallback throughput meter measurements.
-+
- What:           /sys/class/net/<iface>/batman-adv/iface_status
- Date:           May 2010
- Contact:        Marek Lindner <mareklindner@neomailbox.ch>
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 6baec4e6..1b3a250f 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -1086,6 +1086,7 @@ void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
- 	 */
- 	atomic_set(&hard_iface->bat_v.throughput_override, 0);
- 	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+	atomic_set(&hard_iface->bat_v.elp_tp_duration, 1000);
- }
- 
- /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 2d206a08..9a106fab 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -76,10 +76,12 @@ static void batadv_v_elp_tp_start(struct batadv_hardif_neigh_node *neigh)
- {
- 	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	u32 elp_tp_duration;
- 
- 	neigh->bat_v.tp_meter_running = true;
--	batadv_tp_start(bat_priv, neigh->addr, neigh,
--			1000, NULL, BATADV_TP_ELP);
-+	elp_tp_duration = atomic_read(&hard_iface->bat_v.elp_tp_duration);
-+	batadv_tp_start(bat_priv, neigh->addr, neigh, elp_tp_duration,
-+			NULL, BATADV_TP_ELP);
- }
- 
- /**
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index f2eef43b..d8d08bfa 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1128,6 +1128,8 @@ static BATADV_ATTR(iface_status, 0444, batadv_show_iface_status, NULL);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, 0644,
- 		     2 * BATADV_JITTER, INT_MAX, NULL);
-+BATADV_ATTR_HIF_UINT(elp_tp_duration, bat_v.elp_tp_duration, 0644,
-+		     1, INT_MAX, NULL);
- static BATADV_ATTR(throughput_override, 0644, batadv_show_throughput_override,
- 		   batadv_store_throughput_override);
- #endif
-@@ -1137,6 +1139,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
- 	&batadv_attr_iface_status,
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	&batadv_attr_elp_interval,
-+	&batadv_attr_elp_tp_duration,
- 	&batadv_attr_throughput_override,
- #endif
- 	NULL,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index fe763410..62c9b49d 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -118,6 +118,9 @@ struct batadv_hard_iface_bat_v {
- 	/** @elp_interval: time interval between two ELP transmissions */
- 	atomic_t elp_interval;
- 
-+	/** @elp_tp_duration: throughput meter fallback test duration */
-+	atomic_t elp_tp_duration;
-+
- 	/** @elp_seqno: current ELP sequence number */
- 	atomic_t elp_seqno;
- 
+These first two things were required to get it working in network namespaces.
+The last point allows in theory to disable the debugfs code but distributions
+will still continue to build the debugfs support for a while. The first patch
+in this series will therefore log access requests to this deprecated
+functionality in the kernel message buffer. This will hopefully cause more
+developers to switch their tools to netlink in the near future:
+
+    $ cat /sys/kernel/debug/batman_adv/bat0/neighbors > /dev/null 
+    batman_adv: [Deprecated]: cat (pid 12053) Use of debugfs file "neighbors".
+    Use genl command BATADV_CMD_GET_NEIGHBORS instead
+
+But we also have some other functionality in batman-adv's debugfs which could
+be integrated better in the rest of the kernel infrastructure: the logging.
+The log ringbuffer from batman-adv is completely isolated from the rest of
+the kernel even when the kernel itself already provides its own tracing
+infrastructure. The tooling for the kernel infrastructure is also a lot
+better and should replace the batman_adv/*/log file in batman-adv/batctl
+completely - but let us postpone the removal for now.
+
+Some examples for the usage of batadv_dbg via tracepoints can be found in the
+commit message of this change. A lot more complex things are possible with
+TRACE_EVENT and co but let us start now with the conversion of the already
+existing messages. There is also a good introduction on LWN [1,2,3]
+
+Kind regards,
+	Sven
+
+[1] https://lwn.net/Articles/379903/
+[2] https://lwn.net/Articles/381064/
+[3] https://lwn.net/Articles/383362/
+
+Sven Eckelmann (2):
+  batman-adv: Mark debugfs functionality as deprecated
+  batman-adv: Provide debug messages as trace events
+
+ Makefile                     |  3 ++
+ README.external.rst          |  1 +
+ compat-include/linux/fs.h    | 37 +++++++++++++++++
+ gen-compat-autoconf.sh       |  1 +
+ net/batman-adv/Kconfig       | 11 +++++
+ net/batman-adv/Makefile      |  3 ++
+ net/batman-adv/debugfs.c     | 37 +++++++++++++++++
+ net/batman-adv/debugfs.h     |  6 +++
+ net/batman-adv/icmp_socket.c |  3 ++
+ net/batman-adv/log.c         | 19 +++++++--
+ net/batman-adv/trace.c       | 22 ++++++++++
+ net/batman-adv/trace.h       | 78 ++++++++++++++++++++++++++++++++++++
+ 12 files changed, 217 insertions(+), 4 deletions(-)
+ create mode 100644 compat-include/linux/fs.h
+ create mode 100644 net/batman-adv/trace.c
+ create mode 100644 net/batman-adv/trace.h
+
 -- 
 2.18.0
 
