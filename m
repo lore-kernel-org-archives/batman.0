@@ -1,14 +1,9 @@
-Return-Path: <jmh8@nhfn.net>
-Date: Sat, 11 Aug 2018 02:47:36 -0400 (EDT)
-From: jmh8@nhfn.net
-In-Reply-To: <3417188.nomnmu2T9o@sven-edge>
-Message-ID: <alpine.DEB.2.00.1808110246150.1280@nhfn.net>
-References: <2791173.mX5NbDZpiX@sven-edge>
- <alpine.DEB.2.00.1808041038340.8742@nhfn.net> <3417188.nomnmu2T9o@sven-edge>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Subject: Re: [B.A.T.M.A.N.] Paper "Performance Evaluation of BATMAN-adv
- Wireless Mesh Network Routing Algorithms "
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 12 Aug 2018 21:04:40 +0200
+Message-Id: <20180812190445.28013-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/5] batman-adv: Missing list checks for
+ *list_add*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,38 +13,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, qianhw@mail.sim.ac.cn, liujp@mail.sim.ac.cn, zhuj@mail.sim.ac.cn, ligang.liu@mail.sim.ac.cn, kekegai@smart-com.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi,
 
-Hi all,
+over two years ago, I've added some tickets [1,2,3,4,5,6,7] about
+missing/not properly locked list checks for functions which create new list
+entries. Only Linus created a patch [8] and the other tickets were ignored.
 
-    Thanks :). You are correct!
+I have therefore now created the minimal version of the patches.
 
-    Point well made. Would be nice to read paper sometime :).
+Kind regards,
+	Sven
 
-    John
+[1] https://www.open-mesh.org/issues/235
+[2] https://www.open-mesh.org/issues/236
+[3] https://www.open-mesh.org/issues/237
+[4] https://www.open-mesh.org/issues/238
+[5] https://www.open-mesh.org/issues/239
+[6] https://www.open-mesh.org/issues/240
+[7] https://www.open-mesh.org/issues/241
+[8] https://patchwork.open-mesh.org/patch/4919/
 
+Sven Eckelmann (5):
+  batman-adv: Prevent duplicated gateway_node entry
+  batman-adv: Prevent duplicated nc_node entry
+  batman-adv: Prevent duplicated softif_vlan entry
+  batman-adv: Prevent duplicated global TT entry
+  batman-adv: Prevent duplicated tvlv handler
 
-On Sat, 4 Aug 2018, Sven Eckelmann wrote:
+ net/batman-adv/gateway_client.c    |  8 ++++++--
+ net/batman-adv/network-coding.c    | 27 +++++++++++++++------------
+ net/batman-adv/soft-interface.c    | 21 ++++++++++++---------
+ net/batman-adv/translation-table.c |  6 ++++--
+ net/batman-adv/tvlv.c              |  8 ++++++--
+ 5 files changed, 43 insertions(+), 27 deletions(-)
 
-> On Samstag, 4. August 2018 16:39:50 CEST jmh8@nhfn.net wrote:
->>     I HATE dealing with ieee.org. Please login. Pay LOTS of money. MAYBE we
->> will get around to you eventually.
->>
->>     I USED to be a member. Waste of $$.
->
-> Please avoiding switching topics in threads. I've asked some questions about a
-> publication and didn't start a discussion about the commercialization of
-> academic publishing.
->
-> This kind of behavior is rather rude towards the authors and might scare them
-> away. It is already hard enough to have some kind of cooperation between
-> scientists and open source developers. Please remember that they are are NOT
-> the IEEE or any other publishing company.
->
-> If you want some discussion about this topic then please find a different
-> channel for that and don't steer the discussion away from the original topic.
->
-> Kind regards,
-> 	Sven
+-- 
+2.18.0
+
