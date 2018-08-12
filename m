@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 12 Aug 2018 21:04:44 +0200
-Message-Id: <20180812190445.28013-5-sven@narfation.org>
+Date: Sun, 12 Aug 2018 21:04:45 +0200
+Message-Id: <20180812190445.28013-6-sven@narfation.org>
 In-Reply-To: <20180812190445.28013-1-sven@narfation.org>
 References: <20180812190445.28013-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Prevent duplicated global TT
- entry
+Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Prevent duplicated tvlv
+ handler
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,8 +17,8 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The function batadv_tt_global_orig_entry_add is responsible for adding new
-tt_orig_list_entry to the orig_list. It first checks whether the entry
+The function batadv_tvlv_handler_register is responsible for adding new
+tvlv_handler to the handler_list. It first checks whether the entry
 already is in the list or not. If it is, then the creation of a new entry
 is aborted.
 
@@ -29,46 +29,46 @@ an entry with the same key between the check and the list manipulation.
 The check and the manipulation of the list must therefore be in the same
 locked code section.
 
-Fixes: c5eb5bb30321 ("batman-adv: add reference counting for type batadv_tt_orig_list_entry")
+Fixes: 0b6aa0d43767 ("batman-adv: tvlv - basic infrastructure")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/batman-adv/tvlv.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 12a2b7d2..d21624c4 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1613,6 +1613,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index a6374582..40e69c93 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -529,15 +529,20 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
  {
- 	struct batadv_tt_orig_list_entry *orig_entry;
+ 	struct batadv_tvlv_handler *tvlv_handler;
  
-+	spin_lock_bh(&tt_global->list_lock);
++	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
 +
- 	orig_entry = batadv_tt_global_orig_entry_find(tt_global, orig_node);
- 	if (orig_entry) {
- 		/* refresh the ttvn: the current value could be a bogus one that
-@@ -1635,11 +1637,9 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
- 	orig_entry->flags = flags;
- 	kref_init(&orig_entry->refcount);
+ 	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
+ 	if (tvlv_handler) {
++		spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
+ 		batadv_tvlv_handler_put(tvlv_handler);
+ 		return;
+ 	}
  
--	spin_lock_bh(&tt_global->list_lock);
- 	kref_get(&orig_entry->refcount);
- 	hlist_add_head_rcu(&orig_entry->list,
- 			   &tt_global->orig_list);
--	spin_unlock_bh(&tt_global->list_lock);
- 	atomic_inc(&tt_global->orig_list_count);
+ 	tvlv_handler = kzalloc(sizeof(*tvlv_handler), GFP_ATOMIC);
+-	if (!tvlv_handler)
++	if (!tvlv_handler) {
++		spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
+ 		return;
++	}
  
- sync_flags:
-@@ -1647,6 +1647,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
- out:
- 	if (orig_entry)
- 		batadv_tt_orig_list_entry_put(orig_entry);
-+
-+	spin_unlock_bh(&tt_global->list_lock);
- }
+ 	tvlv_handler->ogm_handler = optr;
+ 	tvlv_handler->unicast_handler = uptr;
+@@ -547,7 +552,6 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 	kref_init(&tvlv_handler->refcount);
+ 	INIT_HLIST_NODE(&tvlv_handler->list);
  
- /**
+-	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
+ 	kref_get(&tvlv_handler->refcount);
+ 	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
 -- 
 2.18.0
 
