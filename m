@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 13 Aug 2018 09:40:40 +0200
-Message-ID: <1578855.qUiCBR2Cxb@sven-edge>
-In-Reply-To: <2018081310240755548768@mail.sim.ac.cn>
-References: <2791173.mX5NbDZpiX@sven-edge>
- <2018081310240755548768@mail.sim.ac.cn>
+Date: Tue, 14 Aug 2018 08:54:40 +0200
+Message-ID: <6851354.H9m7TIEccf@sven-edge>
+In-Reply-To: <2018081411324765819119@163.com>
+References: <2018081411324765819119@163.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5442372.lcDNdbP7x8";
+Content-Type: multipart/signed; boundary="nextPart7790082.9CvXBLSOjj";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Paper "Performance Evaluation of BATMAN-adv
- Wireless Mesh Network Routing Algorithms "
+Subject: Re: [B.A.T.M.A.N.] Fw: What's the exact definition of
+ expected_throughput in BATMAN-ADV V?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,203 +18,161 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "ligang.liu@mail.sim.ac.cn" <ligang.liu@mail.sim.ac.cn>
-Cc: liujp <liujp@mail.sim.ac.cn>, qianhw <qianhw@mail.sim.ac.cn>, zhuj <zhuj@mail.sim.ac.cn>, "b. a. t. m. a. n" <b.a.t.m.a.n@lists.open-mesh.org>, kekegai <kekegai@smart-com.org>, TPII@ieee.org
+To: "heishuihe2008@163.com" <heishuihe2008@163.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Felix Fietkau <nbd@nbd.name>, a@unstable.cc
 
---nextPart5442372.lcDNdbP7x8
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart7790082.9CvXBLSOjj
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-On Montag, 13. August 2018 04:24:08 CEST ligang.liu@mail.sim.ac.cn wrote:
+Hi,
+
+please don't contact me privately about batman-adv (unless you have a reall=
+y,=20
+really, really, really good reason for that and explain the reason for that=
+ in=20
+the mail). At least Cc the official mailing list=20
+b.a.t.m.a.n@lists.open-mesh.org
+
+On Dienstag, 14. August 2018 05:32:48 CEST heishuihe2008@163.com wrote:
 [...]
-> I'm so sorry for late reply, because I was in vocation last week.
+> I'm the author of paper "Performance Evaluation of BATMAN-adv Wireless Me=
+sh Network Routing Algorithms". Thank you very much for your comments on ou=
+r work.
+>=20
+> I am sorry for some wrong statements in the discussed paper. Actually I'm=
+ new in OpenWRT/LEDE development and have much misunderstanding on it.
 
-No problem. But please change your reply style [2]. It is not very helpful 
-when I first have to open my old mail to find out what you've added to the 
-text and what was my original text :)
+The problem is now that the paper with the wrong statements, graphs and=20
+conclusions is now published by IEEE. Thus my proposal to retract it and=20
+prepare a new paper which doesn't contain the flaws.
 
- 
-> Thank you very much for your concern on our work.
-> 
-> First of all, I have to say that the batman-adv V has performed very good in our recent tests.
-> The main reason why it performed poor when we tested it  is the cfg80211 bug.
-> When we made the test in Jan. we did not know about the cfg80211 uninitialization bug.
-> We never thought of this kind of bug at that time, which is far beyond our scope.
-
-Thanks for checking that. In the light of this and the other problems 
-mentioned in my mail, it would be a good idea to retract the paper with the 
-wrong information and revisit the topic with a new paper. I would be really 
-interested in your results and the overhead comparison - but when comparing 
-the different B.A.T.M.A.N. algorithm versions instead of bugs in other 
-components.
-
-This paper now could cause problems when other research use it as base for 
-their own research - not noticing that this paper is flawed.
-
-@kekegai@smart-com.org: Are you handling the retraction of CSCloud/EdgeCom 2018
-conference papers [1]?
-
-> I noticed this problem in the mail-list until in June.
-> 
-> Recently, I tried to fix the bug by modified the cfg80211 source code, ref https://patchwork.kernel.org/patch/10449857/ 
 [...]
-> Some tests have revealed that V has very good performance, at least not bad than IV.
-> We will report our results after more careful tests.
+> The following is the email I tried to send before. Just for reference.
+>=20
+> I'll continue to work on the batman-adv algorithms and report our result =
+to the community.
+[...]
+> =E5=8F=91=E4=BB=B6=E4=BA=BA=EF=BC=9A heishuihe2008@163.com
+> =E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4=EF=BC=9A 2018-03-22 16:29
+> =E6=94=B6=E4=BB=B6=E4=BA=BA=EF=BC=9A b.a.t.m.a.n
+> =E4=B8=BB=E9=A2=98=EF=BC=9A What's the exact definition of expected_throu=
+ghput in BATMAN-ADV V?
+> Dear all,
+>=20
+> I'm working on a wireless mesh network based on 802.11.
+>=20
+> When I tried to test the BATMAN-ADV V, I got very poor performance compar=
+ed to version IV.
+>=20
+> I guessed the reason was V had much more management costs than IV.
 
-Thanks
+As we now know - most likely not the main contributor. But we will only kno=
+w=20
+it when proper tests have been done.
 
+> Recently I found that the throughput metric was not reliable, probably.
+> The expected_throughput value from cfg80211_get_station is different from=
+ the one with batctl tp.
+> Which one is the correct?
 
-> Here is my response of your questions.
-> 
-> ************************************************************************************** 
-> * What is OpenWrt 1703? (you've referenced a batman-adv config tutorial here 
->   and there is no such version as OpenWrt 1703)
-> 
-> ANS: 
-> The base OpenWrt we used was built near in Sep.  2017, with
-> git clone https://git.lede-project.org/source.git
-> 
-> I think the OpenWrt version should be LEDE 17.01.03
+Depends on what you actually consider correct. cfg80211_get_station should=
+=20
+provide a similar value as `batctl tp` for single hop tests with only a
+single possible link. The first one is done by the driver (actually the=20
+rate control minstrel in many cases) and is hopefully correctly=20
+implemented. Unfortunately, some driver do it completely wrong and=20
+return the PHY rate and some don't implement it at all.
 
-No, this would *not* result in LEDE 17.01.3 (released in Oct 3, 2017) - 
-because you would have to specify the correct branch branch (actually the 
-correct tag). The work on the stable versions v17.01.x was separated from the 
-rest of the development with the branch created on on 2017-01-16. And your
-commands will neither use the separate branch or the actual commit - it will 
-just use whatever master is at that time. Rather bad when somebody wants to 
-understand how to reproduce the results of your experiment.
+batctl tp on the other hand is currently not used for the metric. It uses a=
+=20
+minimal stream protocol to transfer data from the current host to the=20
+specified host. It doesn't have to be a neighbor and you cannot specify whi=
+ch=20
+path it takes. The specified host will acknowledge the received data and th=
+e=20
+sender can calculate the successfully transmitted bytes using that. In its=
+=20
+current form, it is not useful for B.A.T.M.A.N. V and can only be used for=
+=20
+minimal performance tests in the mesh.
 
-Please make sure in your revisited paper that you make correct 
-statements about the used software (LEDE vs. OpenWrt, git tags or actual git 
-version's, applied patches, used feed versions, ...). Btw. there was just an 
-actual OpenWrt release (after v15.05.1): 18.06.0 [3].
+> Does it mean the wireless driver does't support expected_throughput?
 
-And also make sure that you're references are actually about the software. 
-Right now your paper makes wrong statements about that kind of stuff.
+Cannot say this for sure. The driver has to be checked. But your output=20
+suggest that you are using minstrel_ht - which provides an implementation f=
+or=20
+expected_throughput. But many kernel versions contain a cfg80211_get_statio=
+n=20
+which isn't correctly initializing the sinfo structure - thus returning
+uninitialized expected_throughput values in some situations.
 
-* don't call it OpenWRT when it is LEDE
-* don't name it 1703 when there is no such version and you've actually used 
-  the development branch
-* don't add a reference for OpenWRT 1703 which is then pointing to an 
-  unrelated config tutorial on open-mesh.org
+> How to get the correct expected_throughput from wireless driver=EF=BC=9F
 
-Having these incorrect statements in your paper doesn't make it look like it
-is of high quality. And this also causes problems when other try to use your 
-paper as base for their own research.
+In which context? From userspace from a shell maybe?
 
-> **************************************************************************************
-> * When did you want to contact the authors of the B.A.T.M.A.N. V 
->   implementation in batman-adv about your findings?
-> 
-> ANS: 
-> I have tried to contact the community by sending a email to the mail-list,
-> with a title "What's the exact definition of expected_throughput in BATMAN-ADV V?".
-> In that email, I described my concern that the value of the expected_throughput was confused,
-> and asked for help.
-> 
-> Unfortunately there are no response from there.
+Check the output of `iw dev wlan0 station dump` and search for
+"expected throughput". If it isn't there than either your driver doesn't=20
+support it, your 'iw' doesn't support it or it didn't return a valid value
+(for unknown reasons).
 
-There was no such mail on the mailing list [4]. Please make sure that you 
-followed our requirements for this list [5] (no HTML mails). And please use 
-shorter, more concrete subjects than that.
+If you want to get it it via `iw` but instead via nl80211, then please use =
+the=20
+NL80211_STA_INFO_EXPECTED_THROUGHPUT attribute which is sometimes returned =
+for=20
+a NL80211_CMD_GET_STATION request [1].
 
-But it seems that you never contacted the batman-adv developers via the 
-mailing list about the other problems.
+> So I'm wondering that what's the exact definition of expected_throughput?
 
-> **************************************************************************************
-> * How did you solve the cfg80211 bug which returns uninitialized (random)
->   data when asked for the expected throughput of a station? Maybe you remember 
->   that the expected throughput is *the value* which B.A.T.M.A.N. V needs to 
->   calculate routes.
-> 
-> ANS:
-> Our test was done in Jan. 2018 and the paper was submitted in Feb. 2018.
-> At that time, I even had not realized that the problem of expected_throughput
-> was from cfg80211 bug.
+I hope Antonio or Felix can provide a better definition. But I would say it=
+=20
+is:
 
-So your paper therefore (without you noticing) doesn't compare B.A.T.M.A.N. IV 
-vs. B.A.T.M.A.N. V but still tries to establish the narrative that 
-B.A.T.M.A.N. V is worse. 
+  The expected throughput is the number of kilobits per second a user will=
+=20
+  probably transfer (measured on the layers above wifi) when sending data=20
+  directly to this host. This information is calculated based on the past=20
+  experience of the driver (actually the rate control algorithm).
 
+> And what's the difference from tx/rx bitrate?
 
-> **************************************************************************************
-> * What batman-adv version was used?
-> 
-> ANS:
-> I think the version of batman-adv is 2017.3
-> because the source file in OpenWrt named as:
-> batman-adv-2017.3
-> batctl-2017.3
-
-This already shows that you did not use LEDE 17.01.3 - because this version 
-did never include that particular batman-adv release. You were more likely on 
-some random LEDE development branch commit.
-
-> 
-> **************************************************************************************
-> * Did you use the openwrt-routing feed (which exact version) for
->   batctl+batman-adv or how did you build it?
-> 
-> ANS:
-> Here are the main scripts.
-> git clone https://git.lede-project.org/source.git
-> ./scripts/feeds update -a
-> ./scripts/feeds install -a
-> 
-> make download V=s
-> make V=99
-> 
-> At last I flushed the generated 2 files:
-> lede-ar71xx-generic-uImage-lzma.bin
-> lede-ar71xx-generic-root.squashfs
-
-These instruction will result in different version depending on when you run 
-them. Neither the used LEDE commit is specified here nor the used feed commit.
-
-> **************************************************************************************
-> * Did you generate graphs for the chosen best next hop and how it changes
->   over time in comparison to B.A.T.M.A.N. IV?
->  
-> ANS:
-> I had checked the route by batctl ping -R xxx.xxx.xxx.xxx
-> Unfortunately, we did not record and compare the route between IV and V.
-
-I am currently assuming that the chosen routes were wrong because of the 
-cfg80211 bug [6]. Your brief tests with the fixed cfg80211 seem to suggest 
-this but no way to check this now.
+TX/RX bitrate is the raw wifi bitrate. It is much higher than the expected=
+=20
+throughput in most cases because it doesn't contains correction factors for=
+=20
+packet loss, IFS/aggregation and so on. And it is just the info about a=20
+single frame which was received/transmitted - not a more complex value=20
+calculated based on the statistics gathered from the past transfers.
 
 Kind regards,
 	Sven
 
-> [1] https://ieeexplore.ieee.org/document/8421863/
-[2] https://en.wikipedia.org/wiki/Posting_style#Interleaved_style
-[3] https://github.com/openwrt/openwrt/releases/tag/v18.06.0
-[4] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/
-[5] https://www.open-mesh.org/projects/open-mesh/wiki/MailingList
-[6] https://patchwork.kernel.org/patch/10449857/
---nextPart5442372.lcDNdbP7x8
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git/tree/stati=
+on.c?id=3D6ab936f0458c62b1de3a5af8af8d9a3b092cbfac#n412
+[2] https://patchwork.kernel.org/patch/10449857/
+--nextPart7790082.9CvXBLSOjj
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltxNfgACgkQXYcKB8Em
-e0aYlRAAwO7tURh8v9uI+e+2A6uM3LaL2qRwIx4fyfXQ0zN30VZyYQqIARcOzulE
-5xCh5CH2Aoth8HU9KA5euGhtvSj+DdxYmqZpEMrhXt0eJvoKlMHtSPT5EfvGrn8P
-YpZesbO/weZwsxLwbFthwdtcSoVI+j+yV//ln10Q+d1ViPx4bHGyi6FxmAlyAW99
-JH3bZYoEsPDnwr+9pEaRgadsNxR3DX0r6E17I3ChQUIBqt1asfHsh3B6FtzWSD0h
-9WHtOlphHcl4lBQk7YqY4cpSZDsVohW+Ai8nBPt0Cu0+CwrD1G/HFcyQcTLIHiry
-1VnenKDjapom942kFhb7qriOcPk9SM3sjUfyvW3xhELZBDBOs0IgWC7FVLFxJKIX
-Npj+tsSlTI/t1sXmaYBZTtpdgK7OoBIn0A3oyS9fqwjpc8jv1sX4h0v0uHsOVAAh
-6Nz9G63L6uJRsbTI3cHLfGHH2nOd3BzNtTku/Qi5gEJC5gLVYUPSCMn1lnSBKQqq
-SWfuOkK9BpX8YYSoyE4LOZ6grsQulv8VQuCmSae4UnC0UQKqZ66KJDI3CaLWGYvI
-CRMju7tLbV0aoBt6Ik4NACngVyffn+eLuDusALqpKyLniI889Qk5b6/kUTeD9y4C
-3/QBx1OPJ4LMM2CyHyTUd+Dj17ryyf+DgMoNW6vaBQPkZdFwbG4=
-=scLv
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAltyfLAACgkQXYcKB8Em
+e0YdIQ//WpPbiBZRgMLButwOmyNkE42WTlAuDzqnN1xDuQgmssGeWP9XHaYmHXn/
+lOQmey/WGuUdofOsYhH8eCPnyfrPr65woWXSqTV450eN+Ked95sonRMaePeM/+1u
+zYtbWaFDhS0EJu7D7zrrQyjeovx8H1xhzl7rAejlBKwFYwy33iWs7hQNbyZQ/gri
+ww0Ex0W6eBrVScJa6PUACpn/RJoej6DZXtLgQCf5j/ly8PxSfegmQixjbrgFhkjW
+UmhKLBdXdCt+YZ21495srJ+TRiKFNCi+l76fmrXyGjAbo625Za/1/3ap9qJUV+dg
+xvDz7I6Tw4ZQ93IWoje7AwOWbzyiXno9Hy6/5q/mELN1SnbhJPXJYx8yLgVw3knE
+f0gcRQcXyBtsvH9k7/2LbVq7ps7Wuibg8J26EflGh0p41VJkJKYFw7ybcLZA6pxc
+iFBP9AIiNSYGKXux9wRlJ7HlOoUHfCrm6w9JecRpltAFkNEBpxhpMKZj5mLAsQxG
+OIY15F4v2yK1Q6ue6plbljFQF8edGH9Lmdchk6S3R6291N6uhKtJvFTT22T8Puk9
+2w038QOaYZVXSwzKgiS969B/1jbbr/F3HKkI8Yz7CPuI7NZenVI2DcU1pg6U4a9P
+tsd3IIFWUKv6p9WHkkm1tfKi8qflwWdcoO7/zH2AUeknWiC4Sy8=
+=q3vZ
 -----END PGP SIGNATURE-----
 
---nextPart5442372.lcDNdbP7x8--
+--nextPart7790082.9CvXBLSOjj--
 
 
 
