@@ -1,16 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 31 Aug 2018 20:16:31 +0800
-Message-ID: <2087861.tpEfN19RDO@rousseau>
-In-Reply-To: <3991773.ZLWj8GO7DM@bentobox>
-References: <2791173.mX5NbDZpiX@sven-edge>
- <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
- <3991773.ZLWj8GO7DM@bentobox>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2737007.V2qbDAUteA";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Recent test result. Re:Re: Paper "Performance
- Evaluation of BATMAN-adv Wireless Mesh Network Routing Algorithms "
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 31 Aug 2018 15:08:44 +0200
+Message-Id: <20180831130844.5434-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Avoid probe ELP
+ information leak
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,60 +14,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Ligang LIU <heishuihe2008@163.com>, a@unstable.cc
 
---nextPart2737007.V2qbDAUteA
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The probe ELPs for WiFi interfaces are expanded to contain at least
+BATADV_ELP_MIN_PROBE_SIZE bytes. This is usually a lot more than the
+number of bytes which the template ELP packet requires.
 
-On Friday, 31 August 2018 18:30:00 HKT Sven Eckelmann wrote:
-> > I noticed 2 macro definitons.
-> > #define BATADV_ELP_PROBES_PER_NODE 2
-> > #define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
-> > I wonder why it sends 2 prob ELP packets to each neighbour.
-> > Can I change the value of BATADV_ELP_PROBES_PER_NODE from 2 to 1?
-> > And can I decrease ELP prob packet size from 200 to 100, in order to
-> > decrase the ELP airtime?
-> @Antonio, @Marek: Maybe you can explain it better than me.
-> 
-> I would guess that Antonio wanted to make sure that the rate control
-> algorithm of the driver probes enough and thus provides a more realistic
-> expected throughput.
+These extra padding bytes were not initialized and thus could contain data
+which were previously stored at the same location. It is therefore required
+to set it to some predefined or random values to avoid leaking private
+information from the system transmitting these kind of packets.
 
-Feel free to change these values to test if this has any impact. As far as I 
-am aware, these number are the result of an educated guess based on how 
-minstrel works. Antonio can shed more light on this.
+Fixes: bedcadfaa92b ("batman-adv: ELP - send unicast ELP packets for throughput sampling")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_v_elp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-> And you can just use elp_interval [2] to reduce the number of times
-> broadcast and unicast ELP frames are transmitted. 
-
-I don't think unicast ELP were supposed to be affected by changing the 
-elp_interval. Smells like a bug to me. Antonio ?
-
-Cheers,
-Marek
-
-
-
---nextPart2737007.V2qbDAUteA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluJMZ8ACgkQU1VOj+62
-HMDYEggAs1t1QVQVeAG6S3JaSy9ns0OAyAFimEzIA7k6wdwx0vqkrpjN3MqSP5MF
-RIxUYM5g+51wWE7KOJR3mvRFTSkrf33M+TRP0/27I6loNcmsdNbfphuZUTCuGEMx
-WHfblhgJ7HY4fmsnsk7ZyfX6QV6VtybAAyp8I90Bflh6W1AYsriAJT6qEOrLHpLd
-S2+oZ3Faxd3adEh4tOJ1z3DGH5tHHlqyfyB+cJWr5OopT0Qxp8Cvnhz21iPXYIDp
-aRRTi6ugtvsijSKMYrCBvimbdIHZ1dBObod2ynFEZEhnkwGBv1MOwPbtQT/HKAt/
-lbN4Twot54nlBFkF2NrWBK+XOmFQsg==
-=8RG1
------END PGP SIGNATURE-----
-
---nextPart2737007.V2qbDAUteA--
-
-
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 71c20c1d..e103c759 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -241,7 +241,7 @@ batadv_v_elp_wifi_neigh_probe(struct batadv_hardif_neigh_node *neigh)
+ 		 * the packet to be exactly of that size to make the link
+ 		 * throughput estimation effective.
+ 		 */
+-		skb_put(skb, probe_len - hard_iface->bat_v.elp_skb->len);
++		skb_put_zero(skb, probe_len - hard_iface->bat_v.elp_skb->len);
+ 
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "Sending unicast (probe) ELP packet on interface %s to %pM\n",
+-- 
+2.18.0
 
