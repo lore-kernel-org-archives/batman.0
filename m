@@ -1,13 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Aug 2018 11:06:30 +0200
-Message-ID: <2950360.XQPVAlnd6X@bentobox>
-In-Reply-To: <1e3a0849.c275.1658a0b9176.Coremail.heishuihe2008@163.com>
+Return-Path: <heishuihe2008@163.com>
+Date: Fri, 31 Aug 2018 17:52:39 +0800 (CST)
+From: "Ligang LIU" <heishuihe2008@163.com>
+In-Reply-To: <2950360.XQPVAlnd6X@bentobox>
 References: <2791173.mX5NbDZpiX@sven-edge> <3703195.ExmNLY8AJ8@bentobox>
  <1e3a0849.c275.1658a0b9176.Coremail.heishuihe2008@163.com>
+ <2950360.XQPVAlnd6X@bentobox>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=GBK
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1638291.E8EZIUobyM";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID: <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
 Subject: Re: [B.A.T.M.A.N.] Recent test result. Re:Re: Paper "Performance
  Evaluation of BATMAN-adv Wireless Mesh Network Routing Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,77 +20,105 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Ligang LIU <heishuihe2008@163.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1638291.E8EZIUobyM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Donnerstag, 30. August 2018 16:55:38 CEST Ligang LIU wrote:
-> >[...]
-> >> One strange thing. Can I ignore this waring, even if I think the wifi driver is ok?
-> >> [   30.628792] batman_adv: bat0: WiFi driver or ethtool info does not provide information about link speeds on interface wlan1, therefore defaulting to hardcoded throughput values of 1.0 Mbps. Consider overriding the throughput manually or checking your driver.
-> >[...]
-> >
-> >I would say that you cannot ignore it because it means that the wifi driver 
-> >didn't provide the expected throughput for a station.
-> >
-> >But it is most likely better to let Marek and/or Antonio answer this question.
-> 
-> I said it's strange because it seems the throughput value is acttually updated when batman is running, even there is a warning.
-
-Maybe it was just not available when batman-adv asked the first time.
-
-> >Btw. please structure you mails better. I will not read through this 400KB+ 
-> >text mail just to find your annotations and questions. One which I saw but 
-> >which should be answered by a different person is "6-node case".
-> >
-> I described the main results.
-> And the attahed log is just for whom interested in finding the reason. It could be ignored for the others.
-> 
-> I have to emphasize that, the tests show that the output route of V is ok but the delay and throughput are bad. We should try to find where's gone the bandwidth. Do you have any suggestion about it?
-
-Since there is still the problem that the ELP messages are potentially sent 
-too often for low quality links (which also need the automatic retries by the 
-wifi driver/hw). Did you try to increase the interval [1]? Just to make sure
-that they don't use the complete airtime.
-
-
-There was also this odd wifi problem which somehow was (maybe) 
-triggered or caused by B.A.T.M.A.N. V: https://www.open-mesh.org/issues/341
-Unfortunately, the discussion with the reporter was rather frustrating and at 
-the end stopped completely.
-
-When I remember it correctly, the wifi performance of all nodes (even when not 
-sending data over the batman-adv interface) was rather bad when some 
-B.A.T.M.A.N. V nodes were around (and one of the nodes disappeared?).
-
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/Tweaking#ELP-interval
---nextPart1638291.E8EZIUobyM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluHs5YACgkQXYcKB8Em
-e0ZH7xAAn8qcBrVYHFyejX3AsfyQe07V+LwdtNU+suh1eBusSxU2Fj70XibmVbfH
-hBjFlc1RT298Ply86KGrfrafI6e5NJtnIqJXb88PeRsskinze5daQhddF3e9CvgO
-V0CQzEB1Q4E8qjk9ZcWmMJ3/S2ZFmosKscy6FoFb66NFEJJpItrZbeiDWWTbuzQd
-au9PaGBvZzdPOZ3jm4jLmZiMii6pkOqyhtHF9jccrZ3lurxZN6WEUvEkSf2B/bHt
-ad4WgaG5cvYMF8opRj6NmFPYU73Q9Eefrb2cZaK+KjgytbpAusph94vaY0aYYlV2
-ZhQ3cPR7UBXntZjgjzSui3AUlfaScAkTnGE/RyVB4uFbSzZG/4r73IhADbUY/RU8
-UUIqwnV0jGCbhk1IkXjQd3Elz1KJG+yoQovJQ7xUDOPqVVlkIxalLbxKjeK8x6Ze
-d6ke3RISdzNlsKjEqNuiZhNTI21dqg58rBrzSRv16qSzZz/PMAOXuU/eOqMIEH+B
-lGPUjwsPrz1j8awQek7nFRC1ShS2RpU2CIKKJ7SESTDQ4CBeunqZnW/1lPqlQomc
-kNSzENM8/XbQzWTpMPzsn+e304TC8RVKW1cTuQVOzo/ia0XziRxougmy4oDBtH9X
-4Zizbt3ssrhLKAF1/G5cxvQmUJNqK5B6N0MIQCrr5XpDc5mMZQo=
-=FCHL
------END PGP SIGNATURE-----
-
---nextPart1638291.E8EZIUobyM--
-
+RGVhciBhbGwsCgpJIGNhcHR1cmVkIDgwMi4xMSBmcmFtZXMgb2YgQkFUTUFOLWFkdiBWLgoKSGVy
+ZSBpcyB0aGUgc2NyaXB0IHRvIGRvIHRoaXMuCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09Cml3IHBoeSBwaHkxIGludGVyZmFjZSBhZGQgbW9uMCB0eXBlIG1v
+bml0b3IKaWZjb25maWcgbW9uMCB1cAppZmNvbmZpZyBtb24wCnRjcGR1bXAgLWMgMjAwMCAtaSBt
+b24wIC15IElFRUU4MDJfMTFfUkFESU8gLXcgbW9uMC5wY2FwCj09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09CgpJIGNoZWNrZWQgdGhlIC5wY2FwIGZpbGUgaW4g
+d2lyZXNoYXJrIGFuZCBmb3VuZCA0IHR5cGUgb2YgcGFja2V0czoKMS4gbWFueSB1bmljYXN0IHBh
+Y2tldHMsIHdpdGggbGVuZ3RoIG9mIDIwMCBieXRlcy4gSSBndWVzcyBpdCdzIEVMUCB1bmljYXN0
+LgoyLiBzb21lIGJhdG1hbi1hZHYgYnJvYWRjYXN0IHBhY2tldHMgb2YgNTYgYnl0ZXMgbGVuZ3Ro
+LiBJIGd1ZXNzIGl0J3MgT0dNMj8KMy4gc2V2ZXJhbCBiYXRtYW4tYWR2IGJyb2FkY2FzdCBwYWNr
+ZXRzIG9mIDE2IGJ5dGVzIGxlbmd0aC4gSXQncyA/Pz8KMy4gbWFueSBydHMvY3RzL2FjayBwYWNr
+ZXRzLgo0LiBzb21lIGJlYWNvbiBmcmFtZXMuCgpIZXJlIGlzIGEgRUxQIHVuaWNhc3QgcGFja2V0
+IHNhbXBsZS4KMTY6NDM6NDMuNDM4MzY3IDI2NzAwNTk4MjU1dXMgdHNmdCAyNDYyIE1IeiAxMW4g
+YW50ZW5uYSAwIDcuMiBNYi9zIE1DUyAwIDIwIE1IeiBzaG9ydCBHSSBSWC1TVEJDMCAwMDowMDow
+ZDoxODowODowMiAob3VpIFVua25vd24pID4gMDA6MDA6MGQ6MTg6MDg6MDYgKG91aSBVbmtub3du
+KSBTTkFQLCBldGhlcnR5cGUgVW5rbm93biAoMHg0MzA1KSwgbGVuZ3RoIDIwMDogCiAgICAgICAg
+MHgwMDAwOiAgYWFhYSAwMzAwIDAwMDAgNDMwNSAwMzBmIDAwMDAgMGQxOCAwODAyICAuLi4uLi5D
+Li4uLi4uLi4uCiAgICAgICAgMHgwMDEwOiAgMDAwMCAwMDAwIDAwMDAgMDAwMCA4N2YzIDYwMDAg
+ODAwZSAwNDg4ICAuLi4uLi4uLi4uYC4uLi4uCiAgICAgICAgMHgwMDIwOiAgMDAwMCAwMDAwIDAw
+MDAgMDAwMSA4Nzg1IGU1NTAgMDAwMCAwMDAxICAuLi4uLi4uLi4uLlAuLi4uCiAgICAgICAgMHgw
+MDMwOiAgMDAwMCAwMDAxIDAwMDAgMDAwMCAwODAwIDAwMDAgZmZmZiBmZmZmICAuLi4uLi4uLi4u
+Li4uLi4uCiAgICAgICAgMHgwMDQwOiAgZmZmZiAwMDAwIDBkMTggMDgwMiAwMDExIDIyMzMgNDQ1
+OCAwMDM5ICAuLi4uLi4uLi4uIjNEWC45CiAgICAgICAgMHgwMDUwOiAgYWFhYSAwMzAwIDAwMDAg
+NDMwNSAwMzBmIDAwMDAgMGQxOCAwODAyICAuLi4uLi5DLi4uLi4uLi4uCiAgICAgICAgMHgwMDYw
+OiAgMjA0YiA0MDc1IDAwMDAgMDFmNCBmZmZmIGZmZmYgMDQwMSAwMDE0ICAuS0B1Li4uLi4uLi4u
+Li4uCiAgICAgICAgMHgwMDcwOiAgMDEwMSAwMDAyIDU2Y2IgNjIyNCA4MDAwIDAwMDAgNjMyYyBi
+ZjNkICAuLi4uVi5iJC4uLi5jLC49CiAgICAgICAgMHgwMDgwOiAgMDAwMCAwMDVmIDA2MDIgMDAw
+NCAwNzAwIDAwMDAgMDIwMSAwMDAwICAuLi5fLi4uLi4uLi4uLi4uCiAgICAgICAgMHgwMDkwOiAg
+ODMzMyBhYWZmIDAwMDAgYWFmZiAwMDAwIGMwMDUgMDAwMCAwMGZjICAuMy4uLi4uLi4uLi4uLi4u
+CiAgICAgICAgMHgwMGEwOiAgZmZkZCAxODAwIDUwZjIgMDIwMSAwMTgwIDAwMDMgYTQwMCAwMDI3
+ICAuLi4uUC4uLi4uLi4uLi4nCiAgICAgICAgMHgwMGIwOiAgYTQwMCAwMDQyIDQzNWUgMDA2MiAz
+MjJmIDAwZGQgMDkwMCAwMzdmICAuLi5CQ14uYjIvLi4uLi4uCiAgICAgICAgMHgwMGMwOiAgMDEw
+MSAwMDAwIGZmN2YgZGQxOCA4Y2JlIGJlMDEgMDEwMSAwMjAyICAuLi4uLi4uLi4uLi4uLi4uCgpI
+ZXJlIGlzIGEgNTYgYnl0ZXMgKE9HTTI/KSBwYWNrZXQuCjE3OjA4OjQyLjI0MTg4MyAyODIwOTQ4
+ODMxNHVzIHRzZnQgMTguMCBNYi9zIDI0NjIgTUh6IDExZyAtNzNkQm0gc2lnbmFsIC03NWRCbSBz
+aWduYWwgYW50ZW5uYSAwIC03N2RCbSBzaWduYWwgYW50ZW5uYSAxIDAwOjAwOjBkOjE4OjA4OjA1
+IChvdWkgVW5rbm93bikgPiBCcm9hZGNhc3QgU05BUCwgZXRoZXJ0eXBlIFVua25vd24gKDB4NDMw
+NSksIGxlbmd0aCA1NjogCiAgICAgICAgMHgwMDAwOiAgYWFhYSAwMzAwIDAwMDAgNDMwNSAwNDBm
+IDMwMDAgMWIzNCBjZDQyICAuLi4uLi5DLi4uMC4uNC5CCiAgICAgICAgMHgwMDEwOiAgMDAwMCAw
+ZDE4IDA4MDIgMDAyNCAwMDAwIDAwNGQgMDQwMSAwMDE0ICAuLi4uLi4uJC4uLk0uLi4uCiAgICAg
+ICAgMHgwMDIwOiAgMDEwMSAwMDAyIDU2Y2IgNjIyNCA4MDAwIDAwMDAgNjMyYyBiZjNkICAuLi4u
+Vi5iJC4uLi5jLC49CiAgICAgICAgMHgwMDMwOiAgMDAwMCAwMDVmIDA2MDIgMDAwNCAwNzAwIDAw
+MDAgMDIwMSAwMDAwICAuLi5fLi4uLi4uLi4uLi4uCgpIZXJlIGlzIGEgMTYgYnl0ZXMgYmF0bWFu
+LWFkdiBwYWNrZXQuCjE3OjA4OjQyLjI1ODUyMiAyODIwOTUwNDkyMXVzIHRzZnQgMTguMCBNYi9z
+IDI0NjIgTUh6IDExZyAtNzhkQm0gc2lnbmFsIC04NGRCbSBzaWduYWwgYW50ZW5uYSAwIC04MGRC
+bSBzaWduYWwgYW50ZW5uYSAxIDAwOjAwOjBkOjE4OjA4OjAxIChvdWkgVW5rbm93bikgPiBCcm9h
+ZGNhc3QgU05BUCwgZXRoZXJ0eXBlIFVua25vd24gKDB4NDMwNSksIGxlbmd0aCAxNjogCiAgICAg
+ICAgMHgwMDAwOiAgYWFhYSAwMzAwIDAwMDAgNDMwNSAwMzBmIDAwMDAgMGQxOCAwODAxICAuLi4u
+Li5DLi4uLi4uLi4uCiAgICAgICAgMHgwMDEwOiAgYTMzMyBhNzgxIDAwMDAgMDFmNCAgICAgICAg
+ICAgICAgICAgICAgICAuMy4uLi4uLgoKSSB3aWxsIHRyeSB0byBpbmNyZWFzZSB0aGUgRUxQIGlu
+dGVydmFsIGFuZCBjaGVjayB0aGUgcGVyZm9ybWFuY2UgYWdhaW4uCgpJIG5vdGljZWQgMiBtYWNy
+byBkZWZpbml0b25zLgojZGVmaW5lIEJBVEFEVl9FTFBfUFJPQkVTX1BFUl9OT0RFIDIKI2RlZmlu
+ZSBCQVRBRFZfRUxQX01JTl9QUk9CRV9TSVpFIDIwMCAvKiBieXRlcyAqLwpJIHdvbmRlciB3aHkg
+aXQgc2VuZHMgMiBwcm9iIEVMUCBwYWNrZXRzIHRvIGVhY2ggbmVpZ2hib3VyLgpDYW4gSSBjaGFu
+Z2UgdGhlIHZhbHVlIG9mIEJBVEFEVl9FTFBfUFJPQkVTX1BFUl9OT0RFIGZyb20gMiB0byAxPwpB
+bmQgY2FuIEkgZGVjcmVhc2UgRUxQIHByb2IgcGFja2V0IHNpemUgZnJvbSAyMDAgdG8gMTAwLCBp
+biBvcmRlciB0byBkZWNyYXNlIHRoZSBFTFAgYWlydGltZT8KCllvdXJzIFNpbmNlcmVseQpMaWdh
+bmcKCkF0IDIwMTgtMDgtMzAgMTc6MDY6MzAsICJTdmVuIEVja2VsbWFubiIgPHN2ZW5AbmFyZmF0
+aW9uLm9yZz4gd3JvdGU6Cj5PbiBEb25uZXJzdGFnLCAzMC4gQXVndXN0IDIwMTggMTY6NTU6Mzgg
+Q0VTVCBMaWdhbmcgTElVIHdyb3RlOgo+PiA+Wy4uLl0KPj4gPj4gT25lIHN0cmFuZ2UgdGhpbmcu
+IENhbiBJIGlnbm9yZSB0aGlzIHdhcmluZywgZXZlbiBpZiBJIHRoaW5rIHRoZSB3aWZpIGRyaXZl
+ciBpcyBvaz8KPj4gPj4gWyAgIDMwLjYyODc5Ml0gYmF0bWFuX2FkdjogYmF0MDogV2lGaSBkcml2
+ZXIgb3IgZXRodG9vbCBpbmZvIGRvZXMgbm90IHByb3ZpZGUgaW5mb3JtYXRpb24gYWJvdXQgbGlu
+ayBzcGVlZHMgb24gaW50ZXJmYWNlIHdsYW4xLCB0aGVyZWZvcmUgZGVmYXVsdGluZyB0byBoYXJk
+Y29kZWQgdGhyb3VnaHB1dCB2YWx1ZXMgb2YgMS4wIE1icHMuIENvbnNpZGVyIG92ZXJyaWRpbmcg
+dGhlIHRocm91Z2hwdXQgbWFudWFsbHkgb3IgY2hlY2tpbmcgeW91ciBkcml2ZXIuCj4+ID5bLi4u
+XQo+PiA+Cj4+ID5JIHdvdWxkIHNheSB0aGF0IHlvdSBjYW5ub3QgaWdub3JlIGl0IGJlY2F1c2Ug
+aXQgbWVhbnMgdGhhdCB0aGUgd2lmaSBkcml2ZXIgCj4+ID5kaWRuJ3QgcHJvdmlkZSB0aGUgZXhw
+ZWN0ZWQgdGhyb3VnaHB1dCBmb3IgYSBzdGF0aW9uLgo+PiA+Cj4+ID5CdXQgaXQgaXMgbW9zdCBs
+aWtlbHkgYmV0dGVyIHRvIGxldCBNYXJlayBhbmQvb3IgQW50b25pbyBhbnN3ZXIgdGhpcyBxdWVz
+dGlvbi4KPj4gCj4+IEkgc2FpZCBpdCdzIHN0cmFuZ2UgYmVjYXVzZSBpdCBzZWVtcyB0aGUgdGhy
+b3VnaHB1dCB2YWx1ZSBpcyBhY3R0dWFsbHkgdXBkYXRlZCB3aGVuIGJhdG1hbiBpcyBydW5uaW5n
+LCBldmVuIHRoZXJlIGlzIGEgd2FybmluZy4KPgo+TWF5YmUgaXQgd2FzIGp1c3Qgbm90IGF2YWls
+YWJsZSB3aGVuIGJhdG1hbi1hZHYgYXNrZWQgdGhlIGZpcnN0IHRpbWUuCj4KPj4gPkJ0dy4gcGxl
+YXNlIHN0cnVjdHVyZSB5b3UgbWFpbHMgYmV0dGVyLiBJIHdpbGwgbm90IHJlYWQgdGhyb3VnaCB0
+aGlzIDQwMEtCKyAKPj4gPnRleHQgbWFpbCBqdXN0IHRvIGZpbmQgeW91ciBhbm5vdGF0aW9ucyBh
+bmQgcXVlc3Rpb25zLiBPbmUgd2hpY2ggSSBzYXcgYnV0IAo+PiA+d2hpY2ggc2hvdWxkIGJlIGFu
+c3dlcmVkIGJ5IGEgZGlmZmVyZW50IHBlcnNvbiBpcyAiNi1ub2RlIGNhc2UiLgo+PiA+Cj4+IEkg
+ZGVzY3JpYmVkIHRoZSBtYWluIHJlc3VsdHMuCj4+IEFuZCB0aGUgYXR0YWhlZCBsb2cgaXMganVz
+dCBmb3Igd2hvbSBpbnRlcmVzdGVkIGluIGZpbmRpbmcgdGhlIHJlYXNvbi4gSXQgY291bGQgYmUg
+aWdub3JlZCBmb3IgdGhlIG90aGVycy4KPj4gCj4+IEkgaGF2ZSB0byBlbXBoYXNpemUgdGhhdCwg
+dGhlIHRlc3RzIHNob3cgdGhhdCB0aGUgb3V0cHV0IHJvdXRlIG9mIFYgaXMgb2sgYnV0IHRoZSBk
+ZWxheSBhbmQgdGhyb3VnaHB1dCBhcmUgYmFkLiBXZSBzaG91bGQgdHJ5IHRvIGZpbmQgd2hlcmUn
+cyBnb25lIHRoZSBiYW5kd2lkdGguIERvIHlvdSBoYXZlIGFueSBzdWdnZXN0aW9uIGFib3V0IGl0
+Pwo+Cj5TaW5jZSB0aGVyZSBpcyBzdGlsbCB0aGUgcHJvYmxlbSB0aGF0IHRoZSBFTFAgbWVzc2Fn
+ZXMgYXJlIHBvdGVudGlhbGx5IHNlbnQgCj50b28gb2Z0ZW4gZm9yIGxvdyBxdWFsaXR5IGxpbmtz
+ICh3aGljaCBhbHNvIG5lZWQgdGhlIGF1dG9tYXRpYyByZXRyaWVzIGJ5IHRoZSAKPndpZmkgZHJp
+dmVyL2h3KS4gRGlkIHlvdSB0cnkgdG8gaW5jcmVhc2UgdGhlIGludGVydmFsIFsxXT8gSnVzdCB0
+byBtYWtlIHN1cmUKPnRoYXQgdGhleSBkb24ndCB1c2UgdGhlIGNvbXBsZXRlIGFpcnRpbWUuCj4K
+Pgo+VGhlcmUgd2FzIGFsc28gdGhpcyBvZGQgd2lmaSBwcm9ibGVtIHdoaWNoIHNvbWVob3cgd2Fz
+IChtYXliZSkgCj50cmlnZ2VyZWQgb3IgY2F1c2VkIGJ5IEIuQS5ULk0uQS5OLiBWOiBodHRwczov
+L3d3dy5vcGVuLW1lc2gub3JnL2lzc3Vlcy8zNDEKPlVuZm9ydHVuYXRlbHksIHRoZSBkaXNjdXNz
+aW9uIHdpdGggdGhlIHJlcG9ydGVyIHdhcyByYXRoZXIgZnJ1c3RyYXRpbmcgYW5kIGF0IAo+dGhl
+IGVuZCBzdG9wcGVkIGNvbXBsZXRlbHkuCj4KPldoZW4gSSByZW1lbWJlciBpdCBjb3JyZWN0bHks
+IHRoZSB3aWZpIHBlcmZvcm1hbmNlIG9mIGFsbCBub2RlcyAoZXZlbiB3aGVuIG5vdCAKPnNlbmRp
+bmcgZGF0YSBvdmVyIHRoZSBiYXRtYW4tYWR2IGludGVyZmFjZSkgd2FzIHJhdGhlciBiYWQgd2hl
+biBzb21lIAo+Qi5BLlQuTS5BLk4uIFYgbm9kZXMgd2VyZSBhcm91bmQgKGFuZCBvbmUgb2YgdGhl
+IG5vZGVzIGRpc2FwcGVhcmVkPykuCj4KPktpbmQgcmVnYXJkcywKPglTdmVuCj4KPlsxXSBodHRw
+czovL3d3dy5vcGVuLW1lc2gub3JnL3Byb2plY3RzL2JhdG1hbi1hZHYvd2lraS9Ud2Vha2luZyNF
+TFAtaW50ZXJ2YWwK
