@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 31 Aug 2018 16:46:48 +0200
-Message-Id: <20180831144648.24032-2-sven@narfation.org>
+Date: Fri, 31 Aug 2018 16:56:29 +0200
+Message-Id: <20180831145629.26332-1-sven@narfation.org>
 In-Reply-To: <20180831144648.24032-1-sven@narfation.org>
 References: <20180831144648.24032-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix segfault when
+Subject: [B.A.T.M.A.N.] [PATCH maint v2 2/2] batman-adv: Fix segfault when
  writing to sysfs elp_interval
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -37,11 +37,15 @@ to a segfault or to memory corruption.
 Fixes: ec46535b8275 ("batman-adv: Add hard_iface specific sysfs wrapper macros for UINT")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+v2:
+
+* changed how ifname gets initialized (not sure why I've added \0)
+
  net/batman-adv/sysfs.c | 25 +++++++++++++++++--------
  1 file changed, 17 insertions(+), 8 deletions(-)
 
 diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 3a76e897..b2e7bb51 100644
+index 3a76e897..09427fc6 100644
 --- a/net/batman-adv/sysfs.c
 +++ b/net/batman-adv/sysfs.c
 @@ -188,7 +188,8 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
@@ -74,7 +78,7 @@ index 3a76e897..b2e7bb51 100644
  				  unsigned int min, unsigned int max,
  				  atomic_t *attr)
  {
-+	char ifname[IFNAMSIZ + 3] = "\0";
++	char ifname[IFNAMSIZ + 3] = "";
  	unsigned long uint_val;
  	int ret;
  
