@@ -1,11 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 31 Aug 2018 16:56:29 +0200
-Message-Id: <20180831145629.26332-1-sven@narfation.org>
-In-Reply-To: <20180831144648.24032-1-sven@narfation.org>
-References: <20180831144648.24032-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint v2 2/2] batman-adv: Fix segfault when
- writing to sysfs elp_interval
+Date: Sat, 01 Sep 2018 11:08:45 +0200
+Message-ID: <3277849.7XWcqIUx8F@sven-edge>
+In-Reply-To: <3991773.ZLWj8GO7DM@bentobox>
+References: <2791173.mX5NbDZpiX@sven-edge>
+ <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
+ <3991773.ZLWj8GO7DM@bentobox>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2637531.fTVqlZoqRh";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Recent test result. Re:Re: Paper "Performance
+ Evaluation of BATMAN-adv Wireless Mesh Network Routing Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,113 +20,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Ligang LIU <heishuihe2008@163.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, mareklindner@neomailbox.ch
 
-The per hardif sysfs file "batman_adv/elp_interval" is using the generic
-functions to store/show uint values. The helper __batadv_store_uint_attr
-requires the softif net_device as parameter to print the resulting change
-as info text when the users writes to this file. It uses the helper
-function batadv_info to add it at the same time to the kernel ring buffer
-and to the batman-adv debug log (when CONFIG_BATMAN_ADV_DEBUG is enabled).
+--nextPart2637531.fTVqlZoqRh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The function batadv_info requires as first parameter the batman-adv softif
-net_device. This parameter is then used to find the private buffer which
-contains the debug log for this batman-adv interface. But
-batadv_store_throughput_override used as first argument the slave
-net_device. This slave device doesn't have the batadv_priv private data
-which is access by batadv_info.
+On Freitag, 31. August 2018 12:30:00 CEST Sven Eckelmann wrote:
+> Especially because this frame will now be dropped over some interfaces. We 
+> already saw this in the past with fragmented frames [1]. You can increase the 
+> size in batadv_v_elp_iface_enable by adding the number x to the alloc and the 
+> skb_put. For example 44 to get to the minimum ethernet frame size:
+> 
+>     hard_iface->bat_v.elp_skb = dev_alloc_skb(size + 44);
+>     ...
+>     elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN + 44);
 
-Writing to this file with CONFIG_BATMAN_ADV_DEBUG enabled can either lead
-to a segfault or to memory corruption.
+Just as clarification: This should not be relevant for your problem. It was 
+just observed that the ELP [0] documentation talks about more padding. The 
+underlying driver is usually only adding extra padding when required (e.g. 60 
+bytes ethernet).
 
-Fixes: ec46535b8275 ("batman-adv: Add hard_iface specific sysfs wrapper macros for UINT")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2:
 
-* changed how ifname gets initialized (not sure why I've added \0)
+More relevant here would be whether the duration in the RTS/CTS frames look 
+odd. Or what else prevents the devices in your six node setup from sending 
+between each other.
 
- net/batman-adv/sysfs.c | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+Kind regards,
+	Sven
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 3a76e897..09427fc6 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -188,7 +188,8 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 									\
- 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
- 					_post_func, attr,		\
--					&bat_priv->_var, net_dev);	\
-+					&bat_priv->_var, net_dev,	\
-+					NULL);	\
- }
- 
- #define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
-@@ -262,7 +263,9 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 									\
- 	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
- 					  _post_func, attr,		\
--					  &hard_iface->_var, net_dev);	\
-+					  &hard_iface->_var,		\
-+					  hard_iface->soft_iface,	\
-+					  net_dev);			\
- 									\
- 	batadv_hardif_put(hard_iface);				\
- 	return length;							\
-@@ -356,10 +359,12 @@ __batadv_store_bool_attr(char *buff, size_t count,
- 
- static int batadv_store_uint_attr(const char *buff, size_t count,
- 				  struct net_device *net_dev,
-+				  struct net_device *slave_dev,
- 				  const char *attr_name,
- 				  unsigned int min, unsigned int max,
- 				  atomic_t *attr)
- {
-+	char ifname[IFNAMSIZ + 3] = "";
- 	unsigned long uint_val;
- 	int ret;
- 
-@@ -385,8 +390,11 @@ static int batadv_store_uint_attr(const char *buff, size_t count,
- 	if (atomic_read(attr) == uint_val)
- 		return count;
- 
--	batadv_info(net_dev, "%s: Changing from: %i to: %lu\n",
--		    attr_name, atomic_read(attr), uint_val);
-+	if (slave_dev)
-+		snprintf(ifname, sizeof(ifname), "%s: ", slave_dev->name);
-+
-+	batadv_info(net_dev, "%s: %sChanging from: %i to: %lu\n",
-+		    attr_name, ifname, atomic_read(attr), uint_val);
- 
- 	atomic_set(attr, uint_val);
- 	return count;
-@@ -397,12 +405,13 @@ static ssize_t __batadv_store_uint_attr(const char *buff, size_t count,
- 					void (*post_func)(struct net_device *),
- 					const struct attribute *attr,
- 					atomic_t *attr_store,
--					struct net_device *net_dev)
-+					struct net_device *net_dev,
-+					struct net_device *slave_dev)
- {
- 	int ret;
- 
--	ret = batadv_store_uint_attr(buff, count, net_dev, attr->name, min, max,
--				     attr_store);
-+	ret = batadv_store_uint_attr(buff, count, net_dev, slave_dev,
-+				     attr->name, min, max, attr_store);
- 	if (post_func && ret)
- 		post_func(net_dev);
- 
-@@ -571,7 +580,7 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- 	return __batadv_store_uint_attr(buff, count, 1, BATADV_TQ_MAX_VALUE,
- 					batadv_post_gw_reselect, attr,
- 					&bat_priv->gw.sel_class,
--					bat_priv->soft_iface);
-+					bat_priv->soft_iface, NULL);
- }
- 
- static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
--- 
-2.18.0
+[0] https://www.open-mesh.org/projects/batman-adv/wiki/ELP#section-9
+--nextPart2637531.fTVqlZoqRh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluKVx0ACgkQXYcKB8Em
+e0a9DQ//VkgL9F0u6UYQX5QGL903ysq1ajaRtJEFHJ+QAXCB+9twDpdG6bhX0N4s
+nrwV60mXzO+/lPpDhpfaYIBY76MOG9rXBh8rMiGKz2uc7GHvvP8UydOC0KzR6AJh
+8NzwPCVzX8otNTncuoAezGHECPLtGcDJ/qEuKrlWXC+EZnyKY7T+CKH4dJpld76C
+70248l3Mr1Fg54abd2LZu9wlCq6k4WS5erJRHY7BsgwW0OoZlpAagku8KQBQ0MK0
+tc+vjaj4C9Plv+gDpKXZ4st9NEubE00ecE1RHAE2kurLBq7ZaJj9nOqbSQ41ocZ6
+AcrolDAiLx3v3stKOTDl2ZY72O/lx83aF0QP0idUc1HQlc8+lLp3AfCOBkH5MlLb
+jgMJ8KumlKMT0eZWKKXm72ymXtuD/o//FzEAfI13zFMand22gJkFTOF0nyalr9du
+LQfvd6awV7Ssexz/AWGrZM28qKF1/XrTKQm/HZ49v/oRH5iIJoXFqNr9RHA+iUKD
+HeY5o1tjgzzOq0m8hRCCjzzWCUAiSacybtsMyyjV8v8NH2i2ZIxcougAeA3n5Vb7
+RUE5V5rnBGJyqZuzaXK3QHSuGRsrVsrD1hZj85kqC2wfZda82Prh9Z3vECQcoJ8w
+A18vtHVc5jdlTgVVwbbnkX2VHbjaVdf1YrAcwHqCfRSznjEBwr8=
+=/Dbn
+-----END PGP SIGNATURE-----
+
+--nextPart2637531.fTVqlZoqRh--
+
+
 
