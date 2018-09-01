@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 01 Sep 2018 11:08:45 +0200
-Message-ID: <3277849.7XWcqIUx8F@sven-edge>
-In-Reply-To: <3991773.ZLWj8GO7DM@bentobox>
+Return-Path: <a@unstable.cc>
 References: <2791173.mX5NbDZpiX@sven-edge>
  <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
- <3991773.ZLWj8GO7DM@bentobox>
+ <3991773.ZLWj8GO7DM@bentobox> <2087861.tpEfN19RDO@rousseau>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <68a21394-e8ac-2fb1-2132-901ea4c0e610@unstable.cc>
+Date: Sat, 1 Sep 2018 17:33:35 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2637531.fTVqlZoqRh";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <2087861.tpEfN19RDO@rousseau>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="gNoBe1zGKGDUQ9vVNoAXw53OVHwJgnIMe"
 Subject: Re: [B.A.T.M.A.N.] Recent test result. Re:Re: Paper "Performance
  Evaluation of BATMAN-adv Wireless Mesh Network Routing Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,59 +22,102 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Ligang LIU <heishuihe2008@163.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, mareklindner@neomailbox.ch
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2637531.fTVqlZoqRh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--gNoBe1zGKGDUQ9vVNoAXw53OVHwJgnIMe
+Content-Type: multipart/mixed; boundary="QWgHZWxp3w881JsFg5ENUt6blIVgorAfN";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: Ligang LIU <heishuihe2008@163.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+Message-ID: <68a21394-e8ac-2fb1-2132-901ea4c0e610@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] Recent test result. Re:Re: Paper "Performance
+ Evaluation of BATMAN-adv Wireless Mesh Network Routing Algorithms "
+References: <2791173.mX5NbDZpiX@sven-edge>
+ <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
+ <3991773.ZLWj8GO7DM@bentobox> <2087861.tpEfN19RDO@rousseau>
+In-Reply-To: <2087861.tpEfN19RDO@rousseau>
 
-On Freitag, 31. August 2018 12:30:00 CEST Sven Eckelmann wrote:
-> Especially because this frame will now be dropped over some interfaces. We 
-> already saw this in the past with fragmented frames [1]. You can increase the 
-> size in batadv_v_elp_iface_enable by adding the number x to the alloc and the 
-> skb_put. For example 44 to get to the minimum ethernet frame size:
-> 
->     hard_iface->bat_v.elp_skb = dev_alloc_skb(size + 44);
->     ...
->     elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN + 44);
+--QWgHZWxp3w881JsFg5ENUt6blIVgorAfN
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-Just as clarification: This should not be relevant for your problem. It was 
-just observed that the ELP [0] documentation talks about more padding. The 
-underlying driver is usually only adding extra padding when required (e.g. 60 
-bytes ethernet).
+Hi,
+
+On 31/08/18 20:16, Marek Lindner wrote:
+> On Friday, 31 August 2018 18:30:00 HKT Sven Eckelmann wrote:
+>>> I noticed 2 macro definitons.
+>>> #define BATADV_ELP_PROBES_PER_NODE 2
+>>> #define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
+>>> I wonder why it sends 2 prob ELP packets to each neighbour.
+>>> Can I change the value of BATADV_ELP_PROBES_PER_NODE from 2 to 1?
+>>> And can I decrease ELP prob packet size from 200 to 100, in order to
+>>> decrase the ELP airtime?
+>> @Antonio, @Marek: Maybe you can explain it better than me.
+>>
+>> I would guess that Antonio wanted to make sure that the rate control
+>> algorithm of the driver probes enough and thus provides a more realist=
+ic
+>> expected throughput.
+>=20
+> Feel free to change these values to test if this has any impact. As far=
+ as I=20
+> am aware, these number are the result of an educated guess based on how=
+=20
+> minstrel works. Antonio can shed more light on this.
+
+As Marek stated above, these constants are defined so that Minstrel has
+always enough samples to trigger a throughput re-computation for every
+ELP interval.
+
+If less data is available, Minstrel won't compute a fresh expected
+throughput.
+Therefore after every ELP interval batman-adv checks if during the last
+100ms (BATADV_ELP_PROBE_MAX_TX_DIFF) the node had sent any payload data
+to a given neighbour. If not, then it will send the unicast probes.
+
+This means that if you already have enough data over the link, no
+unicast ELP messages should be sent (thus these constants won't be used).=
 
 
-More relevant here would be whether the duration in the RTS/CTS frames look 
-odd. Or what else prevents the devices in your six node setup from sending 
-between each other.
+To conclude: if you have no data over the link, sending 2 probes of
+200bytes each every 500ms (default ELP interval) won't really eat much
+airtime, unless you have a lot of idling 1-hop neighbours.
 
-Kind regards,
-	Sven
+I hope this helps.
 
-[0] https://www.open-mesh.org/projects/batman-adv/wiki/ELP#section-9
---nextPart2637531.fTVqlZoqRh
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--QWgHZWxp3w881JsFg5ENUt6blIVgorAfN--
+
+--gNoBe1zGKGDUQ9vVNoAXw53OVHwJgnIMe
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluKVx0ACgkQXYcKB8Em
-e0a9DQ//VkgL9F0u6UYQX5QGL903ysq1ajaRtJEFHJ+QAXCB+9twDpdG6bhX0N4s
-nrwV60mXzO+/lPpDhpfaYIBY76MOG9rXBh8rMiGKz2uc7GHvvP8UydOC0KzR6AJh
-8NzwPCVzX8otNTncuoAezGHECPLtGcDJ/qEuKrlWXC+EZnyKY7T+CKH4dJpld76C
-70248l3Mr1Fg54abd2LZu9wlCq6k4WS5erJRHY7BsgwW0OoZlpAagku8KQBQ0MK0
-tc+vjaj4C9Plv+gDpKXZ4st9NEubE00ecE1RHAE2kurLBq7ZaJj9nOqbSQ41ocZ6
-AcrolDAiLx3v3stKOTDl2ZY72O/lx83aF0QP0idUc1HQlc8+lLp3AfCOBkH5MlLb
-jgMJ8KumlKMT0eZWKKXm72ymXtuD/o//FzEAfI13zFMand22gJkFTOF0nyalr9du
-LQfvd6awV7Ssexz/AWGrZM28qKF1/XrTKQm/HZ49v/oRH5iIJoXFqNr9RHA+iUKD
-HeY5o1tjgzzOq0m8hRCCjzzWCUAiSacybtsMyyjV8v8NH2i2ZIxcougAeA3n5Vb7
-RUE5V5rnBGJyqZuzaXK3QHSuGRsrVsrD1hZj85kqC2wfZda82Prh9Z3vECQcoJ8w
-A18vtHVc5jdlTgVVwbbnkX2VHbjaVdf1YrAcwHqCfRSznjEBwr8=
-=/Dbn
+iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAluKXPMACgkQB6U8WA7y
+zXT5gA/+PvP7Ut4R36X7CZ3zUuMqpTtUKxmqL1sF6E9+ZXPg/jrReeyQlaRZ4o+h
+iqcg/OQ8T61j77bEzUPTsrvweE3Dbw23Yw1nnV0pxw9RdBKekCPnUSdCxpRUPIxq
+hsjxOoHuDtBclpzI5ko58xX5qeszMfvBKv04gYTCMUsh00dqJ5rqaTjkjjdD8bII
+FCxi/IHLz7qH1ytBamsdQ6fKP/7dIMVNkErCP8xgu8aUXCv+POFd8TJ3wpWxLtQN
+1KFALcJpoKB2+AQcjekHMEoo6GBHWSwsVE0KD34OSkcpEWDwofpWjJn5dM6gUTqc
+hSHypTJ8W8dEi9I/Tp6yuWBVvc9VgPzsL5gIbHRImd7cldCLDExxSmiaWU/06LnA
+C0QXe193MBGo4mjG4wgaxiFDwflOXIzn0hGqYmK3f1Q3Skh5WmIn2PkEBdr/NyO+
+O7YC9gytXQ3VuXhGb9F3APIbMyU2bgMwJyo07K63t2Dd+oE3GAaEj/QBno6dyIZh
+XWL6qnSA3LCI+Hc3PZpuSthp5/vDXpp56WKYVmL17JATPKCnIMjalkQUOwVgvALl
+LG+0GlcKc4VxeLaBycn6GOnlzQvhGSJ5LJow/4Xbt1pFJa9O1LHn1w/A/PWdZTaD
+HOfrtOHZJFAdyGKLR+dFS2jtXe5xZcAsuiCc8rY4q4IwoxivkCA=
+=D5jm
 -----END PGP SIGNATURE-----
 
---nextPart2637531.fTVqlZoqRh--
-
-
-
+--gNoBe1zGKGDUQ9vVNoAXw53OVHwJgnIMe--
