@@ -1,17 +1,16 @@
-Return-Path: <heishuihe2008@163.com>
-Date: Mon, 3 Sep 2018 12:03:07 +0800 (CST)
-From: "Ligang LIU" <heishuihe2008@163.com>
-In-Reply-To: <3991773.ZLWj8GO7DM@bentobox>
-References: <2791173.mX5NbDZpiX@sven-edge> <2950360.XQPVAlnd6X@bentobox>
- <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
- <3991773.ZLWj8GO7DM@bentobox>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 03 Sep 2018 08:25:05 +0200
+Message-ID: <3183122.uSX0CgPaFQ@bentobox>
+In-Reply-To: <2246411.730f.1659d99341d.Coremail.heishuihe2008@163.com>
+References: <2791173.mX5NbDZpiX@sven-edge> <3991773.ZLWj8GO7DM@bentobox>
+ <2246411.730f.1659d99341d.Coremail.heishuihe2008@163.com>
 MIME-Version: 1.0
-Message-ID: <2246411.730f.1659d99341d.Coremail.heishuihe2008@163.com>
-Subject: [B.A.T.M.A.N.] mcast_rate setting of wifi interface has significant
- effect to performance of V. Re:Re: Recent test result. Re:Re: Paper
- "Performance Evaluation of BATMAN-adv Wireless Mesh Network Routing
+Content-Type: multipart/signed; boundary="nextPart4957786.098iAonMLE";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] mcast_rate setting of wifi interface has
+ significant effect to performance of V. Re:Re: Recent test result. Re:Re:
+ Paper "Performance Evaluation of BATMAN-adv Wireless Mesh Network Routing
  Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,91 +21,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Ligang LIU <heishuihe2008@163.com>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, a@unstable.cc, mareklindner@neomailbox.ch
 
-SGksIGRlYXIgYWxsLAoKVGhhbmtzIGEgbG90IHRvIGNsYXJpZnkgbXkgcXVlc3Rpb25zLgoKSSdt
-IGNvbnRpbnVpbmcgdG8gdGVzdCBpbiBteSBkZXBsb3ltZW50IGFuZCBoYXMgZm91bmQgYW4gaW50
-ZXJlc3RpbmcgdGhpbmc6ClRoZSBtY2FzdF9yYXRlIHNldHRpbmcgb2Ygd2lmaSBpbnRlcmZhY2Ug
-aGFzIHNpZ25pZmljZW50IGVmZmVjdCB0byBwZXJmb3JtYW5jZSBvZiBWLAp3aGlsZSBpdCBkb2Vz
-IG5vdCBhZmZlY3QgYmF0bWFuLWFkdiBJViB0b28gbXVjaC4KCmNvbmZpZyB3aWZpLWlmYWNlICdk
-ZWZhdWx0X3JhZGlvMScKICAgICAgICBvcHRpb24gbWNhc3RfcmF0ZSAnMTgwMDAnCiAgICAgICAg
-Li4uLi4uCgpJIGdlbmVyYXRlZCB0aGUgd2lyZWxlc3MgY29uZmlndXJhdGlvbiBpbiB3ZWIgcGFn
-ZSBhbmQgdGhlcmUgaXMgbm8gbWNhc3RfcmF0ZSBzZXR0aW5nIGZvciBhZGhvYyBtb2RlLiBXaGVu
-IEkgbm90aWNlZCB0aGUgbGluZSAib3B0aW9uIG1jYXN0X3JhdGUgJzE4MDAwJyIgaW4gdGhlIGJh
-dG1hbi1hZHYgd2lraSBwYWdlLCBJIHRyaWVkIHRvIHNldCBtY2FzdF9yYXRlIGFuZCByZXBlYXRl
-ZCB0aGUgdGVzdC4gSSBmaW5kIHRoYXQsIHdpdGggbWNhc3RfcmF0ZSBzZXR0aW5nLCBiYXRtYW4t
-YWR2IElWIHdpbGwgZ2V0IHNvbWUgcGVyZm9ybWFuY2UgaW1wcm92ZW1lbnQsIGFuZCB0aGUgcGVy
-Zm9ybWFuY2Ugb2YgYmF0bWFuLWFkdiBWIGhhcyBzaWduaWZpY2FudGx5IGltcHJvdmVkLgoKSSdt
-IG5vdyB0cnlpbmcgdG8gdW5kZXJzdGFuZCBob3cgdGhlIG1jYXN0X3JhdGUgYWZmZWN0cyB0aGUg
-cGVyZm9ybWFuY2Ugb2YgdGhlIGFkaG9jIG5ldHdvcmsuIElmIG1vcmUgdGVzdHMgY2FuIHZlcmlm
-eSB0aGUgaW1wb3J0YW5jZSBvZiB0aGlzIHNldHRpbmcsIEkgc28gc3VnZ2VzdCB0aGF0IGl0IHNo
-b3VsZCBiZSBoaWdobGlnaHRlZCBmb3IgdGhlIGVuZCB1c2VycyBvZiB0aGUgYmF0bWFuLWFkdiwg
-ZXNwZWNpYWxseSBmb3IgdGhlIG5ldyBvbmVzLiBGb3IgdGhlIE9wZW5XUlQgc3lzdGVtLCBpZiBt
-Y2FzdF9yYXRlIGNhbiBiZSBhdXRvbWF0aWNhbGx5IHNldCBmb3IgdGhlIGFkaG9jIG1vZGUsIG9y
-IHRoZSByZWxhdGVkIHdlYiBwYWdlIGNhbiBleHBsaWNpdGx5IHByb3ZpZGUgYSB1c2VyIGludGVy
-ZmFjZSAgdG8gc2V0IG1jYXN0X3JhdGUgaW4gYWRob2MgbW9kZSwgaXQgc2hvdWxkIGJlIG1vcmUg
-ZW5kIHVzZXIgZnJpZW5kbHkuCgpJIGhvcGUgbXkgdGVzdHMgY2FuIGJlIGhlbHBmdWwgdG8gaW1w
-cm92ZSB0aGUgYmF0bWFuLWFkdiBWIGFuZCB5b3VyIGNvbW1lbnRzIGFuZCBzdWdnZXN0aW9ucyBh
-cmUgYXBwcmVjaWF0ZWQuCgpIZXJlIGFyZSB0aGUgdGVzdCByZXN1bHRzLCBmb3IgeW91ciByZWZl
-cmVuY2UsIHdoZXJlIHRoZSBwZXJmb3JtYW5jZSBvZiBWIHdpdGhvdXQgbWNhc3RfcmF0ZSBzZXR0
-aW5nIGlzIG5vdCBwcm92aWRlZCBiZWNhdXNlIGl0IGlzIGFsbW9zdCBub3QgYWNjZXB0YWJsZS4g
-SXQgY2FuIGJlIGFsc28gZm91bmQgdGhhdCBJViBwZXJmb3JtcyBiZXR0ZXIgb3ZlciBWIGFuZCBJ
-IHdpbGwgZG8gbW9yZSB0ZXN0cywgZm9sbG93aW5nIHRoZSBzdWdnZXN0aW9ucyBpbiB5b3VyIHBy
-ZXZpb3VzIGVtYWlscywgdG8gaW1wcm92ZSB0aGUgcGVyZm9ybWFuY2Ugb2YgVi4KCmRlbGF5KG1z
-KQkKVG8gKElWIHdpdGggbWNhc3QpCShJViB3aXRob3V0IG1jYXN0KQkoViB3aXRoIG1jYXN0KQpu
-MQkxLjUwOCAJNC44NTIgCTEwLjA2OSAKbjIJMC41NjMgCTMuNDM1IAkxNy4wNDEgCm4zCTIuMTgz
-IAkyOS4zNTAgCTI1Ljg1MSAKbjUJMS44ODUgCTIuNDI4IAkxOC4wNzEgCm42CTEuMTkzIAk1Ljg1
-MiAJNzMuNTE5IApuNwkwLjU0NyAJMi4zMTQgCTIuNTA0IAoKdGhyb3VnaHB1dChNYnBzKQpUbyAo
-SVYgd2l0aCBtY2FzdCkJKElWIHdpdGhvdXQgbWNhc3QpCShWIHdpdGggbWNhc3QpCm4xCTcuNjUw
-IAk0Ljc0MCAJMi43NzAgCm4yCTcuNzUwIAk4LjQ2MCAJMi42NDAgCm4zCTEuMjAwIAkwLjM3MiAJ
-MC4wMDAgCm41CTguNjMwIAk2Ljk2MCAJNC40MjAgCm42CTIuODMwIAk1Ljc3MCAJMC41NzggCm43
-CTI1LjAwMCAJMjEuNjAwIAkxNi45MDAgCgpZb3VycyBTaW5jZXJlbHkKTGlnYW5nCgoKQXQgMjAx
-OC0wOC0zMSAxODozMDowMCwgIlN2ZW4gRWNrZWxtYW5uIiA8c3ZlbkBuYXJmYXRpb24ub3JnPiB3
-cm90ZToKPk9uIEZyZWl0YWcsIDMxLiBBdWd1c3QgMjAxOCAxNzo1MjozOSBDRVNUIExpZ2FuZyBM
-SVUgd3JvdGU6Cj4+IDEuIG1hbnkgdW5pY2FzdCBwYWNrZXRzLCB3aXRoIGxlbmd0aCBvZiAyMDAg
-Ynl0ZXMuIEkgZ3Vlc3MgaXQncyBFTFAgdW5pY2FzdC4KPj4gMi4gc29tZSBiYXRtYW4tYWR2IGJy
-b2FkY2FzdCBwYWNrZXRzIG9mIDU2IGJ5dGVzIGxlbmd0aC4gSSBndWVzcyBpdCdzIE9HTTI/Cj4+
-IDMuIHNldmVyYWwgYmF0bWFuLWFkdiBicm9hZGNhc3QgcGFja2V0cyBvZiAxNiBieXRlcyBsZW5n
-dGguIEl0J3MgPz8/Cj4KPkZpcnN0IHR3byBhcmUgY29ycmVjdCBhbmQgdGhlIHRoZSAxNiBieXRl
-cyBvbmUgaXMgdGhlIGJyb2FkY2FzdCBFTFAuIEkgCj5wZXJzb25hbGx5IGhhdmUgbm8gaWRlYSBh
-dCB0aGUgbW9tZW50IHdoeSB0aGUgcmVxdWVzdGVkIHBhZGRpbmcgWzBdIHdhcyBub3QgCj5pbXBs
-ZW1lbnRlZC4KPgo+RXNwZWNpYWxseSBiZWNhdXNlIHRoaXMgZnJhbWUgd2lsbCBub3cgYmUgZHJv
-cHBlZCBvdmVyIHNvbWUgaW50ZXJmYWNlcy4gV2UgCj5hbHJlYWR5IHNhdyB0aGlzIGluIHRoZSBw
-YXN0IHdpdGggZnJhZ21lbnRlZCBmcmFtZXMgWzFdLiBZb3UgY2FuIGluY3JlYXNlIHRoZSAKPnNp
-emUgaW4gYmF0YWR2X3ZfZWxwX2lmYWNlX2VuYWJsZSBieSBhZGRpbmcgdGhlIG51bWJlciB4IHRv
-IHRoZSBhbGxvYyBhbmQgdGhlIAo+c2tiX3B1dC4gRm9yIGV4YW1wbGUgNDQgdG8gZ2V0IHRvIHRo
-ZSBtaW5pbXVtIGV0aGVybmV0IGZyYW1lIHNpemU6Cj4KPiAgICBoYXJkX2lmYWNlLT5iYXRfdi5l
-bHBfc2tiID0gZGV2X2FsbG9jX3NrYihzaXplICsgNDQpOwo+ICAgIC4uLgo+ICAgIGVscF9idWZm
-ID0gc2tiX3B1dF96ZXJvKGhhcmRfaWZhY2UtPmJhdF92LmVscF9za2IsIEJBVEFEVl9FTFBfSExF
-TiArIDQ0KTsKPgo+Cj4+IDMuIG1hbnkgcnRzL2N0cy9hY2sgcGFja2V0cy4KPgo+SXMgaXQgcG9z
-c2libGUgdGhhdCBSVFMsIENUUyArIHVuaWNhc3QgcmV0cmllcyB0YWtlIG1vc3Qgb2YgdGhlIGFp
-cnRpbWUgaW4gCj55b3VyIHNldHVwPwo+Cj4KPj4gSSBub3RpY2VkIDIgbWFjcm8gZGVmaW5pdG9u
-cy4KPj4gI2RlZmluZSBCQVRBRFZfRUxQX1BST0JFU19QRVJfTk9ERSAyCj4+ICNkZWZpbmUgQkFU
-QURWX0VMUF9NSU5fUFJPQkVfU0laRSAyMDAgLyogYnl0ZXMgKi8KPj4gSSB3b25kZXIgd2h5IGl0
-IHNlbmRzIDIgcHJvYiBFTFAgcGFja2V0cyB0byBlYWNoIG5laWdoYm91ci4KPj4gQ2FuIEkgY2hh
-bmdlIHRoZSB2YWx1ZSBvZiBCQVRBRFZfRUxQX1BST0JFU19QRVJfTk9ERSBmcm9tIDIgdG8gMT8K
-Pj4gQW5kIGNhbiBJIGRlY3JlYXNlIEVMUCBwcm9iIHBhY2tldCBzaXplIGZyb20gMjAwIHRvIDEw
-MCwgaW4gb3JkZXIgdG8gZGVjcmFzZSB0aGUgRUxQIGFpcnRpbWU/Cj4KPkBBbnRvbmlvLCBATWFy
-ZWs6IE1heWJlIHlvdSBjYW4gZXhwbGFpbiBpdCBiZXR0ZXIgdGhhbiBtZS4KPgo+SSB3b3VsZCBn
-dWVzcyB0aGF0IEFudG9uaW8gd2FudGVkIHRvIG1ha2Ugc3VyZSB0aGF0IHRoZSByYXRlIGNvbnRy
-b2wgYWxnb3JpdGhtIAo+b2YgdGhlIGRyaXZlciBwcm9iZXMgZW5vdWdoIGFuZCB0aHVzIHByb3Zp
-ZGVzIGEgbW9yZSByZWFsaXN0aWMgZXhwZWN0ZWQgCj50aHJvdWdocHV0Lgo+Cj5CdXQgSSB3b3Vs
-ZCBndWVzcyB0aGF0IHRoZSBzaXplIGRvZXNuJ3QgbWF0dGVyIG11Y2guIEl0IGlzIG1vcmUgbGlr
-ZWx5IHRoYXQgCj5hbGwgdGhlIHN0dWZmIGFyb3VuZCB0aGUgYWN0dWFsIGRhdGEgZnJhbWUgKHJ0
-cywgY3RzLCBJRlMsIC4uLikgdGFrZXMgbW9yZSAKPmFpcnRpbWUuCj4KPgo+QW5kIHlvdSBjYW4g
-anVzdCB1c2UgZWxwX2ludGVydmFsIFsyXSB0byByZWR1Y2UgdGhlIG51bWJlciBvZiB0aW1lcyBi
-cm9hZGNhc3QgCj5hbmQgdW5pY2FzdCBFTFAgZnJhbWVzIGFyZSB0cmFuc21pdHRlZC4gQnV0IHll
-cywgcmVkdWNpbmcgdGhlIG51bWJlciBvZiBwcm9iZXMgCj5wZXIgbm9kZSBtaWdodCBhbHNvIGJl
-IGludGVyZXN0aW5nLiBUaGVyZSBpcyBhbHNvIEJBVEFEVl9FTFBfUFJPQkVfTUFYX1RYX0RJRkYg
-Cj50byByZWR1Y2UgdGhlIHRpbWUgZXZlbiBmdXJ0aGVyIC0gYnV0IGFjY29yZGluZyB0byBhIGNv
-bW1lbnQgWzNdLCB0aGlzIG1heQo+bWFrZSBwcm9ibGVtcyB3aXRoIG1pbnN0cmVsLiBCdXQgSSBh
-bSBub3QgcmVhbGx5IHN1cmUgYWJvdXQgdGhhdCBiZWNhdXNlIHRoZQo+ZGVmYXVsdCBlbHBfaW50
-ZXJ2YWwgKDUwMG1zKSBpcyBhbHNvIGFscmVhZHkgbGFyZ2VyIHRoYW4gMTAwbXMuCj4KPktpbmQg
-cmVnYXJkcywKPglTdmVuCj4KPlswXSBodHRwczovL3d3dy5vcGVuLW1lc2gub3JnL3Byb2plY3Rz
-L2JhdG1hbi1hZHYvd2lraS9FTFAjc2VjdGlvbi05Cj5bMV0gaHR0cHM6Ly9naXQub3Blbi1tZXNo
-Lm9yZy9iYXRtYW4tYWR2LmdpdC9jb21taXQvMTFhMGM5MGI0MzkxOTBmZDZhMTA0Y2FhYzVkNGVm
-MDllMWY2NWE5Ngo+WzJdIGh0dHBzOi8vd3d3Lm9wZW4tbWVzaC5vcmcvcHJvamVjdHMvYmF0bWFu
-LWFkdi93aWtpL1R3ZWFraW5nI0VMUC1pbnRlcnZhbAo+WzNdIGh0dHBzOi8vZ2l0Lm9wZW4tbWVz
-aC5vcmcvYmF0bWFuLWFkdi5naXQvYmxvYi84OWRjYmQ1ZjIzNzNiOTU1ZmM4ZWFiYjkwOWY2MTg4
-YWUzMzExMGI3Oi9uZXQvYmF0bWFuLWFkdi9iYXRfdl9lbHAuYyNsMjE4Cg==
+--nextPart4957786.098iAonMLE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Montag, 3. September 2018 12:03:07 CEST Ligang LIU wrote:
+[...]
+> I'm continuing to test in my deployment and has found an interesting thing:
+> The mcast_rate setting of wifi interface has significent effect to performance of V,
+> while it does not affect batman-adv IV too much.
+> 
+> config wifi-iface 'default_radio1'
+>         option mcast_rate '18000'
+>         ......
+> 
+> I generated the wireless configuration in web page and there is no mcast_rate setting for adhoc mode. When I noticed the line "option mcast_rate '18000'" in the batman-adv wiki page, I tried to set mcast_rate and repeated the test. I find that, with mcast_rate setting, batman-adv IV will get some performance improvement, and the performance of batman-adv V has significantly improved.
+
+Still sounds like something is eating away airtime. Just changing the 
+multicast rate here will just make more room for other frames since the 
+multicast/broadcast packets take less time to get transmitted. There are other 
+effects on the amount of multicast/broadcast packets which will be lost 
+(interesting for B.A.T.M.A.N. IV) but I would guess that we can ignore that at 
+the moment.
+
+
+Did you investigate what is the problem here? Did you play around with the ELP 
+interval? Did you check the RTS/CTS durations? Did you find anything else 
+which eats too much airtime when you compare B.A.T.M.A.N. IV and B.A.T.M.A.N. 
+V? Is the higher ELP broadcast interval (compared to B.A.T.M.A.N IV OGM 
+interval) to blame here or the ELP unicast probes?
+
+> I'm now trying to understand how the mcast_rate affects the performance of the adhoc network. If more tests can verify the importance of this setting, I so suggest that it should be highlighted for the end users of the batman-adv, especially for the new ones. For the OpenWRT system, if mcast_rate can be automatically set for the adhoc mode, or the related web page can explicitly provide a user interface  to set mcast_rate in adhoc mode, it should be more end user friendly.
+
+Please get in touch with the OpenWrt LuCI developers [1] about the OpenWrt 
+"webpage" configuration. We cannot really help you here.
+ 
+> I hope my tests can be helpful to improve the batman-adv V and your comments and suggestions are appreciated.
+
+Since it is not clear at the moment why it happens, we cannot do anything on 
+our end.
+
+Kind regards,
+	Sven
+
+[1] https://github.com/openwrt/luci/
+    http://luci.subsignal.org/trac
+--nextPart4957786.098iAonMLE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluM08EACgkQXYcKB8Em
+e0aCFQ//XNcjWW+fhvZdUAZ3tgrawdswtRG7faiu2KpDGboIrmJ7TE9kMdKAT6Qt
+2IcBF8EPi3fDv0PpPh80BGlYLiRRP+gY7pldvVQKtdAmJruQ7HJV+7Oay3BuOuCJ
+jn3A8zPe0MR2NRmLzJzChu6SBiW4cP9MlDvd9pybk+UIXu6kOoNj0CFj+Uou4R/N
+Nho2DfsavrH05Ggzu4GbQMEs6/DCNDAW8Nx8R3QAKV/kf1XMCQUT/I+8CTbCpEIB
+szzXSJEYDpuuie9hLOA9d6Cq2KLEKB+JA+UTpkskUU/j+LX3XmsZXS7UGvm6VhJ6
+a3V1MOFnojfPorMiR4d+T59ZRLqoEy9p7yuTKBAD9/4e0gFbazicV7AElI5hll7D
+qbCq/igpL0KE+0sI8k2W1ZasytI0rr68HdZr5RBANhg9dczkJwWkIzDVt72KR8fG
+B3agKMm9a4m7gu9vvPNq1ktB+d4pm8CRJBt/t5uGvV2qWxA1nN6JCMKBhKexb3Jz
+DXPri+z6SYFU7LgZtNMsqR7yDMa7dNc89NcFbmCzTNAd9Mse2MwS86fQn/1QbcOR
+LtYUFBYC5hrdMD/qLGdU67Misml5RFj0XwxcbxpL0H1TYNQhY7KralPQS0FUfcQ6
+NkYxwDw0oh5zoLZtxHIqY2WS1GJLc06BhXG70cm5a+92KGGPjVk=
+=8bky
+-----END PGP SIGNATURE-----
+
+--nextPart4957786.098iAonMLE--
+
