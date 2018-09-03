@@ -1,15 +1,18 @@
-Return-Path: <a@unstable.cc>
-References: <20180831130844.5434-1-sven@narfation.org>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <88b5cc09-8844-d306-000d-927beedbbb28@unstable.cc>
-Date: Mon, 3 Sep 2018 00:08:33 +0800
+Return-Path: <heishuihe2008@163.com>
+Date: Mon, 3 Sep 2018 12:03:07 +0800 (CST)
+From: "Ligang LIU" <heishuihe2008@163.com>
+In-Reply-To: <3991773.ZLWj8GO7DM@bentobox>
+References: <2791173.mX5NbDZpiX@sven-edge> <2950360.XQPVAlnd6X@bentobox>
+ <733b64f0.dcd9.1658f661fb2.Coremail.heishuihe2008@163.com>
+ <3991773.ZLWj8GO7DM@bentobox>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=GBK
 MIME-Version: 1.0
-In-Reply-To: <20180831130844.5434-1-sven@narfation.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="sHHn7RrJ2XeHfeUBpIcJXOdSP6icI2jm8"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Avoid probe ELP
- information leak
+Message-ID: <2246411.730f.1659d99341d.Coremail.heishuihe2008@163.com>
+Subject: [B.A.T.M.A.N.] mcast_rate setting of wifi interface has significant
+ effect to performance of V. Re:Re: Recent test result. Re:Re: Paper
+ "Performance Evaluation of BATMAN-adv Wireless Mesh Network Routing
+ Algorithms "
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,78 +22,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, a@unstable.cc, mareklindner@neomailbox.ch
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---sHHn7RrJ2XeHfeUBpIcJXOdSP6icI2jm8
-Content-Type: multipart/mixed; boundary="twD9QEOREYEIzrSil6GLMth2Jxr2ux2PU";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
-Message-ID: <88b5cc09-8844-d306-000d-927beedbbb28@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Avoid probe ELP
- information leak
-References: <20180831130844.5434-1-sven@narfation.org>
-In-Reply-To: <20180831130844.5434-1-sven@narfation.org>
-
---twD9QEOREYEIzrSil6GLMth2Jxr2ux2PU
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On 31/08/18 21:08, Sven Eckelmann wrote:
-> The probe ELPs for WiFi interfaces are expanded to contain at least
-> BATADV_ELP_MIN_PROBE_SIZE bytes. This is usually a lot more than the
-> number of bytes which the template ELP packet requires.
->=20
-> These extra padding bytes were not initialized and thus could contain d=
-ata
-> which were previously stored at the same location. It is therefore requ=
-ired
-> to set it to some predefined or random values to avoid leaking private
-> information from the system transmitting these kind of packets.
->=20
-> Fixes: bedcadfaa92b ("batman-adv: ELP - send unicast ELP packets for th=
-roughput sampling")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-
-Acked-by: Antonio Quartulli <a@unstable.cc>
-
-Great catch Sven!
-It seems like the leakage can be fairly severe, therefore this patch
-should definitely be shipped to stable later.
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---twD9QEOREYEIzrSil6GLMth2Jxr2ux2PU--
-
---sHHn7RrJ2XeHfeUBpIcJXOdSP6icI2jm8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAluMCwYACgkQB6U8WA7y
-zXQoLRAAwFOH1d2iWgiTQeOw3FiAm7zv3NXqGhJsMVGqiA9hj2FvQB/K9F9dxruz
-j8WI4W8JQNLTxKEeqmkEaYk4/ZU8t7RgNbt3hOySByGT2JOJTdqV7xAaD0Bl05TL
-buaWatK8jBRVMWG5yKFoepBQb/RLRhSytH/YP8N5yYJ1iuAA3QP+XUolTQCN/OCR
-iF8tqw17h2EaZGkVNoOLeLEEtgQgI46Ao30q4A2KTRcbIFgptbBrcBZwo0x9+Gwy
-Ya8dCHukkFCOWYaPbL9/Hsn4o3jX7IOGtoQ7q49txsmKjKzx82yJefdGMC0ttXoD
-joz5QB8aJAIlow11rJMMddQMZHZGFTEMu2YYYHr9YXMyQc1Pfw33WxeCo5q5vhoZ
-UpwB1Wm1hjGKizZ9TCRM0POq1sUy4c3vLEQq7Q1445siMv7Q4SnzxefJ8iMfN/e7
-MY27a7ivZrKXQZkdjD7OzPDyLP7QVR4myHCp5wIthFy/40SJziT2jgHJuEcBLL0t
-gumNKiOKv9e9syDVTcpI/lL9RTr4knhftEAawV0zSscb+t+kHER1SDGVeeL9/9vh
-h5OIEO9y8w310f16W4xQd2J8s4ZIsFezd4rVVl3fy9fNRpU48PsSXiG4YR1PkD4L
-Oo9wtdBaXI+mksNb0WYlyByD4qoViyiNu/lWO/8vhPMfkfL5o/E=
-=waEN
------END PGP SIGNATURE-----
-
---sHHn7RrJ2XeHfeUBpIcJXOdSP6icI2jm8--
+SGksIGRlYXIgYWxsLAoKVGhhbmtzIGEgbG90IHRvIGNsYXJpZnkgbXkgcXVlc3Rpb25zLgoKSSdt
+IGNvbnRpbnVpbmcgdG8gdGVzdCBpbiBteSBkZXBsb3ltZW50IGFuZCBoYXMgZm91bmQgYW4gaW50
+ZXJlc3RpbmcgdGhpbmc6ClRoZSBtY2FzdF9yYXRlIHNldHRpbmcgb2Ygd2lmaSBpbnRlcmZhY2Ug
+aGFzIHNpZ25pZmljZW50IGVmZmVjdCB0byBwZXJmb3JtYW5jZSBvZiBWLAp3aGlsZSBpdCBkb2Vz
+IG5vdCBhZmZlY3QgYmF0bWFuLWFkdiBJViB0b28gbXVjaC4KCmNvbmZpZyB3aWZpLWlmYWNlICdk
+ZWZhdWx0X3JhZGlvMScKICAgICAgICBvcHRpb24gbWNhc3RfcmF0ZSAnMTgwMDAnCiAgICAgICAg
+Li4uLi4uCgpJIGdlbmVyYXRlZCB0aGUgd2lyZWxlc3MgY29uZmlndXJhdGlvbiBpbiB3ZWIgcGFn
+ZSBhbmQgdGhlcmUgaXMgbm8gbWNhc3RfcmF0ZSBzZXR0aW5nIGZvciBhZGhvYyBtb2RlLiBXaGVu
+IEkgbm90aWNlZCB0aGUgbGluZSAib3B0aW9uIG1jYXN0X3JhdGUgJzE4MDAwJyIgaW4gdGhlIGJh
+dG1hbi1hZHYgd2lraSBwYWdlLCBJIHRyaWVkIHRvIHNldCBtY2FzdF9yYXRlIGFuZCByZXBlYXRl
+ZCB0aGUgdGVzdC4gSSBmaW5kIHRoYXQsIHdpdGggbWNhc3RfcmF0ZSBzZXR0aW5nLCBiYXRtYW4t
+YWR2IElWIHdpbGwgZ2V0IHNvbWUgcGVyZm9ybWFuY2UgaW1wcm92ZW1lbnQsIGFuZCB0aGUgcGVy
+Zm9ybWFuY2Ugb2YgYmF0bWFuLWFkdiBWIGhhcyBzaWduaWZpY2FudGx5IGltcHJvdmVkLgoKSSdt
+IG5vdyB0cnlpbmcgdG8gdW5kZXJzdGFuZCBob3cgdGhlIG1jYXN0X3JhdGUgYWZmZWN0cyB0aGUg
+cGVyZm9ybWFuY2Ugb2YgdGhlIGFkaG9jIG5ldHdvcmsuIElmIG1vcmUgdGVzdHMgY2FuIHZlcmlm
+eSB0aGUgaW1wb3J0YW5jZSBvZiB0aGlzIHNldHRpbmcsIEkgc28gc3VnZ2VzdCB0aGF0IGl0IHNo
+b3VsZCBiZSBoaWdobGlnaHRlZCBmb3IgdGhlIGVuZCB1c2VycyBvZiB0aGUgYmF0bWFuLWFkdiwg
+ZXNwZWNpYWxseSBmb3IgdGhlIG5ldyBvbmVzLiBGb3IgdGhlIE9wZW5XUlQgc3lzdGVtLCBpZiBt
+Y2FzdF9yYXRlIGNhbiBiZSBhdXRvbWF0aWNhbGx5IHNldCBmb3IgdGhlIGFkaG9jIG1vZGUsIG9y
+IHRoZSByZWxhdGVkIHdlYiBwYWdlIGNhbiBleHBsaWNpdGx5IHByb3ZpZGUgYSB1c2VyIGludGVy
+ZmFjZSAgdG8gc2V0IG1jYXN0X3JhdGUgaW4gYWRob2MgbW9kZSwgaXQgc2hvdWxkIGJlIG1vcmUg
+ZW5kIHVzZXIgZnJpZW5kbHkuCgpJIGhvcGUgbXkgdGVzdHMgY2FuIGJlIGhlbHBmdWwgdG8gaW1w
+cm92ZSB0aGUgYmF0bWFuLWFkdiBWIGFuZCB5b3VyIGNvbW1lbnRzIGFuZCBzdWdnZXN0aW9ucyBh
+cmUgYXBwcmVjaWF0ZWQuCgpIZXJlIGFyZSB0aGUgdGVzdCByZXN1bHRzLCBmb3IgeW91ciByZWZl
+cmVuY2UsIHdoZXJlIHRoZSBwZXJmb3JtYW5jZSBvZiBWIHdpdGhvdXQgbWNhc3RfcmF0ZSBzZXR0
+aW5nIGlzIG5vdCBwcm92aWRlZCBiZWNhdXNlIGl0IGlzIGFsbW9zdCBub3QgYWNjZXB0YWJsZS4g
+SXQgY2FuIGJlIGFsc28gZm91bmQgdGhhdCBJViBwZXJmb3JtcyBiZXR0ZXIgb3ZlciBWIGFuZCBJ
+IHdpbGwgZG8gbW9yZSB0ZXN0cywgZm9sbG93aW5nIHRoZSBzdWdnZXN0aW9ucyBpbiB5b3VyIHBy
+ZXZpb3VzIGVtYWlscywgdG8gaW1wcm92ZSB0aGUgcGVyZm9ybWFuY2Ugb2YgVi4KCmRlbGF5KG1z
+KQkKVG8gKElWIHdpdGggbWNhc3QpCShJViB3aXRob3V0IG1jYXN0KQkoViB3aXRoIG1jYXN0KQpu
+MQkxLjUwOCAJNC44NTIgCTEwLjA2OSAKbjIJMC41NjMgCTMuNDM1IAkxNy4wNDEgCm4zCTIuMTgz
+IAkyOS4zNTAgCTI1Ljg1MSAKbjUJMS44ODUgCTIuNDI4IAkxOC4wNzEgCm42CTEuMTkzIAk1Ljg1
+MiAJNzMuNTE5IApuNwkwLjU0NyAJMi4zMTQgCTIuNTA0IAoKdGhyb3VnaHB1dChNYnBzKQpUbyAo
+SVYgd2l0aCBtY2FzdCkJKElWIHdpdGhvdXQgbWNhc3QpCShWIHdpdGggbWNhc3QpCm4xCTcuNjUw
+IAk0Ljc0MCAJMi43NzAgCm4yCTcuNzUwIAk4LjQ2MCAJMi42NDAgCm4zCTEuMjAwIAkwLjM3MiAJ
+MC4wMDAgCm41CTguNjMwIAk2Ljk2MCAJNC40MjAgCm42CTIuODMwIAk1Ljc3MCAJMC41NzggCm43
+CTI1LjAwMCAJMjEuNjAwIAkxNi45MDAgCgpZb3VycyBTaW5jZXJlbHkKTGlnYW5nCgoKQXQgMjAx
+OC0wOC0zMSAxODozMDowMCwgIlN2ZW4gRWNrZWxtYW5uIiA8c3ZlbkBuYXJmYXRpb24ub3JnPiB3
+cm90ZToKPk9uIEZyZWl0YWcsIDMxLiBBdWd1c3QgMjAxOCAxNzo1MjozOSBDRVNUIExpZ2FuZyBM
+SVUgd3JvdGU6Cj4+IDEuIG1hbnkgdW5pY2FzdCBwYWNrZXRzLCB3aXRoIGxlbmd0aCBvZiAyMDAg
+Ynl0ZXMuIEkgZ3Vlc3MgaXQncyBFTFAgdW5pY2FzdC4KPj4gMi4gc29tZSBiYXRtYW4tYWR2IGJy
+b2FkY2FzdCBwYWNrZXRzIG9mIDU2IGJ5dGVzIGxlbmd0aC4gSSBndWVzcyBpdCdzIE9HTTI/Cj4+
+IDMuIHNldmVyYWwgYmF0bWFuLWFkdiBicm9hZGNhc3QgcGFja2V0cyBvZiAxNiBieXRlcyBsZW5n
+dGguIEl0J3MgPz8/Cj4KPkZpcnN0IHR3byBhcmUgY29ycmVjdCBhbmQgdGhlIHRoZSAxNiBieXRl
+cyBvbmUgaXMgdGhlIGJyb2FkY2FzdCBFTFAuIEkgCj5wZXJzb25hbGx5IGhhdmUgbm8gaWRlYSBh
+dCB0aGUgbW9tZW50IHdoeSB0aGUgcmVxdWVzdGVkIHBhZGRpbmcgWzBdIHdhcyBub3QgCj5pbXBs
+ZW1lbnRlZC4KPgo+RXNwZWNpYWxseSBiZWNhdXNlIHRoaXMgZnJhbWUgd2lsbCBub3cgYmUgZHJv
+cHBlZCBvdmVyIHNvbWUgaW50ZXJmYWNlcy4gV2UgCj5hbHJlYWR5IHNhdyB0aGlzIGluIHRoZSBw
+YXN0IHdpdGggZnJhZ21lbnRlZCBmcmFtZXMgWzFdLiBZb3UgY2FuIGluY3JlYXNlIHRoZSAKPnNp
+emUgaW4gYmF0YWR2X3ZfZWxwX2lmYWNlX2VuYWJsZSBieSBhZGRpbmcgdGhlIG51bWJlciB4IHRv
+IHRoZSBhbGxvYyBhbmQgdGhlIAo+c2tiX3B1dC4gRm9yIGV4YW1wbGUgNDQgdG8gZ2V0IHRvIHRo
+ZSBtaW5pbXVtIGV0aGVybmV0IGZyYW1lIHNpemU6Cj4KPiAgICBoYXJkX2lmYWNlLT5iYXRfdi5l
+bHBfc2tiID0gZGV2X2FsbG9jX3NrYihzaXplICsgNDQpOwo+ICAgIC4uLgo+ICAgIGVscF9idWZm
+ID0gc2tiX3B1dF96ZXJvKGhhcmRfaWZhY2UtPmJhdF92LmVscF9za2IsIEJBVEFEVl9FTFBfSExF
+TiArIDQ0KTsKPgo+Cj4+IDMuIG1hbnkgcnRzL2N0cy9hY2sgcGFja2V0cy4KPgo+SXMgaXQgcG9z
+c2libGUgdGhhdCBSVFMsIENUUyArIHVuaWNhc3QgcmV0cmllcyB0YWtlIG1vc3Qgb2YgdGhlIGFp
+cnRpbWUgaW4gCj55b3VyIHNldHVwPwo+Cj4KPj4gSSBub3RpY2VkIDIgbWFjcm8gZGVmaW5pdG9u
+cy4KPj4gI2RlZmluZSBCQVRBRFZfRUxQX1BST0JFU19QRVJfTk9ERSAyCj4+ICNkZWZpbmUgQkFU
+QURWX0VMUF9NSU5fUFJPQkVfU0laRSAyMDAgLyogYnl0ZXMgKi8KPj4gSSB3b25kZXIgd2h5IGl0
+IHNlbmRzIDIgcHJvYiBFTFAgcGFja2V0cyB0byBlYWNoIG5laWdoYm91ci4KPj4gQ2FuIEkgY2hh
+bmdlIHRoZSB2YWx1ZSBvZiBCQVRBRFZfRUxQX1BST0JFU19QRVJfTk9ERSBmcm9tIDIgdG8gMT8K
+Pj4gQW5kIGNhbiBJIGRlY3JlYXNlIEVMUCBwcm9iIHBhY2tldCBzaXplIGZyb20gMjAwIHRvIDEw
+MCwgaW4gb3JkZXIgdG8gZGVjcmFzZSB0aGUgRUxQIGFpcnRpbWU/Cj4KPkBBbnRvbmlvLCBATWFy
+ZWs6IE1heWJlIHlvdSBjYW4gZXhwbGFpbiBpdCBiZXR0ZXIgdGhhbiBtZS4KPgo+SSB3b3VsZCBn
+dWVzcyB0aGF0IEFudG9uaW8gd2FudGVkIHRvIG1ha2Ugc3VyZSB0aGF0IHRoZSByYXRlIGNvbnRy
+b2wgYWxnb3JpdGhtIAo+b2YgdGhlIGRyaXZlciBwcm9iZXMgZW5vdWdoIGFuZCB0aHVzIHByb3Zp
+ZGVzIGEgbW9yZSByZWFsaXN0aWMgZXhwZWN0ZWQgCj50aHJvdWdocHV0Lgo+Cj5CdXQgSSB3b3Vs
+ZCBndWVzcyB0aGF0IHRoZSBzaXplIGRvZXNuJ3QgbWF0dGVyIG11Y2guIEl0IGlzIG1vcmUgbGlr
+ZWx5IHRoYXQgCj5hbGwgdGhlIHN0dWZmIGFyb3VuZCB0aGUgYWN0dWFsIGRhdGEgZnJhbWUgKHJ0
+cywgY3RzLCBJRlMsIC4uLikgdGFrZXMgbW9yZSAKPmFpcnRpbWUuCj4KPgo+QW5kIHlvdSBjYW4g
+anVzdCB1c2UgZWxwX2ludGVydmFsIFsyXSB0byByZWR1Y2UgdGhlIG51bWJlciBvZiB0aW1lcyBi
+cm9hZGNhc3QgCj5hbmQgdW5pY2FzdCBFTFAgZnJhbWVzIGFyZSB0cmFuc21pdHRlZC4gQnV0IHll
+cywgcmVkdWNpbmcgdGhlIG51bWJlciBvZiBwcm9iZXMgCj5wZXIgbm9kZSBtaWdodCBhbHNvIGJl
+IGludGVyZXN0aW5nLiBUaGVyZSBpcyBhbHNvIEJBVEFEVl9FTFBfUFJPQkVfTUFYX1RYX0RJRkYg
+Cj50byByZWR1Y2UgdGhlIHRpbWUgZXZlbiBmdXJ0aGVyIC0gYnV0IGFjY29yZGluZyB0byBhIGNv
+bW1lbnQgWzNdLCB0aGlzIG1heQo+bWFrZSBwcm9ibGVtcyB3aXRoIG1pbnN0cmVsLiBCdXQgSSBh
+bSBub3QgcmVhbGx5IHN1cmUgYWJvdXQgdGhhdCBiZWNhdXNlIHRoZQo+ZGVmYXVsdCBlbHBfaW50
+ZXJ2YWwgKDUwMG1zKSBpcyBhbHNvIGFscmVhZHkgbGFyZ2VyIHRoYW4gMTAwbXMuCj4KPktpbmQg
+cmVnYXJkcywKPglTdmVuCj4KPlswXSBodHRwczovL3d3dy5vcGVuLW1lc2gub3JnL3Byb2plY3Rz
+L2JhdG1hbi1hZHYvd2lraS9FTFAjc2VjdGlvbi05Cj5bMV0gaHR0cHM6Ly9naXQub3Blbi1tZXNo
+Lm9yZy9iYXRtYW4tYWR2LmdpdC9jb21taXQvMTFhMGM5MGI0MzkxOTBmZDZhMTA0Y2FhYzVkNGVm
+MDllMWY2NWE5Ngo+WzJdIGh0dHBzOi8vd3d3Lm9wZW4tbWVzaC5vcmcvcHJvamVjdHMvYmF0bWFu
+LWFkdi93aWtpL1R3ZWFraW5nI0VMUC1pbnRlcnZhbAo+WzNdIGh0dHBzOi8vZ2l0Lm9wZW4tbWVz
+aC5vcmcvYmF0bWFuLWFkdi5naXQvYmxvYi84OWRjYmQ1ZjIzNzNiOTU1ZmM4ZWFiYjkwOWY2MTg4
+YWUzMzExMGI3Oi9uZXQvYmF0bWFuLWFkdi9iYXRfdl9lbHAuYyNsMjE4Cg==
