@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 05 Sep 2018 19:09:09 +0800
-Message-ID: <5193548.c8HxFpEHO3@rousseau>
-In-Reply-To: <20180831145629.26332-1-sven@narfation.org>
-References: <20180831144648.24032-1-sven@narfation.org>
- <20180831145629.26332-1-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 05 Sep 2018 18:06:24 +0200
+Message-ID: <6769424.zgFbfVuIz9@sven-edge>
+In-Reply-To: <20180831130844.5434-1-sven@narfation.org>
+References: <20180831130844.5434-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1605687.C8IaTFe3jQ";
+Content-Type: multipart/signed; boundary="nextPart6246751.Rcxx1L4ber";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2 2/2] batman-adv: Fix segfault
- when writing to sysfs elp_interval
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Avoid probe ELP
+ information leak
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,56 +18,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1605687.C8IaTFe3jQ
+--nextPart6246751.Rcxx1L4ber
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, 31 August 2018 22:56:29 HKT Sven Eckelmann wrote:
-> The per hardif sysfs file "batman_adv/elp_interval" is using the generic
-> functions to store/show uint values. The helper __batadv_store_uint_attr
-> requires the softif net_device as parameter to print the resulting change
-> as info text when the users writes to this file. It uses the helper
-> function batadv_info to add it at the same time to the kernel ring buffer
-> and to the batman-adv debug log (when CONFIG_BATMAN_ADV_DEBUG is enabled).
+On Freitag, 31. August 2018 15:08:44 CEST Sven Eckelmann wrote:
+> The probe ELPs for WiFi interfaces are expanded to contain at least
+> BATADV_ELP_MIN_PROBE_SIZE bytes. This is usually a lot more than the
+> number of bytes which the template ELP packet requires.
 > 
-> The function batadv_info requires as first parameter the batman-adv softif
-> net_device. This parameter is then used to find the private buffer which
-> contains the debug log for this batman-adv interface. But
-> batadv_store_throughput_override used as first argument the slave
-> net_device. This slave device doesn't have the batadv_priv private data
-> which is access by batadv_info.
-> 
-> Writing to this file with CONFIG_BATMAN_ADV_DEBUG enabled can either lead
-> to a segfault or to memory corruption.
-> 
-> Fixes: ec46535b8275 ("batman-adv: Add hard_iface specific sysfs wrapper
-> macros for UINT") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> These extra padding bytes were not initialized and thus could contain data
+> which were previously stored at the same location. It is therefore required
+> to set it to some predefined or random values to avoid leaking private
+> information from the system transmitting these kind of packets.
 
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+Added as 6c876e572f59 [1]
 
-Cheers,
-Marek
+Kind regards,
+	Sven
 
---nextPart1605687.C8IaTFe3jQ
+[1] https://git.open-mesh.org/batman-adv.git/commit/6c876e572f592c31132a55b5fb8427e168e5fb3c
+--nextPart6246751.Rcxx1L4ber
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluPuVUACgkQU1VOj+62
-HMB3BQgAuuDeZwuAuUTq6iGtjnWTIw+34XFYn23KvI20I2WJwQBG9e2CEfpMHtAQ
-24lOlMwcsLW0VTvS4Ty1dX3MXboWOGsPieuCTLnzHLrNDCXlMzji7S79Uo42iqpr
-sNpoQvIjwBVIbAkhhDg5KcUmlV5kZ5JDvoBZeNIykY3sTssSbwBMz53C9uwabQpq
-1+SdPIrX0cqzVlKJst0L0j7VTdWPP36YA26dBzAaHWBpFnp5jf35iuzdCE0P4U/x
-KoEBHuqS55giNWgwbNBw+Y6u8nUNPIOsQjyA1qZ9d29qqQsQUzIQx4UVhmzNWG4h
-JQ+Yo0asO0Dizyz62c56aSVPYwDJ0g==
-=AN1u
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluP/wAACgkQXYcKB8Em
+e0bysRAA1XMX8l+xkBMMgZBzrX2VPYiG1a/QNhv3j/+XPOMxgdh/3UzjsSL+eFL6
+y832jyY+gt2eyLo5UtqsHA+h6PvSeAd7bndLzJf406tf/8OWWw3iyn9p7jq1Cf+1
+x5q7dbFQ851Gb22+nkmSV/acsFTBEpqY+ZRzTON2wFvlkDNyX+thur6MSjMxKhT2
+cTmic4tJk8qaOxR2x6OmFD99Ewd+nqeyR19EalvfZmKCubE3j4DReKUDrGKpuZbG
+waWdL+Fk38GevvlKmSpqPrSaGwXr8YlQAWZjHU5VhfI6OQY/hiu7Q/NpRCaHyoG8
+02TZxdObMGt904WlXuiouhfRoh40Wktr+AvG9E8ouezynWNS/CcNtv5BhAhGfIaQ
+kD1JJthIZqGfaHvKokbaSTpSNy10YVorDgAcT/8/MTUjD/WPPHgXyEnjcULH5Hhw
+5IoQNCRgu0Vq5bJ+Tph6Zg9zaGIIZS+o0tT2eEX2bfSF624LOr16XjF6UvNMsXck
+FKTNKY8tJeNhu7IKG13MD/M4hidvClql3LUDCNPCuqdGAHetCzvK2MGykZYIi4Gn
+t8QPaj3qUXch+MQUp+xLmNX6yAWeZl2Xg7BDUmzc3I5OPK+maGvzJN/Tba61szBa
+aJfDcd+7x0q3A0PQMgEhPAFG7Apdh1QagOUflCbxE6Nmxss5Tig=
+=lpl/
 -----END PGP SIGNATURE-----
 
---nextPart1605687.C8IaTFe3jQ--
+--nextPart6246751.Rcxx1L4ber--
 
 
 
