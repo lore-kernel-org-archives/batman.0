@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 06 Sep 2018 19:41:46 +0800
-Message-ID: <1806111.rq7lml0N69@rousseau>
-In-Reply-To: <20180812190445.28013-2-sven@narfation.org>
+Date: Thu, 06 Sep 2018 19:45:43 +0800
+Message-ID: <3845719.Az451rQS5Q@rousseau>
+In-Reply-To: <20180812190445.28013-3-sven@narfation.org>
 References: <20180812190445.28013-1-sven@narfation.org>
- <20180812190445.28013-2-sven@narfation.org>
+ <20180812190445.28013-3-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2078324.BFvsnLQD0H";
+Content-Type: multipart/signed; boundary="nextPart2662978.hjRXCKt3YR";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Prevent duplicated
- gateway_node entry
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Prevent duplicated
+ nc_node entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,57 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2078324.BFvsnLQD0H
+--nextPart2662978.hjRXCKt3YR
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, 13 August 2018 03:04:41 HKT Sven Eckelmann wrote:
-> @@ -355,6 +356,8 @@ static void batadv_gw_node_add(struct batadv_priv
-> *bat_priv, {
->         struct batadv_gw_node *gw_node;
+On Monday, 13 August 2018 03:04:42 HKT Sven Eckelmann wrote:
+> The function batadv_nc_get_nc_node is responsible for adding new nc_nodes
+> to the in_coding_list and out_coding_list. It first checks whether the
+> entry already is in the list or not. If it is, then the creation of a new
+> entry is aborted.
 > 
-> +       lockdep_assert_held(&bat_priv->gw.list_lock);
-> +
->         if (gateway->bandwidth_down == 0)
->                 return;
+> But the lock for the list is only held when the list is really modified.
+> This could lead to duplicated entries because another context could create
+> an entry with the same key between the check and the list manipulation.
 > 
-> @@ -369,10 +372,8 @@ static void batadv_gw_node_add(struct batadv_priv
-> *bat_priv, gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
->         gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
+> The check and the manipulation of the list must therefore be in the same
+> locked code section.
 > 
-> -       spin_lock_bh(&bat_priv->gw.list_lock);
->         kref_get(&gw_node->refcount);
->         hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.gateway_list);
-> -       spin_unlock_bh(&bat_priv->gw.list_lock);
-
-Not mandatory but in other cases the function kernel doc received a hint that 
-$some lock needs to be acquired before the function should be called.
+> Fixes: 3ed7ada3f0bb ("batman-adv: network coding - detect coding nodes and
+> remove these after timeout") Signed-off-by: Sven Eckelmann
+> <sven@narfation.org>
 
 Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 
 Cheers,
 Marek
 
---nextPart2078324.BFvsnLQD0H
+--nextPart2662978.hjRXCKt3YR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluREnoACgkQU1VOj+62
-HMA0zQgAnTa0LWdWQ/e3U838xUG1vlNiHJJQwiDgKkkqRTjblQ8UDUOiInsBPLUi
-2H0fCflpsfN20hmeE+hTfL6smWAwIy3txgd93stFGMQ4NCV70VrspeS8J1o1X1kz
-6KIA040Prk07kG/1kKUFeHa6ylLDYhZtmHNsA7QKJk2Ste0YxjtVit7wISrnOfDy
-pn13gzriCyGLjplFgK+yp8eDvLVShX3nEhiJzFSHi47vMgEUJ0kwEIwg/rmhkBos
-inTY91Bk13hS9MOMa3rccM+st2W4ieL3+6OYyGPU4KTwg98DQz8bAcSnknysI39w
-D+iMmTVKfU/JcA19z30Gq8pne0Kaew==
-=squy
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluRE2cACgkQU1VOj+62
+HMBcJwf/Qofz9ELPX6UI2yp5OhRZykhXBhpket8twrXgBE590U+ipcBR0QDRdbkc
+7pZdcI3o8rKwaOk7/mnxhxyPwkI5D+MaVQRZePLfs8A0djdDWjB+NSfz4LhudNK0
+3Q8byl7uOz5mMROvDHs+OA8MDcAA9zlieFmQU4tQf/PzT2N/rMVt802NwrbMjuUf
+SHlRY7ZcxmfbnJtbHtEKGe6nAs6tAtZA/pF8NL275pFDEcyzbPIIfAFGCYyux/zP
+1BX7vVhg8ISeNijIsm77X+WuGGedixdU9z6IeeZsy4zWVx8BLckvNWQKjDI15ull
+BvsVzHvAZNIMQwFBkIYC0de5uk2rAA==
+=MPok
 -----END PGP SIGNATURE-----
 
---nextPart2078324.BFvsnLQD0H--
+--nextPart2662978.hjRXCKt3YR--
 
 
 
