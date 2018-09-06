@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 06 Sep 2018 20:03:42 +0800
-Message-ID: <6353214.MYpFiXBgWn@rousseau>
-In-Reply-To: <20180812190445.28013-5-sven@narfation.org>
+Date: Thu, 06 Sep 2018 20:05:33 +0800
+Message-ID: <1682247.b6jU6xIGrp@rousseau>
+In-Reply-To: <20180812190445.28013-6-sven@narfation.org>
 References: <20180812190445.28013-1-sven@narfation.org>
- <20180812190445.28013-5-sven@narfation.org>
+ <20180812190445.28013-6-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3374071.DoJ0dOzUH8";
+Content-Type: multipart/signed; boundary="nextPart1880879.RqXORIIlTR";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Prevent duplicated
- global TT entry
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Prevent duplicated tvlv
+ handler
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,13 +21,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3374071.DoJ0dOzUH8
+--nextPart1880879.RqXORIIlTR
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, 13 August 2018 03:04:44 HKT Sven Eckelmann wrote:
-> The function batadv_tt_global_orig_entry_add is responsible for adding new
-> tt_orig_list_entry to the orig_list. It first checks whether the entry
+On Monday, 13 August 2018 03:04:45 HKT Sven Eckelmann wrote:
+> The function batadv_tvlv_handler_register is responsible for adding new
+> tvlv_handler to the handler_list. It first checks whether the entry
 > already is in the list or not. If it is, then the creation of a new entry
 > is aborted.
 > 
@@ -38,9 +38,8 @@ On Monday, 13 August 2018 03:04:44 HKT Sven Eckelmann wrote:
 > The check and the manipulation of the list must therefore be in the same
 > locked code section.
 > 
-> Fixes: c5eb5bb30321 ("batman-adv: add reference counting for type
-> batadv_tt_orig_list_entry") Signed-off-by: Sven Eckelmann
-> <sven@narfation.org>
+> Fixes: 0b6aa0d43767 ("batman-adv: tvlv - basic infrastructure")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 
 Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
@@ -48,24 +47,25 @@ Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Cheers,
 Marek
 
---nextPart3374071.DoJ0dOzUH8
+
+--nextPart1880879.RqXORIIlTR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluRF54ACgkQU1VOj+62
-HMDosgf/VQbeU2+zpl4F3q8Q5/tX0InUTqy4IG7hk6TG7nfEtqUM+62w6RyTRSOU
-LsLUd76AC8vrOJl7NdWYVCAyDab4U7N40mPAiqlmQ7t2W8ShzIzj3FxgDRS242Rg
-TmRVPqQWSCMQaq4OwzW8hw39B8zFS3E5/OfnfH21ML9vaQ2svcmN6PiBVAJLsL1G
-B0cbExCKyuBWf4I3NnZRFb5v2ktkA9LFY+23vm7h24rQhAu5w8UZB05go240ZS+B
-UzESmXKq004WFH0qNbsJD8++nTmXwjk2yn6tzzt3f4afyvhx+wyT/5v6/dhEJ5xq
-uoiPTDoS08EI0PIrWfyfV6UsjNs5OQ==
-=W6Na
+iQEyBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluRGA0ACgkQU1VOj+62
+HMCqpwf4lvMUMzL5mQb9yN5lvRPG0gj6Kc1MO9phs3lcStHYusm09APxsdzngKkB
+ZZu9eWKZZaMMxPHs6xFQPtxnuBh6ZyLiRrR8wG57MYOU6Ly4A+taMY7Pm635/wff
+07Ld2zP/5obMNFtbjMET7fEc1qZicyiVDh1p/ZohvEdgl9SaX510+oYwq1vdnPK6
+VqIBPR8aXgi7gdMzhbAX37XRHnbiRbv9vQuvpN+k/1TmZG8xNMB7Jz7vGrLsvIKk
+szL+6HxoyKs/H7TmaBvJbqdvH479Ja2HPSYekF+jC+lB8wL0MO8/JEDxXRaFAQhz
+SGvR5LwEwPEDyDSL8bcPopjd21uh
+=AFMi
 -----END PGP SIGNATURE-----
 
---nextPart3374071.DoJ0dOzUH8--
+--nextPart1880879.RqXORIIlTR--
 
 
 
