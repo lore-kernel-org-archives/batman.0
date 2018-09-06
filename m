@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  6 Sep 2018 14:35:26 +0200
-Message-Id: <20180906123528.30490-4-sven@narfation.org>
+Date: Thu,  6 Sep 2018 14:35:27 +0200
+Message-Id: <20180906123528.30490-5-sven@narfation.org>
 In-Reply-To: <20180906123528.30490-1-sven@narfation.org>
 References: <20180906123528.30490-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 3/5] batman-adv: Prevent duplicated
- softif_vlan entry
+Subject: [B.A.T.M.A.N.] [PATCH v2 4/5] batman-adv: Prevent duplicated global
+ TT entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,8 +17,8 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The function batadv_softif_vlan_get is responsible for adding new
-softif_vlan to the softif_vlan_list. It first checks whether the entry
+The function batadv_tt_global_orig_entry_add is responsible for adding new
+tt_orig_list_entry to the orig_list. It first checks whether the entry
 already is in the list or not. If it is, then the creation of a new entry
 is aborted.
 
@@ -29,72 +29,47 @@ an entry with the same key between the check and the list manipulation.
 The check and the manipulation of the list must therefore be in the same
 locked code section.
 
-Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framework")
+Fixes: c5eb5bb30321 ("batman-adv: add reference counting for type batadv_tt_orig_list_entry")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
-v2:
-* changed batadv_softif_create_vlan to handle problems in
-  batadv_sysfs_add_vlan as fatal error
+ net/batman-adv/translation-table.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
- net/batman-adv/soft-interface.c | 25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
-
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 1485263a..626ddca3 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -574,15 +574,20 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	struct batadv_softif_vlan *vlan;
- 	int err;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 12a2b7d2..d21624c4 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1613,6 +1613,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ {
+ 	struct batadv_tt_orig_list_entry *orig_entry;
  
-+	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
++	spin_lock_bh(&tt_global->list_lock);
 +
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
- 	if (vlan) {
- 		batadv_softif_vlan_put(vlan);
-+		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 		return -EEXIST;
- 	}
+ 	orig_entry = batadv_tt_global_orig_entry_find(tt_global, orig_node);
+ 	if (orig_entry) {
+ 		/* refresh the ttvn: the current value could be a bogus one that
+@@ -1635,11 +1637,9 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 	orig_entry->flags = flags;
+ 	kref_init(&orig_entry->refcount);
  
- 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
--	if (!vlan)
-+	if (!vlan) {
-+		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 		return -ENOMEM;
-+	}
+-	spin_lock_bh(&tt_global->list_lock);
+ 	kref_get(&orig_entry->refcount);
+ 	hlist_add_head_rcu(&orig_entry->list,
+ 			   &tt_global->orig_list);
+-	spin_unlock_bh(&tt_global->list_lock);
+ 	atomic_inc(&tt_global->orig_list_count);
  
- 	vlan->bat_priv = bat_priv;
- 	vlan->vid = vid;
-@@ -590,17 +595,23 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 
- 	atomic_set(&vlan->ap_isolation, 0);
- 
-+	kref_get(&vlan->refcount);
-+	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
-+	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ sync_flags:
+@@ -1647,6 +1647,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ out:
+ 	if (orig_entry)
+ 		batadv_tt_orig_list_entry_put(orig_entry);
 +
-+	/* batadv_sysfs_add_vlan cannot be in the spinlock section due to the
-+	 * sleeping behavior of the sysfs functions and the fs_reclaim lock
-+	 */
- 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
- 	if (err) {
--		kfree(vlan);
-+		/* ref for the function */
-+		batadv_softif_vlan_put(vlan);
-+
-+		/* ref for the list */
-+		batadv_softif_vlan_put(vlan);
- 		return err;
- 	}
++	spin_unlock_bh(&tt_global->list_lock);
+ }
  
--	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
--	kref_get(&vlan->refcount);
--	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
--	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
--
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag
- 	 */
+ /**
 -- 
 2.11.0
 
