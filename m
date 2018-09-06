@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 06 Sep 2018 20:05:33 +0800
-Message-ID: <1682247.b6jU6xIGrp@rousseau>
-In-Reply-To: <20180812190445.28013-6-sven@narfation.org>
-References: <20180812190445.28013-1-sven@narfation.org>
- <20180812190445.28013-6-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1880879.RqXORIIlTR";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Prevent duplicated tvlv
- handler
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu,  6 Sep 2018 14:35:23 +0200
+Message-Id: <20180906123528.30490-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 0/5] batman-adv: Missing list checks for
+ *list_add*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +13,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1880879.RqXORIIlTR
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi,
 
-On Monday, 13 August 2018 03:04:45 HKT Sven Eckelmann wrote:
-> The function batadv_tvlv_handler_register is responsible for adding new
-> tvlv_handler to the handler_list. It first checks whether the entry
-> already is in the list or not. If it is, then the creation of a new entry
-> is aborted.
-> 
-> But the lock for the list is only held when the list is really modified.
-> This could lead to duplicated entries because another context could create
-> an entry with the same key between the check and the list manipulation.
-> 
-> The check and the manipulation of the list must therefore be in the same
-> locked code section.
-> 
-> Fixes: 0b6aa0d43767 ("batman-adv: tvlv - basic infrastructure")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Marek reviewed the the previous version of the patcheset [0] and requested
+some changes for patch 1 and 3.
 
+* patch 1:
 
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+  - added kerneldoc about the locking requirements
 
-Cheers,
-Marek
+* patch 3
 
+  - changed batadv_softif_create_vlan to handle problems in
+    batadv_sysfs_add_vlan as fatal error
 
---nextPart1880879.RqXORIIlTR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Kind regards,
+        Sven
 
------BEGIN PGP SIGNATURE-----
+[0] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?series=150&submitter=&state=*&q=&archive=both&delegate=
+[1] https://www.open-mesh.org/issues/235
+[2] https://www.open-mesh.org/issues/236
+[3] https://www.open-mesh.org/issues/237
+[4] https://www.open-mesh.org/issues/238
+[5] https://www.open-mesh.org/issues/239
+[6] https://www.open-mesh.org/issues/240
+[7] https://www.open-mesh.org/issues/241
+[8] https://patchwork.open-mesh.org/patch/4919/
 
-iQEyBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluRGA0ACgkQU1VOj+62
-HMCqpwf4lvMUMzL5mQb9yN5lvRPG0gj6Kc1MO9phs3lcStHYusm09APxsdzngKkB
-ZZu9eWKZZaMMxPHs6xFQPtxnuBh6ZyLiRrR8wG57MYOU6Ly4A+taMY7Pm635/wff
-07Ld2zP/5obMNFtbjMET7fEc1qZicyiVDh1p/ZohvEdgl9SaX510+oYwq1vdnPK6
-VqIBPR8aXgi7gdMzhbAX37XRHnbiRbv9vQuvpN+k/1TmZG8xNMB7Jz7vGrLsvIKk
-szL+6HxoyKs/H7TmaBvJbqdvH479Ja2HPSYekF+jC+lB8wL0MO8/JEDxXRaFAQhz
-SGvR5LwEwPEDyDSL8bcPopjd21uh
-=AFMi
------END PGP SIGNATURE-----
+ net/batman-adv/gateway_client.c    | 11 +++++++++--
+ net/batman-adv/network-coding.c    | 27 +++++++++++++++------------
+ net/batman-adv/soft-interface.c    | 25 ++++++++++++++++++-------
+ net/batman-adv/translation-table.c |  6 ++++--
+ net/batman-adv/tvlv.c              |  8 ++++++--
+ 5 files changed, 52 insertions(+), 25 deletions(-)
 
---nextPart1880879.RqXORIIlTR--
-
-
+-- 
+2.11.0
 
