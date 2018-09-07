@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 07 Sep 2018 18:25:33 +0800
-Message-ID: <45216149.LrRsuFWNSN@rousseau>
-In-Reply-To: <20180522211214.GG15580@otheros>
-References: <20180511185723.20138-1-mareklindner@neomailbox.ch>
- <20180522211214.GG15580@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 07 Sep 2018 13:15:44 +0200
+Message-ID: <1954353.VuJCjj7V6u@sven-edge>
+In-Reply-To: <20180906123528.30490-1-sven@narfation.org>
+References: <20180906123528.30490-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5067488.0HYdFVKV6q";
+Content-Type: multipart/signed; boundary="nextPart1677608.m5svRM8CqQ";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC maint v2] batman-adv: fix adding VLANs with
- partial state
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/5] batman-adv: Missing list checks
+ for *list_add*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +18,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, lemoer <freifunk@irrelefant.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5067488.0HYdFVKV6q
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1677608.m5svRM8CqQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, 23 May 2018 05:12:14 HKT Linus L=FCssing wrote:
-> I tested this patch but so far could not spot any issues either in
-> dmesg or logread.
->=20
-> I've added these patches to a branch for Gluon here:
->=20
-> https://github.com/T-X/gluon/tree/tt-vlan-patched
->=20
-> And used these images (warning, they have my SSH public added):
->=20
-> https://metameute.de/~tux/Freifunk/firmware/ffh-tt-patched/
+On Donnerstag, 6. September 2018 14:35:23 CEST Sven Eckelmann wrote:
+> Hi,
+> 
+> Marek reviewed the the previous version of the patcheset [0] and requested
+> some changes for patch 1 and 3.
+[...]
 
-Any update on whether this patch has caused any grief ? If not I'd submit a=
-s=20
-real patch.
+Added as 848be9859b01..acabad79e017 [1,2,3,4,5]
 
-Cheers,
-Marek
+Kind regards,
+	Sven
 
---nextPart5067488.0HYdFVKV6q
+[1] https://git.open-mesh.org/batman-adv.git/commit/69b3ca714eba608fe79a51ccd89ce7050ee0b770
+[2] https://git.open-mesh.org/batman-adv.git/commit/bab8447ad1850b25188f9652c0c52f8e58acd656
+[3] https://git.open-mesh.org/batman-adv.git/commit/023d3f64207e8b6a6e6d0718d98e239c5545ef0c
+[4] https://git.open-mesh.org/batman-adv.git/commit/79097255a1a3e1bd1949be309af941181fbc7b36
+[5] https://git.open-mesh.org/batman-adv.git/commit/acabad79e01740525cf4ff8ce6e9a210b683d420
+--nextPart1677608.m5svRM8CqQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAluSUh0ACgkQU1VOj+62
-HMBMVwf5AZ7tiJUDafShhzSz16fVvy8HPCXg9CxIuAWTGr21KWt0gVpxpQJAGA7B
-9kScQplWIZiiILT2GpibBi3GQRad/P6NdqCxFlEIe/NjlcAijqNGQPFxBH8RalEU
-KgANfl82Y2gKjnhdbTLxb37sxmyto7K3kgtuORQBp8YfE2DOJr37jdE1pBw3gw3/
-Vcp62DaHD5f8DBuFCv32pUIV89UtJsmK8YKNRlLYpIZFQlvWSY8pzQj46pDiFhFc
-VskafyXNrt/EcnqGN81V3iq7UmsIs2i9QE8ymKtTcSxvk4lenYAbDH4hM4jWfwWI
-54uChsFSRjAYuPUfrILbfO7whChJuQ==
-=gosc
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluSXeAACgkQXYcKB8Em
+e0aswQ/+MhpA7nELHQEQN4Bk/LhsO5a0OQ7k5FjANEmcRKkeJpnhvixdRUcbKkNk
+0/rBq9mxCpZSyPN9CKMtPjf1Dbj6o5ZgeuXBCW9Gasa3J31bEvt7ASTy+xjqehAf
+rTXJiQnoQjx7D4P4+ZfO/uiP5FXvCR8MV0KP0ogT4MUurKEX+AM81KMj+mbqcusD
+puVGWXMgGWlSHJAp4JVmg1oYNsZsNp5AUVsXskh8gx9B7x49I0CIfgaerrx3+5bk
+EEEApggblRi/UtA3oeghMTXfH17MDPvaQlvLQDp6s004Q10w7lUsNrmr7uxBqYly
+SwqB0Jnbzk5zLtxnUF6ehanOxzq0r/7KGzvrEU9cWJyXOmU+5pBWtKN5NFJIvYj/
+JAhoQPoa6s/SilsUCB7yGM0xye9Q5ZxM5oUISvCEryaDK8JyP2i7WtAoAM6yzIIi
+DjifO1sY2RmCx90tlqLaXHeSHy2MPNEIJ7VT6AT+HudV3TQYaRaEmSOAdufLTwSo
+CQxCztoWqGjUyqg89JKPGfibG6ceFqtkRRyZ7ksC4UNuDEDWPfdk3gfepvq6pv8J
+vD/k9XZO/IrC4Xh51UlgXCpDaG7sl4znYAz/CpRo4mqfpT/BAnVt7yLwwWLzWpSi
+HiQL2JwOYh0+NM5GMTIHSRVlTzOz09jDWe8RjWsMv73giAmYvjA=
+=2wEN
 -----END PGP SIGNATURE-----
 
---nextPart5067488.0HYdFVKV6q--
+--nextPart1677608.m5svRM8CqQ--
 
 
 
