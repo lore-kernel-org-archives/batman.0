@@ -1,11 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri,  7 Sep 2018 17:59:55 +0800
-Message-Id: <20180907095958.30946-5-mareklindner@neomailbox.ch>
+Date: Fri,  7 Sep 2018 17:59:56 +0800
+Message-Id: <20180907095958.30946-6-mareklindner@neomailbox.ch>
 In-Reply-To: <20180907095958.30946-1-mareklindner@neomailbox.ch>
 References: <20180907095958.30946-1-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v5 4/7] batman-adv: tp_meter - add caller
- distinction
+Subject: [B.A.T.M.A.N.] [PATCH v5 5/7] batman-adv: tp_meter - add option to
+ perform one-hop test
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,254 +16,610 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Antonio Quartulli <a@unstable.cc>
 
-The throughput meter can be called from user space as well as from
-the batman-adv kernel module itself. Add infrastructure to handle
-the different callers.
+From: Antonio Quartulli <a@unstable.cc>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+A link test is a TP session ran over a specific one-hop link,
+rather than towards an originator in the mesh.
+
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/netlink.c  |   3 +-
- net/batman-adv/tp_meter.c | 108 ++++++++++++++++++++++----------------
- net/batman-adv/tp_meter.h |   3 +-
- net/batman-adv/types.h    |  13 +++++
- 4 files changed, 79 insertions(+), 48 deletions(-)
+ include/uapi/linux/batadv_packet.h |   2 +
+ net/batman-adv/netlink.c           |   2 +-
+ net/batman-adv/routing.c           |   6 +-
+ net/batman-adv/tp_meter.c          | 232 +++++++++++++++++++----------
+ net/batman-adv/tp_meter.h          |   5 +-
+ net/batman-adv/types.h             |   3 +
+ 6 files changed, 167 insertions(+), 83 deletions(-)
 
+diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+index 894d8d2f..4e6e075b 100644
+--- a/include/uapi/linux/batadv_packet.h
++++ b/include/uapi/linux/batadv_packet.h
+@@ -351,10 +351,12 @@ struct batadv_icmp_tp_packet {
+  * enum batadv_icmp_tp_subtype - ICMP TP Meter packet subtypes
+  * @BATADV_TP_MSG: Msg from sender to receiver
+  * @BATADV_TP_ACK: acknowledgment from receiver to sender
++ * @BATADV_TP_MSG_LINK: Msg from sender to receiver used for link test (one-hop)
+  */
+ enum batadv_icmp_tp_subtype {
+ 	BATADV_TP_MSG	= 0,
+ 	BATADV_TP_ACK,
++	BATADV_TP_MSG_LINK,
+ };
+ 
+ #define BATADV_RR_LEN 16
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 0d9459b6..b0e1b73c 100644
+index b0e1b73c..064020cc 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -378,7 +378,8 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
+@@ -378,7 +378,7 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
  	}
  
  	bat_priv = netdev_priv(soft_iface);
--	batadv_tp_start(bat_priv, dst, test_length, &cookie);
-+	batadv_tp_start(bat_priv, dst, test_length, &cookie,
-+			BATADV_TP_USERSPACE);
+-	batadv_tp_start(bat_priv, dst, test_length, &cookie,
++	batadv_tp_start(bat_priv, dst, NULL, test_length, &cookie,
+ 			BATADV_TP_USERSPACE);
  
  	ret = batadv_netlink_tp_meter_put(msg, cookie);
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index cc3ed93a..dbf2d556 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -223,12 +223,14 @@ bool batadv_check_management_packet(struct sk_buff *skb,
+ /**
+  * batadv_recv_my_icmp_packet() - receive an icmp packet locally
+  * @bat_priv: the bat priv with all the soft interface information
++ * @recv_if: interface that the skb is received on
+  * @skb: icmp packet to process
+  *
+  * Return: NET_RX_SUCCESS if the packet has been consumed or NET_RX_DROP
+  * otherwise.
+  */
+ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
++				      struct batadv_hard_iface *recv_if,
+ 				      struct sk_buff *skb)
+ {
+ 	struct batadv_hard_iface *primary_if = NULL;
+@@ -281,7 +283,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		if (!pskb_may_pull(skb, sizeof(struct batadv_icmp_tp_packet)))
+ 			goto out;
  
+-		batadv_tp_meter_recv(bat_priv, skb);
++		batadv_tp_meter_recv(bat_priv, recv_if, skb);
+ 		ret = NET_RX_SUCCESS;
+ 		/* skb was consumed */
+ 		skb = NULL;
+@@ -418,7 +420,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 
+ 	/* packet for me */
+ 	if (batadv_is_my_mac(bat_priv, icmph->dst))
+-		return batadv_recv_my_icmp_packet(bat_priv, skb);
++		return batadv_recv_my_icmp_packet(bat_priv, recv_if, skb);
+ 
+ 	/* TTL exceeded */
+ 	if (icmph->ttl < 2)
 diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 73f7f168..1f201ec7 100644
+index 1f201ec7..f23bb847 100644
 --- a/net/batman-adv/tp_meter.c
 +++ b/net/batman-adv/tp_meter.c
-@@ -215,50 +215,71 @@ static void batadv_tp_update_rto(struct batadv_tp_vars *tp_vars,
+@@ -381,6 +381,9 @@ static void batadv_tp_vars_release(struct kref *ref)
+ 	}
+ 	spin_unlock_bh(&tp_vars->unacked_lock);
+ 
++	if (tp_vars->hardif_neigh)
++		batadv_hardif_neigh_put(tp_vars->hardif_neigh);
++
+ 	kfree_rcu(tp_vars, rcu);
  }
  
- /**
-- * batadv_tp_batctl_notify() - send client status result to client
-- * @reason: reason for tp meter session stop
-- * @dst: destination of tp_meter session
-+ * batadv_tp_caller_notify() - send tp meter status result to caller
-  * @bat_priv: the bat priv with all the soft interface information
-- * @start_time: start of transmission in jiffies
-- * @total_sent: bytes acked to the receiver
-- * @cookie: cookie of tp_meter session
-+ * @tp_vars: the private data of the current TP meter session
-+ * @reason: reason for tp meter session stop
-  */
--static void batadv_tp_batctl_notify(enum batadv_tp_meter_reason reason,
--				    const u8 *dst, struct batadv_priv *bat_priv,
--				    unsigned long start_time, u64 total_sent,
--				    u32 cookie)
-+static void batadv_tp_caller_notify(struct batadv_priv *bat_priv,
-+				    struct batadv_tp_vars *tp_vars,
-+				    enum batadv_tp_meter_reason reason)
- {
--	u32 test_time;
--	u8 result;
- 	u32 total_bytes;
-+	u32 test_time;
-+	u32 cookie;
-+	bool reason_is_error;
+@@ -579,9 +582,8 @@ static void batadv_tp_fill_prerandom(struct batadv_tp_vars *tp_vars,
  
--	if (!batadv_tp_is_error(reason)) {
--		result = BATADV_TP_REASON_COMPLETE;
--		test_time = jiffies_to_msecs(jiffies - start_time);
--		total_bytes = total_sent;
--	} else {
--		result = reason;
--		test_time = 0;
--		total_bytes = 0;
--	}
-+	reason_is_error = batadv_tp_is_error(reason);
-+
-+	switch (tp_vars->caller) {
-+	case BATADV_TP_USERSPACE:
-+		cookie = batadv_tp_session_cookie(tp_vars->session,
-+						  tp_vars->icmp_uid);
-+
-+		if (reason_is_error) {
-+			batadv_netlink_tpmeter_notify(bat_priv,
-+						      tp_vars->other_end,
-+						      reason, 0, 0, cookie);
-+			return;
+ /**
+  * batadv_tp_send_msg() - send a single message
++ * @bat_priv: the bat priv with all the soft interface information
+  * @tp_vars: the private TP meter data for this session
+- * @src: source mac address
+- * @orig_node: the originator of the destination
+  * @seqno: sequence number of this packet
+  * @len: length of the entire packet
+  * @session: session identifier
+@@ -594,26 +596,56 @@ static void batadv_tp_fill_prerandom(struct batadv_tp_vars *tp_vars,
+  * not reachable, BATADV_TP_REASON_MEMORY_ERROR if the packet couldn't be
+  * allocated
+  */
+-static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+-			      struct batadv_orig_node *orig_node,
+-			      u32 seqno, size_t len, const u8 *session,
+-			      int uid, u32 timestamp)
++static int batadv_tp_send_msg(struct batadv_priv *bat_priv,
++			      struct batadv_tp_vars *tp_vars, u32 seqno,
++			      size_t len, const u8 *session, int uid,
++			      u32 timestamp)
+ {
++	struct batadv_hard_iface *primary_if = NULL;
++	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_icmp_tp_packet *icmp;
+ 	struct sk_buff *skb;
+-	int r;
+-	u8 *data;
++	int r, ret = 0;
++	u8 *data, *src, *dst, subtype;
++	struct net_device *netdev;
+ 	size_t data_len;
+ 
+-	skb = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
+-	if (unlikely(!skb))
+-		return BATADV_TP_REASON_MEMORY_ERROR;
++	/* link test */
++	if (tp_vars->hardif_neigh) {
++		dst = tp_vars->hardif_neigh->addr;
++		src = tp_vars->hardif_neigh->if_incoming->net_dev->dev_addr;
++		subtype = BATADV_TP_MSG_LINK;
++		netdev = tp_vars->hardif_neigh->if_incoming->net_dev;
++	} else {
++		orig_node = batadv_orig_hash_find(bat_priv, tp_vars->other_end);
++		if (unlikely(!orig_node)) {
++			ret = BATADV_TP_REASON_DST_UNREACHABLE;
++			goto out;
 +		}
 +
-+		test_time = jiffies_to_msecs(jiffies - tp_vars->start_time);
-+		total_bytes = atomic64_read(&tp_vars->tot_sent);
-+		batadv_netlink_tpmeter_notify(bat_priv, tp_vars->other_end,
-+					      BATADV_TP_REASON_COMPLETE,
-+					      test_time, total_bytes, cookie);
- 
--	batadv_netlink_tpmeter_notify(bat_priv, dst, result, test_time,
--				      total_bytes, cookie);
-+		break;
-+	case BATADV_TP_ELP:
-+		break;
-+	default:
-+		break;
++		primary_if = batadv_primary_if_get_selected(bat_priv);
++		if (unlikely(!primary_if)) {
++			ret = BATADV_TP_REASON_DST_UNREACHABLE;
++			goto out;
++		}
++
++		dst = orig_node->orig;
++		src = primary_if->net_dev->dev_addr;
++		subtype = BATADV_TP_MSG;
++		netdev = NULL;
 +	}
++
++	skb = netdev_alloc_skb_ip_align(netdev, len + ETH_HLEN);
++	if (unlikely(!skb)) {
++		ret = BATADV_TP_REASON_MEMORY_ERROR;
++		goto out;
++	}
+ 
+ 	skb_reserve(skb, ETH_HLEN);
+ 	icmp = skb_put(skb, sizeof(*icmp));
+ 
+ 	/* fill the icmp header */
+-	ether_addr_copy(icmp->dst, orig_node->orig);
++	ether_addr_copy(icmp->dst, dst);
+ 	ether_addr_copy(icmp->orig, src);
+ 	icmp->version = BATADV_COMPAT_VERSION;
+ 	icmp->packet_type = BATADV_ICMP;
+@@ -621,7 +653,7 @@ static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+ 	icmp->msg_type = BATADV_TP;
+ 	icmp->uid = uid;
+ 
+-	icmp->subtype = BATADV_TP_MSG;
++	icmp->subtype = subtype;
+ 	memcpy(icmp->session, session, sizeof(icmp->session));
+ 	icmp->seqno = htonl(seqno);
+ 	icmp->timestamp = htonl(timestamp);
+@@ -630,11 +662,23 @@ static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+ 	data = skb_put(skb, data_len);
+ 	batadv_tp_fill_prerandom(tp_vars, data, data_len);
+ 
+-	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == NET_XMIT_SUCCESS)
+-		return 0;
++	if (tp_vars->hardif_neigh)
++		r = batadv_send_skb_packet(skb,
++					   tp_vars->hardif_neigh->if_incoming,
++					   dst);
++	else
++		r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+ 
+-	return BATADV_TP_REASON_CANT_SEND;
++	if (unlikely(r != NET_XMIT_SUCCESS))
++		ret = BATADV_TP_REASON_CANT_SEND;
++
++out:
++	if (likely(primary_if))
++		batadv_hardif_put(primary_if);
++	if (likely(orig_node))
++		batadv_orig_node_put(orig_node);
++
++	return ret;
  }
  
  /**
-- * batadv_tp_batctl_error_notify() - send client error result to client
-+ * batadv_tp_caller_init_error() - report early tp meter errors to caller
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @caller: caller of tp meter session (user space or ELP)
-  * @reason: reason for tp meter session stop
-  * @dst: destination of tp_meter session
-- * @bat_priv: the bat priv with all the soft interface information
-  * @cookie: cookie of tp_meter session
+@@ -653,7 +697,6 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 	struct batadv_tp_vars *tp_vars;
+ 	size_t packet_len, mss;
+ 	u32 rtt, recv_ack, cwnd;
+-	unsigned char *dev_addr;
+ 
+ 	packet_len = BATADV_TP_PLEN;
+ 	mss = BATADV_TP_PLEN;
+@@ -675,13 +718,11 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 			      (u32)atomic_read(&tp_vars->last_acked)))
+ 		goto out;
+ 
+-	primary_if = batadv_primary_if_get_selected(bat_priv);
+-	if (unlikely(!primary_if))
+-		goto out;
+-
+-	orig_node = batadv_orig_hash_find(bat_priv, icmp->orig);
+-	if (unlikely(!orig_node))
+-		goto out;
++	if (!tp_vars->hardif_neigh) {
++		primary_if = batadv_primary_if_get_selected(bat_priv);
++		if (unlikely(!primary_if))
++			goto out;
++	}
+ 
+ 	/* update RTO with the new sampled RTT, if any */
+ 	rtt = jiffies_to_msecs(jiffies) - ntohl(icmp->timestamp);
+@@ -703,8 +744,11 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 			goto out;
+ 
+ 		/* if this is the third duplicate ACK do Fast Retransmit */
+-		batadv_tp_send_msg(tp_vars, primary_if->net_dev->dev_addr,
+-				   orig_node, recv_ack, packet_len,
++
++		/* if we have a hardif_neigh, it means that this is a LINK test,
++		 * therefore use the according function
++		 */
++		batadv_tp_send_msg(bat_priv, tp_vars, recv_ack, packet_len,
+ 				   icmp->session, icmp->uid,
+ 				   jiffies_to_msecs(jiffies));
+ 
+@@ -741,9 +785,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 				 * immediately as specified by NewReno (see
+ 				 * Section 3.2 of RFC6582 for details)
+ 				 */
+-				dev_addr = primary_if->net_dev->dev_addr;
+-				batadv_tp_send_msg(tp_vars, dev_addr,
+-						   orig_node, recv_ack,
++				batadv_tp_send_msg(bat_priv, tp_vars, recv_ack,
+ 						   packet_len, icmp->session,
+ 						   icmp->uid,
+ 						   jiffies_to_msecs(jiffies));
+@@ -827,8 +869,6 @@ static int batadv_tp_wait_available(struct batadv_tp_vars *tp_vars, size_t plen)
   */
--static void batadv_tp_batctl_error_notify(enum batadv_tp_meter_reason reason,
--					  const u8 *dst,
--					  struct batadv_priv *bat_priv,
--					  u32 cookie)
-+static void batadv_tp_caller_init_error(struct batadv_priv *bat_priv,
-+					enum batadv_tp_meter_caller caller,
-+					enum batadv_tp_meter_reason reason,
-+					const u8 *dst, u32 cookie)
+ static void batadv_tp_send(struct work_struct *work)
  {
--	batadv_tp_batctl_notify(reason, dst, bat_priv, 0, 0, cookie);
-+	switch (caller) {
-+	case BATADV_TP_USERSPACE:
-+		batadv_netlink_tpmeter_notify(bat_priv, dst, reason, 0, 0,
-+					      cookie);
-+		break;
-+	case BATADV_TP_ELP:
-+		break;
-+	default:
-+		break;
-+	}
- }
+-	struct batadv_hard_iface *primary_if = NULL;
+-	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_tp_vars *tp_vars;
+ 	size_t payload_len, packet_len;
+ 	struct batadv_priv *bat_priv;
+@@ -843,20 +883,6 @@ static void batadv_tp_send(struct work_struct *work)
+ 		goto out;
+ 	}
  
- /**
-@@ -411,8 +432,6 @@ static void batadv_tp_sender_cleanup(struct batadv_priv *bat_priv,
- static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
- 				 struct batadv_tp_vars *tp_vars)
- {
--	u32 session_cookie;
+-	orig_node = batadv_orig_hash_find(bat_priv, tp_vars->other_end);
+-	if (unlikely(!orig_node)) {
+-		err = BATADV_TP_REASON_DST_UNREACHABLE;
+-		tp_vars->reason = err;
+-		goto out;
+-	}
 -
- 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
- 		   "Test towards %pM finished..shutting down (reason=%d)\n",
- 		   tp_vars->other_end, tp_vars->reason);
-@@ -425,15 +444,7 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
- 		   "Final values: cwnd=%u ss_threshold=%u\n",
- 		   tp_vars->cwnd, tp_vars->ss_threshold);
- 
--	session_cookie = batadv_tp_session_cookie(tp_vars->session,
--						  tp_vars->icmp_uid);
+-	primary_if = batadv_primary_if_get_selected(bat_priv);
+-	if (unlikely(!primary_if)) {
+-		err = BATADV_TP_REASON_DST_UNREACHABLE;
+-		tp_vars->reason = err;
+-		goto out;
+-	}
 -
--	batadv_tp_batctl_notify(tp_vars->reason,
--				tp_vars->other_end,
--				bat_priv,
--				tp_vars->start_time,
--				atomic64_read(&tp_vars->tot_sent),
--				session_cookie);
-+	batadv_tp_caller_notify(bat_priv, tp_vars, tp_vars->reason);
- }
+ 	/* assume that all the hard_interfaces have a correctly
+ 	 * configured MTU, so use the soft_iface MTU as MSS.
+ 	 * This might not be true and in that case the fragmentation
+@@ -883,10 +909,9 @@ static void batadv_tp_send(struct work_struct *work)
+ 		 */
+ 		packet_len = payload_len + sizeof(struct batadv_unicast_packet);
  
- /**
-@@ -914,9 +925,11 @@ static void batadv_tp_send(struct work_struct *work)
+-		err = batadv_tp_send_msg(tp_vars, primary_if->net_dev->dev_addr,
+-					 orig_node, tp_vars->last_sent,
+-					 packet_len,
+-					 tp_vars->session, tp_vars->icmp_uid,
++		err = batadv_tp_send_msg(bat_priv, tp_vars, tp_vars->last_sent,
++					 packet_len, tp_vars->session,
++					 tp_vars->icmp_uid,
+ 					 jiffies_to_msecs(jiffies));
+ 
+ 		/* something went wrong during the preparation/transmission */
+@@ -908,11 +933,6 @@ static void batadv_tp_send(struct work_struct *work)
+ 	}
+ 
+ out:
+-	if (likely(primary_if))
+-		batadv_hardif_put(primary_if);
+-	if (likely(orig_node))
+-		batadv_orig_node_put(orig_node);
+-
+ 	batadv_tp_sender_end(bat_priv, tp_vars);
+ 	batadv_tp_sender_cleanup(bat_priv, tp_vars);
+ 
+@@ -923,24 +943,28 @@ static void batadv_tp_send(struct work_struct *work)
+  * batadv_tp_start() - start a new tp meter session
+  * @bat_priv: the bat priv with all the soft interface information
   * @dst: the receiver MAC address
++ * @neigh: neighbour towars which we have to run the test (one-hop test)
   * @test_length: test length in milliseconds
   * @cookie: session cookie
-+ * @caller: caller of tp meter session (user space or ELP)
+  * @caller: caller of tp meter session (user space or ELP)
   */
  void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
--		     u32 test_length, u32 *cookie)
-+		     u32 test_length, u32 *cookie,
-+		     enum batadv_tp_meter_caller caller)
++		     struct batadv_hardif_neigh_node *neigh,
+ 		     u32 test_length, u32 *cookie,
+ 		     enum batadv_tp_meter_caller caller)
  {
  	struct batadv_tp_vars *tp_vars;
  	u8 session_id[2];
-@@ -932,15 +945,17 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	u8 icmp_uid;
+-	u32 session_cookie;
++	u32 session_cookie = 0;
+ 	bool ret;
+ 
+ 	get_random_bytes(session_id, sizeof(session_id));
+ 	get_random_bytes(&icmp_uid, 1);
+-	session_cookie = batadv_tp_session_cookie(session_id, icmp_uid);
+-	*cookie = session_cookie;
++	if (cookie) {
++		session_cookie = batadv_tp_session_cookie(session_id, icmp_uid);
++		*cookie = session_cookie;
++	}
+ 
  	if (!atomic_add_unless(&bat_priv->tp_num, 1, BATADV_TP_MAX_NUM_QUEUE)) {
  		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
- 			   "Meter: too many ongoing sessions, aborting (SEND)\n");
--		batadv_tp_batctl_error_notify(BATADV_TP_REASON_TOO_MANY, dst,
--					      bat_priv, session_cookie);
-+		batadv_tp_caller_init_error(bat_priv, caller,
-+					    BATADV_TP_REASON_TOO_MANY, dst,
-+					    session_cookie);
- 		return;
- 	}
+@@ -961,6 +985,10 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
  
- 	tp_vars = kmalloc(sizeof(*tp_vars), GFP_ATOMIC);
- 	if (!tp_vars) {
--		batadv_tp_batctl_error_notify(BATADV_TP_REASON_MEMORY_ERROR,
--					      dst, bat_priv, session_cookie);
-+		batadv_tp_caller_init_error(bat_priv, caller,
-+					    BATADV_TP_REASON_MEMORY_ERROR, dst,
-+					    session_cookie);
- 		return;
- 	}
- 
-@@ -948,6 +963,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	/* initialize tp_vars */
  	ether_addr_copy(tp_vars->other_end, dst);
++	if (neigh) {
++		kref_get(&neigh->refcount);
++		tp_vars->hardif_neigh = neigh;
++	}
  	kref_init(&tp_vars->refcount);
  	tp_vars->role = BATADV_TP_SENDER;
-+	tp_vars->caller = caller;
- 	atomic_set(&tp_vars->sending, 1);
- 	memcpy(tp_vars->session, session_id, sizeof(session_id));
- 	tp_vars->icmp_uid = icmp_uid;
+ 	tp_vars->caller = caller;
+@@ -1133,7 +1161,7 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ /**
+  * batadv_tp_send_ack() - send an ACK packet
+  * @bat_priv: the bat priv with all the soft interface information
+- * @dst: the mac address of the destination originator
++ * @tp_vars: the private data of the current TP meter session
+  * @seq: the sequence number to ACK
+  * @timestamp: the timestamp to echo back in the ACK
+  * @session: session identifier
+@@ -1142,29 +1170,42 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+  * Return: 0 on success, a positive integer representing the reason of the
+  * failure otherwise
+  */
+-static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
++static int batadv_tp_send_ack(struct batadv_priv *bat_priv,
++			      struct batadv_tp_vars *tp_vars,
+ 			      u32 seq, __be32 timestamp, const u8 *session,
+ 			      int socket_index)
+ {
+ 	struct batadv_hard_iface *primary_if = NULL;
+-	struct batadv_orig_node *orig_node;
++	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_icmp_tp_packet *icmp;
++	struct net_device *netdev = NULL;
+ 	struct sk_buff *skb;
++	u8 *src, *dst;
+ 	int r, ret;
+ 
+-	orig_node = batadv_orig_hash_find(bat_priv, dst);
+-	if (unlikely(!orig_node)) {
+-		ret = BATADV_TP_REASON_DST_UNREACHABLE;
+-		goto out;
+-	}
++	if (tp_vars->hardif_neigh) {
++		dst = tp_vars->hardif_neigh->addr;
++		src = tp_vars->hardif_neigh->if_incoming->net_dev->dev_addr;
++		netdev = tp_vars->hardif_neigh->if_incoming->net_dev;
++	} else {
++		orig_node = batadv_orig_hash_find(bat_priv, tp_vars->other_end);
++		if (unlikely(!orig_node)) {
++			ret = BATADV_TP_REASON_DST_UNREACHABLE;
++			goto out;
++		}
+ 
+-	primary_if = batadv_primary_if_get_selected(bat_priv);
+-	if (unlikely(!primary_if)) {
+-		ret = BATADV_TP_REASON_DST_UNREACHABLE;
+-		goto out;
++		primary_if = batadv_primary_if_get_selected(bat_priv);
++		if (unlikely(!primary_if)) {
++			ret = BATADV_TP_REASON_DST_UNREACHABLE;
++			goto out;
++		}
++
++		dst = orig_node->orig;
++		src = primary_if->net_dev->dev_addr;
++		netdev = NULL;
+ 	}
+ 
+-	skb = netdev_alloc_skb_ip_align(NULL, sizeof(*icmp) + ETH_HLEN);
++	skb = netdev_alloc_skb_ip_align(netdev, sizeof(*icmp) + ETH_HLEN);
+ 	if (unlikely(!skb)) {
+ 		ret = BATADV_TP_REASON_MEMORY_ERROR;
+ 		goto out;
+@@ -1176,8 +1217,8 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
+ 	icmp->version = BATADV_COMPAT_VERSION;
+ 	icmp->ttl = BATADV_TTL;
+ 	icmp->msg_type = BATADV_TP;
+-	ether_addr_copy(icmp->dst, orig_node->orig);
+-	ether_addr_copy(icmp->orig, primary_if->net_dev->dev_addr);
++	ether_addr_copy(icmp->dst, dst);
++	ether_addr_copy(icmp->orig, src);
+ 	icmp->uid = socket_index;
+ 
+ 	icmp->subtype = BATADV_TP_ACK;
+@@ -1186,7 +1227,13 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
+ 	icmp->timestamp = timestamp;
+ 
+ 	/* send the ack */
+-	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (tp_vars->hardif_neigh)
++		r = batadv_send_skb_packet(skb,
++					   tp_vars->hardif_neigh->if_incoming,
++					   dst);
++	else
++		r = batadv_send_skb_to_orig(skb, orig_node, NULL);
++
+ 	if (unlikely(r < 0) || r == NET_XMIT_DROP) {
+ 		ret = BATADV_TP_REASON_DST_UNREACHABLE;
+ 		goto out;
+@@ -1314,14 +1361,17 @@ static void batadv_tp_ack_unordered(struct batadv_tp_vars *tp_vars)
+ /**
+  * batadv_tp_init_recv() - return matching or create new receiver tp_vars
+  * @bat_priv: the bat priv with all the soft interface information
++ * @recv_if: interface that the skb is received on
+  * @icmp: received icmp tp msg
+  *
+  * Return: corresponding tp_vars or NULL on errors
+  */
+ static struct batadv_tp_vars *
+ batadv_tp_init_recv(struct batadv_priv *bat_priv,
++		    struct batadv_hard_iface *recv_if,
+ 		    const struct batadv_icmp_tp_packet *icmp)
+ {
++	struct batadv_hardif_neigh_node *neigh = NULL;
+ 	struct batadv_tp_vars *tp_vars;
+ 
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
+@@ -1336,15 +1386,30 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 		goto out_unlock;
+ 	}
+ 
++	/* the sender is starting a LINK test, therefore we have retrieve its
++	 * corresponding hardif_neigh_node that we'll use later to send ACKs
++	 * back
++	 */
++	if (icmp->subtype == BATADV_TP_MSG_LINK) {
++		neigh = batadv_hardif_neigh_get(recv_if, icmp->orig);
++		if (!neigh) {
++			batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
++				   "Meter: %s() can't retrieve sender neigh object for %pM\n",
++				   __func__, icmp->orig);
++			goto out_unlock;
++		}
++	}
++
+ 	tp_vars = kmalloc(sizeof(*tp_vars), GFP_ATOMIC);
+ 	if (!tp_vars)
+-		goto out_unlock;
++		goto err_neigh_put;
+ 
+ 	ether_addr_copy(tp_vars->other_end, icmp->orig);
+ 	tp_vars->role = BATADV_TP_RECEIVER;
+ 	memcpy(tp_vars->session, icmp->session, sizeof(tp_vars->session));
+ 	tp_vars->last_recv = BATADV_TP_FIRST_SEQ;
+ 	tp_vars->bat_priv = bat_priv;
++	tp_vars->hardif_neigh = neigh;
+ 	kref_init(&tp_vars->refcount);
+ 
+ 	spin_lock_init(&tp_vars->unacked_lock);
+@@ -1357,7 +1422,10 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	timer_setup(&tp_vars->timer, batadv_tp_receiver_shutdown, 0);
+ 
+ 	batadv_tp_reset_receiver_timer(tp_vars);
++	goto out_unlock;
+ 
++err_neigh_put:
++	batadv_hardif_neigh_put(neigh);
+ out_unlock:
+ 	spin_unlock_bh(&bat_priv->tp_list_lock);
+ 
+@@ -1367,11 +1435,13 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ /**
+  * batadv_tp_recv_msg() - process a single data message
+  * @bat_priv: the bat priv with all the soft interface information
++ * @recv_if: interface that the skb is received on
+  * @skb: the buffer containing the received packet
+  *
+  * Process a received TP MSG packet
+  */
+ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
++			       struct batadv_hard_iface *recv_if,
+ 			       const struct sk_buff *skb)
+ {
+ 	const struct batadv_icmp_tp_packet *icmp;
+@@ -1386,7 +1456,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ 	 * first packet is lost, the tp meter does not work anymore!
+ 	 */
+ 	if (seqno == BATADV_TP_FIRST_SEQ) {
+-		tp_vars = batadv_tp_init_recv(bat_priv, icmp);
++		tp_vars = batadv_tp_init_recv(bat_priv, recv_if, icmp);
+ 		if (!tp_vars) {
+ 			batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 				   "Meter: seqno != BATADV_TP_FIRST_SEQ cannot initiate connection\n");
+@@ -1442,7 +1512,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ 	 * is going to be sent is a duplicate (the sender will count them and
+ 	 * possibly enter Fast Retransmit as soon as it has reached 3)
+ 	 */
+-	batadv_tp_send_ack(bat_priv, icmp->orig, tp_vars->last_recv,
++	batadv_tp_send_ack(bat_priv, tp_vars, tp_vars->last_recv,
+ 			   icmp->timestamp, icmp->session, icmp->uid);
+ out:
+ 	if (likely(tp_vars))
+@@ -1452,9 +1522,12 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ /**
+  * batadv_tp_meter_recv() - main TP Meter receiving function
+  * @bat_priv: the bat priv with all the soft interface information
++ * @recv_if: interface that the skb is received on
+  * @skb: the buffer containing the received packet
+  */
+-void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
++void batadv_tp_meter_recv(struct batadv_priv *bat_priv,
++			  struct batadv_hard_iface *recv_if,
++			  struct sk_buff *skb)
+ {
+ 	struct batadv_icmp_tp_packet *icmp;
+ 
+@@ -1462,7 +1535,8 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+ 
+ 	switch (icmp->subtype) {
+ 	case BATADV_TP_MSG:
+-		batadv_tp_recv_msg(bat_priv, skb);
++	case BATADV_TP_MSG_LINK:
++		batadv_tp_recv_msg(bat_priv, recv_if, skb);
+ 		break;
+ 	case BATADV_TP_ACK:
+ 		batadv_tp_recv_ack(bat_priv, skb);
 diff --git a/net/batman-adv/tp_meter.h b/net/batman-adv/tp_meter.h
-index ab0bde26..3b11a3e9 100644
+index 3b11a3e9..3a1be483 100644
 --- a/net/batman-adv/tp_meter.h
 +++ b/net/batman-adv/tp_meter.h
-@@ -28,7 +28,8 @@ struct sk_buff;
+@@ -28,10 +28,13 @@ struct sk_buff;
  int batadv_tp_meter_init(void);
  void batadv_tp_meter_destroy(void);
  void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
--		     u32 test_length, u32 *cookie);
-+		     u32 test_length, u32 *cookie,
-+		     enum batadv_tp_meter_caller caller);
++		     struct batadv_hardif_neigh_node *neigh,
+ 		     u32 test_length, u32 *cookie,
+ 		     enum batadv_tp_meter_caller caller);
  void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
  		    u8 return_value);
- void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb);
+-void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb);
++void batadv_tp_meter_recv(struct batadv_priv *bat_priv,
++			  struct batadv_hard_iface *recv_if,
++			  struct sk_buff *skb);
+ 
+ #endif /* _NET_BATMAN_ADV_TP_METER_H_ */
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 2696b093..56034b54 100644
+index 56034b54..f72db6cf 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1324,6 +1324,16 @@ enum batadv_tp_meter_role {
- 	BATADV_TP_SENDER
+@@ -1455,6 +1455,9 @@ struct batadv_tp_vars {
+ 
+ 	/** @rcu: struct used for freeing in an RCU-safe manner */
+ 	struct rcu_head rcu;
++
++	/** @hardif_neigh: in case of LINK test, represents the other-end */
++	struct batadv_hardif_neigh_node *hardif_neigh;
  };
  
-+/**
-+ * enum batadv_tp_meter_caller - initiator of the tp meter session
-+ * @BATADV_TP_USERSPACE: initiated by user space
-+ * @BATADV_TP_ELP: initiated by ELP
-+ */
-+enum batadv_tp_meter_caller {
-+	BATADV_TP_USERSPACE,
-+	BATADV_TP_ELP
-+};
-+
  /**
-  * struct batadv_tp_vars - tp meter private variables per session
-  */
-@@ -1346,6 +1356,9 @@ struct batadv_tp_vars {
- 	/** @role: receiver/sender modi */
- 	enum batadv_tp_meter_role role;
- 
-+	/** @caller: caller of tp meter session (user space or ELP) */
-+	enum batadv_tp_meter_caller caller;
-+
- 	/** @sending: sending binary semaphore: 1 if sending, 0 is not */
- 	atomic_t sending;
- 
 -- 
 2.18.0
 
