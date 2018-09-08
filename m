@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 08 Sep 2018 19:11:09 +0200
-Message-ID: <11216967.y5cQ9vbesN@sven-edge>
-In-Reply-To: <20180907095958.30946-7-mareklindner@neomailbox.ch>
+Date: Sat, 08 Sep 2018 19:38:01 +0200
+Message-ID: <8046301.0ldSNLAhfO@sven-edge>
+In-Reply-To: <20180907095958.30946-1-mareklindner@neomailbox.ch>
 References: <20180907095958.30946-1-mareklindner@neomailbox.ch>
- <20180907095958.30946-7-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2973985.nLNjUtWez9";
+Content-Type: multipart/signed; boundary="nextPart2387932.Z4F31lax4L";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 6/7] batman-adv: ELP - use tp meter to
- estimate the throughput if otherwise not available
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 0/7] B.A.T.M.A.N. V - fallback to tp
+ meter estimation if throughput otherwise not available
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,60 +19,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, Ligang LIU <heishuihe2008@163.com>
 
---nextPart2973985.nLNjUtWez9
+--nextPart2387932.Z4F31lax4L
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Freitag, 7. September 2018 11:59:57 CEST Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
+On Freitag, 7. September 2018 11:59:51 CEST Marek Lindner wrote:
+> Under normal circumstances B.A.T.M.A.N. V retrieves the neighbor
+> throughput values to populate its metric tables from the various
+> drivers such as WiFi throughput tables and Ethernet throughput..
+> Whenever the interface drivers do not export link throughput 
+> information manual overrides become necessary. To further 
+> automate and thus better support these setups, ELP may call the
+> batman-adv throughput meter to schedule a throughput estimation
+> to be used to populate the metric table.
 
-Most patches in the patchset have quite long patch summary phrase [1]. And 
-this one here (and the patch 3)  doesn't have a commit message at all.
+I know that this patchset is required to have some throughput estimates for 
+non-wifi connections (or for wifi drivers without expected throughput). But 
+since we have the other discussion with Ligang LIU, I still have to bring this 
+up:
 
-Wouldn't it be better to have some actual message and a more brief+precise 
-subject
+We already know that something (maybe ELP unicast probes and the related 
+messages) are "breaking" the connectivity between 2 neighbors in Ligang LIU's 
+test setup (with 6 not so well connected nodes). It also seems to be the case 
+that the driver doesn't return the expected throughput for each neighbor all 
+the time and this missing data would then trigger the single-link tpmeter 
+test.
 
-    batman-adv: ELP - Fall back to tpmeter for throughput estimation
+The test seem to be done every 60 seconds (or longer when there is another 
+source for the throughput) for each neighbor and by default 1s long. My 
+assumption would be now that this test could be even more harmful for wifi 
+connections than unicast ELP probes (or whatever is causing Ligang LUI's 
+problems). Let us just assume that we have these 6 nodes with 5 neighbors (I 
+see a lot more in real world setups). If the tests on the different nodes 
+don't overlap (which would also be bad for the test results) than all tests 
+would take at least 30 seconds of the 60 seconds. So even without the problem 
+in the "Performance Evaluation of BATMAN-adv Wireless Mesh Network Routing 
+Algorithms" mailing list thread, the tpmeter fallback has a significant cost.
 
-    ... when nothing works ... blablabla .. better than nothing ... blublub
-    under following conditions ...
-    done every ...
-    more text here
-    ...
-
-(actual info has to be added and the subject can be better then the example 
-one here).
+Is there anything which I missed that could ease my mind?
 
 Kind regards,
 	Sven
-
-[1] https://www.kernel.org/doc/html/v4.17/process/submitting-patches.html#the-canonical-patch-format
---nextPart2973985.nLNjUtWez9
+--nextPart2387932.Z4F31lax4L
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluUAq0ACgkQXYcKB8Em
-e0YI+hAAxxuT6PJ6H9QgozuSsIRvkBXsB/9ef1GH8AD6UNTUxo6mr3LYQTPde8iJ
-+Gp1VartXvGOZ83ohQImFY2s1MH11nOvZbGgbb9rKwwe2kYEn25ygrsFtWRRZDGc
-MpDNgYcOX6NNiG6YpoSZu8iJBmgeD2sPrZbehCpDDdpH3hbF/RG+w6j+AYiBlLbh
-QmkW6WsprUJkvOXRB/28CseE+v6dGQejTvYz9qAvRywxgMR0Hy3yS4qBuDWFWl6R
-oy6+YtSRBtqrQea2pEA6wIQeGG+reiDQi+3xfOzdeS9ZhWSHykObq+ewhmM8aTfA
-/Lb3z/EhbKKgYKzjubprp1nsZKbJd/f+Hhh6DV/7M31bWVQPMNPWYfcRK+PYUcxj
-7MmoPYQorRW6r9tkHwu8mocLMNSBzNTSmnstO+nARb026h3PmseS5HEyhCR9u9Sm
-HVhW16vZcA4Nkjhxa0ezJoBcUbWgewcOYQ8g3oQcUrjU6k+NNR3f6dhnhtDy3M9K
-at/rauN8Ne74OD4IHR6rRC9L1FCjJKOxl96Nes7ZezkmWnGZrKSAsZ7k8aOGCtVX
-gRCSvUu3CMhRrAHB4sjcQOFlAz3KySwan/TgO7esgviz+4Aodf7EXROguSuA3MGV
-WCagpGWaQHbMZDcgEtly5henjw+mT7I0YElKh9UV4wdstrYpPlo=
-=Kzwx
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAluUCPkACgkQXYcKB8Em
+e0ZsbBAApM8wtAaCZxjMGtzL5lIDlGgAyOlUklIVr1uGOH4feG0al3b7XX2SMc+b
+5293bptTnPSwAl7iDgkgtlW854BL15AsKZPqxZq3NhadJJ2xzKwPK4pIhCULKXi5
+DmIwXUATes+zAX7coAzoSP6XMzsS7Q4FTCOJKpCeigBJW1ffPi+bzllg4geEeCJ6
+bCXEy42Q1naXwWpp5KlXmYK3jkTk6P+qpnTScXyAyc5tIhN4gFVeEf3+fIG2S2YF
+il1opiZrVJ2v2jlGiri1hHtBU1B6mlGUMHNbF2O6o5jXwZg+NNJGQLS/gN+Lmwc4
+8BZXmWeuBiD0YCVzX8WQGejA/JiRYVvQpY3fb0SxGlH2FIAhuprMDSu2AMojJHXJ
+wbpRndssz+R2BKZp30eIP3UZKEF4xp+nPdBbVGCZKDsQH8j0jprth7QbRQgS8gLV
+y0ZZR69pQjRGWplz34gIDFlpNYOe2Qogkhk3/kS4NT4eZizGfCMXIelCw4vcqehI
+uWjIlusZsIPl30foG+Lp+7AC+0eAEpw+0VLy/bto0voQf4fwgTiQUSq6kcYda6G0
+m2Ght5E2IChCE04EA0RTFh/qwkDiN47JvsJw6yoQxmfolx+7PIemeNolPc+mAHWP
+8dWr+XSknnuWhPctzyfacx0J0nXkiQh6OPUCTT9OvTanaTNolDw=
+=udA5
 -----END PGP SIGNATURE-----
 
---nextPart2973985.nLNjUtWez9--
+--nextPart2387932.Z4F31lax4L--
 
 
 
