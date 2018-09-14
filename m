@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 14 Sep 2018 19:48:24 +0200
-Message-ID: <3307401.fCaFkusQ1B@sven-edge>
-In-Reply-To: <20180816145445.27289-1-sven@narfation.org>
-References: <20180816145445.27289-1-sven@narfation.org>
+Date: Fri, 14 Sep 2018 19:48:33 +0200
+Message-ID: <4393416.1vRGEzdc1t@sven-edge>
+In-Reply-To: <20180810213616.23794-1-sven@narfation.org>
+References: <20180810213616.23794-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2430174.eyVj0xqhkX";
+Content-Type: multipart/signed; boundary="nextPart1892602.b88HBZIcCW";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Move OGM rebroadcast stats
- to orig_ifinfo
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2] batman-adv: Continue with
+ deprecation of debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,64 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2430174.eyVj0xqhkX
+--nextPart1892602.b88HBZIcCW
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Donnerstag, 16. August 2018 16:54:45 CEST Sven Eckelmann wrote:
-> B.A.T.M.A.N. IV requires the number of rebroadcast from a neighboring
-> originator. These statistics are gathered per interface which transmitted
-> the OGM (and then received it again). Since an originator is not interface
-> specific, a resizable array was used in each originator.
-> 
-> This resizable array had an entry for each interface and had to be resizes
-> (for all OGMs) when the number of active interface was modified. This could
-> cause problems when a large number of interface is added and not enough
-> continuous memory is available to allocate the array.
-> 
-> There is already a per interface originator structure "batadv_orig_ifinfo"
-> which can be used to store this information.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_iv_ogm.c     | 330 ++++++++++----------------------
->  net/batman-adv/hard-interface.c |  47 +++--
->  net/batman-adv/originator.c     | 107 -----------
->  net/batman-adv/originator.h     |   4 -
->  net/batman-adv/soft-interface.c |   1 -
->  net/batman-adv/types.h          |  62 ++----
->  6 files changed, 145 insertions(+), 406 deletions(-)
+On Freitag, 10. August 2018 23:36:14 CEST Sven Eckelmann wrote:
+[...]
+> Sven Eckelmann (2):
+>   batman-adv: Mark debugfs functionality as deprecated
+>   batman-adv: Provide debug messages as trace events
+[...]
 
-Applied as f36b93064420 [1]
+Applied as fee04b6f72cf [1] and a0e9c94f2903 [2]
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/f36b93064420d44998f7984671d5c78668cca059
-
---nextPart2430174.eyVj0xqhkX
+[1] https://git.open-mesh.org/batman-adv.git/commit/fee04b6f72cf92f6a3173ef55e3e32dd98ce7242
+[2] https://git.open-mesh.org/batman-adv.git/commit/a0e9c94f2903de053455f884cb0095a7a23ae084
+--nextPart1892602.b88HBZIcCW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlub9GgACgkQXYcKB8Em
-e0b+3Q//R2FSOkzBLEHMXGpMSSyuPklwK+F4yg+cWMFDtqnxGZZ/LxPyY6Ub0LgL
-t6An0POrnWUwr5U+hpmfb8TIStetITU4HNuSvyLAWtIGl0hieNbBhuIY5qF9i5Y8
-vPisUEvYLs3VeAu31r5mR5oUFtD4PWfpfwtZ8AubiwyY1UdC9CrJzSe8BS5Wd7p0
-qzi+qwnd9nx0vJfmEVX/oT7NXDWm1slgx2wj3+xUsQsCRQK6bhU4Wyv2xUdi7FTZ
-y/i/8VXyQOGSF0sb3jzh99yfCx+hlj8WkvUWCoSfp4deZmaaw2SWdLOtwvhMU6pE
-t3sj/8f9t9vmMoff4Gk6WhzeJT7Kov/EH0kY9P80ZPA74iYcXqI4hqjU6GQ7EH4B
-yMr0GMd6RmZtXL3XvYlbPrc6VLKUyD1G+j/xkDbJw73QCvWkcrqa77jFlium0AXl
-txxPsG1diVpIRS0y42sOL7QZccx9TWRRM0Elwo+G41OWBsMeGRXvGUwYco2DG7WQ
-WNgEJcNnsWUITP2Wa/vU3AJabTFT3CJyhIFXG5fpBHPcOho9PO9yBMWz/qgpU+PU
-QI859Znt0uI4UeoaSlrr2LhEqJ8WKTGh1/M32eIscIKRg1P1L9cqGd9lMUgFF+HD
-2ZOCy4akz1HpHxVQ5jvjnjlHkurRq8qOl/IUz0dEioT/q6meALo=
-=wrL5
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlub9HEACgkQXYcKB8Em
+e0YWYhAAvIx29/zSgYjoL3A/9KmLaxRq3jbPcU1Frm4vg1esveGDzQPXO4Da86VF
+6E4FEgMlw7UIeFPyvfAycKy8WakYekLDLyIbI9xWLAiZ37nf6/e6vWYE6NlG+/cO
+LC5m0YSDlQnAjivY82Y6p8NSLCP7tcrJTlouJa+g3uY4MUPYmZLtC0ME+gzWaslG
+P8W3u5a3/U93jagNsR6YZHacMszUOZ9tadR+U1NIqR2d4FPXlHYN0//yg/gfml5c
+QLRUckdQTfsUXUxObeLChqyEhBPxlQw0LmAHJvxGcOZ/xVAHBwUML8NKoDDp4E+s
+MYuWrkGE4J8AREp8856zlQrMNKx7vuoJhnsiDcB7Hu4e6+sV2Ivy55CQ98/cSouN
+bqZ4Ma3Z2JDyBr+Sc7cNhecVlRqSUpgtJZiePxvfvS14ygdwE0vChjnQfOAryZWn
+v67XoaEVHlrYnICPNg/bdmEmLBiZ1ng2xaFs0uLGUaqArLDTxjvGAemPtDVsrs+F
+zK0IsoS9iAi7YpEWtGxfPaWKukmfrX0GZSTeWjBIWe1yHf3xzpHPHS/2kelDl7AC
+BVqVJKFq5nuHaIWKUD2z4V1e+oknQI4GsItQvR3L9yTgXqxPLNaHZNgtzHA1exrQ
+NO6fcdEVk8iLSLdcJxaAnfKpQjkfGl7re2FJTAN1dJQhDI6HNrU=
+=HP2W
 -----END PGP SIGNATURE-----
 
---nextPart2430174.eyVj0xqhkX--
+--nextPart1892602.b88HBZIcCW--
 
 
 
