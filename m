@@ -1,11 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:03 +0200
-Message-Id: <20180919122213.23108-2-sw@simonwunderlich.de>
-In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
-References: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/11] batman-adv: Avoid probe ELP
- information leak
+Date: Wed, 19 Sep 2018 14:22:02 +0200
+Message-Id: <20180919122213.23108-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 00/11] pull request for net: batman-adv
+ 2018-09-19
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,40 +14,89 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+Hi David,
 
-The probe ELPs for WiFi interfaces are expanded to contain at least
-BATADV_ELP_MIN_PROBE_SIZE bytes. This is usually a lot more than the
-number of bytes which the template ELP packet requires.
+here are some bugfixes which we would like to see integrated into net.
 
-These extra padding bytes were not initialized and thus could contain data
-which were previously stored at the same location. It is therefore required
-to set it to some predefined or random values to avoid leaking private
-information from the system transmitting these kind of packets.
+We forgot to bump the version number in the last round for net-next, so
+the belated patch to do that is included - we hope you can adopt it.
+This will most likely create a merge conflict later when merging into
+net-next with this rounds net-next patchset, but net-next should keep
+the 2018.4 version[1].
 
-Fixes: e4623c913508 ("batman-adv: Avoid probe ELP information leak")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bat_v_elp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please pull or let me know of any problem!
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 71c20c1d4002..e103c759b7ab 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -241,7 +241,7 @@ batadv_v_elp_wifi_neigh_probe(struct batadv_hardif_neigh_node *neigh)
- 		 * the packet to be exactly of that size to make the link
- 		 * throughput estimation effective.
- 		 */
--		skb_put(skb, probe_len - hard_iface->bat_v.elp_skb->len);
-+		skb_put_zero(skb, probe_len - hard_iface->bat_v.elp_skb->len);
+Thank you,
+      Simon
+
+[1] resolution:
+
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -25,11 +25,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
  
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Sending unicast (probe) ELP packet on interface %s to %pM\n",
--- 
-2.11.0
+ #ifndef BATADV_SOURCE_VERSION
+-<<<<<<<
+-#define BATADV_SOURCE_VERSION "2018.3"
+-=======
+ #define BATADV_SOURCE_VERSION "2018.4"
+->>>>>>>
+ #endif
+ 
+ /* B.A.T.M.A.N. parameters */
 
+The following changes since commit 5b394b2ddf0347bef56e50c69a58773c94343ff3:
+
+  Linux 4.19-rc1 (2018-08-26 14:11:59 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180919
+
+for you to fetch changes up to dabeb13eee81329338b1f8f330dfcc37a86714d7:
+
+  batman-adv: Increase version number to 2018.3 (2018-09-14 17:59:20 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - Avoid ELP information leak, by Sven Eckelmann
+
+ - Fix sysfs segfault issues, by Sven Eckelmann (2 patches)
+
+ - Fix locking when adding entries in various lists,
+   by Sven Eckelmann (5 patches)
+
+ - Fix refcount if queue_work() fails, by Marek Lindner (2 patches)
+
+ - Fixup forgotten version bump, by Sven Eckelmann
+
+----------------------------------------------------------------
+Marek Lindner (2):
+      batman-adv: fix backbone_gw refcount on queue_work() failure
+      batman-adv: fix hardif_neigh refcount on queue_work() failure
+
+Sven Eckelmann (9):
+      batman-adv: Avoid probe ELP information leak
+      batman-adv: Fix segfault when writing to throughput_override
+      batman-adv: Fix segfault when writing to sysfs elp_interval
+      batman-adv: Prevent duplicated gateway_node entry
+      batman-adv: Prevent duplicated nc_node entry
+      batman-adv: Prevent duplicated softif_vlan entry
+      batman-adv: Prevent duplicated global TT entry
+      batman-adv: Prevent duplicated tvlv handler
+      batman-adv: Increase version number to 2018.3
+
+ net/batman-adv/bat_v_elp.c             | 10 +++++++---
+ net/batman-adv/bridge_loop_avoidance.c | 10 ++++++++--
+ net/batman-adv/gateway_client.c        | 11 +++++++++--
+ net/batman-adv/main.h                  |  2 +-
+ net/batman-adv/network-coding.c        | 27 +++++++++++++++------------
+ net/batman-adv/soft-interface.c        | 25 ++++++++++++++++++-------
+ net/batman-adv/sysfs.c                 | 30 ++++++++++++++++++++----------
+ net/batman-adv/translation-table.c     |  6 ++++--
+ net/batman-adv/tvlv.c                  |  8 ++++++--
+ 9 files changed, 88 insertions(+), 41 deletions(-)
