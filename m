@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:05 +0200
-Message-Id: <20180919122213.23108-4-sw@simonwunderlich.de>
+Date: Wed, 19 Sep 2018 14:22:06 +0200
+Message-Id: <20180919122213.23108-5-sw@simonwunderlich.de>
 In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
 References: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/11] batman-adv: Fix segfault when writing
- to sysfs elp_interval
+Subject: [B.A.T.M.A.N.] [PATCH 04/11] batman-adv: Prevent duplicated
+ gateway_node entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,109 +20,82 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The per hardif sysfs file "batman_adv/elp_interval" is using the generic
-functions to store/show uint values. The helper __batadv_store_uint_attr
-requires the softif net_device as parameter to print the resulting change
-as info text when the users writes to this file. It uses the helper
-function batadv_info to add it at the same time to the kernel ring buffer
-and to the batman-adv debug log (when CONFIG_BATMAN_ADV_DEBUG is enabled).
+The function batadv_gw_node_add is responsible for adding new gw_node to
+the gateway_list. It is expecting that the caller already checked that
+there is not already an entry with the same key or not.
 
-The function batadv_info requires as first parameter the batman-adv softif
-net_device. This parameter is then used to find the private buffer which
-contains the debug log for this batman-adv interface. But
-batadv_store_throughput_override used as first argument the slave
-net_device. This slave device doesn't have the batadv_priv private data
-which is access by batadv_info.
+But the lock for the list is only held when the list is really modified.
+This could lead to duplicated entries because another context could create
+an entry with the same key between the check and the list manipulation.
 
-Writing to this file with CONFIG_BATMAN_ADV_DEBUG enabled can either lead
-to a segfault or to memory corruption.
+The check and the manipulation of the list must therefore be in the same
+locked code section.
 
-Fixes: 0744ff8fa8fa ("batman-adv: Add hard_iface specific sysfs wrapper macros for UINT")
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/sysfs.c | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+ net/batman-adv/gateway_client.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 3a76e8970c02..09427fc6494a 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -188,7 +188,8 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 									\
- 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
- 					_post_func, attr,		\
--					&bat_priv->_var, net_dev);	\
-+					&bat_priv->_var, net_dev,	\
-+					NULL);	\
- }
- 
- #define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
-@@ -262,7 +263,9 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 									\
- 	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
- 					  _post_func, attr,		\
--					  &hard_iface->_var, net_dev);	\
-+					  &hard_iface->_var,		\
-+					  hard_iface->soft_iface,	\
-+					  net_dev);			\
- 									\
- 	batadv_hardif_put(hard_iface);				\
- 	return length;							\
-@@ -356,10 +359,12 @@ __batadv_store_bool_attr(char *buff, size_t count,
- 
- static int batadv_store_uint_attr(const char *buff, size_t count,
- 				  struct net_device *net_dev,
-+				  struct net_device *slave_dev,
- 				  const char *attr_name,
- 				  unsigned int min, unsigned int max,
- 				  atomic_t *attr)
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 8b198ee798c9..140c61a3f1ec 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -32,6 +32,7 @@
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/rculist.h>
+@@ -348,6 +349,9 @@ void batadv_gw_check_election(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig_node: originator announcing gateway capabilities
+  * @gateway: announced bandwidth information
++ *
++ * Has to be called with the appropriate locks being acquired
++ * (gw.list_lock).
+  */
+ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+@@ -355,6 +359,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
  {
-+	char ifname[IFNAMSIZ + 3] = "";
- 	unsigned long uint_val;
- 	int ret;
+ 	struct batadv_gw_node *gw_node;
  
-@@ -385,8 +390,11 @@ static int batadv_store_uint_attr(const char *buff, size_t count,
- 	if (atomic_read(attr) == uint_val)
- 		return count;
- 
--	batadv_info(net_dev, "%s: Changing from: %i to: %lu\n",
--		    attr_name, atomic_read(attr), uint_val);
-+	if (slave_dev)
-+		snprintf(ifname, sizeof(ifname), "%s: ", slave_dev->name);
++	lockdep_assert_held(&bat_priv->gw.list_lock);
 +
-+	batadv_info(net_dev, "%s: %sChanging from: %i to: %lu\n",
-+		    attr_name, ifname, atomic_read(attr), uint_val);
+ 	if (gateway->bandwidth_down == 0)
+ 		return;
  
- 	atomic_set(attr, uint_val);
- 	return count;
-@@ -397,12 +405,13 @@ static ssize_t __batadv_store_uint_attr(const char *buff, size_t count,
- 					void (*post_func)(struct net_device *),
- 					const struct attribute *attr,
- 					atomic_t *attr_store,
--					struct net_device *net_dev)
-+					struct net_device *net_dev,
-+					struct net_device *slave_dev)
+@@ -369,10 +375,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
+ 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
+ 
+-	spin_lock_bh(&bat_priv->gw.list_lock);
+ 	kref_get(&gw_node->refcount);
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.gateway_list);
+-	spin_unlock_bh(&bat_priv->gw.list_lock);
+ 
+ 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 		   "Found new gateway %pM -> gw bandwidth: %u.%u/%u.%u MBit\n",
+@@ -428,11 +432,14 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
  {
- 	int ret;
+ 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
  
--	ret = batadv_store_uint_attr(buff, count, net_dev, attr->name, min, max,
--				     attr_store);
-+	ret = batadv_store_uint_attr(buff, count, net_dev, slave_dev,
-+				     attr->name, min, max, attr_store);
- 	if (post_func && ret)
- 		post_func(net_dev);
++	spin_lock_bh(&bat_priv->gw.list_lock);
+ 	gw_node = batadv_gw_node_get(bat_priv, orig_node);
+ 	if (!gw_node) {
+ 		batadv_gw_node_add(bat_priv, orig_node, gateway);
++		spin_unlock_bh(&bat_priv->gw.list_lock);
+ 		goto out;
+ 	}
++	spin_unlock_bh(&bat_priv->gw.list_lock);
  
-@@ -571,7 +580,7 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- 	return __batadv_store_uint_attr(buff, count, 1, BATADV_TQ_MAX_VALUE,
- 					batadv_post_gw_reselect, attr,
- 					&bat_priv->gw.sel_class,
--					bat_priv->soft_iface);
-+					bat_priv->soft_iface, NULL);
- }
- 
- static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
+ 	if (gw_node->bandwidth_down == ntohl(gateway->bandwidth_down) &&
+ 	    gw_node->bandwidth_up == ntohl(gateway->bandwidth_up))
 -- 
 2.11.0
 
