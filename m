@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:10 +0200
-Message-Id: <20180919122213.23108-9-sw@simonwunderlich.de>
+Date: Wed, 19 Sep 2018 14:22:11 +0200
+Message-Id: <20180919122213.23108-10-sw@simonwunderlich.de>
 In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
 References: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 08/11] batman-adv: Prevent duplicated tvlv
- handler
+Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: fix backbone_gw refcount
+ on queue_work() failure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,63 +16,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The function batadv_tvlv_handler_register is responsible for adding new
-tvlv_handler to the handler_list. It first checks whether the entry
-already is in the list or not. If it is, then the creation of a new entry
-is aborted.
+The backbone_gw refcounter is to be decreased by the queued work and
+currently is never decreased if the queue_work() call fails.
+Fix by checking the queue_work() return value and decrease refcount
+if necessary.
 
-But the lock for the list is only held when the list is really modified.
-This could lead to duplicated entries because another context could create
-an entry with the same key between the check and the list manipulation.
-
-The check and the manipulation of the list must therefore be in the same
-locked code section.
-
-Fixes: ef26157747d4 ("batman-adv: tvlv - basic infrastructure")
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tvlv.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index a637458205d1..40e69c9346d2 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -529,15 +529,20 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index ff9659af6b91..5f1aeeded0e3 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1772,6 +1772,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
  {
- 	struct batadv_tvlv_handler *tvlv_handler;
+ 	struct batadv_bla_backbone_gw *backbone_gw;
+ 	struct ethhdr *ethhdr;
++	bool ret;
  
-+	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
+ 	ethhdr = eth_hdr(skb);
+ 
+@@ -1795,8 +1796,13 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	if (unlikely(!backbone_gw))
+ 		return true;
+ 
+-	queue_work(batadv_event_workqueue, &backbone_gw->report_work);
+-	/* backbone_gw is unreferenced in the report work function function */
++	ret = queue_work(batadv_event_workqueue, &backbone_gw->report_work);
 +
- 	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
- 	if (tvlv_handler) {
-+		spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
- 		batadv_tvlv_handler_put(tvlv_handler);
- 		return;
- 	}
++	/* backbone_gw is unreferenced in the report work function function
++	 * if queue_work() call was successful
++	 */
++	if (!ret)
++		batadv_backbone_gw_put(backbone_gw);
  
- 	tvlv_handler = kzalloc(sizeof(*tvlv_handler), GFP_ATOMIC);
--	if (!tvlv_handler)
-+	if (!tvlv_handler) {
-+		spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
- 		return;
-+	}
- 
- 	tvlv_handler->ogm_handler = optr;
- 	tvlv_handler->unicast_handler = uptr;
-@@ -547,7 +552,6 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
- 	kref_init(&tvlv_handler->refcount);
- 	INIT_HLIST_NODE(&tvlv_handler->list);
- 
--	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
- 	kref_get(&tvlv_handler->refcount);
- 	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
- 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
+ 	return true;
+ }
 -- 
 2.11.0
 
