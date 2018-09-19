@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:07 +0200
-Message-Id: <20180919122213.23108-6-sw@simonwunderlich.de>
+Date: Wed, 19 Sep 2018 14:22:08 +0200
+Message-Id: <20180919122213.23108-7-sw@simonwunderlich.de>
 In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
 References: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 05/11] batman-adv: Prevent duplicated nc_node
- entry
+Subject: [B.A.T.M.A.N.] [PATCH 06/11] batman-adv: Prevent duplicated
+ softif_vlan entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,10 +20,10 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The function batadv_nc_get_nc_node is responsible for adding new nc_nodes
-to the in_coding_list and out_coding_list. It first checks whether the
-entry already is in the list or not. If it is, then the creation of a new
-entry is aborted.
+The function batadv_softif_vlan_get is responsible for adding new
+softif_vlan to the softif_vlan_list. It first checks whether the entry
+already is in the list or not. If it is, then the creation of a new entry
+is aborted.
 
 But the lock for the list is only held when the list is really modified.
 This could lead to duplicated entries because another context could create
@@ -32,73 +32,69 @@ an entry with the same key between the check and the list manipulation.
 The check and the manipulation of the list must therefore be in the same
 locked code section.
 
-Fixes: d56b1705e28c ("batman-adv: network coding - detect coding nodes and remove these after timeout")
+Fixes: 5d2c05b21337 ("batman-adv: add per VLAN interface attribute framework")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/network-coding.c | 27 +++++++++++++++------------
- 1 file changed, 15 insertions(+), 12 deletions(-)
+ net/batman-adv/soft-interface.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index c3578444f3cb..34caf129a9bf 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -854,16 +854,27 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
- 	spinlock_t *lock; /* Used to lock list selected by "int in_coding" */
- 	struct list_head *list;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 1485263a348b..626ddca332db 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -574,15 +574,20 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	struct batadv_softif_vlan *vlan;
+ 	int err;
  
-+	/* Select ingoing or outgoing coding node */
-+	if (in_coding) {
-+		lock = &orig_neigh_node->in_coding_list_lock;
-+		list = &orig_neigh_node->in_coding_list;
-+	} else {
-+		lock = &orig_neigh_node->out_coding_list_lock;
-+		list = &orig_neigh_node->out_coding_list;
++	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
++
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+ 		batadv_softif_vlan_put(vlan);
++		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 		return -EEXIST;
+ 	}
+ 
+ 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
+-	if (!vlan)
++	if (!vlan) {
++		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 		return -ENOMEM;
 +	}
+ 
+ 	vlan->bat_priv = bat_priv;
+ 	vlan->vid = vid;
+@@ -590,17 +595,23 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 
+ 	atomic_set(&vlan->ap_isolation, 0);
+ 
++	kref_get(&vlan->refcount);
++	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
++	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
 +
-+	spin_lock_bh(lock);
++	/* batadv_sysfs_add_vlan cannot be in the spinlock section due to the
++	 * sleeping behavior of the sysfs functions and the fs_reclaim lock
++	 */
+ 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+ 	if (err) {
+-		kfree(vlan);
++		/* ref for the function */
++		batadv_softif_vlan_put(vlan);
 +
- 	/* Check if nc_node is already added */
- 	nc_node = batadv_nc_find_nc_node(orig_node, orig_neigh_node, in_coding);
++		/* ref for the list */
++		batadv_softif_vlan_put(vlan);
+ 		return err;
+ 	}
  
- 	/* Node found */
- 	if (nc_node)
--		return nc_node;
-+		goto unlock;
- 
- 	nc_node = kzalloc(sizeof(*nc_node), GFP_ATOMIC);
- 	if (!nc_node)
--		return NULL;
-+		goto unlock;
- 
- 	/* Initialize nc_node */
- 	INIT_LIST_HEAD(&nc_node->list);
-@@ -872,22 +883,14 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
- 	kref_get(&orig_neigh_node->refcount);
- 	nc_node->orig_node = orig_neigh_node;
- 
--	/* Select ingoing or outgoing coding node */
--	if (in_coding) {
--		lock = &orig_neigh_node->in_coding_list_lock;
--		list = &orig_neigh_node->in_coding_list;
--	} else {
--		lock = &orig_neigh_node->out_coding_list_lock;
--		list = &orig_neigh_node->out_coding_list;
--	}
+-	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+-	kref_get(&vlan->refcount);
+-	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+-	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
 -
- 	batadv_dbg(BATADV_DBG_NC, bat_priv, "Adding nc_node %pM -> %pM\n",
- 		   nc_node->addr, nc_node->orig_node->orig);
- 
- 	/* Add nc_node to orig_node */
--	spin_lock_bh(lock);
- 	kref_get(&nc_node->refcount);
- 	list_add_tail_rcu(&nc_node->list, list);
-+
-+unlock:
- 	spin_unlock_bh(lock);
- 
- 	return nc_node;
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
 -- 
 2.11.0
 
