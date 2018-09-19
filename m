@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:11 +0200
-Message-Id: <20180919122213.23108-10-sw@simonwunderlich.de>
+Date: Wed, 19 Sep 2018 14:22:12 +0200
+Message-Id: <20180919122213.23108-11-sw@simonwunderlich.de>
 In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
 References: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 09/11] batman-adv: fix backbone_gw refcount
+Subject: [B.A.T.M.A.N.] [PATCH 10/11] batman-adv: fix hardif_neigh refcount
  on queue_work() failure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,7 +20,7 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The backbone_gw refcounter is to be decreased by the queued work and
+The hardif_neigh refcounter is to be decreased by the queued work and
 currently is never decreased if the queue_work() call fails.
 Fix by checking the queue_work() return value and decrease refcount
 if necessary.
@@ -29,37 +29,35 @@ Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_v_elp.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index ff9659af6b91..5f1aeeded0e3 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1772,6 +1772,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
- {
- 	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct ethhdr *ethhdr;
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index e103c759b7ab..9f481cfdf77d 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -268,6 +268,7 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+ 	struct batadv_priv *bat_priv;
+ 	struct sk_buff *skb;
+ 	u32 elp_interval;
 +	bool ret;
  
- 	ethhdr = eth_hdr(skb);
- 
-@@ -1795,8 +1796,13 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	if (unlikely(!backbone_gw))
- 		return true;
- 
--	queue_work(batadv_event_workqueue, &backbone_gw->report_work);
--	/* backbone_gw is unreferenced in the report work function function */
-+	ret = queue_work(batadv_event_workqueue, &backbone_gw->report_work);
+ 	bat_v = container_of(work, struct batadv_hard_iface_bat_v, elp_wq.work);
+ 	hard_iface = container_of(bat_v, struct batadv_hard_iface, bat_v);
+@@ -329,8 +330,11 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+ 		 * may sleep and that is not allowed in an rcu protected
+ 		 * context. Therefore schedule a task for that.
+ 		 */
+-		queue_work(batadv_event_workqueue,
+-			   &hardif_neigh->bat_v.metric_work);
++		ret = queue_work(batadv_event_workqueue,
++				 &hardif_neigh->bat_v.metric_work);
 +
-+	/* backbone_gw is unreferenced in the report work function function
-+	 * if queue_work() call was successful
-+	 */
-+	if (!ret)
-+		batadv_backbone_gw_put(backbone_gw);
++		if (!ret)
++			batadv_hardif_neigh_put(hardif_neigh);
+ 	}
+ 	rcu_read_unlock();
  
- 	return true;
- }
 -- 
 2.11.0
 
