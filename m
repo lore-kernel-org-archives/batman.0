@@ -1,9 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Sep 2018 14:22:02 +0200
-Message-Id: <20180919122213.23108-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 00/11] pull request for net: batman-adv
- 2018-09-19
+Date: Wed, 19 Sep 2018 14:22:04 +0200
+Message-Id: <20180919122213.23108-3-sw@simonwunderlich.de>
+In-Reply-To: <20180919122213.23108-1-sw@simonwunderlich.de>
+References: <20180919122213.23108-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 02/11] batman-adv: Fix segfault when writing
+ to throughput_override
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,89 +16,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Sven Eckelmann <sven@narfation.org>
 
-here are some bugfixes which we would like to see integrated into net.
+The per hardif sysfs file "batman_adv/throughput_override" prints the
+resulting change as info text when the users writes to this file. It uses
+the helper function batadv_info to add it at the same time to the kernel
+ring buffer and to the batman-adv debug log (when CONFIG_BATMAN_ADV_DEBUG
+is enabled).
 
-We forgot to bump the version number in the last round for net-next, so
-the belated patch to do that is included - we hope you can adopt it.
-This will most likely create a merge conflict later when merging into
-net-next with this rounds net-next patchset, but net-next should keep
-the 2018.4 version[1].
+The function batadv_info requires as first parameter the batman-adv softif
+net_device. This parameter is then used to find the private buffer which
+contains the debug log for this batman-adv interface. But
+batadv_store_throughput_override used as first argument the slave
+net_device. This slave device doesn't have the batadv_priv private data
+which is access by batadv_info.
 
-Please pull or let me know of any problem!
+Writing to this file with CONFIG_BATMAN_ADV_DEBUG enabled can either lead
+to a segfault or to memory corruption.
 
-Thank you,
-      Simon
+Fixes: 0b5ecc6811bd ("batman-adv: add throughput override attribute to hard_ifaces")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/sysfs.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-[1] resolution:
-
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -25,11 +25,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index f2eef43bd2ec..3a76e8970c02 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -1090,8 +1090,9 @@ static ssize_t batadv_store_throughput_override(struct kobject *kobj,
+ 	if (old_tp_override == tp_override)
+ 		goto out;
  
- #ifndef BATADV_SOURCE_VERSION
--<<<<<<<
--#define BATADV_SOURCE_VERSION "2018.3"
--=======
- #define BATADV_SOURCE_VERSION "2018.4"
-->>>>>>>
- #endif
+-	batadv_info(net_dev, "%s: Changing from: %u.%u MBit to: %u.%u MBit\n",
+-		    "throughput_override",
++	batadv_info(hard_iface->soft_iface,
++		    "%s: %s: Changing from: %u.%u MBit to: %u.%u MBit\n",
++		    "throughput_override", net_dev->name,
+ 		    old_tp_override / 10, old_tp_override % 10,
+ 		    tp_override / 10, tp_override % 10);
  
- /* B.A.T.M.A.N. parameters */
+-- 
+2.11.0
 
-The following changes since commit 5b394b2ddf0347bef56e50c69a58773c94343ff3:
-
-  Linux 4.19-rc1 (2018-08-26 14:11:59 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20180919
-
-for you to fetch changes up to dabeb13eee81329338b1f8f330dfcc37a86714d7:
-
-  batman-adv: Increase version number to 2018.3 (2018-09-14 17:59:20 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - Avoid ELP information leak, by Sven Eckelmann
-
- - Fix sysfs segfault issues, by Sven Eckelmann (2 patches)
-
- - Fix locking when adding entries in various lists,
-   by Sven Eckelmann (5 patches)
-
- - Fix refcount if queue_work() fails, by Marek Lindner (2 patches)
-
- - Fixup forgotten version bump, by Sven Eckelmann
-
-----------------------------------------------------------------
-Marek Lindner (2):
-      batman-adv: fix backbone_gw refcount on queue_work() failure
-      batman-adv: fix hardif_neigh refcount on queue_work() failure
-
-Sven Eckelmann (9):
-      batman-adv: Avoid probe ELP information leak
-      batman-adv: Fix segfault when writing to throughput_override
-      batman-adv: Fix segfault when writing to sysfs elp_interval
-      batman-adv: Prevent duplicated gateway_node entry
-      batman-adv: Prevent duplicated nc_node entry
-      batman-adv: Prevent duplicated softif_vlan entry
-      batman-adv: Prevent duplicated global TT entry
-      batman-adv: Prevent duplicated tvlv handler
-      batman-adv: Increase version number to 2018.3
-
- net/batman-adv/bat_v_elp.c             | 10 +++++++---
- net/batman-adv/bridge_loop_avoidance.c | 10 ++++++++--
- net/batman-adv/gateway_client.c        | 11 +++++++++--
- net/batman-adv/main.h                  |  2 +-
- net/batman-adv/network-coding.c        | 27 +++++++++++++++------------
- net/batman-adv/soft-interface.c        | 25 ++++++++++++++++++-------
- net/batman-adv/sysfs.c                 | 30 ++++++++++++++++++++----------
- net/batman-adv/translation-table.c     |  6 ++++--
- net/batman-adv/tvlv.c                  |  8 ++++++--
- 9 files changed, 88 insertions(+), 41 deletions(-)
