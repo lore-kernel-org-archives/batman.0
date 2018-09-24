@@ -1,14 +1,9 @@
-Return-Path: <james@fsck.co.uk>
-Mime-Version: 1.0
-Date: Fri, 21 Sep 2018 16:51:53 +0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-ID: <44c621ef89e6d369e6c2e7f438123243@mail.fsck.co.uk>
-From: "A. James Lewis" <james@fsck.co.uk>
-In-Reply-To: <20180919123238.23742-6-sw@simonwunderlich.de>
-References: <20180919123238.23742-6-sw@simonwunderlich.de>
- <20180919123238.23742-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] Packaging BATMAN
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 24 Sep 2018 11:16:08 +0200
+Message-Id: <20180924091609.20794-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix colliding redefinition
+ of file_dentry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,13 +13,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all,=0A=0AI'd like to package an application for RHEL7 which uses BATM=
-AN, but it seems that the module is not distributed by Redhat with their =
-kernel.=0A=0AAm I going to be stuck with releasing a new package with an =
-updated batman-adv kernel module for every minor update of the OS, or is =
-there a simpler way?... =0A=0AAny advice/suggestions would be appreciated=
-.=0A=0A--=0AA. James Lewis (james@fsck.co.uk)=0A"Engineering does not req=
-uire science. Science helps a lot but people=0Abuilt perfectly good brick=
- walls long before they knew why cement works."
+Linux >=4.4.8 have the function file_dentry already defined while Linux 4.5
+only got it with v4.5.2. Older stable kernel versions might also have
+gotten this function. Maintaining a full list of kernel versions which have
+this functionality is too much of a burden and thus the calls to this
+function are simply replaced with calls to a new private function
+batadv_file_dentry.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/fs.h | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/compat-include/linux/fs.h b/compat-include/linux/fs.h
+index 4d6bb1d7..e0d6f7c7 100644
+--- a/compat-include/linux/fs.h
++++ b/compat-include/linux/fs.h
+@@ -27,11 +27,20 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
+ 
+-static inline struct dentry *file_dentry(const struct file *file)
++static inline struct dentry *batadv_file_dentry(const struct file *file)
+ {
+-	return file->f_path.dentry;
++	struct dentry *dentry = file->f_path.dentry;
++
++#ifdef DCACHE_OP_REAL
++	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
++		return dentry->d_op->d_real(dentry, file_inode(file));
++#endif
++
++	return dentry;
+ }
+ 
++#define file_dentry batadv_file_dentry
++
+ #endif /* < KERNEL_VERSION(4, 6, 0) */
+ 
+ #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_FS_H_ */
+-- 
+2.11.0
+
