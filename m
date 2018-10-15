@@ -1,16 +1,8 @@
-Return-Path: <guohuizou2000@sina.com>
-From: "gary" <guohuizou2000@sina.com>
-References: <CAEmTpZG2E2+4taAqrRpr0Yq_2HNte16wB2_gD87ZuN8aRnAOag@mail.gmail.com>
- <6363727.6cOmail6FH@bentobox>
-In-Reply-To: <6363727.6cOmail6FH@bentobox>
-Date: Mon, 15 Oct 2018 14:34:53 +0800
-Message-ID: <029001d46451$32dd4ec0$9897ec40$@sina.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Language: zh-cn
-Subject: Re: [B.A.T.M.A.N.] BLA and gateway mode
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 15 Oct 2018 12:02:01 +0200
+Message-Id: <20181015100201.17348-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Fix minor typos in manpage
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,55 +12,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: =?utf-8?B?J9Cc0LDRgNC6INCa0L7RgNC10L3QsdC10YDQsyc=?= <socketpair@gmail.com>
-
-
-Hi, guys,
-
-I meet an issue related to bla.
-There are two backbone nodes on backbone LAN, and many mesh nodes =
-connected with the two backbone nodes.
-When I run ping test on one client, there is about 20% packet loss.
-And I find out the packet is always loss when the client is switch from =
-one backbone node to another one(observing "batctl cl" on backbone =
-node).
-
-Do you have any suggestion for the issue?
-
-Thanks very much.
------Original Message-----
-From: B.A.T.M.A.N <b.a.t.m.a.n-bounces@lists.open-mesh.org> On Behalf Of =
-Sven Eckelmann
-Sent: 2018=E5=B9=B410=E6=9C=8812=E6=97=A5 14:06
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =D0=9C=D0=B0=D1=80=D0=BA =
-=D0=9A=D0=BE=D1=80=D0=B5=D0=BD=D0=B1=D0=B5=D1=80=D0=B3 =
-<socketpair@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] BLA and gateway mode
 
-On Freitag, 12. Oktober 2018 10:55:02 CEST =D0=9C=D0=B0=D1=80=D0=BA =
-=D0=9A=D0=BE=D1=80=D0=B5=D0=BD=D0=B1=D0=B5=D1=80=D0=B3 wrote:
-> Hello, guys.
->=20
-> Does anybody know if BLA is somehow connected with gateway mode ?
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ man/batctl.8 | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-No it isn't connected.
-
-> In
-> short, I'm unsure if gateway mode algorythms influence only DHCP=20
-> traffic. It is not strictly said. Documentation about BLA II use term=20
-> "gateway". As afr as I understand, there maybe case when BLA gateway=20
-> is one node, and DHCP gateway is another one.
-
-Correct
-
-> So, the question: does
-> GW functionality influence BLA algorythms ?
-
-No
-
-Kind regards,
-	Sven
-
-
+diff --git a/man/batctl.8 b/man/batctl.8
+index d5fc5302ffd5d6a5ab1dfcb164c57a9f7f8e398f..3e210281fcf4d5d3c1d76b1f9c02459f4828979e 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -338,7 +338,7 @@ given batctl will not replace the MAC addresses with bat\-host names in the outp
+ This command starts a throughput test entirely controlled by batman module in
+ kernel space: the computational resources needed to align memory and copy data
+ between user and kernel space that are required by other user space tools may
+-represent a bootleneck on some low profile device.
++represent a bottleneck on some low profile device.
+ 
+ The test consist of the transfer of 14 MB of data between the two nodes. The
+ protocol used to transfer the data is somehow similar to TCP, but simpler: some
+@@ -346,9 +346,9 @@ TCP features are still missing, thus protocol performances could be worst. Since
+ a fixed amount of data is transferred the experiment duration depends on the
+ network conditions. The experiment can be interrupted with CTRL + C. At the end
+ of a successful experiment the throughput in KBytes per second is returned,
+-togheter with the experiment duration in millisecond and the amount of bytes
++together with the experiment duration in millisecond and the amount of bytes
+ transferred. If too many packets are lost or the specified MAC address is not
+-reachable, a message notifing the error is returned instead of the result.
++reachable, a message notifying the error is returned instead of the result.
+ .RE
+ .br
+ .SH FILES
