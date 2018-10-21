@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Oct 2018 00:55:11 +0200
-Message-Id: <20181021225524.8155-26-sven@narfation.org>
+Date: Mon, 22 Oct 2018 00:55:12 +0200
+Message-Id: <20181021225524.8155-27-sven@narfation.org>
 In-Reply-To: <20181021225524.8155-1-sven@narfation.org>
 References: <20181021225524.8155-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 25/38] batctl: Move originators debug table
+Subject: [B.A.T.M.A.N.] [PATCH 26/38] batctl: Move transglobal debug table
  to own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -27,77 +27,77 @@ code sections together.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
  Makefile      |   1 +
- debug.c       |  11 ---
- netlink.c     | 175 ---------------------------------------
+ debug.c       |  11 ----
+ netlink.c     | 112 -----------------------------------
  netlink.h     |   2 -
- originators.c | 225 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 226 insertions(+), 188 deletions(-)
- create mode 100644 originators.c
+ transglobal.c | 159 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 160 insertions(+), 125 deletions(-)
+ create mode 100644 transglobal.c
 
 diff --git a/Makefile b/Makefile
-index d447663..059c602 100755
+index 059c602..ef0c28b 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -53,6 +53,7 @@ OBJ += nc_nodes.o
- OBJ += neighbors.o
- OBJ += netlink.o
- OBJ += ping.o
-+OBJ += originators.o
- OBJ += routing_algo.o
- OBJ += statistics.o
- OBJ += sys.o
+@@ -60,6 +60,7 @@ OBJ += sys.o
+ OBJ += tcpdump.o
+ OBJ += throughputmeter.o
+ OBJ += traceroute.o
++OBJ += transglobal.o
+ OBJ += translate.o
+ 
+ MANPAGE = man/batctl.8
 diff --git a/debug.c b/debug.c
-index a5e7276..f4cc2ea 100644
+index f4cc2ea..5f2ad04 100644
 --- a/debug.c
 +++ b/debug.c
-@@ -200,17 +200,6 @@ int debug_print_routing_algos(void)
- 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
- }
+@@ -210,14 +210,3 @@ static struct debug_table_data batctl_debug_table_translocal = {
  
--static struct debug_table_data batctl_debug_table_originators = {
--	.debugfs_name = "originators",
+ COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
+ 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");
+-
+-static struct debug_table_data batctl_debug_table_transglobal = {
+-	.debugfs_name = "transtable_global",
 -	.header_lines = 2,
--	.netlink_fn = netlink_print_originators,
--	.option_watch_interval = 1,
--	.option_orig_iface = 1,
+-	.netlink_fn = netlink_print_transglobal,
+-	.option_unicast_only = 1,
+-	.option_multicast_only = 1,
 -};
 -
--COMMAND_NAMED(DEBUGTABLE, originators, "o", handle_debug_table,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_originators, "");
--
- static struct debug_table_data batctl_debug_table_translocal = {
- 	.debugfs_name = "transtable_local",
- 	.header_lines = 2,
+-COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
 diff --git a/netlink.c b/netlink.c
-index 7735cb6..cbb73ac 100644
+index cbb73ac..6583696 100644
 --- a/netlink.c
 +++ b/netlink.c
-@@ -456,145 +456,6 @@ int netlink_print_routing_algos(void)
+@@ -456,107 +456,6 @@ int netlink_print_routing_algos(void)
  	return last_err;
  }
  
--static const int originators_mandatory[] = {
+-static const int transglobal_mandatory[] = {
+-	BATADV_ATTR_TT_ADDRESS,
 -	BATADV_ATTR_ORIG_ADDRESS,
--	BATADV_ATTR_NEIGH_ADDRESS,
--	BATADV_ATTR_HARD_IFINDEX,
--	BATADV_ATTR_LAST_SEEN_MSECS,
+-	BATADV_ATTR_TT_VID,
+-	BATADV_ATTR_TT_TTVN,
+-	BATADV_ATTR_TT_LAST_TTVN,
+-	BATADV_ATTR_TT_CRC32,
+-	BATADV_ATTR_TT_FLAGS,
 -};
 -
--static int originators_callback(struct nl_msg *msg, void *arg)
+-static int transglobal_callback(struct nl_msg *msg, void *arg)
 -{
--	unsigned throughput_mbits, throughput_kbits;
 -	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 -	struct nlmsghdr *nlh = nlmsg_hdr(msg);
--	int last_seen_msecs, last_seen_secs;
 -	struct print_opts *opts = arg;
 -	struct bat_host *bat_host;
 -	struct genlmsghdr *ghdr;
--	char ifname[IF_NAMESIZE];
--	float last_seen;
--	uint8_t *neigh;
+-	char c, r, w, i, t;
+-	uint8_t last_ttvn;
+-	uint32_t crc32;
+-	uint32_t flags;
+-	uint8_t *addr;
 -	uint8_t *orig;
--	char c = ' ';
--	uint8_t tq;
+-	uint8_t ttvn;
+-	int16_t vid;
 -
 -	if (!genlmsg_valid_hdr(nlh, 0)) {
 -		fputs("Received invalid data from kernel.\n", stderr);
@@ -106,7 +106,7 @@ index 7735cb6..cbb73ac 100644
 -
 -	ghdr = nlmsg_data(nlh);
 -
--	if (ghdr->cmd != BATADV_CMD_GET_ORIGINATORS)
+-	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
 -		return NL_OK;
 -
 -	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
@@ -115,171 +115,105 @@ index 7735cb6..cbb73ac 100644
 -		exit(1);
 -	}
 -
--	if (missing_mandatory_attrs(attrs, originators_mandatory,
--				       ARRAY_SIZE(originators_mandatory))) {
+-	if (missing_mandatory_attrs(attrs, transglobal_mandatory,
+-				    ARRAY_SIZE(transglobal_mandatory))) {
 -		fputs("Missing attributes from kernel\n", stderr);
 -		exit(1);
 -	}
 -
+-	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
 -	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
--	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+-	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
+-	ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
+-	last_ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
+-	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
+-	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
 -
--	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
--			    ifname))
--		ifname[0] = '\0';
+-	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
+-		return NL_OK;
 -
+-	if (opts->read_opt & UNICAST_ONLY && (addr[0] & 0x01))
+-		return NL_OK;
+-
+-	c = ' ', r = '.', w = '.', i = '.', t = '.';
 -	if (attrs[BATADV_ATTR_FLAG_BEST])
 -		c = '*';
+-	if (flags & BATADV_TT_CLIENT_ROAM)
+-		r = 'R';
+-	if (flags & BATADV_TT_CLIENT_WIFI)
+-		w = 'W';
+-	if (flags & BATADV_TT_CLIENT_ISOLA)
+-		i = 'I';
+-	if (flags & BATADV_TT_CLIENT_TEMP)
+-		t = 'T';
 -
--	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
--	last_seen = (float)last_seen_msecs / 1000.0;
--	last_seen_secs = last_seen_msecs / 1000;
--	last_seen_msecs = last_seen_msecs % 1000;
+-	printf(" %c ", c);
 -
--	/* skip timed out originators */
--	if (opts->read_opt & NO_OLD_ORIGS)
--		if (last_seen > opts->orig_timeout)
--			return NL_OK;
+-	bat_host = bat_hosts_find_by_mac((char *)addr);
+-	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
+-		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
+-		       addr[0], addr[1], addr[2],
+-		       addr[3], addr[4], addr[5]);
+-	else
+-		printf("%17s ", bat_host->name);
 -
--	if (attrs[BATADV_ATTR_THROUGHPUT]) {
--		throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
--		throughput_mbits = throughput_kbits / 1000;
--		throughput_kbits = throughput_kbits % 1000;
+-	printf("%4i [%c%c%c%c] (%3u) ",
+-	       BATADV_PRINT_VID(vid), r, w, i, t, ttvn);
 -
--		if (!(opts->read_opt & USE_BAT_HOSTS)) {
--			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is (%9u.%1u) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
--			       c,
--			       orig[0], orig[1], orig[2],
--			       orig[3], orig[4], orig[5],
--			       last_seen_secs, last_seen_msecs,
--			       throughput_mbits, throughput_kbits / 100,
--			       neigh[0], neigh[1], neigh[2],
--			       neigh[3], neigh[4], neigh[5],
--			       ifname);
--		} else {
--			bat_host = bat_hosts_find_by_mac((char *)orig);
--			if (bat_host)
--				printf(" %c %17s ", c, bat_host->name);
--			else
--				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
--				       c,
--				       orig[0], orig[1], orig[2],
--				       orig[3], orig[4], orig[5]);
--			printf("%4i.%03is (%9u.%1u) ",
--			       last_seen_secs, last_seen_msecs,
--			       throughput_mbits, throughput_kbits / 100);
--			bat_host = bat_hosts_find_by_mac((char *)neigh);
--			if (bat_host)
--				printf(" %c %17s ", c, bat_host->name);
--			else
--				printf(" %02x:%02x:%02x:%02x:%02x:%02x ",
--				       neigh[0], neigh[1], neigh[2],
--				       neigh[3], neigh[4], neigh[5]);
--			printf("[%10s]\n", ifname);
--		}
--	}
--	if (attrs[BATADV_ATTR_TQ]) {
--		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
+-	bat_host = bat_hosts_find_by_mac((char *)orig);
+-	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
+-		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
+-		       orig[0], orig[1], orig[2],
+-		       orig[3], orig[4], orig[5]);
+-	else
+-		printf("%17s ", bat_host->name);
 -
--		if (!(opts->read_opt & USE_BAT_HOSTS)) {
--			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is   (%3i) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
--			       c,
--			       orig[0], orig[1], orig[2],
--			       orig[3], orig[4], orig[5],
--			       last_seen_secs, last_seen_msecs, tq,
--			       neigh[0], neigh[1], neigh[2],
--			       neigh[3], neigh[4], neigh[5],
--			       ifname);
--		} else {
--			bat_host = bat_hosts_find_by_mac((char *)orig);
--			if (bat_host)
--				printf(" %c %17s ", c, bat_host->name);
--			else
--				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
--				       c,
--				       orig[0], orig[1], orig[2],
--				       orig[3], orig[4], orig[5]);
--			printf("%4i.%03is   (%3i) ",
--			       last_seen_secs, last_seen_msecs, tq);
--			bat_host = bat_hosts_find_by_mac((char *)neigh);
--			if (bat_host)
--				printf("%17s ", bat_host->name);
--			else
--				printf("%02x:%02x:%02x:%02x:%02x:%02x ",
--				       neigh[0], neigh[1], neigh[2],
--				       neigh[3], neigh[4], neigh[5]);
--			printf("[%10s]\n", ifname);
--		}
--	}
+-	printf("(%3u) (0x%.8x)\n",
+-	       last_ttvn, crc32);
 -
 -	return NL_OK;
 -}
 -
- static const int transglobal_mandatory[] = {
+ static const int translocal_mandatory[] = {
  	BATADV_ATTR_TT_ADDRESS,
- 	BATADV_ATTR_ORIG_ADDRESS,
-@@ -899,42 +760,6 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+ 	BATADV_ATTR_TT_VID,
+@@ -760,17 +659,6 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
  	return last_err;
  }
  
--int netlink_print_originators(char *mesh_iface, char *orig_iface,
+-int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
 -			      int read_opts, float orig_timeout,
 -			      float watch_interval)
 -{
--	char *header = NULL;
--	char *info_header;
--	int ifindex;
--
--	ifindex = if_nametoindex(mesh_iface);
--	if (!ifindex) {
--		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
--		return -ENODEV;
--	}
--
--	/* only parse routing algorithm name */
--	last_err = -EINVAL;
--	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
--	free(info_header);
--
--	if (strlen(algo_name_buf) == 0)
--		return last_err;
--
--	if (!strcmp("BATMAN_IV", algo_name_buf))
--		header = "   Originator        last-seen (#/255) Nexthop           [outgoingIF]\n";
--	if (!strcmp("BATMAN_V", algo_name_buf))
--		header = "   Originator        last-seen ( throughput)  Nexthop           [outgoingIF]\n";
--
--	if (!header)
--		return -EINVAL;
--
 -	return netlink_print_common(mesh_iface, orig_iface, read_opts,
--				    orig_timeout, watch_interval, header,
--				    BATADV_CMD_GET_ORIGINATORS,
--				    originators_callback);
+-				    orig_timeout, watch_interval,
+-				    "   Client             VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
+-				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
+-				    transglobal_callback);
 -}
 -
- int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
- 			      int read_opts, float orig_timeout,
- 			      float watch_interval)
+ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
+ 			     float orig_timeout,
+ 			     float watch_interval)
 diff --git a/netlink.h b/netlink.h
-index bfac3a5..a099482 100644
+index a099482..1cec0f7 100644
 --- a/netlink.h
 +++ b/netlink.h
 @@ -40,8 +40,6 @@ struct print_opts {
  struct ether_addr;
  
  int netlink_print_routing_algos(void);
--int netlink_print_originators(char *mesh_iface, char *orig_iface, int read_opt,
+-int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
 -			      float orig_timeout, float watch_interval);
- int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
- 			      float orig_timeout, float watch_interval);
  int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
-diff --git a/originators.c b/originators.c
+ 			     float orig_timeout, float watch_interval);
+ 
+diff --git a/transglobal.c b/transglobal.c
 new file mode 100644
-index 0000000..fd2aa66
+index 0000000..f67682a
 --- /dev/null
-+++ b/originators.c
-@@ -0,0 +1,225 @@
++++ b/transglobal.c
+@@ -0,0 +1,159 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -302,15 +236,12 @@ index 0000000..fd2aa66
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#include <errno.h>
-+#include <net/if.h>
 +#include <netlink/netlink.h>
 +#include <netlink/genl/genl.h>
 +#include <netlink/genl/ctrl.h>
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <stdint.h>
-+#include <string.h>
 +
 +#include "batadv_packet.h"
 +#include "batman_adv.h"
@@ -320,28 +251,31 @@ index 0000000..fd2aa66
 +#include "main.h"
 +#include "netlink.h"
 +
-+static const int originators_mandatory[] = {
++static const int transglobal_mandatory[] = {
++	BATADV_ATTR_TT_ADDRESS,
 +	BATADV_ATTR_ORIG_ADDRESS,
-+	BATADV_ATTR_NEIGH_ADDRESS,
-+	BATADV_ATTR_HARD_IFINDEX,
-+	BATADV_ATTR_LAST_SEEN_MSECS,
++	BATADV_ATTR_TT_VID,
++	BATADV_ATTR_TT_TTVN,
++	BATADV_ATTR_TT_LAST_TTVN,
++	BATADV_ATTR_TT_CRC32,
++	BATADV_ATTR_TT_FLAGS,
 +};
 +
-+static int originators_callback(struct nl_msg *msg, void *arg)
++static int transglobal_callback(struct nl_msg *msg, void *arg)
 +{
-+	unsigned throughput_mbits, throughput_kbits;
 +	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 +	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	int last_seen_msecs, last_seen_secs;
 +	struct print_opts *opts = arg;
 +	struct bat_host *bat_host;
 +	struct genlmsghdr *ghdr;
-+	char ifname[IF_NAMESIZE];
-+	float last_seen;
-+	uint8_t *neigh;
++	char c, r, w, i, t;
++	uint8_t last_ttvn;
++	uint32_t crc32;
++	uint32_t flags;
++	uint8_t *addr;
 +	uint8_t *orig;
-+	char c = ' ';
-+	uint8_t tq;
++	uint8_t ttvn;
++	int16_t vid;
 +
 +	if (!genlmsg_valid_hdr(nlh, 0)) {
 +		fputs("Received invalid data from kernel.\n", stderr);
@@ -350,7 +284,7 @@ index 0000000..fd2aa66
 +
 +	ghdr = nlmsg_data(nlh);
 +
-+	if (ghdr->cmd != BATADV_CMD_GET_ORIGINATORS)
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
 +		return NL_OK;
 +
 +	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
@@ -359,152 +293,86 @@ index 0000000..fd2aa66
 +		exit(1);
 +	}
 +
-+	if (missing_mandatory_attrs(attrs, originators_mandatory,
-+				       ARRAY_SIZE(originators_mandatory))) {
++	if (missing_mandatory_attrs(attrs, transglobal_mandatory,
++				    ARRAY_SIZE(transglobal_mandatory))) {
 +		fputs("Missing attributes from kernel\n", stderr);
 +		exit(1);
 +	}
 +
++	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
 +	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
-+	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
++	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
++	ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
++	last_ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
++	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
++	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
 +
-+	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
-+			    ifname))
-+		ifname[0] = '\0';
++	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
++		return NL_OK;
 +
++	if (opts->read_opt & UNICAST_ONLY && (addr[0] & 0x01))
++		return NL_OK;
++
++	c = ' ', r = '.', w = '.', i = '.', t = '.';
 +	if (attrs[BATADV_ATTR_FLAG_BEST])
 +		c = '*';
++	if (flags & BATADV_TT_CLIENT_ROAM)
++		r = 'R';
++	if (flags & BATADV_TT_CLIENT_WIFI)
++		w = 'W';
++	if (flags & BATADV_TT_CLIENT_ISOLA)
++		i = 'I';
++	if (flags & BATADV_TT_CLIENT_TEMP)
++		t = 'T';
 +
-+	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
-+	last_seen = (float)last_seen_msecs / 1000.0;
-+	last_seen_secs = last_seen_msecs / 1000;
-+	last_seen_msecs = last_seen_msecs % 1000;
++	printf(" %c ", c);
 +
-+	/* skip timed out originators */
-+	if (opts->read_opt & NO_OLD_ORIGS)
-+		if (last_seen > opts->orig_timeout)
-+			return NL_OK;
++	bat_host = bat_hosts_find_by_mac((char *)addr);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       addr[0], addr[1], addr[2],
++		       addr[3], addr[4], addr[5]);
++	else
++		printf("%17s ", bat_host->name);
 +
-+	if (attrs[BATADV_ATTR_THROUGHPUT]) {
-+		throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
-+		throughput_mbits = throughput_kbits / 1000;
-+		throughput_kbits = throughput_kbits % 1000;
++	printf("%4i [%c%c%c%c] (%3u) ",
++	       BATADV_PRINT_VID(vid), r, w, i, t, ttvn);
 +
-+		if (!(opts->read_opt & USE_BAT_HOSTS)) {
-+			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is (%9u.%1u) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
-+			       c,
-+			       orig[0], orig[1], orig[2],
-+			       orig[3], orig[4], orig[5],
-+			       last_seen_secs, last_seen_msecs,
-+			       throughput_mbits, throughput_kbits / 100,
-+			       neigh[0], neigh[1], neigh[2],
-+			       neigh[3], neigh[4], neigh[5],
-+			       ifname);
-+		} else {
-+			bat_host = bat_hosts_find_by_mac((char *)orig);
-+			if (bat_host)
-+				printf(" %c %17s ", c, bat_host->name);
-+			else
-+				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
-+				       c,
-+				       orig[0], orig[1], orig[2],
-+				       orig[3], orig[4], orig[5]);
-+			printf("%4i.%03is (%9u.%1u) ",
-+			       last_seen_secs, last_seen_msecs,
-+			       throughput_mbits, throughput_kbits / 100);
-+			bat_host = bat_hosts_find_by_mac((char *)neigh);
-+			if (bat_host)
-+				printf(" %c %17s ", c, bat_host->name);
-+			else
-+				printf(" %02x:%02x:%02x:%02x:%02x:%02x ",
-+				       neigh[0], neigh[1], neigh[2],
-+				       neigh[3], neigh[4], neigh[5]);
-+			printf("[%10s]\n", ifname);
-+		}
-+	}
-+	if (attrs[BATADV_ATTR_TQ]) {
-+		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
++	bat_host = bat_hosts_find_by_mac((char *)orig);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       orig[0], orig[1], orig[2],
++		       orig[3], orig[4], orig[5]);
++	else
++		printf("%17s ", bat_host->name);
 +
-+		if (!(opts->read_opt & USE_BAT_HOSTS)) {
-+			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is   (%3i) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
-+			       c,
-+			       orig[0], orig[1], orig[2],
-+			       orig[3], orig[4], orig[5],
-+			       last_seen_secs, last_seen_msecs, tq,
-+			       neigh[0], neigh[1], neigh[2],
-+			       neigh[3], neigh[4], neigh[5],
-+			       ifname);
-+		} else {
-+			bat_host = bat_hosts_find_by_mac((char *)orig);
-+			if (bat_host)
-+				printf(" %c %17s ", c, bat_host->name);
-+			else
-+				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
-+				       c,
-+				       orig[0], orig[1], orig[2],
-+				       orig[3], orig[4], orig[5]);
-+			printf("%4i.%03is   (%3i) ",
-+			       last_seen_secs, last_seen_msecs, tq);
-+			bat_host = bat_hosts_find_by_mac((char *)neigh);
-+			if (bat_host)
-+				printf("%17s ", bat_host->name);
-+			else
-+				printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+				       neigh[0], neigh[1], neigh[2],
-+				       neigh[3], neigh[4], neigh[5]);
-+			printf("[%10s]\n", ifname);
-+		}
-+	}
++	printf("(%3u) (0x%.8x)\n",
++	       last_ttvn, crc32);
 +
 +	return NL_OK;
 +}
 +
-+static int netlink_print_originators(char *mesh_iface, char *orig_iface,
++static int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
 +				     int read_opts, float orig_timeout,
 +				     float watch_interval)
 +{
-+	char *header = NULL;
-+	char *info_header;
-+	int ifindex;
-+
-+	ifindex = if_nametoindex(mesh_iface);
-+	if (!ifindex) {
-+		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
-+		return -ENODEV;
-+	}
-+
-+	/* only parse routing algorithm name */
-+	last_err = -EINVAL;
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
-+
-+	if (strlen(algo_name_buf) == 0)
-+		return last_err;
-+
-+	if (!strcmp("BATMAN_IV", algo_name_buf))
-+		header = "   Originator        last-seen (#/255) Nexthop           [outgoingIF]\n";
-+	if (!strcmp("BATMAN_V", algo_name_buf))
-+		header = "   Originator        last-seen ( throughput)  Nexthop           [outgoingIF]\n";
-+
-+	if (!header)
-+		return -EINVAL;
-+
 +	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-+				    orig_timeout, watch_interval, header,
-+				    BATADV_CMD_GET_ORIGINATORS,
-+				    originators_callback);
++				    orig_timeout, watch_interval,
++				    "   Client             VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
++				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
++				    transglobal_callback);
 +}
 +
-+static struct debug_table_data batctl_debug_table_originators = {
-+	.debugfs_name = "originators",
++static struct debug_table_data batctl_debug_table_transglobal = {
++	.debugfs_name = "transtable_global",
 +	.header_lines = 2,
-+	.netlink_fn = netlink_print_originators,
-+	.option_watch_interval = 1,
-+	.option_orig_iface = 1,
++	.netlink_fn = netlink_print_transglobal,
++	.option_unicast_only = 1,
++	.option_multicast_only = 1,
 +};
 +
-+COMMAND_NAMED(DEBUGTABLE, originators, "o", handle_debug_table,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_originators, "");
++COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
 -- 
 2.19.1
 
