@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Oct 2018 00:54:48 +0200
-Message-Id: <20181021225524.8155-3-sven@narfation.org>
+Date: Mon, 22 Oct 2018 00:54:49 +0200
+Message-Id: <20181021225524.8155-4-sven@narfation.org>
 In-Reply-To: <20181021225524.8155-1-sven@narfation.org>
 References: <20181021225524.8155-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 02/38] batctl: Use common code organization
- for statistics
+Subject: [B.A.T.M.A.N.] [PATCH 03/38] batctl: Drop legacy vis_* related
+ warning messages
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,105 +19,85 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Most commands have a separate file which is called like command itself.
-They also tend to share the same function signature to make it easier to
-use. Do the same for the ethtool statistics to make it easier to find.
+The vis support code was removed with batman-adv 2014.0.0 (Linux 3.13). All
+kernel versions with up to this version are EOL for a while and also batctl
+warned now about this problem for nearly 5 years. It should therefore no
+(serious) problem to remove these warning messages.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile                | 2 +-
- main.c                  | 4 ++--
- ioctl.c => statistics.c | 6 ++++--
- ioctl.h => statistics.h | 6 +++---
- 4 files changed, 10 insertions(+), 8 deletions(-)
- rename ioctl.c => statistics.c (95%)
- rename ioctl.h => statistics.h (88%)
+ debug.c | 28 ----------------------------
+ debug.h |  1 -
+ main.c  |  6 ------
+ 3 files changed, 35 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 4b417d5..6f620be 100755
---- a/Makefile
-+++ b/Makefile
-@@ -34,10 +34,10 @@ OBJ += genl.o
- OBJ += hash.o
- OBJ += icmp_helper.o
- OBJ += interface.o
--OBJ += ioctl.o
- OBJ += main.o
- OBJ += netlink.o
- OBJ += ping.o
-+OBJ += statistics.o
- OBJ += sys.o
- OBJ += tcpdump.o
- OBJ += tp_meter.o
-diff --git a/main.c b/main.c
-index d5504e0..e904a1f 100644
---- a/main.c
-+++ b/main.c
-@@ -37,7 +37,7 @@
- #include "tcpdump.h"
- #include "tp_meter.h"
- #include "bisect_iv.h"
--#include "ioctl.h"
-+#include "statistics.h"
- #include "functions.h"
- 
- char mesh_dfl_iface[] = "bat0";
-@@ -187,7 +187,7 @@ int main(int argc, char **argv)
- 
- 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
- 
--		ret = ioctl_statistics_get(mesh_iface);
-+		ret = statistics(mesh_iface, argc - 1, argv + 1);
- 
- 	} else if ((strcmp(argv[1], "translate") == 0) || (strcmp(argv[1], "t") == 0)) {
- 
-diff --git a/ioctl.c b/statistics.c
-similarity index 95%
-rename from ioctl.c
-rename to statistics.c
-index 6f9a056..8a889ca 100644
---- a/ioctl.c
-+++ b/statistics.c
-@@ -34,7 +34,8 @@
- #include <linux/ethtool.h>
- #include <stdint.h>
- 
--#include "ioctl.h"
-+#include "main.h"
-+#include "statistics.h"
- 
- void check_root_or_die(const char *cmd);
- 
-@@ -102,7 +103,8 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
- 	return ret;
+diff --git a/debug.c b/debug.c
+index 63fb633..185e26d 100644
+--- a/debug.c
++++ b/debug.c
+@@ -269,34 +269,6 @@ int debug_print_routing_algos(void)
+ 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
  }
  
--int ioctl_statistics_get(char *mesh_iface)
-+int statistics(char *mesh_iface, int argc __maybe_unused,
-+	       char **argv __maybe_unused)
+-int print_vis_info(char *mesh_iface)
+-{
+-	char full_path[MAX_PATH+1];
+-	char *debugfs_mnt;
+-	FILE *fp;
+-
+-	check_root_or_die("batctl vis_data");
+-
+-	debugfs_mnt = debugfs_mount(NULL);
+-	if (!debugfs_mnt) {
+-		fprintf(stderr, "Error - can't mount or find debugfs\n");
+-		return -1;
+-	}
+-
+-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/vis_data", mesh_iface, full_path, sizeof(full_path));
+-	fp = fopen(full_path, "r");
+-	if (fp) {
+-		fclose(fp);
+-		fprintf(stderr, "Error - batctl version is newer than kernel module - the kernel module still supports\n"
+-				"vis, but later versions will not. The vis functionality has been moved to the userspace\n"
+-				"daemon ''alfred''. Please either downgrade to an older (compatible) batctl version or use alfred.\n");
+-	} else {
+-		fprintf(stderr, "Error - The installed batctl version and kernel module don't have vis support. The vis functionality\n"
+-				"has been moved to the userspace daemon ''alfred''.\n");
+-	}
+-	return 0;
+-}
+-
+ static void log_usage(void)
  {
- 	struct ifreq ifr;
- 	int fd = -1, ret = EXIT_FAILURE;
-diff --git a/ioctl.h b/statistics.h
-similarity index 88%
-rename from ioctl.h
-rename to statistics.h
-index 1b216c0..3737a48 100644
---- a/ioctl.h
-+++ b/statistics.h
-@@ -20,9 +20,9 @@
-  * License-Filename: LICENSES/preferred/GPL-2.0
-  */
- 
--#ifndef _BATCTL_IOCTL_H
--#define _BATCTL_IOCTL_H
-+#ifndef _BATCTL_STATISTICS_H
-+#define _BATCTL_STATISTICS_H
- 
--int ioctl_statistics_get(char *mesh_iface);
-+int statistics(char *mesh_iface, int argc, char **argv);
+ 	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
+diff --git a/debug.h b/debug.h
+index 9c57aa6..5508eaf 100644
+--- a/debug.h
++++ b/debug.h
+@@ -59,6 +59,5 @@ extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
+ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
+ int log_print(char *mesh_iface, int argc, char **argv);
+ int debug_print_routing_algos(void);
+-int print_vis_info(char *mesh_iface);
  
  #endif
+diff --git a/main.c b/main.c
+index e904a1f..3a6011b 100644
+--- a/main.c
++++ b/main.c
+@@ -175,12 +175,6 @@ int main(int argc, char **argv)
+ 
+ 		ret = log_print(mesh_iface, argc - 1, argv + 1);
+ 
+-        /* vis legacy support */
+-	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0) ||
+-	           (strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
+-
+-		ret = print_vis_info(mesh_iface);
+-
+ 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
+ 
+ 		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
 -- 
 2.19.1
 
