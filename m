@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Oct 2018 00:55:16 +0200
-Message-Id: <20181021225524.8155-31-sven@narfation.org>
+Date: Mon, 22 Oct 2018 00:55:19 +0200
+Message-Id: <20181021225524.8155-34-sven@narfation.org>
 In-Reply-To: <20181021225524.8155-1-sven@narfation.org>
 References: <20181021225524.8155-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 30/38] batctl: Move bridge_loop_avoidance
- setting to own file
+Subject: [B.A.T.M.A.N.] [PATCH 33/38] batctl: Move isolation_mark setting to
+ own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -25,30 +25,30 @@ file. This also allows to order the usage lines using the Makefile.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile                |  1 +
- bridge_loop_avoidance.c | 33 +++++++++++++++++++++++++++++++++
- sys.c                   |  9 ---------
- 3 files changed, 34 insertions(+), 9 deletions(-)
- create mode 100644 bridge_loop_avoidance.c
+ Makefile         |  1 +
+ isolation_mark.c | 35 +++++++++++++++++++++++++++++++++++
+ sys.c            |  9 ---------
+ 3 files changed, 36 insertions(+), 9 deletions(-)
+ create mode 100644 isolation_mark.c
 
 diff --git a/Makefile b/Makefile
-index c1b8484..6664aa0 100755
+index 7f82d44..9598065 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -37,6 +37,7 @@ ifeq ($(CONFIG_BATCTL_BISECT),y)
- OBJ += $(OBJ_BISECT)
- endif
- OBJ += bonding.o
-+OBJ += bridge_loop_avoidance.o
- OBJ += claimtable.o
- OBJ += dat_cache.o
- OBJ += debugfs.o
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+@@ -51,6 +51,7 @@ OBJ += gw_mode.o
+ OBJ += hash.o
+ OBJ += icmp_helper.o
+ OBJ += interface.o
++OBJ += isolation_mark.o
+ OBJ += loglevel.o
+ OBJ += log.o
+ OBJ += main.o
+diff --git a/isolation_mark.c b/isolation_mark.c
 new file mode 100644
-index 0000000..bf57576
+index 0000000..300bb02
 --- /dev/null
-+++ b/bridge_loop_avoidance.c
-@@ -0,0 +1,33 @@
++++ b/isolation_mark.c
+@@ -0,0 +1,35 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -71,36 +71,38 @@ index 0000000..bf57576
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
++#include <stddef.h>
++
 +#include "main.h"
 +#include "sys.h"
 +
-+static struct settings_data batctl_settings_bridge_loop_avoidance = {
-+	.sysfs_name = SYS_BLA,
-+	.params = sysfs_param_enable,
++static struct settings_data batctl_settings_isolation_mark = {
++	.sysfs_name = "isolation_mark",
++	.params = NULL,
 +};
 +
-+COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
-+	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
++COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
++	      "[mark]            \tdisplay or modify isolation_mark setting");
 diff --git a/sys.c b/sys.c
-index 8ad925e..e08738d 100644
+index f81298b..355b801 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -146,15 +146,6 @@ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
- 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
- 	      "[interval]        \tdisplay or modify orig_interval setting");
+@@ -155,15 +155,6 @@ COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
+ 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
+ 	      "[0|1]             \tdisplay or modify network_coding setting");
  
--static struct settings_data batctl_settings_bridge_loop_avoidance = {
--	.sysfs_name = SYS_BLA,
--	.params = sysfs_param_enable,
+-static struct settings_data batctl_settings_isolation_mark = {
+-	.sysfs_name = "isolation_mark",
+-	.params = NULL,
 -};
 -
--COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
--	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
+-COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
+-	      "[mark]            \tdisplay or modify isolation_mark setting");
 -
- static struct settings_data batctl_settings_distributed_arp_table = {
- 	.sysfs_name = SYS_DAT,
+ static struct settings_data batctl_settings_multicast_mode = {
+ 	.sysfs_name = SYS_MULTICAST_MODE,
  	.params = sysfs_param_enable,
 -- 
 2.19.1
