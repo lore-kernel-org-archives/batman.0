@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Oct 2018 00:54:57 +0200
-Message-Id: <20181021225524.8155-12-sven@narfation.org>
+Date: Mon, 22 Oct 2018 00:54:58 +0200
+Message-Id: <20181021225524.8155-13-sven@narfation.org>
 In-Reply-To: <20181021225524.8155-1-sven@narfation.org>
 References: <20181021225524.8155-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 11/38] batctl: Use command structure for
- remaining subcommands
+Subject: [B.A.T.M.A.N.] [PATCH 12/38] batctl: Use getopt to parse main
+ options
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,259 +19,168 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The command datastructure was extended to be usable for mesh_iface and
-non-mesh_iface subcommands. The referenced subcommands only have to use the
-same function signature to work correctly.
-
-The introduction of dummy parameter to the functions allows therefore to
-convert all non-settings and non-debug-tables subcommands to the new
-infrastructure.
+The handwritten option parser is rather fragile and doesn't support all
+features of a normal commandline option parser. Instead use getopt to
+handle the most critical parts and keep it more flexible.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bisect_iv.c    |  5 ++++-
- bisect_iv.h    |  4 ----
- interface.c    |  6 +++---
- interface.h    | 30 ------------------------------
- main.c         | 23 +----------------------
- routing_algo.c |  4 +++-
- routing_algo.h | 28 ----------------------------
- tcpdump.c      |  4 +++-
- tcpdump.h      |  2 --
- 9 files changed, 14 insertions(+), 92 deletions(-)
- delete mode 100644 interface.h
- delete mode 100644 routing_algo.h
+ main.c | 95 ++++++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 56 insertions(+), 39 deletions(-)
 
-diff --git a/bisect_iv.c b/bisect_iv.c
-index d71ceda..f87f915 100644
---- a/bisect_iv.c
-+++ b/bisect_iv.c
-@@ -32,6 +32,7 @@
- #include "bisect_iv.h"
- #include "bat-hosts.h"
- #include "hash.h"
-+#include "main.h"
- #include "functions.h"
- 
- static struct hashtable_t *node_hash = NULL;
-@@ -1440,7 +1441,7 @@ static int get_orig_addr(char *orig_name, char *orig_addr)
- 	return 0;
- }
- 
--int bisect_iv(int argc, char **argv)
-+static int bisect_iv(char *mesh_iface __maybe_unused, int argc, char **argv)
- {
- 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
- 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
-@@ -1593,3 +1594,5 @@ int bisect_iv(int argc, char **argv)
- 	bat_hosts_free();
- 	return ret;
- }
-+
-+COMMAND(bisect_iv, "bisect_iv", 0);
-diff --git a/bisect_iv.h b/bisect_iv.h
-index 7932c2f..5f5200c 100644
---- a/bisect_iv.h
-+++ b/bisect_iv.h
-@@ -33,10 +33,6 @@
- #define RT_FLAG_UPDATE 2
- #define RT_FLAG_DELETE 3
- 
--int bisect_iv(int argc, char **argv);
--
--
--
- struct bat_node {
- 	char name[NAME_LEN];
- 	struct list_head orig_event_list;
-diff --git a/interface.c b/interface.c
-index 5951b47..485ed0a 100644
---- a/interface.c
-+++ b/interface.c
-@@ -20,8 +20,6 @@
-  * License-Filename: LICENSES/preferred/GPL-2.0
-  */
- 
--#include "interface.h"
--
- #include <unistd.h>
- #include <stdio.h>
- #include <stdbool.h>
-@@ -299,7 +297,7 @@ static int set_master_interface(const char *iface, unsigned int ifmaster)
- 	return err;
- }
- 
--int interface(char *mesh_iface, int argc, char **argv)
-+static int interface(char *mesh_iface, int argc, char **argv)
- {
- 	int i, optchar;
- 	int ret;
-@@ -459,3 +457,5 @@ int interface(char *mesh_iface, int argc, char **argv)
- err:
- 	return EXIT_FAILURE;
- }
-+
-+COMMAND(interface, "if", 0);
-diff --git a/interface.h b/interface.h
-deleted file mode 100644
-index 83ca129..0000000
---- a/interface.h
-+++ /dev/null
-@@ -1,30 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner <mareklindner@neomailbox.ch>
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- * License-Filename: LICENSES/preferred/GPL-2.0
-- */
--
--#ifndef _BATCTL_INTERFACE_H
--#define _BATCTL_INTERFACE_H
--
--#include "main.h"
--
--int interface(char *mesh_iface, int argc, char **argv);
--
--#endif
 diff --git a/main.c b/main.c
-index dacfb12..fa4371c 100644
+index fa4371c..f5df477 100644
 --- a/main.c
 +++ b/main.c
-@@ -30,10 +30,6 @@
- #include "main.h"
- #include "sys.h"
- #include "debug.h"
--#include "interface.h"
--#include "tcpdump.h"
--#include "bisect_iv.h"
--#include "routing_algo.h"
- #include "functions.h"
+@@ -22,6 +22,7 @@
  
- char mesh_dfl_iface[] = "bat0";
-@@ -152,24 +148,7 @@ int main(int argc, char **argv)
- 		exit(EXIT_SUCCESS);
+ 
+ 
++#include <getopt.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+@@ -87,6 +88,25 @@ static void print_usage(void)
+ #endif
+ }
+ 
++static void version(void)
++{
++	int ret;
++
++	printf("batctl %s [batman-adv: ", SOURCE_VERSION);
++
++	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
++	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
++		line_ptr[strlen(line_ptr) - 1] = '\0';
++
++	if (ret == EXIT_SUCCESS)
++		printf("%s]\n", line_ptr);
++	else
++		printf("module not loaded]\n");
++
++	free(line_ptr);
++	exit(EXIT_SUCCESS);
++}
++
+ static const struct command *find_command(const char *name)
+ {
+ 	const struct command **p;
+@@ -109,53 +129,48 @@ int main(int argc, char **argv)
+ 	const struct command *cmd;
+ 	int i, ret = EXIT_FAILURE;
+ 	char *mesh_iface = mesh_dfl_iface;
+-
+-	if ((argc > 1) && (strcmp(argv[1], "-m") == 0)) {
+-		if (argc < 3) {
+-			fprintf(stderr, "Error - the option '-m' needs a parameter\n");
++	int opt;
++
++	while ((opt = getopt(argc, argv, "+hm:v")) != -1) {
++		switch (opt) {
++		case 'h':
++			print_usage();
++			exit(EXIT_SUCCESS);
++			break;
++		case 'm':
++			if (mesh_iface != mesh_dfl_iface) {
++				fprintf(stderr,
++					"Error - multiple mesh interfaces specified\n");
++				goto err;
++			}
++
++			mesh_iface = argv[2];
++			break;
++		case 'v':
++			version();
++			break;
++		default:
+ 			goto err;
+ 		}
+-
+-		mesh_iface = argv[2];
+-
+-		argv += 2;
+-		argc -= 2;
  	}
  
--	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
+-	if (argc < 2) {
++	if (optind >= argc) {
+ 		fprintf(stderr, "Error - no command specified\n");
+ 		goto err;
+ 	}
+ 
+-	if (strcmp(argv[1], "-h") == 0) {
+-		print_usage();
+-		exit(EXIT_SUCCESS);
+-	}
 -
--		ret = interface(mesh_iface, argc - 1, argv + 1);
+-	if (strcmp(argv[1], "-v") == 0) {
+-		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
 -
--	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
+-		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
 -
--		ret = tcpdump(argc - 1, argv + 1);
+-		if (ret == EXIT_SUCCESS)
+-			printf("%s]\n", line_ptr);
+-		else
+-			printf("module not loaded]\n");
 -
--#ifdef BATCTL_BISECT
--	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
--
--		ret = bisect_iv(argc - 1, argv + 1);
--#endif
--	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
--
--		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
--
--	} else if ((cmd = find_command(argv[1]))) {
-+	if ((cmd = find_command(argv[1]))) {
+-		free(line_ptr);
+-		exit(EXIT_SUCCESS);
+-	}
++	argv += optind;
++	argc -= optind;
++	optind = 0;
+ 
+-	if ((cmd = find_command(argv[1]))) {
++	if ((cmd = find_command(argv[0]))) {
  		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
  		    check_mesh_iface(mesh_iface) < 0) {
  			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
-diff --git a/routing_algo.c b/routing_algo.c
-index 89af6c5..2026224 100644
---- a/routing_algo.c
-+++ b/routing_algo.c
-@@ -41,7 +41,7 @@ static void ra_mode_usage(void)
- 	fprintf(stderr, " \t -h print this help\n");
- }
+ 			exit(EXIT_FAILURE);
+ 		}
  
--int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
-+static int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
- {
- 	DIR *iface_base_dir;
- 	struct dirent *iface_dir;
-@@ -125,3 +125,5 @@ int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
- out:
- 	return res;
- }
-+
-+COMMAND(routing_algo, "ra", 0);
-diff --git a/routing_algo.h b/routing_algo.h
-deleted file mode 100644
-index db246c6..0000000
---- a/routing_algo.h
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner <mareklindner@neomailbox.ch>
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- *
-- * License-Filename: LICENSES/preferred/GPL-2.0
-- */
--
--#ifndef _BATCTL_ROUTING_ALGO_H
--#define _BATCTL_ROUTING_ALGO_H
--
--int routing_algo(char *mesh_iface, int argc, char **argv);
--
--#endif
-diff --git a/tcpdump.c b/tcpdump.c
-index dc4ccd3..fd2b35a 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -1210,7 +1210,7 @@ static void sig_handler(int sig)
+-		ret = cmd->handler(mesh_iface, argc - 1, argv + 1);
++		ret = cmd->handler(mesh_iface, argc, argv);
+ 	} else {
+ 		if (check_mesh_iface(mesh_iface) < 0) {
+ 			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+@@ -163,24 +178,26 @@ int main(int argc, char **argv)
+ 		}
+ 
+ 		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
+-			if ((strcmp(argv[1], batctl_settings[i].opt_long) != 0) &&
+-			    (strcmp(argv[1], batctl_settings[i].opt_short) != 0))
++			if ((strcmp(argv[0], batctl_settings[i].opt_long) != 0) &&
++			    (strcmp(argv[0], batctl_settings[i].opt_short) != 0))
+ 				continue;
+ 
+-			ret = handle_sys_setting(mesh_iface, i, argc - 1, argv + 1);
++			ret = handle_sys_setting(mesh_iface, i, argc, argv);
+ 			goto out;
+ 		}
+ 
+ 		for (i = 0; i < BATCTL_TABLE_NUM; i++) {
+-			if ((strcmp(argv[1], batctl_debug_tables[i].opt_long) != 0) &&
+-			    (strcmp(argv[1], batctl_debug_tables[i].opt_short) != 0))
++			if ((strcmp(argv[0], batctl_debug_tables[i].opt_long) != 0) &&
++			    (strcmp(argv[0], batctl_debug_tables[i].opt_short) != 0))
+ 				continue;
+ 
+-			ret = handle_debug_table(mesh_iface, i, argc - 1, argv + 1);
++			ret = handle_debug_table(mesh_iface, i, argc, argv);
+ 			goto out;
+ 		}
+ 
+-		fprintf(stderr, "Error - no valid command or debug table specified: %s\n", argv[1]);
++		fprintf(stderr,
++			"Error - no valid command or debug table specified: %s\n",
++			argv[0]);
+ 		print_usage();
  	}
- }
  
--int tcpdump(int argc, char **argv)
-+static int tcpdump(char *mesh_iface __maybe_unused, int argc, char **argv)
- {
- 	struct timeval tv;
- 	struct dump_if *dump_if, *dump_if_tmp;
-@@ -1351,3 +1351,5 @@ int tcpdump(int argc, char **argv)
- 	bat_hosts_free();
- 	return ret;
- }
-+
-+COMMAND(tcpdump, "td", 0);
-diff --git a/tcpdump.h b/tcpdump.h
-index f73211b..db92fce 100644
---- a/tcpdump.h
-+++ b/tcpdump.h
-@@ -113,6 +113,4 @@ struct prism_header {
- #define PRISM_HEADER_LEN sizeof(struct prism_header)
- #define RADIOTAP_HEADER_LEN sizeof(struct radiotap_header)
- 
--int tcpdump(int argc, char **argv);
--
- #endif
 -- 
 2.19.1
 
