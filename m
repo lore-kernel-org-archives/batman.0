@@ -1,13 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Oct 2018 20:15:33 +0200
-Message-ID: <3971667.ui1v05AXcD@sven-edge>
-In-Reply-To: <CAPzaX0ic23YurEjexLgNq4x6aaAp38f4Nj=iMfNDbLXkHCwhXQ@mail.gmail.com>
-References: <CAPzaX0ic23YurEjexLgNq4x6aaAp38f4Nj=iMfNDbLXkHCwhXQ@mail.gmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 22 Oct 2018 20:17:18 +0200
+Message-ID: <3795505.rC9BEUj0Hg@prime>
+In-Reply-To: <B99A1AB9A294834C8DF94185A5E9D18101784D0848@NRTV96002.america.zf-world.com>
+References: <B99A1AB9A294834C8DF94185A5E9D18101784CE751@NRTV96002.america.zf-world.com>
+ <3126005.3y7xrHjZEe@prime>
+ <B99A1AB9A294834C8DF94185A5E9D18101784D0848@NRTV96002.america.zf-world.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2025955.oWOvcQjO3m";
+Content-Type: multipart/signed; boundary="nextPart2802252.tTjxyp59UE";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Version help
+Subject: Re: [B.A.T.M.A.N.] broadcast storms
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,71 +19,128 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Corey Combs <combsca90@gmail.com>
+To: Jake.Harris@zf.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2025955.oWOvcQjO3m
+--nextPart2802252.tTjxyp59UE
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Montag, 22. Oktober 2018 19:51:21 CEST Corey Combs wrote:
-> I'm currently working on a project that uses BATMAN for a mesh network
-> across multiple Beagle Bone Blacks which are running a Debian version
-> 7.9 at the moment.  They also are running batctl debian-2012.1.0-1
-> [batman-adv 2012.5.0].
+Hello Jake,
 
-Uhm, 2012.5.0 is extreme old and I would advise not to use such an old 
-version. And beside that, it is using COMPAT_VERSION 14 [1]. The current 
-COMPAT_VERSION is 15 - batman-adv kernel modules with different 
-COMPAT_VERSIONs cannot talk to each other.
+I've checked your pcap files. I couldn't find a culprit directly, but it seems 
+like you are having so many repetitions / the network is getting so overloaded 
+that broadcasts stay in the queues of your WiFi driver for longer than 30 
+seconds (possibly in different devices, accumulated). At this point, batman-
+adv assumes that the device has rebooted and the sequence number is validly 
+re-used, thus circumventing the broadcast duplicate check.
 
-> I would like to connect a laptop to the
-> existing network either using Debian or Ubuntu, however I have run
-> into issues with compatibility.  I configured everything identically
-> with the laptop and I believe I'm connected to the network, but I
-> cannot see any other devices on the network.  Is it advisable to
-> upgrade the version of batctl on the 'bone or downgrade the version on
-> debian or Ubuntu so that the versions align?  Or is there something
-> else I am missing in my efforts?
+You could increase the define of BATADV_RESET_PROTECTION_MS to something 
+higher like 120000 (120 seconds) and see if that helps. But the "right" way 
+would be to avoid those deep queues in the first place.
 
-Why batctl? The biggest problem here is the extreme old batman-adv version 
-which is not compatible with every batman-adv version since 2014.
+Do you set a multicast rate higher than the default 1 MBit/s? If not, that's 
+worth a try. :) If you are using iw, there is a "mcast-rate" parameter, and 
+there is something equivalent in wpa_supplicant.
 
-And btw. you didn't tell us what batman-adv version your laptop is using. If 
-they are really using the same version then it could be that either the laptop 
-or the beagle bone blacks have problems with their wifi driver. Wouldn't be
-the first time that things like broadcast or unicast communication via IBSS 
-is broken with some wifi hw/driver.
+Cheers,
+     Simon
 
-Kind regards,
-	Sven
+On Monday, October 22, 2018 5:27:28 PM CEST Jake.Harris@zf.com wrote:
+> Generated this via:
+>    sudo tcpdump -s 2000 -w /media/pi/KINGSTON/my.pcap -i
+>  wlx681ca2083fa4
+> 
+>  message after ^c
+>    12090 packets captured
+>    12251 packets received by filter
+>    0 packets dropped by kernel
+>    27 packets dropped by interface
+> 
+> -----Original Message-----
+> From: Simon Wunderlich <sw@simonwunderlich.de>
+> Sent: Monday, October 22, 2018 10:27
+> To: b.a.t.m.a.n@lists.open-mesh.org
+> Cc: Harris Jake LPR <Jake.Harris@zf.com>
+> Subject: Re: [B.A.T.M.A.N.] broadcast storms
+> 
+> * PGP Signed by an unknown key
+> 
+> Hi Jake,
+> 
+> could you make some pcap dumps on the wlan device where batman runs, and
+> provide that to us? Just the the full tcpdump (tcpdump -s 2000 -w
+> /tmp/my.pcap wlan0, assuming that wlan0 is your interface), not batctl
+> dump? Then we can check sequence numbers etc in wireshark.
+> 
+> Do you have some of your mesh nodes connected and bridged to Ethernet? If
+> yes, you should check the bridge loop avoidance which could also be causing
+> this effect, if you don't have it enabled and use such a topology:
+> 
+> https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-II
+> 
+> Cheers,
+>      Simon
+> 
+> On Monday, October 22, 2018 1:07:29 PM CEST Jake.Harris@zf.com wrote:
+> > I'm sure a similar question to this has been answered, but I am new to
+> > this mailing list format and don't know an efficient way to search
+> > https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/
+> > 
+> > I'm having problems with broadcast messages effectively echoing around
+> > the network of 50ish nodes. I attached a few seconds of the batctl
+> > tcpdump output. I can't seem to find a pattern to what causes this, it
+> > tends to happen once every two or three weeks, the storm causes
+> > problems with the batman program where during the storm nodes drop all
+> > their neighbors (batctl n shows an empty list) indefinitely, which I
+> > have worked around that issue via a batch script that reloads batman
+> > if the neighbor list is empty. Reloading successfully reconnects to
+> > the network but the storm still persists.
+> > 
+> > The only way I've found to fix this is to reboot all the nodes at the
+> > same time such that the whole network is down to kill the echos.
+> > 
+> > I believe I had this problem much more frequently (every 4 days or so)
+> > a while ago on the same network when using discrete tcp destinations
+> > for the nodes to communicate, the storm frequency was reduced to what
+> > it is now by using broadcast packets and reducing the communication
+> > rate from 12 seconds to once every 40 seconds.
+> > 
+> > Rebooting the nodes that are responsible for the echoing messages has
+> > no effect, I rebooted 192.168.1.230 before running tcpdump that is
+> > attached and as it shows packets from 230 continued to bounce around
+> > while the node was powered off and after it rejoined the network. It
+> > doesn't appear broadcast uses a time-to-live parameter to limit the
+> > hops the packets will make.
+> > 
+> > I'm at a loss for a way to remedy this, there seems to only be
+> > multicast optimizations.
+> 
+> * Unknown Key
+> * 0x42929EA1
 
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/Compatversion
 
-
---nextPart2025955.oWOvcQjO3m
+--nextPart2802252.tTjxyp59UE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvOE8UACgkQXYcKB8Em
-e0b7Zg//VEIzcwAkDV0Ugn/2qTzvnYk/zuSGQ0bU3uv5w41jC+rIu2MiDlqofIcI
-C2TtwTnMW5uI/05ZPvBvYk56MjqRh2m4nJqQHrO/VJqaasRcjLnRiVoKbR82xDXK
-QOgcAKu1IevKyNj11Whnq8MLX0aEOH6uVrgpxF5IlOCxhFHzHODGuyg84zsts8f3
-rEFKsmAGCmhzrF3tvH7HHqzBhzMBHXIvSJtqgrbuVMjvFLZkInMRAN/hEkbBeb0Y
-ZA1kDzm9S3rotxHOygKvW/726WrXn5vFSyWBjY+cE0r50TowyBmCIgOgnESBNHQK
-noFVDuzBxF+P8BL3913stoQ+rEEOCrS++DbFJQ+kk/XT4PlJcDfp7xqMibGIkymH
-+WdmBGgN3Ux7wAfdNWT9DC1cJpRUHJzZ+QImz0m22UFrPNLiQQENqJcFTVtyyMit
-+JqUTzLm7NirmMf4/wiPEnFACfpxwsr24jAqmJ0OxYcuCRqp4wmGVTbgp2HCi6Vb
-soL21ROJDMW3SBMcTUpvLw05gviCj7NVG3wBIMTuIiOuEgu5J5XY1IezNyoBplAh
-kNJCJy0Idu78uryvJdXvt6wlizCwwEhO+1k7+gd0WvcxxF2NnRQmg/HQGFpm5Fxn
-r5QFzfOgEEM6DLuCNYiUHZCR0jZnP64k+fotvrvCQiMltFE7oX8=
-=ot90
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlvOFC4ACgkQoSvjmEKS
+nqEJQxAAwGjaJBDiYNxDmE3khaB8T+5P1cQXYxmXLcfvVIDy35T+zh+94PvnJpOS
+Ku0tr1i5/xQoBmx2r6JpyjHEdeuUpFsJFB5kKFG7E8gxvJuodZtJ4joowReCG4Iq
+n68UoZH7vnMl1+Aa88gJrSJkW5FeaqRlR5Ik2BGkGl8Lehs4UFdRONkhHCPDsNls
+O3Eo7h4QY53JOf67PprmG0EIMGQMQ4mHac/RLiEFu0ZMpKMqjbaJYiO43JJ8tAVi
+Fmq4c1bkqy50hgdGgsg0mUZKfVeP3OPOyjQPncIVT6CXlbuWe/LlaX8LfobjfOoc
+bTtz/TyqpkGnShdpqho42USxBEOARCibsHJT2XWDi8WDaV93clITS6HDcXeIJO0t
+J7+w9wHsG29B5sz0J81kxzuudCLA3GuzI/Ovnb7xAMTryCkvOFrpmNW4n5sG5kcC
+LE1fq46cADOzsmjPYTkqSN2tUUTErKM+AzazOOmv9otMmYhrbEhaDXIpm3cArKsF
+pn2t7xwa6b15ubP2z0xzpUVKd/kzaLoJGqI+7qncJlpfGKyq55bttbxb4577P/ci
+WcqknCUzacUESuZu4/Xgdtff2aSPGeN8hZUJgSfPXQXXG75/3ND+yzmNveinIyRc
+ZpD6PCcvRUFP2NReLiRoZb0hHQJGNMsz1YGHJNETGpQ8dcC2VHE=
+=mLFW
 -----END PGP SIGNATURE-----
 
---nextPart2025955.oWOvcQjO3m--
-
-
+--nextPart2802252.tTjxyp59UE--
 
