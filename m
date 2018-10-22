@@ -1,13 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Oct 2018 16:26:49 +0200
-Message-ID: <3126005.3y7xrHjZEe@prime>
-In-Reply-To: <B99A1AB9A294834C8DF94185A5E9D18101784CE751@NRTV96002.america.zf-world.com>
-References: <B99A1AB9A294834C8DF94185A5E9D18101784CE751@NRTV96002.america.zf-world.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 22 Oct 2018 18:42:25 +0200
+Message-ID: <4210821.HbKLZVPWWj@bentobox>
+In-Reply-To: <20181021225524.8155-1-sven@narfation.org>
+References: <20181021225524.8155-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3804838.mmorxGNhlB";
+Content-Type: multipart/signed; boundary="nextPart4545993.vJxjh6QdZB";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] broadcast storms
+Subject: Re: [B.A.T.M.A.N.] [PATCH 00/38] batctl: pre-netlink restructuring,
+ part 1
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,82 +20,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3804838.mmorxGNhlB
+--nextPart4545993.vJxjh6QdZB
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-Hi Jake,
-
-could you make some pcap dumps on the wlan device where batman runs, and 
-provide that to us? Just the the full tcpdump (tcpdump -s 2000 -w /tmp/my.pcap 
-wlan0, assuming that wlan0 is your interface), not batctl dump? Then we can 
-check sequence numbers etc in wireshark.
-
-Do you have some of your mesh nodes connected and bridged to Ethernet? If yes, 
-you should check the bridge loop avoidance which could also be causing this 
-effect, if you don't have it enabled and use such a topology:
-
-https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-II
-
-Cheers,
-     Simon
-
-On Monday, October 22, 2018 1:07:29 PM CEST Jake.Harris@zf.com wrote:
-> I'm sure a similar question to this has been answered, but I am new to this
-> mailing list format and don't know an efficient way to search
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/
+On Montag, 22. Oktober 2018 00:54:46 CEST Sven Eckelmann wrote:
+[...]
+> So as first steps:
 > 
-> I'm having problems with broadcast messages effectively echoing around the
-> network of 50ish nodes. I attached a few seconds of the batctl tcpdump
-> output. I can't seem to find a pattern to what causes this, it tends to
-> happen once every two or three weeks, the storm causes problems with the
-> batman program where during the storm nodes drop all their neighbors
-> (batctl n shows an empty list) indefinitely, which I have worked around
-> that issue via a batch script that reloads batman if the neighbor list is
-> empty. Reloading successfully reconnects to the network but the storm still
-> persists.
+> * restructure command registration
+> * move commands in separate files (which should store their actual implementation)
+> * add a new helper command to receive multicast group messages from the kernel
 > 
-> The only way I've found to fix this is to reboot all the nodes at the same
-> time such that the whole network is down to kill the echos.
-> 
-> I believe I had this problem much more frequently (every 4 days or so) a
-> while ago on the same network when using discrete tcp destinations for the
-> nodes to communicate, the storm frequency was reduced to what it is now by
-> using broadcast packets and reducing the communication rate from 12 seconds
-> to once every 40 seconds.
-> 
-> Rebooting the nodes that are responsible for the echoing messages has no
-> effect, I rebooted 192.168.1.230 before running tcpdump that is attached
-> and as it shows packets from 230 continued to bounce around while the node
-> was powered off and after it rejoined the network. It doesn't appear
-> broadcast uses a time-to-live parameter to limit the hops the packets will
-> make.
-> 
-> I'm at a loss for a way to remedy this, there seems to only be multicast
-> optimizations.
+> More things will follow in the future.
 
+There are now some minor fixes for the posted patches in my git development 
+branch [1]. I will not resend the modified patches directly because there a 
+quite some patches in this series. The important changes:
 
---nextPart3804838.mmorxGNhlB
+* correctly split ap_isolation and bonding patch
+* fix copyright headers for new files
+* move more routing_algo specific code to its command specific file
+* fix build problems with musl in OpenWrt 18.06
+
+Kind regards,
+	Sven
+
+[1] https://git.open-mesh.org/batctl.git/shortlog/refs/heads/ecsv/restructure
+--nextPart4545993.vJxjh6QdZB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlvN3ikACgkQoSvjmEKS
-nqHBFhAAzmCjEDK/TiMS9GwwiXiB1fpZo7ZDpNQhUYafz1AJfBOLAYkQDDjPXgAx
-0uL4dnPFUEDsKsFKq66PHsS5Bt52VaufsDOQaMBkaS9d5eGf7fzJpymxd544efo9
-XKRsjRG4N2iKIgu+3LLm8CPXNxKvsdyP48vkotdeCRQE4Kmnqra4UrZkLC0ax1IT
-2/Jf8gKOy/AneCeRLGPULxXDhTw8VgB28uB+m/7jaZLV9Sa0jwKaQyMN7oVoxw8K
-jybQUCY4TbkwG4svCyiK+30f8VTHKbB0QzFxAQiQlQRLMaLPt8slxJny5LItMKJB
-QvTBy9TG0uHfx48xWZOduAxR9VgPXikcIG6JkHUT2vheDCfj9BJQWKY48VtAXk/Z
-+FzEwvZlJOdT6XbDMgbeFjXga8D1GhMENmdcbVYqmTejIgISNOBk47rHV0vPXTmk
-EpsKCZ2wXVsiTcahC1Ym3RzVLW0f5Wbk/bPbPwMaZfni2K/M8X+XKDYheEYONdRv
-zjWuZo+mPm2psdw6/pD+9WNMZERN6DtrOCoEFo26outPdqLpZiWP5bKYsGmPSGqr
-PbbRJiBrP369HaK4Nf5qM2Z8p/edkqoG19A9uz+aRKMcKWdZd6j3Wd6ZuSkw6bQZ
-XbIqwT8PLwBM5qKXF7Whl0Bl3UoMkIw7S9HXoZ9+qrNvQPbmiTQ=
-=rJUN
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvN/fEACgkQXYcKB8Em
+e0YRbg//fPFXfSNapuVBCVl+5e7kfDw/XBek4aCgkmltC63N4MEObu/NvaRMlxiq
+uNyNp4bmnMoD+msCBmyLp/FdOqmSqgRKnsWbDhuGDnm0TqMDau3m3lzALrMJHRQ5
+WR8Q+nUE2/Nm9NzlLuBYpJ/NMTrenMKf01SFJ7oAsaUseLj964omPL2yVEOvC3rN
+vCcExfh6XV3fAPJp7yzVqzqjAov/yqy5cPoDxs4uBrsz+LClPk65rI8MolRKjumX
+RtwrGf7PE26Mum/TXH4wOoryO86mG/R5OSI4U+ZKbhiZD8GtXrlMxCLhTiGqEC7y
+cM4HmMH6lnR6MbpI+KlKvSjIxgBHrp8ZjYkinzq1ogi/2zcvE8QkZ3ayD3wDXN7P
+kButSp6p7XQpHV0lrda4iBx+2npreFXqVOPTGCqdHaXkBxUiAzzx8VcmXa7+EBgh
+GysGuUpeF1zrBWwxuqRaF58UtgXBSIdsHMmSEZUeJu758qU3LF2MwRbvQ4Me4Y1P
+RvZax1jKCmPLdH7zwQycNT29IhlFF0vXnOWnnUQbWGKtk3NaSHcznk0MYjiLSvtq
+iOpbLF4lV8mxit2qwjZAe66k7U5XzJVkuafgiXRfN+H6J7rqF14v3trmrY/pB6Q1
+eld4y9wCRYVSmiosQWIL5Rph2NMmQCBP51fNDCmYyCJrGQoidYs=
+=g6Vg
 -----END PGP SIGNATURE-----
 
---nextPart3804838.mmorxGNhlB--
+--nextPart4545993.vJxjh6QdZB--
 
