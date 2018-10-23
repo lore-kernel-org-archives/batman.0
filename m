@@ -1,15 +1,17 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Oct 2018 20:17:18 +0200
-Message-ID: <3795505.rC9BEUj0Hg@prime>
-In-Reply-To: <B99A1AB9A294834C8DF94185A5E9D18101784D0848@NRTV96002.america.zf-world.com>
-References: <B99A1AB9A294834C8DF94185A5E9D18101784CE751@NRTV96002.america.zf-world.com>
- <3126005.3y7xrHjZEe@prime>
- <B99A1AB9A294834C8DF94185A5E9D18101784D0848@NRTV96002.america.zf-world.com>
+Return-Path: <guohuizou2000@sina.com>
+From: "gary" <guohuizou2000@sina.com>
+References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>	
+ <2254141.JEhYi27MYC@bentobox>
+ <202a9491f70cebec4fe1aa1ba08b2d99d61435c3.camel@sdl.usu.edu>
+In-Reply-To: <202a9491f70cebec4fe1aa1ba08b2d99d61435c3.camel@sdl.usu.edu>
+Date: Tue, 23 Oct 2018 11:02:37 +0800
+Message-ID: <03b201d46a7c$dd0b47e0$9721d7a0$@sina.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2802252.tTjxyp59UE";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] broadcast storms
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Language: zh-cn
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,128 +21,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jake.Harris@zf.com
+To: 'Jonathan Haws' <jhaws@sdl.usu.edu>, sven@narfation.org
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2802252.tTjxyp59UE
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-Hello Jake,
+Hi Jon,
 
-I've checked your pcap files. I couldn't find a culprit directly, but it seems 
-like you are having so many repetitions / the network is getting so overloaded 
-that broadcasts stay in the queues of your WiFi driver for longer than 30 
-seconds (possibly in different devices, accumulated). At this point, batman-
-adv assumes that the device has rebooted and the sequence number is validly 
-re-used, thus circumventing the broadcast duplicate check.
+Long for your fix. Thanks.
 
-You could increase the define of BATADV_RESET_PROTECTION_MS to something 
-higher like 120000 (120 seconds) and see if that helps. But the "right" way 
-would be to avoid those deep queues in the first place.
-
-Do you set a multicast rate higher than the default 1 MBit/s? If not, that's 
-worth a try. :) If you are using iw, there is a "mcast-rate" parameter, and 
-there is something equivalent in wpa_supplicant.
-
-Cheers,
-     Simon
-
-On Monday, October 22, 2018 5:27:28 PM CEST Jake.Harris@zf.com wrote:
-> Generated this via:
->    sudo tcpdump -s 2000 -w /media/pi/KINGSTON/my.pcap -i
->  wlx681ca2083fa4
-> 
->  message after ^c
->    12090 packets captured
->    12251 packets received by filter
->    0 packets dropped by kernel
->    27 packets dropped by interface
-> 
-> -----Original Message-----
-> From: Simon Wunderlich <sw@simonwunderlich.de>
-> Sent: Monday, October 22, 2018 10:27
-> To: b.a.t.m.a.n@lists.open-mesh.org
-> Cc: Harris Jake LPR <Jake.Harris@zf.com>
-> Subject: Re: [B.A.T.M.A.N.] broadcast storms
-> 
-> * PGP Signed by an unknown key
-> 
-> Hi Jake,
-> 
-> could you make some pcap dumps on the wlan device where batman runs, and
-> provide that to us? Just the the full tcpdump (tcpdump -s 2000 -w
-> /tmp/my.pcap wlan0, assuming that wlan0 is your interface), not batctl
-> dump? Then we can check sequence numbers etc in wireshark.
-> 
-> Do you have some of your mesh nodes connected and bridged to Ethernet? If
-> yes, you should check the bridge loop avoidance which could also be causing
-> this effect, if you don't have it enabled and use such a topology:
-> 
-> https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-II
-> 
-> Cheers,
->      Simon
-> 
-> On Monday, October 22, 2018 1:07:29 PM CEST Jake.Harris@zf.com wrote:
-> > I'm sure a similar question to this has been answered, but I am new to
-> > this mailing list format and don't know an efficient way to search
-> > https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/
-> > 
-> > I'm having problems with broadcast messages effectively echoing around
-> > the network of 50ish nodes. I attached a few seconds of the batctl
-> > tcpdump output. I can't seem to find a pattern to what causes this, it
-> > tends to happen once every two or three weeks, the storm causes
-> > problems with the batman program where during the storm nodes drop all
-> > their neighbors (batctl n shows an empty list) indefinitely, which I
-> > have worked around that issue via a batch script that reloads batman
-> > if the neighbor list is empty. Reloading successfully reconnects to
-> > the network but the storm still persists.
-> > 
-> > The only way I've found to fix this is to reboot all the nodes at the
-> > same time such that the whole network is down to kill the echos.
-> > 
-> > I believe I had this problem much more frequently (every 4 days or so)
-> > a while ago on the same network when using discrete tcp destinations
-> > for the nodes to communicate, the storm frequency was reduced to what
-> > it is now by using broadcast packets and reducing the communication
-> > rate from 12 seconds to once every 40 seconds.
-> > 
-> > Rebooting the nodes that are responsible for the echoing messages has
-> > no effect, I rebooted 192.168.1.230 before running tcpdump that is
-> > attached and as it shows packets from 230 continued to bounce around
-> > while the node was powered off and after it rejoined the network. It
-> > doesn't appear broadcast uses a time-to-live parameter to limit the
-> > hops the packets will make.
-> > 
-> > I'm at a loss for a way to remedy this, there seems to only be
-> > multicast optimizations.
-> 
-> * Unknown Key
-> * 0x42929EA1
+I have a doubt for the issue.
+Alfred should send the info by multicast packets. So the packet's dst =
+mac address should be multicast mac address.
+The packet with multicast mac address should be received by all group =
+member, isn't it?
+Why does the mesh point need peer's mac address for sending the info?
 
 
---nextPart2802252.tTjxyp59UE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Regards,
+Gary
+-----Original Message-----
+From: Jonathan Haws <jhaws@sdl.usu.edu>=20
+Sent: 2018=E5=B9=B410=E6=9C=8823=E6=97=A5 1:36
+To: sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org; guohuizou2000@sina.com
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlvOFC4ACgkQoSvjmEKS
-nqEJQxAAwGjaJBDiYNxDmE3khaB8T+5P1cQXYxmXLcfvVIDy35T+zh+94PvnJpOS
-Ku0tr1i5/xQoBmx2r6JpyjHEdeuUpFsJFB5kKFG7E8gxvJuodZtJ4joowReCG4Iq
-n68UoZH7vnMl1+Aa88gJrSJkW5FeaqRlR5Ik2BGkGl8Lehs4UFdRONkhHCPDsNls
-O3Eo7h4QY53JOf67PprmG0EIMGQMQ4mHac/RLiEFu0ZMpKMqjbaJYiO43JJ8tAVi
-Fmq4c1bkqy50hgdGgsg0mUZKfVeP3OPOyjQPncIVT6CXlbuWe/LlaX8LfobjfOoc
-bTtz/TyqpkGnShdpqho42USxBEOARCibsHJT2XWDi8WDaV93clITS6HDcXeIJO0t
-J7+w9wHsG29B5sz0J81kxzuudCLA3GuzI/Ovnb7xAMTryCkvOFrpmNW4n5sG5kcC
-LE1fq46cADOzsmjPYTkqSN2tUUTErKM+AzazOOmv9otMmYhrbEhaDXIpm3cArKsF
-pn2t7xwa6b15ubP2z0xzpUVKd/kzaLoJGqI+7qncJlpfGKyq55bttbxb4577P/ci
-WcqknCUzacUESuZu4/Xgdtff2aSPGeN8hZUJgSfPXQXXG75/3ND+yzmNveinIyRc
-ZpD6PCcvRUFP2NReLiRoZb0hHQJGNMsz1YGHJNETGpQ8dcC2VHE=
-=mLFW
------END PGP SIGNATURE-----
+On Thu, 2018-10-18 at 08:22 +0200, Sven Eckelmann wrote:
+> On Donnerstag, 18. Oktober 2018 13:53:44 CEST gary wrote:
+> > I setup a testbed like this.  (BBN =3D backbone node)
+> >=20
+> > Switch ---------->BBN1 --------------->MP1
+> >         |
+> > 		------->BBN2---------------->MP2
+> >=20
+> > MP1 and MP2 may select BBN1 or BBN2 as gateway.=20
+> > On both MP1 and MP2, I enable Alfred and batadv-vis as follows:
+> > alfred -i br0 -4 224.0.0.1 -m &
+> > batadv-vis -i bat0 -s
+>=20
+> Looks like you are using the experimental IPv4 support which I don't=20
+> want to actively support. So Jonathan Haws should take care of this.
+>=20
 
---nextPart2802252.tTjxyp59UE--
+I am aware of this issue, but was under the impression I was the only =
+one it affected. I'm working on a fix (basically check the ARP table and =
+if a record doesn't exist for the MAC then run an ARP query; if that =
+query fails then report a error) and I hope to have it working soon.
+
+> >=20
+> > when I run batadv-vis again on MP1, I can't get the info from MP2.=20
+> > If I ping the ip address of MP2 from MP1, MP1 will get MP2's mac=20
+> > address by arp.
+> > And then I run batadv-vis again, I can get the data from MP2 now.
+> >=20
+> > Is there any configure or method to get MP2's info without ping=20
+> > test?
+>=20
+
+We have been working around this issue in the same manner as you =
+describe for the time being.
+
+Thanks,
+Jon
+
+
 
