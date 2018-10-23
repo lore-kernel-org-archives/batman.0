@@ -1,18 +1,14 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Tue, 23 Oct 2018 04:04:42 +0000
-Message-ID: <e287b33a075cd802539d75d95319805eee0010ea.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 23 Oct 2018 08:29:05 +0200
+Message-ID: <2008119.62L72lsrl6@bentobox>
+In-Reply-To: <e287b33a075cd802539d75d95319805eee0010ea.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <2254141.JEhYi27MYC@bentobox>
- <202a9491f70cebec4fe1aa1ba08b2d99d61435c3.camel@sdl.usu.edu>
  <03b201d46a7c$dd0b47e0$9721d7a0$@sina.com>
-In-Reply-To: <03b201d46a7c$dd0b47e0$9721d7a0$@sina.com>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <106C0AD47D2ED84C8A1D3A8D6CEF8318@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <e287b33a075cd802539d75d95319805eee0010ea.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3962130.Z4tyKqcQ0V";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,56 +19,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "guohuizou2000@sina.com" <guohuizou2000@sina.com>, "sven@narfation.org" <sven@narfation.org>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Jonathan Haws <jhaws@sdl.usu.edu>
+Cc: "guohuizou2000@sina.com" <guohuizou2000@sina.com>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-T24gVHVlLCAyMDE4LTEwLTIzIGF0IDExOjAyICswODAwLCBnYXJ5IHdyb3RlOg0KPiBIaSBKb24s
-DQo+IA0KPiBMb25nIGZvciB5b3VyIGZpeC4gVGhhbmtzLg0KDQpJdCdzIHN0aWxsIGF0IGxlYXN0
-IGEgd2VlayBvciBzbyBvdXQuLi4NCg0KPiBJIGhhdmUgYSBkb3VidCBmb3IgdGhlIGlzc3VlLg0K
-PiBBbGZyZWQgc2hvdWxkIHNlbmQgdGhlIGluZm8gYnkgbXVsdGljYXN0IHBhY2tldHMuIFNvIHRo
-ZSBwYWNrZXQncyBkc3QNCj4gbWFjIGFkZHJlc3Mgc2hvdWxkIGJlIG11bHRpY2FzdCBtYWMgYWRk
-cmVzcy4NCj4gVGhlIHBhY2tldCB3aXRoIG11bHRpY2FzdCBtYWMgYWRkcmVzcyBzaG91bGQgYmUg
-cmVjZWl2ZWQgYnkgYWxsIGdyb3VwDQo+IG1lbWJlciwgaXNuJ3QgaXQ/DQo+IFdoeSBkb2VzIHRo
-ZSBtZXNoIHBvaW50IG5lZWQgcGVlcidzIG1hYyBhZGRyZXNzIGZvciBzZW5kaW5nIHRoZSBpbmZv
-Pw0KDQpUaGUgcmVzdCBvZiB0aGUgZGV2cyBtYXkgYmUgYWJsZSB0byBhbnN3ZXIgYmV0dGVyLCBi
-dXQgSSBiZWxpZXZlIGl0IGlzDQpob3cgYWxmcmVkIGRvZXMgaXRzIGRhdGEgc3RvcmFnZSBhbmQg
-bWFwcGluZyBvZiB0aGUgc291cmNlLiBXaGVuIEkNCmxvb2tlZCBhdCB0aGlzIGEgZmV3IG1vbnRo
-cyBhZ28gdGhlIHdheSBpdCB3YXMgdXNpbmcgdGhlIEFSUCB0YWJsZSB0bw0KcHVsbCB0aGUgTUFD
-IGFkZHJlc3MgZGlkbid0IHdvcmsgcmlnaHQgYW5kIHJlcXVpcmVkIGEgc2VwYXJhdGUgQVJQDQpy
-ZXF1ZXN0IHRvIGhhdmUgaXQgd29yayBwcm9wZXJseS4NCg0KV2hlbiBJIGhhdmUgYSBjaGFuY2Ug
-dG8gZGlnIGJhY2sgaW50byBpdCBhbmQgZGV2ZWxvcCB0aGUgZml4IEkgY2FuDQpwcm92aWRlIG1v
-cmUgZGV0YWlscywgYnV0IHRoYXQncyB3aGF0IEkgcmVjYWxsIHJpZ2h0IG5vdy4gSXQgZGlkbid0
-DQptYWtlIHNlbnNlIHRvIG1lIGF0IGZpcnN0IGVpdGhlciBiYXNlZCBvbiB0aGUgc3ltcHRvbXMs
-IGJ1dCB3aGVuIEkgZHVnDQp0aHJvdWdoIHRoZSBjb2RlIEkgcmVhbGl6ZWQgdGhhdCB3YXMgd2hh
-dCB3YXMgcmVxdWlyZWQgYW5kIGp1c3QgZGlkbid0DQpoYXZlIHRpbWUgdG8gcHV0IHRoZSBmaXgg
-aW4gdGhlbi4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb25hdGhh
-biBIYXdzIDxqaGF3c0BzZGwudXN1LmVkdT4gDQo+IFNlbnQ6IDIwMTjlubQxMOaciDIz5pelIDE6
-MzYNCj4gVG86IHN2ZW5AbmFyZmF0aW9uLm9yZw0KPiBDYzogYi5hLnQubS5hLm5AbGlzdHMub3Bl
-bi1tZXNoLm9yZzsgZ3VvaHVpem91MjAwMEBzaW5hLmNvbQ0KPiBTdWJqZWN0OiBSZTogW0IuQS5U
-Lk0uQS5OLl0gYWxmcmVkIGFuZCBiYXRhZHYtdmlzIGlzc3VlDQo+IA0KPiANCj4gT24gVGh1LCAy
-MDE4LTEwLTE4IGF0IDA4OjIyICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToNCj4gPiBPbiBE
-b25uZXJzdGFnLCAxOC4gT2t0b2JlciAyMDE4IDEzOjUzOjQ0IENFU1QgZ2FyeSB3cm90ZToNCj4g
-PiA+IEkgc2V0dXAgYSB0ZXN0YmVkIGxpa2UgdGhpcy4gIChCQk4gPSBiYWNrYm9uZSBub2RlKQ0K
-PiA+ID4gDQo+ID4gPiBTd2l0Y2ggLS0tLS0tLS0tLT5CQk4xIC0tLS0tLS0tLS0tLS0tLT5NUDEN
-Cj4gPiA+ICAgICAgICAgfA0KPiA+ID4gCQktLS0tLS0tPkJCTjItLS0tLS0tLS0tLS0tLS0tPk1Q
-Mg0KPiA+ID4gDQo+ID4gPiBNUDEgYW5kIE1QMiBtYXkgc2VsZWN0IEJCTjEgb3IgQkJOMiBhcyBn
-YXRld2F5LiANCj4gPiA+IE9uIGJvdGggTVAxIGFuZCBNUDIsIEkgZW5hYmxlIEFsZnJlZCBhbmQg
-YmF0YWR2LXZpcyBhcyBmb2xsb3dzOg0KPiA+ID4gYWxmcmVkIC1pIGJyMCAtNCAyMjQuMC4wLjEg
-LW0gJg0KPiA+ID4gYmF0YWR2LXZpcyAtaSBiYXQwIC1zDQo+ID4gDQo+ID4gTG9va3MgbGlrZSB5
-b3UgYXJlIHVzaW5nIHRoZSBleHBlcmltZW50YWwgSVB2NCBzdXBwb3J0IHdoaWNoIEkNCj4gPiBk
-b24ndCANCj4gPiB3YW50IHRvIGFjdGl2ZWx5IHN1cHBvcnQuIFNvIEpvbmF0aGFuIEhhd3Mgc2hv
-dWxkIHRha2UgY2FyZSBvZg0KPiA+IHRoaXMuDQo+ID4gDQo+IA0KPiBJIGFtIGF3YXJlIG9mIHRo
-aXMgaXNzdWUsIGJ1dCB3YXMgdW5kZXIgdGhlIGltcHJlc3Npb24gSSB3YXMgdGhlIG9ubHkNCj4g
-b25lIGl0IGFmZmVjdGVkLiBJJ20gd29ya2luZyBvbiBhIGZpeCAoYmFzaWNhbGx5IGNoZWNrIHRo
-ZSBBUlAgdGFibGUNCj4gYW5kIGlmIGEgcmVjb3JkIGRvZXNuJ3QgZXhpc3QgZm9yIHRoZSBNQUMg
-dGhlbiBydW4gYW4gQVJQIHF1ZXJ5OyBpZg0KPiB0aGF0IHF1ZXJ5IGZhaWxzIHRoZW4gcmVwb3J0
-IGEgZXJyb3IpIGFuZCBJIGhvcGUgdG8gaGF2ZSBpdCB3b3JraW5nDQo+IHNvb24uDQo+IA0KPiA+
-ID4gDQo+ID4gPiB3aGVuIEkgcnVuIGJhdGFkdi12aXMgYWdhaW4gb24gTVAxLCBJIGNhbid0IGdl
-dCB0aGUgaW5mbyBmcm9tDQo+ID4gPiBNUDIuIA0KPiA+ID4gSWYgSSBwaW5nIHRoZSBpcCBhZGRy
-ZXNzIG9mIE1QMiBmcm9tIE1QMSwgTVAxIHdpbGwgZ2V0IE1QMidzIG1hYyANCj4gPiA+IGFkZHJl
-c3MgYnkgYXJwLg0KPiA+ID4gQW5kIHRoZW4gSSBydW4gYmF0YWR2LXZpcyBhZ2FpbiwgSSBjYW4g
-Z2V0IHRoZSBkYXRhIGZyb20gTVAyIG5vdy4NCj4gPiA+IA0KPiA+ID4gSXMgdGhlcmUgYW55IGNv
-bmZpZ3VyZSBvciBtZXRob2QgdG8gZ2V0IE1QMidzIGluZm8gd2l0aG91dCBwaW5nIA0KPiA+ID4g
-dGVzdD8NCj4gDQo+IFdlIGhhdmUgYmVlbiB3b3JraW5nIGFyb3VuZCB0aGlzIGlzc3VlIGluIHRo
-ZSBzYW1lIG1hbm5lciBhcyB5b3UNCj4gZGVzY3JpYmUgZm9yIHRoZSB0aW1lIGJlaW5nLg0KPiAN
-Cj4gVGhhbmtzLA0KPiBKb24NCj4gDQo+IA0KPiANCg==
+--nextPart3962130.Z4tyKqcQ0V
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 23. Oktober 2018 04:04:42 CEST Jonathan Haws wrote:
+[...]
+> > I have a doubt for the issue.
+> > Alfred should send the info by multicast packets. So the packet's dst
+> > mac address should be multicast mac address.
+> > The packet with multicast mac address should be received by all group
+> > member, isn't it?
+> > Why does the mesh point need peer's mac address for sending the info?
+> 
+> The rest of the devs may be able to answer better, but I believe it is
+> how alfred does its data storage and mapping of the source.
+
+Correct, alfred is storing the data from each server using its mac address. It 
+is also looking up the TQ of master servers via the mac address. And the mac 
+address is expected to be extractable from the EUI64 based link-local IPv6
+address.
+
+And of course, Jonathan's IPv4 implementation must get the mac address using 
+different methods. It is using the function ipv4_arp_request to get the 
+information from IPv4 neighbor table. And it looks like his implementation is 
+missing a reliable way to fill this neighbor table.
+
+Kind regards,
+	Sven
+--nextPart3962130.Z4tyKqcQ0V
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvOv7EACgkQXYcKB8Em
+e0a2/A/+NZpL9i32cxnk1v9Jz8C3CmpsHvY9hodD++babAF3XxMPMqrQs+Ids3KC
+jfq+B1KQuOzsZaTRGL0zWMkwMRJRlor2UMhyyaTCO9UOlrLbOckAzV2m2o2FPixB
+4oUGqL6TegKgVtLg4beI/2HaO65IzpaDe9XArmTR4uDRDg6SdW8jicHbsMR76SK2
+dU62DiWbNGWrnZ3ACKt3uTpuBXjsOH+6F+zS2bBlBGrFrGSNPXmG+9UKXljUSVBj
+eyV+106fjfdhXBnxI0PeqV+1zRe3Zp5VCX85jdD/Vr1A9iKoPOOI3zfGP/NpExrr
+CU3LWLLNkm5QwIvl9n68SZBYvg/ZZ+s+MqgadAx+1Ya/VwY+wgdw1Q79/me7ukpE
+/+i2m2u2Q/UApC5HoBozSP1NZwpNJMO+27u99afZLhhcrvt86tPh85mNgCWZUPIY
+8gKFhLaqpwST+Euqw5Bx4fU1RjjmzAn0QEnSA8Hx/Ab9bVDWbEcdbGRkMNNV0Ain
+ZF0km1dSL7vt+jL++TAPMYnla0mIH05y3mWxSHFOSljulTp1lBO1Klt7UWBdiSwC
+g7PjIRhkYffRD3OoMVAU31bSldfrL/NrX8b6UZhNwW8PbHxioOK3LQp9eZog1v40
+oY/UoIFN12gpM41P4jPt3mP1cxXzh6WgLTYFsLwmQN7xLDHLOO0=
+=c9Mb
+-----END PGP SIGNATURE-----
+
+--nextPart3962130.Z4tyKqcQ0V--
+
