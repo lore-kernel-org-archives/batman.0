@@ -1,13 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 23 Oct 2018 12:25:56 +0200
-Message-ID: <1691466.gmWDQoYWNX@bentobox>
-In-Reply-To: <03c201d46ab6$2bbc2650$833472f0$@sina.com>
+Return-Path: <jhaws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Tue, 23 Oct 2018 13:50:42 +0000
+Message-ID: <722f811f37e870de99c4d9e4d11c28b3b9aa9bea.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <2008119.62L72lsrl6@bentobox> <03c201d46ab6$2bbc2650$833472f0$@sina.com>
+ <03b201d46a7c$dd0b47e0$9721d7a0$@sina.com>
+ <e287b33a075cd802539d75d95319805eee0010ea.camel@sdl.usu.edu>
+ <2008119.62L72lsrl6@bentobox>
+In-Reply-To: <2008119.62L72lsrl6@bentobox>
+Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <CA7189DDD27D0041906A783C870D40A1@sdl.usu.edu>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart118486425.gvLHICIDWJ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,45 +23,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gary <guohuizou2000@sina.com>
-Cc: 'Jonathan Haws' <jhaws@sdl.usu.edu>, b.a.t.m.a.n@lists.open-mesh.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart118486425.gvLHICIDWJ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Dienstag, 23. Oktober 2018 17:52:54 CEST gary wrote:
-[..]
-> Can you add a payload in multicast packets to carry the mac address, so we
-> can get the mac from the payload without concerning about whether it is IPv4
-> or IPv6?
-
-You can do a lot - but I will not accept such a change in alfred.
-
-Kind regards,
-	Sven
-
---nextPart118486425.gvLHICIDWJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvO9zQACgkQXYcKB8Em
-e0YvzBAAsW+3r1obh7MykUb7qpg08JLUD5orqGhuaEoS8XOKdlAAYuWY53enqe2k
-tjpOGlpzvur3XIBC+g+PjQnbgEh8pH1ekNyXJnUw/dnAvgO0vmkHFoJrbh6DxoTc
-Y/lGhry1Vxwi0wmDSB9UkiB3xYOVrqJyv406zB2mnqKN8XLhcIrdUVa1HVyjZwIY
-XZFxP+QQhWNcjl9dmju42worHs+nXJwk0FSdKzpywUs+MXXkIjcG5I+rUwwK9kmK
-6jbr2wvMtoJFPKVTwAs/oNxjS19G9CRA2tdKk7fKyiSup4tAm6t8j7s9q1kfmp8z
-ORGrtie6h1fxGepAtLwRmnODWZ3k5a10o6YorM7RNS9wiVinWuKXD8UIMDF/2yUk
-wGM4hrA/ezN8Rur0zZJRqZBSUe3qPhZ7BaMLO2sOZ0BVcFbHGniBLVWBix+RRDg/
-1EQF9E+tsDLlKCQTNsIUFs2XNHx0JY8U2sEz7twRgDGHY6wozgKbOBlq4Eyrs36e
-PK1j0s5RksW52HXbMlsICKfRsEXOfBe4e6SK5OsMUz0c9mVGWoga4DWedVw/PsWc
-mZoSIaaclo7So6up+By+8uVs+CBZLfYfq9ArG7AbpfXM7hh08legwq8zkJwxRbyw
-45TxjqZ018wC6OI9ZtS3Y8xiaGK1aFPS/Pu3j2Kbu3f0OlTUMA0=
-=Cqpn
------END PGP SIGNATURE-----
-
---nextPart118486425.gvLHICIDWJ--
-
+T24gVHVlLCAyMDE4LTEwLTIzIGF0IDA4OjI5ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
+Cj4gT24gRGllbnN0YWcsIDIzLiBPa3RvYmVyIDIwMTggMDQ6MDQ6NDIgQ0VTVCBKb25hdGhhbiBI
+YXdzIHdyb3RlOg0KPiBbLi4uXQ0KPiA+ID4gSSBoYXZlIGEgZG91YnQgZm9yIHRoZSBpc3N1ZS4N
+Cj4gPiA+IEFsZnJlZCBzaG91bGQgc2VuZCB0aGUgaW5mbyBieSBtdWx0aWNhc3QgcGFja2V0cy4g
+U28gdGhlIHBhY2tldCdzDQo+ID4gPiBkc3QNCj4gPiA+IG1hYyBhZGRyZXNzIHNob3VsZCBiZSBt
+dWx0aWNhc3QgbWFjIGFkZHJlc3MuDQo+ID4gPiBUaGUgcGFja2V0IHdpdGggbXVsdGljYXN0IG1h
+YyBhZGRyZXNzIHNob3VsZCBiZSByZWNlaXZlZCBieSBhbGwNCj4gPiA+IGdyb3VwDQo+ID4gPiBt
+ZW1iZXIsIGlzbid0IGl0Pw0KPiA+ID4gV2h5IGRvZXMgdGhlIG1lc2ggcG9pbnQgbmVlZCBwZWVy
+J3MgbWFjIGFkZHJlc3MgZm9yIHNlbmRpbmcgdGhlDQo+ID4gPiBpbmZvPw0KPiA+IA0KPiA+IFRo
+ZSByZXN0IG9mIHRoZSBkZXZzIG1heSBiZSBhYmxlIHRvIGFuc3dlciBiZXR0ZXIsIGJ1dCBJIGJl
+bGlldmUgaXQNCj4gPiBpcw0KPiA+IGhvdyBhbGZyZWQgZG9lcyBpdHMgZGF0YSBzdG9yYWdlIGFu
+ZCBtYXBwaW5nIG9mIHRoZSBzb3VyY2UuDQo+IA0KPiBDb3JyZWN0LCBhbGZyZWQgaXMgc3Rvcmlu
+ZyB0aGUgZGF0YSBmcm9tIGVhY2ggc2VydmVyIHVzaW5nIGl0cyBtYWMNCj4gYWRkcmVzcy4gSXQg
+DQo+IGlzIGFsc28gbG9va2luZyB1cCB0aGUgVFEgb2YgbWFzdGVyIHNlcnZlcnMgdmlhIHRoZSBt
+YWMgYWRkcmVzcy4gQW5kDQo+IHRoZSBtYWMgDQo+IGFkZHJlc3MgaXMgZXhwZWN0ZWQgdG8gYmUg
+ZXh0cmFjdGFibGUgZnJvbSB0aGUgRVVJNjQgYmFzZWQgbGluay1sb2NhbCANCj4gSVB2Ng0KPiBh
+ZGRyZXNzLg0KDQpUaGFua3MsIFN2ZW4sIGZvciB0aGUgY2xhcmlmaWNhdGlvbiENCg0KPiANCj4g
+QW5kIG9mIGNvdXJzZSwgSm9uYXRoYW4ncyBJUHY0IGltcGxlbWVudGF0aW9uIG11c3QgZ2V0IHRo
+ZSBtYWMNCj4gYWRkcmVzcyB1c2luZyANCj4gZGlmZmVyZW50IG1ldGhvZHMuIEl0IGlzIHVzaW5n
+IHRoZSBmdW5jdGlvbiBpcHY0X2FycF9yZXF1ZXN0IHRvIGdldA0KPiB0aGUgDQo+IGluZm9ybWF0
+aW9uIGZyb20gSVB2NCBuZWlnaGJvciB0YWJsZS4gQW5kIGl0IGxvb2tzIGxpa2UgaGlzDQo+IGlt
+cGxlbWVudGF0aW9uIGlzIA0KPiBtaXNzaW5nIGEgcmVsaWFibGUgd2F5IHRvIGZpbGwgdGhpcyBu
+ZWlnaGJvciB0YWJsZS4NCj4gDQoNClllcyAtIG15IHBsYW4gaXMgdG8gaW1wbGVtZW50IGEgbWFu
+dWFsIEFSUCByZXF1ZXN0LCB3aGljaCBpZiB0aGF0IGZhaWxzDQp0aGVuIHRoZSBiZWhhdmlvciB3
+aWxsIGJlIGFzIGl0IGlzIG5vdy4gSG93ZXZlciwgb24gc3VjY2VzcywgaXQgd2lsbA0KaGF2ZSB0
+aGUgY29ycmVjdCBNQUMgYW5kIGV2ZXJ5dGhpbmcgd2lsbCBiZSBnb29kIHRvIGdvLg0KDQpUaGFu
+a3MhDQoNCg0K
