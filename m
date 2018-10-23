@@ -1,18 +1,14 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Tue, 23 Oct 2018 14:11:41 +0000
-Message-ID: <754f0cb793f916471e7a2dbfe1558bee974fea16.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 23 Oct 2018 16:16:21 +0200
+Message-ID: <19500073.zgPyDjR2lk@bentobox>
+In-Reply-To: <754f0cb793f916471e7a2dbfe1558bee974fea16.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <2008119.62L72lsrl6@bentobox>
- <722f811f37e870de99c4d9e4d11c28b3b9aa9bea.camel@sdl.usu.edu>
  <5881573.Sb6ha2483l@bentobox>
-In-Reply-To: <5881573.Sb6ha2483l@bentobox>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <465E73E7CD78174D87B5BE228F4DE4AA@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <754f0cb793f916471e7a2dbfe1558bee974fea16.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6139222.2QLDgQtB6q";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,27 +19,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sven@narfation.org" <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Jonathan Haws <jhaws@sdl.usu.edu>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-T24gVHVlLCAyMDE4LTEwLTIzIGF0IDE2OjA2ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
-Cj4gT24gRGllbnN0YWcsIDIzLiBPa3RvYmVyIDIwMTggMTM6NTA6NDIgQ0VTVCBKb25hdGhhbiBI
-YXdzIHdyb3RlOg0KPiBbLi4uXQ0KPiA+ID4gQW5kIG9mIGNvdXJzZSwgSm9uYXRoYW4ncyBJUHY0
-IGltcGxlbWVudGF0aW9uIG11c3QgZ2V0IHRoZSBtYWMNCj4gPiA+IGFkZHJlc3MgdXNpbmcgDQo+
-ID4gPiBkaWZmZXJlbnQgbWV0aG9kcy4gSXQgaXMgdXNpbmcgdGhlIGZ1bmN0aW9uIGlwdjRfYXJw
-X3JlcXVlc3QgdG8NCj4gPiA+IGdldA0KPiA+ID4gdGhlIA0KPiA+ID4gaW5mb3JtYXRpb24gZnJv
-bSBJUHY0IG5laWdoYm9yIHRhYmxlLiBBbmQgaXQgbG9va3MgbGlrZSBoaXMNCj4gPiA+IGltcGxl
-bWVudGF0aW9uIGlzIA0KPiA+ID4gbWlzc2luZyBhIHJlbGlhYmxlIHdheSB0byBmaWxsIHRoaXMg
-bmVpZ2hib3IgdGFibGUuDQo+ID4gPiANCj4gPiANCj4gPiBZZXMgLSBteSBwbGFuIGlzIHRvIGlt
-cGxlbWVudCBhIG1hbnVhbCBBUlAgcmVxdWVzdCwgd2hpY2ggaWYgdGhhdA0KPiA+IGZhaWxzDQo+
-ID4gdGhlbiB0aGUgYmVoYXZpb3Igd2lsbCBiZSBhcyBpdCBpcyBub3cuIEhvd2V2ZXIsIG9uIHN1
-Y2Nlc3MsIGl0DQo+ID4gd2lsbA0KPiA+IGhhdmUgdGhlIGNvcnJlY3QgTUFDIGFuZCBldmVyeXRo
-aW5nIHdpbGwgYmUgZ29vZCB0byBnby4NCj4gDQo+IE1hbnVhbCBBUlAgcmVxdWVzdCBzb3VuZHMg
-d2VpcmQuIFdoYXQgYWJvdXQgDQo+IA0KaHR0cHM6Ly9naXQub3Blbi1tZXNoLm9yZy9iYXRjdGwu
-Z2l0L2Jsb2IvODNmYWEzMTI2ZDZjYzk4NGZmZjEwNzYwYWE5NzViYWNlYzA0MzYzMjovZnVuY3Rp
-b25zLmMjbDUzNw0KPiBhbmQNCj4gDQpodHRwczovL2dpdC5vcGVuLW1lc2gub3JnL2JhdGN0bC5n
-aXQvYmxvYi84M2ZhYTMxMjZkNmNjOTg0ZmZmMTA3NjBhYTk3NWJhY2VjMDQzNjMyOi9mdW5jdGlv
-bnMuYyNsNzAyDQo+IA0KDQpBcmUgdGhlc2UgbmV3IHJvdXRpbmVzPyAgSSBtYXkgaGF2ZSBiZWVu
-IGxvb2tpbmcgYXQgb2xkIGNvZGUgYW5kIGRvbid0DQpyZW1lbWJlciBzZWVpbmcgdGhlc2UgdGhl
-cmUuIEknbSBzZWVpbmcgdGhhdCB0aGVzZSB3aWxsIGRvIHdoYXQgd2UgbmVlZA0KLSBwZXJmb3Jt
-IGEgcmVxdWVzdCBvbiB0aGUgbmV0d29yayBpZiB0aGUgZW50cnkgaXMgbm90IGluIHRoZSBjYWNo
-ZT8NCg0KVGhhbmtzIQ0K
+--nextPart6139222.2QLDgQtB6q
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 23. Oktober 2018 14:11:41 CEST Jonathan Haws wrote:
+[...]
+> https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l537
+> > and
+> > 
+> https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l702
+> > 
+> 
+> Are these new routines?  I may have been looking at old code and don't
+> remember seeing these there. I'm seeing that these will do what we need
+> - perform a request on the network if the entry is not in the cache?
+
+These routines are not in alfred yet - they are in batctl. And we use them 
+there for the translate subcommand (translate an IP to the responsible 
+originator).
+
+And yes, they check whether the entry is available and if not then they will 
+try to send something towards the remote device. They only have to be
+adjusted for alfred and integrated in your IPv4 codepath(s).
+
+Kind regards,
+	Sven
+--nextPart6139222.2QLDgQtB6q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvPLTUACgkQXYcKB8Em
+e0ZYgg//czvXgMo3LF7ZKrCszXuweoUWArC8bRCChi9SqwxwKS6ynDIXiMTZliim
+fptqMQCBnqx2tPMAuK/YgC23q5jzGB8esHJwIemMSwyKSuOKYzG8BR54BykjTDYU
+wkhpOsRc6TsXHSIxTc78xEMO2Z/wnpL1VPv76VrXvuhOis8IOtbNug7/ixUfpWvP
+NJmUrWQQz0EoBPIXLxtAwEumymlZBInOrmJr+YzJu+/GaBEbKQ/bgKeCCZKIfTUu
+HnGRuGfN2t21n4zkc2/pwOpsicLmqGV6O55sgzJ6gndZInO7NNMPwraGmO+MCq3j
+3dhFejbEQJYpOYGLKJAaTLfAiyCXMrO15ufM74RGJ+jAa37tsK9NY2I6365VVN9+
+VIWc9d+wCF4/jDs9Tq3w5VF3/1PEFwtwPL1ZXKX1ck4/db0aGPFh6tW5mby3546j
+SEu4NZ3dsj/B6QVlRgLfCJjsNthDoRhnwD9EFMoh17A3dRnBEEP13gDHVdWIWY6p
+yYxtzqK+15v1aKV4BLAi7MF4KZ/7rq45DeS58Np91xLNMBUJYqLDC00cMiDV6i5B
+X4O+Neyhc0o/0EiO2cPOzzh0h28WvlqFoKchn01ZrlFs/wuV8sDn0mM30YXP2VJ/
+yWsnjluMYmDfKruH82e04keqMe74nSy2mEYHcRDNSNIsEqfJKTE=
+=NQ/T
+-----END PGP SIGNATURE-----
+
+--nextPart6139222.2QLDgQtB6q--
+
