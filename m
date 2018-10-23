@@ -1,18 +1,14 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Tue, 23 Oct 2018 13:50:42 +0000
-Message-ID: <722f811f37e870de99c4d9e4d11c28b3b9aa9bea.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 23 Oct 2018 16:06:46 +0200
+Message-ID: <5881573.Sb6ha2483l@bentobox>
+In-Reply-To: <722f811f37e870de99c4d9e4d11c28b3b9aa9bea.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <03b201d46a7c$dd0b47e0$9721d7a0$@sina.com>
- <e287b33a075cd802539d75d95319805eee0010ea.camel@sdl.usu.edu>
  <2008119.62L72lsrl6@bentobox>
-In-Reply-To: <2008119.62L72lsrl6@bentobox>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <CA7189DDD27D0041906A783C870D40A1@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <722f811f37e870de99c4d9e4d11c28b3b9aa9bea.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2398047.O3lpLZltjp";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,32 +19,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Jonathan Haws <jhaws@sdl.usu.edu>
 
-T24gVHVlLCAyMDE4LTEwLTIzIGF0IDA4OjI5ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
-Cj4gT24gRGllbnN0YWcsIDIzLiBPa3RvYmVyIDIwMTggMDQ6MDQ6NDIgQ0VTVCBKb25hdGhhbiBI
-YXdzIHdyb3RlOg0KPiBbLi4uXQ0KPiA+ID4gSSBoYXZlIGEgZG91YnQgZm9yIHRoZSBpc3N1ZS4N
-Cj4gPiA+IEFsZnJlZCBzaG91bGQgc2VuZCB0aGUgaW5mbyBieSBtdWx0aWNhc3QgcGFja2V0cy4g
-U28gdGhlIHBhY2tldCdzDQo+ID4gPiBkc3QNCj4gPiA+IG1hYyBhZGRyZXNzIHNob3VsZCBiZSBt
-dWx0aWNhc3QgbWFjIGFkZHJlc3MuDQo+ID4gPiBUaGUgcGFja2V0IHdpdGggbXVsdGljYXN0IG1h
-YyBhZGRyZXNzIHNob3VsZCBiZSByZWNlaXZlZCBieSBhbGwNCj4gPiA+IGdyb3VwDQo+ID4gPiBt
-ZW1iZXIsIGlzbid0IGl0Pw0KPiA+ID4gV2h5IGRvZXMgdGhlIG1lc2ggcG9pbnQgbmVlZCBwZWVy
-J3MgbWFjIGFkZHJlc3MgZm9yIHNlbmRpbmcgdGhlDQo+ID4gPiBpbmZvPw0KPiA+IA0KPiA+IFRo
-ZSByZXN0IG9mIHRoZSBkZXZzIG1heSBiZSBhYmxlIHRvIGFuc3dlciBiZXR0ZXIsIGJ1dCBJIGJl
-bGlldmUgaXQNCj4gPiBpcw0KPiA+IGhvdyBhbGZyZWQgZG9lcyBpdHMgZGF0YSBzdG9yYWdlIGFu
-ZCBtYXBwaW5nIG9mIHRoZSBzb3VyY2UuDQo+IA0KPiBDb3JyZWN0LCBhbGZyZWQgaXMgc3Rvcmlu
-ZyB0aGUgZGF0YSBmcm9tIGVhY2ggc2VydmVyIHVzaW5nIGl0cyBtYWMNCj4gYWRkcmVzcy4gSXQg
-DQo+IGlzIGFsc28gbG9va2luZyB1cCB0aGUgVFEgb2YgbWFzdGVyIHNlcnZlcnMgdmlhIHRoZSBt
-YWMgYWRkcmVzcy4gQW5kDQo+IHRoZSBtYWMgDQo+IGFkZHJlc3MgaXMgZXhwZWN0ZWQgdG8gYmUg
-ZXh0cmFjdGFibGUgZnJvbSB0aGUgRVVJNjQgYmFzZWQgbGluay1sb2NhbCANCj4gSVB2Ng0KPiBh
-ZGRyZXNzLg0KDQpUaGFua3MsIFN2ZW4sIGZvciB0aGUgY2xhcmlmaWNhdGlvbiENCg0KPiANCj4g
-QW5kIG9mIGNvdXJzZSwgSm9uYXRoYW4ncyBJUHY0IGltcGxlbWVudGF0aW9uIG11c3QgZ2V0IHRo
-ZSBtYWMNCj4gYWRkcmVzcyB1c2luZyANCj4gZGlmZmVyZW50IG1ldGhvZHMuIEl0IGlzIHVzaW5n
-IHRoZSBmdW5jdGlvbiBpcHY0X2FycF9yZXF1ZXN0IHRvIGdldA0KPiB0aGUgDQo+IGluZm9ybWF0
-aW9uIGZyb20gSVB2NCBuZWlnaGJvciB0YWJsZS4gQW5kIGl0IGxvb2tzIGxpa2UgaGlzDQo+IGlt
-cGxlbWVudGF0aW9uIGlzIA0KPiBtaXNzaW5nIGEgcmVsaWFibGUgd2F5IHRvIGZpbGwgdGhpcyBu
-ZWlnaGJvciB0YWJsZS4NCj4gDQoNClllcyAtIG15IHBsYW4gaXMgdG8gaW1wbGVtZW50IGEgbWFu
-dWFsIEFSUCByZXF1ZXN0LCB3aGljaCBpZiB0aGF0IGZhaWxzDQp0aGVuIHRoZSBiZWhhdmlvciB3
-aWxsIGJlIGFzIGl0IGlzIG5vdy4gSG93ZXZlciwgb24gc3VjY2VzcywgaXQgd2lsbA0KaGF2ZSB0
-aGUgY29ycmVjdCBNQUMgYW5kIGV2ZXJ5dGhpbmcgd2lsbCBiZSBnb29kIHRvIGdvLg0KDQpUaGFu
-a3MhDQoNCg0K
+--nextPart2398047.O3lpLZltjp
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 23. Oktober 2018 13:50:42 CEST Jonathan Haws wrote:
+[...]
+> > And of course, Jonathan's IPv4 implementation must get the mac
+> > address using 
+> > different methods. It is using the function ipv4_arp_request to get
+> > the 
+> > information from IPv4 neighbor table. And it looks like his
+> > implementation is 
+> > missing a reliable way to fill this neighbor table.
+> > 
+> 
+> Yes - my plan is to implement a manual ARP request, which if that fails
+> then the behavior will be as it is now. However, on success, it will
+> have the correct MAC and everything will be good to go.
+
+Manual ARP request sounds weird. What about 
+https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l537
+and
+https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l702
+
+Kind regards,
+	Sven
+--nextPart2398047.O3lpLZltjp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvPKvYACgkQXYcKB8Em
+e0bhgxAAv4sl3aj14LPaX/sVFHFz9dfw9YryMFJgMAZHSAAVdmvrDi+XUAjKSr4z
+0IOItnLCEKx35EhXJ55J4ZxMeuHpVkVzXQ7ZtNgFh5SWtZr5CepJ4ZvmaTdqmcjY
+8VYD5yWQhO1Pwl4kUZ4ov5/XiKmQJ5i5ikABBSfhd/lF8u7QhlkUh40xlM+FYfkX
+mcpWdDpa4MJZtC9jBLxhLpMBOWgWD2BzOp3H7kue42Ar1TO+XwWe9N8HOwx+YhdA
+87FgW4SuSfXNrtGfYWu3T/MOvrdYzCHVP5WQANLb9bMstMz6UNRoOU2UNW1gfzMW
+ZHTu6phaUHYg1cjpQNR8kcVSoWAb9oy/oO00mLJ76u4bkn08NgtTs+gHF0sQg0ym
+8YDY+eq41zlSTL12RAEwunoT1gex3TkYBC8mgf6Udrlqpbgpikkmu4UAKOXxrf91
+3BCyFY1A7spLh3sr8Ef7Lta0BxTt/VJqWA5R6mcvoE+k2NvN02OcIDYuTb4qpAu5
+96f+PJJ+DzEfKb1gny60sKOKpnfYfnlFRiQR+oKUHbtL4PydyGjYuYvF1AOhPgLW
+5UBDaQj5aPDFbnWecSjdjyAcBjJNnGa0wCskRFCearjWJmnRVpwbsRPcKkpfbq65
+HYUNpVVxAjoQAcU3GrZUbvmjdSGZABeawyUxX2AhIC1BIlfbtL8=
+=YRHJ
+-----END PGP SIGNATURE-----
+
+--nextPart2398047.O3lpLZltjp--
+
