@@ -1,15 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 23 Oct 2018 16:16:21 +0200
-Message-ID: <19500073.zgPyDjR2lk@bentobox>
-In-Reply-To: <754f0cb793f916471e7a2dbfe1558bee974fea16.camel@sdl.usu.edu>
-References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <5881573.Sb6ha2483l@bentobox>
- <754f0cb793f916471e7a2dbfe1558bee974fea16.camel@sdl.usu.edu>
+Return-Path: <combsca90@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6139222.2QLDgQtB6q";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+From: Corey Combs <combsca90@gmail.com>
+Date: Tue, 23 Oct 2018 10:22:29 -0400
+Message-ID: <CAPzaX0gNh3g6wUmZJLuJnixYNVEkYjdiL3E=06acrSDw2amtvw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: [B.A.T.M.A.N.] Additional Assistance
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,56 +14,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6139222.2QLDgQtB6q
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+All, thank you for the replies yesterday.  Would you be able to offer
+some more insight into updating the 2 packages?  I have had some
+successes, but not all the beagle bones have
+recognized the new version of batman-adv when I run batctl -v.
 
-On Dienstag, 23. Oktober 2018 14:11:41 CEST Jonathan Haws wrote:
-[...]
-> https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l537
-> > and
-> > 
-> https://git.open-mesh.org/batctl.git/blob/83faa3126d6cc984fff10760aa975bacec043632:/functions.c#l702
-> > 
-> 
-> Are these new routines?  I may have been looking at old code and don't
-> remember seeing these there. I'm seeing that these will do what we need
-> - perform a request on the network if the entry is not in the cache?
+The general method I've been using is the script here
+https://gist.github.com/marvin/186a609d1e88f7426747 with version 2016.4.
+The starting version on the Beagle Bones is batctl debian-2012.1.0-1 >
+[batman-adv 2012.5.0] as mentioned previously.
+After running this script and doing a
+$ modprobe batman-adv
+followed by
+$ batctl -v
+I get $ batctl 2016.4 [batman-adv 2012.5.0].
 
-These routines are not in alfred yet - they are in batctl. And we use them 
-there for the translate subcommand (translate an IP to the responsible 
-originator).
+I have also attempted to uninstall batctl and batman-adv with
+$ apt-get --purge remove batctl
+ and
+$ apt-get --purge remove batman-adv
+and reinstall using the script, but that hasn't worked across all devices.
 
-And yes, they check whether the entry is available and if not then they will 
-try to send something towards the remote device. They only have to be
-adjusted for alfred and integrated in your IPv4 codepath(s).
+The laptop I have is running Debian 9.5 with batctl debian-2016.5-1
+[batman-adv 2016.4] and the Beagles are running Debian 7.9.  I would
+like to avoid reimaging the Beagles at this point in time.
+Please pardon my lack of knowledge on the topic, as I'm still
+relatively new to Linux and have been learning a great deal in the
+past few months.
+I greatly appreciate your help on the topic.
 
-Kind regards,
-	Sven
---nextPart6139222.2QLDgQtB6q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvPLTUACgkQXYcKB8Em
-e0ZYgg//czvXgMo3LF7ZKrCszXuweoUWArC8bRCChi9SqwxwKS6ynDIXiMTZliim
-fptqMQCBnqx2tPMAuK/YgC23q5jzGB8esHJwIemMSwyKSuOKYzG8BR54BykjTDYU
-wkhpOsRc6TsXHSIxTc78xEMO2Z/wnpL1VPv76VrXvuhOis8IOtbNug7/ixUfpWvP
-NJmUrWQQz0EoBPIXLxtAwEumymlZBInOrmJr+YzJu+/GaBEbKQ/bgKeCCZKIfTUu
-HnGRuGfN2t21n4zkc2/pwOpsicLmqGV6O55sgzJ6gndZInO7NNMPwraGmO+MCq3j
-3dhFejbEQJYpOYGLKJAaTLfAiyCXMrO15ufM74RGJ+jAa37tsK9NY2I6365VVN9+
-VIWc9d+wCF4/jDs9Tq3w5VF3/1PEFwtwPL1ZXKX1ck4/db0aGPFh6tW5mby3546j
-SEu4NZ3dsj/B6QVlRgLfCJjsNthDoRhnwD9EFMoh17A3dRnBEEP13gDHVdWIWY6p
-yYxtzqK+15v1aKV4BLAi7MF4KZ/7rq45DeS58Np91xLNMBUJYqLDC00cMiDV6i5B
-X4O+Neyhc0o/0EiO2cPOzzh0h28WvlqFoKchn01ZrlFs/wuV8sDn0mM30YXP2VJ/
-yWsnjluMYmDfKruH82e04keqMe74nSy2mEYHcRDNSNIsEqfJKTE=
-=NQ/T
------END PGP SIGNATURE-----
-
---nextPart6139222.2QLDgQtB6q--
-
+Regards,
+Corey
