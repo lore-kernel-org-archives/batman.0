@@ -1,12 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 24 Oct 2018 20:57:40 +0200
-Message-ID: <7302424.rEnkhXZBE4@sven-edge>
-In-Reply-To: <20181024183511.19902-1-jhaws@sdl.usu.edu>
+Return-Path: <jhaws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Wed, 24 Oct 2018 19:20:21 +0000
+Message-ID: <9df1a2a9a3c9a31aed98eb9cc623a57fd68134fa.camel@sdl.usu.edu>
 References: <20181024183511.19902-1-jhaws@sdl.usu.edu>
+ <7302424.rEnkhXZBE4@sven-edge>
+In-Reply-To: <7302424.rEnkhXZBE4@sven-edge>
+Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <74E6FB13FA770149A2DC735E1571C948@sdl.usu.edu>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1793086.CGsJKq7lG1";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH alfred] Request MAC resolution for IPv4
  address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,69 +22,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>, guohuizou2000@sina.com
+To: "sven@narfation.org" <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1793086.CGsJKq7lG1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-Please start the subject with "alfred: " when it is a patch for alfred.
-
-On Mittwoch, 24. Oktober 2018 20:35:11 CEST Jonathan Haws wrote:
-> When using IPv4, if the remote server is not yet in the ARP cache, the
-> MAC resolution will fail and data appear to not be shared via alfred.
-> Add a routine (modified from batctl sources) to request MAC resolution
-> by simply sending a datagram to the discard port (UDP/9). This adds the
-> remote MAC to the ARP cache, resulting in successful MAC resolution.
-> 
-> Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
-
-Please add the info which commit was fixed by this change right before 
-the Signed-off-by:
-
-Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
-
-[...]
-> index eecfdfd..5771483 100644
-> --- a/alfred.h
-> +++ b/alfred.h
-> @@ -213,3 +213,4 @@ uint16_t get_random_id(void);
->  bool is_valid_ether_addr(uint8_t *addr);
->  int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
->  		     struct ether_addr *mac);
-> +void ipv4_request_mac_resolve(const alfred_addr *addr);
-
-This doesn't make sense. The function is in util.c and only called in util.c. 
-So it should be static and not in this header at all.
-
-Kind regards,
-	Sven
-
-
---nextPart1793086.CGsJKq7lG1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvQwKQACgkQXYcKB8Em
-e0bcGQ//TMLHa4Nkp4t0wuSV5eE5qpKmGwwcYclb+FtEaWWJSKlPPkAhI9ZgfmD2
-ZMzVVsCMXSdV+uTuPlDZY3cUFyMFHkDfkNXyAtW5tTketVMrzyiAup5zM3dh9d8u
-g0TVJWp53NftbPXvyzLo/uMNtf8BTSMENx1xbJMi/7wLwGe97DCzfFybqVYkelx8
-90S9JjI+BP6/Lv5ae0fnINITWj7rjBgLTF4jIGF4Cj+2tNXiko8LGz8fbWqqIsxZ
-dPI1TzfbSAs6gO0S2YLE67u+9s2HyZutnflQ8cUCHL4N88PAHNDRG0qZjaqcwuUn
-xkydqtIIriLbwA0xl6ZxAZataSLW8Z/SYq1dljU8ChhyXxCW2OHYJnsawQg5E5xm
-DEaW9M0v7n2v7Ivb/c1xsBXWYiqmeIFce3hE3Ris/9DS+r+by/jusHrmPDleRoPY
-ED2c0MQPyvEnpHKOnd1cimtC522jYz6bAFWJddzgw38PNXjHuNHTQCnai/aKBqXL
-b6A0tigZhO5pau+45r8GAIzW/vL1GnlUyB35RXu0PfLhiAL0VDUd+wE7fTE6nIri
-9qk65YxedfJ6H+dsyv2iOZ4XYM5D6txbNKNx5wMYh8SQG6qAyIBHHfmC+jEwgfA5
-wLNPHqTxTSMPG0T7pDzkaivyWY+RA0A+jwnTHGrptALLrbWv5tA=
-=YG7W
------END PGP SIGNATURE-----
-
---nextPart1793086.CGsJKq7lG1--
-
-
-
+T24gV2VkLCAyMDE4LTEwLTI0IGF0IDIwOjU3ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
+Cj4gUGxlYXNlIHN0YXJ0IHRoZSBzdWJqZWN0IHdpdGggImFsZnJlZDogIiB3aGVuIGl0IGlzIGEg
+cGF0Y2ggZm9yDQo+IGFsZnJlZC4NCg0KUmlnaHQgLSBteSBtaXN0YWtlLiBJdCdzIGJlZW4gYSBs
+b25nIHRpbWUgc2luY2UgSSBsYXN0IHN1Ym1pdHRlZC4uLi4NCg0KPiANCj4gT24gTWl0dHdvY2gs
+IDI0LiBPa3RvYmVyIDIwMTggMjA6MzU6MTEgQ0VTVCBKb25hdGhhbiBIYXdzIHdyb3RlOg0KPiA+
+IFdoZW4gdXNpbmcgSVB2NCwgaWYgdGhlIHJlbW90ZSBzZXJ2ZXIgaXMgbm90IHlldCBpbiB0aGUg
+QVJQIGNhY2hlLA0KPiA+IHRoZQ0KPiA+IE1BQyByZXNvbHV0aW9uIHdpbGwgZmFpbCBhbmQgZGF0
+YSBhcHBlYXIgdG8gbm90IGJlIHNoYXJlZCB2aWENCj4gPiBhbGZyZWQuDQo+ID4gQWRkIGEgcm91
+dGluZSAobW9kaWZpZWQgZnJvbSBiYXRjdGwgc291cmNlcykgdG8gcmVxdWVzdCBNQUMNCj4gPiBy
+ZXNvbHV0aW9uDQo+ID4gYnkgc2ltcGx5IHNlbmRpbmcgYSBkYXRhZ3JhbSB0byB0aGUgZGlzY2Fy
+ZCBwb3J0IChVRFAvOSkuIFRoaXMgYWRkcw0KPiA+IHRoZQ0KPiA+IHJlbW90ZSBNQUMgdG8gdGhl
+IEFSUCBjYWNoZSwgcmVzdWx0aW5nIGluIHN1Y2Nlc3NmdWwgTUFDDQo+ID4gcmVzb2x1dGlvbi4N
+Cj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBKb25hdGhhbiBIYXdzIDxqaGF3c0BzZGwudXN1LmVk
+dT4NCj4gDQo+IFBsZWFzZSBhZGQgdGhlIGluZm8gd2hpY2ggY29tbWl0IHdhcyBmaXhlZCBieSB0
+aGlzIGNoYW5nZSByaWdodA0KPiBiZWZvcmUgDQo+IHRoZSBTaWduZWQtb2ZmLWJ5Og0KPiANCj4g
+Rml4ZXM6IGM3ZGE3OTgxMTNhMiAoImFsZnJlZDogSVB2NCBtdWx0aWNhc3QgZGlzdHJpYnV0aW9u
+IHN1cHBvcnQuIikNCj4gDQoNCkRvbmUuDQoNCj4gWy4uLl0NCj4gPiBpbmRleCBlZWNmZGZkLi41
+NzcxNDgzIDEwMDY0NA0KPiA+IC0tLSBhL2FsZnJlZC5oDQo+ID4gKysrIGIvYWxmcmVkLmgNCj4g
+PiBAQCAtMjEzLDMgKzIxMyw0IEBAIHVpbnQxNl90IGdldF9yYW5kb21faWQodm9pZCk7DQo+ID4g
+IGJvb2wgaXNfdmFsaWRfZXRoZXJfYWRkcih1aW50OF90ICphZGRyKTsNCj4gPiAgaW50IGlwdjRf
+YXJwX3JlcXVlc3Qoc3RydWN0IGludGVyZmFjZSAqaW50ZXJmYWNlLCBjb25zdA0KPiA+IGFsZnJl
+ZF9hZGRyICphZGRyLA0KPiA+ICAJCSAgICAgc3RydWN0IGV0aGVyX2FkZHIgKm1hYyk7DQo+ID4g
+K3ZvaWQgaXB2NF9yZXF1ZXN0X21hY19yZXNvbHZlKGNvbnN0IGFsZnJlZF9hZGRyICphZGRyKTsN
+Cj4gDQo+IFRoaXMgZG9lc24ndCBtYWtlIHNlbnNlLiBUaGUgZnVuY3Rpb24gaXMgaW4gdXRpbC5j
+IGFuZCBvbmx5IGNhbGxlZCBpbg0KPiB1dGlsLmMuIA0KPiBTbyBpdCBzaG91bGQgYmUgc3RhdGlj
+IGFuZCBub3QgaW4gdGhpcyBoZWFkZXIgYXQgYWxsLg0KDQpZb3UncmUgcmlnaHQgLSBJIGJsaW5k
+bHkgbWltaWNrZWQgdGhlIHByZXZpb3VzIGlwdjRfYXJwX3JlcXVlc3Qgcm91dGluZQ0Kd2l0aG91
+dCB0aGlua2luZyBhYm91dCBpdC4NCg0KRml4ZWQgaW4gdjIuDQoNCnYyIGZvcnRoY29taW5nLi4u
+DQoNCg0K
