@@ -1,17 +1,10 @@
 Return-Path: <jhaws@sdl.usu.edu>
 From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Wed, 24 Oct 2018 19:20:21 +0000
-Message-ID: <9df1a2a9a3c9a31aed98eb9cc623a57fd68134fa.camel@sdl.usu.edu>
-References: <20181024183511.19902-1-jhaws@sdl.usu.edu>
- <7302424.rEnkhXZBE4@sven-edge>
-In-Reply-To: <7302424.rEnkhXZBE4@sven-edge>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <74E6FB13FA770149A2DC735E1571C948@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+Date: Wed, 24 Oct 2018 13:21:28 -0600
+Message-ID: <20181024192128.22531-1-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [PATCH alfred] Request MAC resolution for IPv4
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH v2] alfred: Request MAC resolution for IPv4
  address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,34 +15,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sven@narfation.org" <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: guohuizou2000@sina.com, b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-T24gV2VkLCAyMDE4LTEwLTI0IGF0IDIwOjU3ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
-Cj4gUGxlYXNlIHN0YXJ0IHRoZSBzdWJqZWN0IHdpdGggImFsZnJlZDogIiB3aGVuIGl0IGlzIGEg
-cGF0Y2ggZm9yDQo+IGFsZnJlZC4NCg0KUmlnaHQgLSBteSBtaXN0YWtlLiBJdCdzIGJlZW4gYSBs
-b25nIHRpbWUgc2luY2UgSSBsYXN0IHN1Ym1pdHRlZC4uLi4NCg0KPiANCj4gT24gTWl0dHdvY2gs
-IDI0LiBPa3RvYmVyIDIwMTggMjA6MzU6MTEgQ0VTVCBKb25hdGhhbiBIYXdzIHdyb3RlOg0KPiA+
-IFdoZW4gdXNpbmcgSVB2NCwgaWYgdGhlIHJlbW90ZSBzZXJ2ZXIgaXMgbm90IHlldCBpbiB0aGUg
-QVJQIGNhY2hlLA0KPiA+IHRoZQ0KPiA+IE1BQyByZXNvbHV0aW9uIHdpbGwgZmFpbCBhbmQgZGF0
-YSBhcHBlYXIgdG8gbm90IGJlIHNoYXJlZCB2aWENCj4gPiBhbGZyZWQuDQo+ID4gQWRkIGEgcm91
-dGluZSAobW9kaWZpZWQgZnJvbSBiYXRjdGwgc291cmNlcykgdG8gcmVxdWVzdCBNQUMNCj4gPiBy
-ZXNvbHV0aW9uDQo+ID4gYnkgc2ltcGx5IHNlbmRpbmcgYSBkYXRhZ3JhbSB0byB0aGUgZGlzY2Fy
-ZCBwb3J0IChVRFAvOSkuIFRoaXMgYWRkcw0KPiA+IHRoZQ0KPiA+IHJlbW90ZSBNQUMgdG8gdGhl
-IEFSUCBjYWNoZSwgcmVzdWx0aW5nIGluIHN1Y2Nlc3NmdWwgTUFDDQo+ID4gcmVzb2x1dGlvbi4N
-Cj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBKb25hdGhhbiBIYXdzIDxqaGF3c0BzZGwudXN1LmVk
-dT4NCj4gDQo+IFBsZWFzZSBhZGQgdGhlIGluZm8gd2hpY2ggY29tbWl0IHdhcyBmaXhlZCBieSB0
-aGlzIGNoYW5nZSByaWdodA0KPiBiZWZvcmUgDQo+IHRoZSBTaWduZWQtb2ZmLWJ5Og0KPiANCj4g
-Rml4ZXM6IGM3ZGE3OTgxMTNhMiAoImFsZnJlZDogSVB2NCBtdWx0aWNhc3QgZGlzdHJpYnV0aW9u
-IHN1cHBvcnQuIikNCj4gDQoNCkRvbmUuDQoNCj4gWy4uLl0NCj4gPiBpbmRleCBlZWNmZGZkLi41
-NzcxNDgzIDEwMDY0NA0KPiA+IC0tLSBhL2FsZnJlZC5oDQo+ID4gKysrIGIvYWxmcmVkLmgNCj4g
-PiBAQCAtMjEzLDMgKzIxMyw0IEBAIHVpbnQxNl90IGdldF9yYW5kb21faWQodm9pZCk7DQo+ID4g
-IGJvb2wgaXNfdmFsaWRfZXRoZXJfYWRkcih1aW50OF90ICphZGRyKTsNCj4gPiAgaW50IGlwdjRf
-YXJwX3JlcXVlc3Qoc3RydWN0IGludGVyZmFjZSAqaW50ZXJmYWNlLCBjb25zdA0KPiA+IGFsZnJl
-ZF9hZGRyICphZGRyLA0KPiA+ICAJCSAgICAgc3RydWN0IGV0aGVyX2FkZHIgKm1hYyk7DQo+ID4g
-K3ZvaWQgaXB2NF9yZXF1ZXN0X21hY19yZXNvbHZlKGNvbnN0IGFsZnJlZF9hZGRyICphZGRyKTsN
-Cj4gDQo+IFRoaXMgZG9lc24ndCBtYWtlIHNlbnNlLiBUaGUgZnVuY3Rpb24gaXMgaW4gdXRpbC5j
-IGFuZCBvbmx5IGNhbGxlZCBpbg0KPiB1dGlsLmMuIA0KPiBTbyBpdCBzaG91bGQgYmUgc3RhdGlj
-IGFuZCBub3QgaW4gdGhpcyBoZWFkZXIgYXQgYWxsLg0KDQpZb3UncmUgcmlnaHQgLSBJIGJsaW5k
-bHkgbWltaWNrZWQgdGhlIHByZXZpb3VzIGlwdjRfYXJwX3JlcXVlc3Qgcm91dGluZQ0Kd2l0aG91
-dCB0aGlua2luZyBhYm91dCBpdC4NCg0KRml4ZWQgaW4gdjIuDQoNCnYyIGZvcnRoY29taW5nLi4u
-DQoNCg0K
+When using IPv4, if the remote server is not yet in the ARP cache, the
+MAC resolution will fail and data appear to not be shared via alfred.
+Add a routine (modified from batctl sources) to request MAC resolution
+by simply sending a datagram to the discard port (UDP/9). This adds the
+remote MAC to the ARP cache, resulting in successful MAC resolution.
+
+Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
+Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
+---
+ util.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/util.c b/util.c
+index dd3f00f..3a0c279 100644
+--- a/util.c
++++ b/util.c
+@@ -30,6 +30,7 @@
+ #include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <time.h>
++#include <unistd.h>
+ #include "alfred.h"
+ 
+ int time_diff(struct timespec *tv1, struct timespec *tv2,
+@@ -80,11 +81,35 @@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
+ 	return true;
+ }
+ 
++static void ipv4_request_mac_resolve(const alfred_addr *addr)
++{
++	const struct sockaddr *sockaddr;
++	struct sockaddr_in inet4;
++	size_t sockaddr_len;
++	int sock;
++	char t = 0;
++
++	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
++	if (sock < 0)
++		return;
++
++	memset(&inet4, 0, sizeof(inet4));
++	inet4.sin_family = AF_INET;
++	inet4.sin_port = htons(9);
++	inet4.sin_addr.s_addr = addr->ipv4.s_addr;
++	sockaddr = (const struct sockaddr *)&inet4;
++	sockaddr_len = sizeof(inet4);
++
++	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
++	close(sock);
++}
++
+ int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
+ 		     struct ether_addr *mac)
+ {
+ 	struct arpreq arpreq;
+ 	struct sockaddr_in *sin;
++	int retries = 1;
+ 
+ 	memset(&arpreq, 0, sizeof(arpreq));
+ 	memset(mac, 0, ETH_ALEN);
+@@ -99,6 +124,14 @@ int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
+ 	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
+ 		return -1;
+ 
++	while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
++		ipv4_request_mac_resolve(addr);
++		usleep(200000);
++
++		if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
++			return -1;
++	}
++
+ 	if (arpreq.arp_flags & ATF_COM) {
+ 		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
+ 	} else {
+-- 
+2.17.1
+
