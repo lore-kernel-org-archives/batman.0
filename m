@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:40 +0200
-Message-Id: <20181025162245.19389-38-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:32 +0200
+Message-Id: <20181025162245.19389-30-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 37/42] batctl: Move orig_interval setting
+Subject: [B.A.T.M.A.N.] [PATCH v3 29/42] batctl: Move ap_isolation setting
  to own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,34 +23,34 @@ file. This also allows to order the usage lines using the Makefile.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile        |  1 +
- orig_interval.c | 35 +++++++++++++++++++++++++++++++++++
- sys.c           |  9 ---------
- 3 files changed, 36 insertions(+), 9 deletions(-)
- create mode 100644 orig_interval.c
+ Makefile       |  1 +
+ ap_isolation.c | 33 +++++++++++++++++++++++++++++++++
+ sys.c          |  9 ---------
+ 3 files changed, 34 insertions(+), 9 deletions(-)
+ create mode 100644 ap_isolation.c
 
 diff --git a/Makefile b/Makefile
-index 8582bf6..a6971d8 100755
+index dfc59af..0a72595 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -63,6 +63,7 @@ OBJ += netlink.o
- OBJ += network_coding.o
- OBJ += ping.o
- OBJ += originators.o
-+OBJ += orig_interval.o
- OBJ += routing_algo.o
- OBJ += statistics.o
- OBJ += sys.o
-diff --git a/orig_interval.c b/orig_interval.c
+@@ -30,6 +30,7 @@ BINARY_NAME = batctl
+ OBJ_BISECT = bisect_iv.o
+ 
+ OBJ += aggregation.o
++OBJ += ap_isolation.o
+ OBJ += bat-hosts.o
+ OBJ += backbonetable.o
+ ifeq ($(CONFIG_BATCTL_BISECT),y)
+diff --git a/ap_isolation.c b/ap_isolation.c
 new file mode 100644
-index 0000000..d308ea2
+index 0000000..2d16c68
 --- /dev/null
-+++ b/orig_interval.c
-@@ -0,0 +1,35 @@
++++ b/ap_isolation.c
+@@ -0,0 +1,33 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
-+ * Marek Lindner <mareklindner@neomailbox.ch>
++ * Antonio Quartulli <a@unstable.cc>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -69,36 +69,37 @@ index 0000000..d308ea2
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#include <stddef.h>
-+
 +#include "main.h"
 +#include "sys.h"
 +
-+static struct settings_data batctl_settings_orig_interval = {
-+	.sysfs_name = "orig_interval",
-+	.params = NULL,
++static struct settings_data batctl_settings_ap_isolation = {
++	.sysfs_name = "ap_isolation",
++	.params = sysfs_param_enable,
 +};
 +
-+COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
-+	      "[interval]        \tdisplay or modify orig_interval setting");
++COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
++	      "[0|1]             \tdisplay or modify ap_isolation setting");
 diff --git a/sys.c b/sys.c
-index 932a7e8..6b98ac4 100644
+index 00e452c..80d9fa1 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -136,12 +136,3 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
- 	free(base_dev);
- 	return res;
- }
--
--static struct settings_data batctl_settings_orig_interval = {
--	.sysfs_name = "orig_interval",
--	.params = NULL,
+@@ -146,15 +146,6 @@ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
+ 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
+ 	      "[interval]        \tdisplay or modify orig_interval setting");
+ 
+-static struct settings_data batctl_settings_ap_isolation = {
+-	.sysfs_name = "ap_isolation",
+-	.params = sysfs_param_enable,
 -};
 -
--COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
--	      "[interval]        \tdisplay or modify orig_interval setting");
+-COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
+-	      "[0|1]             \tdisplay or modify ap_isolation setting");
+-
+ static struct settings_data batctl_settings_bridge_loop_avoidance = {
+ 	.sysfs_name = SYS_BLA,
+ 	.params = sysfs_param_enable,
 -- 
 2.11.0
 
