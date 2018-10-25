@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:07 +0200
-Message-Id: <20181025162245.19389-5-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:08 +0200
+Message-Id: <20181025162245.19389-6-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 04/42] batctl: Move loglevel command to
+Subject: [B.A.T.M.A.N.] [PATCH v3 05/42] batctl: Move log command to
  separate file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,34 +23,95 @@ functionality and detect which parts belong to a more complex construct.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile   |   1 +
- loglevel.c | 144 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- loglevel.h |  28 ++++++++++++
- main.c     |   3 +-
- sys.c      | 114 ------------------------------------------------
- sys.h      |   1 -
- 6 files changed, 175 insertions(+), 116 deletions(-)
- create mode 100644 loglevel.c
- create mode 100644 loglevel.h
+ Makefile |  1 +
+ debug.c  | 41 -------------------------------------
+ debug.h  |  1 -
+ log.c    | 70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ log.h    | 28 ++++++++++++++++++++++++++
+ main.c   |  1 +
+ 6 files changed, 100 insertions(+), 42 deletions(-)
+ create mode 100644 log.c
+ create mode 100644 log.h
 
 diff --git a/Makefile b/Makefile
-index 6f620be..1271200 100755
+index 1271200..a988058 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -34,6 +34,7 @@ OBJ += genl.o
- OBJ += hash.o
+@@ -35,6 +35,7 @@ OBJ += hash.o
  OBJ += icmp_helper.o
  OBJ += interface.o
-+OBJ += loglevel.o
+ OBJ += loglevel.o
++OBJ += log.o
  OBJ += main.o
  OBJ += netlink.o
  OBJ += ping.o
-diff --git a/loglevel.c b/loglevel.c
+diff --git a/debug.c b/debug.c
+index 185e26d..9bc4d0c 100644
+--- a/debug.c
++++ b/debug.c
+@@ -268,44 +268,3 @@ int debug_print_routing_algos(void)
+ 	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
+ 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
+ }
+-
+-static void log_usage(void)
+-{
+-	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
+-	fprintf(stderr, "parameters:\n");
+-	fprintf(stderr, " \t -h print this help\n");
+-	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
+-}
+-
+-int log_print(char *mesh_iface, int argc, char **argv)
+-{
+-	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
+-	char full_path[MAX_PATH+1];
+-	char *debugfs_mnt;
+-
+-	while ((optchar = getopt(argc, argv, "hn")) != -1) {
+-		switch (optchar) {
+-		case 'h':
+-			log_usage();
+-			return EXIT_SUCCESS;
+-		case 'n':
+-			read_opt &= ~USE_BAT_HOSTS;
+-			break;
+-		default:
+-			log_usage();
+-			return EXIT_FAILURE;
+-		}
+-	}
+-
+-	check_root_or_die("batctl log");
+-
+-	debugfs_mnt = debugfs_mount(NULL);
+-	if (!debugfs_mnt) {
+-		fprintf(stderr, "Error - can't mount or find debugfs\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
+-	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
+-	return res;
+-}
+diff --git a/debug.h b/debug.h
+index 5508eaf..d9a2e3a 100644
+--- a/debug.h
++++ b/debug.h
+@@ -57,7 +57,6 @@ struct debug_table_data {
+ extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
+ 
+ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
+-int log_print(char *mesh_iface, int argc, char **argv);
+ int debug_print_routing_algos(void);
+ 
+ #endif
+diff --git a/log.c b/log.c
 new file mode 100644
-index 0000000..584cb37
+index 0000000..fc31c66
 --- /dev/null
-+++ b/loglevel.c
-@@ -0,0 +1,144 @@
++++ b/log.c
+@@ -0,0 +1,70 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -76,130 +137,56 @@ index 0000000..584cb37
 +#include <getopt.h>
 +#include <stdio.h>
 +#include <stdlib.h>
-+#include <string.h>
 +
++#include "debug.h"
++#include "debugfs.h"
 +#include "functions.h"
-+#include "main.h"
-+#include "sys.h"
 +
-+static void log_level_usage(void)
++static void log_usage(void)
 +{
-+	fprintf(stderr, "Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
++	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
 +	fprintf(stderr, "parameters:\n");
 +	fprintf(stderr, " \t -h print this help\n");
-+	fprintf(stderr, "levels:\n");
-+	fprintf(stderr, " \t none    Debug logging is disabled\n");
-+	fprintf(stderr, " \t all     Print messages from all below\n");
-+	fprintf(stderr, " \t batman  Messages related to routing / flooding / broadcasting\n");
-+	fprintf(stderr, " \t routes  Messages related to route added / changed / deleted\n");
-+	fprintf(stderr, " \t tt      Messages related to translation table operations\n");
-+	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
-+	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
-+	fprintf(stderr, " \t nc      Messages related to network coding\n");
-+	fprintf(stderr, " \t mcast   Messages related to multicast\n");
-+	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
++	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 +}
 +
-+int loglevel(char *mesh_iface, int argc, char **argv)
++int log_print(char *mesh_iface, int argc, char **argv)
 +{
-+	int optchar, res = EXIT_FAILURE;
-+	int log_level = 0;
-+	char *path_buff;
-+	char str[4];
-+	int i;
++	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
++	char full_path[MAX_PATH+1];
++	char *debugfs_mnt;
 +
-+	while ((optchar = getopt(argc, argv, "h")) != -1) {
++	while ((optchar = getopt(argc, argv, "hn")) != -1) {
 +		switch (optchar) {
 +		case 'h':
-+			log_level_usage();
++			log_usage();
 +			return EXIT_SUCCESS;
++		case 'n':
++			read_opt &= ~USE_BAT_HOSTS;
++			break;
 +		default:
-+			log_level_usage();
++			log_usage();
 +			return EXIT_FAILURE;
 +		}
 +	}
 +
-+	path_buff = malloc(PATH_BUFF_LEN);
-+	if (!path_buff) {
-+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++	check_root_or_die("batctl log");
++
++	debugfs_mnt = debugfs_mount(NULL);
++	if (!debugfs_mnt) {
++		fprintf(stderr, "Error - can't mount or find debugfs\n");
 +		return EXIT_FAILURE;
 +	}
 +
-+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-+
-+	if (argc != 1) {
-+		check_root_or_die("batctl loglevel");
-+
-+		for (i = 1; i < argc; i++) {
-+			if (strcmp(argv[i], "none") == 0) {
-+				log_level = 0;
-+				break;
-+			} else if (strcmp(argv[i], "all") == 0) {
-+				log_level = 255;
-+				break;
-+			} else if (strcmp(argv[i], "batman") == 0)
-+				log_level |= BIT(0);
-+			else if (strcmp(argv[i], "routes") == 0)
-+				log_level |= BIT(1);
-+			else if (strcmp(argv[i], "tt") == 0)
-+				log_level |= BIT(2);
-+			else if (strcmp(argv[i], "bla") == 0)
-+				log_level |= BIT(3);
-+			else if (strcmp(argv[i], "dat") == 0)
-+				log_level |= BIT(4);
-+			else if (strcmp(argv[i], "nc") == 0)
-+				log_level |= BIT(5);
-+			else if (strcmp(argv[i], "mcast") == 0)
-+				log_level |= BIT(6);
-+			else if (strcmp(argv[i], "tp") == 0)
-+				log_level |= BIT(7);
-+			else {
-+				log_level_usage();
-+				goto out;
-+			}
-+		}
-+
-+		snprintf(str, sizeof(str), "%i", log_level);
-+		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
-+		goto out;
-+	}
-+
-+	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
-+
-+	if (res != EXIT_SUCCESS)
-+		goto out;
-+
-+	log_level = strtol(line_ptr, (char **) NULL, 10);
-+
-+	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
-+	       "all debug output disabled", "none");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
-+	       "messages related to routing / flooding / broadcasting",
-+	       "batman");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
-+	       "messages related to route added / changed / deleted", "routes");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
-+	       "messages related to translation table operations", "tt");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
-+	       "messages related to bridge loop avoidance", "bla");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(4)) ? 'x' : ' ',
-+	       "messages related to arp snooping and distributed arp table", "dat");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
-+	       "messages related to network coding", "nc");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
-+	       "messages related to multicast", "mcast");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(7)) ? 'x' : ' ',
-+	       "messages related to throughput meter", "tp");
-+
-+out:
-+	free(path_buff);
++	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
++	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
 +	return res;
 +}
-diff --git a/loglevel.h b/loglevel.h
+diff --git a/log.h b/log.h
 new file mode 100644
-index 0000000..2644f46
+index 0000000..4ba00e3
 --- /dev/null
-+++ b/loglevel.h
++++ b/log.h
 @@ -0,0 +1,28 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
@@ -223,170 +210,24 @@ index 0000000..2644f46
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#ifndef _BATCTL_LOGLEVEL_H
-+#define _BATCTL_LOGLEVEL_H
++#ifndef _BATCTL_LOG_H
++#define _BATCTL_LOG_H
 +
-+int loglevel(char *mesh_iface, int argc, char **argv);
++int log_print(char *mesh_iface, int argc, char **argv);
 +
 +#endif
 diff --git a/main.c b/main.c
-index 3a6011b..ac4bc47 100644
+index ac4bc47..5b3e570 100644
 --- a/main.c
 +++ b/main.c
-@@ -38,6 +38,7 @@
- #include "tp_meter.h"
+@@ -39,6 +39,7 @@
  #include "bisect_iv.h"
  #include "statistics.h"
-+#include "loglevel.h"
+ #include "loglevel.h"
++#include "log.h"
  #include "functions.h"
  
  char mesh_dfl_iface[] = "bat0";
-@@ -169,7 +170,7 @@ int main(int argc, char **argv)
- 
- 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
- 
--		ret = handle_loglevel(mesh_iface, argc - 1, argv + 1);
-+		ret = loglevel(mesh_iface, argc - 1, argv + 1);
- 
- 	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
- 
-diff --git a/sys.c b/sys.c
-index e0c2073..366f7a2 100644
---- a/sys.c
-+++ b/sys.c
-@@ -117,120 +117,6 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
- 	},
- };
- 
--static void log_level_usage(void)
--{
--	fprintf(stderr, "Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
--	fprintf(stderr, "parameters:\n");
--	fprintf(stderr, " \t -h print this help\n");
--	fprintf(stderr, "levels:\n");
--	fprintf(stderr, " \t none    Debug logging is disabled\n");
--	fprintf(stderr, " \t all     Print messages from all below\n");
--	fprintf(stderr, " \t batman  Messages related to routing / flooding / broadcasting\n");
--	fprintf(stderr, " \t routes  Messages related to route added / changed / deleted\n");
--	fprintf(stderr, " \t tt      Messages related to translation table operations\n");
--	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
--	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
--	fprintf(stderr, " \t nc      Messages related to network coding\n");
--	fprintf(stderr, " \t mcast   Messages related to multicast\n");
--	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
--}
--
--int handle_loglevel(char *mesh_iface, int argc, char **argv)
--{
--	int optchar, res = EXIT_FAILURE;
--	int log_level = 0;
--	char *path_buff;
--	char str[4];
--	int i;
--
--	while ((optchar = getopt(argc, argv, "h")) != -1) {
--		switch (optchar) {
--		case 'h':
--			log_level_usage();
--			return EXIT_SUCCESS;
--		default:
--			log_level_usage();
--			return EXIT_FAILURE;
--		}
--	}
--
--	path_buff = malloc(PATH_BUFF_LEN);
--	if (!path_buff) {
--		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
--		return EXIT_FAILURE;
--	}
--
--	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--
--	if (argc != 1) {
--		check_root_or_die("batctl loglevel");
--
--		for (i = 1; i < argc; i++) {
--			if (strcmp(argv[i], "none") == 0) {
--				log_level = 0;
--				break;
--			} else if (strcmp(argv[i], "all") == 0) {
--				log_level = 255;
--				break;
--			} else if (strcmp(argv[i], "batman") == 0)
--				log_level |= BIT(0);
--			else if (strcmp(argv[i], "routes") == 0)
--				log_level |= BIT(1);
--			else if (strcmp(argv[i], "tt") == 0)
--				log_level |= BIT(2);
--			else if (strcmp(argv[i], "bla") == 0)
--				log_level |= BIT(3);
--			else if (strcmp(argv[i], "dat") == 0)
--				log_level |= BIT(4);
--			else if (strcmp(argv[i], "nc") == 0)
--				log_level |= BIT(5);
--			else if (strcmp(argv[i], "mcast") == 0)
--				log_level |= BIT(6);
--			else if (strcmp(argv[i], "tp") == 0)
--				log_level |= BIT(7);
--			else {
--				log_level_usage();
--				goto out;
--			}
--		}
--
--		snprintf(str, sizeof(str), "%i", log_level);
--		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
--		goto out;
--	}
--
--	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
--
--	if (res != EXIT_SUCCESS)
--		goto out;
--
--	log_level = strtol(line_ptr, (char **) NULL, 10);
--
--	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
--	       "all debug output disabled", "none");
--	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
--	       "messages related to routing / flooding / broadcasting",
--	       "batman");
--	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
--	       "messages related to route added / changed / deleted", "routes");
--	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
--	       "messages related to translation table operations", "tt");
--	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
--	       "messages related to bridge loop avoidance", "bla");
--	printf("[%c] %s (%s)\n", (log_level & BIT(4)) ? 'x' : ' ',
--	       "messages related to arp snooping and distributed arp table", "dat");
--	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
--	       "messages related to network coding", "nc");
--	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
--	       "messages related to multicast", "mcast");
--	printf("[%c] %s (%s)\n", (log_level & BIT(7)) ? 'x' : ' ',
--	       "messages related to throughput meter", "tp");
--
--out:
--	free(path_buff);
--	return res;
--}
--
- static void settings_usage(int setting)
- {
- 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]",
-diff --git a/sys.h b/sys.h
-index 95b2a1e..5e98ab1 100644
---- a/sys.h
-+++ b/sys.h
-@@ -71,7 +71,6 @@ extern const char *sysfs_param_enable[];
- extern const char *sysfs_param_server[];
- extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
- 
--int handle_loglevel(char *mesh_iface, int argc, char **argv);
- int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
- int handle_gw_setting(char *mesh_iface, int argc, char **argv);
- int handle_ra_setting(int argc, char **argv);
 -- 
 2.11.0
 
