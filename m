@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:31 +0200
-Message-Id: <20181025162245.19389-29-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:33 +0200
+Message-Id: <20181025162245.19389-31-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 28/42] batctl: Move aggregation setting to
- own file
+Subject: [B.A.T.M.A.N.] [PATCH v3 30/42] batctl: Move bonding setting to own
+ file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,29 +23,29 @@ file. This also allows to order the usage lines using the Makefile.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile      |  1 +
- aggregation.c | 33 +++++++++++++++++++++++++++++++++
- sys.c         |  9 ---------
+ Makefile  |  1 +
+ bonding.c | 33 +++++++++++++++++++++++++++++++++
+ sys.c     |  9 ---------
  3 files changed, 34 insertions(+), 9 deletions(-)
- create mode 100644 aggregation.c
+ create mode 100644 bonding.c
 
 diff --git a/Makefile b/Makefile
-index 93db44a..dfc59af 100755
+index 0a72595..c1b8484 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -29,6 +29,7 @@ BINARY_NAME = batctl
- 
- OBJ_BISECT = bisect_iv.o
- 
-+OBJ += aggregation.o
- OBJ += bat-hosts.o
- OBJ += backbonetable.o
+@@ -36,6 +36,7 @@ OBJ += backbonetable.o
  ifeq ($(CONFIG_BATCTL_BISECT),y)
-diff --git a/aggregation.c b/aggregation.c
+ OBJ += $(OBJ_BISECT)
+ endif
++OBJ += bonding.o
+ OBJ += claimtable.o
+ OBJ += dat_cache.o
+ OBJ += debugfs.o
+diff --git a/bonding.c b/bonding.c
 new file mode 100644
-index 0000000..57c1dbb
+index 0000000..f7105c9
 --- /dev/null
-+++ b/aggregation.c
++++ b/bonding.c
 @@ -0,0 +1,33 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
@@ -72,33 +72,33 @@ index 0000000..57c1dbb
 +#include "main.h"
 +#include "sys.h"
 +
-+static struct settings_data batctl_settings_aggregation = {
-+	.sysfs_name = "aggregated_ogms",
++static struct settings_data batctl_settings_bonding = {
++	.sysfs_name = "bonding",
 +	.params = sysfs_param_enable,
 +};
 +
-+COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
-+	      "[0|1]             \tdisplay or modify aggregation setting");
++COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
++	      "[0|1]             \tdisplay or modify bonding setting");
 diff --git a/sys.c b/sys.c
-index 08b389e..00e452c 100644
+index 80d9fa1..8ad925e 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -173,15 +173,6 @@ COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
+@@ -164,15 +164,6 @@ COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
  	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
  	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
  
--static struct settings_data batctl_settings_aggregation = {
--	.sysfs_name = "aggregated_ogms",
+-static struct settings_data batctl_settings_bonding = {
+-	.sysfs_name = "bonding",
 -	.params = sysfs_param_enable,
 -};
 -
--COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
--	      "[0|1]             \tdisplay or modify aggregation setting");
+-COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
+-	      "[0|1]             \tdisplay or modify bonding setting");
 -
- static struct settings_data batctl_settings_bonding = {
- 	.sysfs_name = "bonding",
+ static struct settings_data batctl_settings_fragmentation = {
+ 	.sysfs_name = "fragmentation",
  	.params = sysfs_param_enable,
 -- 
 2.11.0
