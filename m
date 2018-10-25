@@ -1,13 +1,16 @@
 Return-Path: <jhaws@sdl.usu.edu>
 From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Thu, 25 Oct 2018 13:40:31 +0000
-Message-ID: <6cc63f89a24a4852bac47e03b67a0f02@sdl.usu.edu>
+Date: Thu, 25 Oct 2018 13:42:58 +0000
+Message-ID: <fab16bf83af547668393219bec7e35fc@sdl.usu.edu>
+References: <20181024192128.22531-1-jhaws@sdl.usu.edu>,
+ <2365708.Am9coUDyuZ@bentobox>
+In-Reply-To: <2365708.Am9coUDyuZ@bentobox>
 Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <97F550D5813C894998C29284D4428AB0@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] alfred: Request MAC resolution for
+ IPv4 address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,62 +20,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: gary <guohuizou2000@sina.com>, 'Sven Eckelmann' <sven@narfation.org>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-R2FyeSwNCg0KSW50ZXJlc3RpbmcuIExvb2tpbmcgYXQgdGhhdCBjb2RlIEkgd291bGQgdGhpbmsg
-aXQgd291bGRuJ3Qgd29yayBhbnkgZGlmZmVyZW50IHRoYW4gdGhlIG9yaWdpbmFsIGJlY2F1c2Ug
-cmV0cmllcyBpcyBzZXQgdG8gMSwgc28gdGhlIGZpcnN0IGVudHJhbmNlIGludG8gdGhlIGZpcnN0
-IHdoaWxlIHdpbGwgcmVkdWNlIHRoYXQgdG8gMCBjYXVzaW5nIHlvdSB0byBuZXZlciBlbnRlciB0
-aGF0IHNlY29uZCBsb29wLiBUaGF0IHNob3VsZCByZXN1bHQgaW4gdGhlIHNhbWUgYmVoYXZpb3Ig
-YXMgaWYgdGhlIHNlY29uZCBsb29wIHdhc24ndCBldmVuIHRoZXJlLg0KDQpJZiB0aGUgc2Vjb25k
-IGlvY3RsIGZhaWxzLCB0aGUgcmVxdWVzdCBzdGlsbCB3ZW50IG91dCB0byB0aGUgb3RoZXIgZGV2
-aWNlLCBzbyB3aWxsIHBvcHVsYXRlIHRoZSBhcnAgY2FjaGUgZm9yIHRoZSBuZXh0IHN5bmMuIFRo
-YXQncyBob3cgaXQgd29ya2VkIGluIG15IHNldHVwLg0KDQpDYW4geW91IGdpdmUgbW9yZSBkZXRh
-aWxzIG9uIHdoYXQgaXMgbm90IHdvcmtpbmc/DQoNCkZZSSwgbCdtIGdvaW5nIHRvIGJlIGluIHRo
-ZSBHcmFuZCBDYW55b24gdGhlIG5leHQgZmV3IGRheXMgYW5kIGxpa2VseSB3b24ndCBiZSBhYmxl
-IHRvIHJlc3BvbmQuDQoNClRoYW5rcyENCg0KDQoNClNlbnQgZnJvbSBteSBWZXJpem9uLCBTYW1z
-dW5nIEdhbGF4eSBzbWFydHBob25lDQoNCi0tLS0tLS0tIE9yaWdpbmFsIG1lc3NhZ2UgLS0tLS0t
-LS0NCkZyb206IGdhcnkgPGd1b2h1aXpvdTIwMDBAc2luYS5jb20+DQpEYXRlOiAxMC8yNS8xOCAz
-OjA2IEFNIChHTVQtMDc6MDApDQpUbzogJ1N2ZW4gRWNrZWxtYW5uJyA8c3ZlbkBuYXJmYXRpb24u
-b3JnPiwgSm9uYXRoYW4gSGF3cyA8amhhd3NAc2RsLnVzdS5lZHU+DQpDYzogYi5hLnQubS5hLm5A
-bGlzdHMub3Blbi1tZXNoLm9yZw0KU3ViamVjdDogUkU6IFtCLkEuVC5NLkEuTi5dIGFsZnJlZCBh
-bmQgYmF0YWR2LXZpcyBpc3N1ZQ0KDQoNCkhpIFN2ZW4gYW5kIEpvbiwNCg0KVGhlIHBhdGNoIGRv
-ZXMgTk9UIHdvcmsgZm9yIG1lLg0KDQpJIHJldmlldyB0aGUgY29kZSBhZ2FpbiBhbmQgZmluZCB0
-aGUgaXNzdWUuIFRoZSBmb2xsb3dpbmcgY29kZSBtYXkgbWFrZSBteQ0KdGVzdGJlZCB3b3JrLg0K
-DQoNCi0tLSBhL3V0aWwuYw0KKysrIGIvdXRpbC5jDQpAQCAtMTIyLDE0ICsxMjIsMTQgQEAgaW50
-IGlwdjRfYXJwX3JlcXVlc3Qoc3RydWN0IGludGVyZmFjZSAqaW50ZXJmYWNlLA0KY29uc3QgYWxm
-cmVkX2FkZHIgKmFkZHIsDQogICAgICAgIGFycHJlcS5hcnBfZGV2W3NpemVvZihhcnByZXEuYXJw
-X2RldikgLSAxXSA9ICdcMCc7DQoNCiAgICAgICAgaWYgKGlvY3RsKGludGVyZmFjZS0+bmV0c29j
-aywgU0lPQ0dBUlAsICZhcnByZXEpIDwgMCkNCi0gICAgICAgICAgICAgICByZXR1cm4gLTE7DQot
-DQotICAgICAgIHdoaWxlIChyZXRyaWVzLS0gJiYgIShhcnByZXEuYXJwX2ZsYWdzICYgQVRGX0NP
-TSkpIHsNCi0gICAgICAgICAgICAgICBpcHY0X3JlcXVlc3RfbWFjX3Jlc29sdmUoYWRkcik7DQot
-ICAgICAgICAgICAgICAgdXNsZWVwKDIwMDAwMCk7DQotDQotICAgICAgICAgICAgICAgaWYgKGlv
-Y3RsKGludGVyZmFjZS0+bmV0c29jaywgU0lPQ0dBUlAsICZhcnByZXEpIDwgMCkNCi0gICAgICAg
-ICAgICAgICAgICAgICAgIHJldHVybiAtMTsNCisgICAgICAgew0KKyAgICAgICAgICAgICAgIHdo
-aWxlIChyZXRyaWVzLS0gJiYgIShhcnByZXEuYXJwX2ZsYWdzICYgQVRGX0NPTSkpIHsNCisgICAg
-ICAgICAgICAgICAgICAgICAgIGlwdjRfcmVxdWVzdF9tYWNfcmVzb2x2ZShhZGRyKTsNCisgICAg
-ICAgICAgICAgICAgICAgICAgIHVzbGVlcCgyMDAwMDApOw0KKw0KKyAgICAgICAgICAgICAgICAg
-ICAgICAgaWYgKGlvY3RsKGludGVyZmFjZS0+bmV0c29jaywgU0lPQ0dBUlAsICZhcnByZXEpIDwN
-CjApDQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJldHVybiAtMTsNCisgICAgICAg
-ICAgICAgICB9DQogICAgICAgIH0NCg0KUmVnYXJkcywNCkdhcnkNCg0KDQotLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KRnJvbTogU3ZlbiBFY2tlbG1hbm4gPHN2ZW5AbmFyZmF0aW9uLm9yZz4N
-ClNlbnQ6IDIwMTjlubQxMOaciDI15pelIDE0OjE1DQpUbzogSm9uYXRoYW4gSGF3cyA8amhhd3NA
-c2RsLnVzdS5lZHU+DQpDYzogZ3VvaHVpem91MjAwMEBzaW5hLmNvbTsgYi5hLnQubS5hLm5AbGlz
-dHMub3Blbi1tZXNoLm9yZw0KU3ViamVjdDogUmU6IFtCLkEuVC5NLkEuTi5dIGFsZnJlZCBhbmQg
-YmF0YWR2LXZpcyBpc3N1ZQ0KDQpPbiBNaXR0d29jaCwgMjQuIE9rdG9iZXIgMjAxOCAxODozOTo0
-MyBDRVNUIEpvbmF0aGFuIEhhd3Mgd3JvdGU6DQpbLi4uXQ0KPiBJIGp1c3Qgc3VibWl0dGVkIGEg
-cGF0Y2ggdGhhdCBwdWxscyB0aGUgcmVxdWVzdF9tYWNfcmVzb2x2ZSgpIHJvdXRpbmUNCj4gZnJv
-bSBiYXRjdGwsIG1vZGlmaWVzIGl0IGFwcHJvcHJpYXRlbHksIGFuZCB1c2VzIGl0IHdoZW4gTUFD
-DQo+IHJlc29sdXRpb24gaXNuJ3QgZnJvbSB0aGUgY2FjaGUuDQo+DQo+IEkndmUgdGVzdGVkIHRo
-aXMgd2l0aCBteSBWTSBzZXR1cCBoZXJlIGFuZCBpdCB3b3JrcyBwcm9wZXJseSAoYWZ0ZXIgSQ0K
-PiB2ZXJpZmllZCB0aGF0IHRoZSBub2RlcyB3ZXJlIG5vdCBzaGFyaW5nIG1lc3NhZ2VzIGZpcnN0
-KS4NCj4NCj4gR2FyeSAtIGNhbiB5b3UgdHJ5IHRoZSBwYXRjaCB3aXRoIHlvdXIgc2V0dXAgYW5k
-IG1ha2Ugc3VyZSBpdCBzb2x2ZXMNCj4gdGhlIHByb2JsZW0gaW4geW91ciBzZXR1cCBhcyB3ZWxs
-Pw0KDQoNClRoZSBwYXRjaCBjYW4gYmUgZm91bmQgYXQgaHR0cHM6Ly9wYXRjaHdvcmsub3Blbi1t
-ZXNoLm9yZy9wYXRjaC8xNzU1Mi8gKG9yDQpkaXJlY3RseSBvbiB0aGUgbWFpbGluZyBsaXN0KQ0K
-DQpQbGVhc2UgcmVwbHkgdmlhIG1haWwgd2l0aCBhIGxpbmUNCg0KVGVzdGVkLWJ5OiBGaXJzdE5h
-bWUgTGFzdE5hbWUgPGd1b2h1aXpvdTIwMDBAc2luYS5jb20+DQoNCndoZW4geW91J3ZlIHN1Y2Nl
-c3NmdWxseSB0ZXN0ZWQgaXQgKEZpcnN0TmFtZSBhbmQgTGFzdE5hbWUgaGF2ZSB0byBiZQ0KcmVw
-bGFjZWQgd2l0aCB5b3VyIGFjdHVhbCBuYW1lKS4NCg0KS2luZCByZWdhcmRzLA0KICAgICAgICBT
-dmVuDQoNCg0K
+Ah, yes - I see the issue now. I'll update that when I get back. And I apol=
+ogize for the top posting! My phone's email client doesn't do inline too we=
+ll...
+
+
+
+Sent from my Verizon, Samsung Galaxy smartphone
+
+
+-------- Original message --------
+From: Sven Eckelmann <sven@narfation.org>
+Date: 10/25/18 3:42 AM (GMT-07:00)
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>, guohuizou2000@sina.com
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] alfred: Request MAC resolution for I=
+Pv4 address not in ARP cache
+
+On Mittwoch, 24. Oktober 2018 13:21:28 CEST Jonathan Haws wrote:
+[...]
+>
+> +       while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
+> +               ipv4_request_mac_resolve(addr);
+> +               usleep(200000);
+> +
+> +               if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
+> +                       return -1;
+> +       }
+> +
+>         if (arpreq.arp_flags & ATF_COM) {
+>                 memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
+>         } else {
+
+According to gary [1], this doesn't work because the ioctl fails for him an=
+d
+then the function returns immediately (before the while loop).
+
+Please adjust your patch - but please don't use his code - it looks rather
+ugly and also doesn't work for multiple retries. You most likely want to
+drop the if-ioctl completely and then put everything in your while loop:
+
+        while (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0 ||
+               !(arpreq.arp_flags & ATF_COM)) {
+                if (retries-- <=3D 0)
+                        break;
+
+                ipv4_request_mac_resolve(addr);
+                usleep(200000);
+        }
+
+But feel to propose a different (cleaner) approach.
+
+Kind regards,
+        Sven
+
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-October/018195.h=
+tml
