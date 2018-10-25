@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:29 +0200
-Message-Id: <20181025162245.19389-27-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:30 +0200
+Message-Id: <20181025162245.19389-28-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 26/42] batctl: Move transglobal debug
- table to own file
+Subject: [B.A.T.M.A.N.] [PATCH v3 27/42] batctl: Move translocal debug table
+ to own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,78 +24,73 @@ code sections together.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile      |   1 +
- debug.c       |  11 ----
- netlink.c     | 112 ----------------------------------------
- netlink.h     |   2 -
- transglobal.c | 161 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 162 insertions(+), 125 deletions(-)
- create mode 100644 transglobal.c
+ Makefile     |   1 +
+ debug.c      |  11 -----
+ netlink.c    | 108 ----------------------------------------
+ netlink.h    |   2 -
+ translocal.c | 157 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 158 insertions(+), 121 deletions(-)
+ create mode 100644 translocal.c
 
 diff --git a/Makefile b/Makefile
-index 059c602..ef0c28b 100755
+index ef0c28b..93db44a 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -60,6 +60,7 @@ OBJ += sys.o
- OBJ += tcpdump.o
- OBJ += throughputmeter.o
+@@ -62,6 +62,7 @@ OBJ += throughputmeter.o
  OBJ += traceroute.o
-+OBJ += transglobal.o
+ OBJ += transglobal.o
  OBJ += translate.o
++OBJ += translocal.o
  
  MANPAGE = man/batctl.8
+ 
 diff --git a/debug.c b/debug.c
-index f4cc2ea..5f2ad04 100644
+index 5f2ad04..17dde92 100644
 --- a/debug.c
 +++ b/debug.c
-@@ -210,14 +210,3 @@ static struct debug_table_data batctl_debug_table_translocal = {
- 
- COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
- 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");
+@@ -199,14 +199,3 @@ int debug_print_routing_algos(void)
+ 	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
+ 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
+ }
 -
--static struct debug_table_data batctl_debug_table_transglobal = {
--	.debugfs_name = "transtable_global",
+-static struct debug_table_data batctl_debug_table_translocal = {
+-	.debugfs_name = "transtable_local",
 -	.header_lines = 2,
--	.netlink_fn = netlink_print_transglobal,
+-	.netlink_fn = netlink_print_translocal,
 -	.option_unicast_only = 1,
 -	.option_multicast_only = 1,
 -};
 -
--COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
+-COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");
 diff --git a/netlink.c b/netlink.c
-index cbb73ac..6583696 100644
+index 6583696..26ae27d 100644
 --- a/netlink.c
 +++ b/netlink.c
-@@ -456,107 +456,6 @@ int netlink_print_routing_algos(void)
+@@ -456,103 +456,6 @@ int netlink_print_routing_algos(void)
  	return last_err;
  }
  
--static const int transglobal_mandatory[] = {
+-static const int translocal_mandatory[] = {
 -	BATADV_ATTR_TT_ADDRESS,
--	BATADV_ATTR_ORIG_ADDRESS,
 -	BATADV_ATTR_TT_VID,
--	BATADV_ATTR_TT_TTVN,
--	BATADV_ATTR_TT_LAST_TTVN,
 -	BATADV_ATTR_TT_CRC32,
 -	BATADV_ATTR_TT_FLAGS,
 -};
 -
--static int transglobal_callback(struct nl_msg *msg, void *arg)
+-static int translocal_callback(struct nl_msg *msg, void *arg)
 -{
+-	int last_seen_msecs = 0, last_seen_secs = 0;
 -	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 -	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 -	struct print_opts *opts = arg;
 -	struct bat_host *bat_host;
 -	struct genlmsghdr *ghdr;
--	char c, r, w, i, t;
--	uint8_t last_ttvn;
+-	char r, p, n, x, w, i;
+-	uint8_t *addr;
+-	int16_t vid;
 -	uint32_t crc32;
 -	uint32_t flags;
--	uint8_t *addr;
--	uint8_t *orig;
--	uint8_t ttvn;
--	int16_t vid;
 -
 -	if (!genlmsg_valid_hdr(nlh, 0)) {
 -		fputs("Received invalid data from kernel.\n", stderr);
@@ -104,7 +99,7 @@ index cbb73ac..6583696 100644
 -
 -	ghdr = nlmsg_data(nlh);
 -
--	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
+-	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_LOCAL)
 -		return NL_OK;
 -
 -	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
@@ -113,19 +108,17 @@ index cbb73ac..6583696 100644
 -		exit(1);
 -	}
 -
--	if (missing_mandatory_attrs(attrs, transglobal_mandatory,
--				    ARRAY_SIZE(transglobal_mandatory))) {
+-	if (missing_mandatory_attrs(attrs, translocal_mandatory,
+-				    ARRAY_SIZE(translocal_mandatory))) {
 -		fputs("Missing attributes from kernel\n", stderr);
 -		exit(1);
 -	}
 -
 -	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
--	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
 -	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
--	ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
--	last_ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
 -	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
 -	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
+-	last_seen_msecs = 0, last_seen_secs = 0;
 -
 -	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
 -		return NL_OK;
@@ -133,19 +126,31 @@ index cbb73ac..6583696 100644
 -	if (opts->read_opt & UNICAST_ONLY && (addr[0] & 0x01))
 -		return NL_OK;
 -
--	c = ' ', r = '.', w = '.', i = '.', t = '.';
--	if (attrs[BATADV_ATTR_FLAG_BEST])
--		c = '*';
+-	r = '.', p = '.', n = '.', x = '.', w = '.', i = '.';
 -	if (flags & BATADV_TT_CLIENT_ROAM)
 -		r = 'R';
+-	if (flags & BATADV_TT_CLIENT_NEW)
+-		n = 'N';
+-	if (flags & BATADV_TT_CLIENT_PENDING)
+-		x = 'X';
 -	if (flags & BATADV_TT_CLIENT_WIFI)
 -		w = 'W';
 -	if (flags & BATADV_TT_CLIENT_ISOLA)
 -		i = 'I';
--	if (flags & BATADV_TT_CLIENT_TEMP)
--		t = 'T';
 -
--	printf(" %c ", c);
+-	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
+-		p = 'P';
+-	} else {
+-		if (!attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
+-			fputs("Received invalid data from kernel.\n", stderr);
+-			exit(1);
+-		}
+-
+-		last_seen_msecs = nla_get_u32(
+-			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
+-		last_seen_secs = last_seen_msecs / 1000;
+-		last_seen_msecs = last_seen_msecs % 1000;
+-	}
 -
 -	bat_host = bat_hosts_find_by_mac((char *)addr);
 -	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
@@ -155,63 +160,54 @@ index cbb73ac..6583696 100644
 -	else
 -		printf("%17s ", bat_host->name);
 -
--	printf("%4i [%c%c%c%c] (%3u) ",
--	       BATADV_PRINT_VID(vid), r, w, i, t, ttvn);
--
--	bat_host = bat_hosts_find_by_mac((char *)orig);
--	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
--		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
--		       orig[0], orig[1], orig[2],
--		       orig[3], orig[4], orig[5]);
--	else
--		printf("%17s ", bat_host->name);
--
--	printf("(%3u) (0x%.8x)\n",
--	       last_ttvn, crc32);
+-	printf("%4i [%c%c%c%c%c%c] %3u.%03u   (0x%.8x)\n",
+-	       BATADV_PRINT_VID(vid), r, p, n, x, w, i,
+-	       last_seen_secs, last_seen_msecs,
+-	       crc32);
 -
 -	return NL_OK;
 -}
 -
- static const int translocal_mandatory[] = {
- 	BATADV_ATTR_TT_ADDRESS,
- 	BATADV_ATTR_TT_VID,
-@@ -760,17 +659,6 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+ 			 float orig_timeout, float watch_interval,
+ 			 const char *header, uint8_t nl_cmd,
+@@ -659,17 +562,6 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
  	return last_err;
  }
  
--int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
--			      int read_opts, float orig_timeout,
--			      float watch_interval)
+-int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
+-			     float orig_timeout,
+-			     float watch_interval)
 -{
 -	return netlink_print_common(mesh_iface, orig_iface, read_opts,
 -				    orig_timeout, watch_interval,
--				    "   Client             VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
--				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
--				    transglobal_callback);
+-				    "Client             VID Flags    Last seen (CRC       )\n",
+-				    BATADV_CMD_GET_TRANSTABLE_LOCAL,
+-				    translocal_callback);
 -}
 -
- int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
- 			     float orig_timeout,
- 			     float watch_interval)
+ static int nlquery_error_cb(struct sockaddr_nl *nla __maybe_unused,
+ 			    struct nlmsgerr *nlerr, void *arg)
+ {
 diff --git a/netlink.h b/netlink.h
-index a099482..1cec0f7 100644
+index 1cec0f7..0b21ac1 100644
 --- a/netlink.h
 +++ b/netlink.h
 @@ -40,8 +40,6 @@ struct print_opts {
  struct ether_addr;
  
  int netlink_print_routing_algos(void);
--int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
--			      float orig_timeout, float watch_interval);
- int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
- 			     float orig_timeout, float watch_interval);
+-int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
+-			     float orig_timeout, float watch_interval);
  
-diff --git a/transglobal.c b/transglobal.c
+ char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
+ int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
+diff --git a/translocal.c b/translocal.c
 new file mode 100644
-index 0000000..f61aa9f
+index 0000000..815dc1e
 --- /dev/null
-+++ b/transglobal.c
-@@ -0,0 +1,161 @@
++++ b/translocal.c
+@@ -0,0 +1,157 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -251,31 +247,26 @@ index 0000000..f61aa9f
 +#include "main.h"
 +#include "netlink.h"
 +
-+static const int transglobal_mandatory[] = {
++static const int translocal_mandatory[] = {
 +	BATADV_ATTR_TT_ADDRESS,
-+	BATADV_ATTR_ORIG_ADDRESS,
 +	BATADV_ATTR_TT_VID,
-+	BATADV_ATTR_TT_TTVN,
-+	BATADV_ATTR_TT_LAST_TTVN,
 +	BATADV_ATTR_TT_CRC32,
 +	BATADV_ATTR_TT_FLAGS,
 +};
 +
-+static int transglobal_callback(struct nl_msg *msg, void *arg)
++static int translocal_callback(struct nl_msg *msg, void *arg)
 +{
++	int last_seen_msecs = 0, last_seen_secs = 0;
 +	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 +	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 +	struct print_opts *opts = arg;
 +	struct bat_host *bat_host;
 +	struct genlmsghdr *ghdr;
-+	char c, r, w, i, t;
-+	uint8_t last_ttvn;
++	char r, p, n, x, w, i;
++	uint8_t *addr;
++	int16_t vid;
 +	uint32_t crc32;
 +	uint32_t flags;
-+	uint8_t *addr;
-+	uint8_t *orig;
-+	uint8_t ttvn;
-+	int16_t vid;
 +
 +	if (!genlmsg_valid_hdr(nlh, 0)) {
 +		fputs("Received invalid data from kernel.\n", stderr);
@@ -284,7 +275,7 @@ index 0000000..f61aa9f
 +
 +	ghdr = nlmsg_data(nlh);
 +
-+	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_LOCAL)
 +		return NL_OK;
 +
 +	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
@@ -293,19 +284,17 @@ index 0000000..f61aa9f
 +		exit(1);
 +	}
 +
-+	if (missing_mandatory_attrs(attrs, transglobal_mandatory,
-+				    ARRAY_SIZE(transglobal_mandatory))) {
++	if (missing_mandatory_attrs(attrs, translocal_mandatory,
++				    ARRAY_SIZE(translocal_mandatory))) {
 +		fputs("Missing attributes from kernel\n", stderr);
 +		exit(1);
 +	}
 +
 +	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
-+	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
 +	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
-+	ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
-+	last_ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
 +	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
 +	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
++	last_seen_msecs = 0, last_seen_secs = 0;
 +
 +	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
 +		return NL_OK;
@@ -313,19 +302,31 @@ index 0000000..f61aa9f
 +	if (opts->read_opt & UNICAST_ONLY && (addr[0] & 0x01))
 +		return NL_OK;
 +
-+	c = ' ', r = '.', w = '.', i = '.', t = '.';
-+	if (attrs[BATADV_ATTR_FLAG_BEST])
-+		c = '*';
++	r = '.', p = '.', n = '.', x = '.', w = '.', i = '.';
 +	if (flags & BATADV_TT_CLIENT_ROAM)
 +		r = 'R';
++	if (flags & BATADV_TT_CLIENT_NEW)
++		n = 'N';
++	if (flags & BATADV_TT_CLIENT_PENDING)
++		x = 'X';
 +	if (flags & BATADV_TT_CLIENT_WIFI)
 +		w = 'W';
 +	if (flags & BATADV_TT_CLIENT_ISOLA)
 +		i = 'I';
-+	if (flags & BATADV_TT_CLIENT_TEMP)
-+		t = 'T';
 +
-+	printf(" %c ", c);
++	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
++		p = 'P';
++	} else {
++		if (!attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
++			fputs("Received invalid data from kernel.\n", stderr);
++			exit(1);
++		}
++
++		last_seen_msecs = nla_get_u32(
++			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
++		last_seen_secs = last_seen_msecs / 1000;
++		last_seen_msecs = last_seen_msecs % 1000;
++	}
 +
 +	bat_host = bat_hosts_find_by_mac((char *)addr);
 +	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
@@ -335,44 +336,35 @@ index 0000000..f61aa9f
 +	else
 +		printf("%17s ", bat_host->name);
 +
-+	printf("%4i [%c%c%c%c] (%3u) ",
-+	       BATADV_PRINT_VID(vid), r, w, i, t, ttvn);
-+
-+	bat_host = bat_hosts_find_by_mac((char *)orig);
-+	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-+		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+		       orig[0], orig[1], orig[2],
-+		       orig[3], orig[4], orig[5]);
-+	else
-+		printf("%17s ", bat_host->name);
-+
-+	printf("(%3u) (0x%.8x)\n",
-+	       last_ttvn, crc32);
++	printf("%4i [%c%c%c%c%c%c] %3u.%03u   (0x%.8x)\n",
++	       BATADV_PRINT_VID(vid), r, p, n, x, w, i,
++	       last_seen_secs, last_seen_msecs,
++	       crc32);
 +
 +	return NL_OK;
 +}
 +
-+static int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
-+				     int read_opts, float orig_timeout,
-+				     float watch_interval)
++static int netlink_print_translocal(char *mesh_iface, char *orig_iface,
++				    int read_opts, float orig_timeout,
++				    float watch_interval)
 +{
 +	return netlink_print_common(mesh_iface, orig_iface, read_opts,
 +				    orig_timeout, watch_interval,
-+				    "   Client             VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
-+				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-+				    transglobal_callback);
++				    "Client             VID Flags    Last seen (CRC       )\n",
++				    BATADV_CMD_GET_TRANSTABLE_LOCAL,
++				    translocal_callback);
 +}
 +
-+static struct debug_table_data batctl_debug_table_transglobal = {
-+	.debugfs_name = "transtable_global",
++static struct debug_table_data batctl_debug_table_translocal = {
++	.debugfs_name = "transtable_local",
 +	.header_lines = 2,
-+	.netlink_fn = netlink_print_transglobal,
++	.netlink_fn = netlink_print_translocal,
 +	.option_unicast_only = 1,
 +	.option_multicast_only = 1,
 +};
 +
-+COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
++COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");
 -- 
 2.11.0
 
