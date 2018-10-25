@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:24 +0200
-Message-Id: <20181025162245.19389-22-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:26 +0200
+Message-Id: <20181025162245.19389-24-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 21/42] batctl: Move gateways debug table
+Subject: [B.A.T.M.A.N.] [PATCH v3 23/42] batctl: Move nc_nodes debug table
  to own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,64 +17,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The netlink.c file contains to many different functions and mixes helper
-functions with actual command implementations. The debug table commands
-should be placed in separate files to better group the command specific
-code sections together.
+The other commands are stored in separate files and nc_nodes might also
+receive a netlink implementation. The latter would increase the complexity
+significantly and thus justify that the command is also added via an extra
+file.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile   |   1 +
- debug.c    |   9 ----
- gateways.c | 175 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- netlink.c  | 130 ++-------------------------------------------
- netlink.h  |   8 +--
- 5 files changed, 183 insertions(+), 140 deletions(-)
- create mode 100644 gateways.c
+ Makefile   |  1 +
+ debug.c    |  8 --------
+ nc_nodes.c | 32 ++++++++++++++++++++++++++++++++
+ 3 files changed, 33 insertions(+), 8 deletions(-)
+ create mode 100644 nc_nodes.c
 
 diff --git a/Makefile b/Makefile
-index 648c7bc..3a8e785 100755
+index a725986..ac4824b 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -39,6 +39,7 @@ OBJ += dat_cache.o
- OBJ += debugfs.o
- OBJ += debug.o
- OBJ += functions.o
-+OBJ += gateways.o
- OBJ += genl.o
- OBJ += gw_mode.o
- OBJ += hash.o
+@@ -49,6 +49,7 @@ OBJ += loglevel.o
+ OBJ += log.o
+ OBJ += main.o
+ OBJ += mcast_flags.o
++OBJ += nc_nodes.o
+ OBJ += netlink.o
+ OBJ += ping.o
+ OBJ += routing_algo.o
 diff --git a/debug.c b/debug.c
-index 29c8252..7bf8bff 100644
+index 4b480a3..531c6aa 100644
 --- a/debug.c
 +++ b/debug.c
-@@ -220,15 +220,6 @@ static struct debug_table_data batctl_debug_table_originators = {
- COMMAND_NAMED(DEBUGTABLE, originators, "o", handle_debug_table,
- 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_originators, "");
+@@ -241,11 +241,3 @@ static struct debug_table_data batctl_debug_table_transglobal = {
  
--static struct debug_table_data batctl_debug_table_gateways = {
--	.debugfs_name = "gateways",
--	.header_lines = 1,
--	.netlink_fn = netlink_print_gateways,
+ COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
+ 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
+-
+-static struct debug_table_data batctl_debug_table_nc_nodes = {
+-	.debugfs_name = DEBUG_NC_NODES,
+-	.header_lines = 0,
 -};
 -
--COMMAND_NAMED(DEBUGTABLE, gateways, "gwl", handle_debug_table,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_gateways, "");
--
- static struct debug_table_data batctl_debug_table_translocal = {
- 	.debugfs_name = "transtable_local",
- 	.header_lines = 2,
-diff --git a/gateways.c b/gateways.c
+-COMMAND_NAMED(DEBUGTABLE, nc_nodes, "nn", handle_debug_table,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_nc_nodes, "");
+diff --git a/nc_nodes.c b/nc_nodes.c
 new file mode 100644
-index 0000000..f81bf20
+index 0000000..9cf437d
 --- /dev/null
-+++ b/gateways.c
-@@ -0,0 +1,175 @@
++++ b/nc_nodes.c
+@@ -0,0 +1,32 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
-+ * Andrew Lunn <andrew@lunn.ch>
-+ * Sven Eckelmann <sven@narfation.org>
++ * Marek Lindner <mareklindner@neomailbox.ch>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -93,351 +86,16 @@ index 0000000..f81bf20
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#include <errno.h>
-+#include <net/if.h>
-+#include <netinet/if_ether.h>
-+#include <netlink/netlink.h>
-+#include <netlink/genl/genl.h>
-+#include <netlink/genl/ctrl.h>
-+#include <stdint.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+
-+#include "batadv_packet.h"
-+#include "batman_adv.h"
-+#include "bat-hosts.h"
 +#include "debug.h"
-+#include "functions.h"
 +#include "main.h"
-+#include "netlink.h"
 +
-+static const int gateways_mandatory[] = {
-+	BATADV_ATTR_ORIG_ADDRESS,
-+	BATADV_ATTR_ROUTER,
-+	BATADV_ATTR_HARD_IFNAME,
-+	BATADV_ATTR_BANDWIDTH_DOWN,
-+	BATADV_ATTR_BANDWIDTH_UP,
++static struct debug_table_data batctl_debug_table_nc_nodes = {
++	.debugfs_name = DEBUG_NC_NODES,
++	.header_lines = 0,
 +};
 +
-+static int gateways_callback(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct print_opts *opts = arg;
-+	struct bat_host *bat_host;
-+	struct genlmsghdr *ghdr;
-+	const char *primary_if;
-+	uint32_t bandwidth_down;
-+	uint32_t bandwidth_up;
-+	uint32_t throughput;
-+	uint8_t *router;
-+	uint8_t *orig;
-+	char c = ' ';
-+	uint8_t tq;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (ghdr->cmd != BATADV_CMD_GET_GATEWAYS)
-+		return NL_OK;
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	if (missing_mandatory_attrs(attrs, gateways_mandatory,
-+				    ARRAY_SIZE(gateways_mandatory))) {
-+		fputs("Missing attributes from kernel\n", stderr);
-+		exit(1);
-+	}
-+
-+	if (attrs[BATADV_ATTR_FLAG_BEST])
-+		c = '*';
-+
-+	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
-+	router = nla_data(attrs[BATADV_ATTR_ROUTER]);
-+	primary_if = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
-+	bandwidth_down = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_DOWN]);
-+	bandwidth_up = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_UP]);
-+
-+	printf("%c ", c);
-+
-+	bat_host = bat_hosts_find_by_mac((char *)orig);
-+	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-+		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+		       orig[0], orig[1], orig[2],
-+		       orig[3], orig[4], orig[5]);
-+	else
-+		printf("%17s ", bat_host->name);
-+
-+	if (attrs[BATADV_ATTR_THROUGHPUT]) {
-+		throughput = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
-+		printf("(%9u.%1u) ", throughput / 10, throughput % 10);
-+	} else if (attrs[BATADV_ATTR_TQ]) {
-+		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
-+		printf("(%3i) ", tq);
-+	}
-+
-+	bat_host = bat_hosts_find_by_mac((char *)router);
-+	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-+		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+		       router[0], router[1], router[2],
-+		       router[3], router[4], router[5]);
-+	else
-+		printf("%17s ", bat_host->name);
-+
-+	printf("[%10s]: %u.%u/%u.%u MBit\n",
-+	       primary_if, bandwidth_down / 10, bandwidth_down % 10,
-+	       bandwidth_up / 10, bandwidth_up % 10);
-+
-+	return NL_OK;
-+}
-+
-+static int netlink_print_gateways(char *mesh_iface, char *orig_iface,
-+				  int read_opts, float orig_timeout,
-+				  float watch_interval)
-+{
-+	char *header = NULL;
-+	char *info_header;
-+	int ifindex;
-+
-+	ifindex = if_nametoindex(mesh_iface);
-+	if (!ifindex) {
-+		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
-+		return -ENODEV;
-+	}
-+
-+	/* only parse routing algorithm name */
-+	last_err = -EINVAL;
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
-+
-+	if (strlen(algo_name_buf) == 0)
-+		return last_err;
-+
-+	if (!strcmp("BATMAN_IV", algo_name_buf))
-+		header = "  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth\n";
-+	if (!strcmp("BATMAN_V", algo_name_buf))
-+		header = "  Router            ( throughput) Next Hop          [outgoingIf]  Bandwidth\n";
-+
-+	if (!header)
-+		return -EINVAL;
-+
-+	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-+				    orig_timeout, watch_interval,
-+				    header,
-+				    BATADV_CMD_GET_GATEWAYS,
-+				    gateways_callback);
-+}
-+
-+static struct debug_table_data batctl_debug_table_gateways = {
-+	.debugfs_name = "gateways",
-+	.header_lines = 1,
-+	.netlink_fn = netlink_print_gateways,
-+};
-+
-+COMMAND_NAMED(DEBUGTABLE, gateways, "gwl", handle_debug_table,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_gateways, "");
-diff --git a/netlink.c b/netlink.c
-index 42fe4a0..c3b2bad 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -109,8 +109,8 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_MCAST_FLAGS_PRIV]		= { .type = NLA_U32 },
- };
- 
--static int last_err;
--static char algo_name_buf[256] = "";
-+int last_err;
-+char algo_name_buf[256] = "";
- static int64_t mcast_flags = -EOPNOTSUPP;
- static int64_t mcast_flags_priv = -EOPNOTSUPP;
- 
-@@ -283,7 +283,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 	return NL_STOP;
- }
- 
--static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
-+char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
- {
- 	struct nl_sock *sock;
- 	struct nl_msg *msg;
-@@ -876,94 +876,6 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
- 	return NL_OK;
- }
- 
--static const int gateways_mandatory[] = {
--	BATADV_ATTR_ORIG_ADDRESS,
--	BATADV_ATTR_ROUTER,
--	BATADV_ATTR_HARD_IFNAME,
--	BATADV_ATTR_BANDWIDTH_DOWN,
--	BATADV_ATTR_BANDWIDTH_UP,
--};
--
--static int gateways_callback(struct nl_msg *msg, void *arg)
--{
--	struct nlattr *attrs[BATADV_ATTR_MAX+1];
--	struct nlmsghdr *nlh = nlmsg_hdr(msg);
--	struct print_opts *opts = arg;
--	struct bat_host *bat_host;
--	struct genlmsghdr *ghdr;
--	const char *primary_if;
--	uint32_t bandwidth_down;
--	uint32_t bandwidth_up;
--	uint32_t throughput;
--	uint8_t *router;
--	uint8_t *orig;
--	char c = ' ';
--	uint8_t tq;
--
--	if (!genlmsg_valid_hdr(nlh, 0)) {
--		fputs("Received invalid data from kernel.\n", stderr);
--		exit(1);
--	}
--
--	ghdr = nlmsg_data(nlh);
--
--	if (ghdr->cmd != BATADV_CMD_GET_GATEWAYS)
--		return NL_OK;
--
--	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
--		      genlmsg_len(ghdr), batadv_netlink_policy)) {
--		fputs("Received invalid data from kernel.\n", stderr);
--		exit(1);
--	}
--
--	if (missing_mandatory_attrs(attrs, gateways_mandatory,
--				    ARRAY_SIZE(gateways_mandatory))) {
--		fputs("Missing attributes from kernel\n", stderr);
--		exit(1);
--	}
--
--	if (attrs[BATADV_ATTR_FLAG_BEST])
--		c = '*';
--
--	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
--	router = nla_data(attrs[BATADV_ATTR_ROUTER]);
--	primary_if = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
--	bandwidth_down = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_DOWN]);
--	bandwidth_up = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_UP]);
--
--	printf("%c ", c);
--
--	bat_host = bat_hosts_find_by_mac((char *)orig);
--	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
--		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
--		       orig[0], orig[1], orig[2],
--		       orig[3], orig[4], orig[5]);
--	else
--		printf("%17s ", bat_host->name);
--
--	if (attrs[BATADV_ATTR_THROUGHPUT]) {
--		throughput = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
--		printf("(%9u.%1u) ", throughput / 10, throughput % 10);
--	} else if (attrs[BATADV_ATTR_TQ]) {
--		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
--		printf("(%3i) ", tq);
--	}
--
--	bat_host = bat_hosts_find_by_mac((char *)router);
--	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
--		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
--		       router[0], router[1], router[2],
--		       router[3], router[4], router[5]);
--	else
--		printf("%17s ", bat_host->name);
--
--	printf("[%10s]: %u.%u/%u.%u MBit\n",
--	       primary_if, bandwidth_down / 10, bandwidth_down % 10,
--	       bandwidth_up / 10, bandwidth_up % 10);
--
--	return NL_OK;
--}
--
- static const int mcast_flags_mandatory[] = {
- 	BATADV_ATTR_ORIG_ADDRESS,
- };
-@@ -1205,42 +1117,6 @@ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
- 				    translocal_callback);
- }
- 
--int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
--			   float orig_timeout,
--			   float watch_interval)
--{	char *header = NULL;
--	char *info_header;
--	int ifindex;
--
--	ifindex = if_nametoindex(mesh_iface);
--	if (!ifindex) {
--		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
--		return -ENODEV;
--	}
--
--	/* only parse routing algorithm name */
--	last_err = -EINVAL;
--	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
--	free(info_header);
--
--	if (strlen(algo_name_buf) == 0)
--		return last_err;
--
--	if (!strcmp("BATMAN_IV", algo_name_buf))
--		header = "  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth\n";
--	if (!strcmp("BATMAN_V", algo_name_buf))
--		header = "  Router            ( throughput) Next Hop          [outgoingIf]  Bandwidth\n";
--
--	if (!header)
--		return -EINVAL;
--
--	return netlink_print_common(mesh_iface, orig_iface, read_opts,
--				    orig_timeout, watch_interval,
--				    header,
--				    BATADV_CMD_GET_GATEWAYS,
--				    gateways_callback);
--}
--
- int netlink_print_mcast_flags(char *mesh_iface, char *orig_iface, int read_opts,
- 			      float orig_timeout, float watch_interval)
- {
-diff --git a/netlink.h b/netlink.h
-index 7549838..ecf4b01 100644
---- a/netlink.h
-+++ b/netlink.h
-@@ -43,17 +43,14 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface, int read_opt,
- 			      float orig_timeout, float watch_interval);
- int netlink_print_neighbors(char *mesh_iface, char *orig_iface, int read_opt,
- 			    float orig_timeout, float watch_interval);
--int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
--			   float orig_timeout, float watch_interval);
- int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
- 			      float orig_timeout, float watch_interval);
- int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
- 			     float orig_timeout, float watch_interval);
--int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
--			   float orig_timeout, float watch_interval);
- int netlink_print_mcast_flags(char *mesh_iface, char *orig_iface, int read_opt,
- 			      float orig_timeout, float watch_interval);
- 
-+char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
- int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
- 			  struct ether_addr *mac_out);
- int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
-@@ -69,4 +66,7 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
- 			 const char *header, uint8_t nl_cmd,
- 			 nl_recvmsg_msg_cb_t callback);
- 
-+extern char algo_name_buf[256];
-+extern int last_err;
-+
- #endif /* _BATCTL_NETLINK_H */
++COMMAND_NAMED(DEBUGTABLE, nc_nodes, "nn", handle_debug_table,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_nc_nodes, "");
 -- 
 2.11.0
 
