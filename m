@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:08 +0200
-Message-Id: <20181025162245.19389-6-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:10 +0200
+Message-Id: <20181025162245.19389-8-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 05/42] batctl: Move log command to
- separate file
+Subject: [B.A.T.M.A.N.] [PATCH v3 07/42] batctl: Move routing_algo command
+ to separate file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,95 +23,55 @@ functionality and detect which parts belong to a more complex construct.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile |  1 +
- debug.c  | 41 -------------------------------------
- debug.h  |  1 -
- log.c    | 70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- log.h    | 28 ++++++++++++++++++++++++++
- main.c   |  1 +
- 6 files changed, 100 insertions(+), 42 deletions(-)
- create mode 100644 log.c
- create mode 100644 log.h
+ Makefile       |   1 +
+ main.c         |   3 +-
+ routing_algo.c | 127 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ routing_algo.h |  28 +++++++++++++
+ sys.c          |  92 -----------------------------------------
+ sys.h          |   3 --
+ 6 files changed, 158 insertions(+), 96 deletions(-)
+ create mode 100644 routing_algo.c
+ create mode 100644 routing_algo.h
 
 diff --git a/Makefile b/Makefile
-index 1271200..a988058 100755
+index 9b960b6..9ff4fe4 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -35,6 +35,7 @@ OBJ += hash.o
- OBJ += icmp_helper.o
- OBJ += interface.o
- OBJ += loglevel.o
-+OBJ += log.o
+@@ -40,6 +40,7 @@ OBJ += log.o
  OBJ += main.o
  OBJ += netlink.o
  OBJ += ping.o
-diff --git a/debug.c b/debug.c
-index 185e26d..9bc4d0c 100644
---- a/debug.c
-+++ b/debug.c
-@@ -268,44 +268,3 @@ int debug_print_routing_algos(void)
- 	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
- 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
- }
--
--static void log_usage(void)
--{
--	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
--	fprintf(stderr, "parameters:\n");
--	fprintf(stderr, " \t -h print this help\n");
--	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
--}
--
--int log_print(char *mesh_iface, int argc, char **argv)
--{
--	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
--	char full_path[MAX_PATH+1];
--	char *debugfs_mnt;
--
--	while ((optchar = getopt(argc, argv, "hn")) != -1) {
--		switch (optchar) {
--		case 'h':
--			log_usage();
--			return EXIT_SUCCESS;
--		case 'n':
--			read_opt &= ~USE_BAT_HOSTS;
--			break;
--		default:
--			log_usage();
--			return EXIT_FAILURE;
--		}
--	}
--
--	check_root_or_die("batctl log");
--
--	debugfs_mnt = debugfs_mount(NULL);
--	if (!debugfs_mnt) {
--		fprintf(stderr, "Error - can't mount or find debugfs\n");
--		return EXIT_FAILURE;
--	}
--
--	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
--	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
--	return res;
--}
-diff --git a/debug.h b/debug.h
-index 5508eaf..d9a2e3a 100644
---- a/debug.h
-+++ b/debug.h
-@@ -57,7 +57,6 @@ struct debug_table_data {
- extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
++OBJ += routing_algo.o
+ OBJ += statistics.o
+ OBJ += sys.o
+ OBJ += tcpdump.o
+diff --git a/main.c b/main.c
+index 6160a72..4abee13 100644
+--- a/main.c
++++ b/main.c
+@@ -41,6 +41,7 @@
+ #include "loglevel.h"
+ #include "log.h"
+ #include "gw_mode.h"
++#include "routing_algo.h"
+ #include "functions.h"
  
- int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
--int log_print(char *mesh_iface, int argc, char **argv);
- int debug_print_routing_algos(void);
- 
+ char mesh_dfl_iface[] = "bat0";
+@@ -153,7 +154,7 @@ int main(int argc, char **argv)
  #endif
-diff --git a/log.c b/log.c
+ 	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
+ 
+-		ret = handle_ra_setting(argc - 1, argv + 1);
++		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
+ 
+ 	} else if (check_mesh_iface(mesh_iface) < 0) {
+ 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+diff --git a/routing_algo.c b/routing_algo.c
 new file mode 100644
-index 0000000..fc31c66
+index 0000000..89af6c5
 --- /dev/null
-+++ b/log.c
-@@ -0,0 +1,70 @@
++++ b/routing_algo.c
+@@ -0,0 +1,127 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -134,59 +94,116 @@ index 0000000..fc31c66
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
++#include <dirent.h>
++#include <errno.h>
 +#include <getopt.h>
 +#include <stdio.h>
 +#include <stdlib.h>
++#include <string.h>
 +
-+#include "debug.h"
-+#include "debugfs.h"
 +#include "functions.h"
++#include "main.h"
++#include "sys.h"
 +
-+static void log_usage(void)
++#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
++#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
++
++static void ra_mode_usage(void)
 +{
-+	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
-+	fprintf(stderr, "parameters:\n");
++	fprintf(stderr, "Usage: batctl [options] routing_algo [algorithm]\n");
++	fprintf(stderr, "options:\n");
 +	fprintf(stderr, " \t -h print this help\n");
-+	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 +}
 +
-+int log_print(char *mesh_iface, int argc, char **argv)
++int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
 +{
-+	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
-+	char full_path[MAX_PATH+1];
-+	char *debugfs_mnt;
++	DIR *iface_base_dir;
++	struct dirent *iface_dir;
++	int optchar;
++	char *path_buff;
++	int res = EXIT_FAILURE;
++	int first_iface = 1;
 +
-+	while ((optchar = getopt(argc, argv, "hn")) != -1) {
++	while ((optchar = getopt(argc, argv, "h")) != -1) {
 +		switch (optchar) {
 +		case 'h':
-+			log_usage();
++			ra_mode_usage();
 +			return EXIT_SUCCESS;
-+		case 'n':
-+			read_opt &= ~USE_BAT_HOSTS;
-+			break;
 +		default:
-+			log_usage();
++			ra_mode_usage();
 +			return EXIT_FAILURE;
 +		}
 +	}
 +
-+	check_root_or_die("batctl log");
++	check_root_or_die("batctl routing_algo");
 +
-+	debugfs_mnt = debugfs_mount(NULL);
-+	if (!debugfs_mnt) {
-+		fprintf(stderr, "Error - can't mount or find debugfs\n");
-+		return EXIT_FAILURE;
++	if (argc == 2) {
++		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
++		goto out;
 +	}
 +
-+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
-+	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
++	path_buff = malloc(PATH_BUFF_LEN);
++	if (!path_buff) {
++		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++		goto out;
++	}
++
++	iface_base_dir = opendir(SYS_IFACE_PATH);
++	if (!iface_base_dir) {
++		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
++			SYS_IFACE_PATH, strerror(errno));
++		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
++		goto free_buff;
++	}
++
++	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
++		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
++		if (res != EXIT_SUCCESS)
++			continue;
++
++		if (line_ptr[strlen(line_ptr) - 1] == '\n')
++			line_ptr[strlen(line_ptr) - 1] = '\0';
++
++		if (first_iface) {
++			first_iface = 0;
++			printf("Active routing protocol configuration:\n");
++		}
++
++		printf(" * %s: %s\n", iface_dir->d_name, line_ptr);
++
++		free(line_ptr);
++		line_ptr = NULL;
++	}
++
++	closedir(iface_base_dir);
++	free(path_buff);
++
++	if (!first_iface)
++		printf("\n");
++
++	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF, 0, 0, 0);
++	if (res != EXIT_SUCCESS)
++		return EXIT_FAILURE;
++
++	printf("Selected routing algorithm (used when next batX interface is created):\n");
++	printf(" => %s\n", line_ptr);
++	free(line_ptr);
++	line_ptr = NULL;
++
++	print_routing_algos();
++	return EXIT_SUCCESS;
++
++free_buff:
++	free(path_buff);
++out:
 +	return res;
 +}
-diff --git a/log.h b/log.h
+diff --git a/routing_algo.h b/routing_algo.h
 new file mode 100644
-index 0000000..4ba00e3
+index 0000000..db246c6
 --- /dev/null
-+++ b/log.h
++++ b/routing_algo.h
 @@ -0,0 +1,28 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
@@ -210,24 +227,132 @@ index 0000000..4ba00e3
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#ifndef _BATCTL_LOG_H
-+#define _BATCTL_LOG_H
++#ifndef _BATCTL_ROUTING_ALGO_H
++#define _BATCTL_ROUTING_ALGO_H
 +
-+int log_print(char *mesh_iface, int argc, char **argv);
++int routing_algo(char *mesh_iface, int argc, char **argv);
 +
 +#endif
-diff --git a/main.c b/main.c
-index ac4bc47..5b3e570 100644
---- a/main.c
-+++ b/main.c
-@@ -39,6 +39,7 @@
- #include "bisect_iv.h"
- #include "statistics.h"
- #include "loglevel.h"
-+#include "log.h"
- #include "functions.h"
+diff --git a/sys.c b/sys.c
+index 14f322c..2cb288e 100644
+--- a/sys.c
++++ b/sys.c
+@@ -205,95 +205,3 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 	free(base_dev);
+ 	return res;
+ }
+-
+-static void ra_mode_usage(void)
+-{
+-	fprintf(stderr, "Usage: batctl [options] routing_algo [algorithm]\n");
+-	fprintf(stderr, "options:\n");
+-	fprintf(stderr, " \t -h print this help\n");
+-}
+-
+-int handle_ra_setting(int argc, char **argv)
+-{
+-	DIR *iface_base_dir;
+-	struct dirent *iface_dir;
+-	int optchar;
+-	char *path_buff;
+-	int res = EXIT_FAILURE;
+-	int first_iface = 1;
+-
+-	while ((optchar = getopt(argc, argv, "h")) != -1) {
+-		switch (optchar) {
+-		case 'h':
+-			ra_mode_usage();
+-			return EXIT_SUCCESS;
+-		default:
+-			ra_mode_usage();
+-			return EXIT_FAILURE;
+-		}
+-	}
+-
+-	check_root_or_die("batctl routing_algo");
+-
+-	if (argc == 2) {
+-		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
+-		goto out;
+-	}
+-
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+-		goto out;
+-	}
+-
+-	iface_base_dir = opendir(SYS_IFACE_PATH);
+-	if (!iface_base_dir) {
+-		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
+-			SYS_IFACE_PATH, strerror(errno));
+-		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
+-		goto free_buff;
+-	}
+-
+-	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
+-		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-		if (res != EXIT_SUCCESS)
+-			continue;
+-
+-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-		if (first_iface) {
+-			first_iface = 0;
+-			printf("Active routing protocol configuration:\n");
+-		}
+-
+-		printf(" * %s: %s\n", iface_dir->d_name, line_ptr);
+-
+-		free(line_ptr);
+-		line_ptr = NULL;
+-	}
+-
+-	closedir(iface_base_dir);
+-	free(path_buff);
+-
+-	if (!first_iface)
+-		printf("\n");
+-
+-	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF, 0, 0, 0);
+-	if (res != EXIT_SUCCESS)
+-		return EXIT_FAILURE;
+-
+-	printf("Selected routing algorithm (used when next batX interface is created):\n");
+-	printf(" => %s\n", line_ptr);
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+-	print_routing_algos();
+-	return EXIT_SUCCESS;
+-
+-free_buff:
+-	free(path_buff);
+-out:
+-	return res;
+-}
+diff --git a/sys.h b/sys.h
+index e1d0f9b..5f0280f 100644
+--- a/sys.h
++++ b/sys.h
+@@ -33,8 +33,6 @@
+ #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+ #define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+ #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+-#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
+-#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
+ #define VLAN_ID_MAX_LEN		4
  
- char mesh_dfl_iface[] = "bat0";
+ enum batctl_settings_list {
+@@ -63,6 +61,5 @@ extern const char *sysfs_param_server[];
+ extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
+ 
+ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
+-int handle_ra_setting(int argc, char **argv);
+ 
+ #endif
 -- 
 2.11.0
 
