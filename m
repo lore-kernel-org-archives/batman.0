@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:18 +0200
-Message-Id: <20181025162245.19389-16-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:20 +0200
+Message-Id: <20181025162245.19389-18-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 15/42] batctl: Add type to command to
- structure usage output
+Subject: [B.A.T.M.A.N.] [PATCH v3 17/42] batctl: Convert sysfs settings to
+ command infrastructure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,296 +17,469 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The usage output of batctl is structured in different sections. This should
-be preserved when the remaining subcommands are converted to the command
-infrastructure.
+Most of the commands were already converted to the new command
+infrastructure. To use the new state and pre-initialization steps, the
+sysfs settings also have to be converted.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bisect_iv.c       |  2 +-
- gw_mode.c         |  2 +-
- interface.c       |  2 +-
- log.c             |  2 +-
- loglevel.c        |  2 +-
- main.c            | 68 +++++++++++++++++++++++++++++++++++--------------------
- main.h            | 12 +++++++---
- ping.c            |  2 +-
- routing_algo.c    |  2 +-
- statistics.c      |  2 +-
- tcpdump.c         |  2 +-
- throughputmeter.c |  2 +-
- traceroute.c      |  2 +-
- translate.c       |  2 +-
- 14 files changed, 64 insertions(+), 40 deletions(-)
+ functions.c |   8 +--
+ main.c      |  67 ++++++----------------
+ main.h      |   5 --
+ sys.c       | 187 +++++++++++++++++++++++++++++++++---------------------------
+ sys.h       |  25 ++------
+ 5 files changed, 130 insertions(+), 162 deletions(-)
 
-diff --git a/bisect_iv.c b/bisect_iv.c
-index c6fc708..420317e 100644
---- a/bisect_iv.c
-+++ b/bisect_iv.c
-@@ -1595,5 +1595,5 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
- 	return ret;
- }
- 
--COMMAND(bisect_iv, "bisect_iv", 0, NULL,
-+COMMAND(SUBCOMMAND, bisect_iv, "bisect_iv", 0, NULL,
- 	"<file1> .. <fileN>\tanalyze given batman iv log files for routing stability");
-diff --git a/gw_mode.c b/gw_mode.c
-index bd530d5..4093f89 100644
---- a/gw_mode.c
-+++ b/gw_mode.c
-@@ -167,5 +167,5 @@ static int gw_mode(struct state *state, int argc, char **argv)
- 	return res;
- }
- 
--COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, gw_mode, "gw", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"[mode]            \tdisplay or modify the gateway mode");
-diff --git a/interface.c b/interface.c
-index 5f69cb3..3c176a8 100644
---- a/interface.c
-+++ b/interface.c
-@@ -458,5 +458,5 @@ static int interface(struct state *state, int argc, char **argv)
- 	return EXIT_FAILURE;
- }
- 
--COMMAND(interface, "if", 0, NULL,
-+COMMAND(SUBCOMMAND, interface, "if", 0, NULL,
- 	"[add|del iface(s)]\tdisplay or modify the interface settings");
-diff --git a/log.c b/log.c
-index b4f0b86..cd69676 100644
---- a/log.c
-+++ b/log.c
-@@ -69,5 +69,5 @@ static int log_print(struct state *state, int argc, char **argv)
- 	return res;
- }
- 
--COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND_NAMED(SUBCOMMAND, log, "l", log_print, COMMAND_FLAG_MESH_IFACE, NULL,
- 	      "                  \tread the log produced by the kernel module");
-diff --git a/loglevel.c b/loglevel.c
-index 7a61524..fed70c8 100644
---- a/loglevel.c
-+++ b/loglevel.c
-@@ -143,5 +143,5 @@ static int loglevel(struct state *state, int argc, char **argv)
- 	return res;
- }
- 
--COMMAND(loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"[level]           \tdisplay or modify the log level");
+diff --git a/functions.c b/functions.c
+index faa9478..0a7b587 100644
+--- a/functions.c
++++ b/functions.c
+@@ -69,10 +69,10 @@ char *line_ptr = NULL;
+ const char *fs_compile_out_param[] = {
+ 	SYS_LOG,
+ 	SYS_LOG_LEVEL,
+-	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+-	batctl_settings[BATCTL_SETTINGS_DAT].sysfs_name,
+-	batctl_settings[BATCTL_SETTINGS_NETWORK_CODING].sysfs_name,
+-	batctl_settings[BATCTL_SETTINGS_MULTICAST_MODE].sysfs_name,
++	SYS_BLA,
++	SYS_DAT,
++	SYS_NETWORK_CODING,
++	SYS_MULTICAST_MODE,
+ 	DEBUG_DAT_CACHE,
+ 	DEBUG_BACKBONETABLE,
+ 	DEBUG_DAT_CACHE,
 diff --git a/main.c b/main.c
-index e20f914..251d753 100644
+index f5920a4..9fc6bfb 100644
 --- a/main.c
 +++ b/main.c
-@@ -41,45 +41,63 @@ extern const struct command *__stop___command[];
- 
- static void print_usage(void)
- {
-+	enum command_type type[] = {
-+		SUBCOMMAND,
-+	};
+@@ -46,10 +46,8 @@ static void print_usage(void)
+ 		DEBUGTABLE,
+ 	};
  	const struct command **p;
--	int i, opt_indent;
-+	int opt_indent;
+-	int opt_indent;
  	char buf[32];
-+	size_t i;
-+	size_t j;
+ 	size_t i;
+-	size_t j;
  
  	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
  	fprintf(stderr, "options:\n");
- 	fprintf(stderr, " \t-m mesh interface or VLAN created on top of a mesh interface (default 'bat0')\n");
- 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
- 	fprintf(stderr, " \t-v print version\n");
--	fprintf(stderr, "\n");
+@@ -83,23 +81,6 @@ static void print_usage(void)
  
--	fprintf(stderr, "commands:\n");
-+	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
-+		fprintf(stderr, "\n");
- 
--	for (p = __start___command; p < __stop___command; p++) {
--		const struct command *cmd = *p;
-+		switch (type[i]) {
-+		case SUBCOMMAND:
-+			fprintf(stderr, "commands:\n");
-+			break;
-+		}
- 
--		if (strcmp(cmd->name, cmd->abbr) == 0)
--			snprintf(buf, sizeof(buf), "%s", cmd->name);
--		else
--			snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
--				 cmd->abbr);
-+		for (p = __start___command; p < __stop___command; p++) {
-+			const struct command *cmd = *p;
- 
--		fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
--	}
-+			if (cmd->type != type[i])
-+				continue;
-+
-+			if (strcmp(cmd->name, cmd->abbr) == 0)
-+				snprintf(buf, sizeof(buf), "%s", cmd->name);
-+			else
-+				snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
-+					 cmd->abbr);
-+
-+			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
-+		}
- 
--	for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
--		fprintf(stderr, " \t%s|%s", batctl_settings[i].opt_long, batctl_settings[i].opt_short);
--		opt_indent = strlen(batctl_settings[i].opt_long) + strlen(batctl_settings[i].opt_short);
+ 			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
+ 		}
 -
--		if (batctl_settings[i].params == sysfs_param_enable)
--			fprintf(stderr, "%*s                display or modify %s setting\n",
--			       31 - opt_indent, "[0|1]", batctl_settings[i].opt_long);
--		else if (batctl_settings[i].params == sysfs_param_server)
--			fprintf(stderr, "%*s      display or modify %s setting\n",
--			       41 - opt_indent, "[client|server]", batctl_settings[i].opt_long);
--		else
--			fprintf(stderr, "                                display or modify %s setting\n",
--			       batctl_settings[i].opt_long);
-+		if (type[i] == SUBCOMMAND) {
-+			for (j = 0; j < BATCTL_SETTINGS_NUM; j++) {
-+				fprintf(stderr, " \t%s|%s", batctl_settings[j].opt_long, batctl_settings[j].opt_short);
-+				opt_indent = strlen(batctl_settings[j].opt_long) + strlen(batctl_settings[j].opt_short);
-+
-+				if (batctl_settings[j].params == sysfs_param_enable)
-+					fprintf(stderr, "%*s                display or modify %s setting\n",
-+						31 - opt_indent, "[0|1]", batctl_settings[j].opt_long);
-+				else if (batctl_settings[j].params == sysfs_param_server)
-+					fprintf(stderr, "%*s      display or modify %s setting\n",
-+						41 - opt_indent, "[client|server]", batctl_settings[j].opt_long);
-+				else
-+					fprintf(stderr, "                                display or modify %s setting\n",
-+						batctl_settings[j].opt_long);
-+			}
-+		}
+-		if (type[i] == SUBCOMMAND) {
+-			for (j = 0; j < BATCTL_SETTINGS_NUM; j++) {
+-				fprintf(stderr, " \t%s|%s", batctl_settings[j].opt_long, batctl_settings[j].opt_short);
+-				opt_indent = strlen(batctl_settings[j].opt_long) + strlen(batctl_settings[j].opt_short);
+-
+-				if (batctl_settings[j].params == sysfs_param_enable)
+-					fprintf(stderr, "%*s                display or modify %s setting\n",
+-						31 - opt_indent, "[0|1]", batctl_settings[j].opt_long);
+-				else if (batctl_settings[j].params == sysfs_param_server)
+-					fprintf(stderr, "%*s      display or modify %s setting\n",
+-						41 - opt_indent, "[client|server]", batctl_settings[j].opt_long);
+-				else
+-					fprintf(stderr, "                                display or modify %s setting\n",
+-						batctl_settings[j].opt_long);
+-			}
+-		}
  	}
-+
- 	fprintf(stderr, "\n");
+ }
  
- 	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
+@@ -142,12 +123,12 @@ static const struct command *find_command(const char *name)
+ int main(int argc, char **argv)
+ {
+ 	const struct command *cmd;
+-	int i, ret = EXIT_FAILURE;
+ 	struct state state = {
+ 		.mesh_iface = mesh_dfl_iface,
+ 		.cmd = NULL,
+ 	};
+ 	int opt;
++	int ret;
+ 
+ 	while ((opt = getopt(argc, argv, "+hm:v")) != -1) {
+ 		switch (opt) {
+@@ -181,42 +162,26 @@ int main(int argc, char **argv)
+ 	argc -= optind;
+ 	optind = 0;
+ 
+-	if ((cmd = find_command(argv[0]))) {
+-		state.cmd = cmd;
+-
+-		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
+-		    check_mesh_iface(state.mesh_iface) < 0) {
+-			fprintf(stderr,
+-				"Error - interface %s is not present or not a batman-adv interface\n",
+-				state.mesh_iface);
+-			exit(EXIT_FAILURE);
+-		}
+-
+-		ret = cmd->handler(&state, argc, argv);
+-	} else {
+-		if (check_mesh_iface(state.mesh_iface) < 0) {
+-			fprintf(stderr,
+-				"Error - interface %s is not present or not a batman-adv interface\n",
+-				state.mesh_iface);
+-			exit(EXIT_FAILURE);
+-		}
+-
+-		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
+-			if ((strcmp(argv[0], batctl_settings[i].opt_long) != 0) &&
+-			    (strcmp(argv[0], batctl_settings[i].opt_short) != 0))
+-				continue;
+-
+-			ret = handle_sys_setting(state.mesh_iface, i, argc, argv);
+-			goto out;
+-		}
+-
++	cmd = find_command(argv[0]);
++	if (!cmd) {
+ 		fprintf(stderr,
+ 			"Error - no valid command or debug table specified: %s\n",
+ 			argv[0]);
+-		print_usage();
++		goto err;
+ 	}
+ 
+-out:
++	state.cmd = cmd;
++
++	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
++	    check_mesh_iface(state.mesh_iface) < 0) {
++		fprintf(stderr,
++			"Error - interface %s is not present or not a batman-adv interface\n",
++			state.mesh_iface);
++		exit(EXIT_FAILURE);
++	}
++
++	ret = cmd->handler(&state, argc, argv);
++
+ 	return ret;
+ 
+ err:
 diff --git a/main.h b/main.h
-index 77eb432..052304c 100644
+index 5fa248c..8d91480 100644
 --- a/main.h
 +++ b/main.h
-@@ -61,12 +61,17 @@ enum command_flags {
- 	COMMAND_FLAG_MESH_IFACE = BIT(0),
+@@ -31,11 +31,6 @@
+ 
+ #define EXIT_NOSUCCESS 2
+ 
+-#define OPT_LONG_MAX_LEN 25
+-#define OPT_SHORT_MAX_LEN 5
+-
+-#define SETTINGS_PATH_MAX_LEN 25
+-
+ #if BYTE_ORDER == BIG_ENDIAN
+ #define __BIG_ENDIAN_BITFIELD
+ #elif BYTE_ORDER == LITTLE_ENDIAN
+diff --git a/sys.c b/sys.c
+index 2cb288e..08b389e 100644
+--- a/sys.c
++++ b/sys.c
+@@ -54,87 +54,18 @@ const char *sysfs_param_server[] = {
+ 	NULL,
  };
  
-+enum command_type {
-+	SUBCOMMAND,
-+};
-+
- struct state {
- 	char *mesh_iface;
- 	const struct command *cmd;
- };
+-const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
+-	{
+-		.opt_long = "orig_interval",
+-		.opt_short = "it",
+-		.sysfs_name = "orig_interval",
+-		.params = NULL,
+-	},
+-	{
+-		.opt_long = "ap_isolation",
+-		.opt_short = "ap",
+-		.sysfs_name = "ap_isolation",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "bridge_loop_avoidance",
+-		.opt_short = "bl",
+-		.sysfs_name = "bridge_loop_avoidance",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "distributed_arp_table",
+-		.opt_short = "dat",
+-		.sysfs_name = "distributed_arp_table",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "aggregation",
+-		.opt_short = "ag",
+-		.sysfs_name = "aggregated_ogms",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "bonding",
+-		.opt_short = "b",
+-		.sysfs_name = "bonding",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "fragmentation",
+-		.opt_short = "f",
+-		.sysfs_name = "fragmentation",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "network_coding",
+-		.opt_short = "nc",
+-		.sysfs_name = "network_coding",
+-		.params = sysfs_param_enable,
+-	},
+-	{
+-		.opt_long = "isolation_mark",
+-		.opt_short = "mark",
+-		.sysfs_name = "isolation_mark",
+-		.params = NULL,
+-	},
+-	{
+-		.opt_long = "multicast_mode",
+-		.opt_short = "mm",
+-		.sysfs_name = "multicast_mode",
+-		.params = sysfs_param_enable,
+-	},
+-};
+-
+-static void settings_usage(int setting)
++static void settings_usage(struct state *state)
+ {
+-	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]",
+-	       (char *)batctl_settings[setting].opt_long, (char *)batctl_settings[setting].opt_short);
+-
+-	if (batctl_settings[setting].params == sysfs_param_enable)
+-		fprintf(stderr, " [0|1]\n");
+-	else if (batctl_settings[setting].params == sysfs_param_server)
+-		fprintf(stderr, " [client|server]\n");
+-	else
+-		fprintf(stderr, "\n");
++	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
++		state->cmd->name, state->cmd->abbr, state->cmd->usage);
  
- struct command {
-+	enum command_type type;
- 	const char *name;
- 	const char *abbr;
- 	int (*handler)(struct state *state, int argc, char **argv);
-@@ -75,8 +80,9 @@ struct command {
- 	const char *usage;
- };
- 
--#define COMMAND_NAMED(_name, _abbr, _handler, _flags, _arg, _usage) \
-+#define COMMAND_NAMED(_type, _name, _abbr, _handler, _flags, _arg, _usage) \
- 	static const struct command command_ ## _name = { \
-+		.type = (_type), \
- 		.name = (#_name), \
- 		.abbr = _abbr, \
- 		.handler = (_handler), \
-@@ -87,7 +93,7 @@ struct command {
- 	static const struct command *__command_ ## _name \
- 	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name
- 
--#define COMMAND(_handler, _abbr, _flags, _arg, _usage) \
--	COMMAND_NAMED(_handler, _abbr, _handler, _flags, _arg, _usage)
-+#define COMMAND(_type, _handler, _abbr, _flags, _arg, _usage) \
-+	COMMAND_NAMED(_type, _handler, _abbr, _handler, _flags, _arg, _usage)
- 
- #endif
-diff --git a/ping.c b/ping.c
-index 24af0e8..5c13d81 100644
---- a/ping.c
-+++ b/ping.c
-@@ -345,5 +345,5 @@ static int ping(struct state *state, int argc, char **argv)
- 	return ret;
+ 	fprintf(stderr, "parameters:\n");
+ 	fprintf(stderr, " \t -h print this help\n");
  }
  
--COMMAND(ping, "p", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, ping, "p", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"<destination>     \tping another batman adv host via layer 2");
-diff --git a/routing_algo.c b/routing_algo.c
-index 30e588b..ded9284 100644
---- a/routing_algo.c
-+++ b/routing_algo.c
-@@ -126,5 +126,5 @@ static int routing_algo(struct state *state __maybe_unused, int argc, char **arg
+-int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
++int handle_sys_setting(struct state *state, int argc, char **argv)
+ {
++	struct settings_data *settings = state->cmd->arg;
+ 	int vid, optchar, res = EXIT_FAILURE;
+ 	char *path_buff, *base_dev = NULL;
+ 	const char **ptr;
+@@ -142,10 +73,10 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+ 		switch (optchar) {
+ 		case 'h':
+-			settings_usage(setting);
++			settings_usage(state);
+ 			return EXIT_SUCCESS;
+ 		default:
+-			settings_usage(setting);
++			settings_usage(state);
+ 			return EXIT_FAILURE;
+ 		}
+ 	}
+@@ -157,27 +88,27 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 		return EXIT_FAILURE;
+ 	}
+ 
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
++	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
+ 
+ 	/* if the specified interface is a VLAN then change the path to point
+ 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
+ 	 */
+-	vid = vlan_get_link(mesh_iface, &base_dev);
++	vid = vlan_get_link(state->mesh_iface, &base_dev);
+ 	if (vid >= 0)
+ 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+ 
+ 	if (argc == 1) {
+-		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
++		res = read_file(path_buff, settings->sysfs_name,
+ 				NO_FLAGS, 0, 0, 0);
+ 		goto out;
+ 	}
+ 
+ 	check_root_or_die("batctl");
+ 
+-	if (!batctl_settings[setting].params)
++	if (!settings->params)
+ 		goto write_file;
+ 
+-	ptr = batctl_settings[setting].params;
++	ptr = settings->params;
+ 	while (*ptr) {
+ 		if (strcmp(*ptr, argv[1]) == 0)
+ 			goto write_file;
+@@ -188,7 +119,7 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+ 	fprintf(stderr, "The following values are allowed:\n");
+ 
+-	ptr = batctl_settings[setting].params;
++	ptr = settings->params;
+ 	while (*ptr) {
+ 		fprintf(stderr, " * %s\n", *ptr);
+ 		ptr++;
+@@ -197,7 +128,7 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 	goto out;
+ 
+ write_file:
+-	res = write_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
++	res = write_file(path_buff, settings->sysfs_name,
+ 			 argv[1], argc > 2 ? argv[2] : NULL);
+ 
+ out:
+@@ -205,3 +136,93 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 	free(base_dev);
  	return res;
  }
++
++static struct settings_data batctl_settings_orig_interval = {
++	.sysfs_name = "orig_interval",
++	.params = NULL,
++};
++
++COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
++	      "[interval]        \tdisplay or modify orig_interval setting");
++
++static struct settings_data batctl_settings_ap_isolation = {
++	.sysfs_name = "ap_isolation",
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
++	      "[0|1]             \tdisplay or modify ap_isolation setting");
++
++static struct settings_data batctl_settings_bridge_loop_avoidance = {
++	.sysfs_name = SYS_BLA,
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
++	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
++
++static struct settings_data batctl_settings_distributed_arp_table = {
++	.sysfs_name = SYS_DAT,
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
++	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
++
++static struct settings_data batctl_settings_aggregation = {
++	.sysfs_name = "aggregated_ogms",
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
++	      "[0|1]             \tdisplay or modify aggregation setting");
++
++static struct settings_data batctl_settings_bonding = {
++	.sysfs_name = "bonding",
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
++	      "[0|1]             \tdisplay or modify bonding setting");
++
++static struct settings_data batctl_settings_fragmentation = {
++	.sysfs_name = "fragmentation",
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, fragmentation, "f", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_fragmentation,
++	      "[0|1]             \tdisplay or modify fragmentation setting");
++
++static struct settings_data batctl_settings_network_coding = {
++	.sysfs_name = SYS_NETWORK_CODING,
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
++	      "[0|1]             \tdisplay or modify network_coding setting");
++
++static struct settings_data batctl_settings_isolation_mark = {
++	.sysfs_name = "isolation_mark",
++	.params = NULL,
++};
++
++COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
++	      "[mark]            \tdisplay or modify isolation_mark setting");
++
++static struct settings_data batctl_settings_multicast_mode = {
++	.sysfs_name = SYS_MULTICAST_MODE,
++	.params = sysfs_param_enable,
++};
++
++COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_multicast_mode,
++	      "[0|1]             \tdisplay or modify multicast_mode setting");
+diff --git a/sys.h b/sys.h
+index 5f0280f..20e1934 100644
+--- a/sys.h
++++ b/sys.h
+@@ -28,6 +28,10 @@
+ #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+ #define SYS_LOG_LEVEL		"log_level"
+ #define SYS_LOG			"log"
++#define SYS_BLA			"bridge_loop_avoidance"
++#define SYS_DAT			"distributed_arp_table"
++#define SYS_NETWORK_CODING	"network_coding"
++#define SYS_MULTICAST_MODE	"multicast_mode"
+ #define SYS_IFACE_PATH		"/sys/class/net"
+ #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
+ #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+@@ -35,31 +39,14 @@
+ #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+ #define VLAN_ID_MAX_LEN		4
  
--COMMAND(routing_algo, "ra", 0, NULL,
-+COMMAND(SUBCOMMAND, routing_algo, "ra", 0, NULL,
- 	"[mode]            \tdisplay or modify the routing algorithm");
-diff --git a/statistics.c b/statistics.c
-index 26ffe44..d684fa5 100644
---- a/statistics.c
-+++ b/statistics.c
-@@ -126,5 +126,5 @@ static int statistics(struct state *state, int argc __maybe_unused,
- 	return ret;
- }
+-enum batctl_settings_list {
+-	BATCTL_SETTINGS_ORIG_INTERVAL,
+-	BATCTL_SETTINGS_AP_ISOLATION,
+-	BATCTL_SETTINGS_BLA,
+-	BATCTL_SETTINGS_DAT,
+-	BATCTL_SETTINGS_AGGREGATION,
+-	BATCTL_SETTINGS_BONDING,
+-	BATCTL_SETTINGS_FRAGMENTATION,
+-	BATCTL_SETTINGS_NETWORK_CODING,
+-	BATCTL_SETTINGS_ISOLATION_MARK,
+-	BATCTL_SETTINGS_MULTICAST_MODE,
+-	BATCTL_SETTINGS_NUM,
+-};
+-
+ struct settings_data {
+-	const char opt_long[OPT_LONG_MAX_LEN];
+-	const char opt_short[OPT_SHORT_MAX_LEN];
+-	const char sysfs_name[SETTINGS_PATH_MAX_LEN];
++	const char *sysfs_name;
+ 	const char **params;
+ };
  
--COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, statistics, "s", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"                  \tprint mesh statistics");
-diff --git a/tcpdump.c b/tcpdump.c
-index 5c93842..42713d3 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -1352,5 +1352,5 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
- 	return ret;
- }
+ extern const char *sysfs_param_enable[];
+ extern const char *sysfs_param_server[];
+-extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
  
--COMMAND(tcpdump, "td", 0, NULL,
-+COMMAND(SUBCOMMAND, tcpdump, "td", 0, NULL,
- 	"<interface>       \ttcpdump layer 2 traffic on the given interface");
-diff --git a/throughputmeter.c b/throughputmeter.c
-index 0c5e38a..de20b66 100644
---- a/throughputmeter.c
-+++ b/throughputmeter.c
-@@ -543,5 +543,5 @@ static int throughputmeter(struct state *state, int argc, char **argv)
- 	return ret;
- }
+-int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
++int handle_sys_setting(struct state *state, int argc, char **argv);
  
--COMMAND(throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"<destination>     \tstart a throughput measurement");
-diff --git a/traceroute.c b/traceroute.c
-index 77c3188..6e325c4 100644
---- a/traceroute.c
-+++ b/traceroute.c
-@@ -231,5 +231,5 @@ static int traceroute(struct state *state, int argc, char **argv)
- 	return ret;
- }
- 
--COMMAND(traceroute, "tr", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, traceroute, "tr", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"<destination>     \ttraceroute another batman adv host via layer 2");
-diff --git a/translate.c b/translate.c
-index 38f26df..ad51ddf 100644
---- a/translate.c
-+++ b/translate.c
-@@ -78,5 +78,5 @@ static int translate(struct state *state, int argc, char **argv)
- 	return ret;
- }
- 
--COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
- 	"<destination>     \ttranslate a destination to the originator responsible for it");
+ #endif
 -- 
 2.11.0
 
