@@ -1,11 +1,15 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Wed, 24 Oct 2018 13:21:28 -0600
-Message-ID: <20181024192128.22531-1-jhaws@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 25 Oct 2018 08:15:07 +0200
+Message-ID: <1897809.X9xPm7IOO6@bentobox>
+In-Reply-To: <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
+References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
+ <19500073.zgPyDjR2lk@bentobox>
+ <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH v2] alfred: Request MAC resolution for IPv4
- address not in ARP cache
+Content-Type: multipart/signed; boundary="nextPart1545029.ofro60iFSz";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,84 +19,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: guohuizou2000@sina.com, b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+To: Jonathan Haws <jhaws@sdl.usu.edu>
+Cc: "guohuizou2000@sina.com" <guohuizou2000@sina.com>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-When using IPv4, if the remote server is not yet in the ARP cache, the
-MAC resolution will fail and data appear to not be shared via alfred.
-Add a routine (modified from batctl sources) to request MAC resolution
-by simply sending a datagram to the discard port (UDP/9). This adds the
-remote MAC to the ARP cache, resulting in successful MAC resolution.
+--nextPart1545029.ofro60iFSz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
----
- util.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+On Mittwoch, 24. Oktober 2018 18:39:43 CEST Jonathan Haws wrote:
+[...]
+> I just submitted a patch that pulls the request_mac_resolve() routine
+> from batctl, modifies it appropriately, and uses it when MAC resolution
+> isn't from the cache.
+> 
+> I've tested this with my VM setup here and it works properly (after I
+> verified that the nodes were not sharing messages first).
+> 
+> Gary - can you try the patch with your setup and make sure it solves
+> the problem in your setup as well?
 
-diff --git a/util.c b/util.c
-index dd3f00f..3a0c279 100644
---- a/util.c
-+++ b/util.c
-@@ -30,6 +30,7 @@
- #include <sys/ioctl.h>
- #include <sys/time.h>
- #include <time.h>
-+#include <unistd.h>
- #include "alfred.h"
- 
- int time_diff(struct timespec *tv1, struct timespec *tv2,
-@@ -80,11 +81,35 @@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
- 	return true;
- }
- 
-+static void ipv4_request_mac_resolve(const alfred_addr *addr)
-+{
-+	const struct sockaddr *sockaddr;
-+	struct sockaddr_in inet4;
-+	size_t sockaddr_len;
-+	int sock;
-+	char t = 0;
-+
-+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock < 0)
-+		return;
-+
-+	memset(&inet4, 0, sizeof(inet4));
-+	inet4.sin_family = AF_INET;
-+	inet4.sin_port = htons(9);
-+	inet4.sin_addr.s_addr = addr->ipv4.s_addr;
-+	sockaddr = (const struct sockaddr *)&inet4;
-+	sockaddr_len = sizeof(inet4);
-+
-+	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
-+	close(sock);
-+}
-+
- int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
- 		     struct ether_addr *mac)
- {
- 	struct arpreq arpreq;
- 	struct sockaddr_in *sin;
-+	int retries = 1;
- 
- 	memset(&arpreq, 0, sizeof(arpreq));
- 	memset(mac, 0, ETH_ALEN);
-@@ -99,6 +124,14 @@ int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
- 	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
- 		return -1;
- 
-+	while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
-+		ipv4_request_mac_resolve(addr);
-+		usleep(200000);
-+
-+		if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
-+			return -1;
-+	}
-+
- 	if (arpreq.arp_flags & ATF_COM) {
- 		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
- 	} else {
--- 
-2.17.1
+
+The patch can be found at https://patchwork.open-mesh.org/patch/17552/ (or 
+directly on the mailing list)
+
+Please reply via mail with a line
+
+Tested-by: FirstName LastName <guohuizou2000@sina.com>
+
+when you've successfully tested it (FirstName and LastName have to be replaced 
+with your actual name).
+
+Kind regards,
+	Sven
+--nextPart1545029.ofro60iFSz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvRX2sACgkQXYcKB8Em
+e0ZPTBAAwXCYMGddkDUeyJQ4oTrcQq6drT5P78LF+TyJ+3v0FvOgt9t/zFkZzIDu
+7ms9eIju0T91MU9wf0h3zpo55Wbvytr0NrnbxhqRaMIQ/5tNG2vse8llmE62rMmX
+GTkVSNnV7uz/mASycBUEHfxNXJ15Sbjp3CSwy74f6u+/ggJU3Ys8Hfo0tCChl6BX
+ZezuLv2WYyNxvT0qGnjR4fcOcnnsaxgmWW/YlSWb/gHxN65Lac/mJtxn1JKpa4J2
+UguSQ2bYMpV2ArRJnSP6ZclqH+oLKd6B4Ge7oTPwOnsFD0sdpDmsO2IA02mjWTYG
+9Xt48NOaqTzJs2ZNtHr5CfhWjHX1/7ImtGIeArTcrnqggVQ06aIVRH73IdQYByZ1
+zkRAaJzUreG1Kz8yArDVBlyb7zqfsAlz9kt2HJltQwWxhcPBOKc6ozk+U818F1l8
+Q9Bnn+X8d6yePzsZ5V8Q9znQaGlxrtyBIH4+ke6fVj+g8WtuKUqEuRatN0PM+eUt
+o6l6OX2M1E6bcYeTpnhyX7Rb4G0lx26ApPO8uGEh0aV2b5FsmTWcAEpUBtyfB+15
+gE5+b2W2TmsUvlfzDQ814VybgHhyx+jtlTJQxMuNSMQmfRyk+ksAEuG+G+rDjzvF
+DSZjtA8RgkCZ0RAhR3SgZypaBVKXan3fCOIOkYi3xPPZLG+IKak=
+=TjoH
+-----END PGP SIGNATURE-----
+
+--nextPart1545029.ofro60iFSz--
 
