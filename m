@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:10 +0200
-Message-Id: <20181025162245.19389-8-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:09 +0200
+Message-Id: <20181025162245.19389-7-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 07/42] batctl: Move routing_algo command
- to separate file
+Subject: [B.A.T.M.A.N.] [PATCH v3 06/42] batctl: Move gw_mode command to
+ separate file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,55 +23,34 @@ functionality and detect which parts belong to a more complex construct.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile       |   1 +
- main.c         |   3 +-
- routing_algo.c | 127 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- routing_algo.h |  28 +++++++++++++
- sys.c          |  92 -----------------------------------------
- sys.h          |   3 --
- 6 files changed, 158 insertions(+), 96 deletions(-)
- create mode 100644 routing_algo.c
- create mode 100644 routing_algo.h
+ Makefile  |   1 +
+ gw_mode.c | 168 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ gw_mode.h |  28 +++++++++++
+ main.c    |   3 +-
+ sys.c     | 129 -----------------------------------------------
+ sys.h     |  10 ----
+ 6 files changed, 199 insertions(+), 140 deletions(-)
+ create mode 100644 gw_mode.c
+ create mode 100644 gw_mode.h
 
 diff --git a/Makefile b/Makefile
-index 9b960b6..9ff4fe4 100755
+index a988058..9b960b6 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -40,6 +40,7 @@ OBJ += log.o
- OBJ += main.o
- OBJ += netlink.o
- OBJ += ping.o
-+OBJ += routing_algo.o
- OBJ += statistics.o
- OBJ += sys.o
- OBJ += tcpdump.o
-diff --git a/main.c b/main.c
-index 6160a72..4abee13 100644
---- a/main.c
-+++ b/main.c
-@@ -41,6 +41,7 @@
- #include "loglevel.h"
- #include "log.h"
- #include "gw_mode.h"
-+#include "routing_algo.h"
- #include "functions.h"
- 
- char mesh_dfl_iface[] = "bat0";
-@@ -153,7 +154,7 @@ int main(int argc, char **argv)
- #endif
- 	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
- 
--		ret = handle_ra_setting(argc - 1, argv + 1);
-+		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
- 
- 	} else if (check_mesh_iface(mesh_iface) < 0) {
- 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
-diff --git a/routing_algo.c b/routing_algo.c
+@@ -31,6 +31,7 @@ OBJ += debugfs.o
+ OBJ += debug.o
+ OBJ += functions.o
+ OBJ += genl.o
++OBJ += gw_mode.o
+ OBJ += hash.o
+ OBJ += icmp_helper.o
+ OBJ += interface.o
+diff --git a/gw_mode.c b/gw_mode.c
 new file mode 100644
-index 0000000..89af6c5
+index 0000000..a92644e
 --- /dev/null
-+++ b/routing_algo.c
-@@ -0,0 +1,127 @@
++++ b/gw_mode.c
+@@ -0,0 +1,168 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
 + *
@@ -94,116 +73,157 @@ index 0000000..89af6c5
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#include <dirent.h>
-+#include <errno.h>
 +#include <getopt.h>
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <string.h>
 +
 +#include "functions.h"
-+#include "main.h"
 +#include "sys.h"
 +
-+#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
-+#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
++#define SYS_GW_MODE		"gw_mode"
++#define SYS_GW_SEL		"gw_sel_class"
++#define SYS_GW_BW		"gw_bandwidth"
 +
-+static void ra_mode_usage(void)
++enum gw_modes {
++	GW_MODE_OFF,
++	GW_MODE_CLIENT,
++	GW_MODE_SERVER,
++};
++
++static void gw_mode_usage(void)
 +{
-+	fprintf(stderr, "Usage: batctl [options] routing_algo [algorithm]\n");
++	fprintf(stderr, "Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
 +	fprintf(stderr, "options:\n");
 +	fprintf(stderr, " \t -h print this help\n");
 +}
 +
-+int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
++int gw_mode(char *mesh_iface, int argc, char **argv)
 +{
-+	DIR *iface_base_dir;
-+	struct dirent *iface_dir;
-+	int optchar;
-+	char *path_buff;
-+	int res = EXIT_FAILURE;
-+	int first_iface = 1;
++	int optchar, res = EXIT_FAILURE;
++	char *path_buff, gw_mode;
++	const char **ptr;
 +
 +	while ((optchar = getopt(argc, argv, "h")) != -1) {
 +		switch (optchar) {
 +		case 'h':
-+			ra_mode_usage();
++			gw_mode_usage();
 +			return EXIT_SUCCESS;
 +		default:
-+			ra_mode_usage();
++			gw_mode_usage();
 +			return EXIT_FAILURE;
 +		}
-+	}
-+
-+	check_root_or_die("batctl routing_algo");
-+
-+	if (argc == 2) {
-+		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
-+		goto out;
 +	}
 +
 +	path_buff = malloc(PATH_BUFF_LEN);
 +	if (!path_buff) {
 +		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-+		goto out;
++		return EXIT_FAILURE;
 +	}
 +
-+	iface_base_dir = opendir(SYS_IFACE_PATH);
-+	if (!iface_base_dir) {
-+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
-+			SYS_IFACE_PATH, strerror(errno));
-+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
-+		goto free_buff;
-+	}
++	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 +
-+	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
-+		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
++	if (argc == 1) {
++		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
++
 +		if (res != EXIT_SUCCESS)
-+			continue;
++			goto out;
 +
 +		if (line_ptr[strlen(line_ptr) - 1] == '\n')
 +			line_ptr[strlen(line_ptr) - 1] = '\0';
 +
-+		if (first_iface) {
-+			first_iface = 0;
-+			printf("Active routing protocol configuration:\n");
-+		}
-+
-+		printf(" * %s: %s\n", iface_dir->d_name, line_ptr);
++		if (strcmp(line_ptr, "client") == 0)
++			gw_mode = GW_MODE_CLIENT;
++		else if (strcmp(line_ptr, "server") == 0)
++			gw_mode = GW_MODE_SERVER;
++		else
++			gw_mode = GW_MODE_OFF;
 +
 +		free(line_ptr);
 +		line_ptr = NULL;
++
++		switch (gw_mode) {
++		case GW_MODE_CLIENT:
++			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
++			break;
++		case GW_MODE_SERVER:
++			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
++			break;
++		default:
++			printf("off\n");
++			goto out;
++		}
++
++		if (res != EXIT_SUCCESS)
++			goto out;
++
++		if (line_ptr[strlen(line_ptr) - 1] == '\n')
++			line_ptr[strlen(line_ptr) - 1] = '\0';
++
++		switch (gw_mode) {
++		case GW_MODE_CLIENT:
++			printf("client (selection class: %s)\n", line_ptr);
++			break;
++		case GW_MODE_SERVER:
++			printf("server (announced bw: %s)\n", line_ptr);
++			break;
++		default:
++			goto out;
++		}
++
++		free(line_ptr);
++		line_ptr = NULL;
++		goto out;
 +	}
 +
-+	closedir(iface_base_dir);
-+	free(path_buff);
++	check_root_or_die("batctl gw_mode");
 +
-+	if (!first_iface)
-+		printf("\n");
++	if (strcmp(argv[1], "client") == 0)
++		gw_mode = GW_MODE_CLIENT;
++	else if (strcmp(argv[1], "server") == 0)
++		gw_mode = GW_MODE_SERVER;
++	else if (strcmp(argv[1], "off") == 0)
++		gw_mode = GW_MODE_OFF;
++	else
++		goto opt_err;
 +
-+	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF, 0, 0, 0);
++	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
 +	if (res != EXIT_SUCCESS)
-+		return EXIT_FAILURE;
++		goto out;
 +
-+	printf("Selected routing algorithm (used when next batX interface is created):\n");
-+	printf(" => %s\n", line_ptr);
-+	free(line_ptr);
-+	line_ptr = NULL;
++	if (argc == 2)
++		goto out;
 +
-+	print_routing_algos();
-+	return EXIT_SUCCESS;
++	switch (gw_mode) {
++	case GW_MODE_CLIENT:
++		res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
++		break;
++	case GW_MODE_SERVER:
++		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
++		break;
++	}
 +
-+free_buff:
-+	free(path_buff);
++	goto out;
++
++opt_err:
++	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
++	fprintf(stderr, "The following values are allowed:\n");
++
++	ptr = sysfs_param_server;
++	while (*ptr) {
++		fprintf(stderr, " * %s\n", *ptr);
++		ptr++;
++	}
++
 +out:
++	free(path_buff);
 +	return res;
 +}
-diff --git a/routing_algo.h b/routing_algo.h
+diff --git a/gw_mode.h b/gw_mode.h
 new file mode 100644
-index 0000000..db246c6
+index 0000000..d4d3fb5
 --- /dev/null
-+++ b/routing_algo.h
++++ b/gw_mode.h
 @@ -0,0 +1,28 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
@@ -227,130 +247,206 @@ index 0000000..db246c6
 + * License-Filename: LICENSES/preferred/GPL-2.0
 + */
 +
-+#ifndef _BATCTL_ROUTING_ALGO_H
-+#define _BATCTL_ROUTING_ALGO_H
++#ifndef _BATCTL_GW_MODE_H
++#define _BATCTL_GW_MODE_H
 +
-+int routing_algo(char *mesh_iface, int argc, char **argv);
++int gw_mode(char *mesh_iface, int argc, char **argv);
 +
 +#endif
+diff --git a/main.c b/main.c
+index 5b3e570..6160a72 100644
+--- a/main.c
++++ b/main.c
+@@ -40,6 +40,7 @@
+ #include "statistics.h"
+ #include "loglevel.h"
+ #include "log.h"
++#include "gw_mode.h"
+ #include "functions.h"
+ 
+ char mesh_dfl_iface[] = "bat0";
+@@ -179,7 +180,7 @@ int main(int argc, char **argv)
+ 
+ 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
+ 
+-		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
++		ret = gw_mode(mesh_iface, argc - 1, argv + 1);
+ 
+ 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
+ 
 diff --git a/sys.c b/sys.c
-index 14f322c..2cb288e 100644
+index 366f7a2..14f322c 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -205,95 +205,3 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
- 	free(base_dev);
+@@ -206,135 +206,6 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
  	return res;
  }
--
--static void ra_mode_usage(void)
+ 
+-static void gw_mode_usage(void)
 -{
--	fprintf(stderr, "Usage: batctl [options] routing_algo [algorithm]\n");
+-	fprintf(stderr, "Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
 -	fprintf(stderr, "options:\n");
 -	fprintf(stderr, " \t -h print this help\n");
 -}
 -
--int handle_ra_setting(int argc, char **argv)
+-int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 -{
--	DIR *iface_base_dir;
--	struct dirent *iface_dir;
--	int optchar;
--	char *path_buff;
--	int res = EXIT_FAILURE;
--	int first_iface = 1;
+-	int optchar, res = EXIT_FAILURE;
+-	char *path_buff, gw_mode;
+-	const char **ptr;
 -
 -	while ((optchar = getopt(argc, argv, "h")) != -1) {
 -		switch (optchar) {
 -		case 'h':
--			ra_mode_usage();
+-			gw_mode_usage();
 -			return EXIT_SUCCESS;
 -		default:
--			ra_mode_usage();
+-			gw_mode_usage();
 -			return EXIT_FAILURE;
 -		}
--	}
--
--	check_root_or_die("batctl routing_algo");
--
--	if (argc == 2) {
--		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
--		goto out;
 -	}
 -
 -	path_buff = malloc(PATH_BUFF_LEN);
 -	if (!path_buff) {
 -		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
--		goto out;
+-		return EXIT_FAILURE;
 -	}
 -
--	iface_base_dir = opendir(SYS_IFACE_PATH);
--	if (!iface_base_dir) {
--		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
--			SYS_IFACE_PATH, strerror(errno));
--		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
--		goto free_buff;
--	}
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 -
--	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
--		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-	if (argc == 1) {
+-		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
+-
 -		if (res != EXIT_SUCCESS)
--			continue;
+-			goto out;
 -
 -		if (line_ptr[strlen(line_ptr) - 1] == '\n')
 -			line_ptr[strlen(line_ptr) - 1] = '\0';
 -
--		if (first_iface) {
--			first_iface = 0;
--			printf("Active routing protocol configuration:\n");
--		}
--
--		printf(" * %s: %s\n", iface_dir->d_name, line_ptr);
+-		if (strcmp(line_ptr, "client") == 0)
+-			gw_mode = GW_MODE_CLIENT;
+-		else if (strcmp(line_ptr, "server") == 0)
+-			gw_mode = GW_MODE_SERVER;
+-		else
+-			gw_mode = GW_MODE_OFF;
 -
 -		free(line_ptr);
 -		line_ptr = NULL;
+-
+-		switch (gw_mode) {
+-		case GW_MODE_CLIENT:
+-			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
+-			break;
+-		case GW_MODE_SERVER:
+-			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
+-			break;
+-		default:
+-			printf("off\n");
+-			goto out;
+-		}
+-
+-		if (res != EXIT_SUCCESS)
+-			goto out;
+-
+-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-		switch (gw_mode) {
+-		case GW_MODE_CLIENT:
+-			printf("client (selection class: %s)\n", line_ptr);
+-			break;
+-		case GW_MODE_SERVER:
+-			printf("server (announced bw: %s)\n", line_ptr);
+-			break;
+-		default:
+-			goto out;
+-		}
+-
+-		free(line_ptr);
+-		line_ptr = NULL;
+-		goto out;
 -	}
 -
--	closedir(iface_base_dir);
--	free(path_buff);
+-	check_root_or_die("batctl gw_mode");
 -
--	if (!first_iface)
--		printf("\n");
+-	if (strcmp(argv[1], "client") == 0)
+-		gw_mode = GW_MODE_CLIENT;
+-	else if (strcmp(argv[1], "server") == 0)
+-		gw_mode = GW_MODE_SERVER;
+-	else if (strcmp(argv[1], "off") == 0)
+-		gw_mode = GW_MODE_OFF;
+-	else
+-		goto opt_err;
 -
--	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF, 0, 0, 0);
+-	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
 -	if (res != EXIT_SUCCESS)
--		return EXIT_FAILURE;
+-		goto out;
 -
--	printf("Selected routing algorithm (used when next batX interface is created):\n");
--	printf(" => %s\n", line_ptr);
--	free(line_ptr);
--	line_ptr = NULL;
+-	if (argc == 2)
+-		goto out;
 -
--	print_routing_algos();
--	return EXIT_SUCCESS;
+-	switch (gw_mode) {
+-	case GW_MODE_CLIENT:
+-		res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+-		break;
+-	case GW_MODE_SERVER:
+-		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+-		break;
+-	}
 -
--free_buff:
--	free(path_buff);
+-	goto out;
+-
+-opt_err:
+-	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+-	fprintf(stderr, "The following values are allowed:\n");
+-
+-	ptr = sysfs_param_server;
+-	while (*ptr) {
+-		fprintf(stderr, " * %s\n", *ptr);
+-		ptr++;
+-	}
+-
 -out:
+-	free(path_buff);
 -	return res;
 -}
+-
+ static void ra_mode_usage(void)
+ {
+ 	fprintf(stderr, "Usage: batctl [options] routing_algo [algorithm]\n");
 diff --git a/sys.h b/sys.h
-index e1d0f9b..5f0280f 100644
+index 5e98ab1..e1d0f9b 100644
 --- a/sys.h
 +++ b/sys.h
-@@ -33,8 +33,6 @@
+@@ -28,9 +28,6 @@
+ #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+ #define SYS_LOG_LEVEL		"log_level"
+ #define SYS_LOG			"log"
+-#define SYS_GW_MODE		"gw_mode"
+-#define SYS_GW_SEL		"gw_sel_class"
+-#define SYS_GW_BW		"gw_bandwidth"
+ #define SYS_IFACE_PATH		"/sys/class/net"
+ #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
  #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
- #define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
- #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
--#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
--#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
- #define VLAN_ID_MAX_LEN		4
+@@ -54,12 +51,6 @@ enum batctl_settings_list {
+ 	BATCTL_SETTINGS_NUM,
+ };
  
- enum batctl_settings_list {
-@@ -63,6 +61,5 @@ extern const char *sysfs_param_server[];
+-enum gw_modes {
+-	GW_MODE_OFF,
+-	GW_MODE_CLIENT,
+-	GW_MODE_SERVER,
+-};
+-
+ struct settings_data {
+ 	const char opt_long[OPT_LONG_MAX_LEN];
+ 	const char opt_short[OPT_SHORT_MAX_LEN];
+@@ -72,7 +63,6 @@ extern const char *sysfs_param_server[];
  extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
  
  int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
--int handle_ra_setting(int argc, char **argv);
+-int handle_gw_setting(char *mesh_iface, int argc, char **argv);
+ int handle_ra_setting(int argc, char **argv);
  
  #endif
 -- 
