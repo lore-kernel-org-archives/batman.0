@@ -1,18 +1,14 @@
-Return-Path: <guohuizou2000@sina.com>
-From: "gary" <guohuizou2000@sina.com>
-References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <19500073.zgPyDjR2lk@bentobox>
- <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
- <1897809.X9xPm7IOO6@bentobox>
-In-Reply-To: <1897809.X9xPm7IOO6@bentobox>
-Date: Thu, 25 Oct 2018 17:06:18 +0800
-Message-ID: <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 25 Oct 2018 11:41:53 +0200
+Message-ID: <2365708.Am9coUDyuZ@bentobox>
+In-Reply-To: <20181024192128.22531-1-jhaws@sdl.usu.edu>
+References: <20181024192128.22531-1-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-Content-Language: zh-cn
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+Content-Type: multipart/signed; boundary="nextPart220068829.Y7zkn2KnXh";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] alfred: Request MAC resolution for
+ IPv4 address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,82 +18,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Sven Eckelmann' <sven@narfation.org>, 'Jonathan Haws' <jhaws@sdl.usu.edu>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>, guohuizou2000@sina.com
 
+--nextPart220068829.Y7zkn2KnXh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Hi Sven and Jon,
-
-The patch does NOT work for me.
-
-I review the code again and find the issue. The following code may make =
-my
-testbed work.
-
-
---- a/util.c
-+++ b/util.c
-@@ -122,14 +122,14 @@ int ipv4_arp_request(struct interface *interface,
-const alfred_addr *addr,
-        arpreq.arp_dev[sizeof(arpreq.arp_dev) - 1] =3D '\0';
-=20
-        if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
--               return -1;
--
--       while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
--               ipv4_request_mac_resolve(addr);
--               usleep(200000);
--
--               if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
--                       return -1;
-+       {
-+               while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
-+                       ipv4_request_mac_resolve(addr);
-+                       usleep(200000);
-+
-+                       if (ioctl(interface->netsock, SIOCGARP, &arpreq) =
-<
-0)
-+                               return -1;
-+               }
-        }
-
-Regards,
-Gary
-
-
------Original Message-----
-From: Sven Eckelmann <sven@narfation.org>=20
-Sent: 2018=C4=EA10=D4=C225=C8=D5 14:15
-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Cc: guohuizou2000@sina.com; b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
-
-On Mittwoch, 24. Oktober 2018 18:39:43 CEST Jonathan Haws wrote:
+On Mittwoch, 24. Oktober 2018 13:21:28 CEST Jonathan Haws wrote:
 [...]
-> I just submitted a patch that pulls the request_mac_resolve() routine=20
-> from batctl, modifies it appropriately, and uses it when MAC=20
-> resolution isn't from the cache.
->=20
-> I've tested this with my VM setup here and it works properly (after I=20
-> verified that the nodes were not sharing messages first).
->=20
-> Gary - can you try the patch with your setup and make sure it solves=20
-> the problem in your setup as well?
+>  
+> +       while (retries-- && !(arpreq.arp_flags & ATF_COM)) {
+> +               ipv4_request_mac_resolve(addr);
+> +               usleep(200000);
+> +
+> +               if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
+> +                       return -1;
+> +       }
+> +
+>         if (arpreq.arp_flags & ATF_COM) {
+>                 memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
+>         } else {
 
+According to gary [1], this doesn't work because the ioctl fails for him and 
+then the function returns immediately (before the while loop).
 
-The patch can be found at https://patchwork.open-mesh.org/patch/17552/ =
-(or
-directly on the mailing list)
+Please adjust your patch - but please don't use his code - it looks rather
+ugly and also doesn't work for multiple retries. You most likely want to
+drop the if-ioctl completely and then put everything in your while loop:
 
-Please reply via mail with a line
+	while (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0 ||
+	       !(arpreq.arp_flags & ATF_COM)) {
+		if (retries-- <= 0)
+			break;
 
-Tested-by: FirstName LastName <guohuizou2000@sina.com>
+		ipv4_request_mac_resolve(addr);
+		usleep(200000);
+	}
 
-when you've successfully tested it (FirstName and LastName have to be
-replaced with your actual name).
+But feel to propose a different (cleaner) approach.
 
 Kind regards,
 	Sven
 
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2018-October/018195.html
+--nextPart220068829.Y7zkn2KnXh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvRj+EACgkQXYcKB8Em
+e0Y8iw//Sq3jOzACC1z+cRwhRMNkBIQxmUIeUZQ4zELSslI+Qu0KBCM4g86EWX0D
+AIDHOmljwvNWypX+0QF1le/psGmMHUN2qOu2o8ci2Zz47dgWxubruCUSk6ksreoc
+NW8ruis1I6OtXSdKYt0/h/12boI6NczByeYnW6yz+2nZ6fww3cTyie2olNj9D9eu
+VY6aQtHlqvbNgN0W1KgRnn/y22ofAKt2Pi2DrZOd+1aw8LmZuGYfkmYlcM17t6c6
+a0+gu3WTIISLWc0Rm5YONWcJXCSDaUut08axdt1UZRTFQ0sYyoJnVgpozx285RmO
+yux1KvQJZ6fVqCkruUQ4yoT12sZpSraQ7v7uQv1Z6XcBKZC9JVR69o9oOwOTrKz1
+7sSKZ1rD2EarH9pjOg2t356tunUVeT3Oad3Kt5pTeW7hXrp1JtahvcZ5bQsZZf7X
+FySWh95wT7JKBzWrRr0GNGzLMC4sOZ1vLmEBUnXY3S4Na0Je5FD6QGpwEziefsa7
+9wpuUQxxFKbGb3Aer7Z784nQvTxMi4Gu0BprJpGiwPCy+KSFx3gyRrfPHsMUwNSX
+FreNhOMwrhXZCV6LuydJZ64n0C3gsfGt6Ex6SPnnWYaemP2/w0mYjqlnE0YV5apq
+SFGdSrsupwP0xQkGNqYaRzzwpsG2vwAAyMn/vWMgCgvy0lXb90I=
+=P4xy
+-----END PGP SIGNATURE-----
+
+--nextPart220068829.Y7zkn2KnXh--
 
