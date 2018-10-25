@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:45 +0200
-Message-Id: <20181025162245.19389-43-sven@narfation.org>
+Date: Thu, 25 Oct 2018 18:22:37 +0200
+Message-Id: <20181025162245.19389-35-sven@narfation.org>
 In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
 References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 42/42] batctl: Allow to enable/disable
- subcommands
+Subject: [B.A.T.M.A.N.] [PATCH v3 34/42] batctl: Move isolation_mark setting
+ to own file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,132 +17,91 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Systems with limited space are usually not using all the functionality of
-batman-adv and of batctl. Still, most of the batctl is still build even
-when the corresponding batman-adv functionality would not be available.
-This becomes especially important for subcommands which implement most
-functionality in userspace when it was previously completely handled by the
-kernel.
-
-An external build system for such system can now just select the commands
-it really needs. Combining this with link-time-optimizationa and/or
-function/data-section garbage collection allows to find the right mix
-between size and functionality.
+The sysfs settings are planned to get also be implemented in netlink. To
+avoid cluttering up netlink.c again, it should be stored in a separate
+file. This also allows to order the usage lines using the Makefile.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile | 83 +++++++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 48 insertions(+), 35 deletions(-)
+ Makefile         |  1 +
+ isolation_mark.c | 35 +++++++++++++++++++++++++++++++++++
+ sys.c            |  9 ---------
+ 3 files changed, 36 insertions(+), 9 deletions(-)
+ create mode 100644 isolation_mark.c
 
 diff --git a/Makefile b/Makefile
-index dfcfbd9..e6b2412 100755
+index 7f82d44..9598065 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -20,56 +20,69 @@
- #
- # License-Filename: LICENSES/preferred/GPL-2.0
- 
--# changing the CONFIG_* line to 'y' enables the related feature
--# batctl advanced debugging tool bisect:
-+# just for backward compatibility - please use CONFIG_bisect_iv instead
- export CONFIG_BATCTL_BISECT=n
- 
- # batctl build
- BINARY_NAME = batctl
- 
--obj-y += aggregation.o
--obj-y += ap_isolation.o
- obj-y += bat-hosts.o
--obj-y += backbonetable.o
--obj-$(CONFIG_BATCTL_BISECT) += bisect_iv.o
--obj-y += bonding.o
--obj-y += bridge_loop_avoidance.o
--obj-y += claimtable.o
--obj-y += dat_cache.o
- obj-y += debugfs.o
- obj-y += debug.o
--obj-y += distributed_arp_table.o
--obj-y += event.o
--obj-y += fragmentation.o
- obj-y += functions.o
--obj-y += gateways.o
- obj-y += genl.o
--obj-y += gw_mode.o
- obj-y += hash.o
- obj-y += icmp_helper.o
--obj-y += interface.o
--obj-y += isolation_mark.o
--obj-y += loglevel.o
--obj-y += log.o
- obj-y += main.o
--obj-y += mcast_flags.o
--obj-y += multicast_mode.o
--obj-y += nc_nodes.o
--obj-y += neighbors.o
- obj-y += netlink.o
--obj-y += network_coding.o
--obj-y += ping.o
--obj-y += originators.o
--obj-y += orig_interval.o
--obj-y += routing_algo.o
--obj-y += statistics.o
- obj-y += sys.o
--obj-y += tcpdump.o
--obj-y += throughputmeter.o
--obj-y += traceroute.o
--obj-y += transglobal.o
--obj-y += translate.o
--obj-y += translocal.o
+@@ -51,6 +51,7 @@ OBJ += gw_mode.o
+ OBJ += hash.o
+ OBJ += icmp_helper.o
+ OBJ += interface.o
++OBJ += isolation_mark.o
+ OBJ += loglevel.o
+ OBJ += log.o
+ OBJ += main.o
+diff --git a/isolation_mark.c b/isolation_mark.c
+new file mode 100644
+index 0000000..13ba869
+--- /dev/null
++++ b/isolation_mark.c
+@@ -0,0 +1,35 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
++ *
++ * Antonio Quartulli <a@unstable.cc>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ */
 +
-+define add_command
-+  CONFIG_$(1):=$(2)
-+  ifneq ($$(CONFIG_$(1)),y)
-+    ifneq ($$(CONFIG_$(1)),n)
-+      $$(warning invalid value for parameter CONFIG_$(1): $$(CONFIG_$(1)))
-+    endif
-+  endif
++#include <stddef.h>
 +
-+  obj-$$(CONFIG_$(1)) += $(1).o
-+endef # add_command
++#include "main.h"
++#include "sys.h"
 +
-+# using the make parameter CONFIG_* (e.g. CONFIG_bisect_iv) with the value 'y'
-+# enables the related feature and 'n' disables it
-+$(eval $(call add_command,aggregation,y))
-+$(eval $(call add_command,ap_isolation,y))
-+$(eval $(call add_command,backbonetable,y))
-+$(eval $(call add_command,bisect_iv,$(CONFIG_BATCTL_BISECT)))
-+$(eval $(call add_command,bonding,y))
-+$(eval $(call add_command,bridge_loop_avoidance,y))
-+$(eval $(call add_command,claimtable,y))
-+$(eval $(call add_command,dat_cache,y))
-+$(eval $(call add_command,distributed_arp_table,y))
-+$(eval $(call add_command,event,y))
-+$(eval $(call add_command,fragmentation,y))
-+$(eval $(call add_command,gateways,y))
-+$(eval $(call add_command,gw_mode,y))
-+$(eval $(call add_command,interface,y))
-+$(eval $(call add_command,isolation_mark,y))
-+$(eval $(call add_command,log,y))
-+$(eval $(call add_command,loglevel,y))
-+$(eval $(call add_command,mcast_flags,y))
-+$(eval $(call add_command,multicast_mode,y))
-+$(eval $(call add_command,nc_nodes,y))
-+$(eval $(call add_command,neighbors,y))
-+$(eval $(call add_command,network_coding,y))
-+$(eval $(call add_command,orig_interval,y))
-+$(eval $(call add_command,originators,y))
-+$(eval $(call add_command,ping,y))
-+$(eval $(call add_command,routing_algo,y))
-+$(eval $(call add_command,statistics,y))
-+$(eval $(call add_command,tcpdump,y))
-+$(eval $(call add_command,throughputmeter,y))
-+$(eval $(call add_command,traceroute,y))
-+$(eval $(call add_command,transglobal,y))
-+$(eval $(call add_command,translate,y))
-+$(eval $(call add_command,translocal,y))
++static struct settings_data batctl_settings_isolation_mark = {
++	.sysfs_name = "isolation_mark",
++	.params = NULL,
++};
++
++COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
++	      "[mark]            \tdisplay or modify isolation_mark setting");
+diff --git a/sys.c b/sys.c
+index f81298b..355b801 100644
+--- a/sys.c
++++ b/sys.c
+@@ -155,15 +155,6 @@ COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
+ 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
+ 	      "[0|1]             \tdisplay or modify network_coding setting");
  
- MANPAGE = man/batctl.8
- 
+-static struct settings_data batctl_settings_isolation_mark = {
+-	.sysfs_name = "isolation_mark",
+-	.params = NULL,
+-};
+-
+-COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
+-	      "[mark]            \tdisplay or modify isolation_mark setting");
+-
+ static struct settings_data batctl_settings_multicast_mode = {
+ 	.sysfs_name = SYS_MULTICAST_MODE,
+ 	.params = sysfs_param_enable,
 -- 
 2.11.0
 
