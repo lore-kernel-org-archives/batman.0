@@ -1,11 +1,19 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 25 Oct 2018 18:22:37 +0200
-Message-Id: <20181025162245.19389-35-sven@narfation.org>
-In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
-References: <20181025162245.19389-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 34/42] batctl: Move isolation_mark setting
- to own file
+Return-Path: <jhaws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Mon, 29 Oct 2018 16:07:26 +0000
+Message-ID: <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
+References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
+ <19500073.zgPyDjR2lk@bentobox>
+ <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
+ <1897809.X9xPm7IOO6@bentobox> <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
+In-Reply-To: <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
+Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <8E46D54B95F03B44BF25B53159434802@sdl.usu.edu>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,93 +23,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "guohuizou2000@sina.com" <guohuizou2000@sina.com>, "sven@narfation.org" <sven@narfation.org>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-The sysfs settings are planned to get also be implemented in netlink. To
-avoid cluttering up netlink.c again, it should be stored in a separate
-file. This also allows to order the usage lines using the Makefile.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile         |  1 +
- isolation_mark.c | 35 +++++++++++++++++++++++++++++++++++
- sys.c            |  9 ---------
- 3 files changed, 36 insertions(+), 9 deletions(-)
- create mode 100644 isolation_mark.c
-
-diff --git a/Makefile b/Makefile
-index 7f82d44..9598065 100755
---- a/Makefile
-+++ b/Makefile
-@@ -51,6 +51,7 @@ OBJ += gw_mode.o
- OBJ += hash.o
- OBJ += icmp_helper.o
- OBJ += interface.o
-+OBJ += isolation_mark.o
- OBJ += loglevel.o
- OBJ += log.o
- OBJ += main.o
-diff --git a/isolation_mark.c b/isolation_mark.c
-new file mode 100644
-index 0000000..13ba869
---- /dev/null
-+++ b/isolation_mark.c
-@@ -0,0 +1,35 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli <a@unstable.cc>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ * License-Filename: LICENSES/preferred/GPL-2.0
-+ */
-+
-+#include <stddef.h>
-+
-+#include "main.h"
-+#include "sys.h"
-+
-+static struct settings_data batctl_settings_isolation_mark = {
-+	.sysfs_name = "isolation_mark",
-+	.params = NULL,
-+};
-+
-+COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
-+	      "[mark]            \tdisplay or modify isolation_mark setting");
-diff --git a/sys.c b/sys.c
-index f81298b..355b801 100644
---- a/sys.c
-+++ b/sys.c
-@@ -155,15 +155,6 @@ COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
- 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
- 	      "[0|1]             \tdisplay or modify network_coding setting");
- 
--static struct settings_data batctl_settings_isolation_mark = {
--	.sysfs_name = "isolation_mark",
--	.params = NULL,
--};
--
--COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
--	      "[mark]            \tdisplay or modify isolation_mark setting");
--
- static struct settings_data batctl_settings_multicast_mode = {
- 	.sysfs_name = SYS_MULTICAST_MODE,
- 	.params = sysfs_param_enable,
--- 
-2.11.0
-
+PiBUaGUgcGF0Y2ggZG9lcyBOT1Qgd29yayBmb3IgbWUuDQo+IA0KPiBJIHJldmlldyB0aGUgY29k
+ZSBhZ2FpbiBhbmQgZmluZCB0aGUgaXNzdWUuIFRoZSBmb2xsb3dpbmcgY29kZSBtYXkNCj4gbWFr
+ZSBteQ0KPiB0ZXN0YmVkIHdvcmsuDQoNCkdhcnkgLSBjYW4geW91IGRlc2NyaWJlIHRvIG1lIHNv
+bWUgbW9yZSBkZXRhaWxzIG9mIHlvdXIgdGVzdCBzZXR1cD8gDQpIb3cgYXJlIEJCTjEgYW5kIEJC
+TjIgY29uZmlndXJlZD8gQXJlIHRoZXkgbWFjaGluZXMgd2l0aCB0d28gZGlmZmVyZW50DQpFdGhl
+cm5ldCBpbnRlcmZhY2VzIChpLmUuIGVhY2ggaGF2aW5nIG9uZSBjb25uZWN0ZWQgdG8gdGhlIGRv
+d25zdHJlYW0NCm5vZGUgYW5kIG9uZSBjb25uZWN0ZWQgdG8gdGhlIHN3aXRjaCk/IEFyZSB0aGV5
+IG1vcmUgb3IgbGVzcyBhY3RpbmcgYXMNCnJvdXRlcnMgKGkuZS4gZG9pbmcgSVAgZm9yd2FyZGlu
+Zyk/DQoNClRoZSB0ZXN0aW5nIEkgaGF2ZSBiZWVuIGRvaW5nIGlzIGp1c3QgY29ubmVjdGluZyBN
+UDEgYW5kIE1QMiB0byB0aGUNCnNhbWUgc3dpdGNoIGFuZCBoYXZpbmcgdGhlbSBvbiB0aGUgc2Ft
+ZSBzdWJuZXQuIElzIHRoYXQgbm90IHRoZSBjYXNlIGluDQp5b3VyIHNldHVwPw0KDQpUaGUgb3Ro
+ZXIgdGhpbmcgSSBhbSBpbnRlcmVzdGVkIGluIGlzIHdoYXQgaXMgdGhlIHJlc3VsdCBvZiB0aGUg
+Zmlyc3QNCmlvY3RsKCkgY2FsbD8gSSdtIGd1ZXNzaW5nIGl0IGhhcyB0byBiZSBmYWlsaW5nLCBv
+ciBlbHNlIHRoZSBwYXRjaA0Kd291bGQgaGF2ZSB3b3JrZWQgZm9yIHlvdS4gQ2FuIHlvdSBhZGQg
+YSBwcmludCBzdGF0ZW1lbnQgYmVmb3JlIHRoZQ0KcmV0dXJuIHRoYXQgd291bGQgZ2l2ZSB0aGUg
+ZXJyb3Igc3RyaW5nIGFzIHdlbGwgYXMgdGhlIGludGVyZmFjZSBhbmQgSVANCihpLmUuIGludGVy
+ZmFjZS0+aW50ZXJmYWNlIGFuZCBhZGRyLT5pcHY0LnNfYWRkcik/IFRoYXQgd291bGQgYmUNCmhl
+bHBmdWwgaW4gaGVscGluZyBtZSBmaW5kIHRoZSByb290IGlzc3VlLg0KDQpPbmUgdGhpbmcgdG8g
+bm90ZSAoYW5kIFN2ZW4sIG1heWJlIHlvdSBjYW4gdGVsbCBtZSBpZiB0aGlzIGlzDQpleHBlY3Rl
+ZCk6IGluIG15IHRlc3RpbmcgSSBmb3VuZCB0aGF0IGFsZnJlZCBpcyBnZXR0aW5nIGludG8gdGhp
+cw0KaXB2NF9hcnBfcmVxdWVzdCBjYWxsIGZvciB0aGUgbG9jYWwgbm9kZSBhcyB3ZWxsLCB0aHVz
+IHRoZSB2ZXJ5IGZpcnN0DQppb2N0bCgpIHdpbGwgZmFpbCB3aXRoICJObyBzdWNoIGRldmljZSBv
+ciBhZGRyZXNzIi4gU2hvdWxkIHRoZXJlIGJlIGENCmNoZWNrIGZvciB0aGlzIGJlaW5nIHRoZSBs
+b2NhbCBub2RlIGFuZCBqdXN0IGRpc2NhcmQgaXQgYmVmb3JlIG1ha2luZw0KdGhlIGNoZWNrIG9y
+IGlzIG1ha2luZyB0aGUgY2hlY2sgYWxsIHRoZSB0aW1lIHRoZW4gZGlzY2FyZGluZyBva2F5Pw0K
+DQoNCg0K
