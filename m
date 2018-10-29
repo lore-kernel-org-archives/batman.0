@@ -1,18 +1,14 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Mon, 29 Oct 2018 17:25:19 +0000
-Message-ID: <a6b00b8957e483dbb895204d33f554ac35a826ee.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 29 Oct 2018 18:34:54 +0100
+Message-ID: <19262377.tOAJaTasav@sven-edge>
+In-Reply-To: <a6b00b8957e483dbb895204d33f554ac35a826ee.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
- <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
  <17712655.F8A4oun0WA@sven-edge>
-In-Reply-To: <17712655.F8A4oun0WA@sven-edge>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <B9C29228A1B2AD468AABC1EABA88EF39@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <a6b00b8957e483dbb895204d33f554ac35a826ee.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart9012674.yz94QG3eO6";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,32 +19,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sven@narfation.org" <sven@narfation.org>
+To: Jonathan Haws <jhaws@sdl.usu.edu>
 Cc: "guohuizou2000@sina.com" <guohuizou2000@sina.com>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-T24gTW9uLCAyMDE4LTEwLTI5IGF0IDE3OjQ4ICswMTAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
-Cj4gT24gTW9udGFnLCAyOS4gT2t0b2JlciAyMDE4IDE3OjA3OjI2IENFVCBKb25hdGhhbiBIYXdz
-IHdyb3RlOg0KPiBbLi4uXQ0KPiA+IE9uZSB0aGluZyB0byBub3RlIChhbmQgU3ZlbiwgbWF5YmUg
-eW91IGNhbiB0ZWxsIG1lIGlmIHRoaXMgaXMNCj4gPiBleHBlY3RlZCk6IGluIG15IHRlc3Rpbmcg
-SSBmb3VuZCB0aGF0IGFsZnJlZCBpcyBnZXR0aW5nIGludG8gdGhpcw0KPiA+IGlwdjRfYXJwX3Jl
-cXVlc3QgY2FsbCBmb3IgdGhlIGxvY2FsIG5vZGUgYXMgd2VsbCwgdGh1cyB0aGUgdmVyeQ0KPiA+
-IGZpcnN0DQo+ID4gaW9jdGwoKSB3aWxsIGZhaWwgd2l0aCAiTm8gc3VjaCBkZXZpY2Ugb3IgYWRk
-cmVzcyIuIFNob3VsZCB0aGVyZSBiZQ0KPiA+IGENCj4gPiBjaGVjayBmb3IgdGhpcyBiZWluZyB0
-aGUgbG9jYWwgbm9kZSBhbmQganVzdCBkaXNjYXJkIGl0IGJlZm9yZQ0KPiA+IG1ha2luZw0KPiA+
-IHRoZSBjaGVjayBvciBpcyBtYWtpbmcgdGhlIGNoZWNrIGFsbCB0aGUgdGltZSB0aGVuIGRpc2Nh
-cmRpbmcgb2theT8NCj4gDQo+IFVobSwgdGhpcyBzb3VuZHMgZXh0cmVtZWx5IHdyb25nIHRvIG1l
-LiBXaHkgd291bGQgeW91IHJlY2VpdmUgeW91cg0KPiBvd24gVURQIA0KPiBwYWNrZXRzIChwdXNo
-X2RhdGEsIGFubm91bmNlX21hc3Rlciwgc3RhdHVzX3R4ZW5kKSBhZ2FpbiBpbiB0aGUgZmlyc3QN
-Cj4gcGxhY2U/IA0KPiBTZWUgbmV0c29ja19vd25fYWRkcmVzcyBmb3IgdGhlIGNvZGUgd2hpY2gg
-ZHJvcHMgc3VjaCBwYWNrZXRzIGluIHRoZQ0KPiBtYWluIHJlY3YgDQo+IGZ1bmN0aW9uIC0geW91
-IHNob3VsZCBrbm93IGl0IGJlY2F1c2UgeW91J3ZlIHRyaWVkIHRvIG1vZGlmeSBpdCBmb3INCj4g
-SVB2NCANCj4gc3VwcG9ydC4NCg0KSSBuZWVkIHRvIGRvdWJsZSBjaGVjayAtIEkgaGFkIHRob3Vn
-aHQgSSBleHBsaWNpdGx5IGRpc2FibGVkDQpJUF9NVUxUSUNBU1RfTE9PUCwgYnV0IGlmIG5vdCBJ
-IG5lZWQgdG8uIFRoaXMgd291bGQgYmUgbXkgZmlyc3QgZ3Vlc3MNCmF0IHdoeSB3ZSdkIGJlIHNl
-ZWluZyBvdXIgb3duIFVEUCBwYWNrZXRzLg0KDQo+IEJ1dCB5b3VyIG1lbW9yeSBpbml0aWFsaXph
-dGlvbiBpcyBjb21wbGV0ZWx5IGJyb2tlbiBhbmQgaGF2ZSB0byBiZQ0KPiBmaXhlZC4gDQo+IFJp
-Z2h0IG5vdywgeW91IGFyZSBqdXN0IGNvbXBhcmluZyB1bmluaXRpYWxpemVkIG1lbW9yeSByZWdp
-b25zDQo+IGFnYWluc3QgZWFjaCANCj4gb3RoZXIuDQoNCkl0IGxvb2tzIGxpa2UgeW91IGZpeGVk
-IHRoZSBtZW1vcnkgaW5pdGlhbGl6YXRpb24gaXNzdWUgaW4geW91ciBsYXRlc3QNCmNvbW1pdCAo
-cmVjdi5jLCB6ZXJvaW5nIHRoZSBhbGZyZWRfc291cmNlIHZhcmlhYmxlKT8gSSdsbCBwdWxsIHRo
-aXMgYW5kDQpzZWUgaG93IGl0IGFmZmVjdHMgdGhlIGJlaGF2aW9yLg0K
+--nextPart9012674.yz94QG3eO6
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Montag, 29. Oktober 2018 18:25:19 CET Jonathan Haws wrote:
+[...]
+> > But your memory initialization is completely broken and have to be
+> > fixed. 
+> > Right now, you are just comparing uninitialized memory regions
+> > against each 
+> > other.
+> 
+> It looks like you fixed the memory initialization issue in your latest
+> commit (recv.c, zeroing the alfred_source variable)? I'll pull this and
+> see how it affects the behavior.
+
+There is no commit yet and it is still queued in patchwork [1]. I am still 
+waiting for a reply with Tested-by: ... line from you.
+
+Kind regards,
+	Sven
+
+[1] https://patchwork.open-mesh.org/patch/17596/
+--nextPart9012674.yz94QG3eO6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvXRL4ACgkQXYcKB8Em
+e0YxGQ/+MKc0K6jYxqEh4wIVfwDO6BL8FM6ZMc7cyXReYuq0uwup9d9YM0wTM3UI
+HIhQYfL5g42jxR4SRYjWPwh9tiDq1U3jn1QKJOUJTpH+qNqW3I8c4URIVhljowbT
+hicwzK+CulEfNFSy6rwos+xf1FExEOdfuvstL94V3HJHE5nvexWvL1ZvRZJbMPar
+KraUIKjMEIUX/UkgiELZ/v91/Bj58fc+ODs2ScObC3kOsDfQj5troTSd+N/KKT+s
+SC1n6POQ/5GFnsyUSPVd7w4PxofgQaaypVmssc5ZeYJMGKk0lRx8KMmUZau+Q4HU
+m7LveWpcmYZwHHEc3cjq9wigrMCs2x55nW5eC1xTF+oKHJaWhLICTsIzbzehqAzz
+jVSLr1cVG1ebBvIQQKDHPP54qAO+OA4h/JhSc3V2CwGKtmXEPl3yhE7VP/gbQ4du
+KKUunNWRd2fBGuYpvzUQL/g2T14gsQp+l/LLNeEdZHjIVeA7uk8utyiLGDcHaXAw
+xBrBfDVqT1SDKOAxFZS555T2hcI0WlV1I+8fNzmuHoujwRCY1PAvTkkx0YKtH0Ks
+Ys7VwznJ2UpxxpHasofxxUChOZs5umybbDKVvCL9JUQjpnNL1ObtD1ZfhzFtB73R
+33qQh73RRui1rOxSoU5I8H2pyToEUYcj7CFZ6841B+NN60KzjUE=
+=BXVN
+-----END PGP SIGNATURE-----
+
+--nextPart9012674.yz94QG3eO6--
+
+
+
