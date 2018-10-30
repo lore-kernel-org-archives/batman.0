@@ -1,19 +1,12 @@
-Return-Path: <guohuizou2000@sina.com>
-From: "gary" <guohuizou2000@sina.com>
-References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>	
- <19500073.zgPyDjR2lk@bentobox>	
- <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>	
- <1897809.X9xPm7IOO6@bentobox> <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
- <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
-In-Reply-To: <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
-Date: Tue, 30 Oct 2018 13:24:23 +0800
-Message-ID: <001901d47010$d20e57d0$762b0770$@sina.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 30 Oct 2018 12:17:10 +0100
+Message-Id: <20181030111710.26217-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Language: zh-cn
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Use explicit tvlv padding
+ for ELP packets
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,58 +16,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Jonathan Haws' <jhaws@sdl.usu.edu>, sven@narfation.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+The announcement messages of batman-adv COMPAT_VERSION 15 have the
+possibility to announce additional information via a dynamic TVLV part.
+This part is optional for the ELP packets and currently not parsed by the
+Linux implementation. Still out-of-tree versions are using it to transport
+things like neighbor hashes to optimize the rebroadcast behavior.
 
-In my test setup, both BBN1/2 and MP1/2 are in one subnet.=20
+Since the ELP broadcast packets are smaller than the minimal ethernet
+packet, it often has to be padded. This is often done (as specified in
+RFC894) with octets of zero and thus work perfectly fine with the TVLV
+part (making it a zero length and thus empty). But not all ethernet
+compatible hardware seems to follow this advice. To avoid ambiguous
+situations when parsing the TVLV header, just force the 4 bytes (TVLV
+length + padding) after the required ELP header to zero.
 
-ipv4_arp_request ret =3D -1  interface =3D0x120020070 sipaddr =3D =
-0x50505f7   (the first try, sipaddr is right)
-ipv4_arp_request ret =3D 0  interface =3D0x120020070 sipaddr =3D =
-0x50505f7    (the second try with latest patch)
+Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_v_elp.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-the cause should be there is no arp entry for the source ip address at =
-the first try.
-
-
------Original Message-----
-From: Jonathan Haws <jhaws@sdl.usu.edu>=20
-Sent: 2018=E5=B9=B410=E6=9C=8830=E6=97=A5 0:07
-To: guohuizou2000@sina.com; sven@narfation.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
-
-> The patch does NOT work for me.
->=20
-> I review the code again and find the issue. The following code may=20
-> make my testbed work.
-
-Gary - can you describe to me some more details of your test setup?=20
-How are BBN1 and BBN2 configured? Are they machines with two different =
-Ethernet interfaces (i.e. each having one connected to the downstream =
-node and one connected to the switch)? Are they more or less acting as =
-routers (i.e. doing IP forwarding)?
-
-The testing I have been doing is just connecting MP1 and MP2 to the same =
-switch and having them on the same subnet. Is that not the case in your =
-setup?
-
-The other thing I am interested in is what is the result of the first
-ioctl() call? I'm guessing it has to be failing, or else the patch would =
-have worked for you. Can you add a print statement before the return =
-that would give the error string as well as the interface and IP (i.e. =
-interface->interface and addr->ipv4.s_addr)? That would be helpful in =
-helping me find the root issue.
-
-One thing to note (and Sven, maybe you can tell me if this is
-expected): in my testing I found that alfred is getting into this =
-ipv4_arp_request call for the local node as well, thus the very first
-ioctl() will fail with "No such device or address". Should there be a =
-check for this being the local node and just discard it before making =
-the check or is making the check all the time then discarding okay?
-
-
-
-
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 9f481cfd..e8090f09 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -352,19 +352,21 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+  */
+ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ {
++	static const size_t tvlv_padding = sizeof(__be32);
+ 	struct batadv_elp_packet *elp_packet;
+ 	unsigned char *elp_buff;
+ 	u32 random_seqno;
+ 	size_t size;
+ 	int res = -ENOMEM;
+ 
+-	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
++	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN + tvlv_padding;
+ 	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
+ 	if (!hard_iface->bat_v.elp_skb)
+ 		goto out;
+ 
+ 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
+-	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
++	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb,
++				BATADV_ELP_HLEN + tvlv_padding);
+ 	elp_packet = (struct batadv_elp_packet *)elp_buff;
+ 
+ 	elp_packet->packet_type = BATADV_ELP;
+-- 
+2.19.1
 
