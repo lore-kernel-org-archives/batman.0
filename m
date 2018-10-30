@@ -1,12 +1,21 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 12:17:10 +0100
-Message-Id: <20181030111710.26217-1-sven@narfation.org>
-MIME-Version: 1.0
+Return-Path: <jhaws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Tue, 30 Oct 2018 14:20:56 +0000
+Message-ID: <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
+References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
+ <19500073.zgPyDjR2lk@bentobox>
+ <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
+ <1897809.X9xPm7IOO6@bentobox> <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
+ <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
+ <001901d47010$d20e57d0$762b0770$@sina.com>
+In-Reply-To: <001901d47010$d20e57d0$762b0770$@sina.com>
+Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
+Content-Language: en-US
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Use explicit tvlv padding
- for ELP packets
+Content-ID: <128CC443FF039B4DB74F30D15E41D28D@sdl.usu.edu>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,57 +25,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "guohuizou2000@sina.com" <guohuizou2000@sina.com>
 
-The announcement messages of batman-adv COMPAT_VERSION 15 have the
-possibility to announce additional information via a dynamic TVLV part.
-This part is optional for the ELP packets and currently not parsed by the
-Linux implementation. Still out-of-tree versions are using it to transport
-things like neighbor hashes to optimize the rebroadcast behavior.
-
-Since the ELP broadcast packets are smaller than the minimal ethernet
-packet, it often has to be padded. This is often done (as specified in
-RFC894) with octets of zero and thus work perfectly fine with the TVLV
-part (making it a zero length and thus empty). But not all ethernet
-compatible hardware seems to follow this advice. To avoid ambiguous
-situations when parsing the TVLV header, just force the 4 bytes (TVLV
-length + padding) after the required ELP header to zero.
-
-Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
-Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bat_v_elp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 9f481cfd..e8090f09 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -352,19 +352,21 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
-  */
- int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- {
-+	static const size_t tvlv_padding = sizeof(__be32);
- 	struct batadv_elp_packet *elp_packet;
- 	unsigned char *elp_buff;
- 	u32 random_seqno;
- 	size_t size;
- 	int res = -ENOMEM;
- 
--	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
-+	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN + tvlv_padding;
- 	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
- 	if (!hard_iface->bat_v.elp_skb)
- 		goto out;
- 
- 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
--	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-+	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb,
-+				BATADV_ELP_HLEN + tvlv_padding);
- 	elp_packet = (struct batadv_elp_packet *)elp_buff;
- 
- 	elp_packet->packet_type = BATADV_ELP;
--- 
-2.19.1
-
+T24gVHVlLCAyMDE4LTEwLTMwIGF0IDEzOjI0ICswODAwLCBnYXJ5IHdyb3RlOg0KPiBJbiBteSB0
+ZXN0IHNldHVwLCBib3RoIEJCTjEvMiBhbmQgTVAxLzIgYXJlIGluIG9uZSBzdWJuZXQuIA0KPiAN
+Cj4gaXB2NF9hcnBfcmVxdWVzdCByZXQgPSAtMSAgaW50ZXJmYWNlID0weDEyMDAyMDA3MCBzaXBh
+ZGRyID0NCj4gMHg1MDUwNWY3ICAgKHRoZSBmaXJzdCB0cnksIHNpcGFkZHIgaXMgcmlnaHQpDQo+
+IGlwdjRfYXJwX3JlcXVlc3QgcmV0ID0gMCAgaW50ZXJmYWNlID0weDEyMDAyMDA3MCBzaXBhZGRy
+ID0NCj4gMHg1MDUwNWY3ICAgICh0aGUgc2Vjb25kIHRyeSB3aXRoIGxhdGVzdCBwYXRjaCkNCj4g
+DQo+IHRoZSBjYXVzZSBzaG91bGQgYmUgdGhlcmUgaXMgbm8gYXJwIGVudHJ5IGZvciB0aGUgc291
+cmNlIGlwIGFkZHJlc3MNCj4gYXQgdGhlIGZpcnN0IHRyeS4NCg0KUmlnaHQgLSB0aGF0IGlzIHdo
+YXQgSSBmb3VuZCBhcyB3ZWxsIGFzIEkgd2FzIGRvaW5nIG1vcmUgdGVzdGluZy4gTXkNCnByZXZp
+b3VzIHRlc3RpbmcgaGFkIGFuIGVudHJ5IHRoYXQgd2FzIHNpbXBseSBiZWluZyBtYXJrZWQgYXMN
+CmluY29tcGxldGUgaW5zdGVhZCBvZiBiZWluZyBmdWxseSBmbHVzaGVkLiANCg0KVGhlIGxhdGVz
+dCBwYXRjaCByZXNvbHZlcyB0aGF0IG92ZXJzaWdodC4gRnJvbSB0aGUgcmVzdWx0cyB5b3Ugc2Vu
+dCBpdA0KYXBwZWFycyB0aGF0IHRoZSBsYXRlc3QgcGF0Y2ggaXMgd29ya2luZyBmb3IgeW91LiBJ
+ZiBzbywgY2FuIHlvdSB1cGRhdGUNCnRoZSBwYXRjaCB3aXRoIGEgVGVzdGVkIEJ5OiBuYW1lIDxl
+bWFpbD4gbGluZSBpbiBwYXRjaHdvcmsgKA0KaHR0cHM6Ly9wYXRjaHdvcmsub3Blbi1tZXNoLm9y
+Zy9wYXRjaC8xNzU5Ny8pPw0KDQpUaGFua3MhDQpKb24NCg==
