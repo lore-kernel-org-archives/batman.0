@@ -1,20 +1,14 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Tue, 30 Oct 2018 14:20:56 +0000
-Message-ID: <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 30 Oct 2018 15:27:06 +0100
+Message-ID: <1765107.oBNBABI5Dg@sven-edge>
+In-Reply-To: <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
 References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <19500073.zgPyDjR2lk@bentobox>
- <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>
- <1897809.X9xPm7IOO6@bentobox> <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
- <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
  <001901d47010$d20e57d0$762b0770$@sina.com>
-In-Reply-To: <001901d47010$d20e57d0$762b0770$@sina.com>
-Reply-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <128CC443FF039B4DB74F30D15E41D28D@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4847680.Qmb9oaJMDL";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -25,21 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "guohuizou2000@sina.com" <guohuizou2000@sina.com>
+To: Jonathan Haws <jhaws@sdl.usu.edu>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "guohuizou2000@sina.com" <guohuizou2000@sina.com>
 
-T24gVHVlLCAyMDE4LTEwLTMwIGF0IDEzOjI0ICswODAwLCBnYXJ5IHdyb3RlOg0KPiBJbiBteSB0
-ZXN0IHNldHVwLCBib3RoIEJCTjEvMiBhbmQgTVAxLzIgYXJlIGluIG9uZSBzdWJuZXQuIA0KPiAN
-Cj4gaXB2NF9hcnBfcmVxdWVzdCByZXQgPSAtMSAgaW50ZXJmYWNlID0weDEyMDAyMDA3MCBzaXBh
-ZGRyID0NCj4gMHg1MDUwNWY3ICAgKHRoZSBmaXJzdCB0cnksIHNpcGFkZHIgaXMgcmlnaHQpDQo+
-IGlwdjRfYXJwX3JlcXVlc3QgcmV0ID0gMCAgaW50ZXJmYWNlID0weDEyMDAyMDA3MCBzaXBhZGRy
-ID0NCj4gMHg1MDUwNWY3ICAgICh0aGUgc2Vjb25kIHRyeSB3aXRoIGxhdGVzdCBwYXRjaCkNCj4g
-DQo+IHRoZSBjYXVzZSBzaG91bGQgYmUgdGhlcmUgaXMgbm8gYXJwIGVudHJ5IGZvciB0aGUgc291
-cmNlIGlwIGFkZHJlc3MNCj4gYXQgdGhlIGZpcnN0IHRyeS4NCg0KUmlnaHQgLSB0aGF0IGlzIHdo
-YXQgSSBmb3VuZCBhcyB3ZWxsIGFzIEkgd2FzIGRvaW5nIG1vcmUgdGVzdGluZy4gTXkNCnByZXZp
-b3VzIHRlc3RpbmcgaGFkIGFuIGVudHJ5IHRoYXQgd2FzIHNpbXBseSBiZWluZyBtYXJrZWQgYXMN
-CmluY29tcGxldGUgaW5zdGVhZCBvZiBiZWluZyBmdWxseSBmbHVzaGVkLiANCg0KVGhlIGxhdGVz
-dCBwYXRjaCByZXNvbHZlcyB0aGF0IG92ZXJzaWdodC4gRnJvbSB0aGUgcmVzdWx0cyB5b3Ugc2Vu
-dCBpdA0KYXBwZWFycyB0aGF0IHRoZSBsYXRlc3QgcGF0Y2ggaXMgd29ya2luZyBmb3IgeW91LiBJ
-ZiBzbywgY2FuIHlvdSB1cGRhdGUNCnRoZSBwYXRjaCB3aXRoIGEgVGVzdGVkIEJ5OiBuYW1lIDxl
-bWFpbD4gbGluZSBpbiBwYXRjaHdvcmsgKA0KaHR0cHM6Ly9wYXRjaHdvcmsub3Blbi1tZXNoLm9y
-Zy9wYXRjaC8xNzU5Ny8pPw0KDQpUaGFua3MhDQpKb24NCg==
+--nextPart4847680.Qmb9oaJMDL
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 30. Oktober 2018 15:20:56 CET Jonathan Haws wrote:
+[...]
+> The latest patch resolves that oversight. From the results you sent it
+> appears that the latest patch is working for you. If so, can you update
+> the patch with a Tested By: name <email> line in patchwork (
+> https://patchwork.open-mesh.org/patch/17597/)?
+
+No, the line must be "Tested-by: $Full $Name <$email@$address.$something>" 
+something else is not detected by Patchwork. The last "Tested By: $Full $Name 
+<$email@$address.$something>" from you for example wasn't detected and I had 
+to manually add it to the commit message.
+
+Kind regards,
+	Sven
+
+
+--nextPart4847680.Qmb9oaJMDL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvYajoACgkQXYcKB8Em
+e0ah7RAArWgKw7nhditx+11ibvSg/DjFNBVw8w5lqU2OkJpETP0mYeipAmKqR4Vk
+U6r+61IBe2XjMWaUawQbDJPJyZVQyj2jWI76eR2r1sXp5sRmknMfpJBKNxL6ro7B
+QiPWYOe30/tCC3kRhAl0KoggjQ5pah3AX7RiL/biASv0B183pN3D0nznIqmw9J8V
+1jv6ZnSqYrukoQrfJdK7eTdp4RBnlFWc3TXL52DH033iJpI87txwerzAvWmPsIC6
+3RyEsVKISb4tklaGCDZ3Ha983zyNvFrtVZrFtxci0EzR8Au5sggzG9W5LM2jyWNO
+VbDyAWZF2ohkf6YEUKYGJWvoJNYeGYp9L6t+N1jSuIk55ztwAhg8Ax03nx5/gJJ4
+ZCxXle61VQRIidUgL96A/iK8IxV9g0st2kGAf0zS5+WTZSIaXLPY8EBYN/6+7ZaO
+3g9qK1KgXFLxzKDSFP77khHji5jyEwMku+H7PCXAF3c4Tocauy4rPBJJVbXf/sa4
+M0HUfdQaRHGPQa1ZdfKlVXoWAepx+gYNm+4QigJwKKJFlFpvs8OlzMMGQGv5bfe1
+0TkTjwYYABsy8YJwY11vNofKXhaFVx33SM4tIUpNlHgxJ05ssFi9xVgSW28i+uFB
+5CIllaGAivFXqOYG5HPT6v9a9q4vAC1tzPlRY9T+MHthvLUMb1U=
+=lG13
+-----END PGP SIGNATURE-----
+
+--nextPart4847680.Qmb9oaJMDL--
+
+
+
