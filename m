@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 22:01:24 +0100
-Message-Id: <20181030210130.18152-4-sven@narfation.org>
+Date: Tue, 30 Oct 2018 22:01:25 +0100
+Message-Id: <20181030210130.18152-5-sven@narfation.org>
 In-Reply-To: <20181030210130.18152-1-sven@narfation.org>
 References: <20181030210130.18152-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: Add inconsistent hardif
- netlink dump detection
+Subject: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Store modification counter
+ via hash helpers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,167 +19,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The netlink dump functionality transfers a large number of entries from the
-kernel to userspace. It is rather likely that the transfer has to
-interrupted and later continued. During that time, it can happen that
-either new entries are added or removed. The userspace could than either
-receive some entries multiple times or miss entries.
-
-Commit 670dc2833d14 ("netlink: advertise incomplete dumps") introduced a
-mechanism to inform userspace about this problem. Userspace can then decide
-whether it is necessary or not to retry dumping the information again.
-
-The netlink dump functions have to be switched to exclusive locks to avoid
-changes while the current message is prepared. And an external generation
-sequence counter is introduced which tracks all modifications of the list.
+Multiple datastructures use the hash helper functions to add and remove
+entries from the simple hlist based hashes. These are often also dumped to
+userspace via netlink and thus should have a generation sequence counter.
 
 Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c |  3 +++
- net/batman-adv/main.c           |  1 +
- net/batman-adv/main.h           |  1 +
- net/batman-adv/netlink.c        | 24 ++++++++++++++----------
- 4 files changed, 19 insertions(+), 10 deletions(-)
+ net/batman-adv/hash.c | 2 ++
+ net/batman-adv/hash.h | 6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 781c5b6e..508f4416 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -951,6 +951,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	batadv_check_known_mac_addr(hard_iface->net_dev);
- 	kref_get(&hard_iface->refcount);
- 	list_add_tail_rcu(&hard_iface->list, &batadv_hardif_list);
-+	batadv_hardif_generation++;
- 
- 	return hard_iface;
- 
-@@ -993,6 +994,7 @@ void batadv_hardif_remove_interfaces(void)
- 	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
- 				 &batadv_hardif_list, list) {
- 		list_del_rcu(&hard_iface->list);
-+		batadv_hardif_generation++;
- 		batadv_hardif_remove_interface(hard_iface);
+diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
+index 7b49e400..9194f4d8 100644
+--- a/net/batman-adv/hash.c
++++ b/net/batman-adv/hash.c
+@@ -32,6 +32,8 @@ static void batadv_hash_init(struct batadv_hashtable *hash)
+ 		INIT_HLIST_HEAD(&hash->table[i]);
+ 		spin_lock_init(&hash->list_locks[i]);
  	}
- 	rtnl_unlock();
-@@ -1054,6 +1056,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
- 	case NETDEV_UNREGISTER:
- 	case NETDEV_PRE_TYPE_CHANGE:
- 		list_del_rcu(&hard_iface->list);
-+		batadv_hardif_generation++;
- 
- 		batadv_hardif_remove_interface(hard_iface);
- 		break;
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index c75e4782..d1ed839f 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -74,6 +74,7 @@
-  * list traversals just rcu-locked
-  */
- struct list_head batadv_hardif_list;
-+unsigned int batadv_hardif_generation;
- static int (*batadv_rx_handler[256])(struct sk_buff *skb,
- 				     struct batadv_hard_iface *recv_if);
- 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 2002b70e..745dc669 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -247,6 +247,7 @@ static inline int batadv_print_vid(unsigned short vid)
++
++	atomic_set(&hash->generation, 0);
  }
  
- extern struct list_head batadv_hardif_list;
-+extern unsigned int batadv_hardif_generation;
+ /**
+diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
+index 9490a7ca..0e36fa1c 100644
+--- a/net/batman-adv/hash.h
++++ b/net/batman-adv/hash.h
+@@ -21,6 +21,7 @@
  
- extern unsigned char batadv_broadcast_addr[];
- extern struct workqueue_struct *batadv_event_workqueue;
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 0d9459b6..2dc3304c 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -29,11 +29,11 @@
- #include <linux/if_ether.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-+#include <linux/list.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/printk.h>
--#include <linux/rculist.h>
--#include <linux/rcupdate.h>
-+#include <linux/rtnetlink.h>
- #include <linux/skbuff.h>
- #include <linux/stddef.h>
- #include <linux/types.h>
-@@ -445,23 +445,27 @@ batadv_netlink_tp_meter_cancel(struct sk_buff *skb, struct genl_info *info)
-  * batadv_netlink_dump_hardif_entry() - Dump one hard interface into a message
-  * @msg: Netlink message to dump into
-  * @portid: Port making netlink request
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @hard_iface: Hard interface to dump
-  *
-  * Return: error code, or 0 on success
-  */
- static int
--batadv_netlink_dump_hardif_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_netlink_dump_hardif_entry(struct sk_buff *msg, u32 portid,
-+				 struct netlink_callback *cb,
- 				 struct batadv_hard_iface *hard_iface)
- {
- 	struct net_device *net_dev = hard_iface->net_dev;
- 	void *hdr;
+ #include "main.h"
  
--	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
-+	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
-+			  &batadv_netlink_family, NLM_F_MULTI,
- 			  BATADV_CMD_GET_HARDIFS);
- 	if (!hdr)
- 		return -EMSGSIZE;
++#include <linux/atomic.h>
+ #include <linux/compiler.h>
+ #include <linux/list.h>
+ #include <linux/rculist.h>
+@@ -58,6 +59,9 @@ struct batadv_hashtable {
  
-+	genl_dump_check_consistent(cb, hdr);
+ 	/** @size: size of hashtable */
+ 	u32 size;
 +
- 	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			net_dev->ifindex) ||
- 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-@@ -498,7 +502,6 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
- 	struct batadv_hard_iface *hard_iface;
- 	int ifindex;
- 	int portid = NETLINK_CB(cb->skb).portid;
--	int seq = cb->nlh->nlmsg_seq;
- 	int skip = cb->args[0];
- 	int i = 0;
++	/** @generation: current (generation) sequence number */
++	atomic_t generation;
+ };
  
-@@ -516,23 +519,24 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
- 		return -ENODEV;
+ /* allocates and clears the hash */
+@@ -112,6 +116,7 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
+ 
+ 	/* no duplicate found in list, add new element */
+ 	hlist_add_head_rcu(data_node, head);
++	atomic_inc(&hash->generation);
+ 
+ 	ret = 0;
+ 
+@@ -154,6 +159,7 @@ static inline void *batadv_hash_remove(struct batadv_hashtable *hash,
+ 
+ 		data_save = node;
+ 		hlist_del_rcu(node);
++		atomic_inc(&hash->generation);
+ 		break;
  	}
- 
--	rcu_read_lock();
-+	rtnl_lock();
-+	cb->seq = batadv_hardif_generation << 1 | 1;
- 
--	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
- 
- 		if (i++ < skip)
- 			continue;
- 
--		if (batadv_netlink_dump_hardif_entry(msg, portid, seq,
-+		if (batadv_netlink_dump_hardif_entry(msg, portid, cb,
- 						     hard_iface)) {
- 			i--;
- 			break;
- 		}
- 	}
- 
--	rcu_read_unlock();
-+	rtnl_unlock();
- 
- 	dev_put(soft_iface);
- 
+ 	spin_unlock_bh(&hash->list_locks[index]);
 -- 
 2.19.1
 
