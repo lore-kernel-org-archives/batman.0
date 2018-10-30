@@ -1,15 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 15:27:06 +0100
-Message-ID: <1765107.oBNBABI5Dg@sven-edge>
-In-Reply-To: <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
-References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>
- <001901d47010$d20e57d0$762b0770$@sina.com>
- <167f3ed693cf1bd489d4fe652bfca655d2597a57.camel@sdl.usu.edu>
+Date: Tue, 30 Oct 2018 22:01:21 +0100
+Message-Id: <20181030210130.18152-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4847680.Qmb9oaJMDL";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/9] batman-adv: Add inconsistent nl dump
+ detection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,52 +15,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jonathan Haws <jhaws@sdl.usu.edu>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "guohuizou2000@sina.com" <guohuizou2000@sina.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4847680.Qmb9oaJMDL
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The netlink dump functionality transfers a large number of entries from the
+kernel to userspace. It is rather likely that the transfer has to
+interrupted and later continued. During that time, it can happen that
+either new entries are added or removed. The userspace could than either
+receive some entries multiple times or miss entries.
 
-On Dienstag, 30. Oktober 2018 15:20:56 CET Jonathan Haws wrote:
-[...]
-> The latest patch resolves that oversight. From the results you sent it
-> appears that the latest patch is working for you. If so, can you update
-> the patch with a Tested By: name <email> line in patchwork (
-> https://patchwork.open-mesh.org/patch/17597/)?
+Commit 670dc2833d14 ("netlink: advertise incomplete dumps") introduced a
+mechanism to inform userspace about this problem. Userspace can then decide
+whether it is necessary or not to retry dumping the information again.
 
-No, the line must be "Tested-by: $Full $Name <$email@$address.$something>" 
-something else is not detected by Patchwork. The last "Tested By: $Full $Name 
-<$email@$address.$something>" from you for example wasn't detected and I had 
-to manually add it to the commit message.
+The netlink dump functions have to be switched to exclusive locks to avoid
+changes while the current message is prepared. And an external generation
+sequence counter is introduced which tracks all modifications of the
+list/hash.
+
+There some netlink dump commands which were not yet modified. These
+datastructures use subentries (or entries for multiple main object)
+which makes mapping to a generation sequence counter more problematic:
+
+* originator
+* neighbor list (multiple interfaces make it harder)
+* global translation table
+
+Also the batadv_algo stuff was ignored because it doesn't even have locks
+and is not supposed to be modified at runtime.
 
 Kind regards,
 	Sven
 
+Sven Eckelmann (9):
+  batman-adv: Add compat for genl_dump_check_consistent
+  batman-adv: Add inconsistent gateway netlink dump detection
+  batman-adv: Add inconsistent hardif netlink dump detection
+  batman-adv: Store modification counter via hash helpers
+  batman-adv: Add inconsistent backbone netlink dump detection
+  batman-adv: Add inconsistent claim netlink dump detection
+  batman-adv: Add inconsistent dat netlink dump detection
+  batman-adv: Add inconsistent local TT netlink dump detection
+  batman-adv: Add inconsistent multicast netlink dump detection
 
---nextPart4847680.Qmb9oaJMDL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ compat-include/net/genetlink.h         | 45 ++++++++++++++
+ net/batman-adv/bat_iv_ogm.c            | 24 +++++---
+ net/batman-adv/bat_v.c                 | 26 +++++---
+ net/batman-adv/bridge_loop_avoidance.c | 82 +++++++++++++++-----------
+ net/batman-adv/distributed-arp-table.c | 42 +++++++------
+ net/batman-adv/gateway_client.c        |  3 +
+ net/batman-adv/hard-interface.c        |  3 +
+ net/batman-adv/hash.c                  |  2 +
+ net/batman-adv/hash.h                  |  6 ++
+ net/batman-adv/main.c                  |  3 +
+ net/batman-adv/main.h                  |  1 +
+ net/batman-adv/multicast.c             | 51 ++++++++--------
+ net/batman-adv/netlink.c               | 24 ++++----
+ net/batman-adv/translation-table.c     | 41 +++++++------
+ net/batman-adv/types.h                 |  5 +-
+ 15 files changed, 233 insertions(+), 125 deletions(-)
+ create mode 100644 compat-include/net/genetlink.h
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvYajoACgkQXYcKB8Em
-e0ah7RAArWgKw7nhditx+11ibvSg/DjFNBVw8w5lqU2OkJpETP0mYeipAmKqR4Vk
-U6r+61IBe2XjMWaUawQbDJPJyZVQyj2jWI76eR2r1sXp5sRmknMfpJBKNxL6ro7B
-QiPWYOe30/tCC3kRhAl0KoggjQ5pah3AX7RiL/biASv0B183pN3D0nznIqmw9J8V
-1jv6ZnSqYrukoQrfJdK7eTdp4RBnlFWc3TXL52DH033iJpI87txwerzAvWmPsIC6
-3RyEsVKISb4tklaGCDZ3Ha983zyNvFrtVZrFtxci0EzR8Au5sggzG9W5LM2jyWNO
-VbDyAWZF2ohkf6YEUKYGJWvoJNYeGYp9L6t+N1jSuIk55ztwAhg8Ax03nx5/gJJ4
-ZCxXle61VQRIidUgL96A/iK8IxV9g0st2kGAf0zS5+WTZSIaXLPY8EBYN/6+7ZaO
-3g9qK1KgXFLxzKDSFP77khHji5jyEwMku+H7PCXAF3c4Tocauy4rPBJJVbXf/sa4
-M0HUfdQaRHGPQa1ZdfKlVXoWAepx+gYNm+4QigJwKKJFlFpvs8OlzMMGQGv5bfe1
-0TkTjwYYABsy8YJwY11vNofKXhaFVx33SM4tIUpNlHgxJ05ssFi9xVgSW28i+uFB
-5CIllaGAivFXqOYG5HPT6v9a9q4vAC1tzPlRY9T+MHthvLUMb1U=
-=lG13
------END PGP SIGNATURE-----
-
---nextPart4847680.Qmb9oaJMDL--
-
-
+-- 
+2.19.1
 
