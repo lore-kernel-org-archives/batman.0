@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 22:01:26 +0100
-Message-Id: <20181030210130.18152-6-sven@narfation.org>
+Date: Tue, 30 Oct 2018 22:01:27 +0100
+Message-Id: <20181030210130.18152-7-sven@narfation.org>
 In-Reply-To: <20181030210130.18152-1-sven@narfation.org>
 References: <20181030210130.18152-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 5/9] batman-adv: Add inconsistent backbone
+Subject: [B.A.T.M.A.N.] [PATCH 6/9] batman-adv: Add inconsistent claim
  netlink dump detection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -41,36 +41,36 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 file changed, 23 insertions(+), 18 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 5f1aeede..9f374734 100644
+index 9f374734..5fdde294 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -2325,14 +2325,15 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
-  *  netlink socket
+@@ -2094,14 +2094,15 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+  * to a netlink socket
   * @msg: buffer for the message
   * @portid: netlink port
 - * @seq: Sequence number of netlink message
 + * @cb: Control block containing additional options
   * @primary_if: primary interface
-  * @backbone_gw: entry to dump
+  * @claim: entry to dump
   *
   * Return: 0 or error code.
   */
  static int
--batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid,
-+			       struct netlink_callback *cb,
- 			       struct batadv_hard_iface *primary_if,
- 			       struct batadv_bla_backbone_gw *backbone_gw)
+-batadv_bla_claim_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++batadv_bla_claim_dump_entry(struct sk_buff *msg, u32 portid,
++			    struct netlink_callback *cb,
+ 			    struct batadv_hard_iface *primary_if,
+ 			    struct batadv_bla_claim *claim)
  {
-@@ -2343,13 +2344,16 @@ batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+@@ -2111,13 +2112,16 @@ batadv_bla_claim_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
  	void *hdr;
  	int ret = -EINVAL;
  
 -	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI, BATADV_CMD_GET_BLA_BACKBONE);
+-			  NLM_F_MULTI, BATADV_CMD_GET_BLA_CLAIM);
 +	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
 +			  &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_BLA_BACKBONE);
++			  BATADV_CMD_GET_BLA_CLAIM);
  	if (!hdr) {
  		ret = -ENOBUFS;
  		goto out;
@@ -78,11 +78,11 @@ index 5f1aeede..9f374734 100644
  
 +	genl_dump_check_consistent(cb, hdr);
 +
- 	is_own = batadv_compare_eth(backbone_gw->orig, primary_addr);
+ 	is_own = batadv_compare_eth(claim->backbone_gw->orig,
+ 				    primary_addr);
  
- 	spin_lock_bh(&backbone_gw->crc_lock);
-@@ -2386,28 +2390,33 @@ batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-  *  a netlink socket
+@@ -2153,28 +2157,33 @@ batadv_bla_claim_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+  * to a netlink socket
   * @msg: buffer for the message
   * @portid: netlink port
 - * @seq: Sequence number of netlink message
@@ -96,33 +96,33 @@ index 5f1aeede..9f374734 100644
   * Return: always 0.
   */
  static int
--batadv_bla_backbone_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_bla_backbone_dump_bucket(struct sk_buff *msg, u32 portid,
-+				struct netlink_callback *cb,
- 				struct batadv_hard_iface *primary_if,
--				struct hlist_head *head, int *idx_skip)
-+				struct batadv_hashtable *hash,
-+				unsigned int bucket, int *idx_skip)
+-batadv_bla_claim_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++batadv_bla_claim_dump_bucket(struct sk_buff *msg, u32 portid,
++			     struct netlink_callback *cb,
+ 			     struct batadv_hard_iface *primary_if,
+-			     struct hlist_head *head, int *idx_skip)
++			     struct batadv_hashtable *hash, unsigned int bucket,
++			     int *idx_skip)
  {
- 	struct batadv_bla_backbone_gw *backbone_gw;
+ 	struct batadv_bla_claim *claim;
  	int idx = 0;
  	int ret = 0;
  
 -	rcu_read_lock();
--	hlist_for_each_entry_rcu(backbone_gw, head, hash_entry) {
+-	hlist_for_each_entry_rcu(claim, head, hash_entry) {
 +	spin_lock_bh(&hash->list_locks[bucket]);
 +	cb->seq = atomic_read(&hash->generation) << 1 | 1;
 +
-+	hlist_for_each_entry(backbone_gw, &hash->table[bucket], hash_entry) {
++	hlist_for_each_entry(claim, &hash->table[bucket], hash_entry) {
  		if (idx++ < *idx_skip)
  			continue;
  
--		ret = batadv_bla_backbone_dump_entry(msg, portid, seq,
-+		ret = batadv_bla_backbone_dump_entry(msg, portid, cb,
- 						     primary_if, backbone_gw);
+-		ret = batadv_bla_claim_dump_entry(msg, portid, seq,
++		ret = batadv_bla_claim_dump_entry(msg, portid, cb,
+ 						  primary_if, claim);
  		if (ret) {
  			*idx_skip = idx - 1;
-@@ -2417,7 +2426,7 @@ batadv_bla_backbone_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+@@ -2184,7 +2193,7 @@ batadv_bla_claim_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
  
  	*idx_skip = 0;
  unlock:
@@ -131,7 +131,7 @@ index 5f1aeede..9f374734 100644
  	return ret;
  }
  
-@@ -2437,7 +2446,6 @@ int batadv_bla_backbone_dump(struct sk_buff *msg, struct netlink_callback *cb)
+@@ -2204,7 +2213,6 @@ int batadv_bla_claim_dump(struct sk_buff *msg, struct netlink_callback *cb)
  	struct batadv_hashtable *hash;
  	struct batadv_priv *bat_priv;
  	int bucket = cb->args[0];
@@ -139,17 +139,17 @@ index 5f1aeede..9f374734 100644
  	int idx = cb->args[1];
  	int ifindex;
  	int ret = 0;
-@@ -2463,11 +2471,8 @@ int batadv_bla_backbone_dump(struct sk_buff *msg, struct netlink_callback *cb)
+@@ -2230,11 +2238,8 @@ int batadv_bla_claim_dump(struct sk_buff *msg, struct netlink_callback *cb)
  	}
  
  	while (bucket < hash->size) {
 -		head = &hash->table[bucket];
 -
--		if (batadv_bla_backbone_dump_bucket(msg, portid,
--						    cb->nlh->nlmsg_seq,
--						    primary_if, head, &idx))
-+		if (batadv_bla_backbone_dump_bucket(msg, portid, cb, primary_if,
-+						    hash, bucket, &idx))
+-		if (batadv_bla_claim_dump_bucket(msg, portid,
+-						 cb->nlh->nlmsg_seq,
+-						 primary_if, head, &idx))
++		if (batadv_bla_claim_dump_bucket(msg, portid, cb, primary_if,
++						 hash, bucket, &idx))
  			break;
  		bucket++;
  	}
