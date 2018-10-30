@@ -1,11 +1,19 @@
-Return-Path: <jhaws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Mon, 29 Oct 2018 11:57:59 -0600
-Message-ID: <20181029175759.20637-1-jhaws@sdl.usu.edu>
+Return-Path: <guohuizou2000@sina.com>
+From: "gary" <guohuizou2000@sina.com>
+References: <02ef01d466a6$f0c629f0$d2527dd0$@sina.com>	
+ <19500073.zgPyDjR2lk@bentobox>	
+ <100c018ff42541ddb2615fae42bc64f62ced80b4.camel@sdl.usu.edu>	
+ <1897809.X9xPm7IOO6@bentobox> <042f01d46c41$fe24ddd0$fa6e9970$@sina.com>
+ <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
+In-Reply-To: <98bb1f935c1da5ecdb978b7c95e243ec5c81f04a.camel@sdl.usu.edu>
+Date: Tue, 30 Oct 2018 13:24:23 +0800
+Message-ID: <001901d47010$d20e57d0$762b0770$@sina.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH v3] alfred: Request MAC resolution for IPv4
- address not in ARP cache
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Language: zh-cn
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,85 +23,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: guohuizou2000@sina.com, b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+To: 'Jonathan Haws' <jhaws@sdl.usu.edu>, sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-When using IPv4, if the remote server is not yet in the ARP cache, the
-MAC resolution will fail and data appear to not be shared via alfred.
-Add a routine (modified from batctl sources) to request MAC resolution
-by simply sending a datagram to the discard port (UDP/9). This adds the
-remote MAC to the ARP cache, resulting in successful MAC resolution.
 
-Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
----
- util.c | 34 ++++++++++++++++++++++++++++++++--
- 1 file changed, 32 insertions(+), 2 deletions(-)
+In my test setup, both BBN1/2 and MP1/2 are in one subnet.=20
 
-diff --git a/util.c b/util.c
-index dd3f00f..0794792 100644
---- a/util.c
-+++ b/util.c
-@@ -30,6 +30,7 @@
- #include <sys/ioctl.h>
- #include <sys/time.h>
- #include <time.h>
-+#include <unistd.h>
- #include "alfred.h"
- 
- int time_diff(struct timespec *tv1, struct timespec *tv2,
-@@ -80,11 +81,35 @@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
- 	return true;
- }
- 
-+static void ipv4_request_mac_resolve(const alfred_addr *addr)
-+{
-+	const struct sockaddr *sockaddr;
-+	struct sockaddr_in inet4;
-+	size_t sockaddr_len;
-+	int sock;
-+	char t = 0;
-+
-+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock < 0)
-+		return;
-+
-+	memset(&inet4, 0, sizeof(inet4));
-+	inet4.sin_family = AF_INET;
-+	inet4.sin_port = htons(9);
-+	inet4.sin_addr.s_addr = addr->ipv4.s_addr;
-+	sockaddr = (const struct sockaddr *)&inet4;
-+	sockaddr_len = sizeof(inet4);
-+
-+	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
-+	close(sock);
-+}
-+
- int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
- 		     struct ether_addr *mac)
- {
- 	struct arpreq arpreq;
- 	struct sockaddr_in *sin;
-+	int retries = 1;
- 
- 	memset(&arpreq, 0, sizeof(arpreq));
- 	memset(mac, 0, ETH_ALEN);
-@@ -96,8 +121,13 @@ int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
- 	strncpy(arpreq.arp_dev, interface->interface, sizeof(arpreq.arp_dev));
- 	arpreq.arp_dev[sizeof(arpreq.arp_dev) - 1] = '\0';
- 
--	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
--		return -1;
-+	while ((ioctl(interface->netsock, SIOCGARP, &arpreq) < 0) || !(arpreq.arp_flags & ATF_COM)) {
-+		ipv4_request_mac_resolve(addr);
-+		usleep(200000);
-+
-+		if (retries-- == 0)
-+			break;
-+	}
- 
- 	if (arpreq.arp_flags & ATF_COM) {
- 		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
--- 
-2.17.1
+ipv4_arp_request ret =3D -1  interface =3D0x120020070 sipaddr =3D =
+0x50505f7   (the first try, sipaddr is right)
+ipv4_arp_request ret =3D 0  interface =3D0x120020070 sipaddr =3D =
+0x50505f7    (the second try with latest patch)
+
+the cause should be there is no arp entry for the source ip address at =
+the first try.
+
+
+-----Original Message-----
+From: Jonathan Haws <jhaws@sdl.usu.edu>=20
+Sent: 2018=E5=B9=B410=E6=9C=8830=E6=97=A5 0:07
+To: guohuizou2000@sina.com; sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [B.A.T.M.A.N.] alfred and batadv-vis issue
+
+> The patch does NOT work for me.
+>=20
+> I review the code again and find the issue. The following code may=20
+> make my testbed work.
+
+Gary - can you describe to me some more details of your test setup?=20
+How are BBN1 and BBN2 configured? Are they machines with two different =
+Ethernet interfaces (i.e. each having one connected to the downstream =
+node and one connected to the switch)? Are they more or less acting as =
+routers (i.e. doing IP forwarding)?
+
+The testing I have been doing is just connecting MP1 and MP2 to the same =
+switch and having them on the same subnet. Is that not the case in your =
+setup?
+
+The other thing I am interested in is what is the result of the first
+ioctl() call? I'm guessing it has to be failing, or else the patch would =
+have worked for you. Can you add a print statement before the return =
+that would give the error string as well as the interface and IP (i.e. =
+interface->interface and addr->ipv4.s_addr)? That would be helpful in =
+helping me find the root issue.
+
+One thing to note (and Sven, maybe you can tell me if this is
+expected): in my testing I found that alfred is getting into this =
+ipv4_arp_request call for the local node as well, thus the very first
+ioctl() will fail with "No such device or address". Should there be a =
+check for this being the local node and just discard it before making =
+the check or is making the check all the time then discarding okay?
+
+
+
+
 
