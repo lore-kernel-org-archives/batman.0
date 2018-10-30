@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 22:01:29 +0100
-Message-Id: <20181030210130.18152-9-sven@narfation.org>
+Date: Tue, 30 Oct 2018 22:01:30 +0100
+Message-Id: <20181030210130.18152-10-sven@narfation.org>
 In-Reply-To: <20181030210130.18152-1-sven@narfation.org>
 References: <20181030210130.18152-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: Add inconsistent local TT
+Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Add inconsistent multicast
  netlink dump detection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -37,118 +37,141 @@ simple hash.
 Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 41 +++++++++++++++++-------------
- 1 file changed, 23 insertions(+), 18 deletions(-)
+ net/batman-adv/multicast.c | 51 +++++++++++++++++++++-----------------
+ 1 file changed, 28 insertions(+), 23 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index d21624c4..8dcd4968 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1145,14 +1145,15 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
-  * batadv_tt_local_dump_entry() - Dump one TT local entry into a message
-  * @msg :Netlink message to dump into
-  * @portid: Port making netlink request
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 86725d79..69244e45 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -1365,22 +1365,26 @@ int batadv_mcast_mesh_info_put(struct sk_buff *msg,
+  *  to a netlink socket
+  * @msg: buffer for the message
+  * @portid: netlink port
 - * @seq: Sequence number of netlink message
 + * @cb: Control block containing additional options
-  * @bat_priv: The bat priv with all the soft interface information
-  * @common: tt local & tt global common data
+  * @orig_node: originator to dump the multicast flags of
   *
-  * Return: Error code, or 0 on success
+  * Return: 0 or error code.
   */
  static int
--batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid,
-+			   struct netlink_callback *cb,
- 			   struct batadv_priv *bat_priv,
- 			   struct batadv_tt_common_entry *common)
+-batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid,
++			      struct netlink_callback *cb,
+ 			      struct batadv_orig_node *orig_node)
  {
-@@ -1173,12 +1174,14 @@ batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 
- 	batadv_softif_vlan_put(vlan);
+ 	void *hdr;
  
 -	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI,
+-			  NLM_F_MULTI, BATADV_CMD_GET_MCAST_FLAGS);
 +	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
-+			  &batadv_netlink_family,  NLM_F_MULTI,
- 			  BATADV_CMD_GET_TRANSTABLE_LOCAL);
++			  &batadv_netlink_family, NLM_F_MULTI,
++			  BATADV_CMD_GET_MCAST_FLAGS);
  	if (!hdr)
  		return -ENOBUFS;
  
 +	genl_dump_check_consistent(cb, hdr);
 +
- 	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
- 	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
- 	    nla_put_u16(msg, BATADV_ATTR_TT_VID, common->vid) ||
-@@ -1201,34 +1204,39 @@ batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-  * batadv_tt_local_dump_bucket() - Dump one TT local bucket into a message
-  * @msg: Netlink message to dump into
-  * @portid: Port making netlink request
+ 	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
+ 		    orig_node->orig)) {
+ 		genlmsg_cancel(msg, hdr);
+@@ -1405,21 +1409,26 @@ batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+  *  table to a netlink socket
+  * @msg: buffer for the message
+  * @portid: netlink port
 - * @seq: Sequence number of netlink message
+- * @head: bucket to dump
 + * @cb: Control block containing additional options
-  * @bat_priv: The bat priv with all the soft interface information
-- * @head: Pointer to the list containing the local tt entries
 + * @hash: hash to dump
 + * @bucket: bucket index to dump
-  * @idx_s: Number of entries to skip
+  * @idx_skip: How many entries to skip
   *
-  * Return: Error code, or 0 on success
+  * Return: 0 or error code.
   */
  static int
--batadv_tt_local_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_tt_local_dump_bucket(struct sk_buff *msg, u32 portid,
-+			    struct netlink_callback *cb,
- 			    struct batadv_priv *bat_priv,
--			    struct hlist_head *head, int *idx_s)
-+			    struct batadv_hashtable *hash, unsigned int bucket,
-+			    int *idx_s)
+-batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+-			       struct hlist_head *head, long *idx_skip)
++batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid,
++			       struct netlink_callback *cb,
++			       struct batadv_hashtable *hash,
++			       unsigned int bucket, long *idx_skip)
  {
- 	struct batadv_tt_common_entry *common;
- 	int idx = 0;
+ 	struct batadv_orig_node *orig_node;
+ 	long idx = 0;
  
 -	rcu_read_lock();
--	hlist_for_each_entry_rcu(common, head, hash_entry) {
+-	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
 +	spin_lock_bh(&hash->list_locks[bucket]);
 +	cb->seq = atomic_read(&hash->generation) << 1 | 1;
 +
-+	hlist_for_each_entry(common, &hash->table[bucket], hash_entry) {
- 		if (idx++ < *idx_s)
++	hlist_for_each_entry(orig_node, &hash->table[bucket], hash_entry) {
+ 		if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
+ 			      &orig_node->capa_initialized))
  			continue;
+@@ -1427,9 +1436,8 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+ 		if (idx < *idx_skip)
+ 			goto skip;
  
--		if (batadv_tt_local_dump_entry(msg, portid, seq, bat_priv,
-+		if (batadv_tt_local_dump_entry(msg, portid, cb, bat_priv,
- 					       common)) {
+-		if (batadv_mcast_flags_dump_entry(msg, portid, seq,
+-						  orig_node)) {
 -			rcu_read_unlock();
++		if (batadv_mcast_flags_dump_entry(msg, portid, cb, orig_node)) {
 +			spin_unlock_bh(&hash->list_locks[bucket]);
- 			*idx_s = idx - 1;
+ 			*idx_skip = idx;
+ 
  			return -EMSGSIZE;
- 		}
+@@ -1438,7 +1446,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+ skip:
+ 		idx++;
  	}
 -	rcu_read_unlock();
 +	spin_unlock_bh(&hash->list_locks[bucket]);
  
- 	*idx_s = 0;
  	return 0;
-@@ -1248,7 +1256,6 @@ int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_hashtable *hash;
+ }
+@@ -1447,7 +1455,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+  * __batadv_mcast_flags_dump() - dump multicast flags table to a netlink socket
+  * @msg: buffer for the message
+  * @portid: netlink port
+- * @seq: Sequence number of netlink message
++ * @cb: Control block containing additional options
+  * @bat_priv: the bat priv with all the soft interface information
+  * @bucket: current bucket to dump
+  * @idx: index in current bucket to the next entry to dump
+@@ -1455,19 +1463,17 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
+  * Return: 0 or error code.
+  */
+ static int
+-__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid, u32 seq,
++__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid,
++			  struct netlink_callback *cb,
+ 			  struct batadv_priv *bat_priv, long *bucket, long *idx)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+ 	long bucket_tmp = *bucket;
 -	struct hlist_head *head;
- 	int ret;
- 	int ifindex;
- 	int bucket = cb->args[0];
-@@ -1276,10 +1283,8 @@ int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 	hash = bat_priv->tt.local_hash;
+ 	long idx_tmp = *idx;
  
- 	while (bucket < hash->size) {
--		head = &hash->table[bucket];
+ 	while (bucket_tmp < hash->size) {
+-		head = &hash->table[bucket_tmp];
 -
--		if (batadv_tt_local_dump_bucket(msg, portid, cb->nlh->nlmsg_seq,
--						bat_priv, head, &idx))
-+		if (batadv_tt_local_dump_bucket(msg, portid, cb, bat_priv,
-+						hash, bucket, &idx))
+-		if (batadv_mcast_flags_dump_bucket(msg, portid, seq, head,
+-						   &idx_tmp))
++		if (batadv_mcast_flags_dump_bucket(msg, portid, cb, hash,
++						   *bucket, &idx_tmp))
  			break;
  
- 		bucket++;
+ 		bucket_tmp++;
+@@ -1550,8 +1556,7 @@ int batadv_mcast_flags_dump(struct sk_buff *msg, struct netlink_callback *cb)
+ 		return ret;
+ 
+ 	bat_priv = netdev_priv(primary_if->soft_iface);
+-	ret = __batadv_mcast_flags_dump(msg, portid, cb->nlh->nlmsg_seq,
+-					bat_priv, bucket, idx);
++	ret = __batadv_mcast_flags_dump(msg, portid, cb, bat_priv, bucket, idx);
+ 
+ 	batadv_hardif_put(primary_if);
+ 	return ret;
 -- 
 2.19.1
 
