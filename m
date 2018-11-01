@@ -1,13 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 30 Oct 2018 22:01:30 +0100
-Message-Id: <20181030210130.18152-10-sven@narfation.org>
-In-Reply-To: <20181030210130.18152-1-sven@narfation.org>
-References: <20181030210130.18152-1-sven@narfation.org>
+Return-Path: <guohuizou2000@sina.com>
+From: "gary" <guohuizou2000@sina.com>
+References: <20181029175759.20637-1-jhaws@sdl.usu.edu>
+In-Reply-To: <20181029175759.20637-1-jhaws@sdl.usu.edu>
+Date: Thu, 1 Nov 2018 09:30:53 +0800
+Message-ID: <004001d47182$88620780$99261680$@sina.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Add inconsistent multicast
- netlink dump detection
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+Content-Language: zh-cn
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] alfred: Request MAC resolution for
+ IPv4 address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,161 +20,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: 'Jonathan Haws' <jhaws@sdl.usu.edu>, b.a.t.m.a.n@lists.open-mesh.org
 
-The netlink dump functionality transfers a large number of entries from the
-kernel to userspace. It is rather likely that the transfer has to
-interrupted and later continued. During that time, it can happen that
-either new entries are added or removed. The userspace could than either
-receive some entries multiple times or miss entries.
 
-Commit 670dc2833d14 ("netlink: advertise incomplete dumps") introduced a
-mechanism to inform userspace about this problem. Userspace can then decide
-whether it is necessary or not to retry dumping the information again.
+Tested-by: Gary Zou <guohuizou2000@sina.com>
 
-The netlink dump functions have to be switched to exclusive locks to avoid
-changes while the current message is prepared. The already existing
-generation sequence counter from the hash helper can be used for this
-simple hash.
+-----Original Message-----
+From: Jonathan Haws <jhaws@sdl.usu.edu>=20
+Sent: 2018=C4=EA10=D4=C230=C8=D5 1:58
+To: guohuizou2000@sina.com; b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+Subject: [B.A.T.M.A.N.][PATCH v3] alfred: Request MAC resolution for =
+IPv4
+address not in ARP cache
 
-Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+When using IPv4, if the remote server is not yet in the ARP cache, the =
+MAC
+resolution will fail and data appear to not be shared via alfred.
+Add a routine (modified from batctl sources) to request MAC resolution =
+by
+simply sending a datagram to the discard port (UDP/9). This adds the =
+remote
+MAC to the ARP cache, resulting in successful MAC resolution.
+
+Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
+Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
 ---
- net/batman-adv/multicast.c | 51 +++++++++++++++++++++-----------------
- 1 file changed, 28 insertions(+), 23 deletions(-)
+ util.c | 34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 86725d79..69244e45 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -1365,22 +1365,26 @@ int batadv_mcast_mesh_info_put(struct sk_buff *msg,
-  *  to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @orig_node: originator to dump the multicast flags of
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid,
-+			      struct netlink_callback *cb,
- 			      struct batadv_orig_node *orig_node)
- {
- 	void *hdr;
- 
--	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI, BATADV_CMD_GET_MCAST_FLAGS);
-+	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
-+			  &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_MCAST_FLAGS);
- 	if (!hdr)
- 		return -ENOBUFS;
- 
-+	genl_dump_check_consistent(cb, hdr);
-+
- 	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
- 		    orig_node->orig)) {
- 		genlmsg_cancel(msg, hdr);
-@@ -1405,21 +1409,26 @@ batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-  *  table to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-- * @head: bucket to dump
-+ * @cb: Control block containing additional options
-+ * @hash: hash to dump
-+ * @bucket: bucket index to dump
-  * @idx_skip: How many entries to skip
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
--			       struct hlist_head *head, long *idx_skip)
-+batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid,
-+			       struct netlink_callback *cb,
-+			       struct batadv_hashtable *hash,
-+			       unsigned int bucket, long *idx_skip)
- {
- 	struct batadv_orig_node *orig_node;
- 	long idx = 0;
- 
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+	spin_lock_bh(&hash->list_locks[bucket]);
-+	cb->seq = atomic_read(&hash->generation) << 1 | 1;
-+
-+	hlist_for_each_entry(orig_node, &hash->table[bucket], hash_entry) {
- 		if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
- 			      &orig_node->capa_initialized))
- 			continue;
-@@ -1427,9 +1436,8 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
- 		if (idx < *idx_skip)
- 			goto skip;
- 
--		if (batadv_mcast_flags_dump_entry(msg, portid, seq,
--						  orig_node)) {
--			rcu_read_unlock();
-+		if (batadv_mcast_flags_dump_entry(msg, portid, cb, orig_node)) {
-+			spin_unlock_bh(&hash->list_locks[bucket]);
- 			*idx_skip = idx;
- 
- 			return -EMSGSIZE;
-@@ -1438,7 +1446,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
- skip:
- 		idx++;
- 	}
--	rcu_read_unlock();
-+	spin_unlock_bh(&hash->list_locks[bucket]);
- 
- 	return 0;
+diff --git a/util.c b/util.c
+index dd3f00f..0794792 100644
+--- a/util.c
++++ b/util.c
+@@ -30,6 +30,7 @@
+ #include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <time.h>
++#include <unistd.h>
+ #include "alfred.h"
+=20
+ int time_diff(struct timespec *tv1, struct timespec *tv2, @@ -80,11 =
++81,35
+@@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
+ 	return true;
  }
-@@ -1447,7 +1455,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-  * __batadv_mcast_flags_dump() - dump multicast flags table to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @bat_priv: the bat priv with all the soft interface information
-  * @bucket: current bucket to dump
-  * @idx: index in current bucket to the next entry to dump
-@@ -1455,19 +1463,17 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-  * Return: 0 or error code.
-  */
- static int
--__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid, u32 seq,
-+__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid,
-+			  struct netlink_callback *cb,
- 			  struct batadv_priv *bat_priv, long *bucket, long *idx)
+=20
++static void ipv4_request_mac_resolve(const alfred_addr *addr) {
++	const struct sockaddr *sockaddr;
++	struct sockaddr_in inet4;
++	size_t sockaddr_len;
++	int sock;
++	char t =3D 0;
++
++	sock =3D socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
++	if (sock < 0)
++		return;
++
++	memset(&inet4, 0, sizeof(inet4));
++	inet4.sin_family =3D AF_INET;
++	inet4.sin_port =3D htons(9);
++	inet4.sin_addr.s_addr =3D addr->ipv4.s_addr;
++	sockaddr =3D (const struct sockaddr *)&inet4;
++	sockaddr_len =3D sizeof(inet4);
++
++	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
++	close(sock);
++}
++
+ int ipv4_arp_request(struct interface *interface, const alfred_addr =
+*addr,
+ 		     struct ether_addr *mac)
  {
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	long bucket_tmp = *bucket;
--	struct hlist_head *head;
- 	long idx_tmp = *idx;
- 
- 	while (bucket_tmp < hash->size) {
--		head = &hash->table[bucket_tmp];
--
--		if (batadv_mcast_flags_dump_bucket(msg, portid, seq, head,
--						   &idx_tmp))
-+		if (batadv_mcast_flags_dump_bucket(msg, portid, cb, hash,
-+						   *bucket, &idx_tmp))
- 			break;
- 
- 		bucket_tmp++;
-@@ -1550,8 +1556,7 @@ int batadv_mcast_flags_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 		return ret;
- 
- 	bat_priv = netdev_priv(primary_if->soft_iface);
--	ret = __batadv_mcast_flags_dump(msg, portid, cb->nlh->nlmsg_seq,
--					bat_priv, bucket, idx);
-+	ret = __batadv_mcast_flags_dump(msg, portid, cb, bat_priv, bucket, idx);
- 
- 	batadv_hardif_put(primary_if);
- 	return ret;
--- 
-2.19.1
+ 	struct arpreq arpreq;
+ 	struct sockaddr_in *sin;
++	int retries =3D 1;
+=20
+ 	memset(&arpreq, 0, sizeof(arpreq));
+ 	memset(mac, 0, ETH_ALEN);
+@@ -96,8 +121,13 @@ int ipv4_arp_request(struct interface *interface, =
+const
+alfred_addr *addr,
+ 	strncpy(arpreq.arp_dev, interface->interface,
+sizeof(arpreq.arp_dev));
+ 	arpreq.arp_dev[sizeof(arpreq.arp_dev) - 1] =3D '\0';
+=20
+-	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
+-		return -1;
++	while ((ioctl(interface->netsock, SIOCGARP, &arpreq) < 0) ||
+!(arpreq.arp_flags & ATF_COM)) {
++		ipv4_request_mac_resolve(addr);
++		usleep(200000);
++
++		if (retries-- =3D=3D 0)
++			break;
++	}
+=20
+ 	if (arpreq.arp_flags & ATF_COM) {
+ 		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
+--
+2.17.1
+
+
+
 
