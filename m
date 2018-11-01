@@ -1,14 +1,12 @@
-Return-Path: <guohuizou2000@sina.com>
-From: "gary" <guohuizou2000@sina.com>
-References: <20181029175759.20637-1-jhaws@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 01 Nov 2018 07:15:13 +0100
+Message-ID: <2322988.VfWoRf7gTx@sven-edge>
 In-Reply-To: <20181029175759.20637-1-jhaws@sdl.usu.edu>
-Date: Thu, 1 Nov 2018 09:30:53 +0800
-Message-ID: <004001d47182$88620780$99261680$@sina.com>
+References: <20181029175759.20637-1-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-Content-Language: zh-cn
+Content-Type: multipart/signed; boundary="nextPart1646792.X6EIWSn92c";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v3] alfred: Request MAC resolution for
  IPv4 address not in ARP cache
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,108 +18,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Jonathan Haws' <jhaws@sdl.usu.edu>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>, guohuizou2000@sina.com
+
+--nextPart1646792.X6EIWSn92c
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Montag, 29. Oktober 2018 18:57:59 CET Jonathan Haws wrote:
+> When using IPv4, if the remote server is not yet in the ARP cache, the
+> MAC resolution will fail and data appear to not be shared via alfred.
+> Add a routine (modified from batctl sources) to request MAC resolution
+> by simply sending a datagram to the discard port (UDP/9). This adds the
+> remote MAC to the ARP cache, resulting in successful MAC resolution.
+> 
+> Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
+> Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
+> ---
+>  util.c | 34 ++++++++++++++++++++++++++++++++--
+>  1 file changed, 32 insertions(+), 2 deletions(-)
 
 
-Tested-by: Gary Zou <guohuizou2000@sina.com>
+Applied as 5610d5bf8f44 [1]
 
------Original Message-----
-From: Jonathan Haws <jhaws@sdl.usu.edu>=20
-Sent: 2018=C4=EA10=D4=C230=C8=D5 1:58
-To: guohuizou2000@sina.com; b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
-Subject: [B.A.T.M.A.N.][PATCH v3] alfred: Request MAC resolution for =
-IPv4
-address not in ARP cache
+Thanks,
+	Sven
 
+[1] https://git.open-mesh.org/alfred.git/commit/5610d5bf8f4447b4d689aede638b4e92ae343340
+--nextPart1646792.X6EIWSn92c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-When using IPv4, if the remote server is not yet in the ARP cache, the =
-MAC
-resolution will fail and data appear to not be shared via alfred.
-Add a routine (modified from batctl sources) to request MAC resolution =
-by
-simply sending a datagram to the discard port (UDP/9). This adds the =
-remote
-MAC to the ARP cache, resulting in successful MAC resolution.
+-----BEGIN PGP SIGNATURE-----
 
-Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
----
- util.c | 34 ++++++++++++++++++++++++++++++++--
- 1 file changed, 32 insertions(+), 2 deletions(-)
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlvamfEACgkQXYcKB8Em
+e0ZhpQ//THes/gEeLAe8mRWKly0D+vkU8j97oArzzVc0nBdsha05dvaXL0u4Q+OG
+3U6bCQYY2PxZoSdxplcStLMC00kUMIbGdZw8Fmiz+6x568wkOOi4O62Gt6WquRl4
+eJ65cjEn9DTomkrS4B1Jl3msS4p04VZdmgWoy8EWKG+AUNMMfwHTiRcGPOMLMFX+
+5MMm+/YskOr09vZr5uQEAhdWxoftSOlIWrN/VC26T48RzHg9+HC5mDjhf8m11OJL
+DgS1U1zNmDF1BWcqU7iu8ZZpOxB7H4OeawlVd13brOiPUSyDdLOcUTtFTyr3LGIP
+UncIpy0VgiHnHTwEk6wc9bQRp27jPT8SIa2YCo8ZyBvOxIp2q8QuFhF8p8gKVeuh
+SM5Qxi14dbpN3zrscy/VH5tVxyqNm63x+AxyPKTv2+Y/TfYhVU0HPoKVoNLoJfKu
+csZUVN83RMHUVoj6X8kN/DCXoN9mrBlOREsTrKwnlch0FYWHS09oNPH9ZI0y8niz
+KoUh5QToBZpQXKx7yNayNwtbHIakpY1jHOBaD+3+fj7eB6ZpAjoKG9uLCRuPq1la
+6JOyWC3SRfzfdRfMQ8r5c8ERmmi+/Mqy6X+4QIhB3VdvuMcPrcPRcMNpy4wT6Y+v
++UBuTO+2b2td0dyrM48ErcoQFub7cnVjBVbC16Dd/7ClkrOp+Xs=
+=653F
+-----END PGP SIGNATURE-----
 
-diff --git a/util.c b/util.c
-index dd3f00f..0794792 100644
---- a/util.c
-+++ b/util.c
-@@ -30,6 +30,7 @@
- #include <sys/ioctl.h>
- #include <sys/time.h>
- #include <time.h>
-+#include <unistd.h>
- #include "alfred.h"
-=20
- int time_diff(struct timespec *tv1, struct timespec *tv2, @@ -80,11 =
-+81,35
-@@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
- 	return true;
- }
-=20
-+static void ipv4_request_mac_resolve(const alfred_addr *addr) {
-+	const struct sockaddr *sockaddr;
-+	struct sockaddr_in inet4;
-+	size_t sockaddr_len;
-+	int sock;
-+	char t =3D 0;
-+
-+	sock =3D socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock < 0)
-+		return;
-+
-+	memset(&inet4, 0, sizeof(inet4));
-+	inet4.sin_family =3D AF_INET;
-+	inet4.sin_port =3D htons(9);
-+	inet4.sin_addr.s_addr =3D addr->ipv4.s_addr;
-+	sockaddr =3D (const struct sockaddr *)&inet4;
-+	sockaddr_len =3D sizeof(inet4);
-+
-+	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
-+	close(sock);
-+}
-+
- int ipv4_arp_request(struct interface *interface, const alfred_addr =
-*addr,
- 		     struct ether_addr *mac)
- {
- 	struct arpreq arpreq;
- 	struct sockaddr_in *sin;
-+	int retries =3D 1;
-=20
- 	memset(&arpreq, 0, sizeof(arpreq));
- 	memset(mac, 0, ETH_ALEN);
-@@ -96,8 +121,13 @@ int ipv4_arp_request(struct interface *interface, =
-const
-alfred_addr *addr,
- 	strncpy(arpreq.arp_dev, interface->interface,
-sizeof(arpreq.arp_dev));
- 	arpreq.arp_dev[sizeof(arpreq.arp_dev) - 1] =3D '\0';
-=20
--	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
--		return -1;
-+	while ((ioctl(interface->netsock, SIOCGARP, &arpreq) < 0) ||
-!(arpreq.arp_flags & ATF_COM)) {
-+		ipv4_request_mac_resolve(addr);
-+		usleep(200000);
-+
-+		if (retries-- =3D=3D 0)
-+			break;
-+	}
-=20
- 	if (arpreq.arp_flags & ATF_COM) {
- 		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
---
-2.17.1
-
+--nextPart1646792.X6EIWSn92c--
 
 
 
