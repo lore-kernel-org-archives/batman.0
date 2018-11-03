@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 03 Nov 2018 13:40:44 +0100
-Message-ID: <1619865.vljUF8tqkC@sven-desktop>
-In-Reply-To: <20181030111710.26217-1-sven@narfation.org>
-References: <20181030111710.26217-1-sven@narfation.org>
+Date: Sat, 03 Nov 2018 13:51:20 +0100
+Message-ID: <1939071.oNHTCgFBiP@sven-desktop>
+In-Reply-To: <20181025162245.19389-1-sven@narfation.org>
+References: <20181025162245.19389-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Use explicit tvlv
- padding for ELP packets
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 00/42] batctl: pre-netlink
+ restructuring, part 1
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,35 +20,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Dienstag, 30. Oktober 2018 12:17:10 CET Sven Eckelmann wrote:
-> The announcement messages of batman-adv COMPAT_VERSION 15 have the
-> possibility to announce additional information via a dynamic TVLV part.
-> This part is optional for the ELP packets and currently not parsed by the
-> Linux implementation. Still out-of-tree versions are using it to transport
-> things like neighbor hashes to optimize the rebroadcast behavior.
->=20
-> Since the ELP broadcast packets are smaller than the minimal ethernet
-> packet, it often has to be padded. This is often done (as specified in
-> RFC894) with octets of zero and thus work perfectly fine with the TVLV
-> part (making it a zero length and thus empty). But not all ethernet
-> compatible hardware seems to follow this advice. To avoid ambiguous
-> situations when parsing the TVLV header, just force the 4 bytes (TVLV
-> length + padding) after the required ELP header to zero.
->=20
-> Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
-> Reported-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_v_elp.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+On Donnerstag, 25. Oktober 2018 18:22:03 CET Sven Eckelmann wrote:
+> the batctl command already has support to get (previously debugfs) tables
+> via netlink. It does this while still being able to fall back to the old
+> debugfs tables on kernels which don't support the new generic netlink
+> family.
+> 
+> Something similar should be done in the future for the settings which
+> are currently part of sysfs. But we can already see that the current
+> integration of netlink in batctl only done in a single file - netlink.c
+> But this file is already starting to be so big that working with it
+> is rather cumbersome.
+> 
+> So as first steps:
+> 
+> * restructure command registration
+> * move commands in separate files (which should store their actual implementation)
+> * add a new helper command to receive multicast group messages from the kernel
 
-Added as 974337ee9773 [1]
+Added as 0a201c2..2f5dbd0 [1]
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/974337ee9773c4bd0a2d5c3=
-22306cf2bea445e11
+[1] https://git.open-mesh.org/batctl.git/log/2f5dbd056b8be344b5492835b0924f6cf463ba4d
 
 
 
