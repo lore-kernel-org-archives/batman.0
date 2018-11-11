@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed,  7 Nov 2018 23:31:54 +0100
-Message-Id: <20181107223154.7843-1-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <ben@decadent.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Expand merged fragment
- buffer for full packet
+MIME-Version: 1.0
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Sun, 11 Nov 2018 19:49:05 +0000
+Message-ID: <lsq.1541965745.539889814@decadent.org.uk>
+In-Reply-To: <lsq.1541965744.387173642@decadent.org.uk>
+Subject: [B.A.T.M.A.N.] [PATCH 3.16 142/366] cfg80211: initialize sinfo in
+ cfg80211_get_station
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,48 +18,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: akpm@linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Marcel Schmidt <ff.z-casparistrasse@mailbox.org>, Johannes Berg <johannes@sipsolutions.net>, Thomas Lauer <holminateur@gmail.com>
 
-The complete size ("total_size") of the fragmented packet is stored in the
-fragment header and in the size of the fragment chain. When the fragments
-are ready for merge, the skbuff's tail of the first fragment is expanded to
-have enough room after the data pointer for at least total_size. This means
-that it gets expanded by total_size - first_skb->len.
+3.16.61-rc1 review patch.  If anyone has any objections, please let me know.
 
-But this is ignoring the fact that after expanding the buffer, the fragment
-header is pulled by from this buffer. Assuming that the tailroom of the
-buffer was already 0, the buffer after the data pointer of the skbuff is
-now only total_size - len(fragment_header) large. When the merge function
-is then processing the remaining fragments, the code to copy the data over
-to the merged skbuff will cause an skb_over_panic when it tries to actually
-put enough data to fill the total_size bytes of the packet.
+------------------
 
-The size of the skb_pull must therefore also be taken into account when the
-buffer's tailroom is expanded.
+From: Sven Eckelmann <sven@narfation.org>
 
-Fixes: 9b3eab61754d ("batman-adv: Receive fragmented packets and merge")
-Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
-Co-authored-by: Linus Lüssing <linus.luessing@c0d3.blue>
+commit 3c12d0486856b9eb89c2a9ac336713cba90813e3 upstream.
+
+Most of the implementations behind cfg80211_get_station will not initialize
+sinfo to zero before manipulating it. For example, the member "filled",
+which indicates the filled in parts of this struct, is often only modified
+by enabling certain bits in the bitfield while keeping the remaining bits
+in their original state. A caller without a preinitialized sinfo.filled can
+then no longer decide which parts of sinfo were filled in by
+cfg80211_get_station (or actually the underlying implementations).
+
+cfg80211_get_station must therefore take care that sinfo is initialized to
+zero. Otherwise, the caller may tries to read information which was not
+filled in and which must therefore also be considered uninitialized. In
+batadv_v_elp_get_throughput's case, an invalid "random" expected throughput
+may be stored for this neighbor and thus the B.A.T.M.A.N V algorithm may
+switch to non-optimal neighbors for certain destinations.
+
+Fixes: 7406353d43c8 ("cfg80211: implement cfg80211_get_station cfg80211 API")
+Reported-by: Thomas Lauer <holminateur@gmail.com>
+Reported-by: Marcel Schmidt <ff.z-casparistrasse@mailbox.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
-Cc: Martin Weinelt <martin@darmstadt.freifunk.net>
----
- net/batman-adv/fragmentation.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/wireless/util.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 0fddc171..5b71a289 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -275,7 +275,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 	kfree(entry);
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -1566,6 +1566,8 @@ int cfg80211_get_station(struct net_devi
+ 	if (!rdev->ops->get_station)
+ 		return -EOPNOTSUPP;
  
- 	packet = (struct batadv_frag_packet *)skb_out->data;
--	size = ntohs(packet->total_size);
-+	size = ntohs(packet->total_size) + hdr_size;
- 
- 	/* Make room for the rest of the fragments. */
- 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
--- 
-2.19.1
++	memset(sinfo, 0, sizeof(*sinfo));
++
+ 	return rdev_get_station(rdev, dev, mac_addr, sinfo);
+ }
+ EXPORT_SYMBOL(cfg80211_get_station);
 
