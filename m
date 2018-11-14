@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Nov 2018 15:07:52 +0100
-Message-Id: <20181114140804.18381-5-sw@simonwunderlich.de>
+Date: Wed, 14 Nov 2018 15:07:57 +0100
+Message-Id: <20181114140804.18381-10-sw@simonwunderlich.de>
 In-Reply-To: <20181114140804.18381-1-sw@simonwunderlich.de>
 References: <20181114140804.18381-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: Improve includes for trace
- functionality
+Subject: [B.A.T.M.A.N.] [PATCH 09/16] batman-adv: Store modification counter
+ via hash helpers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,48 +20,69 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The batadv_dbg trace event uses different functionality and datastructures
-which are not directly associated with the trace infrastructure. It should
-not be expected that the trace headers indirectly provide them and instead
-include the required headers directly.
+Multiple datastructures use the hash helper functions to add and remove
+entries from the simple hlist based hashes. These are often also dumped to
+userspace via netlink and thus should have a generation sequence counter.
 
+Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/trace.c | 2 --
- net/batman-adv/trace.h | 6 ++++++
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ net/batman-adv/hash.c | 2 ++
+ net/batman-adv/hash.h | 6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/net/batman-adv/trace.c b/net/batman-adv/trace.c
-index 3d57f9981f25..8e1024217cff 100644
---- a/net/batman-adv/trace.c
-+++ b/net/batman-adv/trace.c
-@@ -16,7 +16,5 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
+diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
+index 7b49e4001778..9194f4d891b1 100644
+--- a/net/batman-adv/hash.c
++++ b/net/batman-adv/hash.c
+@@ -32,6 +32,8 @@ static void batadv_hash_init(struct batadv_hashtable *hash)
+ 		INIT_HLIST_HEAD(&hash->table[i]);
+ 		spin_lock_init(&hash->list_locks[i]);
+ 	}
++
++	atomic_set(&hash->generation, 0);
+ }
  
--#include <linux/module.h>
--
- #define CREATE_TRACE_POINTS
- #include "trace.h"
-diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-index 3acda26a30ca..104784be94d7 100644
---- a/net/batman-adv/trace.h
-+++ b/net/batman-adv/trace.h
-@@ -21,7 +21,13 @@
+ /**
+diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
+index 9490a7ca2ba6..0e36fa1c7c3e 100644
+--- a/net/batman-adv/hash.h
++++ b/net/batman-adv/hash.h
+@@ -21,6 +21,7 @@
  
  #include "main.h"
  
-+#include <linux/bug.h>
-+#include <linux/kernel.h>
-+#include <linux/netdevice.h>
-+#include <linux/percpu.h>
-+#include <linux/printk.h>
- #include <linux/tracepoint.h>
-+#include <linux/types.h>
++#include <linux/atomic.h>
+ #include <linux/compiler.h>
+ #include <linux/list.h>
+ #include <linux/rculist.h>
+@@ -58,6 +59,9 @@ struct batadv_hashtable {
  
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM batadv
+ 	/** @size: size of hashtable */
+ 	u32 size;
++
++	/** @generation: current (generation) sequence number */
++	atomic_t generation;
+ };
+ 
+ /* allocates and clears the hash */
+@@ -112,6 +116,7 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
+ 
+ 	/* no duplicate found in list, add new element */
+ 	hlist_add_head_rcu(data_node, head);
++	atomic_inc(&hash->generation);
+ 
+ 	ret = 0;
+ 
+@@ -154,6 +159,7 @@ static inline void *batadv_hash_remove(struct batadv_hashtable *hash,
+ 
+ 		data_save = node;
+ 		hlist_del_rcu(node);
++		atomic_inc(&hash->generation);
+ 		break;
+ 	}
+ 	spin_unlock_bh(&hash->list_locks[index]);
 -- 
 2.11.0
 
