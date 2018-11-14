@@ -1,11 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Nov 2018 15:08:03 +0100
-Message-Id: <20181114140804.18381-16-sw@simonwunderlich.de>
+Date: Wed, 14 Nov 2018 15:08:04 +0100
+Message-Id: <20181114140804.18381-17-sw@simonwunderlich.de>
 In-Reply-To: <20181114140804.18381-1-sw@simonwunderlich.de>
 References: <20181114140804.18381-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 15/16] batman-adv: Move CRC16 dependency to
- BATMAN_ADV_BLA
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: enable MCAST by default at
+ compile time
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,42 +19,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The commit ced72933a5e8 ("batman-adv: use CRC32C instead of CRC16 in TT
-code") switched the translation table code from crc16 to crc32c. The
-(optional) bridge loop avoidance code is the only user of this function.
+Thanks to rigorous testing in wireless community mesh networks several
+issues with multicast entries in the translation table were found and
+fixed in the last 1.5 years. Now we see the first larger networks
+(a few hundred nodes) with a batman-adv version with multicast
+optimizations enabled arising, with no TT / multicast optimization
+related issues so far.
 
-batman-adv should only select CRC16 when it is actually using it.
+Therefore it seems safe to enable multicast optimizations by default.
 
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index 082e96060bc2..d6b94559f888 100644
+index d6b94559f888..c386e6981416 100644
 --- a/net/batman-adv/Kconfig
 +++ b/net/batman-adv/Kconfig
-@@ -22,7 +22,6 @@
- config BATMAN_ADV
- 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
- 	depends on NET
--	select CRC16
- 	select LIBCRC32C
+@@ -82,6 +82,7 @@ config BATMAN_ADV_NC
+ config BATMAN_ADV_MCAST
+ 	bool "Multicast optimisation"
+ 	depends on BATMAN_ADV && INET && !(BRIDGE=m && BATMAN_ADV=y)
++	default y
  	help
-           B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
-@@ -48,6 +47,7 @@ config BATMAN_ADV_BATMAN_V
- config BATMAN_ADV_BLA
- 	bool "Bridge Loop Avoidance"
- 	depends on BATMAN_ADV && INET
-+	select CRC16
- 	default y
- 	help
- 	  This option enables BLA (Bridge Loop Avoidance), a mechanism
+ 	  This option enables the multicast optimisation which aims to
+ 	  reduce the air overhead while improving the reliability of
 -- 
 2.11.0
 
