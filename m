@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Nov 2018 15:07:55 +0100
-Message-Id: <20181114140804.18381-8-sw@simonwunderlich.de>
+Date: Wed, 14 Nov 2018 15:07:56 +0100
+Message-Id: <20181114140804.18381-9-sw@simonwunderlich.de>
 In-Reply-To: <20181114140804.18381-1-sw@simonwunderlich.de>
 References: <20181114140804.18381-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: Add inconsistent gateway
+Subject: [B.A.T.M.A.N.] [PATCH 08/16] batman-adv: Add inconsistent hardif
  netlink dump detection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -38,227 +38,150 @@ Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c     | 24 +++++++++++++++---------
- net/batman-adv/bat_v.c          | 26 +++++++++++++++++---------
- net/batman-adv/gateway_client.c |  3 +++
- net/batman-adv/main.c           |  2 ++
- net/batman-adv/types.h          |  5 ++++-
- 5 files changed, 41 insertions(+), 19 deletions(-)
+ net/batman-adv/hard-interface.c |  3 +++
+ net/batman-adv/main.c           |  1 +
+ net/batman-adv/main.h           |  1 +
+ net/batman-adv/netlink.c        | 24 ++++++++++++++----------
+ 4 files changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 1d31ac84dec7..f97e566f0402 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -2584,13 +2584,14 @@ static void batadv_iv_gw_print(struct batadv_priv *bat_priv,
-  * batadv_iv_gw_dump_entry() - Dump a gateway into a message
-  * @msg: Netlink message to dump into
-  * @portid: Port making netlink request
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @bat_priv: The bat priv with all the soft interface information
-  * @gw_node: Gateway to be dumped
-  *
-  * Return: Error code, or 0 on success
-  */
--static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid,
-+				   struct netlink_callback *cb,
- 				   struct batadv_priv *bat_priv,
- 				   struct batadv_gw_node *gw_node)
- {
-@@ -2610,13 +2611,16 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 781c5b6e6e8e..508f4416dfc9 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -951,6 +951,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	batadv_check_known_mac_addr(hard_iface->net_dev);
+ 	kref_get(&hard_iface->refcount);
+ 	list_add_tail_rcu(&hard_iface->list, &batadv_hardif_list);
++	batadv_hardif_generation++;
  
- 	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+ 	return hard_iface;
  
--	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI, BATADV_CMD_GET_GATEWAYS);
-+	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
-+			  &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_GATEWAYS);
- 	if (!hdr) {
- 		ret = -ENOBUFS;
- 		goto out;
+@@ -993,6 +994,7 @@ void batadv_hardif_remove_interfaces(void)
+ 	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
+ 				 &batadv_hardif_list, list) {
+ 		list_del_rcu(&hard_iface->list);
++		batadv_hardif_generation++;
+ 		batadv_hardif_remove_interface(hard_iface);
  	}
+ 	rtnl_unlock();
+@@ -1054,6 +1056,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	case NETDEV_UNREGISTER:
+ 	case NETDEV_PRE_TYPE_CHANGE:
+ 		list_del_rcu(&hard_iface->list);
++		batadv_hardif_generation++;
  
-+	genl_dump_check_consistent(cb, hdr);
-+
- 	ret = -EMSGSIZE;
+ 		batadv_hardif_remove_interface(hard_iface);
+ 		break;
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index c75e47826949..d1ed839fd32b 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -74,6 +74,7 @@
+  * list traversals just rcu-locked
+  */
+ struct list_head batadv_hardif_list;
++unsigned int batadv_hardif_generation;
+ static int (*batadv_rx_handler[256])(struct sk_buff *skb,
+ 				     struct batadv_hard_iface *recv_if);
  
- 	if (curr_gw == gw_node)
-@@ -2667,13 +2671,15 @@ static void batadv_iv_gw_dump(struct sk_buff *msg, struct netlink_callback *cb,
- 	int idx_skip = cb->args[0];
- 	int idx = 0;
- 
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.gateway_list, list) {
-+	spin_lock_bh(&bat_priv->gw.list_lock);
-+	cb->seq = bat_priv->gw.generation << 1 | 1;
-+
-+	hlist_for_each_entry(gw_node, &bat_priv->gw.gateway_list, list) {
- 		if (idx++ < idx_skip)
- 			continue;
- 
--		if (batadv_iv_gw_dump_entry(msg, portid, cb->nlh->nlmsg_seq,
--					    bat_priv, gw_node)) {
-+		if (batadv_iv_gw_dump_entry(msg, portid, cb, bat_priv,
-+					    gw_node)) {
- 			idx_skip = idx - 1;
- 			goto unlock;
- 		}
-@@ -2681,7 +2687,7 @@ static void batadv_iv_gw_dump(struct sk_buff *msg, struct netlink_callback *cb,
- 
- 	idx_skip = idx;
- unlock:
--	rcu_read_unlock();
-+	spin_unlock_bh(&bat_priv->gw.list_lock);
- 
- 	cb->args[0] = idx_skip;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index b68a41190eb0..b572066325e4 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -247,6 +247,7 @@ static inline int batadv_print_vid(unsigned short vid)
  }
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 6baec4e68898..90e33f84d37a 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -27,11 +27,13 @@
- #include <linux/jiffies.h>
+ 
+ extern struct list_head batadv_hardif_list;
++extern unsigned int batadv_hardif_generation;
+ 
+ extern unsigned char batadv_broadcast_addr[];
+ extern struct workqueue_struct *batadv_event_workqueue;
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 0d9459b69bdb..2dc3304cee54 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -29,11 +29,11 @@
+ #include <linux/if_ether.h>
+ #include <linux/init.h>
  #include <linux/kernel.h>
- #include <linux/kref.h>
 +#include <linux/list.h>
  #include <linux/netdevice.h>
  #include <linux/netlink.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
-+#include <linux/spinlock.h>
+ #include <linux/printk.h>
+-#include <linux/rculist.h>
+-#include <linux/rcupdate.h>
++#include <linux/rtnetlink.h>
+ #include <linux/skbuff.h>
  #include <linux/stddef.h>
  #include <linux/types.h>
- #include <linux/workqueue.h>
-@@ -915,13 +917,14 @@ static void batadv_v_gw_print(struct batadv_priv *bat_priv,
-  * batadv_v_gw_dump_entry() - Dump a gateway into a message
+@@ -445,23 +445,27 @@ batadv_netlink_tp_meter_cancel(struct sk_buff *skb, struct genl_info *info)
+  * batadv_netlink_dump_hardif_entry() - Dump one hard interface into a message
   * @msg: Netlink message to dump into
   * @portid: Port making netlink request
 - * @seq: Sequence number of netlink message
 + * @cb: Control block containing additional options
-  * @bat_priv: The bat priv with all the soft interface information
-  * @gw_node: Gateway to be dumped
+  * @hard_iface: Hard interface to dump
   *
-  * Return: Error code, or 0 on success
+  * Return: error code, or 0 on success
   */
--static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid,
-+				  struct netlink_callback *cb,
- 				  struct batadv_priv *bat_priv,
- 				  struct batadv_gw_node *gw_node)
+ static int
+-batadv_netlink_dump_hardif_entry(struct sk_buff *msg, u32 portid, u32 seq,
++batadv_netlink_dump_hardif_entry(struct sk_buff *msg, u32 portid,
++				 struct netlink_callback *cb,
+ 				 struct batadv_hard_iface *hard_iface)
  {
-@@ -941,13 +944,16 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
+ 	struct net_device *net_dev = hard_iface->net_dev;
+ 	void *hdr;
  
- 	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
- 
--	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI, BATADV_CMD_GET_GATEWAYS);
+-	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
 +	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
 +			  &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_GATEWAYS);
- 	if (!hdr) {
- 		ret = -ENOBUFS;
- 		goto out;
- 	}
+ 			  BATADV_CMD_GET_HARDIFS);
+ 	if (!hdr)
+ 		return -EMSGSIZE;
  
 +	genl_dump_check_consistent(cb, hdr);
 +
- 	ret = -EMSGSIZE;
+ 	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			net_dev->ifindex) ||
+ 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
+@@ -498,7 +502,6 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
+ 	struct batadv_hard_iface *hard_iface;
+ 	int ifindex;
+ 	int portid = NETLINK_CB(cb->skb).portid;
+-	int seq = cb->nlh->nlmsg_seq;
+ 	int skip = cb->args[0];
+ 	int i = 0;
  
- 	if (curr_gw == gw_node) {
-@@ -1018,13 +1024,15 @@ static void batadv_v_gw_dump(struct sk_buff *msg, struct netlink_callback *cb,
- 	int idx_skip = cb->args[0];
- 	int idx = 0;
+@@ -516,23 +519,24 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
+ 		return -ENODEV;
+ 	}
  
 -	rcu_read_lock();
--	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.gateway_list, list) {
-+	spin_lock_bh(&bat_priv->gw.list_lock);
-+	cb->seq = bat_priv->gw.generation << 1 | 1;
-+
-+	hlist_for_each_entry(gw_node, &bat_priv->gw.gateway_list, list) {
- 		if (idx++ < idx_skip)
++	rtnl_lock();
++	cb->seq = batadv_hardif_generation << 1 | 1;
+ 
+-	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
+ 		if (hard_iface->soft_iface != soft_iface)
  			continue;
  
--		if (batadv_v_gw_dump_entry(msg, portid, cb->nlh->nlmsg_seq,
--					   bat_priv, gw_node)) {
-+		if (batadv_v_gw_dump_entry(msg, portid, cb, bat_priv,
-+					   gw_node)) {
- 			idx_skip = idx - 1;
- 			goto unlock;
+ 		if (i++ < skip)
+ 			continue;
+ 
+-		if (batadv_netlink_dump_hardif_entry(msg, portid, seq,
++		if (batadv_netlink_dump_hardif_entry(msg, portid, cb,
+ 						     hard_iface)) {
+ 			i--;
+ 			break;
  		}
-@@ -1032,7 +1040,7 @@ static void batadv_v_gw_dump(struct sk_buff *msg, struct netlink_callback *cb,
- 
- 	idx_skip = idx;
- unlock:
--	rcu_read_unlock();
-+	spin_unlock_bh(&bat_priv->gw.list_lock);
- 
- 	cb->args[0] = idx_skip;
- }
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 140c61a3f1ec..9d8e5eda2314 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -377,6 +377,7 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
- 
- 	kref_get(&gw_node->refcount);
- 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.gateway_list);
-+	bat_priv->gw.generation++;
- 
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 		   "Found new gateway %pM -> gw bandwidth: %u.%u/%u.%u MBit\n",
-@@ -472,6 +473,7 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 		if (!hlist_unhashed(&gw_node->list)) {
- 			hlist_del_init_rcu(&gw_node->list);
- 			batadv_gw_node_put(gw_node);
-+			bat_priv->gw.generation++;
- 		}
- 		spin_unlock_bh(&bat_priv->gw.list_lock);
- 
-@@ -518,6 +520,7 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
- 				  &bat_priv->gw.gateway_list, list) {
- 		hlist_del_init_rcu(&gw_node->list);
- 		batadv_gw_node_put(gw_node);
-+		bat_priv->gw.generation++;
  	}
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
- }
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 69c0d85bceb3..c75e47826949 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -186,6 +186,8 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	INIT_HLIST_HEAD(&bat_priv->softif_vlan_list);
- 	INIT_HLIST_HEAD(&bat_priv->tp_list);
  
-+	bat_priv->gw.generation = 0;
-+
- 	ret = batadv_v_mesh_init(bat_priv);
- 	if (ret < 0)
- 		goto err;
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 45b5592de816..cbe17da36fcb 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1096,12 +1096,15 @@ struct batadv_priv_gw {
- 	/** @gateway_list: list of available gateway nodes */
- 	struct hlist_head gateway_list;
+-	rcu_read_unlock();
++	rtnl_unlock();
  
--	/** @list_lock: lock protecting gateway_list & curr_gw */
-+	/** @list_lock: lock protecting gateway_list, curr_gw, generation */
- 	spinlock_t list_lock;
+ 	dev_put(soft_iface);
  
- 	/** @curr_gw: pointer to currently selected gateway node */
- 	struct batadv_gw_node __rcu *curr_gw;
- 
-+	/** @generation: current (generation) sequence number */
-+	unsigned int generation;
-+
- 	/**
- 	 * @mode: gateway operation: off, client or server (see batadv_gw_modes)
- 	 */
 -- 
 2.11.0
 
