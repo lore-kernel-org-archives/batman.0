@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Nov 2018 15:08:02 +0100
-Message-Id: <20181114140804.18381-15-sw@simonwunderlich.de>
+Date: Wed, 14 Nov 2018 15:08:03 +0100
+Message-Id: <20181114140804.18381-16-sw@simonwunderlich.de>
 In-Reply-To: <20181114140804.18381-1-sw@simonwunderlich.de>
 References: <20181114140804.18381-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 14/16] batman-adv: Add inconsistent multicast
- netlink dump detection
+Subject: [B.A.T.M.A.N.] [PATCH 15/16] batman-adv: Move CRC16 dependency to
+ BATMAN_ADV_BLA
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,160 +20,38 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The netlink dump functionality transfers a large number of entries from the
-kernel to userspace. It is rather likely that the transfer has to
-interrupted and later continued. During that time, it can happen that
-either new entries are added or removed. The userspace could than either
-receive some entries multiple times or miss entries.
+The commit ced72933a5e8 ("batman-adv: use CRC32C instead of CRC16 in TT
+code") switched the translation table code from crc16 to crc32c. The
+(optional) bridge loop avoidance code is the only user of this function.
 
-Commit 670dc2833d14 ("netlink: advertise incomplete dumps") introduced a
-mechanism to inform userspace about this problem. Userspace can then decide
-whether it is necessary or not to retry dumping the information again.
+batman-adv should only select CRC16 when it is actually using it.
 
-The netlink dump functions have to be switched to exclusive locks to avoid
-changes while the current message is prepared. The already existing
-generation sequence counter from the hash helper can be used for this
-simple hash.
-
-Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/multicast.c | 51 +++++++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 23 deletions(-)
+ net/batman-adv/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 86725d792e15..69244e4598f5 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -1365,22 +1365,26 @@ int batadv_mcast_mesh_info_put(struct sk_buff *msg,
-  *  to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @orig_node: originator to dump the multicast flags of
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid,
-+			      struct netlink_callback *cb,
- 			      struct batadv_orig_node *orig_node)
- {
- 	void *hdr;
- 
--	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
--			  NLM_F_MULTI, BATADV_CMD_GET_MCAST_FLAGS);
-+	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
-+			  &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_MCAST_FLAGS);
- 	if (!hdr)
- 		return -ENOBUFS;
- 
-+	genl_dump_check_consistent(cb, hdr);
-+
- 	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
- 		    orig_node->orig)) {
- 		genlmsg_cancel(msg, hdr);
-@@ -1405,21 +1409,26 @@ batadv_mcast_flags_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-  *  table to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-- * @head: bucket to dump
-+ * @cb: Control block containing additional options
-+ * @hash: hash to dump
-+ * @bucket: bucket index to dump
-  * @idx_skip: How many entries to skip
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
--			       struct hlist_head *head, long *idx_skip)
-+batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid,
-+			       struct netlink_callback *cb,
-+			       struct batadv_hashtable *hash,
-+			       unsigned int bucket, long *idx_skip)
- {
- 	struct batadv_orig_node *orig_node;
- 	long idx = 0;
- 
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+	spin_lock_bh(&hash->list_locks[bucket]);
-+	cb->seq = atomic_read(&hash->generation) << 1 | 1;
-+
-+	hlist_for_each_entry(orig_node, &hash->table[bucket], hash_entry) {
- 		if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
- 			      &orig_node->capa_initialized))
- 			continue;
-@@ -1427,9 +1436,8 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
- 		if (idx < *idx_skip)
- 			goto skip;
- 
--		if (batadv_mcast_flags_dump_entry(msg, portid, seq,
--						  orig_node)) {
--			rcu_read_unlock();
-+		if (batadv_mcast_flags_dump_entry(msg, portid, cb, orig_node)) {
-+			spin_unlock_bh(&hash->list_locks[bucket]);
- 			*idx_skip = idx;
- 
- 			return -EMSGSIZE;
-@@ -1438,7 +1446,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
- skip:
- 		idx++;
- 	}
--	rcu_read_unlock();
-+	spin_unlock_bh(&hash->list_locks[bucket]);
- 
- 	return 0;
- }
-@@ -1447,7 +1455,7 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-  * __batadv_mcast_flags_dump() - dump multicast flags table to a netlink socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-- * @seq: Sequence number of netlink message
-+ * @cb: Control block containing additional options
-  * @bat_priv: the bat priv with all the soft interface information
-  * @bucket: current bucket to dump
-  * @idx: index in current bucket to the next entry to dump
-@@ -1455,19 +1463,17 @@ batadv_mcast_flags_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-  * Return: 0 or error code.
-  */
- static int
--__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid, u32 seq,
-+__batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid,
-+			  struct netlink_callback *cb,
- 			  struct batadv_priv *bat_priv, long *bucket, long *idx)
- {
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	long bucket_tmp = *bucket;
--	struct hlist_head *head;
- 	long idx_tmp = *idx;
- 
- 	while (bucket_tmp < hash->size) {
--		head = &hash->table[bucket_tmp];
--
--		if (batadv_mcast_flags_dump_bucket(msg, portid, seq, head,
--						   &idx_tmp))
-+		if (batadv_mcast_flags_dump_bucket(msg, portid, cb, hash,
-+						   *bucket, &idx_tmp))
- 			break;
- 
- 		bucket_tmp++;
-@@ -1550,8 +1556,7 @@ int batadv_mcast_flags_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 		return ret;
- 
- 	bat_priv = netdev_priv(primary_if->soft_iface);
--	ret = __batadv_mcast_flags_dump(msg, portid, cb->nlh->nlmsg_seq,
--					bat_priv, bucket, idx);
-+	ret = __batadv_mcast_flags_dump(msg, portid, cb, bat_priv, bucket, idx);
- 
- 	batadv_hardif_put(primary_if);
- 	return ret;
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 082e96060bc2..d6b94559f888 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -22,7 +22,6 @@
+ config BATMAN_ADV
+ 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
+ 	depends on NET
+-	select CRC16
+ 	select LIBCRC32C
+ 	help
+           B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
+@@ -48,6 +47,7 @@ config BATMAN_ADV_BATMAN_V
+ config BATMAN_ADV_BLA
+ 	bool "Bridge Loop Avoidance"
+ 	depends on BATMAN_ADV && INET
++	select CRC16
+ 	default y
+ 	help
+ 	  This option enables BLA (Bridge Loop Avoidance), a mechanism
 -- 
 2.11.0
 
