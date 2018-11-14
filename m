@@ -1,15 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Nov 2018 16:26:14 +0100
-Message-ID: <2217702.0z5C6BKyfH@prime>
-In-Reply-To: <B99A1AB9A294834C8DF94185A5E9D18101784D2AFE@NRTV96002.america.zf-world.com>
-References: <B99A1AB9A294834C8DF94185A5E9D18101784CE751@NRTV96002.america.zf-world.com>
- <5197276.b4DnEGo6x7@prime>
- <B99A1AB9A294834C8DF94185A5E9D18101784D2AFE@NRTV96002.america.zf-world.com>
+Date: Wed, 14 Nov 2018 14:46:16 +0100
+Message-Id: <20181114134618.17557-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5142418.zUjExCIZgx";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] broadcast storms
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
+ 2018-11-14
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,66 +16,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jake.Harris@zf.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
---nextPart5142418.zUjExCIZgx
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi David,
 
-On Tuesday, November 13, 2018 2:55:31 PM CET Jake.Harris@zf.com wrote:
-> > Mhm, this is really not much data ... did you try the multicast as
-> > suggested in an earlier reply?
-> What earlier reply are you referring to? The only one I'm noticing is the
-> tip to boost the multicast bandwidth, but I cannot see this being fruitful
-> to update the configuration of all 50 nodes when worst-case I'm using less
-> than 1% of the max throughput.
+here are some bugfixes which we would like to see integrated into net.
 
-One aspect is that the multicast rate is also changing the modulation rate of 
-beacons. If you have >50 nodes beaconing with 1 Mbit/s you are already filling 
-up your airtime with beacons. Do the math - one beacon takes about 1ms on 1 
-Mbit/s, each node sends about 10 beacons per second ...
+Please pull or let me know of any problem!
 
-This is actually very important and will most likely help already. It would be 
-a better fix than changing the protection window.
+Thank you,
+      Simon
 
-> > BATADV_RESET_PROTECTION_MS is a define in the batman-adv C-code, so it
-> > can't be set at runtime but only at compile time.
-> While this sounds like an utter pain in the butt to recompile and update the
-> code on all the nodes to make this change, I believe this has a far better
-> chance of alleviating the issue, I'm looking into how to do this since I've
-> never compiled anything myself but I can't see it being too difficult.
-> 
-> One observation I made when rebooting the swarm all at once, about a minute
-> after all the pi's go down the laptop I work off (running batctl td bat0)
-> reports a whole bunch of backbone unannounced messages I believe. I'm
-> assuming there is one message per node but have not verified, my guess is
-> this is normal and is not the cause of these issues?
-> 
-> Again, thank you
+The following changes since commit 651022382c7f8da46cb4872a545ee1da6d097d2a:
 
+  Linux 4.20-rc1 (2018-11-04 15:37:52 -0800)
 
---nextPart5142418.zUjExCIZgx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+are available in the git repository at:
 
------BEGIN PGP SIGNATURE-----
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20181114
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlvq7RYACgkQoSvjmEKS
-nqFo9xAAjvN/QzAlyrBWFbUJoaQGSnABZCvK4Drzg07InfGH4x+tBmG1KXwN0b/N
-vTnXkaqjBgAmb1raI6F/7ocWwb6Uk64GBNioAhCxO679q49sbc3dmCiPXRK2qKNy
-90MB3qbsEySLsfpkXJNaPfQ9/cO7KMGPumn2u2OaRuy8RcwrUNkVjDUJYHv0hbrp
-IWysGS3Xefnjh/0Jstpa5LRQHllAaaYIWN6mym0Q+V6M8nrHmm5A2MpE61744KA4
-cPoac/GTnP02YGhmwlNjRa7276uuNEnDOGpdZ456c68bQtILe+UWm6eWtR/YQ+Np
-8Wbxv89VOhevnsKO9jZQrnk/XwjkfGWxMZ0e4nnSIWoUi3Q2mfGMLYad127BG9Cd
-ElsJeyoXD89kOndYggyzsirWf66NMEgXDoGx26nKHAcgiIMSzJMJYn1MLYVUGLEh
-g2xZEpAWNbLGgcZut8RnWJEBAsrDSRUNXEpeD3GLFSzSv/cPlt7ooi5my56ueHIT
-H7ufBmDCJa056lgVBL4zSMezrQIi3nBkkRoQsgFFMsD0CbKDzr4eibCswok1Xl21
-vA/+GnhYRnSmKpF444lMsOmR5uaji1rU495ftztLyfoTvFp3Yzl2/zqJsxUT/Yyv
-WWZZKB9b8OzWZvvEhp4PER1i1AcMNlCALsx6H+hABQ1141eaank=
-=D5i0
------END PGP SIGNATURE-----
+for you to fetch changes up to d7d8bbb40a5b1f682ee6589e212934f4c6b8ad60:
 
---nextPart5142418.zUjExCIZgx--
+  batman-adv: Expand merged fragment buffer for full packet (2018-11-12 10:41:29 +0100)
 
+----------------------------------------------------------------
+Here are two batman-adv bugfixes:
+
+ - Explicitly pad short ELP packets with zeros, by Sven Eckelmann
+
+ - Fix packet size calculation when merging fragments,
+   by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (2):
+      batman-adv: Use explicit tvlv padding for ELP packets
+      batman-adv: Expand merged fragment buffer for full packet
+
+ net/batman-adv/bat_v_elp.c     | 6 ++++--
+ net/batman-adv/fragmentation.c | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
