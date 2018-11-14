@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Nov 2018 14:46:17 +0100
-Message-Id: <20181114134618.17557-2-sw@simonwunderlich.de>
+Date: Wed, 14 Nov 2018 14:46:18 +0100
+Message-Id: <20181114134618.17557-3-sw@simonwunderlich.de>
 In-Reply-To: <20181114134618.17557-1-sw@simonwunderlich.de>
 References: <20181114134618.17557-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Use explicit tvlv padding
- for ELP packets
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Expand merged fragment
+ buffer for full packet
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,56 +23,45 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The announcement messages of batman-adv COMPAT_VERSION 15 have the
-possibility to announce additional information via a dynamic TVLV part.
-This part is optional for the ELP packets and currently not parsed by the
-Linux implementation. Still out-of-tree versions are using it to transport
-things like neighbor hashes to optimize the rebroadcast behavior.
+The complete size ("total_size") of the fragmented packet is stored in the
+fragment header and in the size of the fragment chain. When the fragments
+are ready for merge, the skbuff's tail of the first fragment is expanded to
+have enough room after the data pointer for at least total_size. This means
+that it gets expanded by total_size - first_skb->len.
 
-Since the ELP broadcast packets are smaller than the minimal ethernet
-packet, it often has to be padded. This is often done (as specified in
-RFC894) with octets of zero and thus work perfectly fine with the TVLV
-part (making it a zero length and thus empty). But not all ethernet
-compatible hardware seems to follow this advice. To avoid ambiguous
-situations when parsing the TVLV header, just force the 4 bytes (TVLV
-length + padding) after the required ELP header to zero.
+But this is ignoring the fact that after expanding the buffer, the fragment
+header is pulled by from this buffer. Assuming that the tailroom of the
+buffer was already 0, the buffer after the data pointer of the skbuff is
+now only total_size - len(fragment_header) large. When the merge function
+is then processing the remaining fragments, the code to copy the data over
+to the merged skbuff will cause an skb_over_panic when it tries to actually
+put enough data to fill the total_size bytes of the packet.
 
-Fixes: d6f94d91f766 ("batman-adv: ELP - adding basic infrastructure")
-Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+The size of the skb_pull must therefore also be taken into account when the
+buffer's tailroom is expanded.
+
+Fixes: 610bfc6bc99b ("batman-adv: Receive fragmented packets and merge")
+Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+Co-authored-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v_elp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/batman-adv/fragmentation.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 9f481cfdf77d..e8090f099eb8 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -352,19 +352,21 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
-  */
- int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- {
-+	static const size_t tvlv_padding = sizeof(__be32);
- 	struct batadv_elp_packet *elp_packet;
- 	unsigned char *elp_buff;
- 	u32 random_seqno;
- 	size_t size;
- 	int res = -ENOMEM;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 0fddc17106bd..5b71a289d04f 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -275,7 +275,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+ 	kfree(entry);
  
--	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
-+	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN + tvlv_padding;
- 	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
- 	if (!hard_iface->bat_v.elp_skb)
- 		goto out;
+ 	packet = (struct batadv_frag_packet *)skb_out->data;
+-	size = ntohs(packet->total_size);
++	size = ntohs(packet->total_size) + hdr_size;
  
- 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
--	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-+	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb,
-+				BATADV_ELP_HLEN + tvlv_padding);
- 	elp_packet = (struct batadv_elp_packet *)elp_buff;
- 
- 	elp_packet->packet_type = BATADV_ELP;
+ 	/* Make room for the rest of the fragments. */
+ 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
 -- 
 2.11.0
 
