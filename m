@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 Nov 2018 21:57:16 +0100
-Message-Id: <20181124205718.20148-3-sven@narfation.org>
+Date: Sat, 24 Nov 2018 21:57:17 +0100
+Message-Id: <20181124205718.20148-4-sven@narfation.org>
 In-Reply-To: <20181124205718.20148-1-sven@narfation.org>
 References: <20181124205718.20148-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v3 2/4] batctl: Don't allocate new buffer for
- vlan parent device
+Subject: [B.A.T.M.A.N.] [RFC v3 3/4] batctl: Automatically translate vlan to
+ mesh_iface
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,140 +19,333 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The buffer size is limited by IF_NAMESIZE and can easily be stored on the
-stack. This will also make it easier to store this as part of the the state
-of batctl.
+The way batctl is implementing support for VLANs is rather suboptimal. The
+program has to guess whether it is started with an batadv or vlan interface
+as argument.
+
+Instead of distributing this over the whole program, do it on startup and
+already retrieve the required mesh interface index and vid before the rest
+of the program runs.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 23 ++++++-----------------
- functions.h |  2 +-
- sys.c       |  6 +++---
- 3 files changed, 10 insertions(+), 21 deletions(-)
+ functions.c   | 34 ++++++++++++++++++++++++++--------
+ functions.h   |  6 ++++--
+ gateways.c    | 10 ++--------
+ main.c        | 10 ++++++----
+ main.h        |  6 +++++-
+ mcast_flags.c | 10 ++--------
+ netlink.c     | 12 ++----------
+ originators.c | 10 ++--------
+ sys.c         | 14 +++++++-------
+ 9 files changed, 56 insertions(+), 56 deletions(-)
 
 diff --git a/functions.c b/functions.c
-index bdede8b..ecfd202 100644
+index ecfd202..600c29a 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -830,10 +830,6 @@ static int vlan_get_link_parse(struct nl_msg *msg, void *arg)
- 
- 	/* get parent link name */
- 	idx = *(int *)nla_data(tb[IFLA_LINK]);
--	free(nl_arg->iface);
--	nl_arg->iface = malloc(IFNAMSIZ + 1);
--	if (!nl_arg->iface)
--		goto err;
- 
- 	if (!if_indextoname(idx, nl_arg->iface))
- 		goto err;
-@@ -851,12 +847,12 @@ static int vlan_get_link_parse(struct nl_msg *msg, void *arg)
- /**
-  * vlan_get_link - convert a VLAN interface into its parent one
-  * @ifname: the interface to convert
-- * @parent: buffer where the parent interface name will be written (allocated by
-- *  this function)
-+ * @parent: buffer where the parent interface name will be written
-+ *  (minimum IF_NAMESIZE)
+@@ -852,7 +852,7 @@ static int vlan_get_link_parse(struct nl_msg *msg, void *arg)
   *
   * Returns the vlan identifier on success or -1 on error
   */
--int vlan_get_link(const char *ifname, char **parent)
-+int vlan_get_link(const char *ifname, char *parent)
+-int vlan_get_link(const char *ifname, char *parent)
++static int vlan_get_link(const char *ifname, char *parent)
  {
  	struct nl_sock *sock;
  	int ret;
-@@ -866,12 +862,10 @@ int vlan_get_link(const char *ifname, char **parent)
- 	};
- 	struct nl_cb *cb = NULL;
- 	struct vlan_get_link_nl_arg arg = {
--		.iface = NULL,
-+		.iface = parent,
- 		.vid = -1,
- 	};
+@@ -1019,19 +1019,33 @@ int netlink_simple_request(struct nl_msg *msg)
+ 	return err;
+ }
  
--	*parent = NULL;
--
- 	sock = nl_socket_alloc();
- 	if (!sock)
- 		goto err;
-@@ -894,8 +888,6 @@ int vlan_get_link(const char *ifname, char **parent)
- 	if (ret < 0)
- 		goto err;
- 
--	*parent = arg.iface;
--
- err:
- 	if (cb)
- 		nl_cb_put(cb);
-@@ -1029,13 +1021,13 @@ int netlink_simple_request(struct nl_msg *msg)
- 
- int check_mesh_iface(char *mesh_iface)
+-int check_mesh_iface(char *mesh_iface)
++int translate_mesh_iface(struct state *state)
++{
++	state->vid = vlan_get_link(state->arg_iface, state->mesh_iface);
++	if (state->vid < 0) {
++		/* if there is no iface then the argument must be the
++		 * mesh interface
++		 */
++		snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s",
++			 state->arg_iface);
++	}
++
++	return 0;
++}
++
++int check_mesh_iface(struct state *state)
  {
--	char *base_dev = NULL;
  	char path_buff[PATH_BUFF_LEN];
-+	char base_dev[IF_NAMESIZE];
- 	int ret = -1, vid;
+-	char base_dev[IF_NAMESIZE];
+-	int ret = -1, vid;
++	int ret = -1;
  	DIR *dir;
  
  	/* use the parent interface if this is a VLAN */
--	vid = vlan_get_link(mesh_iface, &base_dev);
-+	vid = vlan_get_link(mesh_iface, base_dev);
- 	if (vid >= 0)
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+-	vid = vlan_get_link(mesh_iface, base_dev);
+-	if (vid >= 0)
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
++	if (state->vid >= 0)
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
++			 state->mesh_iface, state->vid);
  	else
-@@ -1050,9 +1042,6 @@ int check_mesh_iface(char *mesh_iface)
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
++			 state->mesh_iface);
  
+ 	/* try to open the mesh sys directory */
+ 	dir = opendir(path_buff);
+@@ -1040,6 +1054,10 @@ int check_mesh_iface(char *mesh_iface)
+ 
+ 	closedir(dir);
+ 
++	state->mesh_ifindex = if_nametoindex(state->mesh_iface);
++	if (state->mesh_ifindex == 0)
++		goto out;
++
  	ret = 0;
  out:
--	if (base_dev)
--		free(base_dev);
--
  	return ret;
- }
- 
 diff --git a/functions.h b/functions.h
-index c16ba2e..2680e6d 100644
+index 2680e6d..ea3c307 100644
 --- a/functions.h
 +++ b/functions.h
-@@ -48,7 +48,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
+@@ -34,6 +34,8 @@
+ 
+ #define PATH_BUFF_LEN 400
+ 
++struct state;
++
+ /* return time delta from start to end in milliseconds */
+ void start_timer(void);
+ double end_timer(void);
+@@ -48,10 +50,10 @@ int write_file(const char *dir, const char *fname, const char *arg1,
  struct ether_addr *translate_mac(const char *mesh_iface,
  				 const struct ether_addr *mac);
  struct ether_addr *resolve_mac(const char *asc);
--int vlan_get_link(const char *ifname, char **parent);\
-+int vlan_get_link(const char *ifname, char *parent);
+-int vlan_get_link(const char *ifname, char *parent);
  int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
  int netlink_simple_request(struct nl_msg *msg);
- int check_mesh_iface(char *mesh_iface);
+-int check_mesh_iface(char *mesh_iface);
++int translate_mesh_iface(struct state *state);
++int check_mesh_iface(struct state *state);
+ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
+ 
+ void get_random_bytes(void *buf, size_t buflen);
+diff --git a/gateways.c b/gateways.c
+index ff7693f..5beddc7 100644
+--- a/gateways.c
++++ b/gateways.c
+@@ -133,17 +133,11 @@ static int netlink_print_gateways(struct state *state, char *orig_iface,
+ {
+ 	char *header = NULL;
+ 	char *info_header;
+-	int ifindex;
+-
+-	ifindex = if_nametoindex(state->mesh_iface);
+-	if (!ifindex) {
+-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
+-		return -ENODEV;
+-	}
+ 
+ 	/* only parse routing algorithm name */
+ 	last_err = -EINVAL;
+-	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
++	info_header = netlink_get_info(state->mesh_ifindex,
++				       BATADV_CMD_GET_ORIGINATORS, NULL);
+ 	free(info_header);
+ 
+ 	if (strlen(algo_name_buf) == 0)
+diff --git a/main.c b/main.c
+index ab7da45..37a2b5a 100644
+--- a/main.c
++++ b/main.c
+@@ -125,7 +125,7 @@ int main(int argc, char **argv)
+ {
+ 	const struct command *cmd;
+ 	struct state state = {
+-		.mesh_iface = mesh_dfl_iface,
++		.arg_iface = mesh_dfl_iface,
+ 		.cmd = NULL,
+ 	};
+ 	int opt;
+@@ -138,13 +138,13 @@ int main(int argc, char **argv)
+ 			exit(EXIT_SUCCESS);
+ 			break;
+ 		case 'm':
+-			if (state.mesh_iface != mesh_dfl_iface) {
++			if (state.arg_iface != mesh_dfl_iface) {
+ 				fprintf(stderr,
+ 					"Error - multiple mesh interfaces specified\n");
+ 				goto err;
+ 			}
+ 
+-			state.mesh_iface = argv[2];
++			state.arg_iface = argv[2];
+ 			break;
+ 		case 'v':
+ 			version();
+@@ -173,8 +173,10 @@ int main(int argc, char **argv)
+ 
+ 	state.cmd = cmd;
+ 
++	translate_mesh_iface(&state);
++
+ 	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
+-	    check_mesh_iface(state.mesh_iface) < 0) {
++	    check_mesh_iface(&state) < 0) {
+ 		fprintf(stderr,
+ 			"Error - interface %s is not present or not a batman-adv interface\n",
+ 			state.mesh_iface);
+diff --git a/main.h b/main.h
+index 276a018..274fae5 100644
+--- a/main.h
++++ b/main.h
+@@ -25,6 +25,7 @@
+ 
+ #include <stdint.h>
+ 
++#include <net/if.h>
+ #include <netlink/genl/ctrl.h>
+ #include <netlink/genl/genl.h>
+ #include <netlink/netlink.h>
+@@ -74,7 +75,10 @@ enum command_type {
+ };
+ 
+ struct state {
+-	char *mesh_iface;
++	char *arg_iface;
++	char mesh_iface[IF_NAMESIZE];
++	unsigned int mesh_ifindex;
++	int vid;
+ 	const struct command *cmd;
+ 
+ 	struct nl_sock *sock;
+diff --git a/mcast_flags.c b/mcast_flags.c
+index 0dc4227..eb9734e 100644
+--- a/mcast_flags.c
++++ b/mcast_flags.c
+@@ -113,17 +113,11 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
+ 	char *info_header;
+ 	char *header;
+ 	bool bridged;
+-	int ifindex;
+ 	int ret;
+ 
+-	ifindex = if_nametoindex(state->mesh_iface);
+-	if (!ifindex) {
+-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
+-		return -ENODEV;
+-	}
+-
+ 	/* only parse own multicast flags */
+-	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_MCAST_FLAGS, NULL);
++	info_header = netlink_get_info(state->mesh_ifindex,
++				       BATADV_CMD_GET_MCAST_FLAGS, NULL);
+ 	free(info_header);
+ 
+ 	if (mcast_flags == -EOPNOTSUPP || mcast_flags_priv == -EOPNOTSUPP)
+diff --git a/netlink.c b/netlink.c
+index 1829544..b0d57b1 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -443,20 +443,12 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
+ 	};
+ 	int hardifindex = 0;
+ 	struct nl_msg *msg;
+-	int ifindex;
+ 
+ 	if (!state->sock) {
+ 		last_err = -EOPNOTSUPP;
+ 		return last_err;
+ 	}
+ 
+-	ifindex = if_nametoindex(state->mesh_iface);
+-	if (!ifindex) {
+-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
+-		last_err = -ENODEV;
+-		return last_err;
+-	}
+-
+ 	if (orig_iface) {
+ 		hardifindex = if_nametoindex(orig_iface);
+ 		if (!hardifindex) {
+@@ -479,7 +471,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
+ 			printf("\033[2J\033[0;0f");
+ 
+ 		if (!(read_opt & SKIP_HEADER))
+-			opts.remaining_header = netlink_get_info(ifindex,
++			opts.remaining_header = netlink_get_info(state->mesh_ifindex,
+ 								 nl_cmd,
+ 								 header);
+ 
+@@ -490,7 +482,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
+ 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family,
+ 			    0, NLM_F_DUMP, nl_cmd, 1);
+ 
+-		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
++		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
+ 		if (hardifindex)
+ 			nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 				    hardifindex);
+diff --git a/originators.c b/originators.c
+index c29300a..3c13c66 100644
+--- a/originators.c
++++ b/originators.c
+@@ -185,17 +185,11 @@ static int netlink_print_originators(struct state *state, char *orig_iface,
+ {
+ 	char *header = NULL;
+ 	char *info_header;
+-	int ifindex;
+-
+-	ifindex = if_nametoindex(state->mesh_iface);
+-	if (!ifindex) {
+-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
+-		return -ENODEV;
+-	}
+ 
+ 	/* only parse routing algorithm name */
+ 	last_err = -EINVAL;
+-	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
++	info_header = netlink_get_info(state->mesh_ifindex,
++				       BATADV_CMD_GET_ORIGINATORS, NULL);
+ 	free(info_header);
+ 
+ 	if (strlen(algo_name_buf) == 0)
 diff --git a/sys.c b/sys.c
-index 6b98ac4..5c54f08 100644
+index 5c54f08..be20be7 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -67,7 +67,8 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+@@ -66,8 +66,7 @@ static void settings_usage(struct state *state)
+ int handle_sys_setting(struct state *state, int argc, char **argv)
  {
  	struct settings_data *settings = state->cmd->arg;
- 	int vid, optchar, res = EXIT_FAILURE;
--	char *path_buff, *base_dev = NULL;
-+	char base_dev[IF_NAMESIZE];
-+	char *path_buff;
+-	int vid, optchar, res = EXIT_FAILURE;
+-	char base_dev[IF_NAMESIZE];
++	int optchar, res = EXIT_FAILURE;
+ 	char *path_buff;
  	const char **ptr;
  
- 	while ((optchar = getopt(argc, argv, "h")) != -1) {
-@@ -93,7 +94,7 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+@@ -89,14 +88,15 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 		return EXIT_FAILURE;
+ 	}
+ 
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
+-
  	/* if the specified interface is a VLAN then change the path to point
  	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
  	 */
--	vid = vlan_get_link(state->mesh_iface, &base_dev);
-+	vid = vlan_get_link(state->mesh_iface, base_dev);
- 	if (vid >= 0)
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+-	vid = vlan_get_link(state->mesh_iface, base_dev);
+-	if (vid >= 0)
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
++	if (state->vid >= 0)
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
++			 state->mesh_iface, state->vid);
++	else
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
++			 state->mesh_iface);
  
-@@ -133,6 +134,5 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
- 
- out:
- 	free(path_buff);
--	free(base_dev);
- 	return res;
- }
+ 	if (argc == 1) {
+ 		res = read_file(path_buff, settings->sysfs_name,
 -- 
 2.19.1
 
