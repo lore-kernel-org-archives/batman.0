@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 27 Nov 2018 14:09:30 +0100
-Message-ID: <1633809.n2cPIBvzv7@bentobox>
-In-Reply-To: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
+Return-Path: <github@r.z11.de>
+From: Ruben Barkow <github@r.z11.de>
 References: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
+Message-ID: <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
+Date: Tue, 27 Nov 2018 15:00:39 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2119332.To4uuXvzZQ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] patch for manpage batctl.8: Missing description
- of gw_mode sel_class for B.A.T.M.A.N. V
+In-Reply-To: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="60b9ITu4gtbOEWaQruqSk8WEVzUdHBPsq"
+Subject: [B.A.T.M.A.N.] batctl: Add section to explain gateway selection
+ class for BATMAN_V
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +20,127 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Ruben <freifunk@r.z11.de>
 
---nextPart2119332.To4uuXvzZQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--60b9ITu4gtbOEWaQruqSk8WEVzUdHBPsq
+Content-Type: multipart/mixed; boundary="kVMdeHD47SGP6qcn18V5vfE305tobGCGr";
+ protected-headers="v1"
+From: Ruben Barkow <github@r.z11.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
+Subject: batctl: Add section to explain gateway selection class for BATMAN_V
+References: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
+In-Reply-To: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
 
-On Dienstag, 27. November 2018 13:43:33 CET Ruben wrote:
-> This will resolve https://www.open-mesh.org/issues/366
+--kVMdeHD47SGP6qcn18V5vfE305tobGCGr
+Content-Type: multipart/mixed;
+ boundary="------------F72DBDDE036FE557B3E12326"
+Content-Language: en-US
 
-Please use `git format-patch -1` to create a patch file (of the last commit). 
-And then send it via `git send-email --to=b.a.t.m.a.n@lists.open-mesh.org` to 
-the mailing list. The patch you've send here cannot be applied with git-am.
+This is a multi-part message in MIME format.
+--------------F72DBDDE036FE557B3E12326
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Also don't forget to add the Signed-off-by: ... line. And use a proper Subject 
-and commit message [1]. And please no "This will resolve
-https://www.open-mesh.org/issues/366" in the actual commit message.
+As mentioned here: https://www.open-mesh.org/issues/366#note-8
 
-Kind regards,
-	Sven.
+I added a fix to the formatting, so this is the final patch:
+
+Signed-off-by: Ruben Barkow <github@r.z11.de>
 
 
-[1] https://www.open-mesh.org/projects/open-mesh/wiki/Contribute#Submitting-patches
---nextPart2119332.To4uuXvzZQ
+
+--------------F72DBDDE036FE557B3E12326
+Content-Type: text/x-patch;
+ name="0001-batctl-Add-section-to-explain-gateway-selection-clas.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename*0="0001-batctl-Add-section-to-explain-gateway-selection-clas.pa";
+ filename*1="tch"
+
+=46rom c3561b556c57546b2a089b830bd78ada7cd46218 Mon Sep 17 00:00:00 2001
+From: rubo77 <github@r.z11.de>
+Date: Tue, 27 Nov 2018 13:40:29 +0100
+Subject: [PATCH] batctl: Add section to explain gateway selection class f=
+or
+ BATMAN_V
+
+Signed-off-by: Ruben Barkow <github@r.z11.de>
+---
+ man/batctl.8 | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/man/batctl.8 b/man/batctl.8
+index 2e3232f..ed8e71f 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -144,6 +144,9 @@ examples:  5000 \->  5.0/1.0 MBit
+ If the node is a gateway client the parameter will decide which criteria=
+ to consider when the batman-adv module has to choose
+ between different internet connections announced by the aforementioned s=
+ervers.
+ .RE
++.RS 7
++B.A.T.M.A.N. IV:
++.RE
+ .RS 17
+ default: 20 \-> late switch (TQ 20)
+ .RE
+@@ -168,6 +171,20 @@ chooses the gateway with the best link quality but s=
+witches to another gateway a
+ least XX TQ better than the currently selected gateway (XX has to be a n=
+umber between 3 and 256).
+ .RE
+ .RE
++.RS 7
++B.A.T.M.A.N. V:
++.RE
++.RS 17
++default: 5000 \-> late switch (5000 kbit/s throughput)
++.br
++example: 1500 \-> fast switch connection
++.RS 17
++switches to another gateway as soon as a better one is found which is at=
+ least=20
++1500 kbit/s faster throughput than the currently selected gateway. Throu=
+ghput is
++determined by evaluating which is lower: the advertised throughput by th=
+e
++gateway or the maximum bandwidth across the entire path.
++.RE
++.RE
+ .br
+ .IP "\fBrouting_algo\fP|\fBra\fP [\fBalgorithm\fP]\fP"
+ If no parameter is given the current routing algorithm configuration as =
+well as
+--=20
+2.17.1
+
+
+--------------F72DBDDE036FE557B3E12326--
+
+--kVMdeHD47SGP6qcn18V5vfE305tobGCGr--
+
+--60b9ITu4gtbOEWaQruqSk8WEVzUdHBPsq
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlv9QgoACgkQXYcKB8Em
-e0ZaHxAAiw5w8MN7rvG1k4SAWXws7tGK63PF+PfFalLHSTw9T3GyaukKBOTJqR9/
-eGriF2JRL+wZN7lKnT0HnQtRZ3Fas2WA+RLanu3Lgl/aaVtfAgqZCl49apQrRlnW
-1TiNebiIfo7J2L5EXzJt4ekKvn7mUrNYPlLiRTXDeiEEbccW2qX8FfcxAxqODkPT
-OtRhuZrEEkXfioXAnYt4yx5LfU93+jZVlk9vRDV0HHyEv6W7yN4P6jUsEsqT63Eo
-veCzQl3rlb/0t7zhUw7bBd+Q8QmVKEjhI3lwNciKGW/g7dbgY0BLZwBSkilKnMW0
-gDzoJnVZGGr4zPrQ99AGWaNNCMWAOzyFK37QnD1tEtju+GB4k4JyWsix5eosGJYo
-8W1NdxMgX1+4WH6z6dOU4mU/VsYIGdicSZqK6OenM7yRigMougCibCIh0AEUIbC0
-wml263V5Vdz1AilW5mbdT+pvwGw9LxFFyIOPxl7LQmUk2bF614zopdMEtEoDnux9
-ZAf96/a66sfEiaS1UZzgma7LzHZaoWjCi0r6PoNOYEhMQEutx/faxFuPT6ASt7th
-7LfRpl3Wji52vb7blwXZIJf8cw3UapL8+M1y17HyCtf32GOe3V+6D0/b/mck6QX9
-GFj9VIDtGw7VU9/rNSF34YjTZLrxbC53RsURiHJmOtLj5Sjm5CM=
-=/F6A
+iQIzBAEBCgAdFiEEc4/4iBsWuuBVYgULkXRByBJwXLAFAlv9TgcACgkQkXRByBJw
+XLDvrA//V31Ne8v9CPfpFuX6n+GEHJwbDJu25BUY8rBcGro3FZ58ULlXhskl0TM9
+NYWMTSWvW7Gj6k8yX06RHzd4ESXW4qaj+pm+nkKhZrWxEjY5aA1+ISASdkzFuK0r
+GiJIcUqd73l4sLzpDm0+vy3mcuB2T83RQna5gfwZx1ofW5q+v/ExakZTNs1VRlIy
+WBNu0wO//w+uWj7FnI4OL4JiYrGzM8+zNQBem5l1vOQS2zZGpITtTz5u1fRZPEMJ
+3rA+Xc8agZl6ibIlsc1+fvcUJ+sqTf9CxGXRIbCfGZIxfaLEubICmykm3YO/CQo7
+hVMJvEtNjxO8dxErjI2VBcRi16xRKkilsPPOFY3qf44oRWDNLiLmAnvG4lZDqJxf
+6uu7nWqz/QmwuhfUWtq8J3wO0HRPJ46mYItCCw2Cz1/PFOIRVyqh1N5ItJesxRBE
+4LYAJvgT6OAHqfNybyyfUJNaBXTCZDFEN7SImUi4wencvODI/7oBVX0356R5xRRc
+O/b59tkmOQlqRnsmkHZdKZvKhsQ8xw1Vc2jIWfh/6J6mXnOrRilt1SjDLyIBj4n+
+v/nP4z/ELvI0uC+P/mJwQ7jfe/3pZXXgKouF//PxTBQIsD/9dHGPhS+GN9/5bP9S
+4MpplD4kyhlsk6qMZi8v5TVK2ByyuFk6SFDzvPdtE7FoeyolVJQ=
+=VoEs
 -----END PGP SIGNATURE-----
 
---nextPart2119332.To4uuXvzZQ--
-
+--60b9ITu4gtbOEWaQruqSk8WEVzUdHBPsq--
