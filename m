@@ -1,14 +1,13 @@
-Return-Path: <a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 28 Nov 2018 08:29:14 +0100
+Message-ID: <1732194.WAl8XlAdAA@bentobox>
+In-Reply-To: <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
 References: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
  <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <143f284e-06ac-7065-2a8e-950a4db74bb6@unstable.cc>
-Date: Wed, 28 Nov 2018 08:10:54 +1000
 MIME-Version: 1.0
-In-Reply-To: <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="crJETMvqAHmNT0EeDjhoIADVcWuflFTGF"
+Content-Type: multipart/signed; boundary="nextPart30270288.0bVaGKrfVv";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] batctl: Add section to explain gateway selection
  class for BATMAN_V
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,64 +19,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Ruben Barkow <github@r.z11.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Ruben Barkow <github@r.z11.de>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---crJETMvqAHmNT0EeDjhoIADVcWuflFTGF
-Content-Type: multipart/mixed; boundary="7LZYiuHL8IBl1ysaHhLwWY9JBhMxOsYfA";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Ruben Barkow <github@r.z11.de>
-Message-ID: <143f284e-06ac-7065-2a8e-950a4db74bb6@unstable.cc>
-Subject: Re: batctl: Add section to explain gateway selection class for
- BATMAN_V
-References: <50dd4215-efd3-2b89-874f-bbf7330bf37a@r.z11.de>
- <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
-In-Reply-To: <bd7bec9a-c380-aa64-3cdd-e3cb63d0394a@r.z11.de>
+--nextPart30270288.0bVaGKrfVv
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---7LZYiuHL8IBl1ysaHhLwWY9JBhMxOsYfA
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On 28/11/2018 00:00, Ruben Barkow wrote:
+On Dienstag, 27. November 2018 15:00:39 CET Ruben Barkow wrote:
 > As mentioned here: https://www.open-mesh.org/issues/366#note-8
->=20
-> I added a fix to the formatting, so this is the final patch:
->=20
-> Signed-off-by: Ruben Barkow <github@r.z11.de>
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+Applied as 26b483ce543e [1]. Thanks for taking care of the wiki entry and the 
+manpage.
 
---=20
-Antonio Quartulli
+Please send it next time as inline patch [2]. I had to manually adjust the 
+commit message because of that. Otherwise it would have looked like this:
+
+    batctl: Add section to explain gateway selection class for BATMAN_V
+    
+    As mentioned here: https://www.open-mesh.org/issues/366#note-8
+    
+    I added a fix to the formatting, so this is the final patch:
+    
+    Signed-off-by: Ruben Barkow <github@r.z11.de>
+    Acked-by: Antonio Quartulli <a@unstable.cc>
+    
+    >From c3561b556c57546b2a089b830bd78ada7cd46218 Mon Sep 17 00:00:00 2001
+    From: rubo77 <github@r.z11.de>
+    Date: Tue, 27 Nov 2018 13:40:29 +0100
+    Subject: [PATCH] batctl: Add section to explain gateway selection class for
+     BATMAN_V
+    
+    Signed-off-by: Ruben Barkow <github@r.z11.de>
+    Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Kind regards,
+	Sven
 
 
---7LZYiuHL8IBl1ysaHhLwWY9JBhMxOsYfA--
-
---crJETMvqAHmNT0EeDjhoIADVcWuflFTGF
+[1] https://git.open-mesh.org/batctl.git/commit/26b483ce543e5b4bf6869a66c0ef28ef7a00e367
+[2] https://www.kernel.org/doc/html/v4.19/process/email-clients.html
+--nextPart30270288.0bVaGKrfVv
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEE3o8ejP0lUW4GTX3J9FVsWUWDDm0FAlv9wO4ACgkQ9FVsWUWD
-Dm3ASw/+P45SRo63PP/s/fyAk8oIUeRDgu6oiGHPyJhsyKe3EdEj1hKmiQDAyVOY
-JcIDL9ns+meJml+pAVXZ1ogypbqxPA4HcghSx+5dpoXSzX9LaHzi1dDPiCAWPUBH
-h0Uhn7Yn19PoyhZR4k6YMV5wb8/rASW65/4V7wnJN5ATXDrR4tR05UIXzmiWvLRl
-3wzk9VvY7WPvYCPV1rVyHnx51XE3TdStMzMCb31Z/simA0NT/3YFtu8C3Y00q+Y+
-acaChRru96Ou9dv5zA2QXZ0fPbJZkgYLnwOnULO8yWMZBWBsJ8MTHvVMFKeGyEA9
-ldsLL2H9fhooK92kJMddFVyr+PuG4OwzFG/MjsTxZDK9a97uJalFVa/nW5PkZAla
-UjlWDK1DKEqOBoepuPXGLpdEQbfI6UWeg5fr9bdF7Dd8AK3M33trqMA0ytGj6OEo
-qAhj+yj+zo/curku2Y8IPCw8Cduy0anpMtUUUgsMQrZTNpiPVkgnWz6N3WrXM9vq
-sHuLYlhi/3ARakZ2xTH1TQlAt+Fzd0VVRggFDcDTTiYRhsqCOo57mgrNZl1YYtoX
-4jl1HUzAa42BRxY6xy1SbsA9YMeRlQ+8K0ZYOIrGtA4BpPpL0KlIq8gaIutOLQmh
-THRaHfbSy7HPf5gu7fVBqDkv6tITSsOsRg2ZSbDbgpsTKBQTfyQ=
-=Ftu3
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlv+Q8oACgkQXYcKB8Em
+e0atuxAAuaa+fGUFjyDN7G9ZsIcRavi8FIvCjItpNGyixGd1EFBE5JPttIKS4Ept
+x1a+k9MemjcpuwlS6DwdHhVkK2302KKE6+J7nWFGH7ntuUFdmI3ZgEbHhOqo2hyH
+0lOH0qwGh0DU5Yn9EQej0QNtRcU9fw8QZlZjtjsS6xyjwNFzZmVlTltChCy9DU8u
+r7N6SSUecYwX6KoTlJ90JinEgzdSzq8RKqIiTlk64jhrkEy8Npe8ZunHMkGlTXzP
+doOX8mcNXwDhWfgu6aeoDinprZn6lNhKdetkKjORxOsSZ9IxARxeS9hnR7Mlrfaq
+nlU7WKaUIHcn9OvooJzEgDFrM/5a52OYh/iteZsa7hkQBIXU6c+Mvt5L6zn+boa0
+Th/aq+YYOVgAPCL+pmmcRcFcVgl+NGGPK/6pPE4DMBKdluP3sqvJHpnQsHoMM30D
+4FtfzTbIAKhyJiXtUZOqempSUuGeOtUSiIMNdyJ4Enn/AnQ6DZmOhJPWHMwlXUGy
+OxEKenr6StHto/uvex0g84XgpVZiRN2aToRPcVL9Gkb04T2rg5WqBbJDkzrlf8Bb
+QAT2y3WiOw1s4nfwfHevdM9viS6atIV7/j9ERPYE5cmRLydB21Up2ZxH/slFmsAJ
+IvaSN9eOeY8KPZuSqfSt24SpekjeKf1EDK/zLkug5jLr6bPBJhA=
+=d1vg
 -----END PGP SIGNATURE-----
 
---crJETMvqAHmNT0EeDjhoIADVcWuflFTGF--
+--nextPart30270288.0bVaGKrfVv--
+
