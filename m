@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:32:02 +0100
-Message-Id: <20181207203209.22633-14-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:32:03 +0100
+Message-Id: <20181207203209.22633-15-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 13/20] batctl: Support generic netlink for
- ap_isolation command
+Subject: [B.A.T.M.A.N.] [RFC v4 14/20] batctl: Support generic netlink for
+ bonding command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,30 +18,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
 
 sysfs should be avoided for new settings of network interfaces. To still
 provide a common configuration infrastructure, all the existing settings
 subcommands also have to be reimplemented via generic netlink while still
 using sysfs as fallback.
 
-The ap_isolation implementation is using the commands
-BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH and
-BATADV_CMD_SET_VLAN/BATADV_CMD_GET_VLAN to set/get the configuration of the
-u8 (boolean) BATADV_ATTR_AP_ISOLATION attribute.
+The bonding implementation is using the commands
+BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
+the u8 (boolean) BATADV_ATTR_BONDING attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- ap_isolation.c | 67 ++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
+ bonding.c | 45 +++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 43 insertions(+), 2 deletions(-)
 
-diff --git a/ap_isolation.c b/ap_isolation.c
-index 2d16c68..c9fd336 100644
---- a/ap_isolation.c
-+++ b/ap_isolation.c
-@@ -21,13 +21,76 @@
+diff --git a/bonding.c b/bonding.c
+index f7105c9..3b8b11b 100644
+--- a/bonding.c
++++ b/bonding.c
+@@ -21,13 +21,54 @@
   */
  
  #include "main.h"
@@ -54,72 +52,50 @@ index 2d16c68..c9fd336 100644
 +#include "netlink.h"
  #include "sys.h"
  
-+static struct simple_boolean_data ap_isolation;
++static struct simple_boolean_data bonding;
 +
-+static int print_ap_isolation(struct nl_msg *msg, void *arg)
++static int print_bonding(struct nl_msg *msg, void *arg)
 +{
-+	return sys_simple_print_boolean(msg, arg, BATADV_ATTR_AP_ISOLATION);
++	return sys_simple_print_boolean(msg, arg, BATADV_ATTR_BONDING);
 +}
 +
-+static int get_attrs_ap_isolation(struct nl_msg *msg, void *arg)
++static int get_bonding(struct state *state)
 +{
-+	struct state *state = arg;
-+
-+	if (state->vid >= 0)
-+		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
-+
-+	return 0;
++	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
++				  NULL, print_bonding);
 +}
 +
-+static int get_ap_isolation(struct state *state)
-+{
-+	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
-+
-+	if (state->vid >= 0)
-+		nl_cmd = BATADV_CMD_GET_VLAN;
-+
-+	return sys_simple_nlquery(state, nl_cmd, get_attrs_ap_isolation,
-+				  print_ap_isolation);
-+}
-+
-+static int set_attrs_ap_isolation(struct nl_msg *msg, void *arg)
++static int set_attrs_bonding(struct nl_msg *msg, void *arg)
 +{
 +	struct state *state = arg;
 +	struct settings_data *settings = state->cmd->arg;
 +	struct simple_boolean_data *data = settings->data;
 +
-+	nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION, data->val);
-+
-+	if (state->vid >= 0)
-+		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
++	nla_put_u8(msg, BATADV_ATTR_BONDING, data->val);
 +
 +	return 0;
 +}
 +
-+static int set_ap_isolation(struct state *state)
++static int set_bonding(struct state *state)
 +{
-+	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
-+
-+	if (state->vid >= 0)
-+		nl_cmd = BATADV_CMD_SET_VLAN;
-+
-+	return sys_simple_nlquery(state, nl_cmd, set_attrs_ap_isolation, NULL);
++	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
++				  set_attrs_bonding, NULL);
 +}
 +
- static struct settings_data batctl_settings_ap_isolation = {
- 	.sysfs_name = "ap_isolation",
+ static struct settings_data batctl_settings_bonding = {
+ 	.sysfs_name = "bonding",
 -	.params = sysfs_param_enable,
-+	.data = &ap_isolation,
++	.data = &bonding,
 +	.parse = parse_simple_boolean,
-+	.netlink_get = get_ap_isolation,
-+	.netlink_set = set_ap_isolation,
++	.netlink_get = get_bonding,
++	.netlink_set = set_bonding,
  };
  
- COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
+ COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
 +	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_ap_isolation,
- 	      "[0|1]             \tdisplay or modify ap_isolation setting");
++	      &batctl_settings_bonding,
+ 	      "[0|1]             \tdisplay or modify bonding setting");
 -- 
 2.19.2
 
