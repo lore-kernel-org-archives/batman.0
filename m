@@ -1,13 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:32:06 +0100
-Message-Id: <20181207203209.22633-18-sven@narfation.org>
-In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
-References: <20181207203209.22633-1-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:50:13 +0100
+Message-Id: <20181207205013.25105-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 17/20] batctl: Support generic netlink for
- fragmentation command
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Rename option_watch_interval to
+ option_timeout_interval
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,87 +16,67 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Andreas Langer <an.langer@gmx.de>, Martin Hundeboll <martin@hundeboll.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-sysfs should be avoided for new settings of network interfaces. To still
-provide a common configuration infrastructure, all the existing settings
-subcommands also have to be reimplemented via generic netlink while still
-using sysfs as fallback.
-
-The fragmentation implementation is using the commands
-BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
-the u8 (boolean) BATADV_ATTR_FRAGMENTATION attribute.
+The watch interval is actually a different option for debug tables which
+uses the parameter '-w'. The configuration to enable/disable the parameter
+to set the timeout for not displaying not seen originators should therefore
+use a different name.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Andreas Langer <an.langer@gmx.de>
-Cc: Martin Hundeboll <martin@hundeboll.net>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
----
- fragmentation.c | 45 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 43 insertions(+), 2 deletions(-)
+ debug.c       | 4 ++--
+ debug.h       | 2 +-
+ originators.c | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fragmentation.c b/fragmentation.c
-index e159bdd..7f5f488 100644
---- a/fragmentation.c
-+++ b/fragmentation.c
-@@ -21,13 +21,54 @@
-  */
+diff --git a/debug.c b/debug.c
+index 316312f..182877a 100644
+--- a/debug.c
++++ b/debug.c
+@@ -44,7 +44,7 @@ static void debug_table_usage(struct state *state)
+ 	fprintf(stderr, " \t -H don't show the header\n");
+ 	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
  
- #include "main.h"
-+
-+#include <errno.h>
-+#include <linux/genetlink.h>
-+#include <netlink/genl/genl.h>
-+
-+#include "batman_adv.h"
-+#include "netlink.h"
- #include "sys.h"
+-	if (debug_table->option_watch_interval)
++	if (debug_table->option_timeout_interval)
+ 		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
  
-+static struct simple_boolean_data fragmentation;
-+
-+static int print_fragmentation(struct nl_msg *msg, void *arg)
-+{
-+	return sys_simple_print_boolean(msg, arg, BATADV_ATTR_FRAGMENTATION);
-+}
-+
-+static int get_fragmentation(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_fragmentation);
-+}
-+
-+static int set_attrs_fragmentation(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct simple_boolean_data *data = settings->data;
-+
-+	nla_put_u8(msg, BATADV_ATTR_FRAGMENTATION, data->val);
-+
-+	return 0;
-+}
-+
-+static int set_fragmentation(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_fragmentation, NULL);
-+}
-+
- static struct settings_data batctl_settings_fragmentation = {
- 	.sysfs_name = "fragmentation",
--	.params = sysfs_param_enable,
-+	.data = &fragmentation,
-+	.parse = parse_simple_boolean,
-+	.netlink_get = get_fragmentation,
-+	.netlink_set = set_fragmentation,
+ 	if (debug_table->option_orig_iface)
+@@ -89,7 +89,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
+ 			}
+ 			break;
+ 		case 't':
+-			if (!debug_table->option_watch_interval) {
++			if (!debug_table->option_timeout_interval) {
+ 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
+ 				debug_table_usage(state);
+ 				return EXIT_FAILURE;
+diff --git a/debug.h b/debug.h
+index 2dac1b7..f1a3fd4 100644
+--- a/debug.h
++++ b/debug.h
+@@ -43,7 +43,7 @@ struct debug_table_data {
+ 			 float orig_timeout, float watch_interval);
+ 	unsigned int option_unicast_only:1;
+ 	unsigned int option_multicast_only:1;
+-	unsigned int option_watch_interval:1;
++	unsigned int option_timeout_interval:1;
+ 	unsigned int option_orig_iface:1;
  };
  
- COMMAND_NAMED(SUBCOMMAND, fragmentation, "f", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_fragmentation,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_fragmentation,
- 	      "[0|1]             \tdisplay or modify fragmentation setting");
+diff --git a/originators.c b/originators.c
+index c29300a..7dc9b4c 100644
+--- a/originators.c
++++ b/originators.c
+@@ -219,7 +219,7 @@ static struct debug_table_data batctl_debug_table_originators = {
+ 	.debugfs_name = "originators",
+ 	.header_lines = 2,
+ 	.netlink_fn = netlink_print_originators,
+-	.option_watch_interval = 1,
++	.option_timeout_interval = 1,
+ 	.option_orig_iface = 1,
+ };
+ 
 -- 
 2.19.2
 
