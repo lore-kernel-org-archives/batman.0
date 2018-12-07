@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:31:57 +0100
-Message-Id: <20181207203209.22633-9-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:31:58 +0100
+Message-Id: <20181207203209.22633-10-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 08/20] batctl: Support generic netlink for
- loglevel command
+Subject: [B.A.T.M.A.N.] [RFC v4 09/20] batctl: Support generic netlink for
+ isolation_mark command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,54 +18,101 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
 
 sysfs should be avoided for new settings of network interfaces. To still
 provide a common configuration infrastructure, all the existing settings
 subcommands also have to be reimplemented via generic netlink while still
 using sysfs as fallback.
 
-The loglevel implementation is using the commands
+The isolation_mark implementation is using the commands
 BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
-this feature using the u32 (bitmask) BATADV_ATTR_LOG_LEVEL attribute.
+the mark/mask using the u32 attributes BATADV_ATTR_ISOLATION_MARK
+and BATADV_ATTR_ISOLATION_MASK.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Antonio Quartulli <a@unstable.cc>
 ---
- loglevel.c | 138 ++++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 110 insertions(+), 28 deletions(-)
+ isolation_mark.c | 123 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 121 insertions(+), 2 deletions(-)
 
-diff --git a/loglevel.c b/loglevel.c
-index fed70c8..72e16e0 100644
---- a/loglevel.c
-+++ b/loglevel.c
-@@ -20,7 +20,9 @@
+diff --git a/isolation_mark.c b/isolation_mark.c
+index 13ba869..461053f 100644
+--- a/isolation_mark.c
++++ b/isolation_mark.c
+@@ -20,16 +20,135 @@
   * License-Filename: LICENSES/preferred/GPL-2.0
   */
  
 +#include <errno.h>
- #include <getopt.h>
+ #include <stddef.h>
 +#include <stdint.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
-@@ -29,6 +31,10 @@
++#include <string.h>
+ 
  #include "main.h"
  #include "sys.h"
  
-+static struct log_level_data {
-+	uint32_t log_level;
-+} log_level_globals;
++static struct isolation_mark_data {
++	uint32_t isolation_mark;
++	uint32_t isolation_mask;
++} isolation_mark;
 +
- static void log_level_usage(void)
- {
- 	fprintf(stderr, "Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
-@@ -47,14 +53,93 @@ static void log_level_usage(void)
- 	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
- }
- 
-+static int extract_log_level(struct nl_msg *msg, void *arg)
++static int parse_isolation_mark(struct state *state, int argc, char *argv[])
++{
++	struct settings_data *settings = state->cmd->arg;
++	struct isolation_mark_data *data = settings->data;
++	char *mask_ptr;
++	char buff[256];
++	uint32_t mark;
++	uint32_t mask;
++	char *endptr;
++
++	if (argc != 2) {
++		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
++		return -EINVAL;
++	}
++
++	strncpy(buff, argv[1], sizeof(buff));
++	buff[sizeof(buff) - 1] = '\0';
++
++	/* parse the mask if it has been specified, otherwise assume the mask is
++	 * the biggest possible
++	 */
++	mask = 0xFFFFFFFF;
++	mask_ptr = strchr(buff, '/');
++	if (mask_ptr) {
++		*mask_ptr = '\0';
++		mask_ptr++;
++
++		/* the mask must be entered in hex base as it is going to be a
++		 * bitmask and not a prefix length
++		 */
++		mask = strtoul(mask_ptr, &endptr, 16);
++		if (!endptr || *endptr != '\0')
++			goto inval_format;
++	}
++
++	/* the mark can be entered in any base */
++	mark = strtoul(buff, &endptr, 0);
++	if (!endptr || *endptr != '\0')
++		goto inval_format;
++
++	data->isolation_mask = mask;
++	/* erase bits not covered by the mask */
++	data->isolation_mark = mark & mask;
++
++	return 0;
++
++inval_format:
++	fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
++	fprintf(stderr, "The following formats for mark(/mask) are allowed:\n");
++	fprintf(stderr, " * 0x12345678\n");
++	fprintf(stderr, " * 0x12345678/0xabcdef09\n");
++	return -EINVAL;
++}
++
++static int print_isolation_mark(struct nl_msg *msg, void *arg)
 +{
 +	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 +	struct nlmsghdr *nlh = nlmsg_hdr(msg);
@@ -82,174 +129,56 @@ index fed70c8..72e16e0 100644
 +		return NL_OK;
 +	}
 +
-+	if (!attrs[BATADV_ATTR_LOG_LEVEL])
++	if (!attrs[BATADV_ATTR_ISOLATION_MARK] ||
++	    !attrs[BATADV_ATTR_ISOLATION_MASK])
 +		return NL_OK;
 +
-+	log_level_globals.log_level = nla_get_u32(attrs[BATADV_ATTR_LOG_LEVEL]);
++	printf("0x%08x/0x%08x\n",
++	       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MARK]),
++	       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MASK]));
 +
 +	*result = 0;
 +	return NL_STOP;
 +}
 +
-+static int get_log_level(struct state *state)
++static int get_isolation_mark(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, extract_log_level);
++				  NULL, print_isolation_mark);
 +}
 +
-+static int set_attrs_log_level(struct nl_msg *msg, void *arg __maybe_unused)
++static int set_attrs_isolation_mark(struct nl_msg *msg, void *arg)
 +{
-+	nla_put_u32(msg, BATADV_ATTR_LOG_LEVEL, log_level_globals.log_level);
++	struct state *state = arg;
++	struct settings_data *settings = state->cmd->arg;
++	struct isolation_mark_data *data = settings->data;
++
++	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MARK, data->isolation_mark);
++	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MASK, data->isolation_mask);
 +
 +	return 0;
 +}
 +
-+static int set_log_level(struct state *state)
++static int set_isolation_mark(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_log_level, NULL);
++				  set_attrs_isolation_mark, NULL);
 +}
 +
-+static int log_level_read_setting(struct state *state, const char *path_buff)
-+{
-+	int res;
-+
-+	res = get_log_level(state);
-+	if (res < 0 && res != -EOPNOTSUPP)
-+		return EXIT_FAILURE;
-+	if (res >= 0)
-+		return EXIT_SUCCESS;
-+
-+	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
-+	if (res != EXIT_SUCCESS)
-+		return res;
-+
-+	log_level_globals.log_level = strtol(line_ptr, (char **) NULL, 10);
-+
-+	return res;
-+}
-+
-+static int log_level_write_setting(struct state *state, const char *path_buff)
-+{
-+	int res;
-+	char str[4];
-+
-+	res = set_log_level(state);
-+	if (res < 0 && res != -EOPNOTSUPP)
-+		return EXIT_FAILURE;
-+	if (res >= 0)
-+		return EXIT_SUCCESS;
-+
-+	snprintf(str, sizeof(str), "%i", log_level_globals.log_level);
-+	return write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
-+}
-+
- static int loglevel(struct state *state, int argc, char **argv)
- {
- 	int optchar, res = EXIT_FAILURE;
--	int log_level = 0;
- 	char *path_buff;
--	char str[4];
- 	int i;
+ static struct settings_data batctl_settings_isolation_mark = {
+ 	.sysfs_name = "isolation_mark",
+-	.params = NULL,
++	.data = &isolation_mark,
++	.parse = parse_isolation_mark,
++	.netlink_get = get_isolation_mark,
++	.netlink_set = set_isolation_mark,
+ };
  
-+	log_level_globals.log_level = 0;
-+
- 	while ((optchar = getopt(argc, argv, "h")) != -1) {
- 		switch (optchar) {
- 		case 'h':
-@@ -79,63 +164,59 @@ static int loglevel(struct state *state, int argc, char **argv)
- 
- 		for (i = 1; i < argc; i++) {
- 			if (strcmp(argv[i], "none") == 0) {
--				log_level = 0;
-+				log_level_globals.log_level = 0;
- 				break;
- 			} else if (strcmp(argv[i], "all") == 0) {
--				log_level = 255;
-+				log_level_globals.log_level = 255;
- 				break;
- 			} else if (strcmp(argv[i], "batman") == 0)
--				log_level |= BIT(0);
-+				log_level_globals.log_level |= BIT(0);
- 			else if (strcmp(argv[i], "routes") == 0)
--				log_level |= BIT(1);
-+				log_level_globals.log_level |= BIT(1);
- 			else if (strcmp(argv[i], "tt") == 0)
--				log_level |= BIT(2);
-+				log_level_globals.log_level |= BIT(2);
- 			else if (strcmp(argv[i], "bla") == 0)
--				log_level |= BIT(3);
-+				log_level_globals.log_level |= BIT(3);
- 			else if (strcmp(argv[i], "dat") == 0)
--				log_level |= BIT(4);
-+				log_level_globals.log_level |= BIT(4);
- 			else if (strcmp(argv[i], "nc") == 0)
--				log_level |= BIT(5);
-+				log_level_globals.log_level |= BIT(5);
- 			else if (strcmp(argv[i], "mcast") == 0)
--				log_level |= BIT(6);
-+				log_level_globals.log_level |= BIT(6);
- 			else if (strcmp(argv[i], "tp") == 0)
--				log_level |= BIT(7);
-+				log_level_globals.log_level |= BIT(7);
- 			else {
- 				log_level_usage();
- 				goto out;
- 			}
- 		}
- 
--		snprintf(str, sizeof(str), "%i", log_level);
--		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
-+		log_level_write_setting(state, path_buff);
- 		goto out;
- 	}
- 
--	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
--
-+	res = log_level_read_setting(state, path_buff);
- 	if (res != EXIT_SUCCESS)
- 		goto out;
- 
--	log_level = strtol(line_ptr, (char **) NULL, 10);
--
--	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (!log_level_globals.log_level) ? 'x' : ' ',
- 	       "all debug output disabled", "none");
--	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(0)) ? 'x' : ' ',
- 	       "messages related to routing / flooding / broadcasting",
- 	       "batman");
--	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(1)) ? 'x' : ' ',
- 	       "messages related to route added / changed / deleted", "routes");
--	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(2)) ? 'x' : ' ',
- 	       "messages related to translation table operations", "tt");
--	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(3)) ? 'x' : ' ',
- 	       "messages related to bridge loop avoidance", "bla");
--	printf("[%c] %s (%s)\n", (log_level & BIT(4)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(4)) ? 'x' : ' ',
- 	       "messages related to arp snooping and distributed arp table", "dat");
--	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(5)) ? 'x' : ' ',
- 	       "messages related to network coding", "nc");
--	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(6)) ? 'x' : ' ',
- 	       "messages related to multicast", "mcast");
--	printf("[%c] %s (%s)\n", (log_level & BIT(7)) ? 'x' : ' ',
-+	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(7)) ? 'x' : ' ',
- 	       "messages related to throughput meter", "tp");
- 
- out:
-@@ -143,5 +224,6 @@ static int loglevel(struct state *state, int argc, char **argv)
- 	return res;
- }
- 
--COMMAND(SUBCOMMAND, loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
-+COMMAND(SUBCOMMAND, loglevel, "ll",
-+	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
- 	"[level]           \tdisplay or modify the log level");
+ COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_settings_isolation_mark,
+ 	      "[mark]            \tdisplay or modify isolation_mark setting");
 -- 
 2.19.2
 
