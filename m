@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:32:03 +0100
-Message-Id: <20181207203209.22633-15-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:32:04 +0100
+Message-Id: <20181207203209.22633-16-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 14/20] batctl: Support generic netlink for
- bonding command
+Subject: [B.A.T.M.A.N.] [RFC v4 15/20] batctl: Support generic netlink for
+ bridge_loop_avoidance command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,22 +24,22 @@ provide a common configuration infrastructure, all the existing settings
 subcommands also have to be reimplemented via generic netlink while still
 using sysfs as fallback.
 
-The bonding implementation is using the commands
+The bridge_loop_avoidance implementation is using the commands
 BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
-the u8 (boolean) BATADV_ATTR_BONDING attribute.
+the u8 (boolean) BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 Cc: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- bonding.c | 45 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 43 insertions(+), 2 deletions(-)
+ bridge_loop_avoidance.c | 46 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 44 insertions(+), 2 deletions(-)
 
-diff --git a/bonding.c b/bonding.c
-index f7105c9..3b8b11b 100644
---- a/bonding.c
-+++ b/bonding.c
-@@ -21,13 +21,54 @@
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 0db49f2..7831a19 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -21,13 +21,55 @@
   */
  
  #include "main.h"
@@ -52,50 +52,51 @@ index f7105c9..3b8b11b 100644
 +#include "netlink.h"
  #include "sys.h"
  
-+static struct simple_boolean_data bonding;
++static struct simple_boolean_data bridge_loop_avoidance;
 +
-+static int print_bonding(struct nl_msg *msg, void *arg)
++static int print_bridge_loop_avoidance(struct nl_msg *msg, void *arg)
 +{
-+	return sys_simple_print_boolean(msg, arg, BATADV_ATTR_BONDING);
++	return sys_simple_print_boolean(msg, arg,
++					BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE);
 +}
 +
-+static int get_bonding(struct state *state)
++static int get_bridge_loop_avoidance(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_bonding);
++				  NULL, print_bridge_loop_avoidance);
 +}
 +
-+static int set_attrs_bonding(struct nl_msg *msg, void *arg)
++static int set_attrs_bridge_loop_avoidance(struct nl_msg *msg, void *arg)
 +{
 +	struct state *state = arg;
 +	struct settings_data *settings = state->cmd->arg;
 +	struct simple_boolean_data *data = settings->data;
 +
-+	nla_put_u8(msg, BATADV_ATTR_BONDING, data->val);
++	nla_put_u8(msg, BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE, data->val);
 +
 +	return 0;
 +}
 +
-+static int set_bonding(struct state *state)
++static int set_bridge_loop_avoidance(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_bonding, NULL);
++				  set_attrs_bridge_loop_avoidance, NULL);
 +}
 +
- static struct settings_data batctl_settings_bonding = {
- 	.sysfs_name = "bonding",
+ static struct settings_data batctl_settings_bridge_loop_avoidance = {
+ 	.sysfs_name = SYS_BLA,
 -	.params = sysfs_param_enable,
-+	.data = &bonding,
++	.data = &bridge_loop_avoidance,
 +	.parse = parse_simple_boolean,
-+	.netlink_get = get_bonding,
-+	.netlink_set = set_bonding,
++	.netlink_get = get_bridge_loop_avoidance,
++	.netlink_set = set_bridge_loop_avoidance,
  };
  
- COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
+ COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
 +	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_bonding,
- 	      "[0|1]             \tdisplay or modify bonding setting");
++	      &batctl_settings_bridge_loop_avoidance,
+ 	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
 -- 
 2.19.2
 
