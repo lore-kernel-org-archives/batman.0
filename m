@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:31:55 +0100
-Message-Id: <20181207203209.22633-7-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:31:56 +0100
+Message-Id: <20181207203209.22633-8-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 06/20] batctl: Add netlink simple query
- helper
+Subject: [B.A.T.M.A.N.] [RFC v4 07/20] batctl: Support generic netlink for
+ gw_mode command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,121 +18,352 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
 
-All functions which will use the new configuration interface for meshifs,
-hardifs and vlans require a simple method to send messages and have one or
-multiple extra functionality:
+sysfs should be avoided for new settings of network interfaces. To still
+provide a common configuration infrastructure, all the existing settings
+subcommands also have to be reimplemented via generic netlink while still
+using sysfs as fallback.
 
-* add special attributes (attribute_cb)
-* return errors which happened during communication via netlink
-* parse the reply message (callback)
+The gw_mode implementation is using the commands
+BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
+this feature using the attributes:
 
-The sys_simple_nlquery provides this but requires that the netlink socket
-and the single use nl_cb was allocated by the initialization helper via
-COMMAND_FLAG_MESH_IFACE.
+* u8 BATADV_ATTR_GW_MODE (0 == off, 1 == client, 2 == server)
+* u32 BATADV_ATTR_GW_BANDWIDTH_DOWN (in 100 kbit/s steps)
+* u32 BATADV_ATTR_GW_BANDWIDTH_UP (in 100 kbit/s steps)
+* u32 BATADV_ATTR_GW_SEL_CLASS
+  - 1-255 for BATMAN_IV
+  - 1-UINT32_MAX for BATMAN_V
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- sys.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- sys.h | 10 ++++++++++
- 2 files changed, 69 insertions(+)
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Antonio Quartulli <a@unstable.cc>
+---
+ gw_mode.c | 275 ++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 206 insertions(+), 69 deletions(-)
 
-diff --git a/sys.c b/sys.c
-index 482daed..a44502c 100644
---- a/sys.c
-+++ b/sys.c
-@@ -47,6 +47,65 @@ const char *sysfs_param_enable[] = {
- 	NULL,
- };
+diff --git a/gw_mode.c b/gw_mode.c
+index 167b777..477a1ff 100644
+--- a/gw_mode.c
++++ b/gw_mode.c
+@@ -162,80 +162,233 @@ static int parse_gw(struct state *state, int argc, char *argv[])
+ 	return 0;
+ }
  
-+static int sys_simple_nlerror(struct sockaddr_nl *nla __maybe_unused,
-+			      struct nlmsgerr *nlerr,	void *arg)
-+{
+-static int gw_mode(struct state *state, int argc, char **argv)
++static int print_gw(struct nl_msg *msg, void *arg)
+ {
+-	int optchar, res = EXIT_FAILURE;
+-	char *path_buff, gw_mode;
++	static const int mandatory[] = {
++		BATADV_ATTR_GW_MODE,
++	};
++	static const int mandatory_client[] = {
++		BATADV_ATTR_ALGO_NAME,
++		BATADV_ATTR_GW_SEL_CLASS,
++	};
++	static const int mandatory_server[] = {
++		BATADV_ATTR_GW_BANDWIDTH_DOWN,
++		BATADV_ATTR_GW_BANDWIDTH_UP,
++	};
++	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
 +	int *result = arg;
++	const char *algo;
++	uint8_t gw_mode;
++	uint32_t val;
++	uint32_t down;
++	uint32_t up;
 +
-+	if (nlerr->error != -EOPNOTSUPP)
-+		fprintf(stderr, "Error received: %s\n",
-+			strerror(-nlerr->error));
++	if (!genlmsg_valid_hdr(nlh, 0))
++		return NL_OK;
 +
-+	*result = nlerr->error;
++	ghdr = nlmsg_data(nlh);
 +
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), batadv_netlink_policy)) {
++		return NL_OK;
++	}
+ 
+-	while ((optchar = getopt(argc, argv, "h")) != -1) {
+-		switch (optchar) {
+-		case 'h':
+-			gw_mode_usage();
+-			return EXIT_SUCCESS;
+-		default:
+-			gw_mode_usage();
+-			return EXIT_FAILURE;
+-		}
++	/* ignore entry when attributes are missing */
++	if (missing_mandatory_attrs(attrs, mandatory, ARRAY_SIZE(mandatory)))
++		return NL_OK;
++
++	gw_mode = nla_get_u8(attrs[BATADV_ATTR_GW_MODE]);
++	switch (gw_mode) {
++	case BATADV_GW_MODE_OFF:
++		printf("off\n");
++		break;
++	case BATADV_GW_MODE_CLIENT:
++		if (missing_mandatory_attrs(attrs, mandatory_client,
++		    ARRAY_SIZE(mandatory_client)))
++			return NL_OK;
++
++		algo = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
++		val = nla_get_u32(attrs[BATADV_ATTR_GW_SEL_CLASS]);
++
++		if (strcmp(algo, "BATMAN_V") == 0)
++			printf("client (selection class: %u.%01u MBit)\n",
++			       val / 10, val % 10);
++		else
++			printf("client (selection class: %u)\n", val);
++		break;
++	case BATADV_GW_MODE_SERVER:
++		if (missing_mandatory_attrs(attrs, mandatory_server,
++		    ARRAY_SIZE(mandatory_server)))
++			return NL_OK;
++
++		down = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]);
++		up = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_UP]);
++
++		printf("server (announced bw: %u.%01u/%u.%01u MBit)\n",
++		       down / 10, down % 10, up / 10, up % 10);
++		break;
++	default:
++		printf("unknown\n");
++		break;
+ 	}
+ 
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++	*result = 0;
 +	return NL_STOP;
 +}
 +
-+int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
-+		       nl_recvmsg_msg_cb_t attribute_cb,
-+		       nl_recvmsg_msg_cb_t callback)
++static int get_gw(struct state *state)
 +{
-+	int result;
-+	struct nl_msg *msg;
-+	int ret;
-+
-+	if (!state->sock)
-+		return -EOPNOTSUPP;
-+
-+	if (callback) {
-+		result = -EOPNOTSUPP;
-+		nl_cb_set(state->cb, NL_CB_VALID, NL_CB_CUSTOM, callback,
-+			  &result);
-+	} else {
-+		result = 0;
-+	}
-+
-+	nl_cb_err(state->cb, NL_CB_CUSTOM, sys_simple_nlerror, &result);
-+
-+	msg = nlmsg_alloc();
-+	if (!msg)
-+		return -ENOMEM;
-+
-+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0, 0,
-+		    nl_cmd, 1);
-+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
-+
-+	if (attribute_cb) {
-+		ret = attribute_cb(msg, state);
-+		if (ret < 0) {
-+			nlmsg_free(msg);
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	nl_send_auto_complete(state->sock, msg);
-+	nlmsg_free(msg);
-+
-+	nl_recvmsgs(state->sock, state->cb);
-+
-+	return result;
++	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH, NULL, print_gw);
 +}
 +
- static void settings_usage(struct state *state)
- {
- 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
-diff --git a/sys.h b/sys.h
-index 1c8f23d..57224d5 100644
---- a/sys.h
-+++ b/sys.h
-@@ -25,6 +25,12 @@
- 
- #include "main.h"
- 
-+#include <linux/genetlink.h>
-+#include <netlink/genl/genl.h>
++static int set_attrs_gw(struct nl_msg *msg, void *arg __maybe_unused)
++{
++	nla_put_u8(msg, BATADV_ATTR_GW_MODE, gw_globals.mode);
 +
-+#include "batman_adv.h"
-+#include "netlink.h"
++	if (gw_globals.bandwidth_down_found)
++		nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_DOWN,
++			    gw_globals.bandwidth_down);
 +
- #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
- #define SYS_LOG_LEVEL		"log_level"
- #define SYS_LOG			"log"
-@@ -53,4 +59,8 @@ extern const char *sysfs_param_enable[];
- 
- int handle_sys_setting(struct state *state, int argc, char **argv);
- 
-+int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
-+		       nl_recvmsg_msg_cb_t attribute_cb,
-+		       nl_recvmsg_msg_cb_t callback);
++	if (gw_globals.bandwidth_up_found)
++		nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_UP,
++			    gw_globals.bandwidth_up);
 +
- #endif
++	if (gw_globals.sel_class_found)
++		nla_put_u32(msg, BATADV_ATTR_GW_SEL_CLASS,
++			    gw_globals.sel_class);
++
++	return 0;
++}
++
++static int set_gw(struct state *state)
++{
++	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH, set_attrs_gw,
++				  NULL);
++}
++
++static int gw_read_setting(struct state *state, const char *path_buff)
++{
++	enum batadv_gw_modes gw_mode;
++	int res;
++
++	res = get_gw(state);
++	if (res < 0 && res != -EOPNOTSUPP)
+ 		return EXIT_FAILURE;
++	if (res >= 0)
++		return EXIT_SUCCESS;
++
++	/* fallback to sysfs */
++	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
++	if (res != EXIT_SUCCESS)
++		goto out;
++
++	if (line_ptr[strlen(line_ptr) - 1] == '\n')
++		line_ptr[strlen(line_ptr) - 1] = '\0';
++
++	if (strcmp(line_ptr, "client") == 0)
++		gw_mode = BATADV_GW_MODE_CLIENT;
++	else if (strcmp(line_ptr, "server") == 0)
++		gw_mode = BATADV_GW_MODE_SERVER;
++	else
++		gw_mode = BATADV_GW_MODE_OFF;
++
++	free(line_ptr);
++	line_ptr = NULL;
++
++	switch (gw_mode) {
++	case BATADV_GW_MODE_CLIENT:
++		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
++		break;
++	case BATADV_GW_MODE_SERVER:
++		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
++		break;
++	default:
++		printf("off\n");
++		goto out;
+ 	}
+ 
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
++	if (res != EXIT_SUCCESS)
++		goto out;
+ 
+-	if (argc == 1) {
+-		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
++	if (line_ptr[strlen(line_ptr) - 1] == '\n')
++		line_ptr[strlen(line_ptr) - 1] = '\0';
+ 
+-		if (res != EXIT_SUCCESS)
+-			goto out;
++	switch (gw_mode) {
++	case BATADV_GW_MODE_CLIENT:
++		printf("client (selection class: %s)\n", line_ptr);
++		break;
++	case BATADV_GW_MODE_SERVER:
++		printf("server (announced bw: %s)\n", line_ptr);
++		break;
++	default:
++		goto out;
++	}
+ 
+-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
++out:
++	free(line_ptr);
++	line_ptr = NULL;
+ 
+-		if (strcmp(line_ptr, "client") == 0)
+-			gw_mode = BATADV_GW_MODE_CLIENT;
+-		else if (strcmp(line_ptr, "server") == 0)
+-			gw_mode = BATADV_GW_MODE_SERVER;
+-		else
+-			gw_mode = BATADV_GW_MODE_OFF;
++	return res;
++}
++
++static int gw_write_setting(struct state *state, const char *path_buff,
++			    int argc, char *argv[])
++{
++	int res = EXIT_FAILURE;
++
++	res = set_gw(state);
++	if (res < 0 && res != -EOPNOTSUPP)
++		return EXIT_FAILURE;
++	if (res >= 0)
++		return EXIT_SUCCESS;
+ 
+-		free(line_ptr);
+-		line_ptr = NULL;
++	/* sysfs fallback */
++	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
++	if (res != EXIT_SUCCESS)
++		return res;
+ 
+-		switch (gw_mode) {
++	if (argc > 2) {
++		switch (gw_globals.mode) {
+ 		case BATADV_GW_MODE_CLIENT:
+-			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
++			res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+ 			break;
+ 		case BATADV_GW_MODE_SERVER:
+-			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
++			res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+ 			break;
+-		default:
+-			printf("off\n");
+-			goto out;
+ 		}
++	}
+ 
+-		if (res != EXIT_SUCCESS)
+-			goto out;
++	return res;
++}
+ 
+-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
++static int gw_mode(struct state *state, int argc, char **argv)
++{
++	int optchar, res = EXIT_FAILURE;
++	char *path_buff;
+ 
+-		switch (gw_mode) {
+-		case BATADV_GW_MODE_CLIENT:
+-			printf("client (selection class: %s)\n", line_ptr);
+-			break;
+-		case BATADV_GW_MODE_SERVER:
+-			printf("server (announced bw: %s)\n", line_ptr);
+-			break;
++	while ((optchar = getopt(argc, argv, "h")) != -1) {
++		switch (optchar) {
++		case 'h':
++			gw_mode_usage();
++			return EXIT_SUCCESS;
+ 		default:
+-			goto out;
++			gw_mode_usage();
++			return EXIT_FAILURE;
+ 		}
++	}
+ 
+-		free(line_ptr);
+-		line_ptr = NULL;
++	path_buff = malloc(PATH_BUFF_LEN);
++	if (!path_buff) {
++		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++		return EXIT_FAILURE;
++	}
++
++	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
++
++	if (argc == 1) {
++		res = gw_read_setting(state, path_buff);
+ 		goto out;
+ 	}
+ 
+@@ -247,28 +400,12 @@ static int gw_mode(struct state *state, int argc, char **argv)
+ 		goto out;
+ 	}
+ 
+-	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
+-	if (res != EXIT_SUCCESS)
+-		goto out;
+-
+-	if (argc == 2)
+-		goto out;
+-
+-	switch (gw_globals.mode) {
+-	case BATADV_GW_MODE_CLIENT:
+-		res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+-		break;
+-	case BATADV_GW_MODE_SERVER:
+-		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+-		break;
+-	}
+-
+-	goto out;
+-
++	res = gw_write_setting(state, path_buff, argc, argv);
+ out:
+ 	free(path_buff);
+ 	return res;
+ }
+ 
+-COMMAND(SUBCOMMAND, gw_mode, "gw", COMMAND_FLAG_MESH_IFACE, NULL,
++COMMAND(SUBCOMMAND, gw_mode, "gw",
++	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
+ 	"[mode]            \tdisplay or modify the gateway mode");
 -- 
 2.19.2
 
