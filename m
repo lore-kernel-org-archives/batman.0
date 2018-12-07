@@ -1,12 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 14:58:38 +0100
-Message-Id: <20181207135846.6152-12-sven@narfation.org>
+Date: Fri,  7 Dec 2018 14:58:39 +0100
+Message-Id: <20181207135846.6152-13-sven@narfation.org>
 In-Reply-To: <20181207135846.6152-1-sven@narfation.org>
 References: <20181207135846.6152-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v3 11/19] batman-adv: Add gateway mesh genl
+Subject: [B.A.T.M.A.N.] [RFC v3 12/19] batman-adv: Add hop_penalty mesh genl
  configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,292 +19,81 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, Simon Wunderlich <sw@simonwunderlich.de>
 
-The mesh/soft-interface can optimize the handling of DHCP packets. Instead
-of flooding them through the whole mesh, it can be forwarded as unicast to
-a specific gateway server. The originator which injects the packets in the
-mesh has to select (based on sel_class thresholds) a responsible gateway
-server. This is done by switching this originator to the gw_mode client.
-The servers announce their forwarding bandwidth (download/upload) when the
-gw_mode server was selected.
+The TQ (B.A.T.M.A.N. IV) and throughput values (B.A.T.M.A.N. V) are reduced
+when they are forwarded. One of the reductions is the penalty for
+traversing an additional hop. This hop_penalty (0-255) defines the
+percentage of reduction (0-100%).
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the attributes:
-
-* u8 BATADV_ATTR_GW_MODE (0 == off, 1 == client, 2 == server)
-* u32 BATADV_ATTR_GW_BANDWIDTH_DOWN (in 100 kbit/s steps)
-* u32 BATADV_ATTR_GW_BANDWIDTH_UP (in 100 kbit/s steps)
-* u32 BATADV_ATTR_GW_SEL_CLASS
+configuration of this feature using the u8 BATADV_ATTR_HOP_PENALTY
+attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+Cc: Linus Lüssing <linus.luessing@c0d3.blue>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h | 40 ++++++++++++++
- net/batman-adv/gateway_client.c |  1 -
- net/batman-adv/gateway_common.c |  1 +
- net/batman-adv/gateway_common.h |  6 ---
- net/batman-adv/netlink.c        | 92 +++++++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.c |  2 +-
- net/batman-adv/sysfs.c          |  1 +
- 7 files changed, 135 insertions(+), 8 deletions(-)
+ include/uapi/linux/batman_adv.h |  6 ++++++
+ net/batman-adv/netlink.c        | 11 +++++++++++
+ 2 files changed, 17 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 5c58d3b6..0d45e807 100644
+index 0d45e807..7cc69802 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -139,6 +139,20 @@ enum batadv_mcast_flags_priv {
- 	BATADV_MCAST_FLAGS_QUERIER_IPV6_SHADOWING	= (1 << 4),
- };
- 
-+/**
-+ * enum batadv_gw_modes - gateway mode of node
-+ */
-+enum batadv_gw_modes {
-+	/** @BATADV_GW_MODE_OFF: gw mode disabled */
-+	BATADV_GW_MODE_OFF,
-+
-+	/** @BATADV_GW_MODE_CLIENT: send DHCP requests to gw servers */
-+	BATADV_GW_MODE_CLIENT,
-+
-+	/** @BATADV_GW_MODE_SERVER: announce itself as gatway server */
-+	BATADV_GW_MODE_SERVER,
-+};
-+
- /**
-  * enum batadv_nl_attrs - batman-adv netlink attributes
-  */
-@@ -402,6 +416,32 @@ enum batadv_nl_attrs {
+@@ -442,6 +442,12 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_FRAGMENTATION,
+ 	BATADV_ATTR_GW_SEL_CLASS,
  
 +	/**
-+	 * @BATADV_ATTR_GW_BANDWIDTH_DOWN: defines the download bandwidth which
-+	 *  is propagated by this node if %BATADV_ATTR_GW_BANDWIDTH_MODE was set
-+	 *  to 'server'.
++	 * @BATADV_ATTR_HOP_PENALTY: defines the penalty which will be applied
++	 *  to an originator message's tq-field on every hop.
 +	 */
-+	BATADV_ATTR_GW_BANDWIDTH_DOWN,
-+
-+	/**
-+	 * @BATADV_ATTR_GW_BANDWIDTH_UP: defines the upload bandwidth which
-+	 *  is propagated by this node if %BATADV_ATTR_GW_BANDWIDTH_MODE was set
-+	 *  to 'server'.
-+	 */
-+	BATADV_ATTR_GW_BANDWIDTH_UP,
-+
-+	/**
-+	 * @BATADV_ATTR_GW_MODE: defines the state of the gateway features.
-+	 * Possible values are specified in enum batadv_gw_modes
-+	 */
-+	BATADV_ATTR_GW_MODE,
-+
-+	/**
-+	 * @BATADV_ATTR_GW_SEL_CLASS: defines the selection criteria this node
-+	 *  will use to choose a gateway if gw_mode was set to 'client'.
-+	 */
-+	BATADV_ATTR_GW_SEL_CLASS,
++	BATADV_ATTR_HOP_PENALTY,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 9d8e5eda..2373903c 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -47,7 +47,6 @@
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
--#include "gateway_common.h"
- #include "hard-interface.h"
- #include "log.h"
- #include "netlink.h"
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 936c107f..08b62271 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -28,6 +28,7 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <uapi/linux/batadv_packet.h>
-+#include <uapi/linux/batman_adv.h>
- 
- #include "gateway_client.h"
- #include "log.h"
-diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
-index 80afb279..cd1c5f54 100644
---- a/net/batman-adv/gateway_common.h
-+++ b/net/batman-adv/gateway_common.h
-@@ -25,12 +25,6 @@
- 
- struct net_device;
- 
--enum batadv_gw_modes {
--	BATADV_GW_MODE_OFF,
--	BATADV_GW_MODE_CLIENT,
--	BATADV_GW_MODE_SERVER,
--};
--
- /**
-  * enum batadv_bandwidth_units - bandwidth unit types
-  */
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index d7d5f196..e79a61a6 100644
+index e79a61a6..bbea6ac0 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -51,6 +51,7 @@
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
-+#include "gateway_common.h"
- #include "hard-interface.h"
- #include "multicast.h"
- #include "originator.h"
-@@ -147,6 +148,10 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE]	= { .type = NLA_U8 },
- 	[BATADV_ATTR_DISTRIBUTED_ARP_TABLE]	= { .type = NLA_U8 },
- 	[BATADV_ATTR_FRAGMENTATION]		= { .type = NLA_U8 },
-+	[BATADV_ATTR_GW_BANDWIDTH_DOWN]		= { .type = NLA_U32 },
-+	[BATADV_ATTR_GW_BANDWIDTH_UP]		= { .type = NLA_U32 },
-+	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
-+	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
+@@ -152,6 +152,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_GW_BANDWIDTH_UP]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
+ 	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
++	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
  };
  
  /**
-@@ -302,6 +307,28 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
- 		       !!atomic_read(&bat_priv->fragmentation)))
- 		goto nla_put_failure;
+@@ -329,6 +330,10 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
+ 			goto nla_put_failure;
+ 	}
  
-+	if (nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_DOWN,
-+			atomic_read(&bat_priv->gw.bandwidth_down)))
++	if (nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY,
++		       atomic_read(&bat_priv->hop_penalty)))
 +		goto nla_put_failure;
-+
-+	if (nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_UP,
-+			atomic_read(&bat_priv->gw.bandwidth_up)))
-+		goto nla_put_failure;
-+
-+	if (nla_put_u8(msg, BATADV_ATTR_GW_MODE,
-+		       atomic_read(&bat_priv->gw.mode)))
-+		goto nla_put_failure;
-+
-+	if (bat_priv->algo_ops->gw.get_best_gw_node &&
-+	    bat_priv->algo_ops->gw.is_eligible) {
-+		/* GW selection class is not available if the routing algorithm
-+		 * in use does not implement the GW API
-+		 */
-+		if (nla_put_u32(msg, BATADV_ATTR_GW_SEL_CLASS,
-+				atomic_read(&bat_priv->gw.sel_class)))
-+			goto nla_put_failure;
-+	}
 +
  	batadv_hardif_put(primary_if);
  
  	genlmsg_end(msg, hdr);
-@@ -442,6 +469,71 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
- 		batadv_update_min_mtu(bat_priv->soft_iface);
+@@ -534,6 +539,12 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
+ 		}
  	}
  
-+	if (info->attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]) {
-+		attr = info->attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN];
++	if (info->attrs[BATADV_ATTR_HOP_PENALTY]) {
++		attr = info->attrs[BATADV_ATTR_HOP_PENALTY];
 +
-+		atomic_set(&bat_priv->gw.bandwidth_down, nla_get_u32(attr));
-+		batadv_gw_tvlv_container_update(bat_priv);
-+	}
-+
-+	if (info->attrs[BATADV_ATTR_GW_BANDWIDTH_UP]) {
-+		attr = info->attrs[BATADV_ATTR_GW_BANDWIDTH_UP];
-+
-+		atomic_set(&bat_priv->gw.bandwidth_up, nla_get_u32(attr));
-+		batadv_gw_tvlv_container_update(bat_priv);
-+	}
-+
-+	if (info->attrs[BATADV_ATTR_GW_MODE]) {
-+		u8 gw_mode;
-+
-+		attr = info->attrs[BATADV_ATTR_GW_MODE];
-+		gw_mode = nla_get_u8(attr);
-+
-+		if (gw_mode <= BATADV_GW_MODE_SERVER) {
-+			/* Invoking batadv_gw_reselect() is not enough to really
-+			 * de-select the current GW. It will only instruct the
-+			 * gateway client code to perform a re-election the next
-+			 * time that this is needed.
-+			 *
-+			 * When gw client mode is being switched off the current
-+			 * GW must be de-selected explicitly otherwise no GW_ADD
-+			 * uevent is thrown on client mode re-activation. This
-+			 * is operation is performed in
-+			 * batadv_gw_check_client_stop().
-+			 */
-+			batadv_gw_reselect(bat_priv);
-+
-+			/* always call batadv_gw_check_client_stop() before
-+			 * changing the gateway state
-+			 */
-+			batadv_gw_check_client_stop(bat_priv);
-+			atomic_set(&bat_priv->gw.mode, gw_mode);
-+			batadv_gw_tvlv_container_update(bat_priv);
-+		}
-+	}
-+
-+	if (info->attrs[BATADV_ATTR_GW_SEL_CLASS] &&
-+	    bat_priv->algo_ops->gw.get_best_gw_node &&
-+	    bat_priv->algo_ops->gw.is_eligible) {
-+		/* setting the GW selection class is allowed only if the routing
-+		 * algorithm in use implements the GW API
-+		 */
-+
-+		u32 sel_class_max = 0xffffffffu;
-+		u32 sel_class;
-+
-+		attr = info->attrs[BATADV_ATTR_GW_SEL_CLASS];
-+		sel_class = nla_get_u32(attr);
-+
-+		if (!bat_priv->algo_ops->gw.store_sel_class)
-+			sel_class_max = BATADV_TQ_MAX_VALUE;
-+
-+		if (sel_class >= 1 && sel_class <= sel_class_max) {
-+			atomic_set(&bat_priv->gw.sel_class, sel_class);
-+			batadv_gw_reselect(bat_priv);
-+		}
++		atomic_set(&bat_priv->hop_penalty, nla_get_u8(attr));
 +	}
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
  	return 0;
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 5db5a0a4..d158ac70 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -50,13 +50,13 @@
- #include <linux/string.h>
- #include <linux/types.h>
- #include <uapi/linux/batadv_packet.h>
-+#include <uapi/linux/batman_adv.h>
- 
- #include "bat_algo.h"
- #include "bridge_loop_avoidance.h"
- #include "debugfs.h"
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
--#include "gateway_common.h"
- #include "hard-interface.h"
- #include "multicast.h"
- #include "network-coding.h"
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 09427fc6..344e5787 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -40,6 +40,7 @@
- #include <linux/stringify.h>
- #include <linux/workqueue.h>
- #include <uapi/linux/batadv_packet.h>
-+#include <uapi/linux/batman_adv.h>
- 
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
 -- 
 2.19.2
 
