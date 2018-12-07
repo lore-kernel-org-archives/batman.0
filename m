@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:31:58 +0100
-Message-Id: <20181207203209.22633-10-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:31:59 +0100
+Message-Id: <20181207203209.22633-11-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 09/20] batctl: Support generic netlink for
- isolation_mark command
+Subject: [B.A.T.M.A.N.] [RFC v4 10/20] batctl: Support generic netlink for
+ orig_interval command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,30 +18,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
 sysfs should be avoided for new settings of network interfaces. To still
 provide a common configuration infrastructure, all the existing settings
 subcommands also have to be reimplemented via generic netlink while still
 using sysfs as fallback.
 
-The isolation_mark implementation is using the commands
+The orig_interval implementation is using the commands
 BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
-the mark/mask using the u32 attributes BATADV_ATTR_ISOLATION_MARK
-and BATADV_ATTR_ISOLATION_MASK.
+the u32 BATADV_ATTR_ORIG_INTERVAL attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- isolation_mark.c | 123 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 121 insertions(+), 2 deletions(-)
+ orig_interval.c | 84 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-diff --git a/isolation_mark.c b/isolation_mark.c
-index 13ba869..461053f 100644
---- a/isolation_mark.c
-+++ b/isolation_mark.c
-@@ -20,16 +20,135 @@
+diff --git a/orig_interval.c b/orig_interval.c
+index d308ea2..6dd0039 100644
+--- a/orig_interval.c
++++ b/orig_interval.c
+@@ -20,16 +20,96 @@
   * License-Filename: LICENSES/preferred/GPL-2.0
   */
  
@@ -53,19 +52,14 @@ index 13ba869..461053f 100644
  #include "main.h"
  #include "sys.h"
  
-+static struct isolation_mark_data {
-+	uint32_t isolation_mark;
-+	uint32_t isolation_mask;
-+} isolation_mark;
++static struct orig_interval_data {
++	uint32_t orig_interval;
++} orig_interval;
 +
-+static int parse_isolation_mark(struct state *state, int argc, char *argv[])
++static int parse_orig_interval(struct state *state, int argc, char *argv[])
 +{
 +	struct settings_data *settings = state->cmd->arg;
-+	struct isolation_mark_data *data = settings->data;
-+	char *mask_ptr;
-+	char buff[256];
-+	uint32_t mark;
-+	uint32_t mask;
++	struct orig_interval_data *data = settings->data;
 +	char *endptr;
 +
 +	if (argc != 2) {
@@ -73,46 +67,16 @@ index 13ba869..461053f 100644
 +		return -EINVAL;
 +	}
 +
-+	strncpy(buff, argv[1], sizeof(buff));
-+	buff[sizeof(buff) - 1] = '\0';
-+
-+	/* parse the mask if it has been specified, otherwise assume the mask is
-+	 * the biggest possible
-+	 */
-+	mask = 0xFFFFFFFF;
-+	mask_ptr = strchr(buff, '/');
-+	if (mask_ptr) {
-+		*mask_ptr = '\0';
-+		mask_ptr++;
-+
-+		/* the mask must be entered in hex base as it is going to be a
-+		 * bitmask and not a prefix length
-+		 */
-+		mask = strtoul(mask_ptr, &endptr, 16);
-+		if (!endptr || *endptr != '\0')
-+			goto inval_format;
++	data->orig_interval = strtoul(argv[1], &endptr, 0);
++	if (!endptr || *endptr != '\0') {
++		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
++		return -EINVAL;
 +	}
 +
-+	/* the mark can be entered in any base */
-+	mark = strtoul(buff, &endptr, 0);
-+	if (!endptr || *endptr != '\0')
-+		goto inval_format;
-+
-+	data->isolation_mask = mask;
-+	/* erase bits not covered by the mask */
-+	data->isolation_mark = mark & mask;
-+
 +	return 0;
-+
-+inval_format:
-+	fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
-+	fprintf(stderr, "The following formats for mark(/mask) are allowed:\n");
-+	fprintf(stderr, " * 0x12345678\n");
-+	fprintf(stderr, " * 0x12345678/0xabcdef09\n");
-+	return -EINVAL;
 +}
 +
-+static int print_isolation_mark(struct nl_msg *msg, void *arg)
++static int print_orig_interval(struct nl_msg *msg, void *arg)
 +{
 +	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 +	struct nlmsghdr *nlh = nlmsg_hdr(msg);
@@ -129,56 +93,52 @@ index 13ba869..461053f 100644
 +		return NL_OK;
 +	}
 +
-+	if (!attrs[BATADV_ATTR_ISOLATION_MARK] ||
-+	    !attrs[BATADV_ATTR_ISOLATION_MASK])
++	if (!attrs[BATADV_ATTR_ORIG_INTERVAL])
 +		return NL_OK;
 +
-+	printf("0x%08x/0x%08x\n",
-+	       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MARK]),
-+	       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MASK]));
++	printf("%u\n", nla_get_u32(attrs[BATADV_ATTR_ORIG_INTERVAL]));
 +
 +	*result = 0;
 +	return NL_STOP;
 +}
 +
-+static int get_isolation_mark(struct state *state)
++static int get_orig_interval(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_isolation_mark);
++				  NULL, print_orig_interval);
 +}
 +
-+static int set_attrs_isolation_mark(struct nl_msg *msg, void *arg)
++static int set_attrs_orig_interval(struct nl_msg *msg, void *arg)
 +{
 +	struct state *state = arg;
 +	struct settings_data *settings = state->cmd->arg;
-+	struct isolation_mark_data *data = settings->data;
++	struct orig_interval_data *data = settings->data;
 +
-+	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MARK, data->isolation_mark);
-+	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MASK, data->isolation_mask);
++	nla_put_u32(msg, BATADV_ATTR_ORIG_INTERVAL, data->orig_interval);
 +
 +	return 0;
 +}
 +
-+static int set_isolation_mark(struct state *state)
++static int set_orig_interval(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_isolation_mark, NULL);
++				  set_attrs_orig_interval, NULL);
 +}
 +
- static struct settings_data batctl_settings_isolation_mark = {
- 	.sysfs_name = "isolation_mark",
+ static struct settings_data batctl_settings_orig_interval = {
+ 	.sysfs_name = "orig_interval",
 -	.params = NULL,
-+	.data = &isolation_mark,
-+	.parse = parse_isolation_mark,
-+	.netlink_get = get_isolation_mark,
-+	.netlink_set = set_isolation_mark,
++	.data = &orig_interval,
++	.parse = parse_orig_interval,
++	.netlink_get = get_orig_interval,
++	.netlink_set = set_orig_interval,
  };
  
- COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
+ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
 +	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_isolation_mark,
- 	      "[mark]            \tdisplay or modify isolation_mark setting");
++	      &batctl_settings_orig_interval,
+ 	      "[interval]        \tdisplay or modify orig_interval setting");
 -- 
 2.19.2
 
