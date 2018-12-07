@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Dec 2018 21:32:00 +0100
-Message-Id: <20181207203209.22633-12-sven@narfation.org>
+Date: Fri,  7 Dec 2018 21:32:01 +0100
+Message-Id: <20181207203209.22633-13-sven@narfation.org>
 In-Reply-To: <20181207203209.22633-1-sven@narfation.org>
 References: <20181207203209.22633-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 11/20] batctl: Add helper to read/write
- boolean configuration values
+Subject: [B.A.T.M.A.N.] [RFC v4 12/20] batctl: Support generic netlink for
+ aggregation command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,164 +18,85 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
-Most of the available settings commands in batctl only operate on a single
-boolean value. Both the reading, parsing and writing of these values can
-mostly be handled by the same set of helper functions. Only the actual
-setting/getting of the correct attribute has to be handled by the actual
-settings command implementation.
+sysfs should be avoided for new settings of network interfaces. To still
+provide a common configuration infrastructure, all the existing settings
+subcommands also have to be reimplemented via generic netlink while still
+using sysfs as fallback.
+
+The aggregation implementation is using the commands
+BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
+the u8 (boolean) BATADV_ATTR_AGGREGATED_OGMS attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 17 +++++++++++++++++
- functions.h |  1 +
- sys.c       | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- sys.h       |  8 ++++++++
- 4 files changed, 81 insertions(+)
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ aggregation.c | 45 +++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 43 insertions(+), 2 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index ead7e97..bb6dc31 100644
---- a/functions.c
-+++ b/functions.c
-@@ -1201,6 +1201,23 @@ void check_root_or_die(const char *cmd)
- 	}
- }
+diff --git a/aggregation.c b/aggregation.c
+index 57c1dbb..fa6610c 100644
+--- a/aggregation.c
++++ b/aggregation.c
+@@ -21,13 +21,54 @@
+  */
  
-+int parse_bool(const char *val, bool *res)
-+{
-+	if (strcasecmp(val, "0") == 0 ||
-+	    strcasecmp(val, "disable") == 0 ||
-+	    strcasecmp(val, "disabled") == 0) {
-+		*res = false;
-+		return 0;
-+	} else if (strcasecmp(val, "1") == 0 ||
-+		   strcasecmp(val, "enable") == 0 ||
-+		   strcasecmp(val, "enabled") == 0) {
-+		*res = true;
-+		return 0;
-+	}
+ #include "main.h"
 +
-+	return -EINVAL;
++#include <errno.h>
++#include <linux/genetlink.h>
++#include <netlink/genl/genl.h>
++
++#include "batman_adv.h"
++#include "netlink.h"
+ #include "sys.h"
+ 
++static struct simple_boolean_data aggregated_ogms;
++
++static int print_aggregated_ogms(struct nl_msg *msg, void *arg)
++{
++	return sys_simple_print_boolean(msg, arg, BATADV_ATTR_AGGREGATED_OGMS);
 +}
 +
- bool parse_throughput(char *buff, const char *description, uint32_t *throughput)
- {
- 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
-diff --git a/functions.h b/functions.h
-index 4a6ab61..5f39104 100644
---- a/functions.h
-+++ b/functions.h
-@@ -72,6 +72,7 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
- void get_random_bytes(void *buf, size_t buflen);
- void check_root_or_die(const char *cmd);
- 
-+int parse_bool(const char *val, bool *res);
- bool parse_throughput(char *buff, const char *description,
- 		      uint32_t *throughput);
- 
-diff --git a/sys.c b/sys.c
-index a44502c..ede8b09 100644
---- a/sys.c
-+++ b/sys.c
-@@ -47,6 +47,34 @@ const char *sysfs_param_enable[] = {
- 	NULL,
- };
- 
-+int parse_simple_boolean(struct state *state, int argc, char *argv[])
++static int get_aggregated_ogms(struct state *state)
 +{
++	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
++				  NULL, print_aggregated_ogms);
++}
++
++static int set_attrs_aggregated_ogms(struct nl_msg *msg, void *arg)
++{
++	struct state *state = arg;
 +	struct settings_data *settings = state->cmd->arg;
 +	struct simple_boolean_data *data = settings->data;
-+	int ret;
 +
-+	if (argc != 2) {
-+		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = parse_bool(argv[1], &data->val);
-+	if (ret < 0) {
-+		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
-+		fprintf(stderr, "The following values are allowed:\n");
-+		fprintf(stderr, " * 0\n");
-+		fprintf(stderr, " * disable\n");
-+		fprintf(stderr, " * disabled\n");
-+		fprintf(stderr, " * 1\n");
-+		fprintf(stderr, " * enable\n");
-+		fprintf(stderr, " * enabled\n");
-+
-+		return ret;
-+	}
++	nla_put_u8(msg, BATADV_ATTR_AGGREGATED_OGMS, data->val);
 +
 +	return 0;
 +}
 +
- static int sys_simple_nlerror(struct sockaddr_nl *nla __maybe_unused,
- 			      struct nlmsgerr *nlerr,	void *arg)
- {
-@@ -106,6 +134,33 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
- 	return result;
- }
- 
-+int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
-+			     enum batadv_nl_attrs attr)
++static int set_aggregated_ogms(struct state *state)
 +{
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct genlmsghdr *ghdr;
-+	int *result = arg;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (!attrs[attr])
-+		return NL_OK;
-+
-+	printf("%s\n", nla_get_u8(attrs[attr]) ? "enabled" : "disabled");
-+
-+	*result = 0;
-+	return NL_STOP;
++	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
++				  set_attrs_aggregated_ogms, NULL);
 +}
 +
- static void settings_usage(struct state *state)
- {
- 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
-diff --git a/sys.h b/sys.h
-index 57224d5..f32f134 100644
---- a/sys.h
-+++ b/sys.h
-@@ -27,6 +27,7 @@
+ static struct settings_data batctl_settings_aggregation = {
+ 	.sysfs_name = "aggregated_ogms",
+-	.params = sysfs_param_enable,
++	.data = &aggregated_ogms,
++	.parse = parse_simple_boolean,
++	.netlink_get = get_aggregated_ogms,
++	.netlink_set = set_aggregated_ogms,
+ };
  
- #include <linux/genetlink.h>
- #include <netlink/genl/genl.h>
-+#include <stdbool.h>
- 
- #include "batman_adv.h"
- #include "netlink.h"
-@@ -57,10 +58,17 @@ struct settings_data {
- 
- extern const char *sysfs_param_enable[];
- 
-+struct simple_boolean_data {
-+	bool val;
-+};
-+
- int handle_sys_setting(struct state *state, int argc, char **argv);
-+int parse_simple_boolean(struct state *state, int argc, char *argv[]);
- 
- int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
- 		       nl_recvmsg_msg_cb_t attribute_cb,
- 		       nl_recvmsg_msg_cb_t callback);
-+int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
-+			     enum batadv_nl_attrs attr);
- 
- #endif
+ COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
+-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_settings_aggregation,
+ 	      "[0|1]             \tdisplay or modify aggregation setting");
 -- 
 2.19.2
 
