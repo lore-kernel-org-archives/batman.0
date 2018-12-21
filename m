@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 21 Dec 2018 16:15:11 +0100
-Message-Id: <20181221151511.14923-5-linus.luessing@c0d3.blue>
+Date: Fri, 21 Dec 2018 16:15:10 +0100
+Message-Id: <20181221151511.14923-4-linus.luessing@c0d3.blue>
 In-Reply-To: <20181221151511.14923-1-linus.luessing@c0d3.blue>
 References: <20181221151511.14923-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH net-next 4/4] bridge: Snoop Multicast Router
- Advertisements
+Subject: [B.A.T.M.A.N.] [PATCH net-next 3/4] bridge: join all-snoopers
+ multicast address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,240 +21,168 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: netdev@vger.kernel.org
 Cc: Roopa Prabhu <roopa@cumulusnetworks.com>, Nikolay Aleksandrov <nikolay@cumulusnetworks.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
-When multiple multicast routers are present in a broadcast domain then
-only one of them will be detectable via IGMP/MLD query snooping. The
-multicast router with the lowest IP address will become the selected and
-active querier while all other multicast routers will then refrain from
-sending queries.
+Next to snooping IGMP/MLD queries RFC4541, section 2.1.1.a) recommends
+to snoop multicast router advertisements to detect multicast routers.
 
-To detect such rather silent multicast routers, too, RFC4286
-("Multicast Router Discovery") provides a standardized protocol to
-detect multicast routers for multicast snooping switches.
+Multicast router advertisements are sent to an "all-snoopers"
+multicast address. To be able to receive them reliably, we need to
+join this group.
 
-This patch implements the necessary MRD Advertisement message parsing
-and after successful processing adds such routers to the internal
-multicast router list.
+Otherwise other snooping switches might refrain from forwarding these
+advertisements to us.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- include/linux/in.h          |  5 +++++
- include/net/addrconf.h      | 15 +++++++++++++
- include/uapi/linux/icmpv6.h |  2 ++
- include/uapi/linux/igmp.h   |  1 +
- net/bridge/br_multicast.c   | 55 +++++++++++++++++++++++++++++++++++++++++++++
- net/ipv6/mcast_snoop.c      |  5 ++++-
- 6 files changed, 82 insertions(+), 1 deletion(-)
+ include/uapi/linux/in.h   |  9 +++---
+ net/bridge/br_multicast.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++-
+ net/ipv6/mcast.c          |  2 ++
+ 3 files changed, 78 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/in.h b/include/linux/in.h
-index 31b493734763..435e7f2a513a 100644
---- a/include/linux/in.h
-+++ b/include/linux/in.h
-@@ -60,6 +60,11 @@ static inline bool ipv4_is_lbcast(__be32 addr)
- 	return addr == htonl(INADDR_BROADCAST);
- }
+diff --git a/include/uapi/linux/in.h b/include/uapi/linux/in.h
+index f6052e70bf40..7ab685cacb8f 100644
+--- a/include/uapi/linux/in.h
++++ b/include/uapi/linux/in.h
+@@ -292,10 +292,11 @@ struct sockaddr_in {
+ #define	IN_LOOPBACK(a)		((((long int) (a)) & 0xff000000) == 0x7f000000)
  
-+static inline bool ipv4_is_all_snoopers(__be32 addr)
-+{
-+	return addr == htonl(INADDR_ALLSNOOPERS_GROUP);
-+}
-+
- static inline bool ipv4_is_zeronet(__be32 addr)
- {
- 	return (addr & htonl(0xff000000)) == htonl(0x00000000);
-diff --git a/include/net/addrconf.h b/include/net/addrconf.h
-index daf11dcb0f70..20d523ee2fec 100644
---- a/include/net/addrconf.h
-+++ b/include/net/addrconf.h
-@@ -229,6 +229,7 @@ void ipv6_mc_unmap(struct inet6_dev *idev);
- void ipv6_mc_remap(struct inet6_dev *idev);
- void ipv6_mc_init_dev(struct inet6_dev *idev);
- void ipv6_mc_destroy_dev(struct inet6_dev *idev);
-+int ipv6_mc_check_icmpv6(struct sk_buff *skb);
- int ipv6_mc_check_mld(struct sk_buff *skb);
- void addrconf_dad_failure(struct sk_buff *skb, struct inet6_ifaddr *ifp);
- 
-@@ -499,6 +500,20 @@ static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
+ /* Defines for Multicast INADDR */
+-#define INADDR_UNSPEC_GROUP   	0xe0000000U	/* 224.0.0.0   */
+-#define INADDR_ALLHOSTS_GROUP 	0xe0000001U	/* 224.0.0.1   */
+-#define INADDR_ALLRTRS_GROUP    0xe0000002U	/* 224.0.0.2 */
+-#define INADDR_MAX_LOCAL_GROUP  0xe00000ffU	/* 224.0.0.255 */
++#define INADDR_UNSPEC_GROUP		0xe0000000U	/* 224.0.0.0   */
++#define INADDR_ALLHOSTS_GROUP		0xe0000001U	/* 224.0.0.1   */
++#define INADDR_ALLRTRS_GROUP		0xe0000002U	/* 224.0.0.2 */
++#define INADDR_ALLSNOOPERS_GROUP	0xe000006aU	/* 224.0.0.106 */
++#define INADDR_MAX_LOCAL_GROUP		0xe00000ffU	/* 224.0.0.255 */
  #endif
- }
  
-+static inline bool ipv6_addr_is_all_snoopers(const struct in6_addr *addr)
-+{
-+#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
-+	__be64 *p = (__be64 *)addr;
-+
-+	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) |
-+		(p[1] ^ cpu_to_be64(0x6a))) == 0UL;
-+#else
-+	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
-+		addr->s6_addr32[1] | addr->s6_addr32[2] |
-+		(addr->s6_addr32[3] ^ htonl(0x0000006a))) == 0;
-+#endif
-+}
-+
- #ifdef CONFIG_PROC_FS
- int if6_proc_init(void);
- void if6_proc_exit(void);
-diff --git a/include/uapi/linux/icmpv6.h b/include/uapi/linux/icmpv6.h
-index caf8dc019250..325395f56bfa 100644
---- a/include/uapi/linux/icmpv6.h
-+++ b/include/uapi/linux/icmpv6.h
-@@ -108,6 +108,8 @@ struct icmp6hdr {
- #define ICMPV6_MOBILE_PREFIX_SOL	146
- #define ICMPV6_MOBILE_PREFIX_ADV	147
- 
-+#define ICMPV6_MRDISC_ADV		151
-+
- /*
-  *	Codes for Destination Unreachable
-  */
-diff --git a/include/uapi/linux/igmp.h b/include/uapi/linux/igmp.h
-index 7e44ac02ca18..90c28bc466c6 100644
---- a/include/uapi/linux/igmp.h
-+++ b/include/uapi/linux/igmp.h
-@@ -93,6 +93,7 @@ struct igmpv3_query {
- #define IGMP_MTRACE_RESP		0x1e
- #define IGMP_MTRACE			0x1f
- 
-+#define IGMP_MRDISC_ADV			0x30	/* From RFC4286 */
- 
- /*
-  *	Use the BSD names for these for compatibility
+ /* <asm/byteorder.h> contains the htonl type stuff.. */
 diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-index 2366f4a2780e..2c46c7aca571 100644
+index 156c4905639e..2366f4a2780e 100644
 --- a/net/bridge/br_multicast.c
 +++ b/net/bridge/br_multicast.c
-@@ -14,6 +14,7 @@
- #include <linux/export.h>
- #include <linux/if_ether.h>
- #include <linux/igmp.h>
-+#include <linux/in.h>
- #include <linux/jhash.h>
- #include <linux/kernel.h>
- #include <linux/log2.h>
-@@ -29,10 +30,12 @@
- #include <net/ip.h>
- #include <net/switchdev.h>
- #if IS_ENABLED(CONFIG_IPV6)
-+#include <linux/icmpv6.h>
- #include <net/ipv6.h>
- #include <net/mld.h>
- #include <net/ip6_checksum.h>
- #include <net/addrconf.h>
-+#include <net/ipv6.h>
- #endif
- 
- #include "br_private.h"
-@@ -1583,6 +1586,19 @@ static void br_multicast_pim(struct net_bridge *br,
- 	br_multicast_mark_router(br, port);
+@@ -1780,6 +1780,68 @@ void br_multicast_init(struct net_bridge *br)
+ 	INIT_HLIST_HEAD(&br->mdb_list);
  }
  
-+static int br_ip4_multicast_mrd_rcv(struct net_bridge *br,
-+				    struct net_bridge_port *port,
-+				    struct sk_buff *skb)
++static void br_ip4_multicast_join_snoopers(struct net_bridge *br)
 +{
-+	if (ip_hdr(skb)->protocol != IPPROTO_IGMP ||
-+	    igmp_hdr(skb)->type != IGMP_MRDISC_ADV)
-+		return -ENOMSG;
++	struct in_device *in_dev = in_dev_get(br->dev);
 +
-+	br_multicast_mark_router(br, port);
++	if (!in_dev)
++		return;
 +
-+	return 0;
++	ip_mc_inc_group(in_dev, htonl(INADDR_ALLSNOOPERS_GROUP));
++	in_dev_put(in_dev);
 +}
 +
- static int br_multicast_ipv4_rcv(struct net_bridge *br,
- 				 struct net_bridge_port *port,
- 				 struct sk_buff *skb,
-@@ -1600,7 +1616,15 @@ static int br_multicast_ipv4_rcv(struct net_bridge *br,
- 		} else if (pim_ipv4_all_pim_routers(ip_hdr(skb)->daddr)) {
- 			if (ip_hdr(skb)->protocol == IPPROTO_PIM)
- 				br_multicast_pim(br, port, skb);
-+		} else if (ipv4_is_all_snoopers(ip_hdr(skb)->daddr)) {
-+			err = br_ip4_multicast_mrd_rcv(br, port, skb);
-+
-+			if (err < 0 && err != -ENOMSG) {
-+				br_multicast_err_count(br, port, skb->protocol);
-+				return err;
-+			}
- 		}
-+
- 		return 0;
- 	} else if (err < 0) {
- 		br_multicast_err_count(br, port, skb->protocol);
-@@ -1635,6 +1659,27 @@ static int br_multicast_ipv4_rcv(struct net_bridge *br,
- }
- 
- #if IS_ENABLED(CONFIG_IPV6)
-+static int br_ip6_multicast_mrd_rcv(struct net_bridge *br,
-+				    struct net_bridge_port *port,
-+				    struct sk_buff *skb)
++#if IS_ENABLED(CONFIG_IPV6)
++static void br_ip6_multicast_join_snoopers(struct net_bridge *br)
 +{
-+	int ret;
++	struct in6_addr addr;
 +
-+	if (ipv6_hdr(skb)->nexthdr != IPPROTO_ICMPV6)
-+		return -ENOMSG;
++	ipv6_addr_set(&addr, htonl(0xff020000), 0, 0, htonl(0x6a));
++	ipv6_dev_mc_inc(br->dev, &addr);
++}
++#else
++static inline void br_ip6_multicast_join_snoopers(struct net_bridge *br)
++{
++}
++#endif
 +
-+	ret = ipv6_mc_check_icmpv6(skb);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (icmp6_hdr(skb)->icmp6_type != ICMPV6_MRDISC_ADV)
-+		return -ENOMSG;
-+
-+	br_multicast_mark_router(br, port);
-+
-+	return 0;
++static void br_multicast_join_snoopers(struct net_bridge *br)
++{
++	br_ip4_multicast_join_snoopers(br);
++	br_ip6_multicast_join_snoopers(br);
 +}
 +
- static int br_multicast_ipv6_rcv(struct net_bridge *br,
- 				 struct net_bridge_port *port,
- 				 struct sk_buff *skb,
-@@ -1649,6 +1694,16 @@ static int br_multicast_ipv6_rcv(struct net_bridge *br,
- 	if (err == -ENOMSG) {
- 		if (!ipv6_addr_is_ll_all_nodes(&ipv6_hdr(skb)->daddr))
- 			BR_INPUT_SKB_CB(skb)->mrouters_only = 1;
++static void br_ip4_multicast_leave_snoopers(struct net_bridge *br)
++{
++	struct in_device *in_dev = in_dev_get(br->dev);
 +
-+		if (ipv6_addr_is_all_snoopers(&ipv6_hdr(skb)->daddr)) {
-+			err = br_ip6_multicast_mrd_rcv(br, port, skb);
++	if (WARN_ON(!in_dev))
++		return;
 +
-+			if (err < 0 && err != -ENOMSG) {
-+				br_multicast_err_count(br, port, skb->protocol);
-+				return err;
-+			}
-+		}
++	ip_mc_dec_group(in_dev, htonl(INADDR_ALLSNOOPERS_GROUP));
++	in_dev_put(in_dev);
++}
 +
- 		return 0;
- 	} else if (err < 0) {
- 		br_multicast_err_count(br, port, skb->protocol);
-diff --git a/net/ipv6/mcast_snoop.c b/net/ipv6/mcast_snoop.c
-index a72ddfc40eb3..55e2ac179f28 100644
---- a/net/ipv6/mcast_snoop.c
-+++ b/net/ipv6/mcast_snoop.c
-@@ -41,6 +41,8 @@ static int ipv6_mc_check_ip6hdr(struct sk_buff *skb)
- 	if (skb->len < len || len <= offset)
- 		return -EINVAL;
- 
-+	skb_set_transport_header(skb, offset);
++#if IS_ENABLED(CONFIG_IPV6)
++static void br_ip6_multicast_leave_snoopers(struct net_bridge *br)
++{
++	struct in6_addr addr;
 +
- 	return 0;
- }
- 
-@@ -142,7 +144,7 @@ static inline __sum16 ipv6_mc_validate_checksum(struct sk_buff *skb)
- 	return skb_checksum_validate(skb, IPPROTO_ICMPV6, ip6_compute_pseudo);
- }
- 
--static int ipv6_mc_check_icmpv6(struct sk_buff *skb)
-+int ipv6_mc_check_icmpv6(struct sk_buff *skb)
++	ipv6_addr_set(&addr, htonl(0xff020000), 0, 0, htonl(0x6a));
++	ipv6_dev_mc_dec(br->dev, &addr);
++}
++#else
++static inline void br_ip6_multicast_leave_snoopers(struct net_bridge *br)
++{
++}
++#endif
++
++static void br_multicast_leave_snoopers(struct net_bridge *br)
++{
++	br_ip4_multicast_leave_snoopers(br);
++	br_ip6_multicast_leave_snoopers(br);
++}
++
+ static void __br_multicast_open(struct net_bridge *br,
+ 				struct bridge_mcast_own_query *query)
  {
- 	unsigned int len = skb_transport_offset(skb) + sizeof(struct icmp6hdr);
- 	unsigned int transport_len = ipv6_transport_len(skb);
-@@ -161,6 +163,7 @@ static int ipv6_mc_check_icmpv6(struct sk_buff *skb)
+@@ -1793,6 +1855,9 @@ static void __br_multicast_open(struct net_bridge *br,
  
- 	return 0;
+ void br_multicast_open(struct net_bridge *br)
+ {
++	if (br_opt_get(br, BROPT_MULTICAST_ENABLED))
++		br_multicast_join_snoopers(br);
++
+ 	__br_multicast_open(br, &br->ip4_own_query);
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	__br_multicast_open(br, &br->ip6_own_query);
+@@ -1808,6 +1873,9 @@ void br_multicast_stop(struct net_bridge *br)
+ 	del_timer_sync(&br->ip6_other_query.timer);
+ 	del_timer_sync(&br->ip6_own_query.timer);
+ #endif
++
++	if (br_opt_get(br, BROPT_MULTICAST_ENABLED))
++		br_multicast_leave_snoopers(br);
  }
-+EXPORT_SYMBOL(ipv6_mc_check_icmpv6);
  
- /**
-  * ipv6_mc_check_mld - checks whether this is a sane MLD packet
+ void br_multicast_dev_del(struct net_bridge *br)
+@@ -1943,8 +2011,10 @@ int br_multicast_toggle(struct net_bridge *br, unsigned long val)
+ 
+ 	br_mc_disabled_update(br->dev, val);
+ 	br_opt_toggle(br, BROPT_MULTICAST_ENABLED, !!val);
+-	if (!br_opt_get(br, BROPT_MULTICAST_ENABLED))
++	if (!br_opt_get(br, BROPT_MULTICAST_ENABLED)) {
++		br_multicast_leave_snoopers(br);
+ 		goto unlock;
++	}
+ 
+ 	if (!netif_running(br->dev))
+ 		goto unlock;
+diff --git a/net/ipv6/mcast.c b/net/ipv6/mcast.c
+index 21f6deb2aec9..42f3f5cd349f 100644
+--- a/net/ipv6/mcast.c
++++ b/net/ipv6/mcast.c
+@@ -940,6 +940,7 @@ int ipv6_dev_mc_inc(struct net_device *dev, const struct in6_addr *addr)
+ {
+ 	return __ipv6_dev_mc_inc(dev, addr, MCAST_EXCLUDE);
+ }
++EXPORT_SYMBOL(ipv6_dev_mc_inc);
+ 
+ /*
+  *	device multicast group del
+@@ -987,6 +988,7 @@ int ipv6_dev_mc_dec(struct net_device *dev, const struct in6_addr *addr)
+ 
+ 	return err;
+ }
++EXPORT_SYMBOL(ipv6_dev_mc_dec);
+ 
+ /*
+  *	check if the interface/address pair is valid
 -- 
 2.11.0
 
