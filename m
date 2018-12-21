@@ -1,13 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 20 Dec 2018 13:19:19 +0100
-Message-ID: <5663464.jlV71abGFt@sven-edge>
-In-Reply-To: <06c85527-ec8d-bead-ca65-2736cba8507f@osmozis.com>
-References: <06c85527-ec8d-bead-ca65-2736cba8507f@osmozis.com>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Fri, 21 Dec 2018 16:15:07 +0100
+Message-Id: <20181221151511.14923-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4561425.4h7u1pDOvJ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] gw_mode & vlan
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH net-next 0/4] bridge: implement Multicast
+ Router Discovery (RFC4286)
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,45 +16,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: netdev@vger.kernel.org
+Cc: Roopa Prabhu <roopa@cumulusnetworks.com>, Nikolay Aleksandrov <nikolay@cumulusnetworks.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
---nextPart4561425.4h7u1pDOvJ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi,
 
-On Thursday, 20 December 2018 11.09.01 CET Sylvain PRUDENT wrote:
-> A lot of clients may connect to the lan so I would like to use gateway 
-> mode (client/server) feature to avoid dhcp broadcast storms.
-> Is it possible to use gw_mode for the main lan network without affecting 
-> dhcp traffic on the private vlan networks ?
+This patchset adds initial Multicast Router Discovery support to
+the Linux bridge (RFC4286). With MRD it is possible to detect multicast
+routers and mark bridge ports and forward multicast packets to such routers
+accordingly.
 
-No
+So far, multicast routers are detected via IGMP/MLD queries and PIM
+messages in the Linux bridge. As there is only one active, selected
+querier at a time RFC4541 ("Considerations for Internet Group Management
+Protocol (IGMP) and Multicast Listener Discovery (MLD) Snooping
+Switches") section 2.1.1.a) recommends snooping Multicast Router
+Advertisements as provided by MRD (RFC4286).
 
-Kind regards,
-	Sven
---nextPart4561425.4h7u1pDOvJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
+The first two patches are refactoring some existing code which is reused
+for parsing the Multicast Router Advertisements later in the fourth
+patch. The third patch lets the bridge join the all-snoopers multicast
+address to be able to reliably receive the Multicast Router
+Advertisements.
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwbiMcACgkQXYcKB8Em
-e0Z7jxAAxDKTImYVlLZ34PSImuu5g670H1fNhAVI3MDiUFlY/O+EbYlWQbou8Ic/
-MT7QcxIbMZakMnkyO5RnF9Dl7orJ00xeC2SK7HtnyzRs/Ajuyz84/RQaghIH2OzQ
-NkIKROo7Q4gHH+tpyQR5g3y9F+Xv1IxOUfMZlURrCDwIstQFByD/XB8f2jnU94fu
-+NsHFH8oe2dWKIQ817h/TjNVkNWSSBmA/2GQzCIzI95LhOAocPFQf9K7/Sy7AUpq
-RxWsjtZb785uhkoUXod3FzDES8zox4FyjGRVybbHGVpSjM0/6RBx8P2euTRSXDXN
-1Sl5VOjzLNzjOQ8IH7m2RTyJPAxOe7Glw1fyOjBiLjgFY7C9n+ddevRx1M+ev2Bt
-T3jwTzIC7MXU2QnDjhRYZCyTalAMSh/I4IUgLi7Beagosj4z0gy1oprlSHByHFFk
-sVTUF2W7cVImLkiksEderqfGCdd+Swxes+TkSv2dDRlw71NqNej4hPOpPP94vpyW
-Sk4l40E4yUShbuZ089h8bZ2v01WxvbU52dsUPbh1o04G6sligdUeeZ79v2RoeogD
-OyOG3lmVhng+9JJt3zXJhDwJWkCM/4+KPoT1vVpYFdYKWO6euffR0oYUQ5KIyVCw
-geskSkyp2AT0PcKoatuTt4AnJw4uRNaPauRJlowRBKcwqG8nq4U=
-=s3m3
------END PGP SIGNATURE-----
 
---nextPart4561425.4h7u1pDOvJ--
+What is not implemented yet from RFC4286 yet:
+
+* Sending Multicast Router Solicitations:
+  -> RFC4286: "[...] may be sent when [...] an interface is
+     (re-)initialized [or] MRD is enabled"
+* Snooping Multicast Router Terminations:
+  -> currently this only relies on our own timeouts
+* Adjusting timeouts with the values provided in the announcements
+
+
+Regards, Linus
 
 
 
