@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 24 Dec 2018 19:43:07 +0100
-Message-ID: <4059540.uxCivL65nk@sven-edge>
+Date: Mon, 24 Dec 2018 19:46:32 +0100
+Message-ID: <3515548.IyJqbIalli@sven-edge>
 In-Reply-To: <20181224174926.20321-1-pakki001@umn.edu>
 References: <20181224174926.20321-1-pakki001@umn.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7191841.mqxAbxXKxD";
+Content-Type: multipart/signed; boundary="nextPart140518754.v2Ycy2XqpW";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv/main: Fix check on return
  value of rtnl_link_register
@@ -21,59 +21,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Aditya Pakki <pakki001@umn.edu>, Marek Lindner <mareklindner@neomailbox.ch>, kjlu@umn.edu, Antonio Quartulli <a@unstable.cc>, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
 
---nextPart7191841.mqxAbxXKxD
+--nextPart140518754.v2Ycy2XqpW
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
 On Monday, 24 December 2018 18.49.26 CET Aditya Pakki wrote:
-[...]
-> diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-> index 69c0d85bceb3..e0007f242823 100644
-> --- a/net/batman-adv/main.c
-> +++ b/net/batman-adv/main.c
-> @@ -109,7 +109,10 @@ static int __init batadv_init(void)
->  	batadv_debugfs_init();
->  
->  	register_netdevice_notifier(&batadv_hard_if_notifier);
-> -	rtnl_link_register(&batadv_link_ops);
-> +	ret = rtnl_link_register(&batadv_link_ops);
-> +	if (ret < 0)
-> +		return ret;
-> +
->  	batadv_netlink_register();
+> rtnl_link_register() may fail and can impact registering the device.
+> The fix checks the return value and pushes the error upstream.
 
-Uhm, but shouldn't the already initialized parts be unregistered/uninitialized 
-in this case?
+Regarding the commit message - what is "batman-adv/main"? Shouldn't this be 
+"batman-adv: "?
 
-Rejecting this patch because this could cause a new bug.
-
-Also "Fixes: " line is missing
+And the device can still be registered without batadv_link_ops - just not 
+using rtnl.
 
 Kind regards,
 	Sven
---nextPart7191841.mqxAbxXKxD
+
+--nextPart140518754.v2Ycy2XqpW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwhKLsACgkQXYcKB8Em
-e0aocw/+OngTRNriOUuAUhqvFiEsEOd9cTfKSauh01enwW3ER+X/MT+kzuaLxOBa
-NRj7UEOvqtZw+UumsTQgO1B6hs3SPHgTPQ5SceUCDcQ8kDOc+mni52x//9xGpEd2
-mABnL/kAmDxpUcDTr3T/83qUAdxw/dwrhRhnmMGiA6UOXJK27ocsOsUr3fMNMt2a
-KoUaWg2Stiovz0/pBDmbe9wJiQ4TLmtwLyCjSHo4sdGWGJJ733QDIhq3Ou+4kG4r
-gj5RJbE3MtXkqAzj0bf/OEBM2QT21cgMVzgjynHv6o+rREZUgY7cyx3rpVEBzlX4
-muODmEqYdyJ4IiNf7iygsfRc2Nh/JXUGaFZ1r2NwJhPnGgQ2J/q+NyqFlw1Obzwl
-ZYKmaL+Ap2EGG30+ZiCQJ3Ccq0x27eEe2mIcW2JSk/guQBiZ/gv8ufeKyLdZwj44
-eVqAeO3SBYY+1qVnWb96hmDtBANvc9MOiuFQ55l7PYMrUpAoHpfrK4u4RZsfxycw
-l2qfIUtmIOOMM0o5gTwYwK8pEsV7OeNqr31R08xKUCntOVFcKYlZYGh/GkSgWATc
-pRlMnmIkjbLHHpjCP7YaAa1GvsL5paOd6S+AUwpj9SXyDmR4jpTKeVRAhdkocJEe
-im9TSDSKVJaSLdhaBXTmH30HFGMeOC7Mw5CZ01lNVJvuBQIWXPE=
-=dQvc
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwhKYgACgkQXYcKB8Em
+e0ZL0RAAxtawbTcwqlL8r79AWaXuiWh9o+J0ZZVRd+9hjfA0RnJpRgf66Q7Itas2
+EjXOaPjvEwNXG3fNORRMjvaFrjitPTjahyJiYVjlsF8D09rZkCRBQ2DtkEFKuQFG
+GvYYbtd0zB1FYEQuA6P7j+TMi9Iocpy+afeVTFdgKzJfRe9n1uiqSiNxvLyTdv8g
+DpZ054QKXhD2EpJxDT5RF6mJMeWnHqj4DYQ9jWyLk0IYicPYrByIN1QPBlwYYBR7
+fHYXGT2g+4IWIOPZa2slbmr/U5FEK8kjAqtfhK98zR+MnsRH2oB+JGONmELzINRb
+aGcGgw7pDmvVEX+myqFPWI6hPWwvYOyLIeVwW7qdTSMpmZyT1r5znw2hx7TzFwMj
+jRplEh3kUkP1wVn+D91G9JxAvMxbZyecCv9rLgEnLRk86aqH5e+mKTt/UmM1bcOp
+zKrw8VnSzC/e6VURdGE1ZTAu3XOerQpD7tW+ZSW39zJ/uZNWM0nxHhHdX4qyW2wu
+Hn/V11b8uwzzZZ6ZCfq2LLucdNqk2rwQx/a5hYneWsx+3t7tQE2PUo2uLzRRjBhU
+OQaIdZQZQPwOpXv57xKWUAzZdyt8VRf4qtXFCzxScHtGPd6tuk+aRdUKbj4DgIl9
+HRhcp6U5ZIaJijiFbi6gvpAGFtv0lz04jxqSgz3MvaLiTVNLUFk=
+=8Nd8
 -----END PGP SIGNATURE-----
 
---nextPart7191841.mqxAbxXKxD--
+--nextPart140518754.v2Ycy2XqpW--
 
 
 
