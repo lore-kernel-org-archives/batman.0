@@ -1,10 +1,13 @@
-Return-Path: <3v6AoXAkbAIo6CDyozzs5o33wr.u22uzs86s5q217s17.q20@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 30 Dec 2018 12:00:12 +0100
+Message-ID: <3100603.HWLWhOUWpG@sven-edge>
+In-Reply-To: <000000000000d89413057e3aeec2@google.com>
+References: <000000000000d89413057e3aeec2@google.com>
 MIME-Version: 1.0
-Date: Sun, 30 Dec 2018 02:41:03 -0800
-Message-ID: <000000000000d89413057e3aeec2@google.com>
-From: syzbot <syzbot+c764de0fcfadca9a8595@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
-Subject: [B.A.T.M.A.N.] WARNING in batadv_is_on_batman_iface
+Content-Type: multipart/signed; boundary="nextPart1873944.72WfFfbkSa";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] WARNING in batadv_is_on_batman_iface
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,103 +17,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: syzbot <syzbot+c764de0fcfadca9a8595@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Hello,
+--nextPart1873944.72WfFfbkSa
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-syzbot found the following crash on:
+On Sunday, 30 December 2018 11.41.03 CET syzbot wrote:
+[...]
+> HEAD commit:    d8924c0d76aa Merge tag 'devprop-4.21-rc1' of git://git.ker..
+> git tree:       upstream
+> console output: https://syzkaller.appspot.com/x/log.txt?x=122a373f400000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=91a256823ef17263
+> dashboard link: https://syzkaller.appspot.com/bug?extid=c764de0fcfadca9a8595
+> compiler:       gcc (GCC) 8.0.1 20180413 (experimental)
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16fd1d67400000
+> 
+> IMPORTANT: if you fix the bug, please add the following tag to the commit:
+> Reported-by: syzbot+c764de0fcfadca9a8595@syzkaller.appspotmail.com
 
-HEAD commit:    d8924c0d76aa Merge tag 'devprop-4.21-rc1' of git://git.ker..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=122a373f400000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=91a256823ef17263
-dashboard link: https://syzkaller.appspot.com/bug?extid=c764de0fcfadca9a8595
-compiler:       gcc (GCC) 8.0.1 20180413 (experimental)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16fd1d67400000
+What is the bug here? The kernel module showed a warning because the parent 
+device cannot be found in the same netns using __dev_get_by_index.
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+c764de0fcfadca9a8595@syzkaller.appspotmail.com
+The test system was just configured to panic on warnings. So are we now 
+expected to show warnings or what is the expected behavior?
 
-8021q: adding VLAN 0 to HW filter on device team0
-8021q: adding VLAN 0 to HW filter on device team0
-8021q: adding VLAN 0 to HW filter on device team0
-------------[ cut here ]------------
-Cannot find parent device
-WARNING: CPU: 1 PID: 9391 at net/batman-adv/hard-interface.c:182  
-batadv_is_on_batman_iface+0x3ef/0x460 net/batman-adv/hard-interface.c:182
-Kernel panic - not syncing: panic_on_warn set ...
-CPU: 1 PID: 9391 Comm: syz-executor2 Not tainted 4.20.0+ #388
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
-Google 01/01/2011
-Call Trace:
-  __dump_stack lib/dump_stack.c:77 [inline]
-  dump_stack+0x1d3/0x2c6 lib/dump_stack.c:113
-  panic+0x2ad/0x55c kernel/panic.c:188
-  __warn.cold.8+0x20/0x45 kernel/panic.c:540
-  report_bug+0x254/0x2d0 lib/bug.c:186
-  fixup_bug arch/x86/kernel/traps.c:178 [inline]
-  do_error_trap+0x11b/0x200 arch/x86/kernel/traps.c:271
-  do_invalid_op+0x36/0x40 arch/x86/kernel/traps.c:290
-  invalid_op+0x14/0x20 arch/x86/entry/entry_64.S:973
-RIP: 0010:batadv_is_on_batman_iface+0x3ef/0x460  
-net/batman-adv/hard-interface.c:182
-Code: 8b 45 d0 48 89 45 c0 e9 f5 fe ff ff 4c 89 ff e8 67 f7 03 fa e9 f4 fc  
-ff ff e8 2d ec c0 f9 48 c7 c7 00 16 d6 88 e8 b1 9f 8a f9 <0f> 0b eb b7 e8  
-68 f7 03 fa e9 3e fc ff ff 48 8b 7d c0 e8 5a f7 03
-RSP: 0018:ffff8881d31e68b8 EFLAGS: 00010282
-RAX: 0000000000000000 RBX: ffff8881d78d0ec0 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: ffffffff8164e075 RDI: 0000000000000006
-RBP: ffff8881d31e6900 R08: ffff8881b0d9c040 R09: 0000000000000006
-R10: 0000000000000000 R11: ffff8881b0d9c040 R12: 0000000000000000
-R13: ffff8881bd630140 R14: 00000000447eea95 R15: ffff8881d78d0fc8
-  batadv_is_valid_iface net/batman-adv/hard-interface.c:205 [inline]
-  batadv_hardif_add_interface net/batman-adv/hard-interface.c:917 [inline]
-  batadv_hard_if_event+0x944/0x11e0 net/batman-adv/hard-interface.c:1041
-  notifier_call_chain+0x17e/0x380 kernel/notifier.c:93
-  __raw_notifier_call_chain kernel/notifier.c:394 [inline]
-  raw_notifier_call_chain+0x2d/0x40 kernel/notifier.c:401
-  call_netdevice_notifiers_info+0x3f/0x90 net/core/dev.c:1733
-  call_netdevice_notifiers net/core/dev.c:1751 [inline]
-  register_netdevice+0xb98/0x10f0 net/core/dev.c:8570
-  ip6gre_newlink_common.isra.29+0x165/0x3c0 net/ipv6/ip6_gre.c:1948
-  ip6gre_newlink+0x353/0x9b0 net/ipv6/ip6_gre.c:1981
-  rtnl_newlink+0xf08/0x1da0 net/core/rtnetlink.c:3175
-  rtnetlink_rcv_msg+0x46a/0xc20 net/core/rtnetlink.c:4950
-  netlink_rcv_skb+0x172/0x440 net/netlink/af_netlink.c:2477
-  rtnetlink_rcv+0x1c/0x20 net/core/rtnetlink.c:4968
-  netlink_unicast_kernel net/netlink/af_netlink.c:1310 [inline]
-  netlink_unicast+0x5a5/0x760 net/netlink/af_netlink.c:1336
-  netlink_sendmsg+0xa18/0xfc0 net/netlink/af_netlink.c:1917
-  sock_sendmsg_nosec net/socket.c:621 [inline]
-  sock_sendmsg+0xd5/0x120 net/socket.c:631
-  ___sys_sendmsg+0x7fd/0x930 net/socket.c:2116
-  __sys_sendmsg+0x11d/0x280 net/socket.c:2154
-  __do_sys_sendmsg net/socket.c:2163 [inline]
-  __se_sys_sendmsg net/socket.c:2161 [inline]
-  __x64_sys_sendmsg+0x78/0xb0 net/socket.c:2161
-  do_syscall_64+0x1b9/0x820 arch/x86/entry/common.c:290
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x457759
-Code: fd b3 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7  
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
-ff 0f 83 cb b3 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007fd848638c78 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000457759
-RDX: 0000000000000000 RSI: 00000000200005c0 RDI: 0000000000000003
-RBP: 000000000073bf00 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007fd8486396d4
-R13: 00000000004c49f1 R14: 00000000004d80d0 R15: 00000000ffffffff
-Kernel Offset: disabled
-Rebooting in 86400 seconds..
+This behavior was added with commit b7eddd0b3950 ("batman-adv: prevent using 
+any virtual device created on batman-adv as hard-interface") - 3d48811b27f5 in 
+the out-of-tree module.
+
+Kind regards,
+	Sven
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b7eddd0b3950ea9dc863f1cbfa30d172dbf772f4
+--nextPart1873944.72WfFfbkSa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwopTwACgkQXYcKB8Em
+e0YQMBAAltYX12JxNeyzwU/NpF0YYohNL71mWTCotYpuPntVwfcUHt8iJzdWTMed
+F45oQfZXtt2M9ruWxf5PuFbDLhOipHuMT49eGKrKSmBn8P3LAZrQ3LLBhp7wOwU+
+o9ueQy39Y7qbnbc+Xw4efv6Mg82MjVXDWpmLTc9EEjg6v5JImkmGIUg+cUrWtlrs
+zAEVHvivGWDOhDNFWHrqKPhQl37nIl5ejkSC7VxDRsRzOnT8j+PG7UyUkYOW2XmI
+UrySPu/ZycG94xze37bvWN+z5ta63QvpIPiTtmyiqN0PEgtrbM0xaMtfB53qdqt6
+oBFJVs+VKH6ojcybbIK+LTD3Aj8BIBPaQP4NmcB2B6K8a/7v4wiuf40dXTgj2Bj3
+I0XJ2QJZgdYmMtkvvyNHaY29QPvd+Pww+6ynSRL9hS7Ol4PGJ6nasJPH91k/ve6E
+MgEIibTKM25Qp9rmLoaNnTv4d4xBmh0gcDeSaOdt3kRjf5l8r/o6lNfolepKoDvz
+AxhpilApMsTrFLsbDeTeH/NERK2rcZaZyWeFOjAQoz8cGU+OyM6L924NFGmmGCbP
+rukjTuP1Wj2Bb2pYV5QsBnV4t8LWOXca+VhK2CQ+/pGAnVym4g2SjWi0jeAS9O6W
+MG7gIAZFRoMQLNx2y2cwTjeN8tKjakuFi0IRHMrbiSVyl1SvqJg=
+=r+Bq
+-----END PGP SIGNATURE-----
+
+--nextPart1873944.72WfFfbkSa--
 
 
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#bug-status-tracking for how to communicate with  
-syzbot.
-syzbot can test patches for this bug, for details see:
-https://goo.gl/tpsmEJ#testing-patches
