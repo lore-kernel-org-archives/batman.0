@@ -1,10 +1,10 @@
-Return-Path: <32JYpXAkbAJMFLM7x881ExCC50.3BB381HF1EzBAG1AG.zB9@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <3P5gpXAkbAPww23oeppivettmh.ksskpiywivgsrxirx.gsq@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Date: Sun, 30 Dec 2018 20:11:04 -0800
-Message-ID: <000000000000fa4f60057e499989@google.com>
-From: syzbot <syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com>
+Date: Sun, 30 Dec 2018 20:17:03 -0800
+Message-ID: <0000000000005c2068057e49afcf@google.com>
+From: syzbot <syzbot+050927a651272b145a5d@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
-Subject: [B.A.T.M.A.N.] WARNING in batadv_mcast_mla_tt_retract
+Subject: [B.A.T.M.A.N.] WARNING in batadv_mcast_mla_update
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,22 +22,27 @@ syzbot found the following crash on:
 
 HEAD commit:    eed9688f8513 Merge branch 'ras-core-for-linus' of git://gi..
 git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=103bffaf400000
+console output: https://syzkaller.appspot.com/x/log.txt?x=10785d57400000
 kernel config:  https://syzkaller.appspot.com/x/.config?x=fa5c63e12fd85b25
-dashboard link: https://syzkaller.appspot.com/bug?extid=83f2d54ec6b7e417e13f
+dashboard link: https://syzkaller.appspot.com/bug?extid=050927a651272b145a5d
 compiler:       gcc (GCC) 8.0.1 20180413 (experimental)
 
 Unfortunately, I don't have any reproducer for this crash yet.
 
 IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com
+Reported-by: syzbot+050927a651272b145a5d@syzkaller.appspotmail.com
 
+QAT: Invalid ioctl
 bond0 (unregistering): Releasing backup interface bond_slave_0
 bond0 (unregistering): Released all slaves
-WARNING: CPU: 1 PID: 7 at net/batman-adv/multicast.c:337  
-batadv_mcast_mla_tt_retract+0x476/0x590 net/batman-adv/multicast.c:337
+WARNING: CPU: 0 PID: 28 at net/batman-adv/multicast.c:371  
+batadv_mcast_mla_tt_add net/batman-adv/multicast.c:371 [inline]
+WARNING: CPU: 0 PID: 28 at net/batman-adv/multicast.c:371  
+__batadv_mcast_mla_update net/batman-adv/multicast.c:636 [inline]
+WARNING: CPU: 0 PID: 28 at net/batman-adv/multicast.c:371  
+batadv_mcast_mla_update+0x248f/0x2da0 net/batman-adv/multicast.c:661
 Kernel panic - not syncing: panic_on_warn set ...
-CPU: 1 PID: 7 Comm: kworker/u4:0 Not tainted 4.20.0+ #169
+CPU: 0 PID: 28 Comm: kworker/u4:2 Not tainted 4.20.0+ #390
 Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
 Google 01/01/2011
 Workqueue: bat_events batadv_mcast_mla_update
@@ -51,19 +56,19 @@ Call Trace:
   do_error_trap+0x11b/0x200 arch/x86/kernel/traps.c:271
   do_invalid_op+0x36/0x40 arch/x86/kernel/traps.c:290
   invalid_op+0x14/0x20 arch/x86/entry/entry_64.S:973
-RIP: 0010:batadv_mcast_mla_tt_retract+0x476/0x590  
-net/batman-adv/multicast.c:337
-Code: 00 00 ad de 4c 89 ff 49 89 47 08 e8 b4 0f 03 fa e9 b6 fe ff ff 49 8d  
-47 10 48 89 85 60 ff ff ff e9 05 ff ff ff e8 4a 30 c0 f9 <0f> 0b e9 3f fc  
-ff ff e8 6e 3b 03 fa e9 44 fe ff ff 4c 89 f7 e8 81
-RSP: 0018:ffff8880a9e1f260 EFLAGS: 00010293
-RAX: ffff8880a9e041c0 RBX: 0000000000000001 RCX: ffffffff87bedca3
-RDX: 0000000000000000 RSI: ffffffff87bee066 RDI: 0000000000000007
-RBP: ffff8880a9e1f328 R08: ffff8880a9e041c0 R09: ffffed1015ce5b8f
-R10: 0000000000000003 R11: ffff8880ae72dc7b R12: ffff8880a9e1f490
-R13: 0000000000000000 R14: ffff888055b95fc0 R15: ffff8880a9e1f710
-  __batadv_mcast_mla_update net/batman-adv/multicast.c:635 [inline]
-  batadv_mcast_mla_update+0x819/0x2da0 net/batman-adv/multicast.c:661
+RIP: 0010:batadv_mcast_mla_tt_add net/batman-adv/multicast.c:371 [inline]
+RIP: 0010:__batadv_mcast_mla_update net/batman-adv/multicast.c:636 [inline]
+RIP: 0010:batadv_mcast_mla_update+0x248f/0x2da0  
+net/batman-adv/multicast.c:661
+Code: 49 c1 ee 03 48 b8 00 00 00 00 00 fc ff df be f8 f8 ff ff 66 41 89 34  
+06 48 c1 ea 03 c6 04 02 f8 e9 f7 e7 ff ff e8 41 f3 bf f9 <0f> 0b e9 b8 e3  
+ff ff 48 8b bd 48 fc ff ff e8 1e fe 02 fa e9 99 df
+RSP: 0018:ffff8880a9fe7338 EFLAGS: 00010293
+RAX: ffff8880a9422000 RBX: 0000000000000001 RCX: ffffffff87bf0125
+RDX: 0000000000000000 RSI: ffffffff87bf1d6f RDI: 0000000000000007
+RBP: ffff8880a9fe7738 R08: ffff8880a9422000 R09: 0000000000000006
+R10: 0000000000000000 R11: ffff8880a9422000 R12: ffff8880a9fe7490
+R13: 0000000000000000 R14: 1ffff110153fce92 R15: ffff8880a9fe7710
   process_one_work+0xc90/0x1c40 kernel/workqueue.c:2153
   worker_thread+0x17f/0x1390 kernel/workqueue.c:2296
   kthread+0x35a/0x440 kernel/kthread.c:246
