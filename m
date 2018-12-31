@@ -1,10 +1,15 @@
-Return-Path: <3L-QpXAkbAIY289ukvvo1kzzsn.qyyqvo42o1myx3ox3.myw@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 31 Dec 2018 20:08:19 +0100
+Message-ID: <1842705.uoa0R6XjVQ@sven-edge>
+In-Reply-To: <20181230165754.GC4150@otheros>
+References: <20181207135846.6152-1-sven@narfation.org>
+ <20181207135846.6152-2-sven@narfation.org> <20181230165754.GC4150@otheros>
 MIME-Version: 1.0
-Date: Mon, 31 Dec 2018 01:41:03 -0800
-Message-ID: <0000000000000f098d057e4e3662@google.com>
-From: syzbot <syzbot+9d7405c7faa390e60b4e@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
-Subject: [B.A.T.M.A.N.] KASAN: slab-out-of-bounds Read in batadv_interface_tx
+Content-Type: multipart/signed; boundary="nextPart2658736.S6grkqtJDO";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC v3 01/19] batman-adv: Move common genl doit
+ code pre/post hooks
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,125 +19,120 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello,
+--nextPart2658736.S6grkqtJDO
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-syzbot found the following crash on:
+On Sunday, 30 December 2018 17.57.54 CET Linus L=FCssing wrote:
+> On Fri, Dec 07, 2018 at 02:58:28PM +0100, Sven Eckelmann wrote:
+> > +/**
+> > + * batadv_get_softif_from_info() - Retrieve soft interface from genl=20
+attributes
+> > + * @net: the applicable net namespace
+> > + * @info: receiver information
+> > + *
+> > + * Return: Pointer to soft interface on success, error pointer on error
+> > + */
+> > +static struct batadv_priv *
+> > +batadv_get_softif_from_info(struct net *net, struct genl_info *info)
+>=20
+> Since this returns a batadv_priv, shouldn't it better be called
+> batadv_get_batpriv_from_info() or batadv_get_bat_priv_from_info() maybe?
 
-HEAD commit:    f346b0becb1b Merge branch 'akpm' (patches from Andrew)
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=10f0bbdd400000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=c255c77ba370fe7c
-dashboard link: https://syzkaller.appspot.com/bug?extid=9d7405c7faa390e60b4e
-compiler:       gcc (GCC) 8.0.1 20180413 (experimental)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14c3eabf400000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=164bfbfb400000
+OK
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+9d7405c7faa390e60b4e@syzkaller.appspotmail.com
+>=20
+> > +{
+> > +	struct net_device *soft_iface;
+> > +	int ifindex;
+> > +
+> > +	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
+> > +		return ERR_PTR(-EINVAL);
+> > +
+> > +	ifindex =3D nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
+> > +
+> > +	soft_iface =3D dev_get_by_index(net, ifindex);
+> > +	if (!soft_iface)
+> > +		return ERR_PTR(-ENODEV);
+> > +
+> > +	if (!batadv_softif_is_valid(soft_iface))
+> > +		goto err_put_softif;
+> > +
+> > +	return netdev_priv(soft_iface);
+> > +
+> > +err_put_softif:
+> > +	dev_put(soft_iface);
+> > +
+> > +	return ERR_PTR(-EINVAL);
+> > +}
+>=20
+> Is holding a reference to bat_priv->soft_iface really
+> necessary (and releasing it in batadv_post_doit() )?
+> If we are able to retrieve a valid bat_priv then this bat_priv
+> itself should hold a reference to to soft_iface, shouldn't it?
 
-IPv6: ADDRCONF(NETDEV_UP): vxcan1: link is not ready
-8021q: adding VLAN 0 to HW filter on device batadv0
-==================================================================
-BUG: KASAN: slab-out-of-bounds in batadv_interface_tx+0x160a/0x18b0  
-net/batman-adv/soft-interface.c:226
-Read of size 2 at addr ffff8880a662f5cb by task syz-executor922/8142
+No, we don't hold any explicit reference to bat_priv itself. The bat_priv i=
+s a=20
+part of the memory of the soft_iface. So we most hold a reference for=20
+soft_iface because we don't prevent that it is removed in the meantime (the=
+=20
+netlink interface is registered per module and not per meshif/softif).
 
-CPU: 0 PID: 8142 Comm: syz-executor922 Not tainted 4.20.0+ #173
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
-Google 01/01/2011
-Call Trace:
-  __dump_stack lib/dump_stack.c:77 [inline]
-  dump_stack+0x1d3/0x2c6 lib/dump_stack.c:113
-  print_address_description.cold.5+0x9/0x1ff mm/kasan/report.c:187
-  kasan_report.cold.6+0x1b/0x39 mm/kasan/report.c:317
-  __asan_report_load_n_noabort+0xf/0x20 mm/kasan/generic_report.c:145
-  batadv_interface_tx+0x160a/0x18b0 net/batman-adv/soft-interface.c:226
-  __netdev_start_xmit include/linux/netdevice.h:4382 [inline]
-  netdev_start_xmit include/linux/netdevice.h:4391 [inline]
-  dev_direct_xmit+0x36c/0x6a0 net/core/dev.c:3930
-  packet_direct_xmit+0xfb/0x170 net/packet/af_packet.c:246
-  packet_snd net/packet/af_packet.c:2932 [inline]
-  packet_sendmsg+0x298a/0x6ad0 net/packet/af_packet.c:2957
-  sock_sendmsg_nosec net/socket.c:621 [inline]
-  sock_sendmsg+0xd5/0x120 net/socket.c:631
-  __sys_sendto+0x3d7/0x670 net/socket.c:1788
-  __do_sys_sendto net/socket.c:1800 [inline]
-  __se_sys_sendto net/socket.c:1796 [inline]
-  __x64_sys_sendto+0xe1/0x1a0 net/socket.c:1796
-  do_syscall_64+0x1b9/0x820 arch/x86/entry/common.c:290
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x441619
-Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7  
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
-ff 0f 83 3b 0b fc ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007ffd5c9334f8 EFLAGS: 00000212 ORIG_RAX: 000000000000002c
-RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 0000000000441619
-RDX: 000000000000000e RSI: 0000000020000180 RDI: 0000000000000003
-RBP: 0000000000000001 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000212 R12: 00000000004025e0
-R13: 0000000000402670 R14: 0000000000000000 R15: 0000000000000000
+[...]
+> > +	if (ops->internal_flags & BATADV_FLAG_NEED_MESH) {
+> > +		bat_priv =3D batadv_get_softif_from_info(genl_info_net(info),
+> > +						       info);
+>=20
+> Would it look nicer to store genl_info_net(info) in a temporary variable
+> so that its shorter and the newline for the second parameter could
+> be avoided?
 
-Allocated by task 8184:
-  save_stack+0x43/0xd0 mm/kasan/common.c:73
-  set_track mm/kasan/common.c:85 [inline]
-  kasan_kmalloc+0xcb/0xd0 mm/kasan/common.c:482
-  kasan_slab_alloc+0x12/0x20 mm/kasan/common.c:397
-  kmem_cache_alloc+0x130/0x730 mm/slab.c:3541
-  getname_flags+0xd0/0x590 fs/namei.c:140
-  getname+0x19/0x20 fs/namei.c:211
-  do_sys_open+0x383/0x780 fs/open.c:1057
-  __do_sys_open fs/open.c:1081 [inline]
-  __se_sys_open fs/open.c:1076 [inline]
-  __x64_sys_open+0x7e/0xc0 fs/open.c:1076
-  do_syscall_64+0x1b9/0x820 arch/x86/entry/common.c:290
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+Ok
 
-Freed by task 8184:
-  save_stack+0x43/0xd0 mm/kasan/common.c:73
-  set_track mm/kasan/common.c:85 [inline]
-  __kasan_slab_free+0x102/0x150 mm/kasan/common.c:444
-  kasan_slab_free+0xe/0x10 mm/kasan/common.c:452
-  __cache_free mm/slab.c:3485 [inline]
-  kmem_cache_free+0x83/0x290 mm/slab.c:3747
-  putname+0xf2/0x130 fs/namei.c:261
-  do_sys_open+0x54d/0x780 fs/open.c:1072
-  __do_sys_open fs/open.c:1081 [inline]
-  __se_sys_open fs/open.c:1076 [inline]
-  __x64_sys_open+0x7e/0xc0 fs/open.c:1076
-  do_syscall_64+0x1b9/0x820 arch/x86/entry/common.c:290
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+> > +		if (IS_ERR(bat_priv))
+> > +			return PTR_ERR(bat_priv);
+> > +
+> > +		info->user_ptr[0] =3D bat_priv;
+>=20
+> Would it make sense to wrap this private data access into
+> something somehow? Conceptually similar to what we do not with skb private
+> data already for instance. There we use BATADV_SKB_CB() for instance.
 
-The buggy address belongs to the object at ffff8880a662e5c0
-  which belongs to the cache names_cache of size 4096
-The buggy address is located 11 bytes to the right of
-  4096-byte region [ffff8880a662e5c0, ffff8880a662f5c0)
-The buggy address belongs to the page:
-page:ffffea0002998b80 count:1 mapcount:0 mapping:ffff88821bc48200 index:0x0  
-compound_mapcount: 0
-flags: 0x1fffc0000010200(slab|head)
-raw: 01fffc0000010200 ffffea00029fa208 ffffea00022fd188 ffff88821bc48200
-raw: 0000000000000000 ffff8880a662e5c0 0000000100000001 0000000000000000
-page dumped because: kasan: bad access detected
+Please not, we only have two pointers and I definitely don't want to force=
+=20
+specific positions (we need three at the moment - but max two per command).=
+=20
+You should compare it with the nl80211 code.
 
-Memory state around the buggy address:
-  ffff8880a662f480: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-  ffff8880a662f500: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-> ffff8880a662f580: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc fc
-                                               ^
-  ffff8880a662f600: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-  ffff8880a662f680: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
-==================================================================
+Kind regards,
+	Sven
 
 
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+--nextPart2658736.S6grkqtJDO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#bug-status-tracking for how to communicate with  
-syzbot.
-syzbot can test patches for this bug, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwqaSMACgkQXYcKB8Em
+e0ahrRAAgQIMtmEmeogL1KH69H9I6up4WZmGBTVcIK5qavW/pTyOvPSd1qdeliYD
+NuE/LcvnPujCyARNz77BLMfBycMQruAX+frZa0NjH5HdRXF1GrPdpR77L/pL27Uh
+kxajdVjwgimW5qqMj1ktj+Ub1rxt7iLtPGp6g6VFzi9hdW13+qoMna1HT1pwEeQI
+6j5hKe1VKYBNOkOegTx6Aa8KnquZ+TIT15J3RBWLqM5NubYBxHCtURjr48ioHCXI
+jeoIDu0MPC4/TJhAFqCrm36PzUTY39VavOnAZI3vms3d0i9ynCgXPLYYUw3XI76U
+Jp8Lbzw/FxhMR30bxbmlb2p+f9ldTT83VKH2y0TVj1418P9kgj/SfpV2t1NaAydQ
+vSoBJySeSqcPlgbvRvzIUinNi+URXOrO7GkXplctR7acUYpk3rjako7BSnH4Qypo
+0nxmhJ70IzTiegYI0VCwi6/QkGNBG4ZyMSgxV2YuqUkhXuskGdl4e5PP2T3rs5e3
+eueZbamJntgtGaudYSujF220aWhwO8IXB4PGzq0FApwxEgtrYtRu0DKf6pvrbENS
+ZiP4pKbM2XkH/CUYTaMPUkNmhkk6RYZwaVdDz0VY/eFTvi135PFjjQDlmgkU8BGc
+PAUEHGiX2l47516/0MCd7Xc8fGVYkmnSa9SxkH96hB3fPtR0K98=
+=BXVo
+-----END PGP SIGNATURE-----
+
+--nextPart2658736.S6grkqtJDO--
+
+
+
