@@ -1,15 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 31 Dec 2018 12:59:36 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20181231115936.GE4150@otheros>
-References: <20181207135846.6152-1-sven@narfation.org>
- <20181207135846.6152-4-sven@narfation.org>
+Return-Path: <32JYpXAkbAJMFLM7x881ExCC50.3BB381HF1EzBAG1AG.zB9@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20181207135846.6152-4-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC v3 03/19] batman-adv: Prepare framework for
- hardif genl config
+Date: Sun, 30 Dec 2018 20:11:04 -0800
+Message-ID: <000000000000fa4f60057e499989@google.com>
+From: syzbot <syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
+Subject: [B.A.T.M.A.N.] WARNING in batadv_mcast_mla_tt_retract
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +14,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-On Fri, Dec 07, 2018 at 02:58:30PM +0100, Sven Eckelmann wrote:
-[...]
-> The BATADV_CMD_GET_HARDIFS (or short version BATADV_CMD_GET_HARDIF) is
-> reused as get command because it already allow to dump the content of other
-> information from the slave/hard-interface which are not yet configuration
-> specific.
+Hello,
 
-"already allow" -> "already allows"
+syzbot found the following crash on:
 
-[...]
-> @@ -76,6 +77,13 @@ enum batadv_genl_ops_flags {
->  	 *  safed in info->user_ptr[0]
->  	 */
->  	BATADV_FLAG_NEED_MESH = BIT(0),
-> +
-> +	/**
-> +	 * @BATADV_FLAG_NEED_HARDIF: request requires valid hard interface in
-> +	 *  attribute BATADV_ATTR_HARD_IFINDEX and expects a pointer to it to be
-> +	 *  safed in info->user_ptr[1]
-> +	 */
-> +	BATADV_FLAG_NEED_HARDIF = BIT(1),
+HEAD commit:    eed9688f8513 Merge branch 'ras-core-for-linus' of git://gi..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=103bffaf400000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=fa5c63e12fd85b25
+dashboard link: https://syzkaller.appspot.com/bug?extid=83f2d54ec6b7e417e13f
+compiler:       gcc (GCC) 8.0.1 20180413 (experimental)
 
-safed -> saved
-(and same in the previous patch)
+Unfortunately, I don't have any reproducer for this crash yet.
 
-[...]
->  /**
->   * batadv_pre_doit() - Prepare batman-adv genl doit request
->   * @ops: requested netlink operation
-> @@ -592,7 +738,16 @@ batadv_get_softif_from_info(struct net *net, struct genl_info *info)
->  static int batadv_pre_doit(const struct genl_ops *ops, struct sk_buff *skb,
->  			   struct genl_info *info)
->  {
-> -	struct batadv_priv *bat_priv;
-> +	struct batadv_hard_iface *hard_iface;
-> +	struct batadv_priv *bat_priv = NULL;
-> +	int ret;
-> +
-> +	if (WARN_ON(ops->internal_flags & BATADV_FLAG_NEED_HARDIF))
-> +		return -EINVAL;
-> +
-> +	if (WARN_ON((ops->internal_flags & BATADV_FLAG_NEED_HARDIF) &&
-> +		    (~ops->internal_flags & BATADV_FLAG_NEED_MESH)))
-> +		return -EINVAL;
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com
 
-Seems like the second part is unreachable code. If
-BATADV_FLAG_NEED_HARDIF is set then the function returns with the first
-if-clause already.
+bond0 (unregistering): Releasing backup interface bond_slave_0
+bond0 (unregistering): Released all slaves
+WARNING: CPU: 1 PID: 7 at net/batman-adv/multicast.c:337  
+batadv_mcast_mla_tt_retract+0x476/0x590 net/batman-adv/multicast.c:337
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 1 PID: 7 Comm: kworker/u4:0 Not tainted 4.20.0+ #169
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Workqueue: bat_events batadv_mcast_mla_update
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x1d3/0x2c6 lib/dump_stack.c:113
+  panic+0x2ad/0x55c kernel/panic.c:188
+  __warn.cold.8+0x20/0x45 kernel/panic.c:540
+  report_bug+0x254/0x2d0 lib/bug.c:186
+  fixup_bug arch/x86/kernel/traps.c:178 [inline]
+  do_error_trap+0x11b/0x200 arch/x86/kernel/traps.c:271
+  do_invalid_op+0x36/0x40 arch/x86/kernel/traps.c:290
+  invalid_op+0x14/0x20 arch/x86/entry/entry_64.S:973
+RIP: 0010:batadv_mcast_mla_tt_retract+0x476/0x590  
+net/batman-adv/multicast.c:337
+Code: 00 00 ad de 4c 89 ff 49 89 47 08 e8 b4 0f 03 fa e9 b6 fe ff ff 49 8d  
+47 10 48 89 85 60 ff ff ff e9 05 ff ff ff e8 4a 30 c0 f9 <0f> 0b e9 3f fc  
+ff ff e8 6e 3b 03 fa e9 44 fe ff ff 4c 89 f7 e8 81
+RSP: 0018:ffff8880a9e1f260 EFLAGS: 00010293
+RAX: ffff8880a9e041c0 RBX: 0000000000000001 RCX: ffffffff87bedca3
+RDX: 0000000000000000 RSI: ffffffff87bee066 RDI: 0000000000000007
+RBP: ffff8880a9e1f328 R08: ffff8880a9e041c0 R09: ffffed1015ce5b8f
+R10: 0000000000000003 R11: ffff8880ae72dc7b R12: ffff8880a9e1f490
+R13: 0000000000000000 R14: ffff888055b95fc0 R15: ffff8880a9e1f710
+  __batadv_mcast_mla_update net/batman-adv/multicast.c:635 [inline]
+  batadv_mcast_mla_update+0x819/0x2da0 net/batman-adv/multicast.c:661
+  process_one_work+0xc90/0x1c40 kernel/workqueue.c:2153
+  worker_thread+0x17f/0x1390 kernel/workqueue.c:2296
+  kthread+0x35a/0x440 kernel/kthread.c:246
+  ret_from_fork+0x3a/0x50 arch/x86/entry/entry_64.S:352
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
+
+
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#bug-status-tracking for how to communicate with  
+syzbot.
