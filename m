@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 31 Dec 2018 20:11:18 +0100
-Message-ID: <5881296.i1tslI3xJu@sven-edge>
-In-Reply-To: <20181231110950.GD4150@otheros>
+Date: Mon, 31 Dec 2018 20:17:58 +0100
+Message-ID: <2071883.YQQqAYjll7@sven-edge>
+In-Reply-To: <20181231115936.GE4150@otheros>
 References: <20181207135846.6152-1-sven@narfation.org>
- <20181207135846.6152-3-sven@narfation.org> <20181231110950.GD4150@otheros>
+ <20181207135846.6152-4-sven@narfation.org> <20181231115936.GE4150@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6874263.85UqNy2q2d";
+Content-Type: multipart/signed; boundary="nextPart2017907.nQK1TWLzGE";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v3 02/19] batman-adv: Prepare framework for
- mesh genl config
+Subject: Re: [B.A.T.M.A.N.] [RFC v3 03/19] batman-adv: Prepare framework for
+ hardif genl config
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,60 +21,67 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6874263.85UqNy2q2d
+--nextPart2017907.nQK1TWLzGE
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday, 31 December 2018 12.09.50 CET Linus L=FCssing wrote:
+On Monday, 31 December 2018 12.59.36 CET Linus L=FCssing wrote:
 [...]
-> [...]
+> >  static int batadv_pre_doit(const struct genl_ops *ops, struct sk_buff =
+*skb,
+> >  			   struct genl_info *info)
+> >  {
+> > -	struct batadv_priv *bat_priv;
+> > +	struct batadv_hard_iface *hard_iface;
+> > +	struct batadv_priv *bat_priv =3D NULL;
+> > +	int ret;
+> > +
+> > +	if (WARN_ON(ops->internal_flags & BATADV_FLAG_NEED_HARDIF))
+> > +		return -EINVAL;
+> > +
+> > +	if (WARN_ON((ops->internal_flags & BATADV_FLAG_NEED_HARDIF) &&
+> > +		    (~ops->internal_flags & BATADV_FLAG_NEED_MESH)))
+> > +		return -EINVAL;
 >=20
-> >  #ifdef CONFIG_BATMAN_ADV_BLA
-> >  	if (nla_put_u16(msg, BATADV_ATTR_BLA_CRC,
-> >  			ntohs(bat_priv->bla.claim_dest.group)))
-> > -		goto out;
-> > +		goto nla_put_failure;
-> >  #endif
-> > =20
-> >  	if (batadv_mcast_mesh_info_put(msg, bat_priv))
-> > -		goto out;
-> > +		goto nla_put_failure;
->=20
-> With the rename of "batadv_netlink_mesh_info_put" to
-> "batadv_netlink_mesh_put", I'm wondering whether
-> batadv_mcast_mesh_info_put() should be renamed, too.
-> batadv_mcast_mesh_put() would probably be a bit too generic.
-> But maybe something like batadv_mcast_nl_mesh_put()?
+> Seems like the second part is unreachable code. If
+> BATADV_FLAG_NEED_HARDIF is set then the function returns with the first
+> if-clause already.
 
-Not relevant for this patch. But feel free to check what we can do to make =
-it=20
-more consistent. We can then do it after having the rest in place.
+Looks like I've incorrectly splitted the patch at this position. Makes more=
+=20
+sense when you check the next patch.
+
+So the first check should be removed from this patch to make it less=20
+confusing.
+
+
+Btw. thanks for the spelling/grammar fixes.
 
 Kind regards,
 	Sven
---nextPart6874263.85UqNy2q2d
+--nextPart2017907.nQK1TWLzGE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwqadYACgkQXYcKB8Em
-e0aTNBAAu27T5cn3rZbFZvkeYfRRmRzsw1UDByimWKftagDv0CuPkgtwZOUp8PIy
-r76hQvFoVNKTE5Xr/dw46yHSynascYk4AsiIQP6v3qttiIUzytarI7NzfHRdR6E9
-5FZKn1JpJzImL3jWrqfY7VlJW50sYET1ICY4jy9vgnT3BdpxPmtwHs3x2kY6mkQ2
-u32acV0i9uwvyifZNDytb9kxC9ogj/IhqBI3E00V68Kqh5O0YC6c0EH99evj54m9
-GSHqaTkIT+u/o7Z5pKC/2Qdb43P1evorivSWC1xU1hhD20edXaFJMx7wr6Ml8zY2
-T2Oin58S3QbzSYOSRF0EntyH49sRkJkcFVh7w9Z473raQpZrCdkex7WlXXj4pMaD
-j2px13SV6AlZZhSAUa4kJKc8Up4Dqp7SsF7ibPkQn/CTKutRO7I+J4sHkl29wYa3
-J2EqwsjprdkwgLrBsrKiudZM0UIUYypgl++8Vdzfdw0wpVAU6FIGmiqak/+Uf4cG
-dQtDt31IJtUMTkQGwZ1ooggvcHNIHpEKUg/L5fPJCb9Z/dv+rhuD2pR1z18Qg3EW
-imkN7okW3EGuA5hoWOtHtCoSW2HkOal+nBTpcvZVUhIVfwImzKkrtGsfcBYh/cBO
-T7zOsh+PQceEn79TwPjKu3dU6n0Cz5S1i3uo0W0eFNpP9lqRvDY=
-=OmzM
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwqa2YACgkQXYcKB8Em
+e0bNnQ/9FDfouEKRUOk4WTdINgjbrePiPpliWeY92DyMrLTYhBoDERp9eg4NsqN4
+D0OYXCmhVkvnX6wHykNNz/6hu0ZvrNu3rokRzVa0lBf2WRu9RZSWE3ZZTSaxeYns
+E6mwmivV/ii35NGidJz/BsPOGsK/QdTe6EyLQ1l8EhPxv1qluwsY+OgdN9URbtwR
++jaLMsRDOiXdgCX2iN20Q/PAZnKvj/C6VH4M30xztdlu6/lyKYqOMa2gwnz7YZKu
+OgqtTKH7t4wiqF/Kj3yCZ+E0L5qk6qsM1zuMz3v7qYEkw6I6SiwOiudvI205YbCm
+gdrxVNyQQj2wZfrAdBI248Z8gu+jbTKYpC3flMTO8wH7cQloTAUjS8hrREUzIsrt
+LeukpKajo7EKmFuthNqS1aCrM4enIzVJyFzwD4EVSpa0riH7NpKbev2Q00PXgIjJ
+8FvJl2wKWr+SVvzeft1GQcv6X/gHLbqp+ViVE3dQO0etDLI5PBZ5PTlIkZq/h6Pm
+InwE0Z60GE/EhMNYRa1keFH7hg72PQTyK1yH7CawLxk57DcNsDg44q1+h5njOhZF
+jwWg/wOeQBWhyJhJ5K/x5578nvR7+y3uC8kbhcTtKWAHtAGOneAx4I/fOP1h4VK5
+4Oy1fxEU+omcIa10ktxaed1ptCQZIW6q5A3+q6agVZYIHJoipDU=
+=CkKg
 -----END PGP SIGNATURE-----
 
---nextPart6874263.85UqNy2q2d--
+--nextPart2017907.nQK1TWLzGE--
 
 
 
