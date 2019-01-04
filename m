@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 04 Jan 2019 08:52:22 +0100
-Message-ID: <9046472.zWXYbWcy6o@sven-edge>
-In-Reply-To: <20190104003954.GD21623@otheros>
+Date: Fri, 04 Jan 2019 08:58:32 +0100
+Message-ID: <5023487.B7GbudR6Oe@sven-edge>
+In-Reply-To: <20190104022916.GI21623@otheros>
 References: <20181207135846.6152-1-sven@narfation.org>
- <20181207135846.6152-4-sven@narfation.org> <20190104003954.GD21623@otheros>
+ <20181207135846.6152-20-sven@narfation.org> <20190104022916.GI21623@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4484960.KpLy6tMDOY";
+Content-Type: multipart/signed; boundary="nextPart21785035.0hmNaWmsS8";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v3 03/19] batman-adv: Prepare framework for
- hardif genl config
+Subject: Re: [B.A.T.M.A.N.] [RFC v3 19/19] batman-adv: Trigger genl
+ notification on sysfs config change
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,95 +20,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, jiri@mellanox.com
 
---nextPart4484960.KpLy6tMDOY
+--nextPart21785035.0hmNaWmsS8
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Friday, 4 January 2019 01.39.54 CET Linus L=FCssing wrote:
-> On Fri, Dec 07, 2018 at 02:58:30PM +0100, Sven Eckelmann wrote:
-> [...]
-> > +/**
-> > + * batadv_get_hardif_from_info() - Retrieve hardif from genl attributes
-> > + * @bat_priv: the bat priv with all the soft interface information
-> > + * @net: the applicable net namespace
-> > + * @info: receiver information
-> > + *
-> > + * Return: Pointer to hard interface on success, error pointer on error
-> > + */
-> > +static struct batadv_hard_iface *
-> > +batadv_get_hardif_from_info(struct batadv_priv *bat_priv, struct net=20
-*net,
-> > +			    struct genl_info *info)
-> > +{
-> > +	struct batadv_hard_iface *hard_iface;
-> > +	struct net_device *hard_dev;
-> > +	unsigned int hardif_index;
-> > +
-> > +	if (!info->attrs[BATADV_ATTR_HARD_IFINDEX])
-> > +		return ERR_PTR(-EINVAL);
-> > +
-> > +	hardif_index =3D nla_get_u32(info->attrs[BATADV_ATTR_HARD_IFINDEX]);
-> > +
-> > +	hard_dev =3D dev_get_by_index(net, hardif_index);
-> > +	if (!hard_dev)
-> > +		return ERR_PTR(-ENODEV);
-> > +
-> > +	hard_iface =3D batadv_hardif_get_by_netdev(hard_dev);
-> > +	if (!hard_iface)
-> > +		goto err_put_harddev;
-> > +
-> > +	if (hard_iface->soft_iface !=3D bat_priv->soft_iface)
-> > +		goto err_put_hardif;
->=20
-> When would this case above happen?
-
-
-When you ask for a hard interface from a different mesh interface or a hard=
-=20
-interface without a mesh interface.
-
-
-> It seems unnecessary to keep holding a reference to hard_dev on
-> successful return here (and releasing it in post_doit).
+On Friday, 4 January 2019 03.29.16 CET Linus L=FCssing wrote:
 [...]
+> I'm wondering, before it was quite easy to add new sysfs
+> attributes with just a few lines thanks to macros. Now we
+> need to add code in four more places in netlink.c whenever we introduce a
+> new configuration option.
+>=20
+> Would it be possible (and maybe even reduce code size?) if the
+> sysfs and netlink parts were wrapped into some (macro) functions and/or
+> structs, to still be able to add options from a central place and with
+> only a few lines?
+>=20
+> Or would that become too ugly? Or not worth the effort for the few
+> options we have right now?
 
-Ok.
-
-> often with these net_device reference counters...) Same for
-> batadv_get_softif_from_info().
-
-No, no, no, no, no, no, no and again no. The net_device is the only thing w=
-ith=20
-a refcounter here. The bat_priv doesn't have a refcounter because it is jus=
-t a=20
-memory region in the net_device.
+You only need a couple of lines to add netlink things. And we don't want sy=
+sfs=20
+anymore. So no need to add ugly hacks to add both netlink+sysfs with a "cou=
+ple=20
+of lines".
 
 Kind regards,
 	Sven
---nextPart4484960.KpLy6tMDOY
+--nextPart21785035.0hmNaWmsS8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwvELYACgkQXYcKB8Em
-e0YFzg/+PItNrsWfLp5n0ONQuQ1Zyle7cO/mH+8qD8Tm9f+DHuJiORXOzCtYP6ef
-nOh+ejENnYLfXD1IeY5d06kv/knijy6l6TpfoUuBPfo61oms3w4CzC+wQz2q0rVB
-DKouvZdEhW/41vl7ncf6a8DaZvdrgGBJTbRPevliR4raTuSZN+wyDgBMsAgBEyZ6
-LEKrliPvWreyadHh3v9df+xY9mgy1hr4Ws5siPeM481xa33BxMX69GKe1yUw3vTY
-T3sfVs+t0MtqowkDDwmno4/uMejhLtRo3UcaEyA4eZ6Cmt2rAAnRE18DCW9VB7Rm
-T2NJDQRThNMDYiCsM9iBOtF0aeqMkGxP0fXkwZDU1/zWOVhrPY6NcxLZ2EUIOOXb
-LJc0S8wyL9nnNs19sMFyFUg9l6EliBOG/vp+4VdTS8lzRI2c7ooK6lBdMxIyi33v
-UV3Uc3KHdAcBsXMDejvjURG/nNLtC+JUmrWRF//hGnoRRDtEFsjxsvklIV63KJEx
-KzhO663aTe1PkemCW3mxYiJvkgnpky+eFqoPkK34T0ivmAGNDW0qkH4+JmDSU+/d
-p7tnL3fqG/XBwnuZ5JJpwXLAnVXKQdvjMdW3urnHZQ9e09RzIbBiOhj3sFUfGQfm
-NTyCmVWi19QsOCom6mXUQUUjw7vtG06/PBIkHAQhtRI7MJARhzc=
-=9pIX
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwvEigACgkQXYcKB8Em
+e0ZVSRAAjLfRmzKQgn8aGDoA1RcOYFoDD0kzEJtYrOe5Pzrd46huaev/bv7U8r8h
+faYjNjH44e2zKm9O6GNiCmIepZgoUWaJqkVGjvDDPdBaIjwvdBLMLGyMccpjXATc
+wl8iBmdl85ElAxOdbhvVNgGq/zt0f8+MaI3Vdqd8XuLKh6MX3rdpkmmr78k/GJYh
+ZYiOgrOK/0OL4lHBc0o5Bn5FyRgOlnf4EHJZQFcMCYHmAdQAeqXpNf60LABmvfok
+DXPNa78Z5lUg6ixpBLdSMPMWDptHtLvkgh5i+PRPoOc6oui9gaQw/B7gx8uJkN3n
+s/tWredCzjjy9C4FOgD9nKRPBA7+gQkp1BZxjH/+G/uH0s/wIismuh25cUxHfC1r
+D1V50IhtMenSDsJuagrkzodB5Psk2ON6mQra8NUji1sSzRITg5Evo2tDnbaMAF15
+eSnMh4PsOj/5V/tXO8F3N8yzj44u+iUcPE0RLkL60qnFGnvVczb/EQNvpj3fiK4L
+ZpWFkXZL9KeeyOrmT1hnjFz7jxAH4y/zCLWQkkY5Po3NdBXehTHDXQ9+7dMM71uG
+AG/qLSVN+Q84imRzpSOMYbLV7v3pYDTVHHU1WtPU2f9ew3cdwQKl8k0o8RS4ZR3c
+YKmm/rHRKwG8w3I8H78DH9mzqL5aoqVy+E1MkbQkicCAFv/Fl1w=
+=7ogC
 -----END PGP SIGNATURE-----
 
---nextPart4484960.KpLy6tMDOY--
+--nextPart21785035.0hmNaWmsS8--
 
 
 
