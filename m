@@ -1,14 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 04 Jan 2019 08:59:30 +0100
-Message-ID: <3089099.Wv1GCyR4Rs@sven-edge>
-In-Reply-To: <20190104014005.GE21623@otheros>
+Return-Path: <jiri@mellanox.com>
+From: Jiri Pirko <jiri@mellanox.com>
+Date: Fri, 4 Jan 2019 08:51:56 +0000
+Message-ID: <20190104084345.GC21282@nanopsycho.orion>
 References: <20181207135846.6152-1-sven@narfation.org>
- <20181207135846.6152-6-sven@narfation.org> <20190104014005.GE21623@otheros>
+ <20181207135846.6152-15-sven@narfation.org> <20190104015726.GG21623@otheros>
+ <2492575.sfqEKcoiOs@sven-edge>
+In-Reply-To: <2492575.sfqEKcoiOs@sven-edge>
+Content-Language: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-ID: <F9CB9637A8DBF14B8988C50850D97BA1@eurprd05.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8228632.yFHLvNzKRA";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v3 05/19] batman-adv: Add aggregated_ogms
+Subject: Re: [B.A.T.M.A.N.] [RFC v3 14/19] batman-adv: Add multicast_mode
  mesh genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,62 +22,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Marek Lindner <mareklindner@neomailbox.ch>, jiri@mellanox.com
+To: Sven Eckelmann <sven@narfation.org>
+Cc: =?iso-8859-1?Q?Linus_L=FCssing?= <linus.luessing@c0d3.blue>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart8228632.yFHLvNzKRA
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Fri, Jan 04, 2019 at 08:44:38AM CET, sven@narfation.org wrote:
+>On Friday, 4 January 2019 02.57.26 CET Linus L=FCssing wrote:
+>> On Fri, Dec 07, 2018 at 02:58:41PM +0100, Sven Eckelmann wrote:
+>> > diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+>> > index 8e3a1b6e..32762003 100644
+>> > --- a/net/batman-adv/netlink.c
+>> > +++ b/net/batman-adv/netlink.c
+>> > @@ -155,6 +155,7 @@ static const struct nla_policy batadv_netlink_poli=
+cy[NUM_BATADV_ATTR] =3D {
+>> >  	[BATADV_ATTR_GW_SEL_CLASS]		=3D { .type =3D NLA_U32 },
+>> >  	[BATADV_ATTR_HOP_PENALTY]		=3D { .type =3D NLA_U8 },
+>> >  	[BATADV_ATTR_LOG_LEVEL]			=3D { .type =3D NLA_U32 },
+>> > +	[BATADV_ATTR_MULTICAST_MODE]		=3D { .type =3D NLA_U8 },
+>> >  };
+>>=20
+>> Since the name is more generic than just a flag, would it make
+>> sense to make this a U32, just to stay flexible for the future?
 
-On Friday, 4 January 2019 02.40.06 CET Linus L=FCssing wrote:
-> On Fri, Dec 07, 2018 at 02:58:32PM +0100, Sven Eckelmann wrote:
-> > +	/**
-> > +	 * @BATADV_ATTR_AGGREGATED_OGMS: whether the batman protocol messages
-> > +	 *  of the mesh mesh interface shall be aggregated or not.
-> > +	 */
-> > +	BATADV_ATTR_AGGREGATED_OGMS,
-> > +
->=20
-> I'm wondering, would it make sense to take this opportunity to
-> rename this to BATADV_ATTR_AGGREGATION? In case we were adding
-> aggregation support to something other than OGMs in the future.
->=20
-> (and maybe even make it a u32 to be able to potentially use it as
-> a bitfield with a useable length?)
->=20
-> And I know, the generic aggregation patchset was rejected. But on
-> the other hand I don't think that OGMs are that special that they
-> will always be the only packet type worth aggregating.
->=20
+If the attribute is supposed to be just a bool, the name would be
+probably better to change to "BATADV_ATTR_MULTICAST_ENABLED" or
+something.
 
-Any suggestions from Jiri regarding this?
 
-Kind regards,
-	Sven
-
---nextPart8228632.yFHLvNzKRA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlwvEmIACgkQXYcKB8Em
-e0aF1RAAu6x+5GirtBznrq4QwdGMkRvqIHZHNm2VXUfz5Qo70wPhg0LUmZcxOEEB
-LbAwlEGkl1b3RzAObpLsot2nxebG8PA+7Vk7XPD+trejCk4r1WcLe+RTa6VfWcDj
-ud/D9hotHWjVcjVPjPXGEYHUPiXjA3h5fYVnIIFfFnmqPtC4V/i1JPAyb+VVtXsX
-aTx/pKSJYy4brQ9jHRtw2xzPyfnnAsOSAfN2JY4SIyfgxuOICWC9noP8IEeAxTU+
-k9b/6KogNqnVBM8i8InwfGzNrQwxlR7qL3FsjmMBK/XIGtNiiSMkKF8hn5Bwsag0
-0BDm4L86Ayxtts4A21qH8K8yiTGL3YS4edhLbZlWRlbtfvLEWygmCieWHFeSBrjM
-ifcmbrhDaVngxvkVUbzKCDH0RnSKtfxnaQZ9tDY9JJTUxD1KiTX6V9fXnCQ7DGe8
-aagmm92eqf8h3PahNQok5ck2piv8uSmMTOZX3chFqHJ+l7I6hsB+5dme2nePgjpm
-3CBf1vnRKFShcTwPZNcJxIfks88OvSaWCcj0dCSAS7Rn4SN/HLTCKiYNTYqTeM6+
-0XJRMa6sPU7hcQ1iRjiGFRPk3D9KFG/9/MM7AImtpb8nr8XaG35o29Ft5acVoUIG
-eC1DAlVtnqERk4SYQ8X8m1Bt9f3fNvCRCIREi+ZTDmhCcGYh1cc=
-=hfE/
------END PGP SIGNATURE-----
-
---nextPart8228632.yFHLvNzKRA--
-
+>>=20
+>> (I don't have any specific ideas or plans to use more
+>> values for it right now, though)
+>
+>Please discuss this with Jiro because he told us to use u8.
+>
+>Kind regards,
+>	Sven
+>
 
 
