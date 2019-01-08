@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 08 Jan 2019 08:37:10 +0100
-Message-ID: <3036280.VRa4Vx8K96@bentobox>
-In-Reply-To: <20190107185712.GD5399@otheros>
-References: <20181207203209.22633-1-sven@narfation.org>
- <20190107185712.GD5399@otheros>
+Date: Tue, 08 Jan 2019 08:54:00 +0100
+Message-ID: <4486944.DYXfSb8N5e@bentobox>
+In-Reply-To: <20190107184906.GC5399@otheros>
+References: <20181207135846.6152-1-sven@narfation.org>
+ <20181207135846.6152-3-sven@narfation.org> <20190107184906.GC5399@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1661098.9KF6M8RRKR";
+Content-Type: multipart/signed; boundary="nextPart5930028.PgqtcrPFqD";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v4 00/20] batctl: netlink restructuring,
- part 3
+Subject: Re: [B.A.T.M.A.N.] [RFC v3 02/19] batman-adv: Prepare framework for
+ mesh genl config
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,49 +21,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1661098.9KF6M8RRKR
+--nextPart5930028.PgqtcrPFqD
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday, 7 January 2019 19.57.13 CET Linus L=FCssing wrote:
+On Monday, 7 January 2019 19.49.06 CET Linus L=FCssing wrote:
 [...]
-> Is "batctl if" supposed to use netlink to get the interface status
-> yet?
+> I seem to be able to trigger a null pointer dereference for this
+> batadv_hardif_put() call here. With the following steps I end up
+> with a primary_if =3D=3D NULL:
 >=20
-> Currently, with the items in *_attr[] in sysfs.c in batman-adv
-> commented out, I get these errors:
+> $ batctl if add 1
 >=20
-> ---
-> root@Linus-Debian:~# batctl if
-> ens3: <error reading status>
-> ens5: <error reading status>
-> ---
+> root@Linus-Debian:~# batctl o
+> Error - interface bat0 is not present or not a batman-adv interface
+> root@Linus-Debian:~# batctl if add 1
+> Error - interface does not exist: 1
+> root@Linus-Debian:~# batctl o
+> Killed
+> root@Linus-Debian:~#
+> root@Linus-Debian:~#
+> root@Linus-Debian:~# batctl o
 
-Not yet, but I think we should switch to it in the near future.
+You can reproduce it easier with (destroy is only there to make sure that t=
+he=20
+bat0 is really empty before the originator dump):
+
+    batctl if destroy
+    batctl if create
+    batctl o
+
+The check before=20
+
+    	batadv_hardif_put(primary_if);
+
+is missing. So it should actually be (like in the nla_put_failure case):
+
+    	if (primary_if)
+    		batadv_hardif_put(primary_if);
+
+
+And "batctl if add" is basically a short version of:
+
+   batctl if create
+   batctl if add -M XXXX
+
+And in your test, only the second part failed.
 
 Kind regards,
 	Sven
---nextPart1661098.9KF6M8RRKR
+--nextPart5930028.PgqtcrPFqD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlw0UyYACgkQXYcKB8Em
-e0avdxAArm8GfQUUWh3YKJcjGSNClnH5pHhIiXu4z1XTxawOgKbvlWc0DyD76oSm
-1pADqDYFMIEIukBF/3+/nkB3HaOSeXTZtGlmXNZ26YqITwi/hE7YeuSfkO/hwYlN
-MBdxwDMGZzIli6pE7sQU2LWVeCEbRE3lPLSY6iqtn9lI1DtQX+Uz3+NdfzUENcO9
-xUHFMDoM7unDskZhUmyBgSp5qXls5kgB+22ZiN/Dre7lPjzGPoz5+vLYnrG373b7
-nKNG+I9/yQ8HCVenwStsaBLBraUwi6/+qx6OVIqdu7peUsdtFys7E2suR533ixwe
-m35MIZ2tLtrFxXxNlTzOxD8j3kNPGVKDubA3Cb7uNGxSZCq52X1oSk/jidOjlV3e
-86WyTlO0EQizgcgAKaSOyNYTKCwhKU6T/eFabxR0X8E+31YFcynwtwdKzGkjSEWr
-NPtmFuGX6my2xDYnuFGOm0Cm66S9FBnt2omPk9ALkTJBOkdGavG5Zi8zfJSMkEQM
-+XECuu1fNzNOlf9y/HvQbdzAJFGPCVnAXGYb3Q/H2CqveGQ3wcTGMmBQ45WuG//G
-Q8Hzbi6FMUEzqlJujqDu7HAWVAkBoayv1i8409G2xGzhFEfqatdHqKL+aB336e6p
-T/wj4+YBH9CQcwIu+fqNddOcQKBf6Wop4tExmMo+DhtWS0CKLCk=
-=BbKJ
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlw0VxgACgkQXYcKB8Em
+e0ZoAg/9EEWIoNsyL/bJn07Fy2i6PNWX4wQgnLDfeuVAjJ+lEiIbz0aetnjI3O6V
+QJOSmOaJvN3El24+/ubtSW9Y/a5VVWyanvbO3Htf8SUrqTuGohrWr6R39AuIEyL8
+J/pJ971sjvq4VjC8TRhUA0sC1/65MXNqpo5c+owUzwkkH0YTiNMGfTcK6bNJ46fw
+NTOBMY8Ti7G5Q8RGi7U1Dn6LYhe29nI5q/SuKG7m/s8OJjgWfdAvMV0QYKNzi+5p
+tCTbzy2hQ+kyBGxb7KXbeJ0iTmn/jAjyNpe2ptgutosUiLVjm4Dw2z25hVQHc41+
+C+7hbUufjUh/1jk61+zxvKnZOhwia0M4lTeHoHuGThTrOd5gKZHMqUik47Tx4lt4
+g2fbSyr0fahsg3Bc9fhN2CrGi8i19q/8wB0AYkT1cCvycV3x6CHk9VyKcycnpAEw
+1R0Dp4cTz5KmKBa/RxtZ6dDXnnB+H8+Lo5MaQmcS3athAoPpQdmp0eOscIkJRXfL
+9pimJOufMt1hiQuDwiwV0e4qcuFkz+sMlVoj7SwdWAoqVZjxZCfEHOaZ0soqyclo
++XITshxricWdY+/w8S2IZwDR6jqs1yzhzMNLKxa5k1N5dgsb/fRtZF84nud/qsDb
+6WN2igYy1cquDPOe34GflBahPQGpPecamqeFN/u4lSJgLWtzXdA=
+=eHr2
 -----END PGP SIGNATURE-----
 
---nextPart1661098.9KF6M8RRKR--
+--nextPart5930028.PgqtcrPFqD--
 
