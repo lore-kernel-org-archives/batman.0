@@ -1,12 +1,11 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 11 Jan 2019 22:02:08 +0100
-Message-Id: <20190111210208.29139-1-linus.luessing@c0d3.blue>
+Return-Path: <3ti06XAkbAOEVbcNDOOHUDSSLG.JRRJOHXVHUFRQWHQW.FRP@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Increase purge timeout on DAT
- DHT candidates
+Date: Sat, 12 Jan 2019 10:11:02 -0800
+In-Reply-To: <000000000000fa4f60057e499989@google.com>
+Message-ID: <0000000000000cb9e2057f46bcb2@google.com>
+From: syzbot <syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
+Subject: Re: [B.A.T.M.A.N.] WARNING in batadv_mcast_mla_tt_retract
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,269 +15,126 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Currently, the DHT_GET messages of the DAT will likely be left
-unanswered due to the following issues:
+syzbot has found a reproducer for the following crash on:
 
-When a node has a matching DAT Cache entry for a local ARP Request then
-this node will answer it directly with the information provided by the
-cache. This however, will likely lead to missing ARP Replies from the
-original host. Which in turn leads to the DAT cache not being updated.
+HEAD commit:    4b3c31c8d4dd Merge branch 'i2c/for-current' of git://git.k..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=12fecc7f400000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=b05cfdb4ee8ab9b2
+dashboard link: https://syzkaller.appspot.com/bug?extid=83f2d54ec6b7e417e13f
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=139c6408c00000
 
-Then the local DAT cache entry will time out, triggering a unicasted
-DHT_GET. However, as the 5min. timeout has passed, the DAT DHT
-candidates will likely have purged their entry, too.
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com
 
-So basically this results in an ARP Request broadcast fallback every
-five minutes.
-
-A second issue is that it is quite common that a host which has long
-gone offline will be tried to be contacted by another one at some remote
-period larger than the current 5min. timeout. This too leads to flooded
-ARP Requests.
-
-With this patch the purge timeout for local DAT cache entries and
-entries submitted via a DHT_PUT message is differentiated:
-
-While the former stays at 5min. the latter is increased to 30min. Which
-decreases the rate of broadcasted ARP Requests.
-
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-
----
-
-Some old investigations and analysis seemed to indicate a potential
-reduction of 91.71% of unanswered ARP Requests (45min: 97.95%, 60min:
-98.95%):
-
-https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
-
-This patch is rebased on top of:
-
-"batman-adv: DHCP snooping for DAT"
-
-And it is a follow-up of:
-
-"batman-adv: Increase DHCP snooped DAT entry purge timeout in DHT"
-- https://patchwork.open-mesh.org/patch/17364/
----
- net/batman-adv/distributed-arp-table.c | 39 ++++++++++++++++++++++------------
- net/batman-adv/distributed-arp-table.h |  3 ++-
- net/batman-adv/main.h                  |  2 ++
- net/batman-adv/routing.c               |  8 ++++---
- net/batman-adv/types.h                 |  5 +++++
- 5 files changed, 39 insertions(+), 18 deletions(-)
-
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 899ab051..34898abf 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -152,7 +152,9 @@ static void batadv_dat_entry_put(struct batadv_dat_entry *dat_entry)
- static bool batadv_dat_to_purge(struct batadv_dat_entry *dat_entry)
- {
- 	return batadv_has_timed_out(dat_entry->last_update,
--				    BATADV_DAT_ENTRY_TIMEOUT);
-+				    BATADV_DAT_ENTRY_TIMEOUT) &&
-+	       batadv_has_timed_out(dat_entry->last_dht_update,
-+				    BATADV_DAT_DHT_TIMEOUT);
- }
- 
- /**
-@@ -369,9 +371,11 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
-  * @ip: ipv4 to add/edit
-  * @mac_addr: mac address to assign to the given ipv4
-  * @vid: VLAN identifier
-+ * @extended_timeout: whether this should be cached with an extended timeout
-  */
--static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
--				 u8 *mac_addr, unsigned short vid)
-+static void
-+batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip, u8 *mac_addr,
-+		     unsigned short vid, bool extended_timeout)
- {
- 	struct batadv_dat_entry *dat_entry;
- 	int hash_added;
-@@ -382,6 +386,10 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 		if (!batadv_compare_eth(dat_entry->mac_addr, mac_addr))
- 			ether_addr_copy(dat_entry->mac_addr, mac_addr);
- 		dat_entry->last_update = jiffies;
-+
-+		if (extended_timeout)
-+			dat_entry->last_dht_update = jiffies;
-+
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 			   "Entry updated: %pI4 %pM (vid: %d)\n",
- 			   &dat_entry->ip, dat_entry->mac_addr,
-@@ -397,6 +405,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 	dat_entry->vid = vid;
- 	ether_addr_copy(dat_entry->mac_addr, mac_addr);
- 	dat_entry->last_update = jiffies;
-+	dat_entry->last_dht_update = extended_timeout ? jiffies : 0;
- 	kref_init(&dat_entry->refcount);
- 
- 	kref_get(&dat_entry->refcount);
-@@ -1229,7 +1238,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	hw_src = batadv_arp_hw_src(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
- 
- 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
- 	if (dat_entry) {
-@@ -1322,7 +1331,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
- 
- 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
- 	if (!dat_entry)
-@@ -1386,8 +1395,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, false);
- 
- 	/* Send the ARP reply to the candidates for both the IP addresses that
- 	 * the node obtained from the ARP reply
-@@ -1402,12 +1411,14 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ * @is_dht_put: whether this is a BATADV_P_DAT_DHT_PUT message
-  *
-  * Return: true if the packet was snooped and consumed by DAT. False if the
-  * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
--					 struct sk_buff *skb, int hdr_size)
-+					 struct sk_buff *skb, int hdr_size,
-+					 bool is_dht_put)
- {
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	u16 type;
-@@ -1450,8 +1461,8 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* Update our internal cache with both the IP addresses the node got
- 	 * within the ARP reply
- 	 */
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, is_dht_put);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, is_dht_put);
- 
- 	/* If BLA is enabled, only forward ARP replies if we have claimed the
- 	 * source of the ARP reply or if no one else of the same backbone has
-@@ -1705,8 +1716,8 @@ static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
- 
- 	skb_set_network_header(skb, ETH_HLEN);
- 
--	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid, false);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid, false);
- 
- 	batadv_dat_send_data(bat_priv, skb, yiaddr, vid, BATADV_P_DAT_DHT_PUT);
- 	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
-@@ -1827,8 +1838,8 @@ void batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
- 	hw_src = ethhdr->h_source;
- 	vid = batadv_dat_get_vid(skb, &hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid, false);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid, false);
- 
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 		   "Snooped from incoming DHCPACK (server address): %pI4, %pM (vid: %i)\n",
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index 68c0ff32..21dbf285 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -45,7 +45,8 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
--					 struct sk_buff *skb, int hdr_size);
-+					 struct sk_buff *skb, int hdr_size,
-+					 bool is_dht_put);
- void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
- 					struct sk_buff *skb,
- 					__be16 proto,
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 05cb9080..6c1488f8 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -51,6 +51,8 @@
- #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
- #define BATADV_MCAST_WORK_PERIOD 500 /* 0.5 seconds */
- #define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
-+#define BATADV_DAT_DHT_TIMEOUT (30 * 60000) /* 30 mins in milliseconds */
-+
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
-  */
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index cae0e5dd..2b5d50ab 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -974,7 +974,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 	int check, hdr_size = sizeof(*unicast_packet);
- 	enum batadv_subtype subtype;
- 	int ret = NET_RX_DROP;
--	bool is4addr, is_gw;
-+	bool is4addr, is_gw, is_dht_put = false;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 	is4addr = unicast_packet->packet_type == BATADV_UNICAST_4ADDR;
-@@ -1033,6 +1033,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 				orig_addr = unicast_4addr_packet->src;
- 				orig_node = batadv_orig_hash_find(bat_priv,
- 								  orig_addr);
-+			} else if (subtype == BATADV_P_DAT_DHT_PUT) {
-+				is_dht_put = true;
- 			}
- 		}
- 
-@@ -1040,7 +1042,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 							  hdr_size))
- 			goto rx_success;
- 		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
--							hdr_size))
-+							hdr_size, is_dht_put))
- 			goto rx_success;
- 
- 		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-@@ -1277,7 +1279,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
- 		goto rx_success;
--	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false))
- 		goto rx_success;
- 
- 	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index a21b34ed..74801d79 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -2280,6 +2280,11 @@ struct batadv_dat_entry {
- 	 */
- 	unsigned long last_update;
- 
-+	/**
-+	 * @last_dht_update: time in jiffies when a DHT_PUT was last received
-+	 */
-+	unsigned long last_dht_update;
-+
- 	/** @hash_entry: hlist node for &batadv_priv_dat.hash */
- 	struct hlist_node hash_entry;
- 
--- 
-2.11.0
+IPv6: ADDRCONF(NETDEV_CHANGE): team0: link becomes ready
+bridge0: port 2(bridge_slave_1) entered blocking state
+bridge0: port 2(bridge_slave_1) entered disabled state
+device bridge_slave_1 entered promiscuous mode
+IPv6: ADDRCONF(NETDEV_UP): veth1_to_team: link is not ready
+WARNING: CPU: 0 PID: 26 at net/batman-adv/multicast.c:337  
+batadv_mcast_mla_tt_retract+0x3d7/0x4b0 net/batman-adv/multicast.c:337
+kobject: 'lo' (000000007d40203a): kobject_uevent_env
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 0 PID: 26 Comm: kworker/u4:2 Not tainted 5.0.0-rc1+ #21
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Workqueue: bat_events batadv_mcast_mla_update
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x1db/0x2d0 lib/dump_stack.c:113
+  panic+0x2cb/0x65c kernel/panic.c:214
+kobject: 'lo' (000000007d40203a): fill_kobj_path: path  
+= '/devices/virtual/net/lo'
+kobject: 'queues' (0000000029ca31b3): kobject_add_internal: parent: 'lo',  
+set: '<NULL>'
+  __warn.cold+0x20/0x48 kernel/panic.c:571
+kobject: 'queues' (0000000029ca31b3): kobject_uevent_env
+  report_bug+0x263/0x2b0 lib/bug.c:186
+kobject: 'queues' (0000000029ca31b3): kobject_uevent_env: filter function  
+caused the event to drop!
+  fixup_bug arch/x86/kernel/traps.c:178 [inline]
+  fixup_bug arch/x86/kernel/traps.c:173 [inline]
+  do_error_trap+0x11b/0x200 arch/x86/kernel/traps.c:271
+  do_invalid_op+0x37/0x50 arch/x86/kernel/traps.c:290
+kobject: 'rx-0' (00000000a8654327): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+  invalid_op+0x14/0x20 arch/x86/entry/entry_64.S:973
+RIP: 0010:batadv_mcast_mla_tt_retract+0x3d7/0x4b0  
+net/batman-adv/multicast.c:337
+kobject: 'rx-0' (00000000a8654327): kobject_uevent_env
+Code: 48 8b 45 d0 65 48 33 04 25 28 00 00 00 0f 85 c8 00 00 00 48 81 c4 a0  
+00 00 00 5b 41 5c 41 5d 41 5e 41 5f 5d c3 e8 29 07 b0 f9 <0f> 0b e9 de fc  
+ff ff e8 9d f2 f3 f9 e9 e3 fd ff ff 48 89 df e8 b0
+RSP: 0018:ffff8880a96676b0 EFLAGS: 00010293
+RAX: ffff8880a96586c0 RBX: 0000000000000001 RCX: ffffffff87d1ed13
+RDX: 0000000000000000 RSI: ffffffff87d1f037 RDI: 0000000000000007
+kobject: 'rx-0' (00000000a8654327): fill_kobj_path: path  
+= '/devices/virtual/net/lo/queues/rx-0'
+RBP: ffff8880a9667778 R08: ffff8880a96586c0 R09: 0000000000000003
+R10: 0000000000000000 R11: ffff8880ae62dc7b R12: ffff8880a9667868
+R13: 0000000000000000 R14: 1ffff110152ccf0d R15: ffff88808820dc40
+kobject: 'tx-0' (00000000e6698f16): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+kobject: 'tx-0' (00000000e6698f16): kobject_uevent_env
+kobject: 'tx-0' (00000000e6698f16): fill_kobj_path: path  
+= '/devices/virtual/net/lo/queues/tx-0'
+  __batadv_mcast_mla_update net/batman-adv/multicast.c:635 [inline]
+  batadv_mcast_mla_update+0x78e/0x2980 net/batman-adv/multicast.c:661
+kobject: 'veth1_to_bond' (00000000a8d46f44): kobject_add_internal:  
+parent: 'net', set: 'devices'
+kobject: 'veth1_to_bond' (00000000a8d46f44): kobject_uevent_env
+kobject: 'veth1_to_bond' (00000000a8d46f44): fill_kobj_path: path  
+= '/devices/virtual/net/veth1_to_bond'
+kobject: 'queues' (000000006228a66d): kobject_add_internal:  
+parent: 'veth1_to_bond', set: '<NULL>'
+kobject: 'queues' (000000006228a66d): kobject_uevent_env
+kobject: 'queues' (000000006228a66d): kobject_uevent_env: filter function  
+caused the event to drop!
+kobject: 'rx-0' (000000008bc09a3a): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+  process_one_work+0xd0c/0x1ce0 kernel/workqueue.c:2153
+kobject: 'rx-0' (000000008bc09a3a): kobject_uevent_env
+kobject: 'rx-0' (000000008bc09a3a): fill_kobj_path: path  
+= '/devices/virtual/net/veth1_to_bond/queues/rx-0'
+kobject: 'tx-0' (000000007f0c3f6d): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+kobject: 'tx-0' (000000007f0c3f6d): kobject_uevent_env
+kobject: 'tx-0' (000000007f0c3f6d): fill_kobj_path: path  
+= '/devices/virtual/net/veth1_to_bond/queues/tx-0'
+kobject: 'batman_adv' (00000000f9be0f83): kobject_add_internal:  
+parent: 'veth1_to_bond', set: '<NULL>'
+kobject: 'bond_slave_1' (000000003c754cbc): kobject_add_internal:  
+parent: 'net', set: 'devices'
+kobject: 'bond_slave_1' (000000003c754cbc): kobject_uevent_env
+  worker_thread+0x143/0x14a0 kernel/workqueue.c:2296
+kobject: 'bond_slave_1' (000000003c754cbc): fill_kobj_path: path  
+= '/devices/virtual/net/bond_slave_1'
+kobject: 'queues' (000000002a7c877f): kobject_add_internal:  
+parent: 'bond_slave_1', set: '<NULL>'
+kobject: 'queues' (000000002a7c877f): kobject_uevent_env
+kobject: 'queues' (000000002a7c877f): kobject_uevent_env: filter function  
+caused the event to drop!
+kobject: 'rx-0' (00000000bd1d2cc7): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+kobject: 'rx-0' (00000000bd1d2cc7): kobject_uevent_env
+kobject: 'rx-0' (00000000bd1d2cc7): fill_kobj_path: path  
+= '/devices/virtual/net/bond_slave_1/queues/rx-0'
+kobject: 'tx-0' (00000000ccbdecac): kobject_add_internal: parent: 'queues',  
+set: 'queues'
+kobject: 'tx-0' (00000000ccbdecac): kobject_uevent_env
+kobject: 'tx-0' (00000000ccbdecac): fill_kobj_path: path  
+= '/devices/virtual/net/bond_slave_1/queues/tx-0'
+kobject: 'batman_adv' (0000000021ba1ff8): kobject_add_internal:  
+parent: 'bond_slave_1', set: '<NULL>'
+  kthread+0x357/0x430 kernel/kthread.c:246
+kobject: 'ip6gretap0' (0000000011d834fd): kobject_add_internal:  
+parent: 'net', set: 'devices'
+  ret_from_fork+0x3a/0x50 arch/x86/entry/entry_64.S:352
+kobject: 'ip6gretap0' (0000000011d834fd): kobject_uevent_env
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
 
