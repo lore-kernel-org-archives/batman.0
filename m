@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 19 Jan 2019 16:56:22 +0100
-Message-Id: <20190119155626.6414-16-sven@narfation.org>
+Date: Sat, 19 Jan 2019 16:56:23 +0100
+Message-Id: <20190119155626.6414-17-sven@narfation.org>
 In-Reply-To: <20190119155626.6414-1-sven@narfation.org>
 References: <20190119155626.6414-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 15/19] batman-adv: Add network_coding mesh
+Subject: [B.A.T.M.A.N.] [RFC v4 16/19] batman-adv: Add orig_interval mesh
  genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,89 +18,78 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jiri Pirko <jiri@mellanox.com>, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, Martin Hundeboll <martin@hundeboll.net>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Jiri Pirko <jiri@mellanox.com>, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
-The mesh interface can use (in an homogeneous mesh) network coding, a
-mechanism that aims to increase the overall network throughput by fusing
-multiple packets in one transmission.
+The OGM packets are transmitted every orig_interval milliseconds. This
+value can be changed using the configuration interface.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the BATADV_ATTR_NETWORK_CODING_ENABLED
-attribute. Setting the u8 to zero will disable this feature and setting it
-to something else is enabling this feature.
+configuration of this feature using the u32 BATADV_ATTR_ORIG_INTERVAL
+attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Martin Hundeboll <martin@hundeboll.net>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- include/uapi/linux/batman_adv.h |  7 +++++++
+ include/uapi/linux/batman_adv.h |  6 ++++++
  net/batman-adv/netlink.c        | 17 +++++++++++++++++
- 2 files changed, 24 insertions(+)
+ 2 files changed, 23 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 9f5c85a5..2f0dbcc0 100644
+index 2f0dbcc0..5c18d454 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -463,6 +463,13 @@ enum batadv_nl_attrs {
+@@ -470,6 +470,12 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_MULTICAST_MODE_ENABLED,
+ 	BATADV_ATTR_NETWORK_CODING_ENABLED,
  
 +	/**
-+	 * @BATADV_ATTR_NETWORK_CODING_ENABLED: whether Network Coding (using
-+	 *  some magic to send fewer wifi packets but still the same content) is
-+	 *  enabled or not.
++	 * @BATADV_ATTR_ORIG_INTERVAL: defines the interval in milliseconds in
++	 *  which batman sends its protocol messages.
 +	 */
-+	BATADV_ATTR_NETWORK_CODING_ENABLED,
++	BATADV_ATTR_ORIG_INTERVAL,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index a0fbad39..9c7f8ca5 100644
+index 9c7f8ca5..fbb75177 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -55,6 +55,7 @@
- #include "hard-interface.h"
- #include "log.h"
- #include "multicast.h"
-+#include "network-coding.h"
- #include "originator.h"
- #include "soft-interface.h"
- #include "tp_meter.h"
-@@ -156,6 +157,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
+@@ -158,6 +158,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
  	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
  	[BATADV_ATTR_MULTICAST_MODE_ENABLED]	= { .type = NLA_U8 },
-+	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
+ 	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
  };
  
  /**
-@@ -350,6 +352,12 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
+@@ -358,6 +359,10 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
  		goto nla_put_failure;
- #endif /* CONFIG_BATMAN_ADV_MCAST */
+ #endif /* CONFIG_BATMAN_ADV_NC */
  
-+#ifdef CONFIG_BATMAN_ADV_NC
-+	if (nla_put_u8(msg, BATADV_ATTR_NETWORK_CODING_ENABLED,
-+		       !!atomic_read(&bat_priv->network_coding)))
++	if (nla_put_u32(msg, BATADV_ATTR_ORIG_INTERVAL,
++			atomic_read(&bat_priv->orig_interval)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -579,6 +587,15 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
+@@ -596,6 +601,18 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
- #endif /* CONFIG_BATMAN_ADV_MCAST */
+ #endif /* CONFIG_BATMAN_ADV_NC */
  
-+#ifdef CONFIG_BATMAN_ADV_NC
-+	if (info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]) {
-+		attr = info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED];
++	if (info->attrs[BATADV_ATTR_ORIG_INTERVAL]) {
++		u32 orig_interval;
 +
-+		atomic_set(&bat_priv->network_coding, !!nla_get_u8(attr));
-+		batadv_nc_status_update(bat_priv->soft_iface);
++		attr = info->attrs[BATADV_ATTR_ORIG_INTERVAL];
++		orig_interval = nla_get_u32(attr);
++
++		orig_interval = min_t(u32, orig_interval, INT_MAX);
++		orig_interval = max_t(u32, orig_interval, 2 * BATADV_JITTER);
++
++		atomic_set(&bat_priv->orig_interval, orig_interval);
 +	}
-+#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
