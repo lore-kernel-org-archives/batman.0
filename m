@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 19 Jan 2019 16:56:15 +0100
-Message-Id: <20190119155626.6414-9-sven@narfation.org>
+Date: Sat, 19 Jan 2019 16:56:16 +0100
+Message-Id: <20190119155626.6414-10-sven@narfation.org>
 In-Reply-To: <20190119155626.6414-1-sven@narfation.org>
 References: <20190119155626.6414-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC v4 08/19] batman-adv: Add bridge_loop_avoidance
+Subject: [B.A.T.M.A.N.] [RFC v4 09/19] batman-adv: Add distributed_arp_table
  mesh genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,82 +18,82 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jiri Pirko <jiri@mellanox.com>, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Jiri Pirko <jiri@mellanox.com>, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
 
-The mesh interface can try to detect loops in the same mesh caused by
-(indirectly) bridged mesh/soft-interfaces of different nodes. Some of the
-loops can also be resolved without breaking the mesh.
+The mesh interface can use a distributed hash table to answer ARP requests
+without flooding the request through the whole mesh.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
 configuration of this feature using the
-BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED attribute. Setting the u8 to zero
+BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED attribute. Setting the u8 to zero
 will disable this feature and setting it to something else is enabling this
 feature.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
 ---
- include/uapi/linux/batman_adv.h |  7 +++++++
+ include/uapi/linux/batman_adv.h |  8 ++++++++
  net/batman-adv/netlink.c        | 17 +++++++++++++++++
- 2 files changed, 24 insertions(+)
+ 2 files changed, 25 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index f74ff261..3cb35c66 100644
+index 3cb35c66..f303a149 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -381,6 +381,13 @@ enum batadv_nl_attrs {
+@@ -388,6 +388,14 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_BONDING_ENABLED,
+ 	BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED,
  
 +	/**
-+	 * @BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED: whether the bridge loop
-+	 *  avoidance feature is enabled. This feature detects and avoids loops
-+	 *  between the mesh and devices bridged with the soft interface
++	 * @BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED: whether the distributed
++	 *  arp table feature is enabled. This feature uses a distributed hash
++	 *  table to answer ARP requests without flooding the request through
++	 *  the whole mesh.
 +	 */
-+	BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED,
++	BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 8a309c78..0a29dc75 100644
+index 0a29dc75..68440d2f 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -144,6 +144,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_ISOLATION_MARK]		= { .type = NLA_U32 },
+@@ -145,6 +145,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
  	[BATADV_ATTR_ISOLATION_MASK]		= { .type = NLA_U32 },
  	[BATADV_ATTR_BONDING_ENABLED]		= { .type = NLA_U8 },
-+	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]	= { .type = NLA_U8 },
+ 	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]	= { .type = NLA_U8 },
  };
  
  /**
-@@ -284,6 +285,12 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
- 		       !!atomic_read(&bat_priv->bonding)))
+@@ -291,6 +292,12 @@ static int batadv_netlink_mesh_put(struct sk_buff *msg,
  		goto nla_put_failure;
+ #endif /* CONFIG_BATMAN_ADV_BLA */
  
-+#ifdef CONFIG_BATMAN_ADV_BLA
-+	if (nla_put_u8(msg, BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED,
-+		       !!atomic_read(&bat_priv->bridge_loop_avoidance)))
++#ifdef CONFIG_BATMAN_ADV_DAT
++	if (nla_put_u8(msg, BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED,
++		       !!atomic_read(&bat_priv->distributed_arp_table)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_BLA */
++#endif /* CONFIG_BATMAN_ADV_DAT */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -398,6 +405,16 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
- 		atomic_set(&bat_priv->bonding, !!nla_get_u8(attr));
+@@ -415,6 +422,16 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
+ #endif /* CONFIG_BATMAN_ADV_BLA */
  
-+#ifdef CONFIG_BATMAN_ADV_BLA
-+	if (info->attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]) {
-+		attr = info->attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED];
++#ifdef CONFIG_BATMAN_ADV_DAT
++	if (info->attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]) {
++		attr = info->attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED];
 +
-+		atomic_set(&bat_priv->bridge_loop_avoidance,
++		atomic_set(&bat_priv->distributed_arp_table,
 +			   !!nla_get_u8(attr));
-+		batadv_bla_status_update(bat_priv->soft_iface);
++		batadv_dat_status_update(bat_priv->soft_iface);
 +	}
-+#endif /* CONFIG_BATMAN_ADV_BLA */
++#endif /* CONFIG_BATMAN_ADV_DAT */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
