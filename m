@@ -1,15 +1,15 @@
-Return-Path: <joe@perches.com>
-Message-ID: <d9eb35b2594d9cfedd8525dc32a18b40c60451b0.camel@perches.com>
-From: Joe Perches <joe@perches.com>
-Date: Sun, 20 Jan 2019 10:39:55 -0800
-In-Reply-To: <3904432.cpar7GfAiZ@sven-edge>
-References: <20190116102651.489113812@linutronix.de>
- <20190116104127.698565432@linutronix.de> <3904432.cpar7GfAiZ@sven-edge>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [patch 2/2] scripts/spdxcheck.py: Handle special
- quotation mark comments
+Return-Path: <jiri@resnulli.us>
+Date: Mon, 21 Jan 2019 10:44:30 +0100
+From: Jiri Pirko <jiri@resnulli.us>
+Message-ID: <20190121094430.GC2228@nanopsycho>
+References: <20190119155626.6414-1-sven@narfation.org>
+ <20190119155626.6414-5-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190119155626.6414-5-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [RFC v4 04/19] batman-adv: Prepare framework for
+ vlan genl config
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,82 +19,123 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Simon Horman <horms+renesas@verge.net.au>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Andrew Morton <akpm@linux-foundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Jiri Pirko <jiri@mellanox.com>, netdev@vger.kernel.org
 
-On Sun, 2019-01-20 at 16:32 +0100, Sven Eckelmann wrote:
-> On Wednesday, 16 January 2019 11.26.53 CET Thomas Gleixner wrote:
-> > The SuperH boot code files use a magic format for the SPDX identifier
-> > comment:
-> > 
-> >   LIST "SPDX-License-Identifier: .... "
-> > 
-> > The trailing quotation mark is not stripped before the token parser is
-> > invoked and causes the scan to fail. Handle it gracefully.
-> [...]
-> 
-> This patch introduces a false positive when checking files with an ANSI-C 
-> style /* SPDX-License-Identifier: .... */ comment line.
-> 
->     $ ./scripts/checkpatch.pl -q -f include/linux/bug.h
->     WARNING: 'SPDX-License-Identifier: GPL-2.0 */' is not supported in LICENSES/...
->     #1: FILE: include/linux/bug.h:1:
->     +/* SPDX-License-Identifier: GPL-2.0 */
->     
->     total: 0 errors, 1 warnings, 79 lines checked
-> 
-> checkpatch.pl is already stripping the "/* " prefix and only sends the 
-> remaining "SPDX-License-Identifier: GPL-2.0 */" via stdin to
-> scripts/spdxcheck.py. Thus the newly introduced check
-> 
-> > +                # Remove trailing comment closure
-> > +                if line.startswith('/*'):
-> > +                    expr = expr.rstrip('*/').strip()
-> 
-> doesn't match and thus the code doesn't remove the " */" at the end of the 
-> line.
+Sat, Jan 19, 2019 at 04:56:11PM CET, sven@narfation.org wrote:
 
-Well, maybe checkpatch should remove the comment trailer.
----
-Miscellanea:
+[...]
 
-o Indent a block properly too
+>+/**
+>+ * batadv_netlink_vlan_put() - Fill message with vlan attributes
+>+ * @msg: Netlink message to dump into
+>+ * @bat_priv: the bat priv with all the soft interface information
+>+ * @vlan: vlan which was modified
+>+ * @cmd: type of message to generate
+>+ * @portid: Port making netlink request
+>+ * @seq: sequence number for message
+>+ * @flags: Additional flags for message
+>+ *
+>+ * Return: 0 on success or negative error number in case of failure
+>+ */
+>+static int batadv_netlink_vlan_put(struct sk_buff *msg,
+>+				   struct batadv_priv *bat_priv,
+>+				   struct batadv_softif_vlan *vlan,
+>+				   enum batadv_nl_commands cmd,
+>+				   u32 portid, u32 seq, int flags)
+>+{
+>+	void *hdr;
+>+
+>+	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, flags, cmd);
+>+	if (!hdr)
+>+		return -ENOBUFS;
+>+
+>+	if (nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX,
+>+			bat_priv->soft_iface->ifindex))
+>+		goto nla_put_failure;
+>+
+>+	if (nla_put_u32(msg, BATADV_ATTR_VLANID, vlan->vid & VLAN_VID_MASK))
+>+		goto nla_put_failure;
+>+
+>+	genlmsg_end(msg, hdr);
+>+	return 0;
+>+
+>+nla_put_failure:
+>+	genlmsg_cancel(msg, hdr);
+>+	return -EMSGSIZE;
+>+}
+>+
+>+/**
+>+ * batadv_netlink_notify_vlan() - send vlan attributes to listener
+>+ * @bat_priv: the bat priv with all the soft interface information
+>+ * @vlan: vlan which was modified
+>+ *
+>+ * Return: 0 on success, < 0 on error
+>+ */
+>+static int batadv_netlink_notify_vlan(struct batadv_priv *bat_priv,
+>+				      struct batadv_softif_vlan *vlan)
+>+{
+>+	struct sk_buff *msg;
+>+	int ret;
+>+
+>+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>+	if (!msg)
+>+		return -ENOMEM;
+>+
+>+	ret = batadv_netlink_vlan_put(msg, bat_priv, vlan,
+>+				      BATADV_CMD_SET_VLAN, 0, 0, 0);
+>+	if (ret < 0) {
+>+		nlmsg_free(msg);
+>+		return ret;
+>+	}
+>+
+>+	genlmsg_multicast_netns(&batadv_netlink_family,
+>+				dev_net(bat_priv->soft_iface), msg, 0,
+>+				BATADV_NL_MCGRP_CONFIG, GFP_KERNEL);
+>+
+>+	return 0;
+>+}
+>+
+>+/**
+>+ * batadv_netlink_get_vlan() - Get vlan attributes
+>+ * @skb: Netlink message with request data
+>+ * @info: receiver information
+>+ *
+>+ * Return: 0 on success or negative error number in case of failure
+>+ */
+>+static int batadv_netlink_get_vlan(struct sk_buff *skb, struct genl_info *info)
+>+{
+>+	struct batadv_softif_vlan *vlan = info->user_ptr[1];
+>+	struct batadv_priv *bat_priv = info->user_ptr[0];
+>+	struct sk_buff *msg;
+>+	int ret;
+>+
+>+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>+	if (!msg)
+>+		return -ENOMEM;
+>+
+>+	ret = batadv_netlink_vlan_put(msg, bat_priv, vlan, BATADV_CMD_GET_VLAN,
+>+				      info->snd_portid, info->snd_seq, 0);
 
- scripts/checkpatch.pl | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+This get/put naming here looks a bit confusing. Better to use "fill" for
+example:
+	ret = batadv_netlink_vlan_fill(msg, bat_priv, vlan, BATADV_CMD_GET_VLAN,
+				       info->snd_portid, info->snd_seq, 0);
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 155fa9305166..e0b542008256 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -3029,8 +3029,10 @@ sub process {
- 				$checklicenseline = 2;
- 			} elsif ($rawline =~ /^\+/) {
- 				my $comment = "";
-+				my $trailer = "";
- 				if ($realfile =~ /\.(h|s|S)$/) {
- 					$comment = '/*';
-+					$trailer = '*/';
- 				} elsif ($realfile =~ /\.(c|dts|dtsi)$/) {
- 					$comment = '//';
- 				} elsif (($checklicenseline == 2) || $realfile =~ /\.(sh|pl|py|awk|tc)$/) {
-@@ -3044,11 +3046,12 @@ sub process {
- 					 WARN("SPDX_LICENSE_TAG",
- 					      "Missing or malformed SPDX-License-Identifier tag in line $checklicenseline\n" . $herecurr);
- 				} elsif ($rawline =~ /(SPDX-License-Identifier: .*)/) {
--					 my $spdx_license = $1;
--					 if (!is_SPDX_License_valid($spdx_license)) {
--						  WARN("SPDX_LICENSE_TAG",
--						       "'$spdx_license' is not supported in LICENSES/...\n" . $herecurr);
--					 }
-+					my $spdx_license = rtrim($1);
-+					$spdx_license =~ s/\s*\Q$trailer\E$//;
-+					if (!is_SPDX_License_valid($spdx_license)) {
-+						WARN("SPDX_LICENSE_TAG",
-+						     "'$spdx_license' is not supported in LICENSES/...\n" . $herecurr);
-+					}
- 				}
- 			}
- 		}
+>+	if (ret < 0) {
 
+Just "if (!ret)" would do. Same in the rest of the code.
+
+
+>+		nlmsg_free(msg);
+>+		return ret;
+>+	}
+>+
+>+	ret = genlmsg_reply(msg, info);
+>+
+>+	return ret;
+>+}
+>+
+
+[...]
 
