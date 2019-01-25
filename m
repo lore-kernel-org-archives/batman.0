@@ -1,8 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 25 Jan 2019 09:02:05 +0100
-Message-Id: <20190125080205.10594-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: release station info
+Date: Fri, 25 Jan 2019 09:23:42 +0100
+Message-ID: <2843714.oyMTxGbNKy@bentobox>
+In-Reply-To: <1DC40B07CD6EC041A66726C271A73AE68CFA842A@IRSMSX108.ger.corp.intel.com>
+References: <20190125080205.10594-1-sven@narfation.org>
+ <1DC40B07CD6EC041A66726C271A73AE68CFA842A@IRSMSX108.ger.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart7411239.his8t7OFxK";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: release station info
  tidstats
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -13,69 +19,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Felix Fietkau <nbd@nbd.name>, Sven Eckelmann <sven@narfation.org>, Johannes Berg <johannes.berg@intel.com>, Arend van Spriel <aspriel@gmail.com>
+To: "Berg, Johannes" <johannes.berg@intel.com>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Felix Fietkau <nbd@nbd.name>, Arend van Spriel <aspriel@gmail.com>
 
-From: Felix Fietkau <nbd@nbd.name>
+--nextPart7411239.his8t7OFxK
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-With the addition of TXQ stats in the per-tid statistics the struct
-station_info grew significantly. This resulted in stack size warnings
-due to the structure itself being above the limit for the warnings.
+On Friday, 25 January 2019 08.16.46 CET Berg, Johannes wrote:
+> Huh, sorry about that.
+> 
+> > From: Felix Fietkau <nbd@nbd.name>
+> 
+> If Felix had nothing to do with the patch, why would you pretend otherwise?
 
-To work around this, the TID array was allocated dynamically. Also a
-function to free this content was introduced with commit 7ea3e110f2f8
-("cfg80211: release station info tidstats where needed") but the necessary
-changes were not provided for batman-adv's B.A.T.M.A.N. V implementation.
+This is what he has dropped and Martin Weinelt forwarded to us:
+http://nbd.name/batman-adv-memleak.patch
 
-Signed-off-by: Felix Fietkau <nbd@nbd.name>
-Fixes: 8689c051a201 ("cfg80211: dynamically allocate per-tid stats for station info")
-[sven@narfation.org: add commit message, add compat code]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Cc: Johannes Berg <johannes.berg@intel.com>
-Cc: Arend van Spriel <aspriel@gmail.com>
+So just the net/batman-adv/bat_v_elp.c part without anything else.
 
-Felix Fietkau didn't really send this patch to us and thus also didn't
-signed it off. This is just a proposal how we could integrate it - please
-inform me how we want to deal with it.
+> You need two patches - one for backports, this part:
+> 
+> >  compat-include/net/cfg80211.h | 7 +++++++
 
-Thanks to Martin Weinelt for discovering this change and forwarding it to
-us.
----
- compat-include/net/cfg80211.h | 7 +++++++
- net/batman-adv/bat_v_elp.c    | 3 +++
- 2 files changed, 10 insertions(+)
+This is not for backports [0] - this is for batman-adv.git [1]
 
-diff --git a/compat-include/net/cfg80211.h b/compat-include/net/cfg80211.h
-index 79c028af..6b6a0287 100644
---- a/compat-include/net/cfg80211.h
-+++ b/compat-include/net/cfg80211.h
-@@ -79,4 +79,11 @@ static inline int batadv_cfg80211_get_station(struct net_device *dev,
- 
- #endif /* < KERNEL_VERSION(4, 18, 0) && IS_ENABLED(CONFIG_CFG80211) */
- 
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 18, 0)
-+
-+#define cfg80211_sinfo_release_content(sinfo)
-+
-+#endif /* < KERNEL_VERSION(4, 18, 0) */
-+
- #endif	/* _NET_BATMAN_ADV_COMPAT_NET_CFG80211_H_ */
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index e8090f09..ef0dec20 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -104,6 +104,9 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
- 
- 		ret = cfg80211_get_station(real_netdev, neigh->addr, &sinfo);
- 
-+		/* free the TID stats immediately */
-+		cfg80211_sinfo_release_content(&sinfo);
-+
- 		dev_put(real_netdev);
- 		if (ret == -ENOENT) {
- 			/* Node is not associated anymore! It would be
--- 
-2.11.0
+> And for mainline, this part:
+> 
+> >  net/batman-adv/bat_v_elp.c    | 3 +++
+> 
+> So send the two separate patches to the two separate projects, and that's it?
+
+The upstream patch (for David) is just stripped from the compat-include part.
+
+Kind regards,
+	Sven
+
+[0] https://git.kernel.org/pub/scm/linux/kernel/git/backports/backports.git/
+[1] https://git.open-mesh.org/batman-adv.git
+[2] https://git.open-mesh.org/linux-merge.git/commit/7d652669b61d702c6e62a39579d17f6881670ab6
+--nextPart7411239.his8t7OFxK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxKx44ACgkQXYcKB8Em
+e0ZJfhAAmdAcmLTQeP38LP3FelESUjbe+OMSOPDw8sYIYKD5nh9DzRPOkKIbEZUC
+JE1BlJv11Y/aW+nRB/BOsyRe8kedP7Jh9qJ1EjJtEk4+lqBaNT89lxl5kGiEMZDb
+zqRa79kYLyEIy+fr/RJ6aoWvcH8aMEGavYNZC837Ixio/AK5pv1/AyQpxYFiLMg4
+v0nDng0NPCl8jWbEkzSedbfM8zxdFGhBScHF/lJXIvBLPemxlqemeGkEH9G9aYo9
+pHIFMI+h/3blJTzgJunfNlTPnY4v7yCKR+y5qj3TZjFJLoR5gaDbwCs+iC3iHpEH
+WRvkLO/BsWQCcbS77mzUcUnF8nTDMUY1CxIECLguk3E2g2j9+NKx1m3uOMG14d82
+cqRk+H/Z25EgJrHP+s/cFSPLeIPqVWqnpgab7GpM1cQMqUypSocAczQ+VvrK6upT
+Op0tY9pYFeALMH7furecb6dp9flS4rf6So4PLZZHOJXyoU7zfvgefg3BvQLLUS5Y
+oBS2bvHP61hLjIOVNwC/PBjjeKWt6w6OsiUvfAFQB7FCWIsVfMzrH3ExMWYj5oUM
+urnpbvhZXPmnMbEl6WVnrciQ7tJZ0lC84UDM3C7ZZs5O7geXfyxI6f8ekNIug7VH
+sv1jrLh9y1hJXjOF6uIZlS4DvBfuz3ftCtfeQ9H0gxwAHb22nUY=
+=HKRm
+-----END PGP SIGNATURE-----
+
+--nextPart7411239.his8t7OFxK--
 
