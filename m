@@ -1,11 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 27 Jan 2019 22:47:08 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20190127214708.GC1788@otheros>
+Return-Path: <fw@strlen.de>
+Date: Sun, 27 Jan 2019 23:48:22 +0100
+From: Florian Westphal <fw@strlen.de>
+Message-ID: <20190127224822.lsagihtfiuvxyool@breakpoint.cc>
+References: <20190127214708.GC1788@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="iso-8859-15"
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] "Kernel bug detected [...]
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190127214708.GC1788@otheros>
+Subject: Re: [B.A.T.M.A.N.] "Kernel bug detected [...]
  nf_ct_del_from_dying_or_unconfirmed_list"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,66 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netfilter-devel@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Linus =?iso-8859-15?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Cc: netfilter-devel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+Linus L=FCssing <linus.luessing@c0d3.blue> wrote:
+> This only happens upon sending a SIGTERM to the network manager
+> "netifd" (so upon network shutdown). And only if the node is connected
+> to mesh of reasonable size, so if there is a certain amount of
+> multicast traffic for the multicast-to-multi-unicast patch to work on.
 
-I was trying to implement a multicast-to-multi-unicast conversion
-in batman-adv with the following patch:
+Does this still trigger when you do
 
-https://patchwork.open-mesh.org/patch/17729/
+nf_reset(newskb);
 
-However, on OpenWrt with a 4.9.146 kernel I get a
-"Kernel bug detected [...] nf_ct_del_from_dying_or_unconfirmed_list".
+after skb_copy()?
 
-This only happens upon sending a SIGTERM to the network manager
-"netifd" (so upon network shutdown). And only if the node is connected
-to mesh of reasonable size, so if there is a certain amount of
-multicast traffic for the multicast-to-multi-unicast patch to work on.
+> One difference is that the broadcast flooding adds a bit of
+> delay between each transmission. Which the multicast-to-multi-unicast
+> doesn't.
 
-Upon normal operation, no such crash seems to occur.
+Are those transmits done asynchronously?
 
-The crash itself is triggered by the:
+conntrack assumes exclusive access to skb->nfct if the conntrack
+entry isn't in main hash table.
 
-  BUG_ON(hlist_nulls_unhashed(&ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode));
+(i.e, when nf_ct_is_confirmed returns false).
 
-in here:
+> "In nfqueue, two consecutive skbuffs may race to create the conntrack
+>  entry. Hence, the one that loses the race gets dropped due to clash in
+>  the insertion into the hashes from the nf_conntrack_confirm() path."
+>=20
+> This patch is only part of >=3D 4.18, so not part of the firmware we use
+> yet. Could this issue somehow be related?
 
-https://elixir.bootlin.com/linux/v4.9.146/source/net/netfilter/nf_conntrack_core.c#L354
+Possible, but I don't think its likely.
+In the nfquee case there is asynchronous processing, but
+no skb can share the same conntrack entry unless the entry is already
+in the conntrack hash table.
 
+> Other than that I was wondering whether we might be missing to
+> reset something after skb_copy()-ing. We do a "skb->protocol =3D
+> htons(ETH_P_BATMAN)" right before the dev_queue_xmit(skb) call in
+> batman-adv which sends the encapsulated frame into the
+> mesh. And we do a nf_reset(skb) after decapsulating a frame
+> received from the mesh. But maybe that is not enough?
 
-What confuses me a bit is, that the multicast-to-multi-unicast
-conversion uses the same/similar, simple skb_copy() approach like the
-"classic broadcast flooding" approach in batman-adv so far. The latter too
-transmits three redundant frames via skb_copy() to increase
-reliability for Wifi broadcast packets.
-
-One difference is that the broadcast flooding adds a bit of
-delay between each transmission. Which the multicast-to-multi-unicast
-doesn't.
-
-Looking at "git log net/netfilter/nf_conntrack_core.c" I noticed
-"netfilter: nfnetlink_queue: resolve clash for unconfirmed
-conntracks" (368982cd7). Which says:
-
-"In nfqueue, two consecutive skbuffs may race to create the conntrack
- entry. Hence, the one that loses the race gets dropped due to clash in
- the insertion into the hashes from the nf_conntrack_confirm() path."
-
-This patch is only part of >= 4.18, so not part of the firmware we use
-yet. Could this issue somehow be related?
-
-
-Other than that I was wondering whether we might be missing to
-reset something after skb_copy()-ing. We do a "skb->protocol =
-htons(ETH_P_BATMAN)" right before the dev_queue_xmit(skb) call in
-batman-adv which sends the encapsulated frame into the
-mesh. And we do a nf_reset(skb) after decapsulating a frame
-received from the mesh. But maybe that is not enough?
-
-Ticket this issue was reported at:
-
-https://github.com/freifunk-gluon/gluon/issues/1468
-
-Regards, Linus
+I suggest nf_reset() on xmit, if you can be sure that the xmit
+won't occur back-to-self (netns case is fine, as skb scrubbing
+resets skb nfct anyway) and the skb isn't on a rexmit list somewhere.
+(clone is fine, only shared skb would break).
