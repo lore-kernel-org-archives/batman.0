@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Feb 2019 12:14:11 +0100
-Message-Id: <20190201111412.13807-3-sw@simonwunderlich.de>
+Date: Fri,  1 Feb 2019 12:14:10 +0100
+Message-Id: <20190201111412.13807-2-sw@simonwunderlich.de>
 In-Reply-To: <20190201111412.13807-1-sw@simonwunderlich.de>
 References: <20190201111412.13807-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Force mac header to start of
- data on xmit
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Avoid WARN on net_device
+ without parent in netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,40 +20,49 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The caller of ndo_start_xmit may not already have called
-skb_reset_mac_header. The returned value of skb_mac_header/eth_hdr
-therefore can be in the wrong position and even outside the current skbuff.
-This for example happens when the user binds to the device using a
-PF_PACKET-SOCK_RAW with enabled qdisc-bypass:
+It is not allowed to use WARN* helpers on potential incorrect input from
+the user or transient problems because systems configured as panic_on_warn
+will reboot due to such a problem.
 
-  int opt = 4;
-  setsockopt(sock, SOL_PACKET, PACKET_QDISC_BYPASS, &opt, sizeof(opt));
+A NULL return value of __dev_get_by_index can be caused by various problems
+which can either be related to the system configuration or problems
+(incorrectly returned network namespaces) in other (virtual) net_device
+drivers. batman-adv should not cause a (harmful) WARN in this situation and
+instead only report it via a simple message.
 
-Since eth_hdr is used all over the codebase, the batadv_interface_tx
-function must always take care of resetting it.
-
-Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
-Reported-by: syzbot+9d7405c7faa390e60b4e@syzkaller.appspotmail.com
-Reported-by: syzbot+7d20bc3f1ddddc0f9079@syzkaller.appspotmail.com
+Fixes: b7eddd0b3950 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
+Reported-by: syzbot+c764de0fcfadca9a8595@syzkaller.appspotmail.com
+Reported-by: Dmitry Vyukov <dvyukov@google.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/soft-interface.c | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/hard-interface.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 5db5a0a4c959..b85ca809e509 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -221,6 +221,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 508f4416dfc9..415d494cbe22 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -20,7 +20,6 @@
+ #include "main.h"
  
- 	netif_trans_update(soft_iface);
- 	vid = batadv_get_vid(skb, 0);
-+
-+	skb_reset_mac_header(skb);
- 	ethhdr = eth_hdr(skb);
+ #include <linux/atomic.h>
+-#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/gfp.h>
+@@ -179,8 +178,10 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ 	parent_dev = __dev_get_by_index((struct net *)parent_net,
+ 					dev_get_iflink(net_dev));
+ 	/* if we got a NULL parent_dev there is something broken.. */
+-	if (WARN(!parent_dev, "Cannot find parent device"))
++	if (!parent_dev) {
++		pr_err("Cannot find parent device\n");
+ 		return false;
++	}
  
- 	switch (ntohs(ethhdr->h_proto)) {
+ 	if (batadv_mutual_parents(net_dev, net, parent_dev, parent_net))
+ 		return false;
 -- 
 2.11.0
 
