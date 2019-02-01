@@ -1,14 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Feb 2019 12:18:10 +0100
-Message-Id: <20190201111810.14150-4-sw@simonwunderlich.de>
+Date: Fri,  1 Feb 2019 12:18:09 +0100
+Message-Id: <20190201111810.14150-3-sw@simonwunderlich.de>
 In-Reply-To: <20190201111810.14150-1-sw@simonwunderlich.de>
 References: <20190201111810.14150-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Update copyright years for
- 2019
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Snoop DHCPACKs for DAT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,771 +18,571 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
+In a 1000 nodes mesh network (Freifunk Hamburg) we can still see
+30KBit/s of ARP traffic (equalling about 25% of all layer two
+specific overhead, remaining after some filtering) flooded through
+the mesh. These 30KBit/s are mainly ARP Requests from the
+gateways / DHCP servers.
+
+By snooping DHCPACKs we can learn about MAC/IP address pairs
+in the DHCP range without relying on ARP. This patch is in preparation
+to eliminate the need for mesh wide message flooding for IPv4 address
+resolution.
+
+Also this allows to quickly update a MAC/IP pair at least in the DHT when
+DHCP reassigns an IP address to a new host.
+
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batadv_packet.h     | 2 +-
- include/uapi/linux/batman_adv.h        | 2 +-
- net/batman-adv/Kconfig                 | 2 +-
- net/batman-adv/Makefile                | 2 +-
- net/batman-adv/bat_algo.c              | 2 +-
- net/batman-adv/bat_algo.h              | 2 +-
- net/batman-adv/bat_iv_ogm.c            | 2 +-
- net/batman-adv/bat_iv_ogm.h            | 2 +-
- net/batman-adv/bat_v.c                 | 2 +-
- net/batman-adv/bat_v.h                 | 2 +-
- net/batman-adv/bat_v_elp.c             | 2 +-
- net/batman-adv/bat_v_elp.h             | 2 +-
- net/batman-adv/bat_v_ogm.c             | 2 +-
- net/batman-adv/bat_v_ogm.h             | 2 +-
- net/batman-adv/bitarray.c              | 2 +-
- net/batman-adv/bitarray.h              | 2 +-
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/bridge_loop_avoidance.h | 2 +-
- net/batman-adv/debugfs.c               | 2 +-
- net/batman-adv/debugfs.h               | 2 +-
- net/batman-adv/distributed-arp-table.c | 2 +-
- net/batman-adv/distributed-arp-table.h | 2 +-
- net/batman-adv/fragmentation.c         | 2 +-
- net/batman-adv/fragmentation.h         | 2 +-
- net/batman-adv/gateway_client.c        | 2 +-
- net/batman-adv/gateway_client.h        | 2 +-
- net/batman-adv/gateway_common.c        | 2 +-
- net/batman-adv/gateway_common.h        | 2 +-
- net/batman-adv/hard-interface.c        | 2 +-
- net/batman-adv/hard-interface.h        | 2 +-
- net/batman-adv/hash.c                  | 2 +-
- net/batman-adv/hash.h                  | 2 +-
- net/batman-adv/icmp_socket.c           | 2 +-
- net/batman-adv/icmp_socket.h           | 2 +-
- net/batman-adv/log.c                   | 2 +-
- net/batman-adv/log.h                   | 2 +-
- net/batman-adv/main.c                  | 2 +-
- net/batman-adv/main.h                  | 2 +-
- net/batman-adv/multicast.c             | 2 +-
- net/batman-adv/multicast.h             | 2 +-
- net/batman-adv/netlink.c               | 2 +-
- net/batman-adv/netlink.h               | 2 +-
- net/batman-adv/network-coding.c        | 2 +-
- net/batman-adv/network-coding.h        | 2 +-
- net/batman-adv/originator.c            | 2 +-
- net/batman-adv/originator.h            | 2 +-
- net/batman-adv/routing.c               | 2 +-
- net/batman-adv/routing.h               | 2 +-
- net/batman-adv/send.c                  | 2 +-
- net/batman-adv/send.h                  | 2 +-
- net/batman-adv/soft-interface.c        | 2 +-
- net/batman-adv/soft-interface.h        | 2 +-
- net/batman-adv/sysfs.c                 | 2 +-
- net/batman-adv/sysfs.h                 | 2 +-
- net/batman-adv/tp_meter.c              | 2 +-
- net/batman-adv/tp_meter.h              | 2 +-
- net/batman-adv/trace.c                 | 2 +-
- net/batman-adv/trace.h                 | 2 +-
- net/batman-adv/translation-table.c     | 2 +-
- net/batman-adv/translation-table.h     | 2 +-
- net/batman-adv/tvlv.c                  | 2 +-
- net/batman-adv/tvlv.h                  | 2 +-
- net/batman-adv/types.h                 | 2 +-
- 63 files changed, 63 insertions(+), 63 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 399 +++++++++++++++++++++++++++++++++
+ net/batman-adv/distributed-arp-table.h |  19 ++
+ net/batman-adv/routing.c               |   4 +
+ net/batman-adv/soft-interface.c        |  11 +-
+ 4 files changed, 431 insertions(+), 2 deletions(-)
 
-diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-index 894d8d2f713d..7eb2936a8e22 100644
---- a/include/uapi/linux/batadv_packet.h
-+++ b/include/uapi/linux/batadv_packet.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 324a0e1143e7..a28e76a7e0a2 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: MIT */
--/* Copyright (C) 2016-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2016-2019  B.A.T.M.A.N. contributors:
-  *
-  * Matthias Schiffer
-  *
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index c386e6981416..a31db5e9ac8e 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -1,5 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
--# Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+# Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
- #
- # Marek Lindner, Simon Wunderlich
- #
-diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
-index 9b58160fe485..a887ecc3efa1 100644
---- a/net/batman-adv/Makefile
-+++ b/net/batman-adv/Makefile
-@@ -1,5 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
--# Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+# Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
- #
- # Marek Lindner, Simon Wunderlich
- #
-diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
-index ea309ad06175..7b7e15641fef 100644
---- a/net/batman-adv/bat_algo.c
-+++ b/net/batman-adv/bat_algo.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
-index 534b790c3753..25e7bb51928c 100644
---- a/net/batman-adv/bat_algo.h
-+++ b/net/batman-adv/bat_algo.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Linus Lüssing
-  *
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index f97e566f0402..de61091af666 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
-index 3dc6a7a43eb7..785f6666273c 100644
---- a/net/batman-adv/bat_iv_ogm.h
-+++ b/net/batman-adv/bat_iv_ogm.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 90e33f84d37a..445594ed58af 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Linus Lüssing, Marek Lindner
-  *
-diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
-index ec4a2a569750..465a4fc23354 100644
---- a/net/batman-adv/bat_v.h
-+++ b/net/batman-adv/bat_v.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Linus Lüssing
-  *
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index e8090f099eb8..7b80f6f8d4dc 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Linus Lüssing, Marek Lindner
-  *
-diff --git a/net/batman-adv/bat_v_elp.h b/net/batman-adv/bat_v_elp.h
-index e8c7b7fd290d..75f189ee4a1c 100644
---- a/net/batman-adv/bat_v_elp.h
-+++ b/net/batman-adv/bat_v_elp.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Linus Lüssing, Marek Lindner
-  *
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 2948b41b06d4..c9698ad41854 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
-diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
-index e5be14c908c6..f67cf7ee06b2 100644
---- a/net/batman-adv/bat_v_ogm.h
-+++ b/net/batman-adv/bat_v_ogm.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
-diff --git a/net/batman-adv/bitarray.c b/net/batman-adv/bitarray.c
-index a296a4d851f5..63e134e763e3 100644
---- a/net/batman-adv/bitarray.c
-+++ b/net/batman-adv/bitarray.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2006-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2006-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
-index 48f683289531..f3a05ad9afad 100644
---- a/net/batman-adv/bitarray.h
-+++ b/net/batman-adv/bitarray.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2006-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2006-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 5fdde2947802..ef39aabdb694 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich
-  *
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 71f95a3e4d3f..31771c751efb 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich
-  *
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index d4a7702e48d8..3b9d1ad2f467 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
-index 8de018e5c577..c0b8694041ec 100644
---- a/net/batman-adv/debugfs.h
-+++ b/net/batman-adv/debugfs.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index c7f3e2231233..899ab051ffce 100644
+index b9ffe1826527..c7f3e2231233 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
+@@ -19,6 +19,7 @@
+ #include "distributed-arp-table.h"
+ #include "main.h"
+ 
++#include <asm/unaligned.h>
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
+@@ -29,6 +30,7 @@
+ #include <linux/if_ether.h>
+ #include <linux/if_vlan.h>
+ #include <linux/in.h>
++#include <linux/ip.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+@@ -42,6 +44,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/stddef.h>
+ #include <linux/string.h>
++#include <linux/udp.h>
+ #include <linux/workqueue.h>
+ #include <net/arp.h>
+ #include <net/genetlink.h>
+@@ -60,6 +63,49 @@
+ #include "translation-table.h"
+ #include "tvlv.h"
+ 
++enum batadv_bootpop {
++	BATADV_BOOTREPLY	= 2,
++};
++
++enum batadv_boothtype {
++	BATADV_HTYPE_ETHERNET	= 1,
++};
++
++enum batadv_dhcpoptioncode {
++	BATADV_DHCP_OPT_PAD		= 0,
++	BATADV_DHCP_OPT_MSG_TYPE	= 53,
++	BATADV_DHCP_OPT_END		= 255,
++};
++
++enum batadv_dhcptype {
++	BATADV_DHCPACK		= 5,
++};
++
++/* { 99, 130, 83, 99 } */
++#define BATADV_DHCP_MAGIC 1669485411
++
++struct batadv_dhcp_packet {
++	__u8 op;
++	__u8 htype;
++	__u8 hlen;
++	__u8 hops;
++	__be32 xid;
++	__be16 secs;
++	__be16 flags;
++	__be32 ciaddr;
++	__be32 yiaddr;
++	__be32 siaddr;
++	__be32 giaddr;
++	__u8 chaddr[16];
++	__u8 sname[64];
++	__u8 file[128];
++	__be32 magic;
++	__u8 options[0];
++};
++
++#define BATADV_DHCP_YIADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->yiaddr)
++#define BATADV_DHCP_CHADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->chaddr)
++
+ static void batadv_dat_purge(struct work_struct *work);
+ 
+ /**
+@@ -1440,6 +1486,359 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
++ * batadv_dat_check_dhcp_ipudp() - check skb for IP+UDP headers valid for DHCP
++ * @skb: the packet to check
++ * @ip_src: a buffer to store the IPv4 source address in
++ *
++ * Checks whether the given skb has an IP and UDP header valid for a DHCP
++ * message from a DHCP server. And if so, stores the IPv4 source address in
++ * the provided buffer.
++ *
++ * Return: True if valid, false otherwise.
++ */
++static bool
++batadv_dat_check_dhcp_ipudp(struct sk_buff *skb, __be32 *ip_src)
++{
++	unsigned int offset = skb_network_offset(skb);
++	struct udphdr *udphdr, _udphdr;
++	struct iphdr *iphdr, _iphdr;
++
++	iphdr = skb_header_pointer(skb, offset, sizeof(_iphdr), &_iphdr);
++	if (!iphdr || iphdr->version != 4 || iphdr->ihl * 4 < sizeof(_iphdr))
++		return false;
++
++	if (iphdr->protocol != IPPROTO_UDP)
++		return false;
++
++	offset += iphdr->ihl * 4;
++	skb_set_transport_header(skb, offset);
++
++	udphdr = skb_header_pointer(skb, offset, sizeof(_udphdr), &_udphdr);
++	if (!udphdr || udphdr->source != htons(67))
++		return false;
++
++	*ip_src = get_unaligned(&iphdr->saddr);
++
++	return true;
++}
++
++/**
++ * batadv_dat_check_dhcp() - examine packet for valid DHCP message
++ * @skb: the packet to check
++ * @proto: ethernet protocol hint (behind a potential vlan)
++ * @ip_src: a buffer to store the IPv4 source address in
++ *
++ * Checks whether the given skb is a valid DHCP packet. And if so, stores the
++ * IPv4 source address in the provided buffer.
++ *
++ * Caller needs to ensure that the skb network header is set correctly.
++ *
++ * Return: If skb is a valid DHCP packet, then returns its op code
++ * (e.g. BOOTREPLY vs. BOOTREQUEST). Otherwise returns -EINVAL.
++ */
++static int
++batadv_dat_check_dhcp(struct sk_buff *skb, __be16 proto, __be32 *ip_src)
++{
++	__be32 *magic, _magic;
++	unsigned int offset;
++	struct {
++		__u8 op;
++		__u8 htype;
++		__u8 hlen;
++		__u8 hops;
++	} *dhcp_h, _dhcp_h;
++
++	if (proto != htons(ETH_P_IP))
++		return -EINVAL;
++
++	if (!batadv_dat_check_dhcp_ipudp(skb, ip_src))
++		return -EINVAL;
++
++	offset = skb_transport_offset(skb) + sizeof(struct udphdr);
++	if (skb->len < offset + sizeof(struct batadv_dhcp_packet))
++		return -EINVAL;
++
++	dhcp_h = skb_header_pointer(skb, offset, sizeof(_dhcp_h), &_dhcp_h);
++	if (!dhcp_h || dhcp_h->htype != BATADV_HTYPE_ETHERNET ||
++	    dhcp_h->hlen != ETH_ALEN)
++		return -EINVAL;
++
++	offset += offsetof(struct batadv_dhcp_packet, magic);
++
++	magic = skb_header_pointer(skb, offset, sizeof(_magic), &_magic);
++	if (!magic || get_unaligned(magic) != htonl(BATADV_DHCP_MAGIC))
++		return -EINVAL;
++
++	return dhcp_h->op;
++}
++
++/**
++ * batadv_dat_get_dhcp_message_type() - get message type of a DHCP packet
++ * @skb: the DHCP packet to parse
++ *
++ * Iterates over the DHCP options of the given DHCP packet to find a
++ * DHCP Message Type option and parse it.
++ *
++ * Caller needs to ensure that the given skb is a valid DHCP packet and
++ * that the skb transport header is set correctly.
++ *
++ * Return: The found DHCP message type value, if found. -EINVAL otherwise.
++ */
++static int batadv_dat_get_dhcp_message_type(struct sk_buff *skb)
++{
++	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
++	u8 *type, _type;
++	struct {
++		u8 type;
++		u8 len;
++	} *tl, _tl;
++
++	offset += sizeof(struct batadv_dhcp_packet);
++
++	while ((tl = skb_header_pointer(skb, offset, sizeof(_tl), &_tl))) {
++		if (tl->type == BATADV_DHCP_OPT_MSG_TYPE)
++			break;
++
++		if (tl->type == BATADV_DHCP_OPT_END)
++			break;
++
++		if (tl->type == BATADV_DHCP_OPT_PAD)
++			offset++;
++		else
++			offset += tl->len + sizeof(_tl);
++	}
++
++	/* Option Overload Code not supported */
++	if (!tl || tl->type != BATADV_DHCP_OPT_MSG_TYPE ||
++	    tl->len != sizeof(_type))
++		return -EINVAL;
++
++	offset += sizeof(_tl);
++
++	type = skb_header_pointer(skb, offset, sizeof(_type), &_type);
++	if (!type)
++		return -EINVAL;
++
++	return *type;
++}
++
++/**
++ * batadv_dat_get_dhcp_yiaddr() - get yiaddr from a DHCP packet
++ * @skb: the DHCP packet to parse
++ * @buf: a buffer to store the yiaddr in
++ *
++ * Caller needs to ensure that the given skb is a valid DHCP packet and
++ * that the skb transport header is set correctly.
++ *
++ * Return: True on success, false otherwise.
++ */
++static bool batadv_dat_dhcp_get_yiaddr(struct sk_buff *skb, __be32 *buf)
++{
++	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
++	__be32 *yiaddr;
++
++	offset += offsetof(struct batadv_dhcp_packet, yiaddr);
++	yiaddr = skb_header_pointer(skb, offset, BATADV_DHCP_YIADDR_LEN, buf);
++
++	if (!yiaddr)
++		return false;
++
++	if (yiaddr != buf)
++		*buf = get_unaligned(yiaddr);
++
++	return true;
++}
++
++/**
++ * batadv_dat_get_dhcp_chaddr() - get chaddr from a DHCP packet
++ * @skb: the DHCP packet to parse
++ * @buf: a buffer to store the chaddr in
++ *
++ * Caller needs to ensure that the given skb is a valid DHCP packet and
++ * that the skb transport header is set correctly.
++ *
++ * Return: True on success, false otherwise
++ */
++static bool batadv_dat_get_dhcp_chaddr(struct sk_buff *skb, u8 *buf)
++{
++	unsigned int offset = skb_transport_offset(skb) + sizeof(struct udphdr);
++	u8 *chaddr;
++
++	offset += offsetof(struct batadv_dhcp_packet, chaddr);
++	chaddr = skb_header_pointer(skb, offset, BATADV_DHCP_CHADDR_LEN, buf);
++
++	if (!chaddr)
++		return false;
++
++	if (chaddr != buf)
++		memcpy(buf, chaddr, BATADV_DHCP_CHADDR_LEN);
++
++	return true;
++}
++
++/**
++ * batadv_dat_put_dhcp() - puts addresses from a DHCP packet into the DHT and
++ *  DAT cache
++ * @bat_priv: the bat priv with all the soft interface information
++ * @chaddr: the DHCP client MAC address
++ * @yiaddr: the DHCP client IP address
++ * @hw_dst: the DHCP server MAC address
++ * @ip_dst: the DHCP server IP address
++ * @vid: VLAN identifier
++ *
++ * Adds given MAC/IP pairs to the local DAT cache and propagates them further
++ * into the DHT.
++ *
++ * For the DHT propagation, client MAC + IP will appear as the ARP Reply
++ * transmitter (and hw_dst/ip_dst as the target).
++ */
++static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
++				__be32 yiaddr, u8 *hw_dst, __be32 ip_dst,
++				unsigned short vid)
++{
++	struct sk_buff *skb;
++
++	skb = batadv_dat_arp_create_reply(bat_priv, yiaddr, ip_dst, chaddr,
++					  hw_dst, vid);
++	if (!skb)
++		return;
++
++	skb_set_network_header(skb, ETH_HLEN);
++
++	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
++	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
++
++	batadv_dat_send_data(bat_priv, skb, yiaddr, vid, BATADV_P_DAT_DHT_PUT);
++	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
++
++	batadv_dbg(BATADV_DBG_DAT, bat_priv,
++		   "Snooped from outgoing DHCPACK (server address): %pI4, %pM (vid: %i)\n",
++		   &ip_dst, hw_dst, batadv_print_vid(vid));
++	batadv_dbg(BATADV_DBG_DAT, bat_priv,
++		   "Snooped from outgoing DHCPACK (client address): %pI4, %pM (vid: %i)\n",
++		   &yiaddr, chaddr, batadv_print_vid(vid));
++}
++
++/**
++ * batadv_dat_check_dhcp_ack() - examine packet for valid DHCP message
++ * @skb: the packet to check
++ * @proto: ethernet protocol hint (behind a potential vlan)
++ * @ip_src: a buffer to store the IPv4 source address in
++ * @chaddr: a buffer to store the DHCP Client Hardware Address in
++ * @yiaddr: a buffer to store the DHCP Your IP Address in
++ *
++ * Checks whether the given skb is a valid DHCPACK. And if so, stores the
++ * IPv4 server source address (ip_src), client MAC address (chaddr) and client
++ * IPv4 address (yiaddr) in the provided buffers.
++ *
++ * Caller needs to ensure that the skb network header is set correctly.
++ *
++ * Return: True if the skb is a valid DHCPACK. False otherwise.
++ */
++static bool
++batadv_dat_check_dhcp_ack(struct sk_buff *skb, __be16 proto, __be32 *ip_src,
++			  u8 *chaddr, __be32 *yiaddr)
++{
++	int type;
++
++	type = batadv_dat_check_dhcp(skb, proto, ip_src);
++	if (type != BATADV_BOOTREPLY)
++		return false;
++
++	type = batadv_dat_get_dhcp_message_type(skb);
++	if (type != BATADV_DHCPACK)
++		return false;
++
++	if (!batadv_dat_dhcp_get_yiaddr(skb, yiaddr))
++		return false;
++
++	if (!batadv_dat_get_dhcp_chaddr(skb, chaddr))
++		return false;
++
++	return true;
++}
++
++/**
++ * batadv_dat_snoop_outgoing_dhcp_ack() - snoop DHCPACK and fill DAT with it
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the packet to snoop
++ * @proto: ethernet protocol hint (behind a potential vlan)
++ * @vid: VLAN identifier
++ *
++ * This function first checks whether the given skb is a valid DHCPACK. If
++ * so then its source MAC and IP as well as its DHCP Client Hardware Address
++ * field and DHCP Your IP Address field are added to the local DAT cache and
++ * propagated into the DHT.
++ *
++ * Caller needs to ensure that the skb mac and network headers are set
++ * correctly.
++ */
++void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
++					struct sk_buff *skb,
++					__be16 proto,
++					unsigned short vid)
++{
++	u8 chaddr[BATADV_DHCP_CHADDR_LEN];
++	__be32 ip_src, yiaddr;
++
++	if (!atomic_read(&bat_priv->distributed_arp_table))
++		return;
++
++	if (!batadv_dat_check_dhcp_ack(skb, proto, &ip_src, chaddr, &yiaddr))
++		return;
++
++	batadv_dat_put_dhcp(bat_priv, chaddr, yiaddr, eth_hdr(skb)->h_source,
++			    ip_src, vid);
++}
++
++/**
++ * batadv_dat_snoop_incoming_dhcp_ack() - snoop DHCPACK and fill DAT cache
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the packet to snoop
++ * @hdr_size: header size, up to the tail of the batman-adv header
++ *
++ * This function first checks whether the given skb is a valid DHCPACK. If
++ * so then its source MAC and IP as well as its DHCP Client Hardware Address
++ * field and DHCP Your IP Address field are added to the local DAT cache.
++ */
++void batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
++					struct sk_buff *skb, int hdr_size)
++{
++	u8 chaddr[BATADV_DHCP_CHADDR_LEN];
++	struct ethhdr *ethhdr;
++	__be32 ip_src, yiaddr;
++	unsigned short vid;
++	__be16 proto;
++	u8 *hw_src;
++
++	if (!atomic_read(&bat_priv->distributed_arp_table))
++		return;
++
++	if (unlikely(!pskb_may_pull(skb, hdr_size + ETH_HLEN)))
++		return;
++
++	ethhdr = (struct ethhdr *)(skb->data + hdr_size);
++	skb_set_network_header(skb, hdr_size + ETH_HLEN);
++	proto = ethhdr->h_proto;
++
++	if (!batadv_dat_check_dhcp_ack(skb, proto, &ip_src, chaddr, &yiaddr))
++		return;
++
++	hw_src = ethhdr->h_source;
++	vid = batadv_dat_get_vid(skb, &hdr_size);
++
++	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
++
++	batadv_dbg(BATADV_DBG_DAT, bat_priv,
++		   "Snooped from incoming DHCPACK (server address): %pI4, %pM (vid: %i)\n",
++		   &ip_src, hw_src, batadv_print_vid(vid));
++	batadv_dbg(BATADV_DBG_DAT, bat_priv,
++		   "Snooped from incoming DHCPACK (client address): %pI4, %pM (vid: %i)\n",
++		   &yiaddr, chaddr, batadv_print_vid(vid));
++}
++
++/**
+  * batadv_dat_drop_broadcast_packet() - check if an ARP request has to be
+  *  dropped (because the node has already obtained the reply via DAT) or not
+  * @bat_priv: the bat priv with all the soft interface information
 diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index e58d7a9bfc8d..68c0ff321acd 100644
+index a04596028337..e58d7a9bfc8d 100644
 --- a/net/batman-adv/distributed-arp-table.h
 +++ b/net/batman-adv/distributed-arp-table.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2011-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2011-2019  B.A.T.M.A.N. contributors:
-  *
-  * Antonio Quartulli
-  *
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 5b71a289d04f..b506d15b8230 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Martin Hundebøll <martin@hundeboll.net>
-  *
-diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
-index 944512e07782..abdac26579bf 100644
---- a/net/batman-adv/fragmentation.h
-+++ b/net/batman-adv/fragmentation.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2013-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2013-2019  B.A.T.M.A.N. contributors:
-  *
-  * Martin Hundebøll <martin@hundeboll.net>
-  *
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 9d8e5eda2314..0a6b9b30eabd 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
-index f0b86fcb2493..b5732c8be81a 100644
---- a/net/batman-adv/gateway_client.h
-+++ b/net/batman-adv/gateway_client.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 936c107f3199..53d03adc9bfc 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
-index 80afb2793687..89bae100a0b0 100644
---- a/net/batman-adv/gateway_common.h
-+++ b/net/batman-adv/gateway_common.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 508f4416dfc9..28c1fb8d1af0 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index d1c0f6189301..48de28c83401 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
-index 9194f4d891b1..56a08ce193d5 100644
---- a/net/batman-adv/hash.c
-+++ b/net/batman-adv/hash.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2006-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2006-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index 0e36fa1c7c3e..37507b6d4006 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2006-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2006-2019  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index d70f363c52ae..d34bb79e0405 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
-index 958be22beda9..5f8926522ff0 100644
---- a/net/batman-adv/icmp_socket.h
-+++ b/net/batman-adv/icmp_socket.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index 02e55b78132f..f97849a8380b 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
-index 35f4f397ed57..660e9bcc85a2 100644
---- a/net/batman-adv/log.h
-+++ b/net/batman-adv/log.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index d1ed839fd32b..75750870cf04 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index f3ef2c725a41..3ed669d7dc6b 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 69244e4598f5..5de6a37525f5 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2014-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2014-2019  B.A.T.M.A.N. contributors:
-  *
-  * Linus Lüssing
-  *
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 3b04ab13f0eb..466013fe88af 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2014-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2014-2019  B.A.T.M.A.N. contributors:
-  *
-  * Linus Lüssing
-  *
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 2dc3304cee54..5fe833cc9507 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2016-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2016-2019  B.A.T.M.A.N. contributors:
-  *
-  * Matthias Schiffer
-  *
-diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
-index 571d9a5ae7aa..216484b8b82d 100644
---- a/net/batman-adv/netlink.h
-+++ b/net/batman-adv/netlink.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2016-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2016-2019  B.A.T.M.A.N. contributors:
-  *
-  * Matthias Schiffer
-  *
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 34caf129a9bf..278762bd94c6 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2012-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2012-2019  B.A.T.M.A.N. contributors:
-  *
-  * Martin Hundebøll, Jeppe Ledet-Pedersen
-  *
-diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
-index 65c346812bc1..96ef0a511fc7 100644
---- a/net/batman-adv/network-coding.h
-+++ b/net/batman-adv/network-coding.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2012-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2012-2019  B.A.T.M.A.N. contributors:
-  *
-  * Martin Hundebøll, Jeppe Ledet-Pedersen
-  *
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 56a981af5c92..e5cdf89ef63c 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index a8b4c7b667ec..dca1e4a34ec6 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
+@@ -46,6 +46,12 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb);
+ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb, int hdr_size);
++void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
++					struct sk_buff *skb,
++					__be16 proto,
++					unsigned short vid);
++void batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
++					struct sk_buff *skb, int hdr_size);
+ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
+ 				      struct batadv_forw_packet *forw_packet);
+ 
+@@ -140,6 +146,19 @@ batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	return false;
+ }
+ 
++static inline void
++batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
++				   struct sk_buff *skb, __be16 proto,
++				   unsigned short vid)
++{
++}
++
++static inline void
++batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
++				   struct sk_buff *skb, int hdr_size)
++{
++}
++
+ static inline bool
+ batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
+ 				 struct batadv_forw_packet *forw_packet)
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 469fa97d1add..cae0e5dd0768 100644
+index cc3ed93a6d51..469fa97d1add 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
-index db54c2d9b8bf..0102d69d345c 100644
---- a/net/batman-adv/routing.h
-+++ b/net/batman-adv/routing.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 4a35f5c2f52b..66a8b3e44501 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 64cce07b8fe6..1f6132922e60 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
+@@ -1043,6 +1043,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 							hdr_size))
+ 			goto rx_success;
+ 
++		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
++
+ 		batadv_interface_rx(recv_if->soft_iface, skb, hdr_size,
+ 				    orig_node);
+ 
+@@ -1278,6 +1280,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
+ 		goto rx_success;
+ 
++	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
++
+ 	/* broadcast for me */
+ 	batadv_interface_rx(recv_if->soft_iface, skb, hdr_size, orig_node);
+ 
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 943071008670..b14fb3462af7 100644
+index 5db5a0a4c959..943071008670 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index daf87f07fadd..538bb661878c 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 09427fc6494a..e1b816262c53 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
-index c1e3fb69952d..705ffbe763f4 100644
---- a/net/batman-adv/sysfs.h
-+++ b/net/batman-adv/sysfs.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 11520de96ccb..500109bbd551 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2012-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2012-2019  B.A.T.M.A.N. contributors:
-  *
-  * Edo Monticelli, Antonio Quartulli
-  *
-diff --git a/net/batman-adv/tp_meter.h b/net/batman-adv/tp_meter.h
-index 68e600974759..6b4d0f733896 100644
---- a/net/batman-adv/tp_meter.h
-+++ b/net/batman-adv/tp_meter.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2012-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2012-2019  B.A.T.M.A.N. contributors:
-  *
-  * Edo Monticelli, Antonio Quartulli
-  *
-diff --git a/net/batman-adv/trace.c b/net/batman-adv/trace.c
-index 8e1024217cff..f77c917ed20d 100644
---- a/net/batman-adv/trace.c
-+++ b/net/batman-adv/trace.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Sven Eckelmann
-  *
-diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-index 104784be94d7..5e5579051400 100644
---- a/net/batman-adv/trace.h
-+++ b/net/batman-adv/trace.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2010-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2010-2019  B.A.T.M.A.N. contributors:
-  *
-  * Sven Eckelmann
-  *
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 8dcd4968cde7..f73d79139ae7 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich, Antonio Quartulli
-  *
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 01b6c8eafaf9..61bca75e5911 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich, Antonio Quartulli
-  *
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 40e69c9346d2..7e947b01919d 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
-index ef5867f49824..c0f033b1acb8 100644
---- a/net/batman-adv/tvlv.h
-+++ b/net/batman-adv/tvlv.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index cbe17da36fcb..a21b34ed6548 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1,5 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2007-2018  B.A.T.M.A.N. contributors:
-+/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner, Simon Wunderlich
-  *
+@@ -212,6 +212,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 	enum batadv_forw_mode forw_mode;
+ 	struct batadv_orig_node *mcast_single_orig = NULL;
+ 	int network_offset = ETH_HLEN;
++	__be16 proto;
+ 
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+@@ -223,12 +224,15 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 	vid = batadv_get_vid(skb, 0);
+ 	ethhdr = eth_hdr(skb);
+ 
+-	switch (ntohs(ethhdr->h_proto)) {
++	proto = ethhdr->h_proto;
++
++	switch (ntohs(proto)) {
+ 	case ETH_P_8021Q:
+ 		vhdr = vlan_eth_hdr(skb);
++		proto = vhdr->h_vlan_encapsulated_proto;
+ 
+ 		/* drop batman-in-batman packets to prevent loops */
+-		if (vhdr->h_vlan_encapsulated_proto != htons(ETH_P_BATMAN)) {
++		if (proto != htons(ETH_P_BATMAN)) {
+ 			network_offset += VLAN_HLEN;
+ 			break;
+ 		}
+@@ -256,6 +260,9 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 			goto dropped;
+ 	}
+ 
++	/* Snoop address candidates from DHCPACKs for early DAT filling */
++	batadv_dat_snoop_outgoing_dhcp_ack(bat_priv, skb, proto, vid);
++
+ 	/* don't accept stp packets. STP does not help in meshes.
+ 	 * better use the bridge loop avoidance ...
+ 	 *
 -- 
 2.11.0
 
