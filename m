@@ -1,9 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Feb 2019 12:14:09 +0100
-Message-Id: <20190201111412.13807-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 0/3] pull request for net: batman-adv
- 2019-02-01
+Date: Fri,  1 Feb 2019 12:14:12 +0100
+Message-Id: <20190201111412.13807-4-sw@simonwunderlich.de>
+In-Reply-To: <20190201111412.13807-1-sw@simonwunderlich.de>
+References: <20190201111412.13807-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: release station info tidstats
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,47 +15,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Felix Fietkau <nbd@nbd.name>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Felix Fietkau <nbd@nbd.name>
 
-here are some bugfixes which we would like to see integrated into net.
+With the addition of TXQ stats in the per-tid statistics the struct
+station_info grew significantly. This resulted in stack size warnings
+due to the structure itself being above the limit for the warnings.
 
-Please pull or let me know of any problem!
+To work around this, the TID array was allocated dynamically. Also a
+function to free this content was introduced with commit 7ea3e110f2f8
+("cfg80211: release station info tidstats where needed") but the necessary
+changes were not provided for batman-adv's B.A.T.M.A.N. V implementation.
 
-Thank you,
-      Simon
+Signed-off-by: Felix Fietkau <nbd@nbd.name>
+Fixes: 8689c051a201 ("cfg80211: dynamically allocate per-tid stats for station info")
+[sven@narfation.org: add commit message]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_v_elp.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The following changes since commit b71acb0e372160167bf6d5500b88b30b52ccef6e:
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index e8090f099eb8..ef0dec20c7d8 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -104,6 +104,9 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 
+ 		ret = cfg80211_get_station(real_netdev, neigh->addr, &sinfo);
+ 
++		/* free the TID stats immediately */
++		cfg80211_sinfo_release_content(&sinfo);
++
+ 		dev_put(real_netdev);
+ 		if (ret == -ENOENT) {
+ 			/* Node is not associated anymore! It would be
+-- 
+2.11.0
 
-  Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6 (2018-12-27 13:53:32 -0800)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20190201
-
-for you to fetch changes up to 7d652669b61d702c6e62a39579d17f6881670ab6:
-
-  batman-adv: release station info tidstats (2019-01-25 09:04:41 +0100)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - Avoid WARN to report incorrect configuration, by Sven Eckelmann
-
- - Fix mac header position setting, by Sven Eckelmann
-
- - Fix releasing station statistics, by Felix Fietkau
-
-----------------------------------------------------------------
-Felix Fietkau (1):
-      batman-adv: release station info tidstats
-
-Sven Eckelmann (2):
-      batman-adv: Avoid WARN on net_device without parent in netns
-      batman-adv: Force mac header to start of data on xmit
-
- net/batman-adv/bat_v_elp.c      | 3 +++
- net/batman-adv/hard-interface.c | 5 +++--
- net/batman-adv/soft-interface.c | 2 ++
- 3 files changed, 8 insertions(+), 2 deletions(-)
