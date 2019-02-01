@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Feb 2019 12:14:12 +0100
-Message-Id: <20190201111412.13807-4-sw@simonwunderlich.de>
+Date: Fri,  1 Feb 2019 12:14:11 +0100
+Message-Id: <20190201111412.13807-3-sw@simonwunderlich.de>
 In-Reply-To: <20190201111412.13807-1-sw@simonwunderlich.de>
 References: <20190201111412.13807-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: release station info tidstats
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Force mac header to start of
+ data on xmit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,42 +16,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Felix Fietkau <nbd@nbd.name>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Felix Fietkau <nbd@nbd.name>
+From: Sven Eckelmann <sven@narfation.org>
 
-With the addition of TXQ stats in the per-tid statistics the struct
-station_info grew significantly. This resulted in stack size warnings
-due to the structure itself being above the limit for the warnings.
+The caller of ndo_start_xmit may not already have called
+skb_reset_mac_header. The returned value of skb_mac_header/eth_hdr
+therefore can be in the wrong position and even outside the current skbuff.
+This for example happens when the user binds to the device using a
+PF_PACKET-SOCK_RAW with enabled qdisc-bypass:
 
-To work around this, the TID array was allocated dynamically. Also a
-function to free this content was introduced with commit 7ea3e110f2f8
-("cfg80211: release station info tidstats where needed") but the necessary
-changes were not provided for batman-adv's B.A.T.M.A.N. V implementation.
+  int opt = 4;
+  setsockopt(sock, SOL_PACKET, PACKET_QDISC_BYPASS, &opt, sizeof(opt));
 
-Signed-off-by: Felix Fietkau <nbd@nbd.name>
-Fixes: 8689c051a201 ("cfg80211: dynamically allocate per-tid stats for station info")
-[sven@narfation.org: add commit message]
+Since eth_hdr is used all over the codebase, the batadv_interface_tx
+function must always take care of resetting it.
+
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+Reported-by: syzbot+9d7405c7faa390e60b4e@syzkaller.appspotmail.com
+Reported-by: syzbot+7d20bc3f1ddddc0f9079@syzkaller.appspotmail.com
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v_elp.c | 3 +++
- 1 file changed, 3 insertions(+)
+ net/batman-adv/soft-interface.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index e8090f099eb8..ef0dec20c7d8 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -104,6 +104,9 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 5db5a0a4c959..b85ca809e509 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -221,6 +221,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
  
- 		ret = cfg80211_get_station(real_netdev, neigh->addr, &sinfo);
- 
-+		/* free the TID stats immediately */
-+		cfg80211_sinfo_release_content(&sinfo);
+ 	netif_trans_update(soft_iface);
+ 	vid = batadv_get_vid(skb, 0);
 +
- 		dev_put(real_netdev);
- 		if (ret == -ENOENT) {
- 			/* Node is not associated anymore! It would be
++	skb_reset_mac_header(skb);
+ 	ethhdr = eth_hdr(skb);
+ 
+ 	switch (ntohs(ethhdr->h_proto)) {
 -- 
 2.11.0
 
