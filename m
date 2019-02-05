@@ -1,13 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 05 Feb 2019 18:04:51 +0100
-Message-ID: <1851509.cZK8r6as2N@prime>
-In-Reply-To: <1895931.G10psR3j26@sven-edge>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Tue, 5 Feb 2019 20:24:10 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20190205192409.GF777@otheros>
 References: <20190119155626.6414-1-sven@narfation.org>
  <1895931.G10psR3j26@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart172156632.1EuqQE1ssQ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1895931.G10psR3j26@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] [RFC v4 00/19] batman-adv: netlink restructuring, part 2
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,75 +19,133 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, netdev@vger.kernel.org, Jiri Pirko <jiri@mellanox.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: netdev@vger.kernel.org, Jiri Pirko <jiri@mellanox.com>
 
---nextPart172156632.1EuqQE1ssQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Saturday, January 26, 2019 11:47:20 AM CET Sven Eckelmann wrote:
-> Aggregated OGM is currently defined as:
+On Sat, Jan 26, 2019 at 11:47:20AM +0100, Sven Eckelmann wrote:
+> On Saturday, 19 January 2019 16.56.07 CET Sven Eckelmann wrote:
+> [...]
+> > There were also two topics which were not yet really discussed and thus
+> > these requests (from Linus) were not yet implemented:
 > 
+> @Jiri, @Linus maybe you can discuss these topics further and select the 
+> correct solution.
+> 
+> > * convert BATADV_ATTR_MULTICAST_MODE_ENABLED to an u32 and let don't handle
+> >   it like a boolean. Instead use it to select how multicast traffic has to
+> >   be handled:
+> >   
+> >   - 0: ignore multicast optimization and just flood it like broadcast
+> >     traffic
+> >   - 1: enabled multicast optimization
+> >   - 2: undefined but also some kind of multicast optimization
+> >   - 3: undefined but also some kind of multicast of optimization
+> >   - ...
+> 
+> Multicast mode is currently defined.
 > 
 > * according to batctl manpage:
 > 
->     aggregation|ag [0|1]
->            If no parameter is given the current aggregation setting
->            is displayed. Otherwise the parameter is used to enable or
->            disable OGM packet aggregation.
+>     multicast_mode|mm [0|1]
+>            If no parameter is given the current multicast mode set‐
+>            ting is displayed. Otherwise the parameter is used to en‐
+>            able or disable multicast optimizations (i.e. disabling
+>            means always sending own multicast frames via classic
+>            flooding).
 > 
 > * according to sysfs ABI:
 > 
->     What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
->     Date:           May 2010
->     Contact:        Marek Lindner <mareklindner@neomailbox.ch>
->     Description:
->                     Indicates whether the batman protocol messages of the
->                     mesh <mesh_iface> shall be aggregated or not.
+>    What:           /sys/class/net/<mesh_iface>/mesh/multicast_mode
+>    Date:           Feb 2014
+>    Contact:        Linus Lüssing <linus.luessing@web.de>
+>    Description:
+>                    Indicates whether multicast optimizations are enabled
+>                    or disabled. If set to zero then all nodes in the
+>                    mesh are going to use classic flooding for any
+>                    multicast packet with no optimizations.
 > 
-> So sysfs is only one possible backend for the batctl command. There is 
-> currently nothing which I would assume to be aggregatable beside OGMs but
-> let  us assume for now that there is now something and some way to
-> aggregate things beside OGMs in a save and backward compatible way. Let's
-> call this FOO - so we have BATADV_ATTR_AGGREGATION_OGM_ENABLED and
-> BATADV_ATTR_AGGREGATION_FOO_ENABLED. Or we have BATADV_ATTR_AGGREGATION as
-> an  u32 and just use the second bit as marker for FOO (and of course the
-> first bit as marker for OGM).
+> Both define it as boolean value and therefore it was converted to a boolean 
+> value (via u8) in netlink.
 > 
-> Would it now be more preferable to use BATADV_ATTR_AGGREGATION_OGM_ENABLED
-> as  u8 (boolean) or to to switch to BATADV_ATTR_AGGREGATION (u32) & assign
-> single bits to packet types.
+> But Linus now suggested that it is actually an u32. Most likely 0 == to 
+> something like BATADV_MULTICAST_MODE_FLOODING. But I have no idea what 1 is or 
+> what 2, 3, 4, .. would be. So I need some input here.
 
-I'd prefer BATADV_ATTR_AGGREGATION_OGM_ENABLED (as we have your patchset now). 
-Although it may be technically possible to aggregate other things (e.g. 
-broadcasts), I don't think this will be implemented anytime soon, if at all. 
-And if we do, we can just make another BATADV_ATTR_AGGREGATION_FOO_ENABLED 
-flag.
+Right, 0 would be flooding. 1 is the current multicast-aware multi-to-single-unicast
+conversion mechanism, which would be extended to a multi-to-multi-unicast mechanism
+with the last multicast related patch to the batman mailing list.
 
-Cheers,
-       Simon
---nextPart172156632.1EuqQE1ssQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+In this particular case there is no need to assign a new
+multicast_mode == 2, because the old approach can be achieved
+again by setting multicast_fanout to 1.
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlxZwjMACgkQoSvjmEKS
-nqHR1w//ZXnTIOOEiq9ldBdn5wj/fY1Xawy83lPq8x3W7IeFdfxwzHWA3dnz7O/I
-Hmt1/c7idoNCLGIhAuTH4sBHGmvf+tdVFX06vfUtcK4hDE+6D1r8ujlNAQWab6np
-quoofnlURz7KfE/vY9p4XFpVoGg1CMSwjyw9qAYzjvx4J+5rdQvX/mzRwxYAtABp
-YxOH62M8hrGc2xrH5JFn3SPvHte0XDEwkEyDOl7t1EaVcIR4RAgKHp08PyR3/YyE
-i/YE1j7/hEBAEyIQUo7wdBGfs7NaFbiyU4B3dyLUWHRZB9nL+LO70UQjS+B3HoMp
-ydt/HuyqNupSR8E5hCkHGxPKH6T+2oPVv79MESi87KPqgQn+JpzwFdynGRrHCXVR
-T+m3ILMftMg7FvSi/1JLIJhLMyV7Gs6j784CqnSZ86ljfQBTPYvaq8ii1iAwMA6v
-rY3gO2s+EtDZ7WhyMu7UtvM4HnjJ/InnXE/NNKpWqvblEpC1HuqygSHWVKkL0v51
-gjEe+6hU64o10+ePu8fSUJMUlfoAmx/du5GWtXSkFKJLDJ45xcnMloRIDwlb2aNH
-VBz+dOnvEc3qtG7dm/0qdNHMVK/KxmiaCEfKV8Vc75Nle9Vt17bNq3E8VGoUpnkZ
-45ZHx6XOmA0k2sIlJ6rVACsii0o3QjC1sK1r+oW1KmkmJAj+K5U=
-=Vu+P
------END PGP SIGNATURE-----
+After the multi-to-(multi-)unicast conversion mechanism the next
+simple step I would have in mind would be adding a "struct
+batadv_mcast_packet". Which would basically behave similar to a
+normal batadv_unicast_packet, but would be able to hold a flexible
+amount of destination addresses.
 
---nextPart172156632.1EuqQE1ssQ--
 
+And then there was the old tracker packet idea which could come
+after that.
+
+And then, recently a source-specific-multicast, reverse tracker
+packet approach was discussed. Which would have yet another magnitude
+of complexity. But would have very compelling scalability properties.
+
+
+From a user perspective, once someone relies on some degree of
+multicast capabilities and if a new mechanism somehow fails for
+the user (for instance a bug or special topology properties), it
+might not be feasible to go back to flooding. For instance, let's
+say with multicast-to-multi-unicast a Freifunk-like network were now
+able to scale to 1500 nodes. And now we introduce some new
+enhancements/mechanisms for multicast and things break. Then
+flooding would likely leave a broken/unusable network for them
+too, due to congestion.
+
+Maybe seeing "multicast_mode" as a gear shift would be an analogy?
+
+
+> And Jiri said that it should be renamed to BATADV_ATTR_MULTICAST_ENABLED -
+> which seems to suggest that he doesn't like the idea of a u32 for some reason
+> and prefers to use a boolean value.
+> 
+> And now Linus even said that it should be a bit field - which makes it even 
+> more vague to me and I have now absolutely no idea what should be implemented.
+> 
+> * BIT 0 for flooding vs ?
+
+Flooding would always be available.
+
+BIT 0: Enable multicast-to-(multi-)unicast
+BIT 1: Enable multicast-packet-type
+BIT 2: Enable multicast-tracker-packets
+BIT 3: Enable ssm-multicast-tracker-packets
+...
+
+The thing is, these mechanisms do not necessarilly have to be
+exclusive. For instance, the tracker packet mechanism needs to
+propagate the tracker packets for a second or so first before it
+can be safely used for multicast data packets. In the mean time we
+could either flood or buffer the packet. Or we could send them via
+multicast-to-multi-unicast.
+
+Hm, but maybe this is getting too flexible. If multicast_mode == n
+would mean that all features 0 <= n are available would be fine,
+too, I think.
+
+
+Another thought, if all this is too vague for now... what about
+ommiting the BATADV_ATTR_MULTICAST_(MODE)_ENABLED for now and use
+a reverse logic instead? Like
+BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, defaulting to false.
+That still leaves the opportunity to add a BATADV_ATTR_MULTICAST_MODE
+option or BATADV_ATTR_MULTICAST_FEATURES bitset later when we have
+actual code needing it.
+
+(btw., is there a general preference in netlink towards either
+grouping things in bitfields or individual _ENABLED attributes?)
+
+Regards, Linus
