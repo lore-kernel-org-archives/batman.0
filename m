@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Feb 2019 19:20:25 +0100
-Message-ID: <3348534.ntHJrxh9jc@sven-edge>
-In-Reply-To: <20190205192409.GF777@otheros>
-References: <20190119155626.6414-1-sven@narfation.org>
- <1895931.G10psR3j26@sven-edge> <20190205192409.GF777@otheros>
+Date: Wed, 06 Feb 2019 19:38:41 +0100
+Message-ID: <1556071.oqAPsG2Tpi@sven-edge>
+In-Reply-To: <mailman.2.1549464410.7610.b.a.t.m.a.n@lists.open-mesh.org>
+References: <mailman.2.1549464410.7610.b.a.t.m.a.n@lists.open-mesh.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2533756.8eBEcCl513";
+Content-Type: multipart/signed; boundary="nextPart5849019.qPd6GMsqcs";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v4 00/19] batman-adv: netlink restructuring, part 2
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory leak in in
+ batadv_dat_put_dhcp
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,53 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, Jiri Pirko <jiri@mellanox.com>
+To: b.a.t.m.a.n@lists.open-mesh.org, Martin Weinelt <martin@linuxlounge.net>
 
---nextPart2533756.8eBEcCl513
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart5849019.qPd6GMsqcs
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, 5 February 2019 20.24.10 CET Linus L=FCssing wrote:
-[...]
-> Another thought, if all this is too vague for now...=20
+On Wednesday, 6 February 2019 15.39.14 CET Martin Weinelt via B.A.T.M.A.N wrote:
+> Consume the skb to avoid leaking memory.
+> 
+> Fixes: 1fd1ce2d383f ("batman-adv: Snoop DHCPACKs for DAT")
+> Signed-off-by: Martin Weinelt <martin@linuxlounge.net>
 
-Yes, it is to vague for the integration in netlink :D
-
-> what about
-> ommiting the BATADV_ATTR_MULTICAST_(MODE)_ENABLED for now and use
-> a reverse logic instead? Like
-> BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, defaulting to false.
-
-Would be fine for me. But it is rather odd to map this to the batctl=20
-multicast_mode. But the name is explaining quite well what it does
-and you can later rewrite the batctl part.
+Good catch. I've modified the commit message to make it better 
+understandable and to describe the actual problem in more detail.
 
 Kind regards,
 	Sven
---nextPart2533756.8eBEcCl513
+--nextPart5849019.qPd6GMsqcs
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxbJWkACgkQXYcKB8Em
-e0Z68Q//WWhCBjCB6fIxnn7zF9ZURmfMBwUjOvLBAIUbWv7qmesdnZBzQCt5wt7n
-9VXxDpc8720pHXzFIWHCEldRHUtLGwnKqEMd50V4P/IGTrJYdvp9keGUTcqWj118
-gL+CiKokS/tCqkf+B63RwfCnsIaRLpQrfodpIxxegSENRnimsTowXZsvAFKbCi8v
-7Kj3Zalqhe/8EaXFx7gOf/rMUI7sgvZ2SMV9QHlJaZgwdqVY8ws9HLs3/jaXueqw
-UCW0IiiFuqW9Uo90ykXPBihYiyLxDD4kRPEwc5vnvVWScPSkKAcj+bvDftWnivwi
-ChP56yH1EqbdJ+NFyVLGxim2JzfEBeJA8d60l4RMuO0+ACKP3VGLb8U1FW5rx3AN
-a6eWKF+vh9pcGDTEAL/RIw7sfAFVgQHOwoPP9RXdUCMWGhGhSJLyF9mKyNlwBhqI
-KAzcH53w4DKfhBpLBW5NzW736hf74xle97NYp6YU7IoxDGII73dSRtIW5dbHWN8P
-Q/m+VdxjhUGhPzAKsaxCneTrEBAUqjLW3HYA+q/NGC6H+Ng8PYf52XqAhdFNxyeT
-5uLZj7djPVZ3RboVOOrayQg7PnaEXetnMN1U0Q428Tt9Guv8lpQUxEn8kmhS/gNU
-Dzn9Qpk2xQ+XBlSU/OoI9nBRihDxvPLgiEiUbxWJ/GeUYU9eKpw=
-=2u8V
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxbKbEACgkQXYcKB8Em
+e0bcng//USi7Mv6dApZIan8eZVzFkRtKUf+T++7PPSsvTNgt9oKuI8Z7H+njnZD5
+XFJhOzdR1isN6xM3+6O6eVwCVK+nSZYOw/fTqzNhPfZlbLqS1uTWG+x8vkfCJ0Ph
+HONrS8zCx9Ehx9AkIlKNqJfbz3UQNt7YytsjpRqz367GkuNZMtpmOn3Yu3efkqPm
++TCHP3fF08KUfvCIhiMOeQYTG6YgKuaucrw7nw+Wp/rlDQsy4uLkpreYvi8ykT1S
+U7cEj6nZSkGiHFNxeR86yzP7F5GvLiDw3XTRdHJ2deW+UbaLRXNC+1rASse18MBC
+mNQnenFx5iU3F1ORQV/K93Es+nWynUHMjI0AipBpqn7kcqJtPyfqply+bqwUzq98
+PRQs4ZRoYAEfMJXvzvDSYPcXwoVaf+9O9HHd+wfXXKPyqRITFDFsHC71AWgmHpnw
+IIGc05lY9oIHdecFnbfTUr4X2BtFGQvLrd/pBEzHc/WWDfwktlq+wc693iEiYfHc
+XNxghds8pNySIXEDZICYLIC8xIJkOv2LYDL9Nrem8umHgn4FeXZ5JkAIjMmLsuBK
+8t7oSsbxcaUy3msyZaYGf5oagJfBuRzeGX4Khypiu/q0SAqpS/YnKlA3qHPOg+KL
+iui/pHGLU1RZytlKknYt/cHj1Nkw17btgy1LES+efIxzbIdH1eE=
+=j8Re
 -----END PGP SIGNATURE-----
 
---nextPart2533756.8eBEcCl513--
+--nextPart5849019.qPd6GMsqcs--
 
 
 
