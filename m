@@ -1,14 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 07 Feb 2019 11:02:05 +0100
-Message-ID: <20390898.jiIYt7HcL9@bentobox>
-In-Reply-To: <20190206190814.GC1442@otheros>
-References: <20190119155626.6414-1-sven@narfation.org>
- <3348534.ntHJrxh9jc@sven-edge> <20190206190814.GC1442@otheros>
+Return-Path: <beth.flippo@telegrid.com>
+From: <beth.flippo@telegrid.com>
+References: <015501d4be3c$d64ad290$82e077b0$@telegrid.com>
+ <2382079.7bZRkTAdJY@sven-edge> <022801d4be4c$60a1dec0$21e59c40$@telegrid.com>
+ <6030797.OfDuFm2WhJ@prime>
+In-Reply-To: <6030797.OfDuFm2WhJ@prime>
+Date: Fri, 8 Feb 2019 10:58:46 -0500
+Message-ID: <041301d4bfc7$2ccff3d0$866fdb70$@telegrid.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3292177.3M3rTVY09g";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v4 00/19] batman-adv: netlink restructuring, part 2
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Language: en-us
+Subject: Re: [B.A.T.M.A.N.] Alfred problem reading other nodes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,44 +21,142 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: 'Simon Wunderlich' <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: 'Sven Eckelmann' <sven@narfation.org>, s.pinsky@telegrid.com
+
+Hi -
+
+So I added a lot of debug in both send.c and recv.c.  Turns out that only
+multicast works - unicast does not.  When I changed the destination on push
+packets to the Alfred multicast address then they were received on the other
+side.
+
+Unicast does not produce any errors at the sendto function and looks like it
+is working but tcpdump doesn't see it and nothing gets to the receive side.
+Tcpdump does see the multicast announcement packets.
+
+I have a ton of output from netstat and tcpdump but I don't think it is
+really useful to throw at you guys.  
+
+We are still googling it over here but at least we know it is on the send
+side and not a firewall issue on the receive side.
+
+Any idea why this would happen?  Anything thing we should try?
+
+Thanks again for the help!
+
+Beth
+
+-----Original Message-----
+From: Simon Wunderlich <sw@simonwunderlich.de> 
+Sent: Wednesday, February 6, 2019 2:03 PM
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org, Jiri Pirko <jiri@mellanox.com>
+Cc: beth.flippo@telegrid.com; 'Sven Eckelmann' <sven@narfation.org>;
+s.pinsky@telegrid.com
+Subject: Re: [B.A.T.M.A.N.] Alfred problem reading other nodes
 
---nextPart3292177.3M3rTVY09g
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi Beth,
 
-On Wednesday, 6 February 2019 20:08:14 CET Linus L=FCssing wrote:
-> Ok, will rewrite the batctl part later then. And probably keep "batctl
-> mm" as a (hidden?) option for compatibility reasons?
+as Sven said, if both nodes are running in master mode then they should
+regularly synchronize their data. This happens by sending unicast (!) UDP
+packets to their respective link-local IPv6 addresses. In your dump, we can
+only see broadcasts of 4 bytes, most likely the announcements. But as you
+said, two different hosts are sending those announcements, so that part
+seems to work.
 
-Yes, sounds good.
+Since announcement from both ends are visible, it could still be that your
+firewall drops it. Did you try disabling the firewall completely (e.g. /etc/
+init.d/firewall stop, iptable -F etc ...)?
 
-Kind regards,
-	Sven
---nextPart3292177.3M3rTVY09g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+If that doesn't help, the best way would be to instrument the code (recv.c
+as Sven suggested) to see if the announcements are received. we don't really
+have debug code there.
 
------BEGIN PGP SIGNATURE-----
+Cheers,
+      Simon
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxcAh0ACgkQXYcKB8Em
-e0bgag/+JTXvWI021K4Eugo4dKGQlRmMKzPmqSyjwYVH1bXIzutevHa2Kd8BjgIi
-/HtBaTsyZkipMGOJA6xlC85cZtra6QDnaHaf0V9+lSY9z+n21U0iW8GT+8ErGiCr
-c8wHF4S23IDNiwsYq+1qXY700laZbHpNtTc9Uc+M7IcgwmbWt2tc2qd15flT875l
-LmN3n/ciwod2l/AK5otdUxfuzFuiqvNnwr8XeGhnUKrJQWCZXohjlIvR17Tz3D0O
-CpUGcwXqjugckZUt3t5n8MxxCnF4HXWU64/VYnM8A4Lkj+LJv43fokjB5TMrT6XM
-cBe0+qU9tspVDevvlnYifFQOleceeRXmRQTqVMHoMI3hcb/IKBLN0+ade1ETTxfD
-OFSq7I+EhnBi70/4ZsXlMgbXQJpbRkP5CiQICfW9PQsIm92I/amDaqnDPEjoANX8
-VqHwHvp1jE4ep/FiB9AAYsfmv0X+ds0EQ4qMW5l0CN059iVSm7yEpLFehnjgxIwJ
-vqr0c2TaUswy4T22OmiViehDfmFsmrihg2m+O7yxHzJuOVUBPbkUNRafO3qmGDkT
-FJd5X5Bo4qrnLplpvalQo5yMTeda/06D29eVbcoYaYqR/HS0MV4rdupJMoVau9Jf
-PSLaEByWutI7hmGzgQnaT6bAHIDX12dneSdZFu1gWCId66yP+Pc=
-=B85L
------END PGP SIGNATURE-----
-
---nextPart3292177.3M3rTVY09g--
-
+On Wednesday, February 6, 2019 1:47:14 PM CET beth.flippo@telegrid.com
+wrote:
+> We are using a gateworks board and built the latest version from their 
+> bsp but we had batman-adv, batctl and Alfred ipk built at version 2018.0.
+> Batman and batctl are both working.
+> 
+> root@OpenWrt:~# uname -a
+> Linux OpenWrt 4.4.0 #16 SMP Tue Jan 29 19:41:46 UTC 2019 armv7l 
+> GNU/Linux root@OpenWrt:~# cat /etc/openwrt_release DISTRIB_ID='Gateworks'
+> DISTRIB_RELEASE='Gateworks Ventana 16.02@dd98aee-dirty'
+> DISTRIB_REVISION='r48868'
+> DISTRIB_CODENAME='designated_driver'
+> DISTRIB_TARGET='imx6/generic'
+> DISTRIB_DESCRIPTION='Gateworks Designated Driver Gateworks Ventana 
+> 16.02@dd98aee-dirty'
+> DISTRIB_TAINTS='no-all busybox'
+> root@OpenWrt:~#
+> 
+> 
+> 
+> -----Original Message-----
+> From: Sven Eckelmann <sven@narfation.org>
+> Sent: Wednesday, February 6, 2019 1:14 PM
+> To: b.a.t.m.a.n@lists.open-mesh.org
+> Cc: beth.flippo@telegrid.com; s.pinsky@telegrid.com
+> Subject: Re: [B.A.T.M.A.N.] Alfred problem reading other nodes
+> 
+> On Wednesday, 6 February 2019 17.56.00 CET beth.flippo@telegrid.com wrote:
+> [...]
+> 
+> > I am having a problem getting alfred retrieve info from other nodes.
+> > I am running openwrt and alfred 2018.0.
+> 
+> Which OpenWrt version should that be? There is no release with 2018.0 
+> and the current version in master is also newer.
+> 
+> > I am able to start the alfred server with no errors both from boot 
+> > and the command line.
+> > 
+> > root@OpenWrt:~# /etc/init.d/alfred restart
+> > /etc/init.d/alfred: waiting 30 secs for br-lan address...
+> > /etc/init.d/alfred: starting alfred
+> > /etc/init.d/alfred: starting batadv-vis
+> > 
+> > I can see it with ps
+> > 
+> > 4290 root       816 S    /usr/sbin/alfred -i br-lan -m -b bat0
+> > 
+> > I can issue a set and then a receive and I see the value I set but 
+> > only locally.  It does not get any info from the other nodes in my 
+> > network.  They are all running alfred servers as master.
+> 
+> Have you checked whether process_alfred_announce_master (recv.c) 
+> rejects the incoming packet for some reason and thus doesn't add it to the
+server list?
+> 
+> If not, have you checked whether sync_data (send.c) really sends out 
+> the data via push_data to the remote server?
+> 
+> > I have added a firewall rule to open the port.
+> > 
+> > If I have 2 nodes running alfred and I run 'tcpdump -i br-lan udp 
+> > port 16962' - I see packets from the other node:
+> > 
+> > 16:21:49.279086 IP6 fe80::2d0:12ff:fe00:f0c7.16962 > ip6-allnodes.16962:
+> > UDP, length 4
+> 
+> [...]
+> 
+> > I think these might be the master announcements but when I issue an 
+> > alfred -r # - I do not see any new messages in the tcpdump.
+> 
+> If all daemons are in server mode then they will not create a request 
+> via `alfred -r`. Instead, they regularly sync [1] their facts between 
+> each other (same port but different packet type).
+> 
+> Kind regards,
+> 	Sven
+> 
+> [1]
+> https://www.open-mesh.org/projects/alfred/wiki/Alfred_architecture#Syn
+> chroni
+> zation
 
 
