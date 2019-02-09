@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  9 Feb 2019 14:41:02 +0100
-Message-Id: <20190209134109.14908-13-sven@narfation.org>
+Date: Sat,  9 Feb 2019 14:41:05 +0100
+Message-Id: <20190209134109.14908-16-sven@narfation.org>
 In-Reply-To: <20190209134109.14908-1-sven@narfation.org>
 References: <20190209134109.14908-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v5 12/19] batman-adv: Add hop_penalty mesh
+Subject: [B.A.T.M.A.N.] [PATCH v5 15/19] batman-adv: Add network_coding mesh
  genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,75 +18,89 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>, Martin Hundeboll <martin@hundeboll.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-The TQ (B.A.T.M.A.N. IV) and throughput values (B.A.T.M.A.N. V) are reduced
-when they are forwarded. One of the reductions is the penalty for
-traversing an additional hop. This hop_penalty (0-255) defines the
-percentage of reduction (0-100%).
+The mesh interface can use (in an homogeneous mesh) network coding, a
+mechanism that aims to increase the overall network throughput by fusing
+multiple packets in one transmission.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the u8 BATADV_ATTR_HOP_PENALTY
-attribute.
+configuration of this feature using the BATADV_ATTR_NETWORK_CODING_ENABLED
+attribute. Setting the u8 to zero will disable this feature and setting it
+to something else is enabling this feature.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+Cc: Martin Hundeboll <martin@hundeboll.net>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Antonio Quartulli <a@unstable.cc>
 ---
- include/uapi/linux/batman_adv.h |  6 ++++++
- net/batman-adv/netlink.c        | 11 +++++++++++
- 2 files changed, 17 insertions(+)
+ include/uapi/linux/batman_adv.h |  7 +++++++
+ net/batman-adv/netlink.c        | 17 +++++++++++++++++
+ 2 files changed, 24 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 165272be..b37cb923 100644
+index 38caaaae..a4239c14 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -443,6 +443,12 @@ enum batadv_nl_attrs {
+@@ -464,6 +464,13 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_GW_SEL_CLASS,
+ 	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
  
 +	/**
-+	 * @BATADV_ATTR_HOP_PENALTY: defines the penalty which will be applied
-+	 *  to an originator message's tq-field on every hop.
++	 * @BATADV_ATTR_NETWORK_CODING_ENABLED: whether Network Coding (using
++	 *  some magic to send fewer wifi packets but still the same content) is
++	 *  enabled or not.
 +	 */
-+	BATADV_ATTR_HOP_PENALTY,
++	BATADV_ATTR_NETWORK_CODING_ENABLED,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 473467af..ce6e6f07 100644
+index 475bd15f..6f01f92e 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -152,6 +152,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_GW_BANDWIDTH_UP]		= { .type = NLA_U32 },
- 	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
- 	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
-+	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
+@@ -55,6 +55,7 @@
+ #include "hard-interface.h"
+ #include "log.h"
+ #include "multicast.h"
++#include "network-coding.h"
+ #include "originator.h"
+ #include "soft-interface.h"
+ #include "tp_meter.h"
+@@ -156,6 +157,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
+ 	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
+ 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
  };
  
  /**
-@@ -330,6 +331,10 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
- 			goto nla_put_failure;
- 	}
+@@ -350,6 +352,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
+ 		goto nla_put_failure;
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
  
-+	if (nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY,
-+		       atomic_read(&bat_priv->hop_penalty)))
++#ifdef CONFIG_BATMAN_ADV_NC
++	if (nla_put_u8(msg, BATADV_ATTR_NETWORK_CODING_ENABLED,
++		       !!atomic_read(&bat_priv->network_coding)))
 +		goto nla_put_failure;
++#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -536,6 +541,12 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
- 		}
+@@ -579,6 +587,15 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
  
-+	if (info->attrs[BATADV_ATTR_HOP_PENALTY]) {
-+		attr = info->attrs[BATADV_ATTR_HOP_PENALTY];
++#ifdef CONFIG_BATMAN_ADV_NC
++	if (info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]) {
++		attr = info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED];
 +
-+		atomic_set(&bat_priv->hop_penalty, nla_get_u8(attr));
++		atomic_set(&bat_priv->network_coding, !!nla_get_u8(attr));
++		batadv_nc_status_update(bat_priv->soft_iface);
 +	}
++#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
