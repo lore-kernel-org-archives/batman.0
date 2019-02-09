@@ -1,12 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  9 Feb 2019 14:42:02 +0100
-Message-Id: <20190209134222.15035-1-sven@narfation.org>
+Date: Sat,  9 Feb 2019 14:42:03 +0100
+Message-Id: <20190209134222.15035-2-sven@narfation.org>
+In-Reply-To: <20190209134222.15035-1-sven@narfation.org>
+References: <20190209134222.15035-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v5 00/20] batctl: netlink restructuring,
- part 3
+Subject: [B.A.T.M.A.N.] [PATCH v5 01/20] batctl: Add support for config
+ mcast group in event monitor
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,103 +19,559 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-As mentioned earlier, the netlink config restructuring in batctl will be
-splitted in multiple steps. The first step was already merged and the
-patch series for the netlink interface in batman-adv was just posted.
+The netlink set netlink messages issued by the config subcommands get as
+reply a multicast message with the new value. The event monitor should show
+these messages similar to the tp_meter results.
 
-The batman-adv weren't directly rejected by Jiro and thus I've started
-to convert all settings to netlink while still allowing sysfs as fallback.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ batman_adv.h | 190 +++++++++++++++++++++++++++++++++++++++--
+ event.c      | 234 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ netlink.c    |  20 +++++
+ 3 files changed, 439 insertions(+), 5 deletions(-)
 
-
-v5:
-===
-
-* dropped attribute BATADV_ATTR_MULTICAST_MODE for multicast_mode and replaced
-  it with (basically inversed) BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED
-* Add _ENABLED Postfix for boolean attributes:
-  
-  -  BATADV_ATTR_AGGREGATED_OGMS_ENABLED
-  -  BATADV_ATTR_AP_ISOLATION_ENABLED
-  -  BATADV_ATTR_BONDING_ENABLED
-  -  BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED
-  -  BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED
-  -  BATADV_ATTR_FRAGMENTATION_ENABLED
-  -  BATADV_ATTR_NETWORK_CODING_ENABLED
-
-v4:
-===
-
-* last patch (which adds the netlink implementation of the settings commands)
-  was splitted in 16 separate patches
-* Cc the (most likely) responsible developers for each setting to more
-  directly ask them for feedback
-
-v3:
-===
-
-* fix kernel-doc in batman_adv.h
-* add three patches to use the netlink interface with the already existing
-  setting commands
-
-v2:
-===
-
-* drop of generic config command
-* reimplementation of the event command
-
-Kind regards,
-	Sven
-
-Sven Eckelmann (20):
-  batctl: Add support for config mcast group in event monitor
-  batctl: Don't allocate new buffer for vlan parent device
-  batctl: Automatically translate vlan to mesh_iface
-  batctl: Add settings_data hooks for netlink integration
-  batctl: Parse the arguments for gw_mode
-  batctl: Add netlink simple query helper
-  batctl: Support generic netlink for gw_mode command
-  batctl: Support generic netlink for loglevel command
-  batctl: Support generic netlink for isolation_mark command
-  batctl: Support generic netlink for orig_interval command
-  batctl: Add helper to read/write boolean configuration values
-  batctl: Support generic netlink for aggregation command
-  batctl: Support generic netlink for ap_isolation command
-  batctl: Support generic netlink for bonding command
-  batctl: Support generic netlink for bridge_loop_avoidance command
-  batctl: Support generic netlink for distributed_arp_table command
-  batctl: Support generic netlink for fragmentation command
-  batctl: Support generic netlink for multicast_mode command
-  batctl: Support generic netlink for network_coding command
-  batctl: Drop settings_data param lists
-
- aggregation.c           |  46 ++++-
- ap_isolation.c          |  68 ++++++-
- batman_adv.h            | 190 +++++++++++++++++-
- bonding.c               |  45 ++++-
- bridge_loop_avoidance.c |  46 ++++-
- distributed_arp_table.c |  46 ++++-
- event.c                 | 234 ++++++++++++++++++++++
- fragmentation.c         |  46 ++++-
- functions.c             | 160 +++++++++++++---
- functions.h             |  23 ++-
- gateways.c              |  10 +-
- gw_mode.c               | 416 +++++++++++++++++++++++++++++++---------
- isolation_mark.c        | 123 +++++++++++-
- loglevel.c              | 138 ++++++++++---
- main.c                  |  10 +-
- main.h                  |   6 +-
- mcast_flags.c           |  10 +-
- multicast_mode.c        |  66 ++++++-
- netlink.c               | 108 ++++++++++-
- netlink.h               |   2 +
- network_coding.c        |  46 ++++-
- orig_interval.c         |  84 +++++++-
- originators.c           |  10 +-
- routing_algo.c          |   1 -
- sys.c                   | 219 ++++++++++++++++-----
- sys.h                   |  25 ++-
- 26 files changed, 1922 insertions(+), 256 deletions(-)
-
+diff --git a/batman_adv.h b/batman_adv.h
+index a28e76a..9b12d2a 100644
+--- a/batman_adv.h
++++ b/batman_adv.h
+@@ -27,6 +27,7 @@
+ 
+ #define BATADV_NL_NAME "batadv"
+ 
++#define BATADV_NL_MCAST_GROUP_CONFIG	"config"
+ #define BATADV_NL_MCAST_GROUP_TPMETER	"tpmeter"
+ 
+ /**
+@@ -138,6 +139,20 @@ enum batadv_mcast_flags_priv {
+ 	BATADV_MCAST_FLAGS_QUERIER_IPV6_SHADOWING	= (1 << 4),
+ };
+ 
++/**
++ * enum batadv_gw_modes - gateway mode of node
++ */
++enum batadv_gw_modes {
++	/** @BATADV_GW_MODE_OFF: gw mode disabled */
++	BATADV_GW_MODE_OFF,
++
++	/** @BATADV_GW_MODE_CLIENT: send DHCP requests to gw servers */
++	BATADV_GW_MODE_CLIENT,
++
++	/** @BATADV_GW_MODE_SERVER: announce itself as gatway server */
++	BATADV_GW_MODE_SERVER,
++};
++
+ /**
+  * enum batadv_nl_attrs - batman-adv netlink attributes
+  */
+@@ -344,6 +359,138 @@ enum batadv_nl_attrs {
+ 	 */
+ 	BATADV_ATTR_MCAST_FLAGS_PRIV,
+ 
++	/**
++	 * @BATADV_ATTR_VLANID: VLAN id on top of soft interface
++	 */
++	BATADV_ATTR_VLANID,
++
++	/**
++	 * @BATADV_ATTR_AGGREGATED_OGMS_ENABLED: whether the batman protocol
++	 *  messages of the mesh interface shall be aggregated or not.
++	 */
++	BATADV_ATTR_AGGREGATED_OGMS_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_AP_ISOLATION_ENABLED: whether the data traffic going
++	 *  from a wireless client to another wireless client will be silently
++	 *  dropped.
++	 */
++	BATADV_ATTR_AP_ISOLATION_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_ISOLATION_MARK: the isolation mark which is used to
++	 *  classify clients as "isolated" by the Extended Isolation feature.
++	 */
++	BATADV_ATTR_ISOLATION_MARK,
++
++	/**
++	 * @BATADV_ATTR_ISOLATION_MASK: the isolation (bit)mask which is used to
++	 *  classify clients as "isolated" by the Extended Isolation feature.
++	 */
++	BATADV_ATTR_ISOLATION_MASK,
++
++	/**
++	 * @BATADV_ATTR_BONDING_ENABLED: whether the data traffic going through
++	 *  the mesh will be sent using multiple interfaces at the same time.
++	 */
++	BATADV_ATTR_BONDING_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED: whether the bridge loop
++	 *  avoidance feature is enabled. This feature detects and avoids loops
++	 *  between the mesh and devices bridged with the soft interface
++	 */
++	BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED: whether the distributed
++	 *  arp table feature is enabled. This feature uses a distributed hash
++	 *  table to answer ARP requests without flooding the request through
++	 *  the whole mesh.
++	 */
++	BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_FRAGMENTATION_ENABLED: whether the data traffic going
++	 *  through the mesh will be fragmented or silently discarded if the
++	 *  packet size exceeds the outgoing interface MTU.
++	 */
++	BATADV_ATTR_FRAGMENTATION_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_GW_BANDWIDTH_DOWN: defines the download bandwidth which
++	 *  is propagated by this node if %BATADV_ATTR_GW_BANDWIDTH_MODE was set
++	 *  to 'server'.
++	 */
++	BATADV_ATTR_GW_BANDWIDTH_DOWN,
++
++	/**
++	 * @BATADV_ATTR_GW_BANDWIDTH_UP: defines the upload bandwidth which
++	 *  is propagated by this node if %BATADV_ATTR_GW_BANDWIDTH_MODE was set
++	 *  to 'server'.
++	 */
++	BATADV_ATTR_GW_BANDWIDTH_UP,
++
++	/**
++	 * @BATADV_ATTR_GW_MODE: defines the state of the gateway features.
++	 * Possible values are specified in enum batadv_gw_modes
++	 */
++	BATADV_ATTR_GW_MODE,
++
++	/**
++	 * @BATADV_ATTR_GW_SEL_CLASS: defines the selection criteria this node
++	 *  will use to choose a gateway if gw_mode was set to 'client'.
++	 */
++	BATADV_ATTR_GW_SEL_CLASS,
++
++	/**
++	 * @BATADV_ATTR_HOP_PENALTY: defines the penalty which will be applied
++	 *  to an originator message's tq-field on every hop.
++	 */
++	BATADV_ATTR_HOP_PENALTY,
++
++	/**
++	 * @BATADV_ATTR_LOG_LEVEL: bitmask with to define which debug messages
++	 *  should be send to the debug log/trace ring buffer
++	 */
++	BATADV_ATTR_LOG_LEVEL,
++
++	/**
++	 * @BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED whether multicast
++	 *  optimizations should be replaced by simple broadcast-like flooding
++	 *  of multicast packets. If set to non-zero then all nodes in the mesh
++	 *  are going to use classic flooding for any multicast packet with no
++	 *  optimizations.
++	 */
++	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_NETWORK_CODING_ENABLED: whether Network Coding (using
++	 *  some magic to send fewer wifi packets but still the same content) is
++	 *  enabled or not.
++	 */
++	BATADV_ATTR_NETWORK_CODING_ENABLED,
++
++	/**
++	 * @BATADV_ATTR_ORIG_INTERVAL: defines the interval in milliseconds in
++	 *  which batman sends its protocol messages.
++	 */
++	BATADV_ATTR_ORIG_INTERVAL,
++
++	/**
++	 * @BATADV_ATTR_ELP_INTERVAL: defines the interval in milliseconds in
++	 *  which batman emits probing packets for neighbor sensing (ELP).
++	 */
++	BATADV_ATTR_ELP_INTERVAL,
++
++	/**
++	 * @BATADV_ATTR_THROUGHPUT_OVERRIDE: defines the throughput value to be
++	 *  used by B.A.T.M.A.N. V when estimating the link throughput using
++	 *  this interface. If the value is set to 0 then batman-adv will try to
++	 *  estimate the throughput by itself.
++	 */
++	BATADV_ATTR_THROUGHPUT_OVERRIDE,
++
+ 	/* add attributes above here, update the policy in netlink.c */
+ 
+ 	/**
+@@ -372,10 +519,14 @@ enum batadv_nl_commands {
+ 	BATADV_CMD_UNSPEC,
+ 
+ 	/**
+-	 * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv
+-	 * device
++	 * @BATADV_CMD_GET_MESH: Get attributes from softif/mesh
++	 */
++	BATADV_CMD_GET_MESH,
++
++	/**
++	 * @BATADV_CMD_GET_MESH_INFO: Alias for @BATADV_CMD_GET_MESH
+ 	 */
+-	BATADV_CMD_GET_MESH_INFO,
++	BATADV_CMD_GET_MESH_INFO = BATADV_CMD_GET_MESH,
+ 
+ 	/**
+ 	 * @BATADV_CMD_TP_METER: Start a tp meter session
+@@ -393,9 +544,15 @@ enum batadv_nl_commands {
+ 	BATADV_CMD_GET_ROUTING_ALGOS,
+ 
+ 	/**
+-	 * @BATADV_CMD_GET_HARDIFS: Query list of hard interfaces
++	 * @BATADV_CMD_GET_HARDIF: Get attributes from a hardif of the
++	 *  current softif
+ 	 */
+-	BATADV_CMD_GET_HARDIFS,
++	BATADV_CMD_GET_HARDIF,
++
++	/**
++	 * @BATADV_CMD_GET_HARDIFS: Alias for @BATADV_CMD_GET_HARDIF
++	 */
++	BATADV_CMD_GET_HARDIFS = BATADV_CMD_GET_HARDIF,
+ 
+ 	/**
+ 	 * @BATADV_CMD_GET_TRANSTABLE_LOCAL: Query list of local translations
+@@ -443,6 +600,29 @@ enum batadv_nl_commands {
+ 	 */
+ 	BATADV_CMD_GET_MCAST_FLAGS,
+ 
++	/**
++	 * @BATADV_CMD_SET_MESH: Set attributes for softif/mesh
++	 */
++	BATADV_CMD_SET_MESH,
++
++	/**
++	 * @BATADV_CMD_SET_HARDIF: Set attributes for hardif of the
++	 *  current softif
++	 */
++	BATADV_CMD_SET_HARDIF,
++
++	/**
++	 * @BATADV_CMD_GET_VLAN: Get attributes from a VLAN of the
++	 *  current softif
++	 */
++	BATADV_CMD_GET_VLAN,
++
++	/**
++	 * @BATADV_CMD_SET_VLAN: Set attributes for VLAN of the
++	 *  current softif
++	 */
++	BATADV_CMD_SET_VLAN,
++
+ 	/* add new commands above here */
+ 
+ 	/**
+diff --git a/event.c b/event.c
+index f5d81c2..62ccf56 100644
+--- a/event.c
++++ b/event.c
+@@ -22,6 +22,7 @@
+ 
+ #include <errno.h>
+ #include <getopt.h>
++#include <net/if.h>
+ #include <netinet/if_ether.h>
+ #include <netlink/netlink.h>
+ #include <netlink/genl/genl.h>
+@@ -51,6 +52,14 @@ struct event_args {
+ 	struct timeval tv;
+ };
+ 
++static const char *u8_to_boolstr(struct nlattr *attrs)
++{
++	if (nla_get_u8(attrs))
++		return "true";
++	else
++		return "false";
++}
++
+ static void event_usage(void)
+ {
+ 	fprintf(stderr, "Usage: batctl [options] event [parameters]\n");
+@@ -87,6 +96,25 @@ static int event_prepare(struct state *state)
+ 
+ skip_tp_meter:
+ 
++	mcid = nl_get_multicast_id(state->sock, BATADV_NL_NAME,
++				   BATADV_NL_MCAST_GROUP_CONFIG);
++	if (mcid < 0) {
++		fprintf(stderr, "Failed to resolve batadv config multicast group: %d\n",
++			mcid);
++		/* ignore error for now */
++		goto skip_config;
++	}
++
++	ret = nl_socket_add_membership(state->sock, mcid);
++	if (ret) {
++		fprintf(stderr, "Failed to join batadv config multicast group: %d\n",
++			ret);
++		/* ignore error for now */
++		goto skip_config;
++	}
++
++skip_config:
++
+ 	return 0;
+ }
+ 
+@@ -145,6 +173,203 @@ static void event_parse_tp_meter(struct nlattr **attrs)
+ 	printf("tp_meter 0x%08x: %s\n", cookie, result_str);
+ }
+ 
++static void event_parse_set_mesh(struct nlattr **attrs)
++{
++	static const int mesh_mandatory[] = {
++		BATADV_ATTR_MESH_IFINDEX,
++		BATADV_ATTR_ALGO_NAME,
++	};
++	char meshif_buf[IF_NAMESIZE];
++	char *meshif_name;
++	uint32_t mesh_ifindex;
++
++	/* ignore entry when attributes are missing */
++	if (missing_mandatory_attrs(attrs, mesh_mandatory,
++				    ARRAY_SIZE(mesh_mandatory)))
++		return;
++
++	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
++	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
++	if (!meshif_name)
++		return;
++
++	printf("%s: set mesh:\n", meshif_name);
++
++	if (attrs[BATADV_ATTR_AGGREGATED_OGMS_ENABLED])
++		printf("* aggregated_ogms %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_AGGREGATED_OGMS_ENABLED]));
++
++	if (attrs[BATADV_ATTR_AP_ISOLATION_ENABLED])
++		printf("* ap_isolation %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_AP_ISOLATION_ENABLED]));
++
++	if (attrs[BATADV_ATTR_ISOLATION_MARK])
++		printf("* isolation_mark 0x%08x\n",
++		       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MARK]));
++
++	if (attrs[BATADV_ATTR_ISOLATION_MASK])
++		printf("* isolation_mask 0x%08x\n",
++		       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MASK]));
++
++	if (attrs[BATADV_ATTR_BONDING_ENABLED])
++		printf("* bonding %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_BONDING_ENABLED]));
++
++	if (attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED])
++		printf("* bridge_loop_avoidance %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]));
++
++	if (attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED])
++		printf("* distributed_arp_table %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]));
++
++	if (attrs[BATADV_ATTR_FRAGMENTATION_ENABLED])
++		printf("* fragmentation %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_FRAGMENTATION_ENABLED]));
++
++	if (attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]) {
++		uint32_t val;
++
++		val = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]);
++		printf("* gw_bandwidth_down %u.%01u MBit/s\n", val / 10,
++		       val % 10);
++	}
++
++	if (attrs[BATADV_ATTR_GW_BANDWIDTH_UP]) {
++		uint32_t val;
++
++		val = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_UP]);
++		printf("* gw_bandwidth_up %u.%01u MBit/s\n", val / 10,
++		       val % 10);
++	}
++
++	if (attrs[BATADV_ATTR_GW_MODE]) {
++		uint8_t val = nla_get_u8(attrs[BATADV_ATTR_GW_MODE]);
++		const char *valstr;
++
++		switch (val) {
++		case BATADV_GW_MODE_OFF:
++			valstr = "off";
++			break;
++		case BATADV_GW_MODE_CLIENT:
++			valstr = "client";
++			break;
++		case BATADV_GW_MODE_SERVER:
++			valstr = "server";
++			break;
++		default:
++			valstr = "unknown";
++			break;
++		}
++
++		printf("* gw_mode %s\n", valstr);
++	}
++
++	if (attrs[BATADV_ATTR_GW_SEL_CLASS]) {
++		uint32_t val = nla_get_u32(attrs[BATADV_ATTR_GW_SEL_CLASS]);
++		const char *algo = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
++
++		if (strcmp(algo, "BATMAN_V") == 0)
++			printf("* gw_sel_class %u.%01u MBit/s\n", val / 10,
++			       val % 10);
++		else
++			printf("* gw_sel_class %u\n", val);
++	}
++
++	if (attrs[BATADV_ATTR_HOP_PENALTY])
++		printf("* hop_penalty %u\n",
++		       nla_get_u8(attrs[BATADV_ATTR_HOP_PENALTY]));
++
++	if (attrs[BATADV_ATTR_LOG_LEVEL])
++		printf("* log_level 0x%08x\n",
++		       nla_get_u32(attrs[BATADV_ATTR_LOG_LEVEL]));
++
++	if (attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
++		printf("* multicast_forceflood %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));
++
++	if (attrs[BATADV_ATTR_NETWORK_CODING_ENABLED])
++		printf("* network_coding %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]));
++
++	if (attrs[BATADV_ATTR_ORIG_INTERVAL])
++		printf("* orig_interval %u ms\n",
++		       nla_get_u32(attrs[BATADV_ATTR_ORIG_INTERVAL]));
++}
++
++static void event_parse_set_hardif(struct nlattr **attrs)
++{
++	static const int hardif_mandatory[] = {
++		BATADV_ATTR_MESH_IFINDEX,
++		BATADV_ATTR_HARD_IFINDEX,
++	};
++	char meshif_buf[IF_NAMESIZE];
++	char hardif_buf[IF_NAMESIZE];
++	char *meshif_name;
++	char *hardif_name;
++	uint32_t hardif_ifindex;
++	uint32_t mesh_ifindex;
++
++	/* ignore entry when attributes are missing */
++	if (missing_mandatory_attrs(attrs, hardif_mandatory,
++				    ARRAY_SIZE(hardif_mandatory)))
++		return;
++
++	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
++	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
++	if (!meshif_name)
++		return;
++
++	hardif_ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
++	hardif_name = if_indextoname(hardif_ifindex, hardif_buf);
++	if (!hardif_name)
++		return;
++
++	printf("%s (%s): set hardif:\n", meshif_name, hardif_name);
++
++	if (attrs[BATADV_ATTR_ELP_INTERVAL])
++		printf("* elp_interval %u ms\n",
++		       nla_get_u32(attrs[BATADV_ATTR_ELP_INTERVAL]));
++
++	if (attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]) {
++		uint32_t val;
++
++		val = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]);
++		printf("* throughput_override %u.%01u MBit/s\n", val / 10,
++		       val % 10);
++	}
++}
++
++static void event_parse_set_vlan(struct nlattr **attrs)
++{
++	static const int vlan_mandatory[] = {
++		BATADV_ATTR_MESH_IFINDEX,
++		BATADV_ATTR_VLANID,
++	};
++	char meshif_buf[IF_NAMESIZE];
++	char *meshif_name;
++	uint32_t mesh_ifindex;
++	uint16_t vid;
++
++	/* ignore entry when attributes are missing */
++	if (missing_mandatory_attrs(attrs, vlan_mandatory,
++				    ARRAY_SIZE(vlan_mandatory)))
++		return;
++
++	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
++	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
++	if (!meshif_name)
++		return;
++
++	vid = nla_get_u16(attrs[BATADV_ATTR_VLANID]);
++
++	printf("%s (vid %u): set vlan:\n", meshif_name, vid);
++
++	if (attrs[BATADV_ATTR_AP_ISOLATION_ENABLED])
++		printf("* ap_isolation %s\n",
++		       u8_to_boolstr(attrs[BATADV_ATTR_AP_ISOLATION_ENABLED]));
++}
++
+ static unsigned long long get_timestamp(struct event_args *event_args)
+ {
+ 	unsigned long long prevtime = 0;
+@@ -190,6 +415,15 @@ static int event_parse(struct nl_msg *msg, void *arg)
+ 	case BATADV_CMD_TP_METER:
+ 		event_parse_tp_meter(attrs);
+ 		break;
++	case BATADV_CMD_SET_MESH:
++		event_parse_set_mesh(attrs);
++		break;
++	case BATADV_CMD_SET_HARDIF:
++		event_parse_set_hardif(attrs);
++		break;
++	case BATADV_CMD_SET_VLAN:
++		event_parse_set_vlan(attrs);
++		break;
+ 	default:
+ 		printf("Received unknown event %u\n", ghdr->cmd);
+ 		break;
+diff --git a/netlink.c b/netlink.c
+index 4d1a3bf..abd3316 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -107,6 +107,26 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_DAT_CACHE_VID]		= { .type = NLA_U16 },
+ 	[BATADV_ATTR_MCAST_FLAGS]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_MCAST_FLAGS_PRIV]		= { .type = NLA_U32 },
++	[BATADV_ATTR_VLANID]			= { .type = NLA_U16 },
++	[BATADV_ATTR_AGGREGATED_OGMS_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_AP_ISOLATION_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_ISOLATION_MARK]		= { .type = NLA_U32 },
++	[BATADV_ATTR_ISOLATION_MASK]		= { .type = NLA_U32 },
++	[BATADV_ATTR_BONDING_ENABLED]		= { .type = NLA_U8 },
++	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_FRAGMENTATION_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_GW_BANDWIDTH_DOWN]		= { .type = NLA_U32 },
++	[BATADV_ATTR_GW_BANDWIDTH_UP]		= { .type = NLA_U32 },
++	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
++	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
++	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
++	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
++	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
++	[BATADV_ATTR_ELP_INTERVAL]		= { .type = NLA_U32 },
++	[BATADV_ATTR_THROUGHPUT_OVERRIDE]	= { .type = NLA_U32 },
+ };
+ 
+ int netlink_create(struct state *state)
 -- 
 2.20.1
 
