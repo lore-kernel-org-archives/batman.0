@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  9 Feb 2019 14:42:21 +0100
-Message-Id: <20190209134222.15035-20-sven@narfation.org>
+Date: Sat,  9 Feb 2019 14:42:22 +0100
+Message-Id: <20190209134222.15035-21-sven@narfation.org>
 In-Reply-To: <20190209134222.15035-1-sven@narfation.org>
 References: <20190209134222.15035-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v5 19/20] batctl: Support generic netlink for
- network_coding command
+Subject: [B.A.T.M.A.N.] [PATCH v5 20/20] batctl: Drop settings_data param
+ lists
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,87 +18,94 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Martin Hundeboll <martin@hundeboll.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-sysfs should be avoided for new settings of network interfaces. To still
-provide a common configuration infrastructure, all the existing settings
-subcommands also have to be reimplemented via generic netlink while still
-using sysfs as fallback.
-
-The network_coding implementation is using the commands
-BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of
-the u8 (boolean) BATADV_ATTR_NETWORK_CODING_ENABLED attribute.
+The parsing and validation of the settings command parameters is handled by
+the parse function. The params struct member is therefore no longer used
+and can just be dropped.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Martin Hundeboll <martin@hundeboll.net>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
----
- network_coding.c | 46 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 44 insertions(+), 2 deletions(-)
+ sys.c | 32 --------------------------------
+ sys.h |  3 ---
+ 2 files changed, 35 deletions(-)
 
-diff --git a/network_coding.c b/network_coding.c
-index f4f184b..01d7515 100644
---- a/network_coding.c
-+++ b/network_coding.c
-@@ -21,13 +21,55 @@
-  */
+diff --git a/sys.c b/sys.c
+index 26c191d..9a7966f 100644
+--- a/sys.c
++++ b/sys.c
+@@ -39,14 +39,6 @@
+ #include "functions.h"
+ #include "debug.h"
  
- #include "main.h"
-+
-+#include <errno.h>
-+#include <linux/genetlink.h>
-+#include <netlink/genl/genl.h>
-+
-+#include "batman_adv.h"
-+#include "netlink.h"
- #include "sys.h"
+-const char *sysfs_param_enable[] = {
+-	"enable",
+-	"disable",
+-	"1",
+-	"0",
+-	NULL,
+-};
+-
+ int parse_simple_boolean(struct state *state, int argc, char *argv[])
+ {
+ 	struct settings_data *settings = state->cmd->arg;
+@@ -216,7 +208,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 	struct settings_data *settings = state->cmd->arg;
+ 	int optchar, res = EXIT_FAILURE;
+ 	char *path_buff;
+-	const char **ptr;
  
-+static struct simple_boolean_data network_coding;
-+
-+static int print_network_coding(struct nl_msg *msg, void *arg)
-+{
-+	return sys_simple_print_boolean(msg, arg,
-+					BATADV_ATTR_NETWORK_CODING_ENABLED);
-+}
-+
-+static int get_network_coding(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_network_coding);
-+}
-+
-+static int set_attrs_network_coding(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct simple_boolean_data *data = settings->data;
-+
-+	nla_put_u8(msg, BATADV_ATTR_NETWORK_CODING_ENABLED, data->val);
-+
-+	return 0;
-+}
-+
-+static int set_network_coding(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_network_coding, NULL);
-+}
-+
- static struct settings_data batctl_settings_network_coding = {
- 	.sysfs_name = "network_coding",
--	.params = sysfs_param_enable,
-+	.data = &network_coding,
-+	.parse = parse_simple_boolean,
-+	.netlink_get = get_network_coding,
-+	.netlink_set = set_network_coding,
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+ 		switch (optchar) {
+@@ -261,29 +252,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 		}
+ 	}
+ 
+-	if (!settings->params)
+-		goto write_file;
+-
+-	ptr = settings->params;
+-	while (*ptr) {
+-		if (strcmp(*ptr, argv[1]) == 0)
+-			goto write_file;
+-
+-		ptr++;
+-	}
+-
+-	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+-	fprintf(stderr, "The following values are allowed:\n");
+-
+-	ptr = settings->params;
+-	while (*ptr) {
+-		fprintf(stderr, " * %s\n", *ptr);
+-		ptr++;
+-	}
+-
+-	goto out;
+-
+-write_file:
+ 	res = sys_write_setting(state, path_buff, settings->sysfs_name, argc,
+ 				argv);
+ 
+diff --git a/sys.h b/sys.h
+index 5d0ff1e..50f82e0 100644
+--- a/sys.h
++++ b/sys.h
+@@ -43,15 +43,12 @@
+ 
+ struct settings_data {
+ 	const char *sysfs_name;
+-	const char **params;
+ 	void *data;
+ 	int (*parse)(struct state *state, int argc, char *argv[]);
+ 	int (*netlink_get)(struct state *state);
+ 	int (*netlink_set)(struct state *state);
  };
  
- COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_network_coding,
- 	      "[0|1]             \tdisplay or modify network_coding setting");
+-extern const char *sysfs_param_enable[];
+-
+ struct simple_boolean_data {
+ 	bool val;
+ };
 -- 
 2.20.1
 
