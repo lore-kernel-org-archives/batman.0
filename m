@@ -1,13 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  9 Feb 2019 14:41:09 +0100
-Message-Id: <20190209134109.14908-20-sven@narfation.org>
-In-Reply-To: <20190209134109.14908-1-sven@narfation.org>
-References: <20190209134109.14908-1-sven@narfation.org>
+Date: Sat,  9 Feb 2019 14:42:02 +0100
+Message-Id: <20190209134222.15035-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v5 19/19] batman-adv: Trigger genl
- notification on sysfs config change
+Subject: [B.A.T.M.A.N.] [PATCH v5 00/20] batctl: netlink restructuring,
+ part 3
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,236 +18,103 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The generic netlink code is expected to trigger notification messages when
-configuration might have been changed. But the configuration of batman-adv
-is most of the time still done using sysfs. So the sysfs interface should
-also trigger the corresponding netlink messages via the "config" multicast
-group.
+As mentioned earlier, the netlink config restructuring in batctl will be
+splitted in multiple steps. The first step was already merged and the
+patch series for the netlink interface in batman-adv was just posted.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/netlink.c | 10 +++----
- net/batman-adv/netlink.h |  6 ++++
- net/batman-adv/sysfs.c   | 63 +++++++++++++++++++++++++++++++++-------
- 3 files changed, 63 insertions(+), 16 deletions(-)
+The batman-adv weren't directly rejected by Jiro and thus I've started
+to convert all settings to netlink while still allowing sysfs as fallback.
 
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 476b4c60..67a58da2 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -385,7 +385,7 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
-  *
-  * Return: 0 on success, < 0 on error
-  */
--static int batadv_netlink_notify_mesh(struct batadv_priv *bat_priv)
-+int batadv_netlink_notify_mesh(struct batadv_priv *bat_priv)
- {
- 	struct sk_buff *msg;
- 	int ret;
-@@ -852,8 +852,8 @@ static int batadv_netlink_hardif_fill(struct sk_buff *msg,
-  *
-  * Return: 0 on success, < 0 on error
-  */
--static int batadv_netlink_notify_hardif(struct batadv_priv *bat_priv,
--					struct batadv_hard_iface *hard_iface)
-+int batadv_netlink_notify_hardif(struct batadv_priv *bat_priv,
-+				 struct batadv_hard_iface *hard_iface)
- {
- 	struct sk_buff *msg;
- 	int ret;
-@@ -1057,8 +1057,8 @@ static int batadv_netlink_vlan_fill(struct sk_buff *msg,
-  *
-  * Return: 0 on success, < 0 on error
-  */
--static int batadv_netlink_notify_vlan(struct batadv_priv *bat_priv,
--				      struct batadv_softif_vlan *vlan)
-+int batadv_netlink_notify_vlan(struct batadv_priv *bat_priv,
-+			       struct batadv_softif_vlan *vlan)
- {
- 	struct sk_buff *msg;
- 	int ret;
-diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
-index 216484b8..72733685 100644
---- a/net/batman-adv/netlink.h
-+++ b/net/batman-adv/netlink.h
-@@ -34,6 +34,12 @@ int batadv_netlink_tpmeter_notify(struct batadv_priv *bat_priv, const u8 *dst,
- 				  u8 result, u32 test_time, u64 total_bytes,
- 				  u32 cookie);
- 
-+int batadv_netlink_notify_mesh(struct batadv_priv *bat_priv);
-+int batadv_netlink_notify_hardif(struct batadv_priv *bat_priv,
-+				 struct batadv_hard_iface *hard_iface);
-+int batadv_netlink_notify_vlan(struct batadv_priv *bat_priv,
-+			       struct batadv_softif_vlan *vlan);
-+
- extern struct genl_family batadv_netlink_family;
- 
- #endif /* _NET_BATMAN_ADV_NETLINK_H_ */
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 64fd5932..0b4b3fb7 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -48,6 +48,7 @@
- #include "gateway_common.h"
- #include "hard-interface.h"
- #include "log.h"
-+#include "netlink.h"
- #include "network-coding.h"
- #include "soft-interface.h"
- 
-@@ -154,9 +155,14 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- {									\
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
- 	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
-+	ssize_t length;							\
-+									\
-+	length = __batadv_store_bool_attr(buff, count, _post_func, attr,\
-+					  &bat_priv->_name, net_dev);	\
- 									\
--	return __batadv_store_bool_attr(buff, count, _post_func, attr,	\
--					&bat_priv->_name, net_dev);	\
-+	batadv_netlink_notify_mesh(bat_priv);				\
-+									\
-+	return length;							\
- }
- 
- #define BATADV_ATTR_SIF_SHOW_BOOL(_name)				\
-@@ -186,11 +192,16 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- {									\
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
- 	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
-+	ssize_t length;							\
- 									\
--	return __batadv_store_uint_attr(buff, count, _min, _max,	\
--					_post_func, attr,		\
--					&bat_priv->_var, net_dev,	\
--					NULL);	\
-+	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
-+					  _post_func, attr,		\
-+					  &bat_priv->_var, net_dev,	\
-+					  NULL);			\
-+									\
-+	batadv_netlink_notify_mesh(bat_priv);				\
-+									\
-+	return length;							\
- }
- 
- #define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
-@@ -223,6 +234,11 @@ ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
- 					      attr, &vlan->_name,	\
- 					      bat_priv->soft_iface);	\
- 									\
-+	if (vlan->vid)							\
-+		batadv_netlink_notify_vlan(bat_priv, vlan);		\
-+	else								\
-+		batadv_netlink_notify_mesh(bat_priv);			\
-+									\
- 	batadv_softif_vlan_put(vlan);					\
- 	return res;							\
- }
-@@ -256,6 +272,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- {									\
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
- 	struct batadv_hard_iface *hard_iface;				\
-+	struct batadv_priv *bat_priv;					\
- 	ssize_t length;							\
- 									\
- 	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
-@@ -268,6 +285,11 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 					  hard_iface->soft_iface,	\
- 					  net_dev);			\
- 									\
-+	if (hard_iface->soft_iface) {					\
-+		bat_priv = netdev_priv(hard_iface->soft_iface);		\
-+		batadv_netlink_notify_hardif(bat_priv, hard_iface);	\
-+	}								\
-+									\
- 	batadv_hardif_put(hard_iface);				\
- 	return length;							\
- }
-@@ -537,6 +559,9 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	batadv_gw_check_client_stop(bat_priv);
- 	atomic_set(&bat_priv->gw.mode, (unsigned int)gw_mode_tmp);
- 	batadv_gw_tvlv_container_update(bat_priv);
-+
-+	batadv_netlink_notify_mesh(bat_priv);
-+
- 	return count;
- }
- 
-@@ -563,6 +588,7 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- 					 size_t count)
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
-+	ssize_t length;
- 
- 	/* setting the GW selection class is allowed only if the routing
- 	 * algorithm in use implements the GW API
-@@ -578,10 +604,14 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- 		return bat_priv->algo_ops->gw.store_sel_class(bat_priv, buff,
- 							      count);
- 
--	return __batadv_store_uint_attr(buff, count, 1, BATADV_TQ_MAX_VALUE,
--					batadv_post_gw_reselect, attr,
--					&bat_priv->gw.sel_class,
--					bat_priv->soft_iface, NULL);
-+	length = __batadv_store_uint_attr(buff, count, 1, BATADV_TQ_MAX_VALUE,
-+					  batadv_post_gw_reselect, attr,
-+					  &bat_priv->gw.sel_class,
-+					  bat_priv->soft_iface, NULL);
-+
-+	batadv_netlink_notify_mesh(bat_priv);
-+
-+	return length;
- }
- 
- static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
-@@ -601,12 +631,18 @@ static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
- 				      struct attribute *attr, char *buff,
- 				      size_t count)
- {
-+	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
-+	ssize_t length;
- 
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
--	return batadv_gw_bandwidth_set(net_dev, buff, count);
-+	length = batadv_gw_bandwidth_set(net_dev, buff, count);
-+
-+	batadv_netlink_notify_mesh(bat_priv);
-+
-+	return length;
- }
- 
- /**
-@@ -674,6 +710,8 @@ static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
- 		    "New skb mark for extended isolation: %#.8x/%#.8x\n",
- 		    bat_priv->isolation_mark, bat_priv->isolation_mark_mask);
- 
-+	batadv_netlink_notify_mesh(bat_priv);
-+
- 	return count;
- }
- 
-@@ -1078,6 +1116,7 @@ static ssize_t batadv_store_throughput_override(struct kobject *kobj,
- 						struct attribute *attr,
- 						char *buff, size_t count)
- {
-+	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
- 	struct batadv_hard_iface *hard_iface;
- 	u32 tp_override;
-@@ -1108,6 +1147,8 @@ static ssize_t batadv_store_throughput_override(struct kobject *kobj,
- 
- 	atomic_set(&hard_iface->bat_v.throughput_override, tp_override);
- 
-+	batadv_netlink_notify_hardif(bat_priv, hard_iface);
-+
- out:
- 	batadv_hardif_put(hard_iface);
- 	return count;
+
+v5:
+===
+
+* dropped attribute BATADV_ATTR_MULTICAST_MODE for multicast_mode and replaced
+  it with (basically inversed) BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED
+* Add _ENABLED Postfix for boolean attributes:
+  
+  -  BATADV_ATTR_AGGREGATED_OGMS_ENABLED
+  -  BATADV_ATTR_AP_ISOLATION_ENABLED
+  -  BATADV_ATTR_BONDING_ENABLED
+  -  BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED
+  -  BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED
+  -  BATADV_ATTR_FRAGMENTATION_ENABLED
+  -  BATADV_ATTR_NETWORK_CODING_ENABLED
+
+v4:
+===
+
+* last patch (which adds the netlink implementation of the settings commands)
+  was splitted in 16 separate patches
+* Cc the (most likely) responsible developers for each setting to more
+  directly ask them for feedback
+
+v3:
+===
+
+* fix kernel-doc in batman_adv.h
+* add three patches to use the netlink interface with the already existing
+  setting commands
+
+v2:
+===
+
+* drop of generic config command
+* reimplementation of the event command
+
+Kind regards,
+	Sven
+
+Sven Eckelmann (20):
+  batctl: Add support for config mcast group in event monitor
+  batctl: Don't allocate new buffer for vlan parent device
+  batctl: Automatically translate vlan to mesh_iface
+  batctl: Add settings_data hooks for netlink integration
+  batctl: Parse the arguments for gw_mode
+  batctl: Add netlink simple query helper
+  batctl: Support generic netlink for gw_mode command
+  batctl: Support generic netlink for loglevel command
+  batctl: Support generic netlink for isolation_mark command
+  batctl: Support generic netlink for orig_interval command
+  batctl: Add helper to read/write boolean configuration values
+  batctl: Support generic netlink for aggregation command
+  batctl: Support generic netlink for ap_isolation command
+  batctl: Support generic netlink for bonding command
+  batctl: Support generic netlink for bridge_loop_avoidance command
+  batctl: Support generic netlink for distributed_arp_table command
+  batctl: Support generic netlink for fragmentation command
+  batctl: Support generic netlink for multicast_mode command
+  batctl: Support generic netlink for network_coding command
+  batctl: Drop settings_data param lists
+
+ aggregation.c           |  46 ++++-
+ ap_isolation.c          |  68 ++++++-
+ batman_adv.h            | 190 +++++++++++++++++-
+ bonding.c               |  45 ++++-
+ bridge_loop_avoidance.c |  46 ++++-
+ distributed_arp_table.c |  46 ++++-
+ event.c                 | 234 ++++++++++++++++++++++
+ fragmentation.c         |  46 ++++-
+ functions.c             | 160 +++++++++++++---
+ functions.h             |  23 ++-
+ gateways.c              |  10 +-
+ gw_mode.c               | 416 +++++++++++++++++++++++++++++++---------
+ isolation_mark.c        | 123 +++++++++++-
+ loglevel.c              | 138 ++++++++++---
+ main.c                  |  10 +-
+ main.h                  |   6 +-
+ mcast_flags.c           |  10 +-
+ multicast_mode.c        |  66 ++++++-
+ netlink.c               | 108 ++++++++++-
+ netlink.h               |   2 +
+ network_coding.c        |  46 ++++-
+ orig_interval.c         |  84 +++++++-
+ originators.c           |  10 +-
+ routing_algo.c          |   1 -
+ sys.c                   | 219 ++++++++++++++++-----
+ sys.h                   |  25 ++-
+ 26 files changed, 1922 insertions(+), 256 deletions(-)
+
 -- 
 2.20.1
 
