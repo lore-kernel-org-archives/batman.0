@@ -1,13 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 10 Feb 2019 19:50:14 +0800
-Message-ID: <2066898.20yZjQT5U2@rousseau>
-In-Reply-To: <2472562.MHgaaGEVWG@sven-edge>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 10 Feb 2019 16:09:59 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20190210150959.GD1477@otheros>
 References: <20190111210208.29139-1-linus.luessing@c0d3.blue>
- <2472562.MHgaaGEVWG@sven-edge>
+ <3604216.NcQoz811mF@rousseau>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3379546.c2uJRL0TkL";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3604216.NcQoz811mF@rousseau>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Increase purge timeout on
  DAT DHT candidates
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,67 +20,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, a@unstable.cc
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3379546.c2uJRL0TkL
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi Marek,
 
-Hi,
+Thanks for your feedback!
 
-> > With this patch the purge timeout for local DAT cache entries and
-> > entries submitted via a DHT_PUT message is differentiated:
-> >=20
-> > While the former stays at 5min. the latter is increased to 30min. Which
-> > decreases the rate of broadcasted ARP Requests.
-> >=20
-> > Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
->=20
-> @Marek, if I remember correctly, you had some issues [1] with this approa=
-ch.
-> Could you please check again
+On Sun, Feb 10, 2019 at 07:59:59PM +0800, Marek Lindner wrote:
+> On Saturday, 12 January 2019 05:02:08 HKT Linus Lüssing wrote:
+> > Some old investigations and analysis seemed to indicate a potential
+> > reduction of 91.71% of unanswered ARP Requests (45min: 97.95%, 60min:
+> > 98.95%):
+> 
+> Does this reduction apply to this patch specifically or to the DHCPACK 
+> snooping or both ? Has this patch been tested ?
 
-Sven, thanks for pointing this out. Antonio and I had to refresh our memori=
-es=20
-on these matters since the previously rejected patch had aged 6 months by n=
-ow.
+The DHCPACK snooping part should reduce the broadcasted ARP Requests that
+were answered. Which is the 12.881% DAT BCAST part in the link.
 
-The conclusion is this:
-* The old patch was rejected because it was tied to IP/MAC address=20
-combinations snooped via DHCP only (!). The magic happens inside=20
-batadv_dat_put_pairs() which was called via the DHCP snooping path. When=20
-comparing the old and new patch be careful as batadv_dat_put_pairs() has be=
-en=20
-renamed to batadv_dat_put_dhcp().=20
-With the new patch that DHCP dependency is no longer present. The way to go!
-* The old patch also introduced flags being sent around which wasn't all th=
-at=20
-necessary. This is also gone -> green light++
-
-I'll comment on the patch itself for further simplifications.
-
-Cheers,
-Marek
-
---nextPart3379546.c2uJRL0TkL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlxgD/YACgkQU1VOj+62
-HMClsgf9Eg4RoFjhjIOYlAGhnfe2VsRE3yECSiJHIdcwWTFiSbp92VQooSvqc9Xh
-zz2zyqYS0juqJrmokkCtTUnUOkRTUsqB0uHYjqdPArZi4sCT9YKt9jj5JudJse6g
-xSyoUA8YdyjwvxPZytv78g0BCZXZbpQut1SEk5XkViwsrfW7jGPnI4WgNAimamDN
-MWyY1nIltNjQ5mc9c4xLQDuPps9M886QNHsI6KlZp6Btuyse5BojiZUku0ph/sMz
-3DmZ9MzzsvQ+adTpxMjB7kufqE+jdNm0NvqTQT67D+L8UtHO/66ZUaQve1kreryL
-jd+TqzKP59lZAYCyscMHc2ilQZGZDA==
-=ehxS
------END PGP SIGNATURE-----
-
---nextPart3379546.c2uJRL0TkL--
+For the unanswered ARP Requests I do not expect any reduction from
+the DHCPACK snooping part. If the client device is gone than there
+will be no more DHCPACKs to refresh entries either.
 
 
+This patch however targets the unanswered ARP Requests. So even if
+the client is gone, we will then still respond with the value
+stored in the DHT, without falling back to broadcasting.
 
+
+I haven't tested these two patches in the network I had performed
+the initial measurements and calculations in back then. But the
+DHCPACKs patch was applied and tested on gateways at Freifunk
+Darmstadt. And for this patch here I had tested in VMs that the
+DHT-PUT entry stayed for longer than the previous 5 minutes.
+
+> 
+> > 
+> > https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
+> > 
+> > This patch is rebased on top of:
+> > 
+> > "batman-adv: DHCP snooping for DAT"
+> 
+> That patch is now called "batman-adv: Snoop DHCPACKs for DAT" and has been 
+> merged ?
+
+Correct.
+
+> 
+> 
+> > @@ -152,7 +152,9 @@ static void batadv_dat_entry_put(struct batadv_dat_entry
+> > *dat_entry) static bool batadv_dat_to_purge(struct batadv_dat_entry
+> > *dat_entry) {
+> >  	return batadv_has_timed_out(dat_entry->last_update,
+> > -				    BATADV_DAT_ENTRY_TIMEOUT);
+> > +				    BATADV_DAT_ENTRY_TIMEOUT) &&
+> > +	       batadv_has_timed_out(dat_entry->last_dht_update,
+> > +				    BATADV_DAT_DHT_TIMEOUT);
+> >  }
+> 
+> This bit could be further simplified. Introducing 2 timeout fields is a bit 
+> misleading since there only are 2 cases:
+> 
+> * last_update is updated (or not) while last_dht_update is/remains 0
+> * last_update and last_dht_update have the same value
+> 
+> Why not turn last_dht_update into a bool and apply the timeout length based on 
+> that bool. Something like:
+> 
+> if (is_global_entry)
+>    return batadv_has_timed_out(dat_entry->last_update,
+> BATADV_DAT_DHT_TIMEOUT);
+> else
+>    return batadv_has_timed_out(dat_entry->last_update,
+> BATADV_DAT_ENTRY_TIMEOUT));
+
+Good idea, thanks!
+
+> Furthermore, don't jiffies overflow at some point on some architectures ? 
+> Initializing a jiffies field with 0 appears error-prone.
+
+Hm, good point. Assuming 32bit and 1 jiffy = 1ms it would overflow
+every 49 days (2^32/1000/60/60/24). The time_before() macros
+should accomodate for that (as long as the value to compare with
+is < 49/2 days apart?). However you are right, the 0 value would
+probably lead to faulty results for 49/2 days then...
+
+Anyway, removing that new timeout thing should fix it, as
+last_update is always initialized with "jiffies".
+
+Regards, Linus
