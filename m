@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  9 Feb 2019 14:42:20 +0100
-Message-Id: <20190209134222.15035-19-sven@narfation.org>
-In-Reply-To: <20190209134222.15035-1-sven@narfation.org>
-References: <20190209134222.15035-1-sven@narfation.org>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 10 Feb 2019 19:59:59 +0800
+Message-ID: <3604216.NcQoz811mF@rousseau>
+In-Reply-To: <20190111210208.29139-1-linus.luessing@c0d3.blue>
+References: <20190111210208.29139-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v5 18/20] batctl: Support generic netlink for
- multicast_mode command
+Content-Type: multipart/signed; boundary="nextPart14243350.uFGr5DfqaX";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Increase purge timeout on
+ DAT DHT candidates
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,105 +20,84 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-sysfs should be avoided for new settings of network interfaces. To still
-provide a common configuration infrastructure, all the existing settings
-subcommands also have to be reimplemented via generic netlink while still
-using sysfs as fallback.
+--nextPart14243350.uFGr5DfqaX
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-The multicast_mode implementation is using the commands
-BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH to set/get the configuration of the
-u8 (boolean) BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED attribute and print
-its reverse as multicast_mode.
+On Saturday, 12 January 2019 05:02:08 HKT Linus L=FCssing wrote:
+> Some old investigations and analysis seemed to indicate a potential
+> reduction of 91.71% of unanswered ARP Requests (45min: 97.95%, 60min:
+> 98.95%):
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Cc: Linus Lüssing <linus.luessing@c0d3.blue>
----
- multicast_mode.c | 66 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 64 insertions(+), 2 deletions(-)
+Does this reduction apply to this patch specifically or to the DHCPACK=20
+snooping or both ? Has this patch been tested ?
 
-diff --git a/multicast_mode.c b/multicast_mode.c
-index 1c56faa..836a744 100644
---- a/multicast_mode.c
-+++ b/multicast_mode.c
-@@ -21,13 +21,75 @@
-  */
- 
- #include "main.h"
-+
-+#include <errno.h>
-+#include <linux/genetlink.h>
-+#include <netlink/genl/genl.h>
-+
-+#include "batman_adv.h"
-+#include "netlink.h"
- #include "sys.h"
- 
-+static struct simple_boolean_data multicast_mode;
-+
-+static int print_multicast_mode(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct genlmsghdr *ghdr;
-+	int *result = arg;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (!attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
-+		return NL_OK;
-+
-+	printf("%s\n", !nla_get_u8(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) ? "enabled" : "disabled");
-+
-+	*result = 0;
-+	return NL_STOP;
-+}
-+
-+static int get_multicast_mode(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_multicast_mode);
-+}
-+
-+static int set_attrs_multicast_mode(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct simple_boolean_data *data = settings->data;
-+
-+	nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, !data->val);
-+
-+	return 0;
-+}
-+
-+static int set_multicast_mode(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_multicast_mode, NULL);
-+}
-+
- static struct settings_data batctl_settings_multicast_mode = {
- 	.sysfs_name = "multicast_mode",
--	.params = sysfs_param_enable,
-+	.data = &multicast_mode,
-+	.parse = parse_simple_boolean,
-+	.netlink_get = get_multicast_mode,
-+	.netlink_set = set_multicast_mode,
- };
- 
- COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
--	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_multicast_mode,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_multicast_mode,
- 	      "[0|1]             \tdisplay or modify multicast_mode setting");
--- 
-2.20.1
+>=20
+> https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
+>=20
+> This patch is rebased on top of:
+>=20
+> "batman-adv: DHCP snooping for DAT"
+
+That patch is now called "batman-adv: Snoop DHCPACKs for DAT" and has been=
+=20
+merged ?
+
+
+> @@ -152,7 +152,9 @@ static void batadv_dat_entry_put(struct batadv_dat_en=
+try
+> *dat_entry) static bool batadv_dat_to_purge(struct batadv_dat_entry
+> *dat_entry) {
+>  	return batadv_has_timed_out(dat_entry->last_update,
+> -				    BATADV_DAT_ENTRY_TIMEOUT);
+> +				    BATADV_DAT_ENTRY_TIMEOUT) &&
+> +	       batadv_has_timed_out(dat_entry->last_dht_update,
+> +				    BATADV_DAT_DHT_TIMEOUT);
+>  }
+
+This bit could be further simplified. Introducing 2 timeout fields is a bit=
+=20
+misleading since there only are 2 cases:
+
+* last_update is updated (or not) while last_dht_update is/remains 0
+* last_update and last_dht_update have the same value
+
+Why not turn last_dht_update into a bool and apply the timeout length based=
+ on=20
+that bool. Something like:
+
+if (is_global_entry)
+   return batadv_has_timed_out(dat_entry->last_update,
+BATADV_DAT_DHT_TIMEOUT);
+else
+   return batadv_has_timed_out(dat_entry->last_update,
+BATADV_DAT_ENTRY_TIMEOUT));
+
+=46urthermore, don't jiffies overflow at some point on some architectures ?=
+=20
+Initializing a jiffies field with 0 appears error-prone.
+
+Cheers,
+Marek
+
+--nextPart14243350.uFGr5DfqaX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlxgEj8ACgkQU1VOj+62
+HMAmJAf+JONs80DF9mGAlWHfScBC/RXplhix2zQYAR0tGeIDJV5wl5e0aXLgX4y6
++DoZnbaKDeb63OE5TENC+nFdbjsOpfOMq1fXjTLX8pDKWgC5b7o6dm6VzrYiRMKM
+xuW1ewr05EcZVO30FlnSo2pS0oOP0055GC/G90aDRFp/RCpyYlEsT8HTKx5cISXh
+xQiaesVfdtdzxLJA6QUKJXOxOs/bLkoz/zlUZdcvneOy485n2VA+F6o8hXkE9ibg
+u1shZ4lLcLprwZhfaoomK2gIaPZ3cqX2aVzZDvHOT+VBJROvL+LloFHnQAyA+OTS
+SZ6+ek6UaWv6c4aof9cgj2T+j/lFLg==
+=/EUL
+-----END PGP SIGNATURE-----
+
+--nextPart14243350.uFGr5DfqaX--
+
+
 
