@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:06 +0100
-Message-Id: <20190213095524.10147-4-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:07 +0100
+Message-Id: <20190213095524.10147-5-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/21] batman-adv: Move common genl doit code
- pre/post hooks
+Subject: [B.A.T.M.A.N.] [PATCH 04/21] batman-adv: Prepare framework for mesh
+ genl config
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,267 +20,325 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The commit ff4c92d85c6f ("genetlink: introduce pre_doit/post_doit hooks")
-intoduced a mechanism to run specific code for doit hooks before/after the
-hooks are run. Since all doit hooks are requiring the batadv softif, it
-should be retrieved/freed in these helpers to simplify the code.
+The batman-adv configuration interface was implemented solely using sysfs.
+This approach was condemned by non-batadv developers as "huge mistake".
+Instead a netlink/genl based implementation was suggested.
+
+The main objects for this configuration is the mesh/soft-interface object.
+Its actual object in memory already contains most of the available
+configuration settings. The genl interface reflects this by allowing to
+get/set it using the mesh specific commands.
+
+The BATADV_CMD_GET_MESH_INFO (or short version BATADV_CMD_GET_MESH) is
+reused as get command because it already provides the content of other
+information from the mesh/soft-interface which are not yet configuration
+specific.
+
+The set command BATADV_CMD_SET_MESH will also notify interested userspace
+listeners of the "config" mcast group using the BATADV_CMD_SET_MESH command
+message type that settings might have been changed and what the current
+values are.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/netlink.c | 143 +++++++++++++++++++++++++++++++++--------------
- 1 file changed, 100 insertions(+), 43 deletions(-)
+ include/uapi/linux/batman_adv.h |  16 +++-
+ net/batman-adv/netlink.c        | 160 ++++++++++++++++++++++++----------------
+ 2 files changed, 111 insertions(+), 65 deletions(-)
 
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index a28e76a7e0a2..b3394aac9a88 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -27,6 +27,7 @@
+ 
+ #define BATADV_NL_NAME "batadv"
+ 
++#define BATADV_NL_MCAST_GROUP_CONFIG	"config"
+ #define BATADV_NL_MCAST_GROUP_TPMETER	"tpmeter"
+ 
+ /**
+@@ -372,10 +373,14 @@ enum batadv_nl_commands {
+ 	BATADV_CMD_UNSPEC,
+ 
+ 	/**
+-	 * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv
+-	 * device
++	 * @BATADV_CMD_GET_MESH: Get attributes from softif/mesh
+ 	 */
+-	BATADV_CMD_GET_MESH_INFO,
++	BATADV_CMD_GET_MESH,
++
++	/**
++	 * @BATADV_CMD_GET_MESH_INFO: Alias for @BATADV_CMD_GET_MESH
++	 */
++	BATADV_CMD_GET_MESH_INFO = BATADV_CMD_GET_MESH,
+ 
+ 	/**
+ 	 * @BATADV_CMD_TP_METER: Start a tp meter session
+@@ -443,6 +448,11 @@ enum batadv_nl_commands {
+ 	 */
+ 	BATADV_CMD_GET_MCAST_FLAGS,
+ 
++	/**
++	 * @BATADV_CMD_SET_MESH: Set attributes for softif/mesh
++	 */
++	BATADV_CMD_SET_MESH,
++
+ 	/* add new commands above here */
+ 
+ 	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 5fe833cc9507..e56c40d1bfe0 100644
+index e56c40d1bfe0..179cc7cfcb70 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -20,8 +20,10 @@
- #include "main.h"
- 
- #include <linux/atomic.h>
-+#include <linux/bitops.h>
- #include <linux/byteorder/generic.h>
- #include <linux/cache.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/export.h>
- #include <linux/genetlink.h>
-@@ -54,6 +56,8 @@
- #include "tp_meter.h"
- #include "translation-table.h"
- 
-+struct net;
-+
- struct genl_family batadv_netlink_family;
+@@ -62,6 +62,7 @@ struct genl_family batadv_netlink_family;
  
  /* multicast groups */
-@@ -61,6 +65,18 @@ enum batadv_netlink_multicast_groups {
+ enum batadv_netlink_multicast_groups {
++	BATADV_NL_MCGRP_CONFIG,
  	BATADV_NL_MCGRP_TPMETER,
  };
  
-+/**
-+ * enum batadv_genl_ops_flags - flags for genl_ops's internal_flags
-+ */
-+enum batadv_genl_ops_flags {
-+	/**
-+	 * @BATADV_FLAG_NEED_MESH: request requires valid soft interface in
-+	 *  attribute BATADV_ATTR_MESH_IFINDEX and expects a pointer to it to be
-+	 *  saved in info->user_ptr[0]
-+	 */
-+	BATADV_FLAG_NEED_MESH = BIT(0),
-+};
-+
+@@ -78,6 +79,7 @@ enum batadv_genl_ops_flags {
+ };
+ 
  static const struct genl_multicast_group batadv_netlink_mcgrps[] = {
++	[BATADV_NL_MCGRP_CONFIG] = { .name = BATADV_NL_MCAST_GROUP_CONFIG },
  	[BATADV_NL_MCGRP_TPMETER] = { .name = BATADV_NL_MCAST_GROUP_TPMETER },
  };
-@@ -329,40 +345,24 @@ int batadv_netlink_tpmeter_notify(struct batadv_priv *bat_priv, const u8 *dst,
- static int
- batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
+ 
+@@ -138,20 +140,29 @@ batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype)
+ }
+ 
+ /**
+- * batadv_netlink_mesh_info_put() - fill in generic information about mesh
+- *  interface
+- * @msg: netlink message to be sent back
+- * @soft_iface: interface for which the data should be taken
++ * batadv_netlink_mesh_fill() - Fill message with mesh attributes
++ * @msg: Netlink message to dump into
++ * @bat_priv: the bat priv with all the soft interface information
++ * @cmd: type of message to generate
++ * @portid: Port making netlink request
++ * @seq: sequence number for message
++ * @flags: Additional flags for message
+  *
+- * Return: 0 on success, < 0 on error
++ * Return: 0 on success or negative error number in case of failure
+  */
+-static int
+-batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
++static int batadv_netlink_mesh_fill(struct sk_buff *msg,
++				    struct batadv_priv *bat_priv,
++				    enum batadv_nl_commands cmd,
++				    u32 portid, u32 seq, int flags)
+ {
+-	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
++	struct net_device *soft_iface = bat_priv->soft_iface;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct net_device *hard_iface;
+-	int ret = -ENOBUFS;
++	void *hdr;
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, flags, cmd);
++	if (!hdr)
++		return -ENOBUFS;
+ 
+ 	if (nla_put_string(msg, BATADV_ATTR_VERSION, BATADV_SOURCE_VERSION) ||
+ 	    nla_put_string(msg, BATADV_ATTR_ALGO_NAME,
+@@ -162,16 +173,16 @@ batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
+ 		    soft_iface->dev_addr) ||
+ 	    nla_put_u8(msg, BATADV_ATTR_TT_TTVN,
+ 		       (u8)atomic_read(&bat_priv->tt.vn)))
+-		goto out;
++		goto nla_put_failure;
+ 
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	if (nla_put_u16(msg, BATADV_ATTR_BLA_CRC,
+ 			ntohs(bat_priv->bla.claim_dest.group)))
+-		goto out;
++		goto nla_put_failure;
+ #endif
+ 
+ 	if (batadv_mcast_mesh_info_put(msg, bat_priv))
+-		goto out;
++		goto nla_put_failure;
+ 
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (primary_if && primary_if->if_status == BATADV_IF_ACTIVE) {
+@@ -183,77 +194,95 @@ batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
+ 				   hard_iface->name) ||
+ 		    nla_put(msg, BATADV_ATTR_HARD_ADDRESS, ETH_ALEN,
+ 			    hard_iface->dev_addr))
+-			goto out;
++			goto nla_put_failure;
+ 	}
+ 
+-	ret = 0;
++	if (primary_if)
++		batadv_hardif_put(primary_if);
+ 
+- out:
++	genlmsg_end(msg, hdr);
++	return 0;
++
++nla_put_failure:
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+ 
+-	return ret;
++	genlmsg_cancel(msg, hdr);
++	return -EMSGSIZE;
+ }
+ 
+ /**
+- * batadv_netlink_get_mesh_info() - handle incoming BATADV_CMD_GET_MESH_INFO
+- *  netlink request
+- * @skb: received netlink message
+- * @info: receiver information
++ * batadv_netlink_notify_mesh() - send softif attributes to listener
++ * @bat_priv: the bat priv with all the soft interface information
+  *
+  * Return: 0 on success, < 0 on error
+  */
+-static int
+-batadv_netlink_get_mesh_info(struct sk_buff *skb, struct genl_info *info)
++static int batadv_netlink_notify_mesh(struct batadv_priv *bat_priv)
  {
 -	struct net *net = genl_info_net(info);
 -	struct net_device *soft_iface;
--	struct batadv_priv *bat_priv;
-+	struct batadv_priv *bat_priv = info->user_ptr[0];
- 	struct sk_buff *msg = NULL;
- 	u32 test_length;
- 	void *msg_head;
+-	struct sk_buff *msg = NULL;
+-	void *msg_head;
 -	int ifindex;
- 	u32 cookie;
- 	u8 *dst;
++	struct sk_buff *msg;
  	int ret;
  
 -	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
 -		return -EINVAL;
 -
- 	if (!info->attrs[BATADV_ATTR_ORIG_ADDRESS])
- 		return -EINVAL;
- 
- 	if (!info->attrs[BATADV_ATTR_TPMETER_TEST_TIME])
- 		return -EINVAL;
- 
 -	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
 -	if (!ifindex)
 -		return -EINVAL;
--
- 	dst = nla_data(info->attrs[BATADV_ATTR_ORIG_ADDRESS]);
- 
- 	test_length = nla_get_u32(info->attrs[BATADV_ATTR_TPMETER_TEST_TIME]);
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!msg)
++		return -ENOMEM;
  
 -	soft_iface = dev_get_by_index(net, ifindex);
 -	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
 -		ret = -ENODEV;
 -		goto out;
--	}
--
- 	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
- 	if (!msg) {
- 		ret = -ENOMEM;
-@@ -377,15 +377,11 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
- 		goto out;
++	ret = batadv_netlink_mesh_fill(msg, bat_priv, BATADV_CMD_SET_MESH,
++				       0, 0, 0);
++	if (ret < 0) {
++		nlmsg_free(msg);
++		return ret;
  	}
  
--	bat_priv = netdev_priv(soft_iface);
- 	batadv_tp_start(bat_priv, dst, test_length, &cookie);
- 
- 	ret = batadv_netlink_tp_meter_put(msg, cookie);
- 
-  out:
--	if (soft_iface)
--		dev_put(soft_iface);
--
- 	if (ret) {
- 		if (msg)
- 			nlmsg_free(msg);
-@@ -406,38 +402,17 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
- static int
- batadv_netlink_tp_meter_cancel(struct sk_buff *skb, struct genl_info *info)
- {
--	struct net *net = genl_info_net(info);
--	struct net_device *soft_iface;
--	struct batadv_priv *bat_priv;
--	int ifindex;
-+	struct batadv_priv *bat_priv = info->user_ptr[0];
- 	u8 *dst;
- 	int ret = 0;
- 
--	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
--		return -EINVAL;
--
- 	if (!info->attrs[BATADV_ATTR_ORIG_ADDRESS])
- 		return -EINVAL;
- 
--	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
--	if (!ifindex)
--		return -EINVAL;
--
- 	dst = nla_data(info->attrs[BATADV_ATTR_ORIG_ADDRESS]);
- 
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
+-	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+-	if (!msg) {
+-		ret = -ENOMEM;
 -		goto out;
 -	}
--
--	bat_priv = netdev_priv(soft_iface);
- 	batadv_tp_stop(bat_priv, dst, BATADV_TP_REASON_CANCEL);
++	genlmsg_multicast_netns(&batadv_netlink_family,
++				dev_net(bat_priv->soft_iface), msg, 0,
++				BATADV_NL_MCGRP_CONFIG, GFP_KERNEL);
  
--out:
--	if (soft_iface)
--		dev_put(soft_iface);
--
- 	return ret;
- }
- 
-@@ -545,6 +520,84 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
- 	return msg->len;
- }
- 
-+/**
-+ * batadv_get_softif_from_info() - Retrieve soft interface from genl attributes
-+ * @net: the applicable net namespace
-+ * @info: receiver information
-+ *
-+ * Return: Pointer to soft interface (with increased refcnt) on success, error
-+ *  pointer on error
-+ */
-+static struct net_device *
-+batadv_get_softif_from_info(struct net *net, struct genl_info *info)
-+{
-+	struct net_device *soft_iface;
-+	int ifindex;
-+
-+	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
-+		return ERR_PTR(-EINVAL);
-+
-+	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
-+
-+	soft_iface = dev_get_by_index(net, ifindex);
-+	if (!soft_iface)
-+		return ERR_PTR(-ENODEV);
-+
-+	if (!batadv_softif_is_valid(soft_iface))
-+		goto err_put_softif;
-+
-+	return soft_iface;
-+
-+err_put_softif:
-+	dev_put(soft_iface);
-+
-+	return ERR_PTR(-EINVAL);
+-	msg_head = genlmsg_put(msg, info->snd_portid, info->snd_seq,
+-			       &batadv_netlink_family, 0,
+-			       BATADV_CMD_GET_MESH_INFO);
+-	if (!msg_head) {
+-		ret = -ENOBUFS;
+-		goto out;
+-	}
++	return 0;
 +}
-+
+ 
+-	ret = batadv_netlink_mesh_info_put(msg, soft_iface);
 +/**
-+ * batadv_pre_doit() - Prepare batman-adv genl doit request
-+ * @ops: requested netlink operation
++ * batadv_netlink_get_mesh() - Get softif attributes
 + * @skb: Netlink message with request data
 + * @info: receiver information
 + *
 + * Return: 0 on success or negative error number in case of failure
 + */
-+static int batadv_pre_doit(const struct genl_ops *ops, struct sk_buff *skb,
-+			   struct genl_info *info)
++static int batadv_netlink_get_mesh(struct sk_buff *skb, struct genl_info *info)
 +{
-+	struct net *net = genl_info_net(info);
-+	struct net_device *soft_iface;
-+	struct batadv_priv *bat_priv;
++	struct batadv_priv *bat_priv = info->user_ptr[0];
++	struct sk_buff *msg;
++	int ret;
+ 
+- out:
+-	if (soft_iface)
+-		dev_put(soft_iface);
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!msg)
++		return -ENOMEM;
+ 
+-	if (ret) {
+-		if (msg)
+-			nlmsg_free(msg);
++	ret = batadv_netlink_mesh_fill(msg, bat_priv, BATADV_CMD_GET_MESH,
++				       info->snd_portid, info->snd_seq, 0);
++	if (ret < 0) {
++		nlmsg_free(msg);
+ 		return ret;
+ 	}
+ 
+-	genlmsg_end(msg, msg_head);
+-	return genlmsg_reply(msg, info);
++	ret = genlmsg_reply(msg, info);
 +
-+	if (ops->internal_flags & BATADV_FLAG_NEED_MESH) {
-+		soft_iface = batadv_get_softif_from_info(net, info);
-+		if (IS_ERR(soft_iface))
-+			return PTR_ERR(soft_iface);
-+
-+		bat_priv = netdev_priv(soft_iface);
-+		info->user_ptr[0] = bat_priv;
-+	}
-+
-+	return 0;
++	return ret;
 +}
 +
 +/**
-+ * batadv_post_doit() - End batman-adv genl doit request
-+ * @ops: requested netlink operation
++ * batadv_netlink_set_mesh() - Set softif attributes
 + * @skb: Netlink message with request data
 + * @info: receiver information
++ *
++ * Return: 0 on success or negative error number in case of failure
 + */
-+static void batadv_post_doit(const struct genl_ops *ops, struct sk_buff *skb,
-+			     struct genl_info *info)
++static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
 +{
-+	struct batadv_priv *bat_priv;
++	struct batadv_priv *bat_priv = info->user_ptr[0];
 +
-+	if (ops->internal_flags & BATADV_FLAG_NEED_MESH && info->user_ptr[0]) {
-+		bat_priv = info->user_ptr[0];
-+		dev_put(bat_priv->soft_iface);
-+	}
-+}
++	batadv_netlink_notify_mesh(bat_priv);
 +
++	return 0;
+ }
+ 
+ /**
+@@ -600,10 +629,11 @@ static void batadv_post_doit(const struct genl_ops *ops, struct sk_buff *skb,
+ 
  static const struct genl_ops batadv_netlink_ops[] = {
  	{
- 		.cmd = BATADV_CMD_GET_MESH_INFO,
-@@ -557,12 +610,14 @@ static const struct genl_ops batadv_netlink_ops[] = {
- 		.flags = GENL_ADMIN_PERM,
+-		.cmd = BATADV_CMD_GET_MESH_INFO,
+-		.flags = GENL_ADMIN_PERM,
++		.cmd = BATADV_CMD_GET_MESH,
++		/* can be retrieved by unprivileged users */
  		.policy = batadv_netlink_policy,
- 		.doit = batadv_netlink_tp_meter_start,
+-		.doit = batadv_netlink_get_mesh_info,
++		.doit = batadv_netlink_get_mesh,
 +		.internal_flags = BATADV_FLAG_NEED_MESH,
  	},
  	{
- 		.cmd = BATADV_CMD_TP_METER_CANCEL,
- 		.flags = GENL_ADMIN_PERM,
+ 		.cmd = BATADV_CMD_TP_METER,
+@@ -685,7 +715,13 @@ static const struct genl_ops batadv_netlink_ops[] = {
  		.policy = batadv_netlink_policy,
- 		.doit = batadv_netlink_tp_meter_cancel,
-+		.internal_flags = BATADV_FLAG_NEED_MESH,
+ 		.dumpit = batadv_mcast_flags_dump,
  	},
- 	{
- 		.cmd = BATADV_CMD_GET_ROUTING_ALGOS,
-@@ -639,6 +694,8 @@ struct genl_family batadv_netlink_family __ro_after_init = {
- 	.version = 1,
- 	.maxattr = BATADV_ATTR_MAX,
- 	.netnsok = true,
-+	.pre_doit = batadv_pre_doit,
-+	.post_doit = batadv_post_doit,
- 	.module = THIS_MODULE,
- 	.ops = batadv_netlink_ops,
- 	.n_ops = ARRAY_SIZE(batadv_netlink_ops),
+-
++	{
++		.cmd = BATADV_CMD_SET_MESH,
++		.flags = GENL_ADMIN_PERM,
++		.policy = batadv_netlink_policy,
++		.doit = batadv_netlink_set_mesh,
++		.internal_flags = BATADV_FLAG_NEED_MESH,
++	},
+ };
+ 
+ struct genl_family batadv_netlink_family __ro_after_init = {
 -- 
 2.11.0
 
