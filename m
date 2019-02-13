@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:22 +0100
-Message-Id: <20190213095524.10147-20-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:23 +0100
+Message-Id: <20190213095524.10147-21-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 19/21] batman-adv: Add elp_interval hardif
- genl configuration
+Subject: [B.A.T.M.A.N.] [PATCH 20/21] batman-adv: Add throughput_override
+ hardif genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,80 +20,80 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The ELP packets are transmitted every elp_interval milliseconds on an
-slave/hard-interface. This value can be changed using the configuration
-interface.
+The B.A.T.M.A.N. V implementation tries to estimate the link throughput of
+an interface to an originator using different automatic methods. It is
+still possible to overwrite it the link throughput for all reachable
+originators via this interface.
 
 The BATADV_CMD_SET_HARDIF/BATADV_CMD_GET_HARDIF commands allow to set/get
-the configuration of this feature using the u32 BATADV_ATTR_ELP_INTERVAL
-attribute.
+the configuration of this feature using the u32
+BATADV_ATTR_THROUGHPUT_OVERRIDE attribute. The used unit is in 100 Kbit/s.
+If the value is set to 0 then batman-adv will try to estimate the
+throughput by itself.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h |  6 ++++++
- net/batman-adv/netlink.c        | 17 +++++++++++++++++
- 2 files changed, 23 insertions(+)
+ include/uapi/linux/batman_adv.h |  8 ++++++++
+ net/batman-adv/netlink.c        | 12 ++++++++++++
+ 2 files changed, 20 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 6bedd4889c37..f966e497361b 100644
+index f966e497361b..305bf316dd03 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -477,6 +477,12 @@ enum batadv_nl_attrs {
+@@ -483,6 +483,14 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_ORIG_INTERVAL,
+ 	BATADV_ATTR_ELP_INTERVAL,
  
 +	/**
-+	 * @BATADV_ATTR_ELP_INTERVAL: defines the interval in milliseconds in
-+	 *  which batman emits probing packets for neighbor sensing (ELP).
++	 * @BATADV_ATTR_THROUGHPUT_OVERRIDE: defines the throughput value to be
++	 *  used by B.A.T.M.A.N. V when estimating the link throughput using
++	 *  this interface. If the value is set to 0 then batman-adv will try to
++	 *  estimate the throughput by itself.
 +	 */
-+	BATADV_ATTR_ELP_INTERVAL,
++	BATADV_ATTR_THROUGHPUT_OVERRIDE,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index e25c139ba0e1..09187e6e92a3 100644
+index 09187e6e92a3..476b4c6017c9 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -159,6 +159,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
+@@ -160,6 +160,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
  	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
  	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
-+	[BATADV_ATTR_ELP_INTERVAL]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_ELP_INTERVAL]		= { .type = NLA_U32 },
++	[BATADV_ATTR_THROUGHPUT_OVERRIDE]	= { .type = NLA_U32 },
  };
  
  /**
-@@ -825,6 +826,12 @@ static int batadv_netlink_hardif_fill(struct sk_buff *msg,
- 			goto nla_put_failure;
- 	}
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	if (nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL,
-+			atomic_read(&hard_iface->bat_v.elp_interval)))
+@@ -830,6 +831,10 @@ static int batadv_netlink_hardif_fill(struct sk_buff *msg,
+ 	if (nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL,
+ 			atomic_read(&hard_iface->bat_v.elp_interval)))
+ 		goto nla_put_failure;
++
++	if (nla_put_u32(msg, BATADV_ATTR_THROUGHPUT_OVERRIDE,
++			atomic_read(&hard_iface->bat_v.throughput_override)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
-+
+ #endif /* CONFIG_BATMAN_ADV_BATMAN_V */
+ 
  	genlmsg_end(msg, hdr);
- 	return 0;
+@@ -925,6 +930,13 @@ static int batadv_netlink_set_hardif(struct sk_buff *skb,
  
-@@ -910,6 +917,16 @@ static int batadv_netlink_set_hardif(struct sk_buff *skb,
- 	struct batadv_hard_iface *hard_iface = info->user_ptr[1];
- 	struct batadv_priv *bat_priv = info->user_ptr[0];
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	struct nlattr *attr;
+ 		atomic_set(&hard_iface->bat_v.elp_interval, nla_get_u32(attr));
+ 	}
 +
-+	if (info->attrs[BATADV_ATTR_ELP_INTERVAL]) {
-+		attr = info->attrs[BATADV_ATTR_ELP_INTERVAL];
++	if (info->attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]) {
++		attr = info->attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE];
 +
-+		atomic_set(&hard_iface->bat_v.elp_interval, nla_get_u32(attr));
++		atomic_set(&hard_iface->bat_v.throughput_override,
++			   nla_get_u32(attr));
 +	}
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
-+
- 	batadv_netlink_notify_hardif(bat_priv, hard_iface);
+ #endif /* CONFIG_BATMAN_ADV_BATMAN_V */
  
- 	return 0;
+ 	batadv_netlink_notify_hardif(bat_priv, hard_iface);
 -- 
 2.11.0
 
