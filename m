@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:20 +0100
-Message-Id: <20190213095524.10147-18-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:19 +0100
+Message-Id: <20190213095524.10147-17-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 17/21] batman-adv: Add network_coding mesh
- genl configuration
+Subject: [B.A.T.M.A.N.] [PATCH 16/21] batman-adv: Add multicast forceflood
+ mesh genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,85 +20,80 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The mesh interface can use (in an homogeneous mesh) network coding, a
-mechanism that aims to increase the overall network throughput by fusing
-multiple packets in one transmission.
+The mesh interface can optimize the flooding of multicast packets based on
+the content of the global translation tables. To disable this behavior and
+use the broadcast-like flooding of the packets, forceflood has to be
+enabled.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the BATADV_ATTR_NETWORK_CODING_ENABLED
-attribute. Setting the u8 to zero will disable this feature and setting it
-to something else is enabling this feature.
+configuration of this feature using the
+BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED attribute. Setting the u8 to zero
+will disable this feature (allowing multicast optimizations) and setting it
+to something else is enabling this feature (forcing simple flooding).
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h |  7 +++++++
- net/batman-adv/netlink.c        | 17 +++++++++++++++++
+ include/uapi/linux/batman_adv.h |  9 +++++++++
+ net/batman-adv/netlink.c        | 15 +++++++++++++++
  2 files changed, 24 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 38caaaae8a05..a4239c147bde 100644
+index 6d36e4b47eb4..38caaaae8a05 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -464,6 +464,13 @@ enum batadv_nl_attrs {
+@@ -455,6 +455,15 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
+ 	BATADV_ATTR_LOG_LEVEL,
  
 +	/**
-+	 * @BATADV_ATTR_NETWORK_CODING_ENABLED: whether Network Coding (using
-+	 *  some magic to send fewer wifi packets but still the same content) is
-+	 *  enabled or not.
++	 * @BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED: whether multicast
++	 *  optimizations should be replaced by simple broadcast-like flooding
++	 *  of multicast packets. If set to non-zero then all nodes in the mesh
++	 *  are going to use classic flooding for any multicast packet with no
++	 *  optimizations.
 +	 */
-+	BATADV_ATTR_NETWORK_CODING_ENABLED,
++	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 475bd15f806c..6f01f92e6ab3 100644
+index 8c019d46815c..475bd15f806c 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -55,6 +55,7 @@
- #include "hard-interface.h"
- #include "log.h"
- #include "multicast.h"
-+#include "network-coding.h"
- #include "originator.h"
- #include "soft-interface.h"
- #include "tp_meter.h"
-@@ -156,6 +157,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+@@ -155,6 +155,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
  	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
  	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
- 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
-+	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
  };
  
  /**
-@@ -350,6 +352,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
+@@ -343,6 +344,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
  		goto nla_put_failure;
- #endif /* CONFIG_BATMAN_ADV_MCAST */
+ #endif /* CONFIG_BATMAN_ADV_DEBUG */
  
-+#ifdef CONFIG_BATMAN_ADV_NC
-+	if (nla_put_u8(msg, BATADV_ATTR_NETWORK_CODING_ENABLED,
-+		       !!atomic_read(&bat_priv->network_coding)))
++#ifdef CONFIG_BATMAN_ADV_MCAST
++	if (nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
++		       !atomic_read(&bat_priv->multicast_mode)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_NC */
++#endif /* CONFIG_BATMAN_ADV_MCAST */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -579,6 +587,15 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
+@@ -564,6 +571,14 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
- #endif /* CONFIG_BATMAN_ADV_MCAST */
+ #endif /* CONFIG_BATMAN_ADV_DEBUG */
  
-+#ifdef CONFIG_BATMAN_ADV_NC
-+	if (info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]) {
-+		attr = info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED];
++#ifdef CONFIG_BATMAN_ADV_MCAST
++	if (info->attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) {
++		attr = info->attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED];
 +
-+		atomic_set(&bat_priv->network_coding, !!nla_get_u8(attr));
-+		batadv_nc_status_update(bat_priv->soft_iface);
++		atomic_set(&bat_priv->multicast_mode, !nla_get_u8(attr));
 +	}
-+#endif /* CONFIG_BATMAN_ADV_NC */
++#endif /* CONFIG_BATMAN_ADV_MCAST */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
