@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:18 +0100
-Message-Id: <20190213095524.10147-16-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:20 +0100
+Message-Id: <20190213095524.10147-18-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 15/21] batman-adv: Add log_level mesh genl
- configuration
+Subject: [B.A.T.M.A.N.] [PATCH 17/21] batman-adv: Add network_coding mesh
+ genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,82 +20,85 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-In contrast to other modules, batman-adv allows to set the debug message
-verbosity per mesh/soft-interface and not per module (via modparam).
+The mesh interface can use (in an homogeneous mesh) network coding, a
+mechanism that aims to increase the overall network throughput by fusing
+multiple packets in one transmission.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the u32 (bitmask) BATADV_ATTR_LOG_LEVEL
-attribute.
+configuration of this feature using the BATADV_ATTR_NETWORK_CODING_ENABLED
+attribute. Setting the u8 to zero will disable this feature and setting it
+to something else is enabling this feature.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h |  6 ++++++
+ include/uapi/linux/batman_adv.h |  7 +++++++
  net/batman-adv/netlink.c        | 17 +++++++++++++++++
- 2 files changed, 23 insertions(+)
+ 2 files changed, 24 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index b37cb923332e..6d36e4b47eb4 100644
+index 38caaaae8a05..a4239c147bde 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -449,6 +449,12 @@ enum batadv_nl_attrs {
+@@ -464,6 +464,13 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_HOP_PENALTY,
+ 	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
  
 +	/**
-+	 * @BATADV_ATTR_LOG_LEVEL: bitmask with to define which debug messages
-+	 *  should be send to the debug log/trace ring buffer
++	 * @BATADV_ATTR_NETWORK_CODING_ENABLED: whether Network Coding (using
++	 *  some magic to send fewer wifi packets but still the same content) is
++	 *  enabled or not.
 +	 */
-+	BATADV_ATTR_LOG_LEVEL,
++	BATADV_ATTR_NETWORK_CODING_ENABLED,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index ce6e6f078765..8c019d46815c 100644
+index 475bd15f806c..6f01f92e6ab3 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -53,6 +53,7 @@
- #include "gateway_client.h"
- #include "gateway_common.h"
+@@ -55,6 +55,7 @@
  #include "hard-interface.h"
-+#include "log.h"
+ #include "log.h"
  #include "multicast.h"
++#include "network-coding.h"
  #include "originator.h"
  #include "soft-interface.h"
-@@ -153,6 +154,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
- 	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
+ #include "tp_meter.h"
+@@ -156,6 +157,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
  	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
-+	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
+ 	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
+ 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
  };
  
  /**
-@@ -335,6 +337,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
- 		       atomic_read(&bat_priv->hop_penalty)))
+@@ -350,6 +352,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
  		goto nla_put_failure;
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
  
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+	if (nla_put_u32(msg, BATADV_ATTR_LOG_LEVEL,
-+			atomic_read(&bat_priv->log_level)))
++#ifdef CONFIG_BATMAN_ADV_NC
++	if (nla_put_u8(msg, BATADV_ATTR_NETWORK_CODING_ENABLED,
++		       !!atomic_read(&bat_priv->network_coding)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_DEBUG */
++#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -547,6 +555,15 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
- 		atomic_set(&bat_priv->hop_penalty, nla_get_u8(attr));
+@@ -579,6 +587,15 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
  
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
-+	if (info->attrs[BATADV_ATTR_LOG_LEVEL]) {
-+		attr = info->attrs[BATADV_ATTR_LOG_LEVEL];
++#ifdef CONFIG_BATMAN_ADV_NC
++	if (info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]) {
++		attr = info->attrs[BATADV_ATTR_NETWORK_CODING_ENABLED];
 +
-+		atomic_set(&bat_priv->log_level,
-+			   nla_get_u32(attr) & BATADV_DBG_ALL);
++		atomic_set(&bat_priv->network_coding, !!nla_get_u8(attr));
++		batadv_nc_status_update(bat_priv->soft_iface);
 +	}
-+#endif /* CONFIG_BATMAN_ADV_DEBUG */
++#endif /* CONFIG_BATMAN_ADV_NC */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
