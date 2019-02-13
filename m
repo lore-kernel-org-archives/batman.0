@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:04 +0100
-Message-Id: <20190213095524.10147-2-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:05 +0100
+Message-Id: <20190213095524.10147-3-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/21] batman-adv: fix memory leak in in
- batadv_dat_put_dhcp
+Subject: [B.A.T.M.A.N.] [PATCH 02/21] batman-adv: Fix typo "reseved" ->
+ "reserved"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,37 +16,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Martin Weinelt <martin@linuxlounge.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Martin Weinelt <martin@linuxlounge.net>
+From: Sven Eckelmann <sven@narfation.org>
 
-batadv_dat_put_dhcp is creating a new ARP packet via
-batadv_dat_arp_create_reply and tries to forward it via
-batadv_dat_send_data to different peers in the DHT. The original skb is not
-consumed by batadv_dat_send_data and thus has to be consumed by the caller.
+checkpatch.pl complains since commit 45e417022023 ("scripts/spelling.txt:
+add more spellings to spelling.txt") about an additional spelling mistake
+in batman-adv:`
 
-Fixes: b61ec31c8575 ("batman-adv: Snoop DHCPACKs for DAT")
-Signed-off-by: Martin Weinelt <martin@linuxlounge.net>
-[sven@narfation.org: add commit message]
+  CHECK: 'reseved' may be misspelled - perhaps 'reserved'?
+  #232: FILE: include/uapi/linux/batadv_packet.h:232:
+  + * @flags: reseved for routing relevant flags - currently always 0
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/distributed-arp-table.c | 2 ++
- 1 file changed, 2 insertions(+)
+ include/uapi/linux/batadv_packet.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 899ab051ffce..310a4f353008 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1711,6 +1711,8 @@ static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
- 	batadv_dat_send_data(bat_priv, skb, yiaddr, vid, BATADV_P_DAT_DHT_PUT);
- 	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
- 
-+	consume_skb(skb);
-+
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 		   "Snooped from outgoing DHCPACK (server address): %pI4, %pM (vid: %i)\n",
- 		   &ip_dst, hw_dst, batadv_print_vid(vid));
+diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+index 7eb2936a8e22..c99336f4eefe 100644
+--- a/include/uapi/linux/batadv_packet.h
++++ b/include/uapi/linux/batadv_packet.h
+@@ -229,7 +229,7 @@ struct batadv_ogm_packet {
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the general header
+  * @ttl: time to live for this packet, part of the general header
+- * @flags: reseved for routing relevant flags - currently always 0
++ * @flags: reserved for routing relevant flags - currently always 0
+  * @seqno: sequence number
+  * @orig: originator mac address
+  * @tvlv_len: length of the appended tvlv buffer (in bytes)
 -- 
 2.11.0
 
