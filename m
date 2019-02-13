@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 13 Feb 2019 10:55:19 +0100
-Message-Id: <20190213095524.10147-17-sw@simonwunderlich.de>
+Date: Wed, 13 Feb 2019 10:55:21 +0100
+Message-Id: <20190213095524.10147-19-sw@simonwunderlich.de>
 In-Reply-To: <20190213095524.10147-1-sw@simonwunderlich.de>
 References: <20190213095524.10147-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 16/21] batman-adv: Add multicast forceflood
- mesh genl configuration
+Subject: [B.A.T.M.A.N.] [PATCH 18/21] batman-adv: Add orig_interval mesh
+ genl configuration
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,80 +20,75 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The mesh interface can optimize the flooding of multicast packets based on
-the content of the global translation tables. To disable this behavior and
-use the broadcast-like flooding of the packets, forceflood has to be
-enabled.
+The OGM packets are transmitted every orig_interval milliseconds. This
+value can be changed using the configuration interface.
 
 The BATADV_CMD_SET_MESH/BATADV_CMD_GET_MESH commands allow to set/get the
-configuration of this feature using the
-BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED attribute. Setting the u8 to zero
-will disable this feature (allowing multicast optimizations) and setting it
-to something else is enabling this feature (forcing simple flooding).
+configuration of this feature using the u32 BATADV_ATTR_ORIG_INTERVAL
+attribute.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h |  9 +++++++++
- net/batman-adv/netlink.c        | 15 +++++++++++++++
- 2 files changed, 24 insertions(+)
+ include/uapi/linux/batman_adv.h |  6 ++++++
+ net/batman-adv/netlink.c        | 17 +++++++++++++++++
+ 2 files changed, 23 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 6d36e4b47eb4..38caaaae8a05 100644
+index a4239c147bde..6bedd4889c37 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -455,6 +455,15 @@ enum batadv_nl_attrs {
+@@ -471,6 +471,12 @@ enum batadv_nl_attrs {
  	 */
- 	BATADV_ATTR_LOG_LEVEL,
+ 	BATADV_ATTR_NETWORK_CODING_ENABLED,
  
 +	/**
-+	 * @BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED: whether multicast
-+	 *  optimizations should be replaced by simple broadcast-like flooding
-+	 *  of multicast packets. If set to non-zero then all nodes in the mesh
-+	 *  are going to use classic flooding for any multicast packet with no
-+	 *  optimizations.
++	 * @BATADV_ATTR_ORIG_INTERVAL: defines the interval in milliseconds in
++	 *  which batman sends its protocol messages.
 +	 */
-+	BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
++	BATADV_ATTR_ORIG_INTERVAL,
 +
  	/* add attributes above here, update the policy in netlink.c */
  
  	/**
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 8c019d46815c..475bd15f806c 100644
+index 6f01f92e6ab3..e25c139ba0e1 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -155,6 +155,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
- 	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
+@@ -158,6 +158,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
  	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
-+	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
+ 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
+ 	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
  };
  
  /**
-@@ -343,6 +344,12 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
+@@ -358,6 +359,10 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
  		goto nla_put_failure;
- #endif /* CONFIG_BATMAN_ADV_DEBUG */
+ #endif /* CONFIG_BATMAN_ADV_NC */
  
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	if (nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
-+		       !atomic_read(&bat_priv->multicast_mode)))
++	if (nla_put_u32(msg, BATADV_ATTR_ORIG_INTERVAL,
++			atomic_read(&bat_priv->orig_interval)))
 +		goto nla_put_failure;
-+#endif /* CONFIG_BATMAN_ADV_MCAST */
 +
  	if (primary_if)
  		batadv_hardif_put(primary_if);
  
-@@ -564,6 +571,14 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
+@@ -596,6 +601,18 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
  	}
- #endif /* CONFIG_BATMAN_ADV_DEBUG */
+ #endif /* CONFIG_BATMAN_ADV_NC */
  
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	if (info->attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) {
-+		attr = info->attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED];
++	if (info->attrs[BATADV_ATTR_ORIG_INTERVAL]) {
++		u32 orig_interval;
 +
-+		atomic_set(&bat_priv->multicast_mode, !nla_get_u8(attr));
++		attr = info->attrs[BATADV_ATTR_ORIG_INTERVAL];
++		orig_interval = nla_get_u32(attr);
++
++		orig_interval = min_t(u32, orig_interval, INT_MAX);
++		orig_interval = max_t(u32, orig_interval, 2 * BATADV_JITTER);
++
++		atomic_set(&bat_priv->orig_interval, orig_interval);
 +	}
-+#endif /* CONFIG_BATMAN_ADV_MCAST */
 +
  	batadv_netlink_notify_mesh(bat_priv);
  
