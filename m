@@ -1,12 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sat, 16 Feb 2019 03:58:54 +0100
-Message-Id: <20190216025854.21537-1-linus.luessing@c0d3.blue>
+Date: Sat, 16 Feb 2019 22:50:50 +0100
+Message-Id: <20190216215050.11542-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: replace multicast_mode with
- multicast_forceflood command
+Subject: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Add multicast-to-unicast
+ support for multiple targets
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,340 +17,528 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin Weinelt <martin@darmstadt.freifunk.net>, David Bauer <mail@david-bauer.net>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
-This patch hides the multicast_mode setting in the UI and adds a new
-multicast_forceflood command. multicast_forceflood is basically the
-inverse of the current multicast_mode setting.
+With this patch multicast packets with a limited number of destinations
+(current default: 16) will be split and transmitted by the originator as
+individual unicast transmissions.
 
-For the netlink config additions to batman-adv "multicast_mode" was
-not added. Instead a "multicast_forceflood" attribute was introduced.
+Wifi broadcasts with their low bitrate are still a costly undertaking.
+In a mesh network this cost multiplies with the overall size of the mesh
+network. Therefore using multiple unicast transmissions instead of
+broadcast flooding is almost always less burdensome for the mesh
+network.
 
-The multicast_mode batctl command is kept for compatibility for now
-but should be removed eventually.
+The maximum amount of unicast packets can be configured via the newly
+introduced multicast_fanout parameter. If this limit is exceeded
+distribution will fall back to classic broadcast flooding.
+
+The multicast-to-unicast conversion is performed on the initial
+multicast sender node and counts on a final destination node, mesh-wide
+basis (and not next hop, neighbor node basis).
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- Makefile               |  1 +
- README.rst             |  8 ++---
- functions.c            | 16 ++++++++-
- functions.h            |  1 +
- main.c                 |  3 ++
- main.h                 |  1 +
- man/batctl.8           |  8 +++--
- multicast_forceflood.c | 95 ++++++++++++++++++++++++++++++++++++++++++++++++++
- multicast_mode.c       |  3 +-
- sys.c                  | 30 +++++++++++++---
- 10 files changed, 151 insertions(+), 15 deletions(-)
- create mode 100644 multicast_forceflood.c
 
-diff --git a/Makefile b/Makefile
-index 4d8b709..7c050c0 100755
---- a/Makefile
-+++ b/Makefile
-@@ -68,6 +68,7 @@ $(eval $(call add_command,isolation_mark,y))
- $(eval $(call add_command,log,y))
- $(eval $(call add_command,loglevel,y))
- $(eval $(call add_command,mcast_flags,y))
-+$(eval $(call add_command,multicast_forceflood,y))
- $(eval $(call add_command,multicast_mode,y))
- $(eval $(call add_command,nc_nodes,y))
- $(eval $(call add_command,neighbors,y))
-diff --git a/README.rst b/README.rst
-index 4c0f544..6db68d7 100644
---- a/README.rst
-+++ b/README.rst
-@@ -468,14 +468,14 @@ Usage::
- Note that network coding requires a working promiscuous mode on all interfaces.
+---
+
+Changelog v4:
+
+* Fixed return value in "batadv_mcast_forw_tt_send()" for an empty
+  TT entry: the want-all lists still need to be tried. This fixes
+  potential packetloss.
+
+Changelog v3:
+
+* removed sysfs support for multicast_fanout
+
+Changelog v2:
+
+* rebased to master (no conflicts/changes)
+* fixed a double free bug in the batman-adv multicast-to-multi-unicast
+  patch: led to crashes, especially on netifd restart/shutdown
+  -> https://github.com/freifunk-gluon/gluon/issues/1468
+* fixed skb memory leaks in error cases
+* added netlink support for multicast_fanout
+* updated multicast_fanout sysfs ABI doc date to Feb 2019
+---
+ include/uapi/linux/batman_adv.h    |   7 ++
+ net/batman-adv/multicast.c         | 242 ++++++++++++++++++++++++++++++++++++-
+ net/batman-adv/multicast.h         |  18 +++
+ net/batman-adv/netlink.c           |  11 ++
+ net/batman-adv/soft-interface.c    |   8 +-
+ net/batman-adv/translation-table.c |   6 +-
+ net/batman-adv/translation-table.h |   4 +
+ net/batman-adv/types.h             |   6 +
+ 8 files changed, 296 insertions(+), 6 deletions(-)
+
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index 305bf316..e875e0c5 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -491,6 +491,13 @@ enum batadv_nl_attrs {
+ 	 */
+ 	BATADV_ATTR_THROUGHPUT_OVERRIDE,
  
++	/**
++	 * @BATADV_ATTR_MULTICAST_FANOUT: defines the maximum number of packet
++	 * copies that may be generated for a multicast-to-unicast conversion.
++	 * Once this limit is exceeded distribution will fall back to broadcast.
++	 */
++	BATADV_ATTR_MULTICAST_FANOUT,
++
+ 	/* add attributes above here, update the policy in netlink.c */
  
--batctl multicast_mode
--=====================
-+batctl multicast_forceflood
-+===========================
+ 	/**
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index f91b1b62..9a9bec22 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -66,6 +66,7 @@
+ #include "hash.h"
+ #include "log.h"
+ #include "netlink.h"
++#include "send.h"
+ #include "soft-interface.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+@@ -992,6 +993,7 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	int ret, tt_count, ip_count, unsnoop_count, total_count;
+ 	bool is_unsnoopable = false;
+ 	struct ethhdr *ethhdr;
++	unsigned int mcast_fanout;
  
--display or modify the multicast mode setting
-+display or modify the multicast forceflood setting
- 
- Usage::
- 
--  batctl multicast_mode|mm [0|1]
-+  batctl multicast_forceflood|mff [0|1]
- 
- 
- batctl mcast_flags
-diff --git a/functions.c b/functions.c
-index 76deab7..a202969 100644
---- a/functions.c
-+++ b/functions.c
-@@ -175,6 +175,16 @@ static bool ether_addr_valid(const uint8_t *addr)
- 	return true;
- }
- 
-+static void print_inv_bool(char *line)
-+{
-+	if (!strncmp("enabled", line, strlen("enabled")))
-+		printf("disabled\n");
-+	else if (!strncmp("disabled", line, strlen("disabled")))
-+		printf("enabled\n");
-+	else
-+		printf("%s", line);
+ 	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable);
+ 	if (ret == -ENOMEM)
+@@ -1025,8 +1027,246 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	case 0:
+ 		return BATADV_FORW_NONE;
+ 	default:
+-		return BATADV_FORW_ALL;
++		mcast_fanout = atomic_read(&bat_priv->multicast_fanout);
++
++		if (!unsnoop_count && total_count <= mcast_fanout)
++			return BATADV_FORW_SOME;
+ 	}
++
++	return BATADV_FORW_ALL;
 +}
 +
- int read_file(const char *dir, const char *fname, int read_opt,
- 	      float orig_timeout, float watch_interval, size_t header_lines)
- {
-@@ -237,7 +247,11 @@ int read_file(const char *dir, const char *fname, int read_opt,
- 			continue;
- 
- 		if (!(read_opt & USE_BAT_HOSTS)) {
--			printf("%s", line_ptr);
-+			if (read_opt & INVERSE_BOOL)
-+				print_inv_bool(line_ptr);
-+			else
-+				printf("%s", line_ptr);
-+
- 			continue;
- 		}
- 
-diff --git a/functions.h b/functions.h
-index e2bbb4e..b3f2159 100644
---- a/functions.h
-+++ b/functions.h
-@@ -91,6 +91,7 @@ enum {
- 	SKIP_HEADER = 0x100,
- 	UNICAST_ONLY = 0x200,
- 	MULTICAST_ONLY = 0x400,
-+	INVERSE_BOOL = 0x800,
- };
- 
- #endif
-diff --git a/main.c b/main.c
-index 2a28642..199c7a4 100644
---- a/main.c
-+++ b/main.c
-@@ -74,6 +74,9 @@ static void print_usage(void)
- 			if (cmd->type != type[i])
- 				continue;
- 
-+			if (!cmd->usage)
-+				continue;
-+
- 			if (strcmp(cmd->name, cmd->abbr) == 0)
- 				snprintf(buf, sizeof(buf), "%s", cmd->name);
- 			else
-diff --git a/main.h b/main.h
-index fca2a32..92d0e61 100644
---- a/main.h
-+++ b/main.h
-@@ -67,6 +67,7 @@ extern char module_ver_path[];
- enum command_flags {
- 	COMMAND_FLAG_MESH_IFACE = BIT(0),
- 	COMMAND_FLAG_NETLINK = BIT(1),
-+	COMMAND_FLAG_INVERSE = BIT(2),
- };
- 
- enum command_type {
-diff --git a/man/batctl.8 b/man/batctl.8
-index ed8e71f..695067f 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -101,9 +101,11 @@ disable fragmentation.
- If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
- disable network coding.
- .br
--.IP "\fBmulticast_mode\fP|\fBmm\fP [\fB0\fP|\fB1\fP]"
--If no parameter is given the current multicast mode setting is displayed. Otherwise the parameter is used to enable or
--disable multicast optimizations (i.e. disabling means always sending own multicast frames via classic flooding).
-+.IP "\fBmulticast_forceflood\fP|\fBmff\fP [\fB0\fP|\fB1\fP]"
-+If no parameter is given the current multicast forceflood setting is displayed. Otherwise the parameter is used to enable or
-+disable multicast forceflood. This setting defines whether multicast optimizations should be replaced by simple broadcast-like
-+flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
-+multicast packet with no optimizations.
- .br
- .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
- If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
-diff --git a/multicast_forceflood.c b/multicast_forceflood.c
-new file mode 100644
-index 0000000..daaa6d0
---- /dev/null
-+++ b/multicast_forceflood.c
-@@ -0,0 +1,95 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
++/**
++ * batadv_mcast_forw_tt_send() - send a packet to multicast listeners
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to transmit
++ * @vid: the vlan identifier
++ * @limit: number of remaining, maximum transmissions
 + *
-+ * Linus Lüssing <linus.luessing@c0d3.blue>
++ * Sends copies of a frame with multicast destination to any multicast
++ * listener registered in the translation table. A transmission is performed
++ * via a batman-adv unicast packet for each such destination node.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ * License-Filename: LICENSES/preferred/GPL-2.0
++ * Return: NET_XMIT_DROP if limit was reached or on memory allocation failure,
++ * NET_XMIT_SUCCESS otherwise.
 + */
-+
-+#include "main.h"
-+
-+#include <errno.h>
-+#include <linux/genetlink.h>
-+#include <netlink/genl/genl.h>
-+
-+#include "batman_adv.h"
-+#include "netlink.h"
-+#include "sys.h"
-+
-+static struct simple_boolean_data multicast_forceflood;
-+
-+static int print_multicast_forceflood(struct nl_msg *msg, void *arg)
++static int
++batadv_mcast_forw_tt_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			  unsigned short vid, unsigned int *limit)
 +{
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct genlmsghdr *ghdr;
-+	int *result = arg;
++	unsigned int limit_tmp = *limit;
++	int ret = NET_XMIT_SUCCESS;
++	struct sk_buff *newskb;
 +
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
++	struct batadv_tt_orig_list_entry *orig_entry;
 +
-+	ghdr = nlmsg_data(nlh);
++	struct batadv_tt_global_entry *tt_global;
++	const u8 *addr = eth_hdr(skb)->h_dest;
 +
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
++	tt_global = batadv_tt_global_hash_find(bat_priv, addr, vid);
++	if (!tt_global)
++		goto out;
 +
-+	if (!attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
-+		return NL_OK;
-+
-+	printf("%s\n", nla_get_u8(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) ? "enabled" : "disabled");
-+
-+	*result = 0;
-+	return NL_STOP;
-+}
-+
-+static int get_multicast_forceflood(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_multicast_forceflood);
-+}
-+
-+static int set_attrs_multicast_forceflood(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct simple_boolean_data *data = settings->data;
-+
-+	nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, data->val);
-+
-+	return 0;
-+}
-+
-+static int set_multicast_forceflood(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_multicast_forceflood, NULL);
-+}
-+
-+static struct settings_data batctl_settings_multicast_forceflood = {
-+	.sysfs_name = "multicast_mode",
-+	.data = &multicast_forceflood,
-+	.parse = parse_simple_boolean,
-+	.netlink_get = get_multicast_forceflood,
-+	.netlink_set = set_multicast_forceflood,
-+};
-+
-+COMMAND_NAMED(SUBCOMMAND, multicast_forceflood, "mff", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK | COMMAND_FLAG_INVERSE,
-+	      &batctl_settings_multicast_forceflood,
-+	      "[0|1]             \tdisplay or modify multicast_forceflood setting");
-diff --git a/multicast_mode.c b/multicast_mode.c
-index 836a744..fb17586 100644
---- a/multicast_mode.c
-+++ b/multicast_mode.c
-@@ -91,5 +91,4 @@ static struct settings_data batctl_settings_multicast_mode = {
- 
- COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
- 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
--	      &batctl_settings_multicast_mode,
--	      "[0|1]             \tdisplay or modify multicast_mode setting");
-+	      &batctl_settings_multicast_mode, NULL);
-diff --git a/sys.c b/sys.c
-index 9a7966f..b0864cd 100644
---- a/sys.c
-+++ b/sys.c
-@@ -156,7 +156,8 @@ int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
- static void settings_usage(struct state *state)
- {
- 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
--		state->cmd->name, state->cmd->abbr, state->cmd->usage);
-+		state->cmd->name, state->cmd->abbr,
-+		state->cmd->usage ? state->cmd->usage : "");
- 
- 	fprintf(stderr, "parameters:\n");
- 	fprintf(stderr, " \t -h print this help\n");
-@@ -167,6 +168,7 @@ static int sys_read_setting(struct state *state, const char *path_buff,
- {
- 	struct settings_data *settings = state->cmd->arg;
- 	int res = EXIT_FAILURE;
-+	int read_opt = NO_FLAGS;
- 
- 	if (settings->netlink_get) {
- 		res = settings->netlink_get(state);
-@@ -176,8 +178,12 @@ static int sys_read_setting(struct state *state, const char *path_buff,
- 			return EXIT_SUCCESS;
- 	}
- 
--	if (sysfs_name)
--		res = read_file(path_buff, sysfs_name, NO_FLAGS, 0, 0, 0);
-+	if (sysfs_name) {
-+		if (state->cmd->flags & COMMAND_FLAG_INVERSE)
-+			read_opt |= INVERSE_BOOL;
-+
-+		res = read_file(path_buff, sysfs_name, read_opt, 0, 0, 0);
-+	}
- 
- 	return res;
- }
-@@ -187,6 +193,7 @@ static int sys_write_setting(struct state *state, const char *path_buff,
- {
- 	struct settings_data *settings = state->cmd->arg;
- 	int res = EXIT_FAILURE;
-+	char *argv1 = argv[1];
- 
- 	if (settings->netlink_set) {
- 		res = settings->netlink_set(state);
-@@ -196,9 +203,22 @@ static int sys_write_setting(struct state *state, const char *path_buff,
- 			return EXIT_SUCCESS;
- 	}
- 
--	if (sysfs_name)
-+	if (sysfs_name) {
-+		if (state->cmd->flags & COMMAND_FLAG_INVERSE) {
-+			if (!strncmp("0", argv[1], strlen("0")) ||
-+			    !strncmp("disable", argv[1], strlen("disable")) ||
-+			    !strncmp("disabled", argv[1], strlen("disabled"))) {
-+				argv1 = "enabled";
-+			} else if (!strncmp("1", argv[1], strlen("1")) ||
-+				   !strncmp("enable", argv[1], strlen("enable")) ||
-+				   !strncmp("enabled", argv[1], strlen("enabled"))) {
-+				argv1 = "disabled";
-+			}
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_entry, &tt_global->orig_list, list) {
++		if (!limit_tmp) {
++			ret = NET_XMIT_DROP;
++			break;
 +		}
 +
- 		res = write_file(path_buff, sysfs_name,
--				 argv[1], argc > 2 ? argv[2] : NULL);
-+				 argv1, argc > 2 ? argv[2] : NULL);
++		newskb = skb_copy(skb, GFP_ATOMIC);
++		if (!newskb) {
++			ret = NET_XMIT_DROP;
++			break;
++		}
++
++		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
++					orig_entry->orig_node, vid);
++		limit_tmp--;
 +	}
- 
- 	return res;
++	rcu_read_unlock();
++
++	batadv_tt_global_entry_put(tt_global);
++	*limit = limit_tmp;
++
++out:
++	return ret;
++}
++
++/**
++ * batadv_mcast_forw_want_all_ipv4_send() - send to nodes with want-all-ipv4
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to transmit
++ * @vid: the vlan identifier
++ * @limit: number of remaining, maximum transmissions
++ *
++ * Sends copies of a frame with multicast destination to any node with a
++ * BATADV_MCAST_WANT_ALL_IPV4 flag set. A transmission is performed via a
++ * batman-adv unicast packet for each such destination node.
++ *
++ * Return: NET_XMIT_DROP if limit was reached or on memory allocation failure,
++ * NET_XMIT_SUCCESS otherwise.
++ */
++static int
++batadv_mcast_forw_want_all_ipv4_send(struct batadv_priv *bat_priv,
++				     struct sk_buff *skb, unsigned short vid,
++				     unsigned int *limit)
++{
++	struct batadv_orig_node *orig_node;
++	unsigned int limit_tmp = *limit;
++	int ret = NET_XMIT_SUCCESS;
++	struct sk_buff *newskb;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_node,
++				 &bat_priv->mcast.want_all_ipv4_list,
++				 mcast_want_all_ipv4_node) {
++		if (!limit_tmp) {
++			ret = NET_XMIT_DROP;
++			break;
++		}
++
++		newskb = skb_copy(skb, GFP_ATOMIC);
++		if (!newskb) {
++			ret = NET_XMIT_DROP;
++			break;
++		}
++
++		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
++					orig_node, vid);
++		limit_tmp--;
++	}
++	rcu_read_unlock();
++
++	*limit = limit_tmp;
++	return ret;
++}
++
++/**
++ * batadv_mcast_forw_want_all_ipv6_send() - send to nodes with want-all-ipv6
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: The multicast packet to transmit
++ * @vid: the vlan identifier
++ * @limit: number of remaining, maximum transmissions
++ *
++ * Sends copies of a frame with multicast destination to any node with a
++ * BATADV_MCAST_WANT_ALL_IPV6 flag set. A transmission is performed via a
++ * batman-adv unicast packet for each such destination node.
++ *
++ * Return: NET_XMIT_DROP if limit was reached or on memory allocation failure,
++ * NET_XMIT_SUCCESS otherwise.
++ */
++static int
++batadv_mcast_forw_want_all_ipv6_send(struct batadv_priv *bat_priv,
++				     struct sk_buff *skb, unsigned short vid,
++				     unsigned int *limit)
++{
++	struct batadv_orig_node *orig_node;
++	unsigned int limit_tmp = *limit;
++	int ret = NET_XMIT_SUCCESS;
++	struct sk_buff *newskb;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_node,
++				 &bat_priv->mcast.want_all_ipv6_list,
++				 mcast_want_all_ipv6_node) {
++		if (!limit_tmp) {
++			ret = NET_XMIT_DROP;
++			break;
++		}
++
++		newskb = skb_copy(skb, GFP_ATOMIC);
++		if (!newskb) {
++			ret = NET_XMIT_DROP;
++			break;
++		}
++
++		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
++					orig_node, vid);
++		limit_tmp--;
++	}
++	rcu_read_unlock();
++
++	*limit = limit_tmp;
++	return ret;
++}
++
++/**
++ * batadv_mcast_forw_want_all_send() - send packet to nodes in a want-all list
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to transmit
++ * @vid: the vlan identifier
++ * @limit: number of remaining, maximum transmissions
++ *
++ * Sends copies of a frame with multicast destination to any node with a
++ * BATADV_MCAST_WANT_ALL_IPV4 or BATADV_MCAST_WANT_ALL_IPV6 flag set. A
++ * transmission is performed via a batman-adv unicast packet for each such
++ * destination node.
++ *
++ * Return: NET_XMIT_DROP if limit was reached, on memory allocation failure
++ * or if the protocol family is neither IPv4 nor IPv6. NET_XMIT_SUCCESS
++ * otherwise.
++ */
++static int
++batadv_mcast_forw_want_all_send(struct batadv_priv *bat_priv,
++				struct sk_buff *skb, unsigned short vid,
++				unsigned int *limit)
++{
++	switch (ntohs(eth_hdr(skb)->h_proto)) {
++	case ETH_P_IP:
++		return batadv_mcast_forw_want_all_ipv4_send(bat_priv, skb, vid,
++							    limit);
++	case ETH_P_IPV6:
++		return batadv_mcast_forw_want_all_ipv6_send(bat_priv, skb, vid,
++							    limit);
++	default:
++		/* we shouldn't be here... */
++		return NET_XMIT_DROP;
++	}
++}
++
++/**
++ * batadv_mcast_forw_send() - send packet to any detected multicast recpient
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to transmit
++ * @vid: the vlan identifier
++ * @limit: number of remaining, maximum transmissions
++ *
++ * Sends copies of a frame with multicast destination to any node that signaled
++ * interest in it, that is either via the translation table or the according
++ * want-all flags. A transmission is performed via a batman-adv unicast packet
++ * for each such destination node.
++ *
++ * The given skb is consumed/freed.
++ *
++ * Return: NET_XMIT_DROP if limit was reached, on memory allocation failure
++ * or if the protocol family is neither IPv4 nor IPv6. NET_XMIT_SUCCESS
++ * otherwise.
++ */
++int batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			   unsigned short vid)
++{
++	/* The previous forw mode check will try to limit to the configured
++	 * fanout. Here, we allow a little bit of flexibility in case some
++	 * new listeners might have joined between these function calls.
++	 */
++	unsigned int limit = 2 * atomic_read(&bat_priv->multicast_fanout);
++	int ret;
++
++	ret = batadv_mcast_forw_tt_send(bat_priv, skb, vid, &limit);
++	if (ret != NET_XMIT_SUCCESS) {
++		kfree_skb(skb);
++		return ret;
++	}
++
++	ret = batadv_mcast_forw_want_all_send(bat_priv, skb, vid, &limit);
++	if (ret != NET_XMIT_SUCCESS) {
++		kfree_skb(skb);
++		return ret;
++	}
++
++	consume_skb(skb);
++	return ret;
  }
+ 
+ /**
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 466013fe..83c5ff51 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -36,6 +36,13 @@ enum batadv_forw_mode {
+ 	BATADV_FORW_ALL,
+ 
+ 	/**
++	 * @BATADV_FORW_SOME: forward the packet to some nodes (currently via
++	 *  a multicast-to-unicast conversion and the BATMAN unicast routing
++	 *  protocol)
++	 */
++	BATADV_FORW_SOME,
++
++	/**
+ 	 * @BATADV_FORW_SINGLE: forward the packet to a single node (currently
+ 	 *  via the BATMAN unicast routing protocol)
+ 	 */
+@@ -51,6 +58,9 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+ 
++int batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			   unsigned short vid);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
+@@ -73,6 +83,14 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	return BATADV_FORW_ALL;
+ }
+ 
++static inline int
++batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
++		       unsigned short vid)
++{
++	kfree_skb(skb);
++	return NET_XMIT_DROP;
++}
++
+ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 67a58da2..f0458727 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -157,6 +157,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
+ 	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
+ 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
++	[BATADV_ATTR_MULTICAST_FANOUT]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
+ 	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_ELP_INTERVAL]		= { .type = NLA_U32 },
+@@ -353,6 +354,10 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
+ 	if (nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED,
+ 		       !atomic_read(&bat_priv->multicast_mode)))
+ 		goto nla_put_failure;
++
++	if (nla_put_u32(msg, BATADV_ATTR_MULTICAST_FANOUT,
++			atomic_read(&bat_priv->multicast_fanout)))
++		goto nla_put_failure;
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
+ 
+ #ifdef CONFIG_BATMAN_ADV_NC
+@@ -592,6 +597,12 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
+ 
+ 		atomic_set(&bat_priv->multicast_mode, !nla_get_u8(attr));
+ 	}
++
++	if (info->attrs[BATADV_ATTR_MULTICAST_FANOUT]) {
++		attr = info->attrs[BATADV_ATTR_MULTICAST_FANOUT];
++
++		atomic_set(&bat_priv->multicast_fanout, nla_get_u32(attr));
++	}
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
+ 
+ #ifdef CONFIG_BATMAN_ADV_NC
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 2e367230..db8ac4df 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -209,7 +209,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 	unsigned short vid;
+ 	u32 seqno;
+ 	int gw_mode;
+-	enum batadv_forw_mode forw_mode;
++	enum batadv_forw_mode forw_mode = BATADV_FORW_SINGLE;
+ 	struct batadv_orig_node *mcast_single_orig = NULL;
+ 	int network_offset = ETH_HLEN;
+ 	__be16 proto;
+@@ -317,7 +317,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 			if (forw_mode == BATADV_FORW_NONE)
+ 				goto dropped;
+ 
+-			if (forw_mode == BATADV_FORW_SINGLE)
++			if (forw_mode == BATADV_FORW_SINGLE ||
++			    forw_mode == BATADV_FORW_SOME)
+ 				do_bcast = false;
+ 		}
+ 	}
+@@ -377,6 +378,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 			ret = batadv_send_skb_unicast(bat_priv, skb,
+ 						      BATADV_UNICAST, 0,
+ 						      mcast_single_orig, vid);
++		} else if (forw_mode == BATADV_FORW_SOME) {
++			ret = batadv_mcast_forw_send(bat_priv, skb, vid);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
+@@ -818,6 +821,7 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	bat_priv->mcast.querier_ipv6.shadowing = false;
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
+ 	atomic_set(&bat_priv->multicast_mode, 1);
++	atomic_set(&bat_priv->multicast_fanout, 16);
+ 	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_ipv4, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_ipv6, 0);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index f73d7913..8f83554b 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -61,6 +61,7 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
++#include "send.h"
+ #include "soft-interface.h"
+ #include "tvlv.h"
+ 
+@@ -205,7 +206,7 @@ batadv_tt_local_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+  * Return: a pointer to the corresponding tt_global_entry struct if the client
+  * is found, NULL otherwise.
+  */
+-static struct batadv_tt_global_entry *
++struct batadv_tt_global_entry *
+ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ 			   unsigned short vid)
+ {
+@@ -300,8 +301,7 @@ static void batadv_tt_global_entry_release(struct kref *ref)
+  *  possibly release it
+  * @tt_global_entry: tt_global_entry to be free'd
+  */
+-static void
+-batadv_tt_global_entry_put(struct batadv_tt_global_entry *tt_global_entry)
++void batadv_tt_global_entry_put(struct batadv_tt_global_entry *tt_global_entry)
+ {
+ 	kref_put(&tt_global_entry->common.refcount,
+ 		 batadv_tt_global_entry_release);
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 61bca75e..5b41f217 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -41,6 +41,10 @@ int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+ 			       s32 match_vid, const char *message);
++struct batadv_tt_global_entry *
++batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
++			   unsigned short vid);
++void batadv_tt_global_entry_put(struct batadv_tt_global_entry *tt_global_entry);
+ int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
+ 				const u8 *addr, unsigned short vid);
+ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index a21b34ed..d22cf01e 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1565,6 +1565,12 @@ struct batadv_priv {
+ 	 *  node's sender/originating side
+ 	 */
+ 	atomic_t multicast_mode;
++
++	/**
++	 * @multicast_fanout: Maximum number of packet copies to generate for a
++	 *  multicast-to-unicast conversion
++	 */
++	atomic_t multicast_fanout;
+ #endif
+ 
+ 	/** @orig_interval: OGM broadcast interval in milliseconds */
 -- 
 2.11.0
 
