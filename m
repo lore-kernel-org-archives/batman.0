@@ -1,13 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 23 Feb 2019 15:09:06 +0100
-Message-Id: <20190223140906.28979-3-sven@narfation.org>
+Date: Sat, 23 Feb 2019 15:16:14 +0100
+Message-ID: <6715358.6tb0aJhElB@sven-edge>
 In-Reply-To: <20190223140906.28979-1-sven@narfation.org>
 References: <20190223140906.28979-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] batman-adv: Reduce tt_global hash refcnt only for
- removed entry
+Content-Type: multipart/signed; boundary="nextPart2698641.cCrWaGWegk";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH maint] Re: batman-adv: Reduce claim hash
+ refcnt only for removed entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,65 +19,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
 
-The batadv_hash_remove is a function which searches the hashtable for an
-entry using a needle, a hashtable bucket selection function and a compare
-function. It will lock the bucket list and delete an entry when the compare
-function matches it with the needle. It returns the pointer to the
-hlist_node which matches or NULL when no entry matches the needle.
+--nextPart2698641.cCrWaGWegk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The batadv_tt_global_free is not itself protected in anyway to avoid that
-any other function is modifying the hashtable between the search for the
-entry and the call to batadv_hash_remove. It can therefore happen that the
-entry either doesn't exist anymore or an entry was deleted which is not the
-same object as the needle. In such an situation, the reference counter (for
-the reference stored in the hashtable) must not be reduced for the needle.
-Instead the reference counter of the actually removed entry has to be
-reduced.
+On Saturday, 23 February 2019 15:09:04 CET Sven Eckelmann wrote:
+> The batadv_hash_remove is a function which searches the hashtable for an
+> entry using a needle, a hashtable bucket selection function and a compare
+> function. It will lock the bucket list and delete an entry when the compare
+> function matches it with the needle. It returns the pointer to the
+> hlist_node which matches or NULL when no entry matches the needle.
+[...]
 
-Otherwise the reference counter will underflow and the object might be
-freed before all its references were dropped. The kref helpers reported
-this problem as:
+I had a minor problem with my git setup and thus the [PATCH maint] subject was 
+not correctly generated. Sorry about that.
 
-  refcount_t: underflow; use-after-free.
+The issue in redmine can be found at https://www.open-mesh.org/issues/372.
 
-Fixes: 7bad46397eff ("batman-adv: protect the local and the global trans-tables with rcu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Cc: Antonio Quartulli <a@unstable.cc>
+Kind regards,
+	Sven
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index b5cfc5068a904d060dee1a1c6cb4b0177198e5d9..26c4e2493ddfbfdea26a9b45409821834010a913 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -616,14 +616,26 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 				  struct batadv_tt_global_entry *tt_global,
- 				  const char *message)
- {
-+	struct batadv_tt_global_entry *tt_removed_entry;
-+	struct hlist_node *tt_removed_node;
-+
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Deleting global tt entry %pM (vid: %d): %s\n",
- 		   tt_global->common.addr,
- 		   batadv_print_vid(tt_global->common.vid), message);
- 
--	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
--			   batadv_choose_tt, &tt_global->common);
--	batadv_tt_global_entry_put(tt_global);
-+	tt_removed_node = batadv_hash_remove(bat_priv->tt.global_hash,
-+					     batadv_compare_tt,
-+					     batadv_choose_tt,
-+					     &tt_global->common);
-+	if (!tt_removed_node)
-+		return;
-+
-+	/* drop reference of remove hash entry */
-+	tt_removed_entry = hlist_entry(tt_removed_node,
-+				       struct batadv_tt_global_entry,
-+				       common.hash_entry);
-+	batadv_tt_global_entry_put(tt_removed_entry);
- }
- 
- /**
+--nextPart2698641.cCrWaGWegk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxxVa4ACgkQXYcKB8Em
+e0a/rxAAl5qsiKCC9SPNbkGM7bFVHIXFjD9SidVT3VCgDOmWxVmWCL1URvF1EnJy
+T8nfEc0D3mvaOhiXZom+DfS128yoQhmDWVX96L8OMr39ezZnnIdqkXkOKy7H9Sz0
+6r8X+i/yXBtdsz5hDef4P/1708LKCKuTCpWnHmKP/ubO9ovMZhTgUAb/qBkEA1M4
+EWA0SlMN1z3nXzneNPAe6JLiY2MpD4bIODmMtKC1nH08Ly7cuRjDVsnEMRa0iUpT
+pazTFTjQYl6Q2Cv3lYNm/D/HFxpe3P0jZQH9UjxFCCS1t7crLhavqvNsdk97bzMW
++xuaExcC/rFdij0YgqvD9McKiwquZpxbwcar1ID4pDznpyF3YSviz/XTg1JYGn7a
+6rbowP2m1APjgV23LHYUyMkuDtjhMlU+xOZ0faUpdQqTsvbhs5++53Zrj7Rch1J2
++NrwVgi2PADI/+RJAJyqzMEkVRhKGevANFIJvMqsIw9QfzuaYYoeEYgjPfIcYzWN
++Fo01TNY72uLidWe5HwKCkKCWKb1/dqxcxLI1BIZS4EbiMvM2jk0XIty0afJ6emc
+0WxrxnCwgx13p4sMbiuJf4hdxjZaXnXlelxmZoZlz8094eJH1B/z3tdSyOB7eIg2
+N2fysk0iLPLUOOaB2pIz+Q5cLCnxjwd3akyoXODlNKIgIr8Jbf8=
+=Ky3N
+-----END PGP SIGNATURE-----
+
+--nextPart2698641.cCrWaGWegk--
+
+
+
