@@ -1,16 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 25 Feb 2019 09:22:53 +0100
-Message-ID: <50037565.hLq9mJvEzh@bentobox>
-In-Reply-To: <CALYz8yqCAkcrvjcBhgf-2YYTrejhEXnnbRWP3bCtv-joXfP3jA@mail.gmail.com>
-References: <20190224165113.15726-1-sven@narfation.org>
- <2667717.mmYbNj13ue@bentobox>
- <CALYz8yqCAkcrvjcBhgf-2YYTrejhEXnnbRWP3bCtv-joXfP3jA@mail.gmail.com>
+Return-Path: <umut.deniz@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3194159.aSf94Evgts";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC openwrt-routing] batman-adv: Split batadv
- proto in meshif and hardif part
+References: <CAHh66V8N6KCqGdxnMQpHTaqjLbfMwWyGrRvjZY+P20W3-UF4Hw@mail.gmail.com>
+ <CAHh66V-79d--F=d-Rx+af6Vffm09bs=-EOTiK4dtB3+r-E91Ag@mail.gmail.com>
+ <1711580.CLzo8a4Rc7@sven-edge>
+In-Reply-To: <1711580.CLzo8a4Rc7@sven-edge>
+From: umut deniz <umut.deniz@gmail.com>
+Date: Mon, 25 Feb 2019 17:06:21 +0300
+Message-ID: <CAHh66V8VNnbZCHWOi9ppnKbqfo1PbqVV3vSP1wbyROidBpTRCw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [B.A.T.M.A.N.] Fwd: nodes start disappearing after a certain
+ node count
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,46 +19,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?utf-8?B?0JrQuNGA0LjQu9C7INCb0YPQutC+0L3QuNC9?= <klukonin@gmail.com>, openwrt-devel@lists.openwrt.org
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3194159.aSf94Evgts
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+Hello Sven,
 
-On Monday, 25 February 2019 09:03:52 CET =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=
-=BB =D0=9B=D1=83=D0=BA=D0=BE=D0=BD=D0=B8=D0=BD wrote:
-> But what about ELP interval parameter?
-> As I think, it should be covered by UCI config too.
+Thank your for your swift reply and advice. As you said TI supports limited
+number of peers with its driver and hardware in mesh mode. According to TI
+documentation it is 32 nodes. The question bogging my mind is how could the
+< :#iw dev adhoc0 station dump > command return 6 active and plink established
+nodes (with inactive times around 80ms) while batman-adv's last-seen is
+increasing till timeout occurs on all neighbors and after timeout iw station
+dump still reports the same active stations (with inactive times around 80ms).
+Am I missing something to debug or a log to look in to or a configuration
+tied with batman-adv needed to be made.
 
-Please first provide a batctl patch to support this setting. Then we can=20
-discuss the uci integration.
+Thank you and best regards
 
-Kind regards,
-	Sven
---nextPart3194159.aSf94Evgts
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlxzpd0ACgkQXYcKB8Em
-e0ZtzxAAgf2wG1ZkEdvHb19SjA17QKpV/NEe+M5y9HCwzammqRy9iqeIzcuHzHMi
-/OfghmBGpoiY/33BEEoPrc0/0aNC6uS9K1G1rS48Nj+EZFuN5ARtWe/CLrd4CB4q
-9iKs6Ca7Am+4NNLTAF++/a2zOkCjLd59gQ4enX05F9t1Fw8di3pzE3Ouyj3vJRnb
-aoRoVQdwf/TsKInkeHFd4jujXwhDyTfGAy6mvkATrEPQh3kYmrX65OmzsXOYFHhW
-uep8xnWQtabvLJ1NC9rT+eLJ3N60LfHKywxUuUmmNaprRxVLEyqh7RMiPQtox1Yz
-fsTEtEDpDTTX+zayfJBtn3R7dOUfX91IitnZa+GKBlhSnYKbf3ao4h49bcrRGJ7z
-Tmp7p9wy1NCTo4c9MYgJs/yV59iJBXw8zVlcWO4j1OLjyKlT7w7KkxBtFfUy4owX
-qLf1Am908XOvXKbgbIYi5TcDMpAKXHoShao+QdvAe/xhtud5EBP3m2l3tx6mzxA4
-+gtWW4whJQjdGj2hpiGsJToSqxZ3DKjdEQa0XveJqoWqUS6AMEP/75KqugRZFv19
-ZOXMfKm7UXrWG6kfYC5SZ3kks+gZF+MK0tVEHQDG/kdirDi2Uu5pHePdK2wYLH7y
-FR2ZMjeFPkMiXRjYegFMvHfUYs5/sZBmo8+gjMpLoyBnKS0cPEY=
-=wav4
------END PGP SIGNATURE-----
-
---nextPart3194159.aSf94Evgts--
-
-
-
+On Mon, Feb 25, 2019 at 12:22 AM Sven Eckelmann <sven@narfation.org> wrote:
+>
+> On Sunday, 24 February 2019 21:48:18 CET umut deniz wrote:
+> > my current platform is ti's beagleboneblack wireless board running openwrt
+> > distribution (the required bbbw dtb and wl1835 driver firmware applied) with
+> > batman enabled and configured. with this high level description of the
+> > components i am able to build a mesh network 6 nodes (i.e. bbbw cards) but as
+> > soon as i introduce a 7th card into the network batman mesh becomes unresponsive
+> > as the last seen times start to increase and finally, after 200 seconds all the
+> > nodes drops from the originator and neighbor tables which could be inspected
+> > with < :#batctl o> and < :#batctl n> commands respectively. all the cards are on
+> > the same table and well powered.
+> [...]
+> > i researched for a while for the cause with no avail. i would appreciate any
+> > kind of help to point me to the right direction to solve this.
+>
+> Please don't use things like wl1835 when building larger meshes. It is known
+> that these kind of  devices only support a very limited amount of peers and
+> are most of the time only (more or less) stable in management mode (client).
+> And afaik, the wlcore driver (like other TI wirelss drivers) is also orphaned.
+>
+> If you're wifi link/driver doesn't work, batman-adv can also do nothing to fix
+> it.
+>
+> Rule of thumb: If it is a USB/SDIO wifi device, start waving your hands in the
+> air, scream and run away. This strategy is also helpful in other wifi related
+> situations.
+>
+> Kind regards,
+>         Sven
