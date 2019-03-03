@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Mar 2019 18:02:58 +0100
-Message-Id: <20190303170259.31798-5-sven@narfation.org>
+Date: Sun,  3 Mar 2019 18:02:55 +0100
+Message-Id: <20190303170259.31798-2-sven@narfation.org>
 In-Reply-To: <20190303170259.31798-1-sven@narfation.org>
 References: <20190303170259.31798-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: ABI: Mark sysfs files as
- deprecated
+Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Drop documentation about
+ debugfs files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,61 +19,71 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The sysfs files are replaced by the batadv generic netlink family. The old
-sysfs configuration interface was frowned upon by other kernel developers.
-But the files cannot be removed immediately because userspace tools might
-still depend on it. Instead schedule for its removal in 2021.
+The debugfs files were marked as deprecated by commit fee04b6f72cf
+("batman-adv: Mark debugfs functionality as deprecated"). The documentation
+should not advertise its usage anymore and instead promote the generic
+netlink family and a userspace tool to access it.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- .../ABI/{testing => obsolete}/sysfs-class-net-batman-adv      | 2 ++
- Documentation/ABI/{testing => obsolete}/sysfs-class-net-mesh  | 2 ++
- MAINTAINERS                                                   | 4 ++--
- 3 files changed, 6 insertions(+), 2 deletions(-)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-net-batman-adv (92%)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-net-mesh (97%)
+ Documentation/networking/batman-adv.rst | 29 ++++++++-----------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-similarity index 92%
-rename from Documentation/ABI/testing/sysfs-class-net-batman-adv
-rename to Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-index 89810684..5bdbc8d4 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-@@ -1,3 +1,5 @@
-+This ABI is deprecated and will be removed after 2021. It is
-+replaced with the batadv generic netlink family.
+diff --git a/Documentation/networking/batman-adv.rst b/Documentation/networking/batman-adv.rst
+index 245fb6c0..1b9ff47c 100644
+--- a/Documentation/networking/batman-adv.rst
++++ b/Documentation/networking/batman-adv.rst
+@@ -74,23 +74,9 @@ All mesh wide settings can be found in batman's own interface folder::
+   bridge_loop_avoidance gw_sel_class  network_coding
+   distributed_arp_table hop_penalty   orig_interval
  
- What:           /sys/class/net/<iface>/batman-adv/elp_interval
- Date:           Feb 2014
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/obsolete/sysfs-class-net-mesh
-similarity index 97%
-rename from Documentation/ABI/testing/sysfs-class-net-mesh
-rename to Documentation/ABI/obsolete/sysfs-class-net-mesh
-index c2b956d4..04c1a293 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/obsolete/sysfs-class-net-mesh
-@@ -1,3 +1,5 @@
-+This ABI is deprecated and will be removed after 2021. It is
-+replaced with the batadv generic netlink family.
+-There is a special folder for debugging information::
+-
+-  $ ls /sys/kernel/debug/batman_adv/bat0/
+-  bla_backbone_table log         neighbors         transtable_local
+-  bla_claim_table    mcast_flags originators
+-  dat_cache          nc          socket
+-  gateways           nc_nodes    transtable_global
+-
+-Some of the files contain all sort of status information regarding the mesh
+-network. For example, you can view the table of originators (mesh
+-participants) with::
+-
+-  $ cat /sys/kernel/debug/batman_adv/bat0/originators
+-
+-Other files allow to change batman's behaviour to better fit your requirements.
+-For instance, you can check the current originator interval (value in
+-milliseconds which determines how often batman sends its broadcast packets)::
++Some files allow to change batman-adv's behaviour to better fit your
++requirements. For instance, you can check the current originator interval (value
++in milliseconds which determines how often batman sends its broadcast packets)::
  
- What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
- Date:           May 2010
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5fe4a8f3..e205c8e3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6,8 +6,8 @@ L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
- W:	https://www.open-mesh.org/
- Q:	https://patchwork.open-mesh.org/project/batman/list/
- S:	Maintained
--F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
--F:	Documentation/ABI/testing/sysfs-class-net-mesh
-+F:	Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-+F:	Documentation/ABI/obsolete/sysfs-class-net-mesh
- F:	Documentation/networking/batman-adv.rst
- F:	include/uapi/linux/batadv_packet.h
- F:	include/uapi/linux/batman_adv.h
+   $ cat /sys/class/net/bat0/mesh/orig_interval
+   1000
+@@ -103,6 +89,10 @@ In very mobile scenarios, you might want to adjust the originator interval to a
+ lower value. This will make the mesh more responsive to topology changes, but
+ will also increase the overhead.
+ 
++Information about the current state can be accessed via the batadv generic
++netlink family. batctl provides human readable version via its debug tables
++subcommands.
++
+ 
+ Usage
+ =====
+@@ -147,10 +137,9 @@ batman-adv module. When building batman-adv as part of kernel, use "make
+ menuconfig" and enable the option ``B.A.T.M.A.N. debugging``
+ (``CONFIG_BATMAN_ADV_DEBUG=y``).
+ 
+-Those additional debug messages can be accessed using a special file in
+-debugfs::
++Those additional debug messages can be accessed using the perf infrastructure::
+ 
+-  $ cat /sys/kernel/debug/batman_adv/bat0/log
++  $ trace-cmd stream -e batadv:batadv_dbg
+ 
+ The additional debug output is by default disabled. It can be enabled during
+ run time. Following log_levels are defined:
 -- 
 2.20.1
 
