@@ -1,11 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 28 Mar 2019 16:41:43 +0100
-Message-Id: <20190328154152.20552-4-sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:41:44 +0100
+Message-Id: <20190328154152.20552-5-sw@simonwunderlich.de>
 In-Reply-To: <20190328154152.20552-1-sw@simonwunderlich.de>
 References: <20190328154152.20552-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/12] batman-adv: Drop documentation about
- sysfs files
+Subject: [B.A.T.M.A.N.] [PATCH 04/12] batman-adv: Make sysfs support optional
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,147 +19,349 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The sysfs files will be marked as deprecated in the near future. They
-are already replaced by the batadv generic netlink family. The
-documentation should not advertise its usage anymore and instead
-promote the generic netlink family and a userspace tool to access it.
+The sysfs files will be marked as deprecated in the near future. They are
+already replaced by the batadv generic netlink family. Add an Kconfig
+option to disable the sysfs support for users who want to test their tools
+or want to safe some space. This setting should currently still be enabled
+by default to keep backward compatible with legacy tools.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/networking/batman-adv.rst | 91 +++++++++------------------------
- 1 file changed, 24 insertions(+), 67 deletions(-)
+ net/batman-adv/Kconfig                 | 12 ++++++
+ net/batman-adv/Makefile                |  2 +-
+ net/batman-adv/bridge_loop_avoidance.c |  1 -
+ net/batman-adv/gateway_client.c        |  1 -
+ net/batman-adv/main.c                  | 73 ++++++++++++++++++++++++++++++++++
+ net/batman-adv/main.h                  |  2 +
+ net/batman-adv/sysfs.c                 | 70 --------------------------------
+ net/batman-adv/sysfs.h                 | 38 +++++++++++++++++-
+ 8 files changed, 124 insertions(+), 75 deletions(-)
 
-diff --git a/Documentation/networking/batman-adv.rst b/Documentation/networking/batman-adv.rst
-index 1b9ff47c0976..18020943ba25 100644
---- a/Documentation/networking/batman-adv.rst
-+++ b/Documentation/networking/batman-adv.rst
-@@ -27,24 +27,8 @@ Load the batman-adv module into your kernel::
-   $ insmod batman-adv.ko
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 17595ec0961a..a3d188dfbe75 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -97,6 +97,18 @@ config BATMAN_ADV_DEBUG
+ 	  buffer. The output is controlled via the batadv netdev specific
+ 	  log_level setting.
  
- The module is now waiting for activation. You must add some interfaces on which
--batman can operate. After loading the module batman advanced will scan your
--systems interfaces to search for compatible interfaces. Once found, it will
--create subfolders in the ``/sys`` directories of each supported interface,
--e.g.::
--
--  $ ls /sys/class/net/eth0/batman_adv/
--  elp_interval iface_status mesh_iface throughput_override
--
--If an interface does not have the ``batman_adv`` subfolder, it probably is not
--supported. Not supported interfaces are: loopback, non-ethernet and batman's
--own interfaces.
--
--Note: After the module was loaded it will continuously watch for new
--interfaces to verify the compatibility. There is no need to reload the module
--if you plug your USB wifi adapter into your machine after batman advanced was
--initially loaded.
--
--The batman-adv soft-interface can be created using the iproute2 tool ``ip``::
-+batman-adv can operate. The batman-adv soft-interface can be created using the
-+iproute2 tool ``ip``::
- 
-   $ ip link add name bat0 type batadv
- 
-@@ -52,38 +36,37 @@ To activate a given interface simply attach it to the ``bat0`` interface::
- 
-   $ ip link set dev eth0 master bat0
- 
--Repeat this step for all interfaces you wish to add. Now batman starts
-+Repeat this step for all interfaces you wish to add. Now batman-adv starts
- using/broadcasting on this/these interface(s).
- 
--By reading the "iface_status" file you can check its status::
--
--  $ cat /sys/class/net/eth0/batman_adv/iface_status
--  active
--
- To deactivate an interface you have to detach it from the "bat0" interface::
- 
-   $ ip link set dev eth0 nomaster
- 
-+The same can also be done using the batctl interface subcommand::
++config BATMAN_ADV_SYSFS
++	bool "batman-adv sysfs entries"
++	depends on BATMAN_ADV
++	default y
++	help
++	  Say Y here if you want to enable batman-adv device configuration and
++	  status interface through sysfs attributes. It is replaced by the
++	  batadv generic netlink family but still used by various userspace
++	  tools and scripts.
 +
-+  batctl -m bat0 interface create
-+  batctl -m bat0 interface add -M eth0
++	  If unsure, say Y.
 +
-+To detach eth0 and destroy bat0::
+ config BATMAN_ADV_TRACING
+ 	bool "B.A.T.M.A.N. tracing support"
+ 	depends on BATMAN_ADV
+diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
+index 1bf7acfea17a..fd63e116d9ff 100644
+--- a/net/batman-adv/Makefile
++++ b/net/batman-adv/Makefile
+@@ -28,7 +28,7 @@ batman-adv-y += originator.o
+ batman-adv-y += routing.o
+ batman-adv-y += send.o
+ batman-adv-y += soft-interface.o
+-batman-adv-y += sysfs.o
++batman-adv-$(CONFIG_BATMAN_ADV_SYSFS) += sysfs.o
+ batman-adv-$(CONFIG_BATMAN_ADV_TRACING) += trace.o
+ batman-adv-y += tp_meter.o
+ batman-adv-y += translation-table.o
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index ee92bbc25058..8d6b7c9c2a7e 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -47,7 +47,6 @@
+ #include "netlink.h"
+ #include "originator.h"
+ #include "soft-interface.h"
+-#include "sysfs.h"
+ #include "translation-table.h"
  
--All mesh wide settings can be found in batman's own interface folder::
-+  batctl -m bat0 interface del -M eth0
-+  batctl -m bat0 interface destroy
+ static const u8 batadv_announce_mac[4] = {0x43, 0x05, 0x43, 0x05};
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index be63d6706659..47df4c678988 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -41,7 +41,6 @@
+ #include "originator.h"
+ #include "routing.h"
+ #include "soft-interface.h"
+-#include "sysfs.h"
+ #include "translation-table.h"
  
--  $ ls /sys/class/net/bat0/mesh/
--  aggregated_ogms       fragmentation isolation_mark routing_algo
--  ap_isolation          gw_bandwidth  log_level      vlan0
--  bonding               gw_mode       multicast_mode
--  bridge_loop_avoidance gw_sel_class  network_coding
--  distributed_arp_table hop_penalty   orig_interval
-+There are additional settings for each batadv mesh interface, vlan and hardif
-+which can be modified using batctl. Detailed information about this can be found
-+in its manual.
+ /* These are the offsets of the "hw type" and "hw address length" in the dhcp
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 33b9b38b82da..dabcaff87e34 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -10,6 +10,7 @@
+ #include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/crc32c.h>
++#include <linux/device.h>
+ #include <linux/errno.h>
+ #include <linux/genetlink.h>
+ #include <linux/gfp.h>
+@@ -19,6 +20,7 @@
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/kernel.h>
++#include <linux/kobject.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+@@ -28,6 +30,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/seq_file.h>
+ #include <linux/skbuff.h>
++#include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+@@ -72,6 +75,22 @@ struct workqueue_struct *batadv_event_workqueue;
  
--Some files allow to change batman-adv's behaviour to better fit your
--requirements. For instance, you can check the current originator interval (value
--in milliseconds which determines how often batman sends its broadcast packets)::
-+For instance, you can check the current originator interval (value
-+in milliseconds which determines how often batman-adv sends its broadcast
-+packets)::
+ static void batadv_recv_handler_init(void);
  
--  $ cat /sys/class/net/bat0/mesh/orig_interval
-+  $ batctl -M bat0 orig_interval
-   1000
- 
- and also change its value::
- 
--  $ echo 3000 > /sys/class/net/bat0/mesh/orig_interval
-+  $ batctl -M bat0 orig_interval 3000
- 
- In very mobile scenarios, you might want to adjust the originator interval to a
- lower value. This will make the mesh more responsive to topology changes, but
-@@ -142,37 +125,11 @@ Those additional debug messages can be accessed using the perf infrastructure::
-   $ trace-cmd stream -e batadv:batadv_dbg
- 
- The additional debug output is by default disabled. It can be enabled during
--run time. Following log_levels are defined:
--
--.. flat-table::
--
--   * - 0
--     - All debug output disabled
--   * - 1
--     - Enable messages related to routing / flooding / broadcasting
--   * - 2
--     - Enable messages related to route added / changed / deleted
--   * - 4
--     - Enable messages related to translation table operations
--   * - 8
--     - Enable messages related to bridge loop avoidance
--   * - 16
--     - Enable messages related to DAT, ARP snooping and parsing
--   * - 32
--     - Enable messages related to network coding
--   * - 64
--     - Enable messages related to multicast
--   * - 128
--     - Enable messages related to throughput meter
--   * - 255
--     - Enable all messages
--
--The debug output can be changed at runtime using the file
--``/sys/class/net/bat0/mesh/log_level``. e.g.::
--
--  $ echo 6 > /sys/class/net/bat0/mesh/log_level
--
--will enable debug messages for when routes change.
-+run time::
++#define BATADV_UEV_TYPE_VAR	"BATTYPE="
++#define BATADV_UEV_ACTION_VAR	"BATACTION="
++#define BATADV_UEV_DATA_VAR	"BATDATA="
 +
-+  $ batctl -m bat0 loglevel routes tt
++static char *batadv_uev_action_str[] = {
++	"add",
++	"del",
++	"change",
++	"loopdetect",
++};
 +
-+will enable debug messages for when routes and translation table entries change.
++static char *batadv_uev_type_str[] = {
++	"gw",
++	"bla",
++};
++
+ static int __init batadv_init(void)
+ {
+ 	int ret;
+@@ -666,6 +685,60 @@ bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid)
+ 	return ap_isolation_enabled;
+ }
  
- Counters for different types of packets entering and leaving the batman-adv
- module are available through ethtool::
++/**
++ * batadv_throw_uevent() - Send an uevent with batman-adv specific env data
++ * @bat_priv: the bat priv with all the soft interface information
++ * @type: subsystem type of event. Stored in uevent's BATTYPE
++ * @action: action type of event. Stored in uevent's BATACTION
++ * @data: string with additional information to the event (ignored for
++ *  BATADV_UEV_DEL). Stored in uevent's BATDATA
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
++int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
++			enum batadv_uev_action action, const char *data)
++{
++	int ret = -ENOMEM;
++	struct kobject *bat_kobj;
++	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
++
++	bat_kobj = &bat_priv->soft_iface->dev.kobj;
++
++	uevent_env[0] = kasprintf(GFP_ATOMIC,
++				  "%s%s", BATADV_UEV_TYPE_VAR,
++				  batadv_uev_type_str[type]);
++	if (!uevent_env[0])
++		goto out;
++
++	uevent_env[1] = kasprintf(GFP_ATOMIC,
++				  "%s%s", BATADV_UEV_ACTION_VAR,
++				  batadv_uev_action_str[action]);
++	if (!uevent_env[1])
++		goto out;
++
++	/* If the event is DEL, ignore the data field */
++	if (action != BATADV_UEV_DEL) {
++		uevent_env[2] = kasprintf(GFP_ATOMIC,
++					  "%s%s", BATADV_UEV_DATA_VAR, data);
++		if (!uevent_env[2])
++			goto out;
++	}
++
++	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
++out:
++	kfree(uevent_env[0]);
++	kfree(uevent_env[1]);
++	kfree(uevent_env[2]);
++
++	if (ret)
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Impossible to send uevent for (%s,%s,%s) event (err: %d)\n",
++			   batadv_uev_type_str[type],
++			   batadv_uev_action_str[action],
++			   (action == BATADV_UEV_DEL ? "NULL" : data), ret);
++	return ret;
++}
++
+ module_init(batadv_init);
+ module_exit(batadv_exit);
+ 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index c5de987778d1..f827e441025f 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -382,5 +382,7 @@ static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
+ 
+ unsigned short batadv_get_vid(struct sk_buff *skb, size_t header_len);
+ bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid);
++int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
++			enum batadv_uev_action action, const char *data);
+ 
+ #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 4fc9f7305174..7d289e50de71 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -102,22 +102,6 @@ batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
+ 	return vlan;
+ }
+ 
+-#define BATADV_UEV_TYPE_VAR	"BATTYPE="
+-#define BATADV_UEV_ACTION_VAR	"BATACTION="
+-#define BATADV_UEV_DATA_VAR	"BATDATA="
+-
+-static char *batadv_uev_action_str[] = {
+-	"add",
+-	"del",
+-	"change",
+-	"loopdetect",
+-};
+-
+-static char *batadv_uev_type_str[] = {
+-	"gw",
+-	"bla",
+-};
+-
+ /* Use this, if you have customized show and store functions for vlan attrs */
+ #define BATADV_ATTR_VLAN(_name, _mode, _show, _store)	\
+ struct batadv_attribute batadv_attr_vlan_##_name = {	\
+@@ -1235,57 +1219,3 @@ void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
+ 	kobject_put(*hardif_obj);
+ 	*hardif_obj = NULL;
+ }
+-
+-/**
+- * batadv_throw_uevent() - Send an uevent with batman-adv specific env data
+- * @bat_priv: the bat priv with all the soft interface information
+- * @type: subsystem type of event. Stored in uevent's BATTYPE
+- * @action: action type of event. Stored in uevent's BATACTION
+- * @data: string with additional information to the event (ignored for
+- *  BATADV_UEV_DEL). Stored in uevent's BATDATA
+- *
+- * Return: 0 on success or negative error number in case of failure
+- */
+-int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+-			enum batadv_uev_action action, const char *data)
+-{
+-	int ret = -ENOMEM;
+-	struct kobject *bat_kobj;
+-	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
+-
+-	bat_kobj = &bat_priv->soft_iface->dev.kobj;
+-
+-	uevent_env[0] = kasprintf(GFP_ATOMIC,
+-				  "%s%s", BATADV_UEV_TYPE_VAR,
+-				  batadv_uev_type_str[type]);
+-	if (!uevent_env[0])
+-		goto out;
+-
+-	uevent_env[1] = kasprintf(GFP_ATOMIC,
+-				  "%s%s", BATADV_UEV_ACTION_VAR,
+-				  batadv_uev_action_str[action]);
+-	if (!uevent_env[1])
+-		goto out;
+-
+-	/* If the event is DEL, ignore the data field */
+-	if (action != BATADV_UEV_DEL) {
+-		uevent_env[2] = kasprintf(GFP_ATOMIC,
+-					  "%s%s", BATADV_UEV_DATA_VAR, data);
+-		if (!uevent_env[2])
+-			goto out;
+-	}
+-
+-	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
+-out:
+-	kfree(uevent_env[0]);
+-	kfree(uevent_env[1]);
+-	kfree(uevent_env[2]);
+-
+-	if (ret)
+-		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-			   "Impossible to send uevent for (%s,%s,%s) event (err: %d)\n",
+-			   batadv_uev_type_str[type],
+-			   batadv_uev_action_str[action],
+-			   (action == BATADV_UEV_DEL ? "NULL" : data), ret);
+-	return ret;
+-}
+diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
+index 2d13f59efb1a..83fa808b1871 100644
+--- a/net/batman-adv/sysfs.h
++++ b/net/batman-adv/sysfs.h
+@@ -45,6 +45,8 @@ struct batadv_attribute {
+ 			 char *buf, size_t count);
+ };
+ 
++#ifdef CONFIG_BATMAN_ADV_SYSFS
++
+ int batadv_sysfs_add_meshif(struct net_device *dev);
+ void batadv_sysfs_del_meshif(struct net_device *dev);
+ int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
+@@ -54,7 +56,39 @@ int batadv_sysfs_add_vlan(struct net_device *dev,
+ 			  struct batadv_softif_vlan *vlan);
+ void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
+ 			   struct batadv_softif_vlan *vlan);
+-int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+-			enum batadv_uev_action action, const char *data);
++
++#else
++
++static inline int batadv_sysfs_add_meshif(struct net_device *dev)
++{
++	return 0;
++}
++
++static inline void batadv_sysfs_del_meshif(struct net_device *dev)
++{
++}
++
++static inline int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
++					  struct net_device *dev)
++{
++	return 0;
++}
++
++static inline void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
++{
++}
++
++static inline int batadv_sysfs_add_vlan(struct net_device *dev,
++					struct batadv_softif_vlan *vlan)
++{
++	return 0;
++}
++
++static inline void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
++					 struct batadv_softif_vlan *vlan)
++{
++}
++
++#endif
+ 
+ #endif /* _NET_BATMAN_ADV_SYSFS_H_ */
 -- 
 2.11.0
 
