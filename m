@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 28 Mar 2019 16:41:48 +0100
-Message-Id: <20190328154152.20552-9-sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:41:49 +0100
+Message-Id: <20190328154152.20552-10-sw@simonwunderlich.de>
 In-Reply-To: <20190328154152.20552-1-sw@simonwunderlich.de>
 References: <20190328154152.20552-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 08/12] MAINTAINERS: Add C(hat) field for
+Subject: [B.A.T.M.A.N.] [PATCH 09/12] MAINTAINERS: Add T(ree) field for
  batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,8 +20,9 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The #batman channel on freenode was created to discuss various B.A.T.M.A.N.
-related topics (like batman-adv).
+The linux-merge.git repository on git.open-mesh.org is used since 8 years
+to send PRs for net.git and net-next.git. It is time to officially specify
+list it as SCM tree.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
@@ -30,17 +31,17 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  1 file changed, 1 insertion(+)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 0a15adf5aaee..828dc1bd5a16 100644
+index 828dc1bd5a16..01eb5225e4ab 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2794,6 +2794,7 @@ M:	Antonio Quartulli <a@unstable.cc>
- L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
- W:	https://www.open-mesh.org/
+@@ -2796,6 +2796,7 @@ W:	https://www.open-mesh.org/
  B:	https://www.open-mesh.org/projects/batman-adv/issues
-+C:	irc://chat.freenode.net/batman
+ C:	irc://chat.freenode.net/batman
  Q:	https://patchwork.open-mesh.org/project/batman/list/
++T:	git https://git.open-mesh.org/linux-merge.git
  S:	Maintained
  F:	Documentation/ABI/obsolete/sysfs-class-net-batman-adv
+ F:	Documentation/ABI/obsolete/sysfs-class-net-mesh
 -- 
 2.11.0
 
