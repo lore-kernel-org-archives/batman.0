@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 28 Mar 2019 16:41:47 +0100
-Message-Id: <20190328154152.20552-8-sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:41:48 +0100
+Message-Id: <20190328154152.20552-9-sw@simonwunderlich.de>
 In-Reply-To: <20190328154152.20552-1-sw@simonwunderlich.de>
 References: <20190328154152.20552-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 07/12] MAINTAINERS: Add B(ugtracker) field
- for batman-adv
+Subject: [B.A.T.M.A.N.] [PATCH 08/12] MAINTAINERS: Add C(hat) field for
+ batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,9 +20,8 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-While it is acceptable to discuss problems on the mailing list, it is
-easier to track bugs in the official bugtracker. Registration is required
-to get access to the submission form.
+The #batman channel on freenode was created to discuss various B.A.T.M.A.N.
+related topics (like batman-adv).
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
@@ -31,14 +30,14 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  1 file changed, 1 insertion(+)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index fce2919582fb..0a15adf5aaee 100644
+index 0a15adf5aaee..828dc1bd5a16 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2793,6 +2793,7 @@ M:	Simon Wunderlich <sw@simonwunderlich.de>
- M:	Antonio Quartulli <a@unstable.cc>
+@@ -2794,6 +2794,7 @@ M:	Antonio Quartulli <a@unstable.cc>
  L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
  W:	https://www.open-mesh.org/
-+B:	https://www.open-mesh.org/projects/batman-adv/issues
+ B:	https://www.open-mesh.org/projects/batman-adv/issues
++C:	irc://chat.freenode.net/batman
  Q:	https://patchwork.open-mesh.org/project/batman/list/
  S:	Maintained
  F:	Documentation/ABI/obsolete/sysfs-class-net-batman-adv
