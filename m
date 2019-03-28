@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 28 Mar 2019 16:31:24 +0100
-Message-Id: <20190328153127.19931-3-sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:31:25 +0100
+Message-Id: <20190328153127.19931-4-sw@simonwunderlich.de>
 In-Reply-To: <20190328153127.19931-1-sw@simonwunderlich.de>
 References: <20190328153127.19931-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Reduce tt_local hash refcnt
+Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: Reduce tt_global hash refcnt
  only for removed entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -26,7 +26,7 @@ function. It will lock the bucket list and delete an entry when the compare
 function matches it with the needle. It returns the pointer to the
 hlist_node which matches or NULL when no entry matches the needle.
 
-The batadv_tt_local_remove is not itself protected in anyway to avoid that
+The batadv_tt_global_free is not itself protected in anyway to avoid that
 any other function is modifying the hashtable between the search for the
 entry and the call to batadv_hash_remove. It can therefore happen that the
 entry either doesn't exist anymore or an entry was deleted which is not the
@@ -41,52 +41,49 @@ this problem as:
 
   refcount_t: underflow; use-after-free.
 
-Fixes: ef72706a0543 ("batman-adv: protect tt_local_entry from concurrent delete events")
+Fixes: 7683fdc1e886 ("batman-adv: protect the local and the global trans-tables with rcu")
+Reported-by: Martin Weinelt <martin@linuxlounge.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ net/batman-adv/translation-table.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index f73d79139ae7..b5cfc5068a90 100644
+index b5cfc5068a90..26c4e2493ddf 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1337,9 +1337,10 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
- 			   unsigned short vid, const char *message,
- 			   bool roaming)
+@@ -616,14 +616,26 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
+ 				  struct batadv_tt_global_entry *tt_global,
+ 				  const char *message)
  {
-+	struct batadv_tt_local_entry *tt_removed_entry;
- 	struct batadv_tt_local_entry *tt_local_entry;
- 	u16 flags, curr_flags = BATADV_NO_FLAGS;
--	void *tt_entry_exists;
++	struct batadv_tt_global_entry *tt_removed_entry;
 +	struct hlist_node *tt_removed_node;
++
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Deleting global tt entry %pM (vid: %d): %s\n",
+ 		   tt_global->common.addr,
+ 		   batadv_print_vid(tt_global->common.vid), message);
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
- 	if (!tt_local_entry)
-@@ -1368,15 +1369,18 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
- 	 */
- 	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
- 
--	tt_entry_exists = batadv_hash_remove(bat_priv->tt.local_hash,
-+	tt_removed_node = batadv_hash_remove(bat_priv->tt.local_hash,
- 					     batadv_compare_tt,
- 					     batadv_choose_tt,
- 					     &tt_local_entry->common);
--	if (!tt_entry_exists)
+-	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
+-			   batadv_choose_tt, &tt_global->common);
+-	batadv_tt_global_entry_put(tt_global);
++	tt_removed_node = batadv_hash_remove(bat_priv->tt.global_hash,
++					     batadv_compare_tt,
++					     batadv_choose_tt,
++					     &tt_global->common);
 +	if (!tt_removed_node)
- 		goto out;
- 
--	/* extra call to free the local tt entry */
--	batadv_tt_local_entry_put(tt_local_entry);
++		return;
++
 +	/* drop reference of remove hash entry */
 +	tt_removed_entry = hlist_entry(tt_removed_node,
-+				       struct batadv_tt_local_entry,
++				       struct batadv_tt_global_entry,
 +				       common.hash_entry);
-+	batadv_tt_local_entry_put(tt_removed_entry);
++	batadv_tt_global_entry_put(tt_removed_entry);
+ }
  
- out:
- 	if (tt_local_entry)
+ /**
 -- 
 2.11.0
 
