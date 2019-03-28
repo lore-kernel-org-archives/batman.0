@@ -1,11 +1,12 @@
-Return-Path: <3JTOXXAkbANIGMN8y992FyDD61.4CC492IG2F0CBH2BH.0CA@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:31:22 +0100
+Message-Id: <20190328153127.19931-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Sun, 24 Mar 2019 00:35:01 -0700
-In-Reply-To: <000000000000fa4f60057e499989@google.com>
-Message-ID: <0000000000002c5a7f0584d220fa@google.com>
-From: syzbot <syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
-Subject: Re: [B.A.T.M.A.N.] WARNING in batadv_mcast_mla_tt_retract
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/5] pull request for net: batman-adv
+ 2019-03-28
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,27 +16,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, alexander.h.duyck@intel.com, amritha.nambiar@intel.com, avagin@gmail.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, devicetree@vger.kernel.org, dmitry.torokhov@gmail.com, heiko@sntech.de, jeffrey.t.kirsher@intel.com, joe@perches.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, mareklindner@neomailbox.ch, mark.rutland@arm.com, netdev@vger.kernel.org, robh+dt@kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tyhicks@canonical.com
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-syzbot has bisected this bug to:
+Hi David,
 
-commit 2ed30cfcf866f657349bf9f54a017a957cd98378
-Author: Heiko Stuebner <heiko@sntech.de>
-Date:   Thu Aug 2 11:36:41 2018 +0000
+here are some bugfixes which we would like to have integrated into net.
 
-     arm64: dts: rockchip: enable dwc2-based otg controller on px30-evb
+Please pull or let me know of any problem!
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=177e9917200000
-start commit:   4b3c31c8 Merge branch 'i2c/for-current' of git://git.kerne..
-git tree:       upstream
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=14fe9917200000
-console output: https://syzkaller.appspot.com/x/log.txt?x=10fe9917200000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=b05cfdb4ee8ab9b2
-dashboard link: https://syzkaller.appspot.com/bug?extid=83f2d54ec6b7e417e13f
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=139c6408c00000
+Thank you,
+      Simon
 
-Reported-by: syzbot+83f2d54ec6b7e417e13f@syzkaller.appspotmail.com
-Fixes: 2ed30cfcf866 ("arm64: dts: rockchip: enable dwc2-based otg  
-controller on px30-evb")
+The following changes since commit ffa91253739ca89fc997195d8bbd1f7ba3e29fbe:
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+  Documentation: networking: Update netdev-FAQ regarding patches (2019-03-18 20:09:58 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20190328
+
+for you to fetch changes up to 438b3d3fae4346a49fe12fa7cc1dc9327f006a91:
+
+  batman-adv: Fix genl notification for throughput_override (2019-03-25 09:31:19 +0100)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - Fix refcount underflows in bridge loop avoidance code,
+   by Sven Eckelmann (3 patches)
+
+ - Fix warning when CFG80211 isn't enabled, by Anders Roxell
+
+ - Fix genl notification for throughput override, by Sven Eckelmann
+
+----------------------------------------------------------------
+Anders Roxell (1):
+      batman-adv: fix warning in function batadv_v_elp_get_throughput
+
+Sven Eckelmann (4):
+      batman-adv: Reduce claim hash refcnt only for removed entry
+      batman-adv: Reduce tt_local hash refcnt only for removed entry
+      batman-adv: Reduce tt_global hash refcnt only for removed entry
+      batman-adv: Fix genl notification for throughput_override
+
+ net/batman-adv/bat_v_elp.c             |  6 ++++--
+ net/batman-adv/bridge_loop_avoidance.c | 16 +++++++++++++---
+ net/batman-adv/sysfs.c                 |  7 +++++--
+ net/batman-adv/translation-table.c     | 32 ++++++++++++++++++++++++--------
+ 4 files changed, 46 insertions(+), 15 deletions(-)
