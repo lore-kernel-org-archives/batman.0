@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 28 Mar 2019 16:41:45 +0100
-Message-Id: <20190328154152.20552-6-sw@simonwunderlich.de>
+Date: Thu, 28 Mar 2019 16:41:46 +0100
+Message-Id: <20190328154152.20552-7-sw@simonwunderlich.de>
 In-Reply-To: <20190328154152.20552-1-sw@simonwunderlich.de>
 References: <20190328154152.20552-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 05/12] batman-adv: ABI: Mark sysfs files as
- deprecated
+Subject: [B.A.T.M.A.N.] [PATCH 06/12] batman-adv: Warn about sysfs file
+ access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,62 +20,247 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The sysfs files are replaced by the batadv generic netlink family. The old
-sysfs configuration interface was frowned upon by other kernel developers.
-But the files cannot be removed immediately because userspace tools might
-still depend on it. Instead schedule for its removal in 2021.
+The sysfs files to read and modify the configuration settings were replaced
+by the batadv generic netlink family. They are also marked as obsolete in
+the ABI documentation. But not all users of this functionality might follow
+changes in the Documentation/ABI/obsolete/ folder. They might benefit from
+a warning messages about the deprecation of the functionality which they
+just tried to access
+
+  batman_adv: [Deprecated]: batctl (pid 30381) Use of sysfs file "orig_interval".
+  Use batadv genl family instead
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/ABI/{testing => obsolete}/sysfs-class-net-batman-adv | 2 ++
- Documentation/ABI/{testing => obsolete}/sysfs-class-net-mesh       | 2 ++
- MAINTAINERS                                                        | 4 ++--
- 3 files changed, 6 insertions(+), 2 deletions(-)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-net-batman-adv (92%)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-net-mesh (97%)
+ net/batman-adv/sysfs.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-similarity index 92%
-rename from Documentation/ABI/testing/sysfs-class-net-batman-adv
-rename to Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-index 898106849e27..5bdbc8d40256 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-@@ -1,3 +1,5 @@
-+This ABI is deprecated and will be removed after 2021. It is
-+replaced with the batadv generic netlink family.
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 7d289e50de71..ad14c8086fe7 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -7,6 +7,7 @@
+ #include "sysfs.h"
+ #include "main.h"
  
- What:           /sys/class/net/<iface>/batman-adv/elp_interval
- Date:           Feb 2014
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/obsolete/sysfs-class-net-mesh
-similarity index 97%
-rename from Documentation/ABI/testing/sysfs-class-net-mesh
-rename to Documentation/ABI/obsolete/sysfs-class-net-mesh
-index c2b956d44a95..04c1a2932507 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/obsolete/sysfs-class-net-mesh
-@@ -1,3 +1,5 @@
-+This ABI is deprecated and will be removed after 2021. It is
-+replaced with the batadv generic netlink family.
++#include <asm/current.h>
+ #include <linux/atomic.h>
+ #include <linux/compiler.h>
+ #include <linux/device.h>
+@@ -22,6 +23,7 @@
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/rtnetlink.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+@@ -40,6 +42,16 @@
+ #include "network-coding.h"
+ #include "soft-interface.h"
  
- What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
- Date:           May 2010
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f8ff9ae52c21..fce2919582fb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2795,8 +2795,8 @@ L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
- W:	https://www.open-mesh.org/
- Q:	https://patchwork.open-mesh.org/project/batman/list/
- S:	Maintained
--F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
--F:	Documentation/ABI/testing/sysfs-class-net-mesh
-+F:	Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-+F:	Documentation/ABI/obsolete/sysfs-class-net-mesh
- F:	Documentation/networking/batman-adv.rst
- F:	include/uapi/linux/batadv_packet.h
- F:	include/uapi/linux/batman_adv.h
++/**
++ * batadv_sysfs_deprecated() - Log use of deprecated batadv sysfs access
++ * @attr: attribute which was accessed
++ */
++static void batadv_sysfs_deprecated(struct attribute *attr)
++{
++	pr_warn_ratelimited(DEPRECATED "%s (pid %d) Use of sysfs file \"%s\".\nUse batadv genl family instead",
++			    current->comm, task_pid_nr(current), attr->name);
++}
++
+ static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
+ {
+ 	struct device *dev = container_of(obj->parent, struct device, kobj);
+@@ -129,6 +141,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
+ 	ssize_t length;							\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	length = __batadv_store_bool_attr(buff, count, _post_func, attr,\
+ 					  &bat_priv->_name, net_dev);	\
+ 									\
+@@ -143,6 +156,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ {									\
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	return sprintf(buff, "%s\n",					\
+ 		       atomic_read(&bat_priv->_name) == 0 ?		\
+ 		       "disabled" : "enabled");				\
+@@ -166,6 +180,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
+ 	ssize_t length;							\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
+ 					  _post_func, attr,		\
+ 					  &bat_priv->_var, net_dev,	\
+@@ -182,6 +197,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ {									\
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
+ }									\
+ 
+@@ -206,6 +222,7 @@ ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
+ 					      attr, &vlan->_name,	\
+ 					      bat_priv->soft_iface);	\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	if (vlan->vid)							\
+ 		batadv_netlink_notify_vlan(bat_priv, vlan);		\
+ 	else								\
+@@ -226,6 +243,7 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
+ 			     atomic_read(&vlan->_name) == 0 ?		\
+ 			     "disabled" : "enabled");			\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	batadv_softif_vlan_put(vlan);					\
+ 	return res;							\
+ }
+@@ -247,6 +265,7 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	struct batadv_priv *bat_priv;					\
+ 	ssize_t length;							\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
+ 	if (!hard_iface)						\
+ 		return 0;						\
+@@ -274,6 +293,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	struct batadv_hard_iface *hard_iface;				\
+ 	ssize_t length;							\
+ 									\
++	batadv_sysfs_deprecated(attr);					\
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
+ 	if (!hard_iface)						\
+ 		return 0;						\
+@@ -418,6 +438,7 @@ static ssize_t batadv_show_bat_algo(struct kobject *kobj,
+ {
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 
++	batadv_sysfs_deprecated(attr);
+ 	return sprintf(buff, "%s\n", bat_priv->algo_ops->name);
+ }
+ 
+@@ -434,6 +455,8 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	int bytes_written;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	/* GW mode is not available if the routing algorithm in use does not
+ 	 * implement the GW API
+ 	 */
+@@ -468,6 +491,8 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 	char *curr_gw_mode_str;
+ 	int gw_mode_tmp = -1;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	/* toggling GW mode is allowed only if the routing algorithm in use
+ 	 * provides the GW API
+ 	 */
+@@ -542,6 +567,8 @@ static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
+ {
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	/* GW selection class is not available if the routing algorithm in use
+ 	 * does not implement the GW API
+ 	 */
+@@ -562,6 +589,8 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	ssize_t length;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	/* setting the GW selection class is allowed only if the routing
+ 	 * algorithm in use implements the GW API
+ 	 */
+@@ -592,6 +621,8 @@ static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	u32 down, up;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	down = atomic_read(&bat_priv->gw.bandwidth_down);
+ 	up = atomic_read(&bat_priv->gw.bandwidth_up);
+ 
+@@ -607,6 +638,8 @@ static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
+ 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	ssize_t length;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
+ 
+@@ -631,6 +664,7 @@ static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
+ {
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 
++	batadv_sysfs_deprecated(attr);
+ 	return sprintf(buff, "%#.8x/%#.8x\n", bat_priv->isolation_mark,
+ 		       bat_priv->isolation_mark_mask);
+ }
+@@ -654,6 +688,8 @@ static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
+ 	u32 mark, mask;
+ 	char *mask_ptr;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	/* parse the mask if it has been specified, otherwise assume the mask is
+ 	 * the biggest possible
+ 	 */
+@@ -909,6 +945,8 @@ static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
+ 	ssize_t length;
+ 	const char *ifname;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface)
+ 		return 0;
+@@ -1013,6 +1051,8 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+ 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct batadv_store_mesh_work *store_work;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
+ 
+@@ -1044,6 +1084,8 @@ static ssize_t batadv_show_iface_status(struct kobject *kobj,
+ 	struct batadv_hard_iface *hard_iface;
+ 	ssize_t length;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface)
+ 		return 0;
+@@ -1095,6 +1137,8 @@ static ssize_t batadv_store_throughput_override(struct kobject *kobj,
+ 	u32 old_tp_override;
+ 	bool ret;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface)
+ 		return -EINVAL;
+@@ -1134,6 +1178,8 @@ static ssize_t batadv_show_throughput_override(struct kobject *kobj,
+ 	struct batadv_hard_iface *hard_iface;
+ 	u32 tp_override;
+ 
++	batadv_sysfs_deprecated(attr);
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface)
+ 		return -EINVAL;
 -- 
 2.11.0
 
