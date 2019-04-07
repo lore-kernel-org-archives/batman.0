@@ -1,15 +1,11 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 7 Apr 2019 13:09:38 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20190407110938.GA1471@otheros>
-References: <20190111210208.29139-1-linus.luessing@c0d3.blue>
- <3604216.NcQoz811mF@rousseau>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Sun,  7 Apr 2019 13:23:18 +0200
+Message-Id: <20190407112320.32021-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <3604216.NcQoz811mF@rousseau>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Increase purge timeout on
- DAT DHT candidates
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH v4 0/2] batman-adv: increase DAT DHT timeout
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,22 +15,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Feb 10, 2019 at 07:59:59PM +0800, Marek Lindner wrote:
-> Why not turn last_dht_update into a bool and apply the timeout length based on 
-> that bool.
+Hi,
 
-I wasn't sure how to smoothly toggle a DAT entry from local to
-global or the other way round without adding locks, several
-'if()'s and hackish adjustments of 'last_update'.
+This is the fourth attempt to increase the DAT DHT timeout to reduce the
+amount of broadcasted ARP Replies.
+
+To increase the timeout only for DAT DHT entries added via DHT-PUT but
+not for any other entry in the DAT cache the DAT cache and DAT DHT
+concepts are first split into two separate hash tables (PATCH 1/2).
+
+PATCH 2/2 then increases the timeout for DAT DHT entries from 5 to
+30 minutes.
 
 
-Therefore I went for a split the hash table in two in v3: One for
-the DAT cache and one for the DAT DHT. Kind of similar to how we
-have two tables for the TT for two distinct concepts as well.
+The motivation for this patchset is based on the observations made here:
+https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
 
-While this might need a few more lines of code the result seemed
-less complicated and cleaner.
+Regards,
+Linus
 
-Regards, Linus
+---
+
+Changelog v2:
+
+formerly:
+ "batman-adv: Increase DHCP snooped DAT entry purge timeout in DHT"
+ (https://patchwork.open-mesh.org/patch/17364/)
+- removed the extended timeouts flag in the DHT-PUT messages introduced
+  in v1 again
+- removed DHCP dependency
+
+Changelog v3:
+
+formerly:
+ "batman-adv: Increase purge timeout on DAT DHT candidates"
+ https://patchwork.open-mesh.org/patch/17728/
+- fixed the potential jiffies overflow and jiffies initialization
+  issues by replacing the last_dht_update timeout variable with
+  a split of DAT cache and DAT DHT into two separate hash tables
+  -> instead of maintaining two timeouts in one DAT entry two DAT
+     entries are created and maintained in their respective DAT
+     cache and DAT DHT hash tables
+
+Changelog v4:
+- rebased to: acfc9a214d01695
+  ("batman-adv: genetlink: make policy common to family")
+
+
+
