@@ -1,13 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun,  7 Apr 2019 12:37:02 +0200
-Message-Id: <20190407103702.30435-3-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 07 Apr 2019 12:48:14 +0200
+Message-ID: <2195799.xoe8fjgBhO@sven-edge>
 In-Reply-To: <20190407103702.30435-1-linus.luessing@c0d3.blue>
 References: <20190407103702.30435-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v3 2/2] batman-adv: increase DAT DHT timeout
+Content-Type: multipart/signed; boundary="nextPart1858257.jOoLZtUsC8";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 0/2] batman-adv: increase DAT DHT
+ timeout
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,95 +20,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Currently, the DHT_GET messages of the DAT will likely be left
-unanswered due to the following issues:
+--nextPart1858257.jOoLZtUsC8
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-When a node has a matching DAT Cache entry for a local ARP Request then
-this node will answer it directly with the information provided by the
-cache. This however, will likely lead to missing ARP Replies from the
-original host. Which in turn leads to the DAT DHT not being updated.
+On Sunday, 7 April 2019 12:37:00 CEST Linus L=FCssing wrote:
+> Hi,
+>=20
+> This is the third attempt to increase the DAT DHT timeout to reduce the
+> amount of broadcasted ARP Replies.
 
-Then the local DAT cache entry will time out, triggering a unicasted
-DHT_GET. However, as the 5min. timeout has passed, the DAT DHT
-candidates will likely have purged their entry, too.
+Doesn't apply with git-am. And the line:
 
-So basically this results in an ARP Request broadcast fallback every
-five minutes.
+   .policy =3D batadv_netlink_policy,
 
-A second issue is that it is quite common that a host which has long
-gone offline will be tried to be contacted by another one at some remote
-period larger than the current 5min. timeout. This too leads to flooded
-ARP Requests.
+doesn't build anymore in net-next.
 
-With this patch the purge timeout for DAT DHT entries is increased to
-30min to reduce the number of DAT ARP broadcast fallbacks.
+Kind regards,
+	Sven
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/distributed-arp-table.c | 22 +++++++++++++++++-----
- net/batman-adv/main.h                  |  3 ++-
- 2 files changed, 19 insertions(+), 6 deletions(-)
+--nextPart1858257.jOoLZtUsC8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 97444342..b2173c5f 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -132,15 +132,27 @@ static void batadv_dat_entry_put(struct batadv_dat_entry *dat_entry)
- }
- 
- /**
-- * batadv_dat_to_purge() - check whether a dat_entry has to be purged or not
-+ * batadv_dat_cache_to_purge() - check if a cache entry has to be purged or not
-  * @dat_entry: the entry to check
-  *
-  * Return: true if the entry has to be purged now, false otherwise.
-  */
--static bool batadv_dat_to_purge(struct batadv_dat_entry *dat_entry)
-+static bool batadv_dat_cache_to_purge(struct batadv_dat_entry *dat_entry)
- {
- 	return batadv_has_timed_out(dat_entry->last_update,
--				    BATADV_DAT_ENTRY_TIMEOUT);
-+				    BATADV_DAT_CACHE_ENTRY_TIMEOUT);
-+}
-+
-+/**
-+ * batadv_dat_dht_to_purge() - check if a DHT entry has to be purged or not
-+ * @dat_entry: the entry to check
-+ *
-+ * Return: true if the entry has to be purged now, false otherwise.
-+ */
-+static bool batadv_dat_dht_to_purge(struct batadv_dat_entry *dat_entry)
-+{
-+	return batadv_has_timed_out(dat_entry->last_update,
-+				    BATADV_DAT_DHT_ENTRY_TIMEOUT);
- }
- 
- /**
-@@ -201,8 +213,8 @@ static void batadv_dat_purge(struct work_struct *work)
- 	priv_dat = container_of(delayed_work, struct batadv_priv_dat, work);
- 	bat_priv = container_of(priv_dat, struct batadv_priv, dat);
- 
--	__batadv_dat_purge(bat_priv->dat.cache_hash, batadv_dat_to_purge);
--	__batadv_dat_purge(bat_priv->dat.dht_hash, batadv_dat_to_purge);
-+	__batadv_dat_purge(bat_priv->dat.cache_hash, batadv_dat_cache_to_purge);
-+	__batadv_dat_purge(bat_priv->dat.dht_hash, batadv_dat_dht_to_purge);
- 	batadv_dat_start_timer(bat_priv);
- }
- 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index c59afcba..cb30c042 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -38,7 +38,8 @@
- #define BATADV_TT_WORK_PERIOD 5000 /* 5 seconds */
- #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
- #define BATADV_MCAST_WORK_PERIOD 500 /* 0.5 seconds */
--#define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
-+#define BATADV_DAT_CACHE_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
-+#define BATADV_DAT_DHT_ENTRY_TIMEOUT (30 * 60000) /* 30 mins in milliseconds */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
-  */
--- 
-2.20.1
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlyp1W4ACgkQXYcKB8Em
+e0barxAAhAFBs6Ug7yZc1mt7qijBAN6OYQypj9eT7IdVi79+EDcD1A+7CVnQEwt/
+ItSZulzTRDp89PqhFnfmQ5szicB6uIdr2re+XBGObPM2yrRDHZsl/X8wyH0Tqv42
+um4xngbodWoga7egEFcP6N3O+L3swYf6BpxOfnK5NxMYeQEumMkVKfGchXR83+gq
+q69LWgAfabSnEBt/rgA6SXKQ252YXzREzGyzdSdhzTGCYs/Nmwq0hYYaVitnrGU6
+H59QE7HgcZgnTh/4XvuzE/QUTE0XeXv08LdNKUdBef/5DLQzfu2h0OsqZLA0d3Si
+9TBdp1p5DG9IkHazYdSItE3Lldn7pWoN+4IjkifrOZga6A8vXS5uo2PAm+jsxEaa
+sQ48lxBqiy+FDgzrNo5g/iIxHuKMys0UXe/fYMvGxC76CUzVeuj7kNWikANHzIJs
+7T307hTRMjITV9pQDypC3dX7sIe9o2/q+42Z5+G0lrRE8LZv+sDo44yxGT6vRQOk
+XHT57W6R3RB5b3Vdrhwd9KJm5/2Yvd5NMJmpsO2iKRft1iZlfvj/I4nzj/47PreQ
+uv0CNT3BrKcvLMSG6hian3cy653E7fb5HHpjq0YTMigmmp8ER5qakBSQ66JSpDAL
+U0/fwP/KuvIDwy1YPvP7jiQpcttteJgKE9XdZC0BqhkMCNijVGk=
+=c3jG
+-----END PGP SIGNATURE-----
+
+--nextPart1858257.jOoLZtUsC8--
+
+
 
