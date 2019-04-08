@@ -1,14 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 08 Apr 2019 10:10:27 +0200
-Message-ID: <1743828.EEJ9lJHY9g@prime>
-In-Reply-To: <f2d6318d-a691-971e-9889-00867115303f@gmail.com>
-References: <a5949349-69fa-7ef5-fd78-88af76749e24@gmail.com>
- <7264236.pZJWJxn9C4@prime> <f2d6318d-a691-971e-9889-00867115303f@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 08 Apr 2019 11:14:30 +0200
+Message-ID: <2333514.yPfxEEDAa4@bentobox>
+In-Reply-To: <20190407112320.32021-1-linus.luessing@c0d3.blue>
+References: <20190407112320.32021-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3131022.RyoOysFVOU";
+Content-Type: multipart/signed; boundary="nextPart4072542.o65Qt8kU2r";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] About making batman-adv mesh network invisible
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 0/2] batman-adv: increase DAT DHT
+ timeout
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,96 +18,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Xuebing Wang <xbing6@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, a@unstable.cc
 
---nextPart3131022.RyoOysFVOU
+--nextPart4072542.o65Qt8kU2r
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="iso-8859-1"
 
-Hi Xuebing,
-
-I'm not aware of any "proprietary modulation", and I doubt it's possible - =
-at=20
-least not while using an AP at the same time. You can look into 5/10 MHz mo=
-de=20
-or do other quirks if mesh is the only thing running on your module though.
-
-Cheers,
-     Simon
-
-On Saturday, April 6, 2019 2:06:55 PM CEST Xuebing Wang wrote:
-> Hi Simon,
+On Sunday, 7 April 2019 13:23:18 CEST Linus L=FCssing wrote:
+> To increase the timeout only for DAT DHT entries added via DHT-PUT but
+> not for any other entry in the DAT cache the DAT cache and DAT DHT
+> concepts are first split into two separate hash tables (PATCH 1/2).
 >=20
-> Thanks a lot for your reply.
+> PATCH 2/2 then increases the timeout for DAT DHT entries from 5 to
+> 30 minutes.
 >=20
-> With ath9k chip and ath9k driver, do you think it is possible to use
-> "proprietary modulation" (slightly modified), so wireshark + wlan in
-> monitor mode won't be able to detect wireless frames batman-adv network
-> sends?
 >=20
-> Xuebing Wang
->=20
-> On 2019/4/1 =E4=B8=8B=E5=8D=885:59, Simon Wunderlich wrote:
-> > Hi Xuebing,
-> >=20
-> > at least for Ad-Hoc mode, you can't hide the SSID without changing the
-> > kernel driver (mac80211). Encrypting the beacon doesn't help here, as t=
-he
-> > SSID needs to be clear text eventually even if management frames get
-> > encrypted.
-> >=20
-> > Cheers,
-> >=20
-> >         Simon
-> >=20
-> > On Saturday, March 30, 2019 11:50:27 AM CEST Xuebing Wang wrote:
-> >> Hi community,
-> >>=20
-> >> We have batman-adv + OpenWRT + ath9k chip + ath9k driver reliably
-> >> running for about 2 years. The biggest batman-adv mesh network is with
-> >> 100+ nodes.
-> >>=20
-> >> As this is a closed network, we have a new requirement which is to make
-> >> our batman-adv mesh network invisible, although the current SSID is ju=
-st
-> >> some meaningless characters.
-> >>=20
-> >> One thought is hidden_ssid. But, it seems hidden_ssid is only supported
-> >> for AP mode (not IBSS mode).
-> >>=20
-> >> 802.11w does not protect Beacon frame (because it is before four-ways
-> >> handshake).
-> >>=20
-> >> As this is a closed network, what about encrypting Beacon (maybe all
-> >> management frames later) using a hard-coded key in wpa_supplicant?
-> >>=20
-> >> Thanks for your help.
-> >>=20
-> >> Xuebing Wang
+> The motivation for this patchset is based on the observations made here:
+> https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
 
+Antonio, please check whether this approach is to your liking. Also that th=
+ere=20
+are now two ways to retrieve the DAT data via netlink.
 
---nextPart3131022.RyoOysFVOU
+Kind regards,
+	Sven
+--nextPart4072542.o65Qt8kU2r
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlyrAfMACgkQoSvjmEKS
-nqEqWhAArPLO18THiA+xAObHlbpIT2L+tc2EVJQ9H2rxmlCuogIr33bcHNLQuJP3
-M7xqQkuIVwfCT7zyXjWo+fXT3dPJzLMxANRLI1qqOfSukmJ0UVRjPE2QvJAAVNO6
-wFxCzl90cUlivCjS8t2ew1R3kEdtLL2Ykmj/+uMBmyKScsV6Imf6PWReqVR83mGl
-ZHoxVviubOgq9ryYGTOOHtMTUSI2PEtdsRl/GYcpk1SA1OwJQ4aT9u7Gw89DEhkd
-ij4L7xdK2CKSgkTawFFoxbNv1uwzItKeqX3hE8V/StWOngFeFXGpZ4NLLIGyZg08
-sa3T+Ue5gqOelLJLK/qtKIJcP8FRdIc3k0kykb6Y88PmS7gbxc/XmPRDwShrmkM6
-gYEXh8UaVyxBZNJ9faTj+XTcdnmQODon3/GoXkiHVHwLO1ADVFWAPWoD3qJHDKqu
-swhfV4mMSLKNlt2VcrSA8wWgDNYa7qcTDxnQFrdX4ESpIPxDB4rqawrwMJzSvFnS
-XM0j7eKdXRzVkU7JC31VzW2CRQ3WBXlM/kjngd2Cbrhc0LYpbOIQZ892rx+q06lH
-A18cMZPapS8YZC4N8FsI26upQiqp41BCrIAG0EgAZbepMppBvtoqRhty1OH3tA0Y
-iPPiukFMj0bgo8AedKaW9FvIBWI389qdrl+epcRSM3YHylVixCM=
-=E8ty
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlyrEPYACgkQXYcKB8Em
+e0aiQxAAhp7fw7GvHmeWAjlxxPz5JRWhREXMNQXMoYs5n3XL8retS7V9uHkw0ZNQ
+hydcH/IgfYS47GwVKiQJAHpwRwvMCtdNj78B3GOog8rKD4oc/BikP28jpJzpY+df
+qFxM//c9SjAG/UG3gluFbVv9JeYu6WBfF+B5enoQZmNcT58wR2AVciTRjtLPKYlF
+aHs/84aYpoB28VZUgdw+X5A4pFsO+tB/wCR+43s8jkLsU4kMBnpW4ggZ8dM1sqHC
+yrsSbTBWVGMe7BlwGCAqf9x3kHyYQk6yr5x5Z92AvOB9LcUHX+YM3cAXaIhzsRvg
+jmyoAaCOQqcETyHGKGs6abRE0MPL9HcsSV4CUtmYWWI9TWu1/OSTWlIVWzAfxjBb
+6J6VPvHDMMh3bXh2Ssb/A6F5QesvdKPDQ9w00ZBoFh1zSMs7YPl5K6vzEHl1pp38
+lEqcqe8PJYETZuMSYPHF212iExHhtbRNxN+GL01fD01EP6d3gxk/aA6IgU5/a053
+Du5xoqkyYfhadg1w6V2tjr5jtljs/bi6915mL+H/vgR94KXbkoRauVAyabM1VGu+
+agMfvwaC7HRG0J0+cIg8SS1IH0ijpoJA/RfD4qp7w4Y78dnkqT6IWnTFqCfDcdaj
+wClh8Irx4Lu+R1lVSI6wepA6z/mF+mJNGk3vcXK5E5i2U23A/Zw=
+=MEuC
 -----END PGP SIGNATURE-----
 
---nextPart3131022.RyoOysFVOU--
+--nextPart4072542.o65Qt8kU2r--
+
+
 
