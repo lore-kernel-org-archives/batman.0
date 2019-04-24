@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 22 Apr 2019 11:30:06 +0200
-Message-ID: <3742207.3UPO53M6zG@sven-edge>
-In-Reply-To: <20190422092048.GG6201@otheros>
-References: <20190422081214.8481-1-sven@narfation.org>
- <20190422092048.GG6201@otheros>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Wed, 24 Apr 2019 03:19:13 +0200
+Message-Id: <20190424011919.9821-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2062830.b35WlyjXgK";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Drop log subcommand
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/6] batman-adv: Add routeable multicast
+ optimizations
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,61 +18,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2062830.b35WlyjXgK
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+The following patchset fills the next gaps in the multicast address
+rules page by adding support for group-aware optimizations for
+multicast addresses of scope greater than link-local. So far, only
+link-local addresses were optimized as packets with routeable
+addresses not only need to be forwarded to local multicast listeners
+but also multicast routers.
 
-On Monday, 22 April 2019 11:20:48 CEST Linus L=FCssing wrote:
-> On Mon, Apr 22, 2019 at 10:12:14AM +0200, Sven Eckelmann wrote:
-> > The correct way to get a log of the activities of batman-adv is to use =
-the
-> > standard kernel tracing infrastructure:
-> >=20
-> >   $ trace-cmd stream -e batadv:batadv_dbg
-[...]
-> The trace-cmd approach does not add/provide network namespace
-> support, does it?
+"Handling rules depending on multicast address:" [0]
 
-Afaik, not at the moment.
+Before:
 
-> If we were removing "batctl log" now we would probably need to readd it
-> later again when adding network namespace support, both for
-> either a netlink or IPv6 node-local multicast approach, right [0]?
->=20
-> (Although for the IPv6 node-local multicast 'socat' for instance would
-> work, too.)
+* Ipv4, link-local: supported without bridges
+* IPv6, link-local: supported
+* IPv4, routeable: support planned.
+* IPv6, routeable: support planned.
 
-I am rather sure that we shouldn't add the namespace specific logs in batma=
-n-
-adv via a batadv specific new infrastructure. Sounds like horrible hacks wh=
-ich=20
-we shouldn't even try to upstream.
+After:
 
-Kind regards,
-	Sven
---nextPart2062830.b35WlyjXgK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAly9iZ4ACgkQXYcKB8Em
-e0aZtw//ZWpomp+Lou9CwAwXwCBDhK+ZYq9pzRLfx4241i3gxVW7o3J7oRUcvFip
-hk/Q2lylaaDnVT9pIWCzAjBAp8ssJ74zjo6MxrUig6CoEZGcOqhw+tJFX+/JRO0v
-6s3pb906RFvLv6EQAET5XdkMPPT69WYeZOPSnA7+Hino70vsB4cxzYyXM48Wt2AU
-L7EXKHbt1pVlVIGqgvGItFzSLv9Mhc3aSHjPSxSCTpRFto4Wo4O6ElT4MOFH5NfT
-QwUIf3D5R1HG/MjdrmUxgh/Mw7GkjafraCTGdsSxMY7Mhv206OupYnU/ii6ClZdE
-X8FhwGrkWhHB3m6QuAdvGEk7GprX78JIKQgx22GeZ+rpUQhFqhGLj29RbltyMgiQ
-apZYIe63Ugb514GSUsbXtC6RvjkslpJDLzM+FgzPOLneiynlxs2OcyYl5NVhdGtB
-bJYjdI67JmsFsmM62lH5Bfk7DLNquT38fMm4J38u35wrUpaLfkcY3WuwNHItqKTl
-JJSsU5RnI32LTyhZDkRXHH4RUo6GbYKJQ+gDjPoMjep5Udd+4+mjg5jl/Rmozi4g
-p1OU3mqZPD2s5/FeDGBrLtTE+C3OR6w5b+Pt3jfVnpdW7tACWfz/By7QLI+NO0Y1
-ysr0vQcVJBR2QkGvfp9MvFkjclzNnMsPZ6DPyi2kLnxS5JXNrcs=
-=C4DF
------END PGP SIGNATURE-----
-
---nextPart2062830.b35WlyjXgK--
+* Ipv4, link-local: supported without bridges
+* IPv6, link-local: supported
+* IPv4, routeable: supported without bridges.
+* IPv6, routeable: supported.
 
 
+The first patch is a fix for the maint branch addressing tickets #369
+and #370.
+
+Then patches 2 to 4 are basically some cleanups and restructuring of the
+current code.
+
+Patch 5 adds the detection of multicast routers and announces
+that via two new flags in its multicast TVLV. TVLV receivers will
+memorize this and fill lists similar to how we already do for the
+WANT_ALL_IPV4/IPV6 flags. Currently the detection for bridged-in
+IPv6 multicast routers is not quite what the RFC for multicast router
+discovery suggests. But once the MRD implementation in the Linux bridge
+has matured a bit, I'm going to swap this simplified approach with
+tapping into the bridge once more, asking the bridge for the presence of
+multicast routers on the link. (This will then also add support for
+"IPv4, routeable, with bridges")
+
+Finally, patch 6 implements the changes to the forwarding plane,
+utilizing the new information we have gathered with patch 5.
+
+Regards, Linus
+
+[0]: https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-tech#Handling-rules-depending-on-multicast-address
 
