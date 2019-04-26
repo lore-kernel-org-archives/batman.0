@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 26 Apr 2019 19:29:55 +0200
-Message-Id: <20190426172955.18574-1-linus.luessing@c0d3.blue>
+Date: Fri, 26 Apr 2019 19:31:48 +0200
+Message-Id: <20190426173148.18677-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Add noflood command
+Subject: [B.A.T.M.A.N.] [PATCH v2] batctl: Add noflood command
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,11 +21,16 @@ Adds support for the new 'noflood' setting in batman-adv.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- Makefile     |  1 +
- README.rst   | 10 ++++++++++
- batman_adv.h | 10 ++++++++++
- man/batctl.8 |  7 +++++++
- 4 files changed, 28 insertions(+)
+Changelog v2:
+* added noflood.c
+---
+ Makefile     |   1 +
+ README.rst   |  10 +++++
+ batman_adv.h |  10 +++++
+ man/batctl.8 |   7 ++++
+ noflood.c    | 101 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 129 insertions(+)
+ create mode 100644 noflood.c
 
 diff --git a/Makefile b/Makefile
 index df8b7b9..6a363d7 100755
@@ -99,6 +104,113 @@ index 8d7332a..7518f9c 100644
  .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
  If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
  level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
+diff --git a/noflood.c b/noflood.c
+new file mode 100644
+index 0000000..c60063c
+--- /dev/null
++++ b/noflood.c
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
++ *
++ * Linus Lüssing <linus.luessing@c0d3.blue>
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ */
++
++#include <errno.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <string.h>
++
++#include "main.h"
++#include "sys.h"
++
++static struct noflood_data {
++	uint32_t noflood;
++} noflood;
++
++static int parse_noflood(struct state *state, int argc, char *argv[])
++{
++	struct settings_data *settings = state->cmd->arg;
++	struct noflood_data *data = settings->data;
++	char *endptr;
++
++	if (argc != 2) {
++		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
++		return -EINVAL;
++	}
++
++	data->noflood = strtoul(argv[1], &endptr, 0);
++	if (!endptr || *endptr != '\0') {
++		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int print_noflood(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
++	int *result = arg;
++
++	if (!genlmsg_valid_hdr(nlh, 0))
++		return NL_OK;
++
++	ghdr = nlmsg_data(nlh);
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), batadv_netlink_policy)) {
++		return NL_OK;
++	}
++
++	if (!attrs[BATADV_ATTR_NOFLOOD])
++		return NL_OK;
++
++	printf("%u\n", nla_get_u8(attrs[BATADV_ATTR_NOFLOOD]));
++
++	*result = 0;
++	return NL_STOP;
++}
++
++static int get_noflood(struct state *state)
++{
++	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
++				  NULL, print_noflood);
++}
++
++static int set_attrs_noflood(struct nl_msg *msg, void *arg)
++{
++	struct state *state = arg;
++	struct settings_data *settings = state->cmd->arg;
++	struct noflood_data *data = settings->data;
++
++	nla_put_u8(msg, BATADV_ATTR_NOFLOOD, data->noflood);
++
++	return 0;
++}
++
++static int set_noflood(struct state *state)
++{
++	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
++				  set_attrs_noflood, NULL);
++}
++
++static struct settings_data batctl_settings_noflood = {
++	.sysfs_name = NULL,
++	.data = &noflood,
++	.parse = parse_noflood,
++	.netlink_get = get_noflood,
++	.netlink_set = set_noflood,
++};
++
++COMMAND_NAMED(SUBCOMMAND, noflood, "nf", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_settings_noflood,
++	      "[0|1|2]        \tdisplay or modify noflood setting (<disabled>|<cautious>|<aggressive>)");
 -- 
 2.20.1
 
