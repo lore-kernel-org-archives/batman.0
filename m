@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 28 Apr 2019 07:59:15 +0200
-Message-Id: <20190428055915.31585-1-sven@narfation.org>
+Date: Sun, 28 Apr 2019 19:04:40 +0200
+Message-ID: <2852684.HY4pDEyiBM@sven-edge>
+In-Reply-To: <20190426171231.18156-1-linus.luessing@c0d3.blue>
+References: <20190426171231.18156-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC] batman-adv: genetlink: optionally validate
- strictly/dumps
+Content-Type: multipart/signed; boundary="nextPart3415318.LZ3gu7H8KP";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce "noflood"
+ broadcast flood prevention option
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,167 +19,63 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Martin Weinelt <martin@linuxlounge.net>
 
-From: Johannes Berg <johannes.berg@intel.com>
+--nextPart3415318.LZ3gu7H8KP
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Add options to strictly validate messages and dump messages,
-sometimes perhaps validating dump messages non-strictly may
-be required, so add an option for that as well.
+On Friday, 26 April 2019 19:12:31 CEST Linus L=FCssing wrote:
+> With DAT DHCP snooping, the gateway feature and multicast optimizations
+> in place in some scenarios broadcast flooding might not be strictly
+> necessary anymore to be able to establish IPv4/IPv6 communication.
+> Therefore this patch adds an option to disable broadcast flooding.
+>=20
+> Larger mesh networks typically filter a variety of multicast packets via
+> ebtables/netfilter to clamp on overhead. With this option such firewall
+> rules can be relaxed so that such multicast packets are only dropped
+> if they cannot be handled by multicast-to-unicast, for instance.
+>=20
+> "noflood" comes in two flavours: If set to 1 then flood prevention is
+> enabled for all multicast/broadcast packets except ICMPv6 and IGMP
+> (cautious mode). Or, if set to 2 then flood prevention is enabled for
+> all multicast/broadcast packets (aggressive mode). If set to 0 then
+> flood prevention is disabled.
+>=20
+> "noflood" is disabled by default as there are still some things to take
+> care of to avoid breaking things (especially for the "aggressive mode").
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 
-Since none of this can really be applied to existing commands,
-set the options everwhere using the following spatch:
+@Martin, I think you've started to experiment with this noflood feature. An=
+y=20
+experiences which you can share with us?
 
-    @@
-    identifier ops;
-    expression X;
-    @@
-    struct genl_ops ops[] = {
-    ...,
-     {
-            .cmd = X,
-    +       .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
-            ...
-     },
-    ...
-    };
+Kind regards,
+	Sven
+--nextPart3415318.LZ3gu7H8KP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-For new commands one should just not copy the .validate 'opt-out'
-flags and thus get strict validation.
+-----BEGIN PGP SIGNATURE-----
 
-Signed-off-by: Johannes Berg <johannes.berg@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch was already applied upstream as 
-ef6243acb4782df587a4d7d6c310fa5b5d82684b but compat code is missing for it.
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlzF3SgACgkQXYcKB8Em
+e0abHw//dT7mmJlCqq/EZWzOBS/Bwnl6YcUdgRBggHdPXWPzVDpO27BA+gHnEGh+
+NLUQ1dOWhGUllu6HrC8FpFIMnrihz/MWkjAY4hpfeI/pAYqv6UU2jFTFDYwnkchL
+5/rFFdr/yodq3L2EKYWOacABjXrfbJ2TF9tAMW6nZ5zgFPjCvNycsn6fOsA21SBK
+lQbQfE7wqJpTeo4L8fyybZRiEmJ90sM6g/BQDPpGA5nRDyAwDOPTfyO4nvpVS5Bp
+W1/veCNIWjz7eKICnV8mZPUfjKZSTdZCGg9fL1JubeGwzlO6BZE1WYW4NcpeY6Rr
+GEya5SrfWaHbY4YYfM88aaNWX6TzcQaXalBBKyrC8fcnhmKKBGVzSHssNWEZ1dk5
+z/w07m0+nb8+idzIig8TBIm3FS84EGba45ANzbnNswMFJieGgdOg9ED2n9T2SLeu
+ox4Byh9cZyVcwS54L5gem1Qot1URk6eFZb7ev+UTNc0uz3cKAmyLjDVRe/Ge+kMH
+XJI/0fEFYCTa+p0Xrvce9uJeMkcmIEsrYPCB3+sWo+4k/6LB/48Li+mWL+HsOFvZ
+9PKJKAXNc0q+qBzkUpJ/+V6OJ+K93ntyN53JWcxgXBr1OKxLFsCCru45RX+Stg21
+V9G65EvddWAJRKhyooXKlu/AG1SWJawZuG3433gKzw98XJY7Bxg=
+=vBgl
+-----END PGP SIGNATURE-----
 
- net/batman-adv/netlink.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+--nextPart3415318.LZ3gu7H8KP--
 
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index e7907308..a67720fa 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -1343,29 +1343,34 @@ static void batadv_post_doit(const struct genl_ops *ops, struct sk_buff *skb,
- static const struct genl_ops batadv_netlink_ops[] = {
- 	{
- 		.cmd = BATADV_CMD_GET_MESH,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		/* can be retrieved by unprivileged users */
- 		.doit = batadv_netlink_get_mesh,
- 		.internal_flags = BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd = BATADV_CMD_TP_METER,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.doit = batadv_netlink_tp_meter_start,
- 		.internal_flags = BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd = BATADV_CMD_TP_METER_CANCEL,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.doit = batadv_netlink_tp_meter_cancel,
- 		.internal_flags = BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_ROUTING_ALGOS,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_algo_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_HARDIF,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		/* can be retrieved by unprivileged users */
- 		.dumpit = batadv_netlink_dump_hardif,
- 		.doit = batadv_netlink_get_hardif,
-@@ -1374,57 +1379,68 @@ static const struct genl_ops batadv_netlink_ops[] = {
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_TRANSTABLE_LOCAL,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_tt_local_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_tt_global_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_ORIGINATORS,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_orig_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_NEIGHBORS,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_hardif_neigh_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_GATEWAYS,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_gw_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_BLA_CLAIM,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_bla_claim_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_BLA_BACKBONE,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_bla_backbone_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_DAT_CACHE,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_dat_cache_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_MCAST_FLAGS,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.dumpit = batadv_mcast_flags_dump,
- 	},
- 	{
- 		.cmd = BATADV_CMD_SET_MESH,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.doit = batadv_netlink_set_mesh,
- 		.internal_flags = BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd = BATADV_CMD_SET_HARDIF,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.doit = batadv_netlink_set_hardif,
- 		.internal_flags = BATADV_FLAG_NEED_MESH |
-@@ -1432,6 +1448,7 @@ static const struct genl_ops batadv_netlink_ops[] = {
- 	},
- 	{
- 		.cmd = BATADV_CMD_GET_VLAN,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		/* can be retrieved by unprivileged users */
- 		.doit = batadv_netlink_get_vlan,
- 		.internal_flags = BATADV_FLAG_NEED_MESH |
-@@ -1439,6 +1456,7 @@ static const struct genl_ops batadv_netlink_ops[] = {
- 	},
- 	{
- 		.cmd = BATADV_CMD_SET_VLAN,
-+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		.flags = GENL_ADMIN_PERM,
- 		.doit = batadv_netlink_set_vlan,
- 		.internal_flags = BATADV_FLAG_NEED_MESH |
--- 
-2.20.1
+
 
