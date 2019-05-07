@@ -1,9 +1,10 @@
 Return-Path: <linus.luessing@c0d3.blue>
-From: T_X <tux@c0d3.blue>
-Subject: [PATCH v2 0/3] batman-adv: routeable multicast preparations
-Date: Tue,  7 May 2019 05:48:21 +0200
-Message-Id: <20190507034824.3362-1-tux@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH v3 0/3] batman-adv: routeable multicast preparations
+Date: Tue,  7 May 2019 06:08:25 +0200
+Message-Id: <20190507040828.3927-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -31,7 +32,11 @@ will be necessary for routeable multicast addresses.
 
 ---
 
-Changelog v2: 
+Changelog v3:
+
+* fixed "From:" address in mail header
+
+Changelog v2:
 
 * rebased to master
 * removed already applied patch
@@ -41,11 +46,11 @@ Changelog v2:
 
 * kerneldoc: alignment for batadv_mcast_mla_flags_update()
   [PATCH 2/6] / [PATCH v2 1/3]
-* fixed compile issues due to a duplicated member in struct batadv_priv_mcast
+* fixed compile issues due to a duplicated member in struct
+* batadv_priv_mcast
   [PATCH 2/6] / [PATCH v2 1/3]
 * kerneldoc: added missing @flags for batadv_mcast_mla_flags_update()
   [PATCH 2/6] / [PATCH v2 1/3]
 * kerneldoc: @flags -> @tvlv_flags in struct batadv_mcast_mla_flags
   [PATCH 2/6] / [PATCH v2 1/3]
-
 
