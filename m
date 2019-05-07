@@ -1,13 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
 Subject: Re: [PATCH v2] batman-adv: Introduce no noflood mark
-Date: Tue, 07 May 2019 16:00:18 +0800
-Message-ID: <3691280.TvIfeD7Em7@rousseau>
-In-Reply-To: <3693433.LtgH54LjNc@bentobox>
+Date: Tue, 07 May 2019 10:21:40 +0200
+Message-ID: <1895475.8kFdyZb9vl@bentobox>
+In-Reply-To: <3691280.TvIfeD7Em7@rousseau>
 References: <20190507072821.8147-1-linus.luessing@c0d3.blue>
- <3693433.LtgH54LjNc@bentobox>
+ <3693433.LtgH54LjNc@bentobox> <3691280.TvIfeD7Em7@rousseau>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6222648.CryiznrDVP";
+Content-Type: multipart/signed; boundary="nextPart5448167.cg51Gv6jSr";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,64 +19,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart6222648.CryiznrDVP
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart5448167.cg51Gv6jSr
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, 7 May 2019 15:30:46 HKT Sven Eckelmann wrote:
-> On Tuesday, 7 May 2019 09:28:21 CEST Linus L=FCssing wrote:
-> > This mark prevents a multicast packet being flooded through the whole
-> > mesh. The advantage of marking certain multicast packets via e.g.
-> > ebtables instead of dropping is then the following:
-> >=20
-> > This allows an administrator to let specific multicast packets pass as
-> > long as they are forwarded to a limited number of nodes only and are
-> > therefore creating no burdon to unrelated nodes.
-> >=20
-> > Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
->=20
-> I still don't see why this has to be implemented in batman-adv and not as=
- an
-> external filter (tc-ebpf or something like that).
+On Tuesday, 7 May 2019 10:00:18 CEST Marek Lindner wrote:
+[...]
+> > I still don't see why this has to be implemented in batman-adv and not as an
+> > external filter (tc-ebpf or something like that).
+> 
+> As I understand the use-case (Linus correct me if I am wrong): The mark is 
+> supposed to drop packets that couldn't be $optimized by one of the various 
+> batman-adv payload traffic optimizations. From outside of batman-adv it would be 
+> difficult to tell if a broadcast / multicast packet was optimized (think: served 
+> via DAT cache, sent as unicast, etc) or not.
 
-As I understand the use-case (Linus correct me if I am wrong): The mark is=
-=20
-supposed to drop packets that couldn't be $optimized by one of the various=
-=20
-batman-adv payload traffic optimizations. From outside of batman-adv it wou=
-ld be=20
-difficult to tell if a broadcast / multicast packet was optimized (think: s=
-erved=20
-via DAT cache, sent as unicast, etc) or not.
+It should be easy to see in tc whether a packet is transmitted as unicast or 
+broadcast. It is just a bit check in the destination mac. So it would end up 
+as a filter somewheere in the hardif tx path which first checks following 
+before rejecting a packet:
 
-@Linus: How about making the intention clearer by choosing a better name (f=
-or=20
-example: nobroadcast mark) and introducing proper documentation when and ho=
-w=20
-to use this flag ?
+* is it a multicast/broadcast destination address?
 
-Cheers,
-Marek
+  - maybe this part isn't even necessary - at least the mcast2unicast stuff 
+    uses batadv_send_skb_unicast 
 
---nextPart6222648.CryiznrDVP
+* is it a batman-adv packet?
+* is is a batman-adv compat 15 broadcast packet?
+* does it have the noflood mark?
+
+This would even allow some fancy stuff like rate limiting or per hardif 
+behavior. With the problem that there is no package yet which does this in 
+gluon.
+
+Or am I missing something essential here which is also done in the 
+batadv_interface_tx path?
+
+And why would we see see stuff which as served via DAT? This is usually not 
+transmitted on the hardif ports.
+
+Kind regards,
+	Sven
+--nextPart5448167.cg51Gv6jSr
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAlzROxIACgkQU1VOj+62
-HMDvlgf/XIwoh8N+/zWkJG7ft95S7STYUefdu/ZGCOMY5W6Zo+pB/UFgzpZarJdK
-OKGkHEjT7rc6y9LK2+2DmuYcmwAc253JgwG0FoAL5mLx8XdctYqCLphunPtAKlev
-7GKEP5vfvXmBHTVYRTSYd6D9Cc7vnWHlSjAepN0tx2NUE0ybuqPQri8l0o0rug9F
-aubKiDWu3BTk+EBtoTT/I+vOqFEcfHyDJkk4JG5UzaAHWKF6YiMpzWJR7MvwjL79
-d5ANEFfRNhG1hh6fQDBqQEpi92vJO541zdmaFlMqrHZ/Uto1+VZSLCCnRQw40/kp
-X68CN/wyPYDJJUtZk0ucswm/5uXVTQ==
-=l45+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlzRQBQACgkQXYcKB8Em
+e0aK3Q//fJgaqNdebPTylHegpnepVVn1fsb6JSnF/GUAIZDDNwJBtAXq+SFL73AZ
+y9NVla7GqmnMgI5Xxsih8jhvN+a5qq9PULF8ouuiFtDWUaGKJxuZjZxGFtbc+Aab
+YDShIn6iNh5TdyUM9TxhbP/9Traofq96JERejODKoifavC4doQpYNSkPbit+n3y4
+WAfL5NbDpQ7yIDbB4f2EkNb096ZEcbdjZo6QkN+4mM8ZtfuTSNxQVpQ7ogmjFKZu
+WQ825agrvQyDE3CioZZpgd28yYF814+ri8V4gtHpuZC+WZoJw49qml/XlYWoDSW0
+1X1mFLsZ9iCHhp2aQqxlBSSU2bJRKEGQVyl2/F4R08ajBCL1V1egBIuqadrBBdms
+Nrb5Sx85yUAs8h3tXAIBWpyc2TcgwCrbgZZSbvHURlHkCogY2ZVfxFyUZJS+yLN7
+DmgONthMqnCQoI2d8mP/Q2ZtGOyIbmeZQJR8zMz2i5g+rzPviil7Vtu+dnLTORip
+ct7JkyDDfrpnuFZJx1zhsOUcXggiRo7ls5Oc2cmFSrY3OfN+mK8vhOU4+A8pyF7R
+ab9OUtS+aBddyRfN88fxz1xtR7UU7i1o9MpXlt/4NXI5Z7uyNhyZJ7KGvsW2P4jJ
+eGKH0WZh5IxjpFNmtr8sB9x7DWn8Jb5v9X4yucu6+FKeilMaDac=
+=7D5L
 -----END PGP SIGNATURE-----
 
---nextPart6222648.CryiznrDVP--
+--nextPart5448167.cg51Gv6jSr--
 
 
 
