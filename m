@@ -1,11 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3] batctl: Add noflood_mark command
-Date: Tue,  7 May 2019 09:29:30 +0200
-Message-Id: <20190507072930.8221-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH v2] batman-adv: Introduce no noflood mark
+Date: Tue, 07 May 2019 09:30:46 +0200
+Message-ID: <3693433.LtgH54LjNc@bentobox>
+In-Reply-To: <20190507072821.8147-1-linus.luessing@c0d3.blue>
+References: <20190507072821.8147-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart21935947.6gBjiiaz1F";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,268 +19,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Adds support for the new 'noflood_mark' setting in batman-adv.
+--nextPart21935947.6gBjiiaz1F
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
-Changelog v3:
-* changed command from a noflood tri-state option
-  to a value/mask one similar to the isolation mark
-* noflood.c -> noflood_mark.c
+On Tuesday, 7 May 2019 09:28:21 CEST Linus L=FCssing wrote:
+> This mark prevents a multicast packet being flooded through the whole
+> mesh. The advantage of marking certain multicast packets via e.g.
+> ebtables instead of dropping is then the following:
+>=20
+> This allows an administrator to let specific multicast packets pass as
+> long as they are forwarded to a limited number of nodes only and are
+> therefore creating no burdon to unrelated nodes.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 
-Changelog v2:
-* added noflood.c
----
- Makefile       |   1 +
- README.rst     |  15 ++++++
- batman_adv.h   |  12 +++++
- man/batctl.8   |  23 ++++++++
- noflood_mark.c | 141 +++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 192 insertions(+)
- create mode 100644 noflood_mark.c
+I still don't see why this has to be implemented in batman-adv and not as a=
+n=20
+external filter (tc-ebpf or something like that).
 
-diff --git a/Makefile b/Makefile
-index b7bd545..18f874c 100755
---- a/Makefile
-+++ b/Makefile
-@@ -60,6 +60,7 @@ $(eval $(call add_command,multicast_mode,y))
- $(eval $(call add_command,nc_nodes,y))
- $(eval $(call add_command,neighbors,y))
- $(eval $(call add_command,network_coding,y))
-+$(eval $(call add_command,noflood_mark,y))
- $(eval $(call add_command,orig_interval,y))
- $(eval $(call add_command,originators,y))
- $(eval $(call add_command,ping,y))
-diff --git a/README.rst b/README.rst
-index bc54412..c025c30 100644
---- a/README.rst
-+++ b/README.rst
-@@ -549,6 +549,21 @@ Usage::
- * Example 4: ``batctl mark 0x0f``
- 
- 
-+batctl noflood_mark
-+=======================
-+
-+display or modify noflood_mark setting
-+
-+Usage::
-+
-+  batctl noflood_mark|nf $value[/0x$mask]
-+
-+* Example 1: ``batctl nf 0x00000001/0xffffffff``
-+* Example 2: ``batctl nf 0x00040000/0xffff0000``
-+* Example 3: ``batctl nf 16``
-+* Example 4: ``batctl nf 0x0f``
-+
-+
- batctl translocal
- =================
- 
-diff --git a/batman_adv.h b/batman_adv.h
-index 67f4636..6fabb7a 100644
---- a/batman_adv.h
-+++ b/batman_adv.h
-@@ -480,6 +480,18 @@ enum batadv_nl_attrs {
- 	 */
- 	BATADV_ATTR_MULTICAST_FANOUT,
- 
-+	/**
-+	 * @BATADV_ATTR_NOFLOOD_MARK: the noflood mark which allows to tag
-+	 *  frames which should never be broadcast flooded through the mesh.
-+	 */
-+	BATADV_ATTR_NOFLOOD_MARK,
-+
-+	/**
-+	 * @BATADV_ATTR_NOFLOOD_MASK: the noflood (bit)mask which allows to tag
-+	 *  frames which should never be broadcast flooded through the mesh.
-+	 */
-+	BATADV_ATTR_NOFLOOD_MASK,
-+
- 	/* add attributes above here, update the policy in netlink.c */
- 
- 	/**
-diff --git a/man/batctl.8 b/man/batctl.8
-index 0b43031..4173137 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -116,6 +116,29 @@ If no parameter is given the current multicast fanout setting is displayed. Othe
- the multicast fanout. The multicast fanout defines the maximum number of packet copies that may be generated for a
- multicast-to-unicast conversion. Once this limit is exceeded distribution will fall back to broadcast.
- .br
-+.IP "\fBnoflood_mark\fP|\fBnf\fP"
-+If no parameter is given the current noflood mark value is displayed.
-+Otherwise the parameter is used to set or unset the noflood mark. The
-+noflood mark allows to prevent broadcast flooding of a frame which
-+was previously tagged via netfilter for instance. batman-adv will
-+then only forward a frame into the mesh if destined to a limited
-+number of destination nodes and drop the frame otherwise.
-+.br
-+The input is supposed to be of the form $value/$mask, where $value can be any
-+32bit long integer (expressed in decimal or hex base) and $mask is a generic
-+bitmask (expressed in hex base) that selects the bits to take into consideration
-+from $value. It is also possible to enter the input using only $value and in
-+this case the full bitmask is used by default.
-+
-+.br
-+.br
-+Example 1: 0x00000001/0xffffffff
-+.br
-+Example 2: 0x00040000/0xffff0000
-+.br
-+Example 3: 16 or 0x0F
-+.br
-+.br
- .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
- If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
- level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
-diff --git a/noflood_mark.c b/noflood_mark.c
-new file mode 100644
-index 0000000..e89205c
---- /dev/null
-+++ b/noflood_mark.c
-@@ -0,0 +1,141 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli <a@unstable.cc>
-+ * Linus Lüssing <linus.luessing@c0d3.blue>
-+ *
-+ * License-Filename: LICENSES/preferred/GPL-2.0
-+ */
-+
-+#include <errno.h>
-+#include <stddef.h>
-+#include <stdint.h>
-+#include <string.h>
-+
-+#include "main.h"
-+#include "sys.h"
-+
-+static struct noflood_mark_data {
-+	uint32_t noflood_mark;
-+	uint32_t noflood_mask;
-+} noflood_mark;
-+
-+static int parse_noflood_mark(struct state *state, int argc, char *argv[])
-+{
-+	struct settings_data *settings = state->cmd->arg;
-+	struct noflood_mark_data *data = settings->data;
-+	char *mask_ptr;
-+	char buff[256];
-+	uint32_t mark;
-+	uint32_t mask;
-+	char *endptr;
-+
-+	if (argc != 2) {
-+		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
-+		return -EINVAL;
-+	}
-+
-+	strncpy(buff, argv[1], sizeof(buff));
-+	buff[sizeof(buff) - 1] = '\0';
-+
-+	/* parse the mask if it has been specified, otherwise assume the mask is
-+	 * the biggest possible
-+	 */
-+	mask = 0xFFFFFFFF;
-+	mask_ptr = strchr(buff, '/');
-+	if (mask_ptr) {
-+		*mask_ptr = '\0';
-+		mask_ptr++;
-+
-+		/* the mask must be entered in hex base as it is going to be a
-+		 * bitmask and not a prefix length
-+		 */
-+		mask = strtoul(mask_ptr, &endptr, 16);
-+		if (!endptr || *endptr != '\0')
-+			goto inval_format;
-+	}
-+
-+	/* the mark can be entered in any base */
-+	mark = strtoul(buff, &endptr, 0);
-+	if (!endptr || *endptr != '\0')
-+		goto inval_format;
-+
-+	data->noflood_mask = mask;
-+	/* erase bits not covered by the mask */
-+	data->noflood_mark = mark & mask;
-+
-+	return 0;
-+
-+inval_format:
-+	fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
-+	fprintf(stderr, "The following formats for mark(/mask) are allowed:\n");
-+	fprintf(stderr, " * 0x12345678\n");
-+	fprintf(stderr, " * 0x12345678/0xabcdef09\n");
-+	return -EINVAL;
-+}
-+
-+static int print_noflood_mark(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct genlmsghdr *ghdr;
-+	int *result = arg;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (!attrs[BATADV_ATTR_NOFLOOD_MARK] ||
-+	    !attrs[BATADV_ATTR_NOFLOOD_MASK])
-+		return NL_OK;
-+
-+	printf("0x%08x/0x%08x\n",
-+	       nla_get_u32(attrs[BATADV_ATTR_NOFLOOD_MARK]),
-+	       nla_get_u32(attrs[BATADV_ATTR_NOFLOOD_MASK]));
-+
-+	*result = 0;
-+	return NL_STOP;
-+}
-+
-+static int get_noflood_mark(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH,
-+				  NULL, print_noflood_mark);
-+}
-+
-+static int set_attrs_noflood_mark(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct noflood_mark_data *data = settings->data;
-+
-+	nla_put_u32(msg, BATADV_ATTR_NOFLOOD_MARK, data->noflood_mark);
-+	nla_put_u32(msg, BATADV_ATTR_NOFLOOD_MASK, data->noflood_mask);
-+
-+	return 0;
-+}
-+
-+static int set_noflood_mark(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH,
-+				  set_attrs_noflood_mark, NULL);
-+}
-+
-+static struct settings_data batctl_settings_noflood_mark = {
-+	.sysfs_name = NULL,
-+	.data = &noflood_mark,
-+	.parse = parse_noflood_mark,
-+	.netlink_get = get_noflood_mark,
-+	.netlink_set = set_noflood_mark,
-+};
-+
-+COMMAND_NAMED(SUBCOMMAND, noflood_mark, "nf", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_noflood_mark,
-+	      "[mark]            \tdisplay or modify noflood_mark setting");
--- 
-2.20.1
+Kind regards,
+	Sven
+
+--nextPart21935947.6gBjiiaz1F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlzRNCYACgkQXYcKB8Em
+e0aXyRAAgG9fa9pNza0iqdGh2yy61KI6EM9PyYPJof4okfcogmjtiyGIvjcoBbIF
+W/IEzETTT/nAsYgBSP3iyFQm8WE3PTulW8aUauQOapHfO8ovAp/HSp4xnfEHH+J1
+Abm6+NgwdaKb3E8+yX4Smq1B81DeSlV8MXsrK7LqYzbnabk4iPjk1uxdmCCAlnOO
+g7D+XalBiNui5hbtloLIbkthvrCL+bqZF/Zfp73gL/t48gjT+QAkBP/A2Bk8qQ5N
+mUfm5o//pEUXd3sFzREQKDgY8J1a1NVd3xkknX9VEc+e605N8YTKXyMXWkO1noNi
+Fap5KKnPTOCz+5L/8oqK19aFWVQ56Eob/FKA5qkzYt6Tlfki/Ehx0WCefO3OJlys
+MgeMqozB5DYw7oJYVs0H1rWrBt+yx91BByJA4ebYLIUtdtX+aKlgr9wJ6BAZBYyH
+xMknmuvW7T88T6eIdUufSUVU6vSEAAx4wbgiQXsUj4miFT04KKExVVKHJfbM5juY
+jtl/dlf+RW4Ixdy/C3vzddyk6eE1NcaFOhe9KrEFaVHfcA+r9W7IUdrbi4B6UFF1
+X+t6+RaY+n40P0iNbLVvOlszLo2h0rq3O8t0i1yZRY/iHAvWjGZDhI6qRgL9xtPh
+OPEkcn5t/08YeM0Ed4Quh3IHeKgjMnYQywbRi5b1ZsS0GFDtLSg=
+=+kgl
+-----END PGP SIGNATURE-----
+
+--nextPart21935947.6gBjiiaz1F--
+
+
 
