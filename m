@@ -1,16 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 7 May 2019 17:34:59 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
 Subject: Re: [PATCH v2] batman-adv: Introduce no noflood mark
-Message-ID: <20190507153459.GC1493@otheros>
+Date: Tue, 07 May 2019 17:45:04 +0200
+Message-ID: <8751913.vGonOqSknk@bentobox>
+In-Reply-To: <20190507151723.GB1493@otheros>
 References: <20190507072821.8147-1-linus.luessing@c0d3.blue>
- <3693433.LtgH54LjNc@bentobox> <3691280.TvIfeD7Em7@rousseau>
  <1895475.8kFdyZb9vl@bentobox> <20190507151723.GB1493@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190507151723.GB1493@otheros>
+Content-Type: multipart/signed; boundary="nextPart8953029.KQddNnn0Kf";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,46 +18,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Marek Lindner <mareklindner@neomailbox.ch>
 
-On Tue, May 07, 2019 at 05:17:23PM +0200, Linus Lüssing wrote:
-> > This would even allow some fancy stuff like rate limiting or per hardif 
-> > behavior. With the problem that there is no package yet which does this in 
-> > gluon.
-> 
+--nextPart8953029.KQddNnn0Kf
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+
+On Tuesday, 7 May 2019 17:17:23 CEST Linus L=FCssing wrote:
 > Ah, that's an interesting idea. So basically filtering on the
 > hardif instead of in batman-adv via some custom compiled BPF
 > filters. So basically similar to writing a small program like the
 > gluon-radv-filterd with a BPF_* parser?
-> 
-> https://github.com/freifunk-gluon/gluon/blob/master/package/gluon-radv-filterd/src/gluon-radv-filterd.c#L223
+>=20
+> https://github.com/freifunk-gluon/gluon/blob/master/package/gluon-radv-fi=
+lterd/src/gluon-radv-filterd.c#L223
 
-And usability is of course different. Compared to writing a BPF
-program it would just be an extra line in the firewall like here:
+Yes, but you don't have to write the stuff with these intrinsics and cBPF.
+This was done in gluon-radv-filterd only to avoid extra dependencies to=20
+build the program for this really minimal piece of code.
+And I didn't had much benefits from using eBPF at the moment [1].
 
-https://github.com/freifunk-gluon/gluon/pull/1357/files#diff-adbff50d8f3994ffbbac77f580ace41e
+You can just write it in C and use clang to create (e)BPF bytecode as=20
+described in http://man7.org/linux/man-pages/man8/tc-bpf.8.html
 
-And setting the noflood_mark in batman-adv:
+Kind regards,
+	Sven
 
-https://github.com/freifunk-gluon/gluon/pull/1357/files#diff-89c09eae71234dcaa46a6137d796048b
+[1] https://github.com/freifunk-gluon/gluon/pull/838#issuecomment-355547594
+--nextPart8953029.KQddNnn0Kf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Also, we would not only need to package it for Gluon then but also
-various Linux distributions used on gateways, I guess. To further
-reduce the ARP broadcasts for vanished clients on gateways, for instance
-(the second use-case).
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlzRqAAACgkQXYcKB8Em
+e0ZdgQ/+I78xbh5yNkM5edrJuJNyYNbuDd9tLyTqc7+nyllD8vZ/QcOJNsuk+Y7e
+uJcPD2ZgWFOnCHOyIAZBPPBLEhHS0+0UrXNJjWN3jH+dZCaKSJXI63upJn+CXd4t
+oOVxRnAi/psvqqUxe2KyiAJ3nRZKtcPOTAUrkvhkRylfGCSzlk7hZJ/xUOnxwENS
+WuORcowh3b/wm9q2lvOk81f0EeHdhfmkXf4wE6RCPx/rovgZKiNUOpSeZVEyuDR+
+S6ox61ULqVwVgRu9p3PAoXNUiLwJv1UiQkeL8DxCwCVX2WA+OuYoFNF4SFyh5VoU
+bV3TBHiSxQj2ljdlJX4TaOna/d8CwuBr1W24JebA3ZKjbgRmbuZECbyRJ9hkHwjr
+lfFF3zGRUjrW9BcymprUk+cR4Dw86YvPbcnZwcyD7GzeSK1Y1L3RYyFakhY8Sbaf
+YQ1CXZwZ4rf2a6w0dytJHj0+44YGcIJ4D7kOgjDOrzNvR+phYJ9WREJzUFObGkXv
+JUJ2Fx0zS4vwPYhX9ysRLqueUxs+FS/CBEHiV78PLoMQNSXRMcVTZt5cGa4IvOwi
+qmIruktyqb9zjaOHjKtJweAlgD0WJk8G77RFJ1dPBcE8U5T7mPlT8+E4dW7KFThS
+J4tXkoSqiim840AVZriPB1UkRprYVTrrLML/b1ChPZ/w0w50XrU=
+=WI+W
+-----END PGP SIGNATURE-----
+
+--nextPart8953029.KQddNnn0Kf--
 
 
-Btw., I think rate-limiting would already be possible. We could
-set the mark in a rate-limited fashion incoming on bat0 with
-ebtables for instance.
 
-Which could be useful to simplify gluon-ebtables-arp-limiter [0] a
-bit. Currently there's a loop over the "batctl dat_cache" table
-to add an exception to rate-limiting for addresses available in
-the cache.
-
-Regards, Linus
-
-
-[0]: https://github.com/freifunk-gluon/gluon/tree/master/package/gluon-ebtables-limit-arp
