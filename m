@@ -1,16 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 14 May 2019 10:19:33 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [PATCH v2] batman-adv: Introduce no noflood mark
-Message-ID: <20190514081933.GA1602@otheros>
-References: <20190507072821.8147-1-linus.luessing@c0d3.blue>
- <3693433.LtgH54LjNc@bentobox> <3691280.TvIfeD7Em7@rousseau>
- <1895475.8kFdyZb9vl@bentobox> <20190507151723.GB1493@otheros>
+Return-Path: <3e__jXAkbAPYqwxiYjjcpYnngb.emmejcsqcpamlrclr.amk@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190507151723.GB1493@otheros>
+Date: Tue, 21 May 2019 06:39:07 -0700
+Message-ID: <00000000000017d64c058965f966@google.com>
+Subject: memory leak in batadv_tvlv_handler_register
+From: syzbot <syzbot+d454a826e670502484b8@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,45 +14,809 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-On Tue, May 07, 2019 at 05:17:23PM +0200, Linus Lüssing wrote:
-> Maybe more importantly even before the bcast_packet->seqno is
-> increased. It could become an issue if a node were increasing it's
-> seqno quickly without other nodes noticing the new seqnos.
-> Broadcast packets we actually let through might then be received
-> with a seqno outside of the seqno window on the receiving nodes.
+Hello,
 
-Hm, what do others think about this? If I'm not mistaken then we
-currently have three places to consider, which would be affected
-by high packet rate multicast:
+syzbot found the following crash on:
 
-1) Sender, batadv_forw_packet_alloc() in batadv_add_bcast_packet_to_list():
-   -> BATADV_BCAST_QUEUE_LEN = 256
+HEAD commit:    f49aa1de Merge tag 'for-5.2-rc1-tag' of git://git.kernel.o..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=16ca4654a00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=61dd9e15a761691d
+dashboard link: https://syzkaller.appspot.com/bug?extid=d454a826e670502484b8
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17b81d9ca00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1500bd9ca00000
 
-2) Receiver, batadv_test_bit() in batadv_recv_bcast_packet():
-   -> BATADV_TQ_LOCAL_WINDOW_SIZE = 64 -> duplicate detection
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+d454a826e670502484b8@syzkaller.appspotmail.com
 
-3) Receiver, batadv_window_protected() in batadv_recv_bcast_packet():
-   -> BATADV_EXPECTED_SEQNO_RANGE = 65536
+    57.000820][ T7044] team0 (unregistering): Port device team_slave_0  
+removed
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 34.850s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 33.900s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 33.900s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 36.440s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 35.490s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 35.490s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 38.040s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.090s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.090s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 38.130s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.180s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.180s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 38.210s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.260s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.260s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff888113c48bc0 (size 64):
+   comm "softirq", pid 0, jiffies 4294942488 (age 38.290s)
+   hex dump (first 32 bytes):
+     00 00 00 00 00 00 00 00 e0 cc 4c 13 81 88 ff ff  ..........L.....
+     00 00 00 00 00 00 00 00 a0 81 15 83 ff ff ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004b89e436>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004b89e436>] kzalloc include/linux/slab.h:742 [inline]
+     [<000000004b89e436>] batadv_tvlv_handler_register+0xae/0x140  
+net/batman-adv/tvlv.c:529
+     [<00000000b3d9e02d>] batadv_tt_init+0x78/0x180  
+net/batman-adv/translation-table.c:4411
+     [<000000009ae2cc39>] batadv_mesh_init+0x196/0x230  
+net/batman-adv/main.c:208
+     [<000000005fc0d64d>] batadv_softif_init_late+0x1ca/0x220  
+net/batman-adv/soft-interface.c:861
+     [<00000000ecdf3bd4>] register_netdevice+0xbf/0x600 net/core/dev.c:8673
+     [<00000000f14c9819>] __rtnl_newlink+0xaca/0xb30  
+net/core/rtnetlink.c:3203
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+
+BUG: memory leak
+unreferenced object 0xffff888114921200 (size 128):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.350s)
+   hex dump (first 32 bytes):
+     f0 a8 c1 12 81 88 ff ff f0 a8 c1 12 81 88 ff ff  ................
+     0a 57 ac 57 c4 a5 6e 00 af d0 6c 97 81 88 ff ff  .W.W..n...l.....
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<000000004cc7ff0e>] kmalloc include/linux/slab.h:547 [inline]
+     [<000000004cc7ff0e>] hsr_create_self_node+0x42/0x150  
+net/hsr/hsr_framereg.c:84
+     [<0000000015dc75a8>] hsr_dev_finalize+0xa4/0x233  
+net/hsr/hsr_device.c:441
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811483f940 (size 64):
+   comm "syz-executor123", pid 7016, jiffies 4294942583 (age 37.350s)
+   hex dump (first 32 bytes):
+     c0 e3 11 16 81 88 ff ff 00 02 00 00 00 00 ad de  ................
+     00 a0 c1 12 81 88 ff ff c0 a8 c1 12 81 88 ff ff  ................
+   backtrace:
+     [<00000000e8f47afd>] kmemleak_alloc_recursive  
+include/linux/kmemleak.h:55 [inline]
+     [<00000000e8f47afd>] slab_post_alloc_hook mm/slab.h:439 [inline]
+     [<00000000e8f47afd>] slab_alloc mm/slab.c:3326 [inline]
+     [<00000000e8f47afd>] kmem_cache_alloc_trace+0x13d/0x280 mm/slab.c:3553
+     [<00000000fda8b63f>] kmalloc include/linux/slab.h:547 [inline]
+     [<00000000fda8b63f>] kzalloc include/linux/slab.h:742 [inline]
+     [<00000000fda8b63f>] hsr_add_port+0xe7/0x220 net/hsr/hsr_slave.c:142
+     [<000000009bd8bf70>] hsr_dev_finalize+0x14f/0x233  
+net/hsr/hsr_device.c:472
+     [<00000000cb1acb7e>] hsr_newlink+0xf3/0x140 net/hsr/hsr_netlink.c:69
+     [<00000000e468583b>] __rtnl_newlink+0x892/0xb30  
+net/core/rtnetlink.c:3191
+     [<000000008fd2d6fa>] rtnl_newlink+0x4e/0x80 net/core/rtnetlink.c:3249
+     [<0000000029fa04eb>] rtnetlink_rcv_msg+0x178/0x4b0  
+net/core/rtnetlink.c:5218
+     [<0000000092499169>] netlink_rcv_skb+0x61/0x170  
+net/netlink/af_netlink.c:2486
+     [<0000000072c4499d>] rtnetlink_rcv+0x1d/0x30 net/core/rtnetlink.c:5236
+     [<00000000f89d63a1>] netlink_unicast_kernel  
+net/netlink/af_netlink.c:1311 [inline]
+     [<00000000f89d63a1>] netlink_unicast+0x1ec/0x2d0  
+net/netlink/af_netlink.c:1337
+     [<000000006e2fb165>] netlink_sendmsg+0x26a/0x480  
+net/netlink/af_netlink.c:1926
+     [<0000000068f29576>] sock_sendmsg_nosec net/socket.c:652 [inline]
+     [<0000000068f29576>] sock_sendmsg+0x54/0x70 net/socket.c:671
+     [<00000000707b1f6b>] __sys_sendto+0x148/0x1f0 net/socket.c:1964
+     [<0000000015b6ba89>] __do_sys_sendto net/socket.c:1976 [inline]
+     [<0000000015b6ba89>] __se_sys_sendto net/socket.c:1972 [inline]
+     [<0000000015b6ba89>] __x64_sys_sendto+0x2a/0x30 net/socket.c:1972
+     [<00000000b8ae154c>] do_syscall_64+0x76/0x1a0  
+arch/x86/entry/common.c:301
+     [<000000002d5a7be6>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+executing program
+executing program
+executing program
+executing program
+executing program
+executing program
+executing program
 
 
-I did some rough estimations with a 5Mbit/s multicast stream
-(typical bitrate of a 720p video), quantified to 1250 byte
-packets on a piece of paper. It seems ok-ish for the three cases
-above, but also seems to get in a range I would start feeling
-uncomfortable.
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Dropping early via noflood instead of dropping later on the
-hard-interfaces via BPF would avoid taking up queueing space and
-sequence numbers.
-
-(And I think the queueing onto the kworker also creates quite a
-bit of load. At least something like that was my experience on
-a Raspberry Pi One with a USB wifi dongle which used a driver
-that queued everything onto the kworker, the kworker was
-always very busy and never made it above 10-15MBit/s if I remember
-correctly [1].)
-
-
-[1]: https://wikidevi.com/wiki/TP-LINK_TL-WDN4200
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
