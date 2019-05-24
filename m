@@ -1,8 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/3] batman-adv: Fix includes for *_MAX constants
-Date: Fri, 24 May 2019 21:19:56 +0200
-Message-Id: <20190524191958.30928-1-sven@narfation.org>
+Subject: [PATCH 2/3] batman-adv: Add missing include for atomic functions
+Date: Fri, 24 May 2019 21:19:57 +0200
+Message-Id: <20190524191958.30928-2-sven@narfation.org>
+In-Reply-To: <20190524191958.30928-1-sven@narfation.org>
+References: <20190524191958.30928-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,79 +18,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The commit 54d50897d544 ("linux/kernel.h: split *_MAX and *_MIN macros into
-<linux/limits.h>") moved the U32_MAX/INT_MAX/ULONG_MAX from linux/kernel.h
-to linux/limits.h. Adjust the includes accordingly.
+main.h is using atomic_add_unless and log.h atomic_read. The main
+header linux/atomic.h should be included for these files.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/gateway_common.c | 1 +
- net/batman-adv/hard-interface.c | 1 +
- net/batman-adv/netlink.c        | 1 +
- net/batman-adv/sysfs.c          | 1 +
- net/batman-adv/tp_meter.c       | 1 +
- 5 files changed, 5 insertions(+)
+ net/batman-adv/log.h  | 1 +
+ net/batman-adv/main.h | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index dac097f9..fc557505 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -11,6 +11,7 @@
- #include <linux/byteorder/generic.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
-+#include <linux/limits.h>
- #include <linux/math64.h>
- #include <linux/netdevice.h>
- #include <linux/stddef.h>
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 79d1731b..89948764 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -16,6 +16,7 @@
- #include <linux/if_ether.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-+#include <linux/limits.h>
- #include <linux/list.h>
- #include <linux/netdevice.h>
+diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
+index 5504637e..741cfa37 100644
+--- a/net/batman-adv/log.h
++++ b/net/batman-adv/log.h
+@@ -9,6 +9,7 @@
+ 
+ #include "main.h"
+ 
++#include <linux/atomic.h>
+ #include <linux/bitops.h>
+ #include <linux/compiler.h>
  #include <linux/printk.h>
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index a67720fa..7253699c 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -21,6 +21,7 @@
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 11d051db..821a7de4 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -205,6 +205,7 @@ enum batadv_uev_type {
+ 
+ /* Kernel headers */
+ 
++#include <linux/atomic.h>
+ #include <linux/compiler.h>
+ #include <linux/etherdevice.h>
  #include <linux/if_vlan.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-+#include <linux/limits.h>
- #include <linux/list.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 80fc3253..1efcb970 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/kobject.h>
- #include <linux/kref.h>
-+#include <linux/limits.h>
- #include <linux/netdevice.h>
- #include <linux/printk.h>
- #include <linux/rculist.h>
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 82039214..dd6a9a40 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -21,6 +21,7 @@
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/kthread.h>
-+#include <linux/limits.h>
- #include <linux/list.h>
- #include <linux/netdevice.h>
- #include <linux/param.h>
 -- 
 2.20.1
 
