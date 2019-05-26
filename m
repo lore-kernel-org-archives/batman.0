@@ -1,13 +1,10 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v4 2/2] batman-adv: mcast: avoid redundant multicast TT
- entries with bridges
-Date: Sun, 26 May 2019 18:35:50 +0200
-Message-Id: <20190526163550.4073-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20190526163550.4073-1-linus.luessing@c0d3.blue>
-References: <20190526163550.4073-1-linus.luessing@c0d3.blue>
+Subject: [PATCH v3 0/2] batman-adv: Add routeable multicast optimizations
+Date: Sun, 26 May 2019 18:48:27 +0200
+Message-Id: <20190526164829.4247-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,88 +17,71 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-When a bridge is added on top of bat0 we set the WANT_ALL_UNSNOOPABLES
-flag. Which means we sign up for all traffic for ff02::1/128 and
-224.0.0.0/24.
+The following patchset fills the next gaps in the multicast address
+rules page by adding support for group-aware optimizations for
+multicast addresses of scope greater than link-local. So far, only
+link-local addresses were optimized as packets with routeable
+addresses not only need to be forwarded to local multicast listeners
+but also multicast routers.
 
-When the node itself had IPv6 enabled or joined a group in 224.0.0.0/24
-itself then so far this would result in a multicast TT entry which is
-redundant to the WANT_ALL_UNSNOOPABLES.
+"Handling rules depending on multicast address:" [0]
 
-With this patch such redundant TT entries are avoided.
+Before:
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+* Ipv4, link-local: supported without bridges
+* IPv6, link-local: supported
+* IPv4, routeable: support planned.
+* IPv6, routeable: support planned.
+
+After:
+
+* Ipv4, link-local: supported without bridges
+* IPv6, link-local: supported
+* IPv4, routeable: supported without bridges.
+* IPv6, routeable: supported.
+
+Patch 1 adds the detection of multicast routers and announces
+them via two new flags in its multicast TVLV. TVLV receivers will
+memorize this and fill lists similar to how we already do for the
+WANT_ALL_IPV4/IPV6 flags. Currently the detection for bridged-in
+IPv6 multicast routers is not quite what the RFC for multicast router
+discovery suggests. But once the MRD implementation in the Linux bridge
+has matured a bit, I'm going to swap this simplified approach with
+tapping into the bridge once more, asking the bridge for the presence of
+multicast routers on the link. (This will then also add support for
+"IPv4, routeable, with bridges")
+
+Then patch 2 implements the changes to the forwarding plane,
+utilizing the new information we have gathered with the second patch.
+
+This patchset is rebased to:
+
+"[PATCH v4 0/2] batman-adv: routeable multicast preparations"
+https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?series=262
+
+
+Regards, Linus
+
+[0]: https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-tech#Handling-rules-depending-on-multicast-address
+
 ---
- net/batman-adv/multicast.c | 33 +++++++++++++++++++++++++++------
- 1 file changed, 27 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 693e3bba..5940c2df 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -227,6 +227,10 @@ batadv_mcast_mla_softif_get_ipv4(struct net_device *dev,
- 	rcu_read_lock();
- 	for (pmc = rcu_dereference(in_dev->mc_list); pmc;
- 	     pmc = rcu_dereference(pmc->next_rcu)) {
-+		if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-+		    ipv4_is_local_multicast(pmc->multiaddr))
-+			continue;
-+
- 		ip_eth_mc_map(pmc->multiaddr, mcast_addr);
- 
- 		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
-@@ -287,6 +291,10 @@ batadv_mcast_mla_softif_get_ipv6(struct net_device *dev,
- 		    IPV6_ADDR_SCOPE_LINKLOCAL)
- 			continue;
- 
-+		if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-+		    ipv6_addr_is_ll_all_nodes(&pmc6->mca_addr))
-+			continue;
-+
- 		ipv6_eth_mc_map(&pmc6->mca_addr, mcast_addr);
- 
- 		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
-@@ -407,9 +415,8 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
- 				       struct batadv_mcast_mla_flags *flags)
- {
- 	struct list_head bridge_mcast_list = LIST_HEAD_INIT(bridge_mcast_list);
--	bool all_ipv4 = flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV4;
--	bool all_ipv6 = flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6;
- 	struct br_ip_list *br_ip_entry, *tmp;
-+	u8 tvlv_flags = flags->tvlv_flags;
- 	struct batadv_hw_addr *new;
- 	u8 mcast_addr[ETH_ALEN];
- 	int ret;
-@@ -422,11 +429,25 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
- 		goto out;
- 
- 	list_for_each_entry(br_ip_entry, &bridge_mcast_list, list) {
--		if (all_ipv4 && br_ip_entry->addr.proto == htons(ETH_P_IP))
--			continue;
-+		if (br_ip_entry->addr.proto == htons(ETH_P_IP)) {
-+			if (tvlv_flags & BATADV_MCAST_WANT_ALL_IPV4)
-+				continue;
- 
--		if (all_ipv6 && br_ip_entry->addr.proto == htons(ETH_P_IPV6))
--			continue;
-+			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-+			    ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
-+				continue;
-+		}
-+
-+#if IS_ENABLED(CONFIG_IPV6)
-+		if (br_ip_entry->addr.proto == htons(ETH_P_IPV6)) {
-+			if (tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6)
-+				continue;
-+
-+			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-+			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.u.ip6))
-+				continue;
-+		}
-+#endif
- 
- 		batadv_mcast_mla_br_addr_cpy(mcast_addr, &br_ip_entry->addr);
- 		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
--- 
-2.20.1
+Changelog v3:
+
+* rebased to master + routeable multicast preparations v4
+* fixed build errors with CONFIG_IPV6_MROUTE disabled
+* fixed build errors with CONFIG_IPV6 disabled
+
+Changelog v2:
+
+* rebased to master
+* split patchset in two with the intention to ease reviewing
+  (no code changes, just the last two patches here)
+
+* removed unncessarilly added newline in batadv_mcast_flags_log()
+  [PATCH 5/6] / [PATCH v2 1/2]
+* kerneldoc: @BATADV_MCAST_NO_WANT_ALL_RTR6 -> -"NO_"
+  in enum batadv_mcast_flags [PATCH 5/6] / [PATCH v2 1/2]
+
+
 
