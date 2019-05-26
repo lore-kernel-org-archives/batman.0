@@ -1,10 +1,13 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v4 0/2] batman-adv: routeable multicast preparations
-Date: Sun, 26 May 2019 18:35:48 +0200
-Message-Id: <20190526163550.4073-1-linus.luessing@c0d3.blue>
+Subject: [PATCH v4 1/2] batman-adv: mcast: collect softif listeners from IP
+ lists instead
+Date: Sun, 26 May 2019 18:35:49 +0200
+Message-Id: <20190526163550.4073-2-linus.luessing@c0d3.blue>
+In-Reply-To: <20190526163550.4073-1-linus.luessing@c0d3.blue>
+References: <20190526163550.4073-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,44 +20,301 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patchset provides some code restructuring in preparation for the
-support of routeable multicast addresses.
+Instead of collecting multicast MAC addresses from the netdev hw mc
+list collect a node's multicast listeners from the IP lists and convert
+those to MAC addresses.
 
-The first one swaps the kernel MAC multicast list with the equivalent
-IPv4 and IPv6 ones: This allows an easier filtering later.
+This allows to exclude addresses of specific scope later. On a
+multicast MAC address the IP destination scope is not visible anymore.
 
-Patch 2 is a first application of such filtering and allows
-omitting some redundant address additions to the TT. Later, the same
-will be necessary for routeable multicast addresses.
-
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
+ net/batman-adv/multicast.c | 258 +++++++++++++++++++++++++------------
+ 1 file changed, 173 insertions(+), 85 deletions(-)
 
-Changelog v4:
-
-* rebased to master:
-  -> removed [PATCH v3 1/3] (now applied)
-* fixed build issues with CONFIG_IPV6 disabled
-
-Changelog v3:
-
-* fixed "From:" address in mail header
-
-Changelog v2:
-
-* rebased to master
-* removed already applied patch
-  ("batman-adv: mcast: fix multicast tt/tvlv worker locking")
-* split patchset in two with the intention to ease reviewing
-  (no code changes, just omitted the last two patches)
-
-* kerneldoc: alignment for batadv_mcast_mla_flags_update()
-  [PATCH 2/6] / [PATCH v2 1/3]
-* fixed compile issues due to a duplicated member in struct
-* batadv_priv_mcast
-  [PATCH 2/6] / [PATCH v2 1/3]
-* kerneldoc: added missing @flags for batadv_mcast_mla_flags_update()
-  [PATCH 2/6] / [PATCH v2 1/3]
-* kerneldoc: @flags -> @tvlv_flags in struct batadv_mcast_mla_flags
-  [PATCH 2/6] / [PATCH v2 1/3]
-
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index af0e2ce8..693e3bba 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -20,6 +20,7 @@
+ #include <linux/igmp.h>
+ #include <linux/in.h>
+ #include <linux/in6.h>
++#include <linux/inetdevice.h>
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/jiffies.h>
+@@ -171,91 +172,6 @@ static struct net_device *batadv_mcast_get_bridge(struct net_device *soft_iface)
+ 	return upper;
+ }
+ 
+-/**
+- * batadv_mcast_addr_is_ipv4() - check if multicast MAC is IPv4
+- * @addr: the MAC address to check
+- *
+- * Return: True, if MAC address is one reserved for IPv4 multicast, false
+- * otherwise.
+- */
+-static bool batadv_mcast_addr_is_ipv4(const u8 *addr)
+-{
+-	static const u8 prefix[] = {0x01, 0x00, 0x5E};
+-
+-	return memcmp(prefix, addr, sizeof(prefix)) == 0;
+-}
+-
+-/**
+- * batadv_mcast_addr_is_ipv6() - check if multicast MAC is IPv6
+- * @addr: the MAC address to check
+- *
+- * Return: True, if MAC address is one reserved for IPv6 multicast, false
+- * otherwise.
+- */
+-static bool batadv_mcast_addr_is_ipv6(const u8 *addr)
+-{
+-	static const u8 prefix[] = {0x33, 0x33};
+-
+-	return memcmp(prefix, addr, sizeof(prefix)) == 0;
+-}
+-
+-/**
+- * batadv_mcast_mla_softif_get() - get softif multicast listeners
+- * @dev: the device to collect multicast addresses from
+- * @mcast_list: a list to put found addresses into
+- * @flags: flags indicating the new multicast state
+- *
+- * Collects multicast addresses of multicast listeners residing
+- * on this kernel on the given soft interface, dev, in
+- * the given mcast_list. In general, multicast listeners provided by
+- * your multicast receiving applications run directly on this node.
+- *
+- * If there is a bridge interface on top of dev, collects from that one
+- * instead. Just like with IP addresses and routes, multicast listeners
+- * will(/should) register to the bridge interface instead of an
+- * enslaved bat0.
+- *
+- * Return: -ENOMEM on memory allocation error or the number of
+- * items added to the mcast_list otherwise.
+- */
+-static int
+-batadv_mcast_mla_softif_get(struct net_device *dev,
+-			    struct hlist_head *mcast_list,
+-			    struct batadv_mcast_mla_flags *flags)
+-{
+-	bool all_ipv4 = flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV4;
+-	bool all_ipv6 = flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6;
+-	struct net_device *bridge = batadv_mcast_get_bridge(dev);
+-	struct netdev_hw_addr *mc_list_entry;
+-	struct batadv_hw_addr *new;
+-	int ret = 0;
+-
+-	netif_addr_lock_bh(bridge ? bridge : dev);
+-	netdev_for_each_mc_addr(mc_list_entry, bridge ? bridge : dev) {
+-		if (all_ipv4 && batadv_mcast_addr_is_ipv4(mc_list_entry->addr))
+-			continue;
+-
+-		if (all_ipv6 && batadv_mcast_addr_is_ipv6(mc_list_entry->addr))
+-			continue;
+-
+-		new = kmalloc(sizeof(*new), GFP_ATOMIC);
+-		if (!new) {
+-			ret = -ENOMEM;
+-			break;
+-		}
+-
+-		ether_addr_copy(new->addr, mc_list_entry->addr);
+-		hlist_add_head(&new->list, mcast_list);
+-		ret++;
+-	}
+-	netif_addr_unlock_bh(bridge ? bridge : dev);
+-
+-	if (bridge)
+-		dev_put(bridge);
+-
+-	return ret;
+-}
+-
+ /**
+  * batadv_mcast_mla_is_duplicate() - check whether an address is in a list
+  * @mcast_addr: the multicast address to check
+@@ -276,6 +192,178 @@ static bool batadv_mcast_mla_is_duplicate(u8 *mcast_addr,
+ 	return false;
+ }
+ 
++/**
++ * batadv_mcast_mla_softif_get_ipv4() - get softif IPv4 multicast listeners
++ * @dev: the device to collect multicast addresses from
++ * @mcast_list: a list to put found addresses into
++ * @flags: flags indicating the new multicast state
++ *
++ * Collects multicast addresses of IPv4 multicast listeners residing
++ * on this kernel on the given soft interface, dev, in
++ * the given mcast_list. In general, multicast listeners provided by
++ * your multicast receiving applications run directly on this node.
++ *
++ * Return: -ENOMEM on memory allocation error or the number of
++ * items added to the mcast_list otherwise.
++ */
++static int
++batadv_mcast_mla_softif_get_ipv4(struct net_device *dev,
++				 struct hlist_head *mcast_list,
++				 struct batadv_mcast_mla_flags *flags)
++{
++	struct batadv_hw_addr *new;
++	struct in_device *in_dev;
++	u8 mcast_addr[ETH_ALEN];
++	struct ip_mc_list *pmc;
++	int ret = 0;
++
++	if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV4)
++		return 0;
++
++	in_dev = in_dev_get(dev);
++	if (!in_dev)
++		return 0;
++
++	rcu_read_lock();
++	for (pmc = rcu_dereference(in_dev->mc_list); pmc;
++	     pmc = rcu_dereference(pmc->next_rcu)) {
++		ip_eth_mc_map(pmc->multiaddr, mcast_addr);
++
++		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
++			continue;
++
++		new = kmalloc(sizeof(*new), GFP_ATOMIC);
++		if (!new) {
++			ret = -ENOMEM;
++			break;
++		}
++
++		ether_addr_copy(new->addr, mcast_addr);
++		hlist_add_head(&new->list, mcast_list);
++		ret++;
++	}
++	rcu_read_unlock();
++	in_dev_put(in_dev);
++
++	return ret;
++}
++
++/**
++ * batadv_mcast_mla_softif_get_ipv6() - get softif IPv6 multicast listeners
++ * @dev: the device to collect multicast addresses from
++ * @mcast_list: a list to put found addresses into
++ * @flags: flags indicating the new multicast state
++ *
++ * Collects multicast addresses of IPv6 multicast listeners residing
++ * on this kernel on the given soft interface, dev, in
++ * the given mcast_list. In general, multicast listeners provided by
++ * your multicast receiving applications run directly on this node.
++ *
++ * Return: -ENOMEM on memory allocation error or the number of
++ * items added to the mcast_list otherwise.
++ */
++#if IS_ENABLED(CONFIG_IPV6)
++static int
++batadv_mcast_mla_softif_get_ipv6(struct net_device *dev,
++				 struct hlist_head *mcast_list,
++				 struct batadv_mcast_mla_flags *flags)
++{
++	struct batadv_hw_addr *new;
++	struct inet6_dev *in6_dev;
++	u8 mcast_addr[ETH_ALEN];
++	struct ifmcaddr6 *pmc6;
++	int ret = 0;
++
++	if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6)
++		return 0;
++
++	in6_dev = in6_dev_get(dev);
++	if (!in6_dev)
++		return 0;
++
++	read_lock_bh(&in6_dev->lock);
++	for (pmc6 = in6_dev->mc_list; pmc6; pmc6 = pmc6->next) {
++		if (IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) <
++		    IPV6_ADDR_SCOPE_LINKLOCAL)
++			continue;
++
++		ipv6_eth_mc_map(&pmc6->mca_addr, mcast_addr);
++
++		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
++			continue;
++
++		new = kmalloc(sizeof(*new), GFP_ATOMIC);
++		if (!new) {
++			ret = -ENOMEM;
++			break;
++		}
++
++		ether_addr_copy(new->addr, mcast_addr);
++		hlist_add_head(&new->list, mcast_list);
++		ret++;
++	}
++	read_unlock_bh(&in6_dev->lock);
++	in6_dev_put(in6_dev);
++
++	return ret;
++}
++#else
++static inline int
++batadv_mcast_mla_softif_get_ipv6(struct net_device *dev,
++				 struct hlist_head *mcast_list,
++				 struct batadv_mcast_mla_flags *flags)
++{
++	return 0;
++}
++#endif
++
++/**
++ * batadv_mcast_mla_softif_get() - get softif multicast listeners
++ * @dev: the device to collect multicast addresses from
++ * @mcast_list: a list to put found addresses into
++ * @flags: flags indicating the new multicast state
++ *
++ * Collects multicast addresses of multicast listeners residing
++ * on this kernel on the given soft interface, dev, in
++ * the given mcast_list. In general, multicast listeners provided by
++ * your multicast receiving applications run directly on this node.
++ *
++ * If there is a bridge interface on top of dev, collects from that one
++ * instead. Just like with IP addresses and routes, multicast listeners
++ * will(/should) register to the bridge interface instead of an
++ * enslaved bat0.
++ *
++ * Return: -ENOMEM on memory allocation error or the number of
++ * items added to the mcast_list otherwise.
++ */
++static int
++batadv_mcast_mla_softif_get(struct net_device *dev,
++			    struct hlist_head *mcast_list,
++			    struct batadv_mcast_mla_flags *flags)
++{
++	struct net_device *bridge = batadv_mcast_get_bridge(dev);
++	int ret4, ret6 = 0;
++
++	if (bridge)
++		dev = bridge;
++
++	ret4 = batadv_mcast_mla_softif_get_ipv4(dev, mcast_list, flags);
++	if (ret4 < 0)
++		goto out;
++
++	ret6 = batadv_mcast_mla_softif_get_ipv6(dev, mcast_list, flags);
++	if (ret6 < 0) {
++		ret4 = 0;
++		goto out;
++	}
++
++out:
++	if (bridge)
++		dev_put(bridge);
++
++	return ret4 + ret6;
++}
++
+ /**
+  * batadv_mcast_mla_br_addr_cpy() - copy a bridge multicast address
+  * @dst: destination to write to - a multicast MAC address
+-- 
+2.20.1
 
