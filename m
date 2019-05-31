@@ -1,14 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3 2/2] batman-adv: mcast: apply optimizations for routeable
- packets, too
-Date: Sun, 26 May 2019 18:48:29 +0200
-Message-Id: <20190526164829.4247-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20190526164829.4247-1-linus.luessing@c0d3.blue>
-References: <20190526164829.4247-1-linus.luessing@c0d3.blue>
+Return-Path: <baptiste@bitsofnetworks.org>
+Date: Fri, 31 May 2019 15:44:16 +0200
+From: Baptiste Jonglez <baptiste@bitsofnetworks.org>
+Subject: Call for participation for BattleMesh V12 (8-14 July 2019, Paris)
+Message-ID: <20190531134416.GD31876@tuxmachine.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="z4+8/lEcDcG5Ke9S"
+Content-Disposition: inline
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,408 +18,153 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Now that we not only track the presence of multicast listeners but also
-multicast routers we can safely apply group-aware multicast-to-unicast
-forwarding to packets with a destination address of scope greater than
-link-local as well.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/multicast.c | 259 ++++++++++++++++++++++++++++++++++---
- 1 file changed, 241 insertions(+), 18 deletions(-)
+--z4+8/lEcDcG5Ke9S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index c170c08f..ea341670 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -975,6 +975,7 @@ static bool batadv_mcast_is_report_ipv4(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the IPv4 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-+ * @is_routeable: stores whether the destination is routeable
-  *
-  * Checks whether the given IPv4 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -984,7 +985,8 @@ static bool batadv_mcast_is_report_ipv4(struct sk_buff *skb)
-  */
- static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
- 					     struct sk_buff *skb,
--					     bool *is_unsnoopable)
-+					     bool *is_unsnoopable,
-+					     int *is_routeable)
- {
- 	struct iphdr *iphdr;
- 
-@@ -997,16 +999,13 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
- 
- 	iphdr = ip_hdr(skb);
- 
--	/* TODO: Implement Multicast Router Discovery (RFC4286),
--	 * then allow scope > link local, too
--	 */
--	if (!ipv4_is_local_multicast(iphdr->daddr))
--		return -EINVAL;
--
- 	/* link-local multicast listeners behind a bridge are
- 	 * not snoopable (see RFC4541, section 2.1.2.2)
- 	 */
--	*is_unsnoopable = true;
-+	if (ipv4_is_local_multicast(iphdr->daddr))
-+		*is_unsnoopable = true;
-+	else
-+		*is_routeable = ETH_P_IP;
- 
- 	return 0;
- }
-@@ -1041,6 +1040,7 @@ static bool batadv_mcast_is_report_ipv6(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the IPv6 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-+ * @is_routeable: stores whether the destination is routeable
-  *
-  * Checks whether the given IPv6 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -1049,7 +1049,8 @@ static bool batadv_mcast_is_report_ipv6(struct sk_buff *skb)
-  */
- static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 					     struct sk_buff *skb,
--					     bool *is_unsnoopable)
-+					     bool *is_unsnoopable,
-+					     int *is_routeable)
- {
- 	struct ipv6hdr *ip6hdr;
- 
-@@ -1062,10 +1063,7 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 
- 	ip6hdr = ipv6_hdr(skb);
- 
--	/* TODO: Implement Multicast Router Discovery (RFC4286),
--	 * then allow scope > link local, too
--	 */
--	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) != IPV6_ADDR_SCOPE_LINKLOCAL)
-+	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) < IPV6_ADDR_SCOPE_LINKLOCAL)
- 		return -EINVAL;
- 
- 	/* link-local-all-nodes multicast listeners behind a bridge are
-@@ -1073,6 +1071,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 	 */
- 	if (ipv6_addr_is_ll_all_nodes(&ip6hdr->daddr))
- 		*is_unsnoopable = true;
-+	else if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) > IPV6_ADDR_SCOPE_LINKLOCAL)
-+		*is_routeable = ETH_P_IPV6;
- 
- 	return 0;
- }
-@@ -1082,6 +1082,7 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the multicast frame to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-+ * @is_routeable: stores whether the destination is routeable
-  *
-  * Checks whether the given multicast ethernet frame has the potential to be
-  * forwarded with a mode more optimal than classic flooding.
-@@ -1090,7 +1091,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
-  */
- static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
- 					struct sk_buff *skb,
--					bool *is_unsnoopable)
-+					bool *is_unsnoopable,
-+					int *is_routeable)
- {
- 	struct ethhdr *ethhdr = eth_hdr(skb);
- 
-@@ -1100,13 +1102,15 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
- 	switch (ntohs(ethhdr->h_proto)) {
- 	case ETH_P_IP:
- 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
--							 is_unsnoopable);
-+							 is_unsnoopable,
-+							 is_routeable);
- 	case ETH_P_IPV6:
- 		if (!IS_ENABLED(CONFIG_IPV6))
- 			return -EINVAL;
- 
- 		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
--							 is_unsnoopable);
-+							 is_unsnoopable,
-+							 is_routeable);
- 	default:
- 		return -EINVAL;
- 	}
-@@ -1136,6 +1140,29 @@ static int batadv_mcast_forw_want_all_ip_count(struct batadv_priv *bat_priv,
- 	}
- }
- 
-+/**
-+ * batadv_mcast_forw_rtr_count() - count nodes with a multicast router
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @protocol: the ethernet protocol type to count multicast routers for
-+ *
-+ * Return: the number of nodes which want all routeable IPv4 multicast traffic
-+ * if the protocol is ETH_P_IP or the number of nodes which want all routeable
-+ * IPv6 traffic if the protocol is ETH_P_IPV6. Otherwise returns 0.
-+ */
-+
-+static int batadv_mcast_forw_rtr_count(struct batadv_priv *bat_priv,
-+				       int protocol)
-+{
-+	switch (protocol) {
-+	case ETH_P_IP:
-+		return atomic_read(&bat_priv->mcast.num_want_all_rtr4);
-+	case ETH_P_IPV6:
-+		return atomic_read(&bat_priv->mcast.num_want_all_rtr6);
-+	default:
-+		return 0;
-+	}
-+}
-+
- /**
-  * batadv_mcast_forw_tt_node_get() - get a multicast tt node
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1257,6 +1284,84 @@ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
- 	return orig_node;
- }
- 
-+/**
-+ * batadv_mcast_forw_rtr4_node_get() - get a node with an ipv4 mcast router flag
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_RTR4 flag set and
-+ * increases its refcount.
-+ */
-+static struct batadv_orig_node *
-+batadv_mcast_forw_rtr4_node_get(struct batadv_priv *bat_priv)
-+{
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tmp_orig_node,
-+				 &bat_priv->mcast.want_all_rtr4_list,
-+				 mcast_want_all_rtr4_node) {
-+		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
-+			continue;
-+
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
-+	rcu_read_unlock();
-+
-+	return orig_node;
-+}
-+
-+/**
-+ * batadv_mcast_forw_rtr6_node_get() - get a node with an ipv6 mcast router flag
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_RTR6 flag set
-+ * and increases its refcount.
-+ */
-+static struct batadv_orig_node *
-+batadv_mcast_forw_rtr6_node_get(struct batadv_priv *bat_priv)
-+{
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tmp_orig_node,
-+				 &bat_priv->mcast.want_all_rtr6_list,
-+				 mcast_want_all_rtr6_node) {
-+		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
-+			continue;
-+
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
-+	rcu_read_unlock();
-+
-+	return orig_node;
-+}
-+
-+/**
-+ * batadv_mcast_forw_rtr_node_get() - get a node with an ipv4/ipv6 router flag
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ethhdr: an ethernet header to determine the protocol family from
-+ *
-+ * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_RTR4 or
-+ * BATADV_MCAST_WANT_ALL_RTR6 flag, depending on the provided ethhdr, set and
-+ * increases its refcount.
-+ */
-+static struct batadv_orig_node *
-+batadv_mcast_forw_rtr_node_get(struct batadv_priv *bat_priv,
-+			       struct ethhdr *ethhdr)
-+{
-+	switch (ntohs(ethhdr->h_proto)) {
-+	case ETH_P_IP:
-+		return batadv_mcast_forw_rtr4_node_get(bat_priv);
-+	case ETH_P_IPV6:
-+		return batadv_mcast_forw_rtr6_node_get(bat_priv);
-+	default:
-+		/* we shouldn't be here... */
-+		return NULL;
-+	}
-+}
-+
- /**
-  * batadv_mcast_forw_mode() - check on how to forward a multicast packet
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1275,8 +1380,11 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	bool is_unsnoopable = false;
- 	unsigned int mcast_fanout;
- 	struct ethhdr *ethhdr;
-+	int is_routeable = 0;
-+	int rtr_count = 0;
- 
--	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable);
-+	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable,
-+					   &is_routeable);
- 	if (ret == -ENOMEM)
- 		return BATADV_FORW_NONE;
- 	else if (ret < 0)
-@@ -1289,8 +1397,9 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	ip_count = batadv_mcast_forw_want_all_ip_count(bat_priv, ethhdr);
- 	unsnoop_count = !is_unsnoopable ? 0 :
- 			atomic_read(&bat_priv->mcast.num_want_all_unsnoopables);
-+	rtr_count = batadv_mcast_forw_rtr_count(bat_priv, is_routeable);
- 
--	total_count = tt_count + ip_count + unsnoop_count;
-+	total_count = tt_count + ip_count + unsnoop_count + rtr_count;
- 
- 	switch (total_count) {
- 	case 1:
-@@ -1300,6 +1409,9 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 			*orig = batadv_mcast_forw_ip_node_get(bat_priv, ethhdr);
- 		else if (unsnoop_count)
- 			*orig = batadv_mcast_forw_unsnoop_node_get(bat_priv);
-+		else if (rtr_count)
-+			*orig = batadv_mcast_forw_rtr_node_get(bat_priv,
-+							       ethhdr);
- 
- 		if (*orig)
- 			return BATADV_FORW_SINGLE;
-@@ -1470,6 +1582,111 @@ batadv_mcast_forw_want_all(struct batadv_priv *bat_priv,
- 	}
- }
- 
-+/**
-+ * batadv_mcast_forw_want_all_rtr4() - forward to nodes with want-all-rtr4
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the multicast packet to transmit
-+ * @vid: the vlan identifier
-+ *
-+ * Sends copies of a frame with multicast destination to any node with a
-+ * BATADV_MCAST_WANT_ALL_RTR4 flag set. A transmission is performed via a
-+ * batman-adv unicast packet for each such destination node.
-+ *
-+ * Return: NET_XMIT_DROP on memory allocation failure, NET_XMIT_SUCCESS
-+ * otherwise.
-+ */
-+static int
-+batadv_mcast_forw_want_all_rtr4(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb, unsigned short vid)
-+{
-+	struct batadv_orig_node *orig_node;
-+	int ret = NET_XMIT_SUCCESS;
-+	struct sk_buff *newskb;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(orig_node,
-+				 &bat_priv->mcast.want_all_rtr4_list,
-+				 mcast_want_all_rtr4_node) {
-+		newskb = skb_copy(skb, GFP_ATOMIC);
-+		if (!newskb) {
-+			ret = NET_XMIT_DROP;
-+			break;
-+		}
-+
-+		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
-+					orig_node, vid);
-+	}
-+	rcu_read_unlock();
-+	return ret;
-+}
-+
-+/**
-+ * batadv_mcast_forw_want_all_rtr6() - forward to nodes with want-all-rtr6
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: The multicast packet to transmit
-+ * @vid: the vlan identifier
-+ *
-+ * Sends copies of a frame with multicast destination to any node with a
-+ * BATADV_MCAST_WANT_ALL_RTR6 flag set. A transmission is performed via a
-+ * batman-adv unicast packet for each such destination node.
-+ *
-+ * Return: NET_XMIT_DROP on memory allocation failure, NET_XMIT_SUCCESS
-+ * otherwise.
-+ */
-+static int
-+batadv_mcast_forw_want_all_rtr6(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb, unsigned short vid)
-+{
-+	struct batadv_orig_node *orig_node;
-+	int ret = NET_XMIT_SUCCESS;
-+	struct sk_buff *newskb;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(orig_node,
-+				 &bat_priv->mcast.want_all_rtr6_list,
-+				 mcast_want_all_rtr6_node) {
-+		newskb = skb_copy(skb, GFP_ATOMIC);
-+		if (!newskb) {
-+			ret = NET_XMIT_DROP;
-+			break;
-+		}
-+
-+		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
-+					orig_node, vid);
-+	}
-+	rcu_read_unlock();
-+	return ret;
-+}
-+
-+/**
-+ * batadv_mcast_forw_want_rtr() - forward packet to nodes in a want-all-rtr list
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the multicast packet to transmit
-+ * @vid: the vlan identifier
-+ *
-+ * Sends copies of a frame with multicast destination to any node with a
-+ * BATADV_MCAST_WANT_ALL_RTR4 or BATADV_MCAST_WANT_ALL_RTR6 flag set. A
-+ * transmission is performed via a batman-adv unicast packet for each such
-+ * destination node.
-+ *
-+ * Return: NET_XMIT_DROP on memory allocation failure or if the protocol family
-+ * is neither IPv4 nor IPv6. NET_XMIT_SUCCESS otherwise.
-+ */
-+static int
-+batadv_mcast_forw_want_rtr(struct batadv_priv *bat_priv,
-+			   struct sk_buff *skb, unsigned short vid)
-+{
-+	switch (ntohs(eth_hdr(skb)->h_proto)) {
-+	case ETH_P_IP:
-+		return batadv_mcast_forw_want_all_rtr4(bat_priv, skb, vid);
-+	case ETH_P_IPV6:
-+		return batadv_mcast_forw_want_all_rtr6(bat_priv, skb, vid);
-+	default:
-+		/* we shouldn't be here... */
-+		return NET_XMIT_DROP;
-+	}
-+}
-+
- /**
-  * batadv_mcast_forw_send() - send packet to any detected multicast recpient
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1503,6 +1720,12 @@ int batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		return ret;
- 	}
- 
-+	ret = batadv_mcast_forw_want_rtr(bat_priv, skb, vid);
-+	if (ret != NET_XMIT_SUCCESS) {
-+		kfree_skb(skb);
-+		return ret;
-+	}
-+
- 	consume_skb(skb);
- 	return ret;
- }
--- 
-2.20.1
+Hello,
 
+The local organization team is proud to announce that this year's
+Battlemesh will be held near Paris, from 8 to 14 July!
+
+The event aims to bring together people from across the globe who are
+interested in community networks, including wireless mesh network
+technologies, fiber infrastructure, Do-It-Yourself Internet Access
+Providers, and more generally how to create and maintain a thriving
+community of people involved in building their own networks.
+
+We envision 7 days full of expert presentations, practical workshops,
+late-night hacking sessions, and fruitful discussions: whether you are a
+mesh networking enthusiast, community networking activist, protocol
+developer, or have an interest in networking in general, come and join us!=
+=20
+
+More information about the event is available below or on the website:
+https://www.battlemesh.org/BattleMeshV12
+
+
+Where
+=3D=3D=3D=3D=3D
+
+Le 6B, 6-10 quai de Seine, 93200 Saint-Denis, France (very close to
+Paris).
+
+GPS: geo:48.93835,2.34259
+Map: https://www.openstreetmap.org/?mlat=3D48.93835&mlon=3D2.34259#map=3D18=
+/48.93835/2.34259
+Web: https://www.le6b.fr/
+Travel directions: https://www.battlemesh.org/BattleMeshV12#Where
+
+
+What
+=3D=3D=3D=3D
+
+We will have organized talks, workshops and discussion panels on community
+networks and wireless mesh networks.  There will also be more informal
+activities: cooperative hacking, self-organized projects, and (we hope)
+delightful conversations!
+
+A first draft of the schedule (handle with care!) is available here: https:=
+//www.battlemesh.org/BattleMeshV12#Talk_Schedule_and_Workshops
+
+
+How to register
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+The event itself is free of charge and open for all!  However, it makes
+the organisation much easier if you tell us in advance that you plan to
+come.
+
+To register: https://www.battlemesh.org/BattleMeshV12#How_to_register
+
+Current list of participants: https://battlemesh.org/BattleMeshV12/Particip=
+ants
+
+
+Accommodation package
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+For those of you who are looking for a convenient and low cost
+accommodation option in Paris: we negotiated a special group reservation
+for 24 people at an hostel.
+
+There are still a few beds left, register now before we run out! https://ww=
+w.battlemesh.org/BattleMeshV12#Accommodation_package
+
+
+Call for participation
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+We invite participants to propose workshops, talks or panel discussions
+relating to network infrastructure in general, how it can be built and
+operated as a common, and how to sustain a community around networking.
+
+We welcome contributions that broadly address these questions from any of
+several perspectives: technical, organisational, economical, regulatory,
+juridical, political.
+
+Deadline: 10 May 2019, now extended to June 7th!
+
+To submit an event: https://www.battlemesh.org/BattleMeshV12#Call_for_parti=
+cipation
+
+
+Endorsements
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+If your organization wants to support the event by spreading the word, you
+can endorse the event.
+
+For this, just write an article on your website / blog / social media, and
+send us an email with the link and your logo to: (v12) at (battlemesh) dot =
+(org)
+
+See existing endorsements for a template: https://www.battlemesh.org/Battle=
+MeshV12#Endorsements
+
+
+Contact
+=3D=3D=3D=3D=3D=3D=3D
+
+* Web: https://battlemesh.org/BattleMeshV12
+* Contact email (preferred): v12 at battlemesh.org
+* Public mailing list: https://ml.ninux.org/mailman/listinfo/battlemesh
+* IRC: irc.freenode.net #battlemesh
+* Twitter: https://twitter.com/battlemesh/
+* Mastodon: https://toot.aquilenet.fr/@battlemesh12
+
+
+The Local Organization Team
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D
+
+Aube
+Baptiste
+Daniele
+Dash
+Vi
+and many other volunteers!
+
+--z4+8/lEcDcG5Ke9S
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEjVflzZuxNlVFbt5QvgHsIqBOLkYFAlzxL7AACgkQvgHsIqBO
+Lka7tA/+MS+XpaB3YVGdxF8g1ci/zf5mVQurBLmJCZ99Gj1e5lhbqXYPf8fHpt6R
+/9+jNAcba3hM+p9t/CKVGtdYLIH0zd4dGLx2VjliU8g/BuZbmcPp8D8oO7E7Fw+L
+mu8KBU7X0R6HqW3mShwcgaqAAdzg7R0/cyfR2tZUDlCUDqJyJqW4aTNdHm8Ft68c
+bvHp1InZ78jvwIhK+/phlEH0UKQkH7fBOxvdPabYGMAmCukFYsJtuP6r6gTo8610
+5QnRf74M9+7aHJl33ORM4/Mu+/Q72UsseDlthnU1B9F20+ZY1kJ1SvDZVoRJXaRt
+rbSXAd82Np8Yr4gRibWbFPujf5cr5kp+rf2PqvJHhIzWT8EcYeILmuRPHdTN3AVd
+MKUPR2PxM1bSWY0uVi9aGuvoPmAEsNixWBYQg3Fh+q/eHB+SWwwXzVHLSupmPk2n
+0lTt+w0HyN8c4Puivkhh6PtNHDEQ7FsxeRzF/Cv/XzTlGBoHdkBrvbaGn4Ib8NOl
+4F3UcnA0kJN/972EqCofKmUjuXqnz8Dp28jU4kwgwYber15rIKHBhvRi241lpqyQ
+5UXucAAJrbZZPH05LqXJSjpAmhNh63V9jucX3HEIFvIe0emGbVxKDh6j32uKM8HX
+KJaruM6ySzzqdeML87RxmZh5h69lLkBP6tsI04nhCVorLqwCgF0=
+=sHOQ
+-----END PGP SIGNATURE-----
+
+--z4+8/lEcDcG5Ke9S--
