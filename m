@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH maint] batman-adv: Fix duplicated OGMs on NETDEV_UP
-Date: Sun,  2 Jun 2019 11:19:40 +0200
-Message-Id: <20190602091940.10515-1-sven@narfation.org>
+Subject: [PATCH maint v2] batman-adv: Fix duplicated OGMs on NETDEV_UP
+Date: Sun,  2 Jun 2019 11:51:35 +0200
+Message-Id: <20190602095135.15604-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -38,11 +38,18 @@ Fixes: 0d8468553c3c ("batman-adv: remove ogm_emit and ogm_schedule API calls")
 Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-I will backport this patch to LEDE 17.01 and OpenWrt 18.06 for further testing
-in gluon.
-
 Cc: Antonio Quartulli <a@unstable.cc>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
+
+v2:
+* added "(optional)" mark to kerneldoc of enabled function pointer
+
+Here are the backports:
+
+* 2019.2 backport: https://github.com/openwrt-routing/packages/pull/475
+* 2018.1 backport: https://github.com/openwrt-routing/packages/pull/474
+* 2016.5 backport: https://github.com/openwrt-routing/packages/pull/473
+
 
  net/batman-adv/bat_iv_ogm.c     | 4 ++--
  net/batman-adv/hard-interface.c | 3 +++
@@ -87,14 +94,14 @@ index 79d1731b..3719cfd0 100644
  	return 0;
  
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 74b64473..486f8aa6 100644
+index 74b64473..e0b25104 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
 @@ -2129,6 +2129,9 @@ struct batadv_algo_iface_ops {
  	/** @enable: init routing info when hard-interface is enabled */
  	int (*enable)(struct batadv_hard_iface *hard_iface);
  
-+	/** @enabled: notification when hard-interface was enabled */
++	/** @enabled: notification when hard-interface was enabled (optional) */
 +	void (*enabled)(struct batadv_hard_iface *hard_iface);
 +
  	/** @disable: de-init routing info when hard-interface is disabled */
