@@ -1,12 +1,11 @@
-Return-Path: <baptiste@bitsofnetworks.org>
-Date: Fri, 31 May 2019 15:44:16 +0200
-From: Baptiste Jonglez <baptiste@bitsofnetworks.org>
-Subject: Call for participation for BattleMesh V12 (8-14 July 2019, Paris)
-Message-ID: <20190531134416.GD31876@tuxmachine.localdomain>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH maint] batman-adv: Fix duplicated OGMs on NETDEV_UP
+Date: Sun,  2 Jun 2019 11:19:40 +0200
+Message-Id: <20190602091940.10515-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="z4+8/lEcDcG5Ke9S"
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,154 +16,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
+The state of slave interfaces are handled differently depending on whether
+the interface is up or not. All active interfaces (IFF_UP) will transmit
+OGMs. But for B.A.T.M.A.N. IV, also non-active interfaces are scheduling
+(low TTL) OGMs on active interfaces. The code which setups and schedules
+the OGMs must therefore already be called when the interfaces gets added as
+slave interface and the transmit function must then check whether it has to
+send out the OGM or not on the specific slave interface.
 
---z4+8/lEcDcG5Ke9S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+But the commit 0d8468553c3c ("batman-adv: remove ogm_emit and ogm_schedule
+API calls") moved the setup code from the enable function to the activate
+function. The latter is called either when the added slave was already up
+when batadv_hardif_enable_interface processed the new interface or when a
+NETDEV_UP event was received for this slave interfac. As result, each
+NETDEV_UP would schedule a new OGM worker for the interface and thus OGMs
+would be send a lot more than expected.
 
-Hello,
+Fixes: 0d8468553c3c ("batman-adv: remove ogm_emit and ogm_schedule API calls")
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+I will backport this patch to LEDE 17.01 and OpenWrt 18.06 for further testing
+in gluon.
 
-The local organization team is proud to announce that this year's
-Battlemesh will be held near Paris, from 8 to 14 July!
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The event aims to bring together people from across the globe who are
-interested in community networks, including wireless mesh network
-technologies, fiber infrastructure, Do-It-Yourself Internet Access
-Providers, and more generally how to create and maintain a thriving
-community of people involved in building their own networks.
+ net/batman-adv/bat_iv_ogm.c     | 4 ++--
+ net/batman-adv/hard-interface.c | 3 +++
+ net/batman-adv/types.h          | 3 +++
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
-We envision 7 days full of expert presentations, practical workshops,
-late-night hacking sessions, and fruitful discussions: whether you are a
-mesh networking enthusiast, community networking activist, protocol
-developer, or have an interest in networking in general, come and join us!=
-=20
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index bd4138dd..240ed709 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2337,7 +2337,7 @@ batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 	return ret;
+ }
+ 
+-static void batadv_iv_iface_activate(struct batadv_hard_iface *hard_iface)
++static void batadv_iv_iface_enabled(struct batadv_hard_iface *hard_iface)
+ {
+ 	/* begin scheduling originator messages on that interface */
+ 	batadv_iv_ogm_schedule(hard_iface);
+@@ -2683,8 +2683,8 @@ static void batadv_iv_gw_dump(struct sk_buff *msg, struct netlink_callback *cb,
+ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.name = "BATMAN_IV",
+ 	.iface = {
+-		.activate = batadv_iv_iface_activate,
+ 		.enable = batadv_iv_ogm_iface_enable,
++		.enabled = batadv_iv_iface_enabled,
+ 		.disable = batadv_iv_ogm_iface_disable,
+ 		.update_mac = batadv_iv_ogm_iface_update_mac,
+ 		.primary_set = batadv_iv_ogm_primary_iface_set,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 79d1731b..3719cfd0 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -795,6 +795,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 
+ 	batadv_hardif_recalc_extra_skbroom(soft_iface);
+ 
++	if (bat_priv->algo_ops->iface.enabled)
++		bat_priv->algo_ops->iface.enabled(hard_iface);
++
+ out:
+ 	return 0;
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 74b64473..486f8aa6 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -2129,6 +2129,9 @@ struct batadv_algo_iface_ops {
+ 	/** @enable: init routing info when hard-interface is enabled */
+ 	int (*enable)(struct batadv_hard_iface *hard_iface);
+ 
++	/** @enabled: notification when hard-interface was enabled */
++	void (*enabled)(struct batadv_hard_iface *hard_iface);
++
+ 	/** @disable: de-init routing info when hard-interface is disabled */
+ 	void (*disable)(struct batadv_hard_iface *hard_iface);
+ 
+-- 
+2.20.1
 
-More information about the event is available below or on the website:
-https://www.battlemesh.org/BattleMeshV12
-
-
-Where
-=3D=3D=3D=3D=3D
-
-Le 6B, 6-10 quai de Seine, 93200 Saint-Denis, France (very close to
-Paris).
-
-GPS: geo:48.93835,2.34259
-Map: https://www.openstreetmap.org/?mlat=3D48.93835&mlon=3D2.34259#map=3D18=
-/48.93835/2.34259
-Web: https://www.le6b.fr/
-Travel directions: https://www.battlemesh.org/BattleMeshV12#Where
-
-
-What
-=3D=3D=3D=3D
-
-We will have organized talks, workshops and discussion panels on community
-networks and wireless mesh networks.  There will also be more informal
-activities: cooperative hacking, self-organized projects, and (we hope)
-delightful conversations!
-
-A first draft of the schedule (handle with care!) is available here: https:=
-//www.battlemesh.org/BattleMeshV12#Talk_Schedule_and_Workshops
-
-
-How to register
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-The event itself is free of charge and open for all!  However, it makes
-the organisation much easier if you tell us in advance that you plan to
-come.
-
-To register: https://www.battlemesh.org/BattleMeshV12#How_to_register
-
-Current list of participants: https://battlemesh.org/BattleMeshV12/Particip=
-ants
-
-
-Accommodation package
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-For those of you who are looking for a convenient and low cost
-accommodation option in Paris: we negotiated a special group reservation
-for 24 people at an hostel.
-
-There are still a few beds left, register now before we run out! https://ww=
-w.battlemesh.org/BattleMeshV12#Accommodation_package
-
-
-Call for participation
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-We invite participants to propose workshops, talks or panel discussions
-relating to network infrastructure in general, how it can be built and
-operated as a common, and how to sustain a community around networking.
-
-We welcome contributions that broadly address these questions from any of
-several perspectives: technical, organisational, economical, regulatory,
-juridical, political.
-
-Deadline: 10 May 2019, now extended to June 7th!
-
-To submit an event: https://www.battlemesh.org/BattleMeshV12#Call_for_parti=
-cipation
-
-
-Endorsements
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-If your organization wants to support the event by spreading the word, you
-can endorse the event.
-
-For this, just write an article on your website / blog / social media, and
-send us an email with the link and your logo to: (v12) at (battlemesh) dot =
-(org)
-
-See existing endorsements for a template: https://www.battlemesh.org/Battle=
-MeshV12#Endorsements
-
-
-Contact
-=3D=3D=3D=3D=3D=3D=3D
-
-* Web: https://battlemesh.org/BattleMeshV12
-* Contact email (preferred): v12 at battlemesh.org
-* Public mailing list: https://ml.ninux.org/mailman/listinfo/battlemesh
-* IRC: irc.freenode.net #battlemesh
-* Twitter: https://twitter.com/battlemesh/
-* Mastodon: https://toot.aquilenet.fr/@battlemesh12
-
-
-The Local Organization Team
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D
-
-Aube
-Baptiste
-Daniele
-Dash
-Vi
-and many other volunteers!
-
---z4+8/lEcDcG5Ke9S
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEjVflzZuxNlVFbt5QvgHsIqBOLkYFAlzxL7AACgkQvgHsIqBO
-Lka7tA/+MS+XpaB3YVGdxF8g1ci/zf5mVQurBLmJCZ99Gj1e5lhbqXYPf8fHpt6R
-/9+jNAcba3hM+p9t/CKVGtdYLIH0zd4dGLx2VjliU8g/BuZbmcPp8D8oO7E7Fw+L
-mu8KBU7X0R6HqW3mShwcgaqAAdzg7R0/cyfR2tZUDlCUDqJyJqW4aTNdHm8Ft68c
-bvHp1InZ78jvwIhK+/phlEH0UKQkH7fBOxvdPabYGMAmCukFYsJtuP6r6gTo8610
-5QnRf74M9+7aHJl33ORM4/Mu+/Q72UsseDlthnU1B9F20+ZY1kJ1SvDZVoRJXaRt
-rbSXAd82Np8Yr4gRibWbFPujf5cr5kp+rf2PqvJHhIzWT8EcYeILmuRPHdTN3AVd
-MKUPR2PxM1bSWY0uVi9aGuvoPmAEsNixWBYQg3Fh+q/eHB+SWwwXzVHLSupmPk2n
-0lTt+w0HyN8c4Puivkhh6PtNHDEQ7FsxeRzF/Cv/XzTlGBoHdkBrvbaGn4Ib8NOl
-4F3UcnA0kJN/972EqCofKmUjuXqnz8Dp28jU4kwgwYber15rIKHBhvRi241lpqyQ
-5UXucAAJrbZZPH05LqXJSjpAmhNh63V9jucX3HEIFvIe0emGbVxKDh6j32uKM8HX
-KJaruM6ySzzqdeML87RxmZh5h69lLkBP6tsI04nhCVorLqwCgF0=
-=sHOQ
------END PGP SIGNATURE-----
-
---z4+8/lEcDcG5Ke9S--
