@@ -2,13 +2,13 @@ Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
 Subject: Re: [PATCH v4 1/2] batman-adv: mcast: detect,
  distribute and maintain multicast router presence
-Date: Mon, 10 Jun 2019 07:39:17 +0200
-Message-ID: <4372099.eJBBBCqJL5@sven-edge>
+Date: Mon, 10 Jun 2019 09:24:26 +0200
+Message-ID: <1984348.Q8u5oXqQmF@sven-edge>
 In-Reply-To: <20190610004535.13725-2-linus.luessing@c0d3.blue>
 References: <20190610004535.13725-1-linus.luessing@c0d3.blue>
  <20190610004535.13725-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2073850.6bWSJXWb6U";
+Content-Type: multipart/signed; boundary="nextPart74294872.IPmbU8ciul";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,23 +21,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2073850.6bWSJXWb6U
+--nextPart74294872.IPmbU8ciul
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
 On Monday, 10 June 2019 02:45:34 CEST Linus L=FCssing wrote:
-> If a multicast router is detected then this is signalized via the new
-> BATADV_MCAST_WANT_ALL_RTR4 and BATADV_MCAST_WANT_ALL_RTR6
-> multicast tvlv flags (which are sent flipped over the wire for backwards
-> compatibility - so that old nodes will always have them "set").
-
-This doesn't seem to match the code (see below).
-
-> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/bata=
-dv_packet.h
-> index 4ebc2135..23a43043 100644
-> --- a/include/uapi/linux/batadv_packet.h
-> +++ b/include/uapi/linux/batadv_packet.h
 > @@ -107,12 +107,20 @@ enum batadv_icmp_packettype {
 >   * @BATADV_MCAST_WANT_ALL_UNSNOOPABLES: we want all packets destined for
 >   *  224.0.0.0/24 or ff02::1
@@ -60,30 +48,41 @@ efore
 > +       BATADV_MCAST_WANT_NO_RTR6               =3D 1UL << 4,
 >  };
 
+I wonder what a good interpretation of 0x1f would be (all bits set). The co=
+de=20
+doesn't seem to be able to handle this but an interpretation would be:
 
---nextPart2073850.6bWSJXWb6U
+* get all unsnoopable
+* get all link-local but not rtr
+
+Would this make any sense? Or is there a different/better interpretation?
+
+Kind regards,
+	Sven
+
+--nextPart74294872.IPmbU8ciul
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlz97QUACgkQXYcKB8Em
-e0ajqxAAnU7cPbmhTh56EHb81ORS2v7JPlkh6/XgEBnM4a2kuOo6vWBmd14X85gc
-NVH1ui1ZoE6DndJrwWzhko22l7rdjmwVlooTL8CZWlVQ/nB72OkZO/lYaLOvKL5A
-3i9KvB8w9Ouf1zKSuL8yEFTR5jivj0meTZsBxyW0TPuMOTogpSMTb7RwxScgNxT3
-06BVvMg7FoAUKan2XjpTpqCcWm49WAmL7l8eoCfeac8nbJ+a5TPg+Zy803WTEPlJ
-MyYfw/F3UrJF/TMqNNEytAEXLROS/rHz1TMMnBMKk7b1KA0TUYPIR6N2+V90SYqc
-htJxkL/6o0Vrjf9z3iv9ylXtZAasK/Ls9amdvL74RCeNyYwetyEl1ZbjPHx3Wb/s
-bV+UzFev60iadaz+VuIhAbAmNoJNM6ExaTJKjoFwb9Wur+b+0BudEg/Yhb/8s+xj
-1lgRQyhFOg04P3Oqof0aHPc0i4qc+4uZnxH5GlKLF3Volcs5/zLDfsWKYbmsCoF5
-qIkaF8r5lJN9+ct98XQkEFk99WhT3EcIaInJWi6f/SuvqNEkuv/NPBNyOsBWWk5l
-sNpOfIub+Hjp0w0Cl7O4LusMbsr8UON/WlRg3pQwmRmJ6Vt2lK0dV1bqz9YvFRcs
-Qs08kIaTOLhYntPb4poxzgQqFCMw2o40ofBh+i2zN5qzEV91SEM=
-=oRbX
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlz+BaoACgkQXYcKB8Em
+e0ZZpA/+N92S3gkqDi3568cbj7V4l3ucjrJuo0kv5/vMR0YA/1s7XMwCe7uDVDko
+yvj0CQ18MspHgFMdULCpI8r7J0QbAQJyA3gSh49T6xnj50P0O/O5kBb/dNE/YWSr
+l0fmZZJEAoauHZbrN3e8jYDd5o+O7vlPBDSXmFUAc+YBMr9Ytba/Qq8OXE0L33Af
+ZHrnae5/zB0LGZur+69+LXfI/UqQG+h9mj0BhsB6gaHvH/nnKBu14jXR8NjPNxr1
+u+IMYXUBCss23mJPlgLMb+zMRjwpY3HgmKuwnm2uMiFlZqCa6IdwUv9o9ETHCSJP
+fbuU5ffos9o8jkyBKaOv8atT74komiKbVMMuhDfGk6IJrgssjl4dJlVv0wWh2Iva
+Mmpvrs0vyjzIqwRtmEDlCTK9jv6TuVPK0UXIIBYHuXFS2GwZ61HjFoNiU3lzqUkd
+LdekvSkggmhko6wtEZfQKQJx6cIE0CuE53QXlRf1KbNWjtnZAK3r2hX7JgXR3N8N
+1CrDjAFFZsUAU0PyOq77iDg1V8ilgPo46bIOfbKNq/3K3ne1c3DOIF6X2+HU0DpL
+gi1Y54mPUQ6lkxJj27R0w3oGCZqWQnF8zjjgz0nPRuo0fOqNfHA0OZ2b4CULSiq3
+fDR0RTd8lFfVu7EkIWskvSjMocIOpOg7B1ySvN77jIE5VvjkkKs=
+=ChB0
 -----END PGP SIGNATURE-----
 
---nextPart2073850.6bWSJXWb6U--
+--nextPart74294872.IPmbU8ciul--
 
 
 
