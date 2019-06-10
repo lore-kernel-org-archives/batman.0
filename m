@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v4 1/2] batman-adv: mcast: detect,
- distribute and maintain multicast router presence
-Date: Mon, 10 Jun 2019 09:24:26 +0200
-Message-ID: <1984348.Q8u5oXqQmF@sven-edge>
-In-Reply-To: <20190610004535.13725-2-linus.luessing@c0d3.blue>
-References: <20190610004535.13725-1-linus.luessing@c0d3.blue>
- <20190610004535.13725-2-linus.luessing@c0d3.blue>
+Return-Path: <klukonin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart74294872.IPmbU8ciul";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+References: <20190609101922.2366-1-treffer@measite.de>
+ <3224708.U1DPrJmi8S@rousseau>
+ <accc8852-ded3-188b-b72e-313d1b462d18@measite.de>
+ <4907494.lMUJSmCnaO@rousseau>
+In-Reply-To: <4907494.lMUJSmCnaO@rousseau>
+From: =?UTF-8?B?0JrQuNGA0LjQu9C7INCb0YPQutC+0L3QuNC9?= <klukonin@gmail.com>
+Date: Mon, 10 Jun 2019 12:37:08 +0500
+Message-ID: <CALYz8yoqh8X3hZcafrZAauFT4OZtQZ9r92G+9zW9__ir4m5How@mail.gmail.com>
+Subject: Re: [PATCH] batman-adv: Use wifi rx/tx as fallback throughput
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,70 +20,216 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart74294872.IPmbU8ciul
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hello, colleagues.
 
-On Monday, 10 June 2019 02:45:34 CEST Linus L=FCssing wrote:
-> @@ -107,12 +107,20 @@ enum batadv_icmp_packettype {
->   * @BATADV_MCAST_WANT_ALL_UNSNOOPABLES: we want all packets destined for
->   *  224.0.0.0/24 or ff02::1
->   * @BATADV_MCAST_WANT_ALL_IPV4: we want all IPv4 multicast packets
-> + *  (both link-local and routeable ones)
->   * @BATADV_MCAST_WANT_ALL_IPV6: we want all IPv6 multicast packets
-> + *  (both link-local and routable ones)
-> + * @BATADV_MCAST_WANT_NO_RTR4: we have no IPv4 multicast router and ther=
-efore
-> + * only need routeable IPv4 multicast packets we signed up for explicitly
-> + * @BATADV_MCAST_WANT_NO_RTR6: we have no IPv6 multicast router and ther=
-efore
-> + * only need routeable IPv6 multicast packets we signed up for explicitly
->   */
->  enum batadv_mcast_flags {
->         BATADV_MCAST_WANT_ALL_UNSNOOPABLES      =3D 1UL << 0,
->         BATADV_MCAST_WANT_ALL_IPV4              =3D 1UL << 1,
->         BATADV_MCAST_WANT_ALL_IPV6              =3D 1UL << 2,
-> +       BATADV_MCAST_WANT_NO_RTR4               =3D 1UL << 3,
-> +       BATADV_MCAST_WANT_NO_RTR6               =3D 1UL << 4,
->  };
+I have a working solution for this problem. It is not batman-related,
+but I decided to share it with you right here.
+Please let me clarify some  details.
 
-I wonder what a good interpretation of 0x1f would be (all bits set). The co=
-de=20
-doesn't seem to be able to handle this but an interpretation would be:
+1) Some ath10k firmwares (10.2) do not export tx bitrate. So we can't
+rely on it.
+2) Throughput estimation is better to inject from userspace, rather
+than make batman estimate it from unreliable sources.
+3) Here is the patch for mac80211 We made for ath10k and such drivers
+that do not export expected throughput value.
 
-* get all unsnoopable
-* get all link-local but not rtr
-
-Would this make any sense? Or is there a different/better interpretation?
-
-Kind regards,
-	Sven
-
---nextPart74294872.IPmbU8ciul
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlz+BaoACgkQXYcKB8Em
-e0ZZpA/+N92S3gkqDi3568cbj7V4l3ucjrJuo0kv5/vMR0YA/1s7XMwCe7uDVDko
-yvj0CQ18MspHgFMdULCpI8r7J0QbAQJyA3gSh49T6xnj50P0O/O5kBb/dNE/YWSr
-l0fmZZJEAoauHZbrN3e8jYDd5o+O7vlPBDSXmFUAc+YBMr9Ytba/Qq8OXE0L33Af
-ZHrnae5/zB0LGZur+69+LXfI/UqQG+h9mj0BhsB6gaHvH/nnKBu14jXR8NjPNxr1
-u+IMYXUBCss23mJPlgLMb+zMRjwpY3HgmKuwnm2uMiFlZqCa6IdwUv9o9ETHCSJP
-fbuU5ffos9o8jkyBKaOv8atT74komiKbVMMuhDfGk6IJrgssjl4dJlVv0wWh2Iva
-Mmpvrs0vyjzIqwRtmEDlCTK9jv6TuVPK0UXIIBYHuXFS2GwZ61HjFoNiU3lzqUkd
-LdekvSkggmhko6wtEZfQKQJx6cIE0CuE53QXlRf1KbNWjtnZAK3r2hX7JgXR3N8N
-1CrDjAFFZsUAU0PyOq77iDg1V8ilgPo46bIOfbKNq/3K3ne1c3DOIF6X2+HU0DpL
-gi1Y54mPUQ6lkxJj27R0w3oGCZqWQnF8zjjgz0nPRuo0fOqNfHA0OZ2b4CULSiq3
-fDR0RTd8lFfVu7EkIWskvSjMocIOpOg7B1ySvN77jIE5VvjkkKs=
-=ChB0
------END PGP SIGNATURE-----
-
---nextPart74294872.IPmbU8ciul--
+I also think it's a better way because a lot of drivers do not work
+with mac80211 (wil6210). And all driver-dependent math can be easily
+changed on-the-fly.
 
 
+Here is simple patch that make possible this expected throughput injection.
 
+--- a/net/mac80211/debugfs_sta.c
++++ b/net/mac80211/debugfs_sta.c
+@@ -12,6 +12,7 @@
+
+ #include <linux/debugfs.h>
+ #include <linux/ieee80211.h>
++#include <net/mac80211.h>
+ #include "ieee80211_i.h"
+ #include "debugfs.h"
+ #include "debugfs_sta.h"
+@@ -20,6 +21,8 @@
+
+ /* sta attributtes */
+
++#define DEF_THR_BUFF_SIZE sizeof("4294967295")
++
+ #define STA_READ(name, field, format_string)                \
+ static ssize_t sta_ ##name## _read(struct file *file,            \
+                    char __user *userbuf,        \
+@@ -490,6 +493,60 @@ static ssize_t sta_vht_capa_read(struct
+ STA_OPS(vht_capa);
+
+
++static ssize_t sta_def_thr_read(struct file *file, char __user *userbuf,
++                 size_t count, loff_t *ppos)
++{
++    int ret =3D 0;
++    char buf[DEF_THR_BUFF_SIZE] =3D { 0 };
++    struct sta_info *sta =3D file->private_data;
++
++    rcu_read_lock();
++
++    // Access synchronization to struct sta_info is documented in
+net/mac80211/sta_info.c:34
++    ret =3D snprintf(buf, DEF_THR_BUFF_SIZE - 1, "%u", sta->def_thr);
++
++    rcu_read_unlock();
++
++    if(ret >=3D DEF_THR_BUFF_SIZE)
++        return -EFAULT;
++
++    buf[DEF_THR_BUFF_SIZE - 1] =3D '\0';
++
++    return simple_read_from_buffer(userbuf, count, ppos, buf, ret);
++}
++
++static ssize_t sta_def_thr_write(struct file *file, const char __user *use=
+rbuf,
++                 size_t count, loff_t *ppos)
++{
++    u32 thr =3D 0;
++    int ret =3D 0;
++    char buf[DEF_THR_BUFF_SIZE] =3D { 0 };
++    struct sta_info *sta =3D file->private_data;
++
++    if(count >=3D DEF_THR_BUFF_SIZE)
++        return -EINVAL;
++
++    if (copy_from_user(buf, userbuf, count))
++        return -EFAULT;
++
++    buf[DEF_THR_BUFF_SIZE - 1] =3D '\0';
++
++    ret =3D sscanf(buf, "%u", &thr);
++    if(ret !=3D 1)
++        return -EINVAL;
++
++    rcu_read_lock();
++
++    // Access synchronization to struct sta_info is documented in
+net/mac80211/sta_info.c:34
++    sta->def_thr =3D thr;
++    ieee80211_sta_set_expected_throughput(&sta->sta, thr);
++
++    rcu_read_unlock();
++
++    return count;
++}
++STA_OPS_RW(def_thr);
++
+ #define DEBUGFS_ADD(name) \
+     debugfs_create_file(#name, 0400, \
+         sta->debugfs_dir, sta, &sta_ ##name## _ops);
+@@ -534,6 +591,7 @@ void ieee80211_sta_debugfs_add(struct st
+     DEBUGFS_ADD(agg_status);
+     DEBUGFS_ADD(ht_capa);
+     DEBUGFS_ADD(vht_capa);
++    DEBUGFS_ADD(def_thr);
+
+     DEBUGFS_ADD_COUNTER(rx_duplicates, rx_stats.num_duplicates);
+     DEBUGFS_ADD_COUNTER(rx_fragments, rx_stats.fragments);
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -2305,6 +2305,9 @@ u32 sta_get_expected_throughput(struct s
+     else
+         thr =3D drv_get_expected_throughput(local, sta);
+
++    if(thr =3D=3D 0 && sta->def_thr !=3D 0)
++        thr =3D sta->def_thr;
++
+     return thr;
+ }
+
+--- b/net/mac80211/sta_info.h
++++ a/net/mac80211/sta_info.h
+@@ -509,6 +509,7 @@
+     struct work_struct drv_deliver_wk;
+
+     u16 listen_interval;
++    u32 def_thr;
+
+     bool dead;
+     bool removed;
+
+
+
+Best Regards,
+Lukonin Kirill
+
+=D0=BF=D0=BD, 10 =D0=B8=D1=8E=D0=BD. 2019 =D0=B3. =D0=B2 08:32, Marek Lindn=
+er <mareklindner@neomailbox.ch>:
+>
+> On Sunday, 9 June 2019 20:45:06 HKT Ren=C3=A9 Treffer wrote:
+> > I am testing this on devices with ath9k (2.4GHz) and ath10k (5GHz), so =
+I
+> > was looking at the estimates I get from ath9k. Here is a dump from my
+> >
+> > home network on 2.4GHz/ath9k and what rx/3 would give us:
+> > > signal  tx     rx     expect  tx/3    min(tx/3,(rx+tx)/2/3)
+> > > -77     13.0   43.3   6.682   4.333
+> > > -57     130.0  117.0  44.677  43.333  41.166
+> > > -53     117.0  130.0  42.388  39.0
+> > > -82     43.3   6.5    13.366  14.433  8.3      (!!!)
+> > > -63     52.0   86.7   26.733  17.333
+> > > -58     130.0  173.3  29.21   43.333            !!!
+> > > -82     6.5    43.3   2.197   2.166
+> > > -48     104.0  65.0   40.191  34.666  28.166
+> > > -69     57.8   13.0   20.49   19.266  11.8
+> > > -58     86.7   52.0   33.507  28.9    23.116
+> > > -58     52.0   1.0    37.994  17.333  8.833
+> > > -56     115.6  144.4  29.21   38.533            !!!
+>
+>
+> To confirm my understanding: What this table shows are raw tx/rx link est=
+imated
+> values ? None of these numbers compares to Minstrel HT expected throughpu=
+t or
+> actual throughput ?
+>
+>
+> > Cases where the rx/tx estimate would be higher are marked with !!!.
+>
+> I also don't quite understand what the '!!!' thing is trying to indicate.=
+ What
+> is being compared ? But it may be due to my misunderstandings above.
+>
+> In my small test setup with one ath10k device meshing with ath9k over 2.4=
+GHz,
+> your tx / 3 formula seems to be quite accurate (had removed the rx part).
+>
+> # batctl o (your magic formula)
+> * ac:86:74:00:38:06    0.930s (       45.7)  ac:86:74:00:38:06 [    mesh2=
+4]
+>
+> # batctl tp ac:86:74:00:38:06 (actual throughput)
+> Test duration 10440ms.
+> Sent 58393512 Bytes.
+> Throughput: 5.33 MB/s (44.75 Mbps)
+>
+> What would be interesting is how the numbers produced by 'tx / 3' compare=
+ to
+> either the actual throughput (can easily be tested with the throughput me=
+ter)
+> or Minstrel expected throughput.
+>
+>
+> > Why bother and look at rx at all? Asymmetric routing should already
+> > work. I was bit concerned about highly asymmetric links, especially
+> > those where the path back might not work. It might not be worth it thou=
+gh.
+>
+> Generally, the return path might be entirely different. Batman-adv does n=
+ot
+> enforce or even endorse symetric paths. If there is better path for the r=
+eturn
+> route, batman-adv will choose the better path based on tx from the sender=
+ and
+> if only one return path exists, we don't care anyway ..
+>
+> Cheers,
+> Marek
