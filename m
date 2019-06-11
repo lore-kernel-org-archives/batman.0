@@ -1,17 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 11 Jun 2019 01:45:57 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [PATCH v4 1/2] batman-adv: mcast: detect, distribute and
- maintain multicast router presence
-Message-ID: <20190610234557.GB10498@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH v4 1/2] batman-adv: mcast: detect,
+ distribute and maintain multicast router presence
+Date: Tue, 11 Jun 2019 07:44:12 +0200
+Message-ID: <1705254.clgQh6sisM@sven-edge>
+In-Reply-To: <20190610231414.GA10498@otheros>
 References: <20190610004535.13725-1-linus.luessing@c0d3.blue>
- <20190610004535.13725-2-linus.luessing@c0d3.blue>
  <1984348.Q8u5oXqQmF@sven-edge> <20190610231414.GA10498@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190610231414.GA10498@otheros>
+Content-Type: multipart/signed; boundary="nextPart2678157.XC5bmeGSN8";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,51 +19,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Jun 11, 2019 at 01:14:14AM +0200, Linus Lüssing wrote:
-> On Mon, Jun 10, 2019 at 09:24:26AM +0200, Sven Eckelmann wrote:
-> > On Monday, 10 June 2019 02:45:34 CEST Linus Lüssing wrote:
-> > > @@ -107,12 +107,20 @@ enum batadv_icmp_packettype {
-> > >   * @BATADV_MCAST_WANT_ALL_UNSNOOPABLES: we want all packets destined for
-> > >   *  224.0.0.0/24 or ff02::1
-> > >   * @BATADV_MCAST_WANT_ALL_IPV4: we want all IPv4 multicast packets
-> > > + *  (both link-local and routeable ones)
-> > >   * @BATADV_MCAST_WANT_ALL_IPV6: we want all IPv6 multicast packets
-> > > + *  (both link-local and routable ones)
-> > > + * @BATADV_MCAST_WANT_NO_RTR4: we have no IPv4 multicast router and therefore
-> > > + * only need routeable IPv4 multicast packets we signed up for explicitly
-> > > + * @BATADV_MCAST_WANT_NO_RTR6: we have no IPv6 multicast router and therefore
-> > > + * only need routeable IPv6 multicast packets we signed up for explicitly
-> > >   */
-> > >  enum batadv_mcast_flags {
-> > >         BATADV_MCAST_WANT_ALL_UNSNOOPABLES      = 1UL << 0,
-> > >         BATADV_MCAST_WANT_ALL_IPV4              = 1UL << 1,
-> > >         BATADV_MCAST_WANT_ALL_IPV6              = 1UL << 2,
-> > > +       BATADV_MCAST_WANT_NO_RTR4               = 1UL << 3,
-> > > +       BATADV_MCAST_WANT_NO_RTR6               = 1UL << 4,
-> > >  };
-> > 
-> > I wonder what a good interpretation of 0x1f would be (all bits set). The code 
-> > doesn't seem to be able to handle this but an interpretation would be:
-> > 
-> > * get all unsnoopable
-> > * get all link-local but not rtr
+--nextPart2678157.XC5bmeGSN8
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Hrm, in hindsight I would have prefered a much cleaner, more clear
-and more flexible flag set like:
+On Tuesday, 11 June 2019 01:14:14 CEST Linus L=FCssing wrote:
+> I'm currently unsure when we would need that. Are you suggesting
+> to interpret it that way, just in case we might need it some day?
+>=20
+> Note that this would also be a "soft compatibility break". So old
+> nodes would still interpret 0x1f the same way as 0x07, meaning
+> they would send all multicast traffic to nodes announcing either
+> 0x1f or 0x07. It'd be a "soft break" because it wouldn't cause
+> packet loss, old nodes would just overestimate.
 
-enum batadv_mcast_flags {
-	BATADV_MCAST_WANT_ALL_LL4	= 1UL << 0,
-	BATADV_MCAST_WANT_ALL_LL6	= 1UL << 1,
-	BATADV_MCAST_WANT_ALL_RTR4	= 1UL << 2,
-	BATADV_MCAST_WANT_ALL_RTR6	= 1UL << 3,
-}
+I am just unsure how we could/would interpret this in the future. Not that =
+we=20
+need support for it in the first version.
 
-The IPv4 unsnoopable case would have been equivalent to
-BATADV_MCAST_WANT_ALL_LL4. And for the IPv6 unsnoopable case,
-which is just the ff02::1 address which does not get any MLD
-reports, we could have injected a TT entry for 33:33:00:00:00:01
-instead (or just always flooding ff02::1).
+Kind regards,
+	Sven
+--nextPart2678157.XC5bmeGSN8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Well, I guess that's too late now.
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlz/P6wACgkQXYcKB8Em
+e0Yb1A/8CfKHmrUCURf7MNCFJzoYxC1wddIHjEwpNWJhC1ubzxgXMPk5HRBxT07K
+TV7O6N25zUFdRjt/4OPqlepdE82f8sUiezlvcQSoEBpEMN1DYnjHvpo39umDDf8Z
+HtHozA5ZUkYFd59CskyavkvopY2ENkdgrQSw1C9qwLKDaRhB0aWAqXAGA1F5uNS7
+N6NRM7dv/ShKaomjbZwbcUo6O/GTvajGmIyJViaVr790d6d3BWeU8OkYPA4yFF2l
+Kg27/YguXjv0ywpx++sDQV73ezrzNH59yBTQZ4nQI0aDTMwr3ZSENwl4ZKGfCPHZ
+UgzbVxCrezj15F4VlsomzQSKHlAOvIXT+FZ4prYS7O97AOWc/xd78jDMctJWpzhV
+tB/EawT4j4WjMRC6qt6ftwE9R+4GG0x92DspQKf7xmqbBx4EAJ8OtP1Y47jpqYMG
+8oKeTq+mGNHx/hwGPPz02ixy5WbF4Ljwzf/hkzPN4eP1d/F4bRY5+8mDlOP+n4v1
+ji9mCJm8qjr4KhiFFx6EB6E31t6P5gO+znPo9JDO6umHZjtCQY23xZhwWTggeXdU
+Z6NIDzWrNTMns88YWQTBZ0fmZb49pSTHI8mHHYAf+t8kZIp/crAp1IdyF1TDtOcm
+wJRh6ZEyQ1WBi/fHy0I00BkPaham9fG8MsLaQuSklYBrXtDKJOQ=
+=8aS1
+-----END PGP SIGNATURE-----
+
+--nextPart2678157.XC5bmeGSN8--
+
+
+
