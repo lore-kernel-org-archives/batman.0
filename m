@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 3/4] batctl: Add elp_interval setting command
-Date: Thu, 13 Jun 2019 21:12:16 +0200
-Message-Id: <20190613191217.28139-4-sven@narfation.org>
+Subject: [PATCH 4/4] batctl: Add throughput_override setting command
+Date: Thu, 13 Jun 2019 21:12:17 +0200
+Message-Id: <20190613191217.28139-5-sven@narfation.org>
 In-Reply-To: <20190613191217.28139-1-sven@narfation.org>
 References: <20190613191217.28139-1-sven@narfation.org>
 MIME-Version: 1.0
@@ -19,63 +19,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 B.A.T.M.A.N. V introduced a hard interface specific setting called
-elp_interval. It defines the interval in milliseconds in which batman-adv
-emits probing packets for neighbor sensing (ELP).
+throughput. It defines the throughput value to be used by B.A.T.M.A.N. V
+when estimating the link throughput using this interface. If the value is
+set to 0 then batman-adv will try to estimate the throughput by itself.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile       |   1 +
- README.rst     |  16 +++++++
- elp_interval.c | 111 +++++++++++++++++++++++++++++++++++++++++++++++++
- man/batctl.8   |   4 ++
- 4 files changed, 132 insertions(+)
- create mode 100644 elp_interval.c
+ Makefile              |   1 +
+ README.rst            |  17 +++++++
+ man/batctl.8          |   6 +++
+ throughput_override.c | 113 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 137 insertions(+)
+ create mode 100644 throughput_override.c
 
 diff --git a/Makefile b/Makefile
-index b7bd545..f071da2 100755
+index f071da2..e3747a2 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -45,6 +45,7 @@ $(eval $(call add_command,bridge_loop_avoidance,y))
- $(eval $(call add_command,claimtable,y))
- $(eval $(call add_command,dat_cache,y))
- $(eval $(call add_command,distributed_arp_table,y))
-+$(eval $(call add_command,elp_interval,y))
- $(eval $(call add_command,event,y))
- $(eval $(call add_command,fragmentation,y))
- $(eval $(call add_command,gateways,y))
+@@ -67,6 +67,7 @@ $(eval $(call add_command,ping,y))
+ $(eval $(call add_command,routing_algo,y))
+ $(eval $(call add_command,statistics,y))
+ $(eval $(call add_command,tcpdump,y))
++$(eval $(call add_command,throughput_override,y))
+ $(eval $(call add_command,throughputmeter,y))
+ $(eval $(call add_command,traceroute,y))
+ $(eval $(call add_command,transglobal,y))
 diff --git a/README.rst b/README.rst
-index bc54412..92983aa 100644
+index 92983aa..128f539 100644
 --- a/README.rst
 +++ b/README.rst
-@@ -386,6 +386,22 @@ Example::
-   1000
+@@ -402,6 +402,23 @@ Example::
+   200
  
  
-+batctl elp interval
-+===================
++batctl throughput override
++==========================
 +
-+display or modify the elp interval in ms for hard interface
++display or modify the throughput override in kbit/s for hard interface
 +
 +Usage::
 +
-+  batctl hardif $hardif elp_interval|et [interval]
++  batctl hardif $hardif throughput_override|to [kbit]
 +
 +Example::
 +
-+  $ batctl hardif eth0 elp_interval 200
-+  $ batctl hardif eth0 elp_interval
-+  200
++  $ batctl hardif eth0 throughput_override 15000
++  $ batctl hardif eth0 throughput_override 15mbit
++  $ batctl hardif eth0 throughput_override
++  15.0 MBit
 +
 +
  batctl loglevel
  ===============
  
-diff --git a/elp_interval.c b/elp_interval.c
+diff --git a/man/batctl.8 b/man/batctl.8
+index 690da02..b821896 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -203,6 +203,12 @@ supported routing algorithms are displayed.
+ Otherwise the parameter is used to select the routing algorithm for the following
+ batX interface to be created.
+ .br
++.IP "\fBhardif <hardif>\fP \fBthroughput_override|to\fP [\fBbandwidth\fP]\fP"
++If no parameter is given the current througput override is displayed otherwise
++the parameter is used to set the throughput override for the specified hard
++interface.
++Just enter any number (optionally followed by "kbit" or "mbit").
++.br
+ .IP "\fBisolation_mark\fP|\fBmark\fP"
+ If no parameter is given the current isolation mark value is displayed.
+ Otherwise the parameter is used to set or unset the isolation mark used by the
+diff --git a/throughput_override.c b/throughput_override.c
 new file mode 100644
-index 0000000..0a5e989
+index 0000000..28a6588
 --- /dev/null
-+++ b/elp_interval.c
-@@ -0,0 +1,111 @@
++++ b/throughput_override.c
+@@ -0,0 +1,113 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
 + *
@@ -89,39 +108,40 @@ index 0000000..0a5e989
 +#include <stdint.h>
 +#include <string.h>
 +
++#include "functions.h"
 +#include "main.h"
 +#include "sys.h"
 +
-+static struct elp_interval_data {
-+	uint32_t elp_interval;
-+} elp_interval;
++static struct throughput_override_data {
++	uint32_t throughput_override;
++} throughput_override;
 +
-+static int parse_elp_interval(struct state *state, int argc, char *argv[])
++static int parse_throughput_override(struct state *state, int argc, char *argv[])
 +{
 +	struct settings_data *settings = state->cmd->arg;
-+	struct elp_interval_data *data = settings->data;
-+	char *endptr;
++	struct throughput_override_data *data = settings->data;
++	bool ret;
 +
 +	if (argc != 2) {
 +		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
 +		return -EINVAL;
 +	}
 +
-+	data->elp_interval = strtoul(argv[1], &endptr, 0);
-+	if (!endptr || *endptr != '\0') {
-+		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
++	ret = parse_throughput(argv[1], "throughput override",
++				&data->throughput_override);
++	if (!ret)
 +		return -EINVAL;
-+	}
 +
 +	return 0;
 +}
 +
-+static int print_elp_interval(struct nl_msg *msg, void *arg)
++static int print_throughput_override(struct nl_msg *msg, void *arg)
 +{
 +	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 +	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 +	struct genlmsghdr *ghdr;
 +	int *result = arg;
++	uint32_t mbit;
 +
 +	if (!genlmsg_valid_hdr(nlh, 0))
 +		return NL_OK;
@@ -133,16 +153,17 @@ index 0000000..0a5e989
 +		return NL_OK;
 +	}
 +
-+	if (!attrs[BATADV_ATTR_ELP_INTERVAL])
++	if (!attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE])
 +		return NL_OK;
 +
-+	printf("%u\n", nla_get_u32(attrs[BATADV_ATTR_ELP_INTERVAL]));
++	mbit = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]);
++	printf("%u.%u MBit\n", mbit / 10, mbit % 10);
 +
 +	*result = 0;
 +	return NL_STOP;
 +}
 +
-+static int get_attrs_elp_interval(struct nl_msg *msg, void *arg)
++static int get_attrs_elp_isolation(struct nl_msg *msg, void *arg)
 +{
 +	struct state *state = arg;
 +
@@ -151,57 +172,42 @@ index 0000000..0a5e989
 +	return 0;
 +}
 +
-+static int get_elp_interval(struct state *state)
++static int get_throughput_override(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_GET_HARDIF,
-+				  get_attrs_elp_interval, print_elp_interval);
++				  get_attrs_elp_isolation, print_throughput_override);
 +}
 +
-+static int set_attrs_elp_interval(struct nl_msg *msg, void *arg)
++static int set_attrs_throughput_override(struct nl_msg *msg, void *arg)
 +{
 +	struct state *state = arg;
 +	struct settings_data *settings = state->cmd->arg;
-+	struct elp_interval_data *data = settings->data;
++	struct throughput_override_data *data = settings->data;
 +
 +	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
-+	nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL, data->elp_interval);
++	nla_put_u32(msg, BATADV_ATTR_THROUGHPUT_OVERRIDE, data->throughput_override);
 +
 +	return 0;
 +}
 +
-+static int set_elp_interval(struct state *state)
++static int set_throughput_override(struct state *state)
 +{
 +	return sys_simple_nlquery(state, BATADV_CMD_SET_HARDIF,
-+				  set_attrs_elp_interval, NULL);
++				  set_attrs_throughput_override, NULL);
 +}
 +
-+static struct settings_data batctl_settings_elp_interval = {
-+	.sysfs_name = "elp_interval",
-+	.data = &elp_interval,
-+	.parse = parse_elp_interval,
-+	.netlink_get = get_elp_interval,
-+	.netlink_set = set_elp_interval,
++static struct settings_data batctl_settings_throughput_override = {
++	.sysfs_name = "throughput_override",
++	.data = &throughput_override,
++	.parse = parse_throughput_override,
++	.netlink_get = get_throughput_override,
++	.netlink_set = set_throughput_override,
 +};
 +
-+COMMAND_NAMED(SUBCOMMAND_HIF, elp_interval, "et", handle_sys_setting,
++COMMAND_NAMED(SUBCOMMAND_HIF, throughput_override, "to", handle_sys_setting,
 +	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_elp_interval,
-+	      "[interval]        \tdisplay or modify elp_interval setting");
-diff --git a/man/batctl.8 b/man/batctl.8
-index acb4288..690da02 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -93,6 +93,10 @@ the bonding mode.
- batctl will monitor for events from the netlink kernel interface of batman-adv. The local timestamp of the event will be printed
- when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but with relative timestamps.
- .br
-+.IP "\fBhardif <hardif>\fP \fBelp_interval\fP|\fBet\fP [\fBinterval\fP]"
-+If no parameter is given the current ELP interval setting of the hard interface is displayed otherwise the parameter is used to set the
-+ELP interval. The interval is in units of milliseconds.
-+.br
- .IP "\fBfragmentation\fP|\fBf\fP [\fB0\fP|\fB1\fP]"
- If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
- disable fragmentation.
++	      &batctl_settings_throughput_override,
++	      "[mbit]        \tdisplay or modify throughput_override setting");
 -- 
 2.20.1
 
