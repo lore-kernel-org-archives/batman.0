@@ -1,16 +1,10 @@
-Return-Path: <klukonin@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 0/4] batctl: Add vid support and hardif settings
+Date: Thu, 13 Jun 2019 21:12:13 +0200
+Message-Id: <20190613191217.28139-1-sven@narfation.org>
 MIME-Version: 1.0
-References: <20190609101922.2366-1-treffer@measite.de>
- <4907494.lMUJSmCnaO@rousseau>
- <CALYz8yoqh8X3hZcafrZAauFT4OZtQZ9r92G+9zW9__ir4m5How@mail.gmail.com>
- <3147211.nMDzSnZuI7@rousseau>
-In-Reply-To: <3147211.nMDzSnZuI7@rousseau>
-From: =?UTF-8?B?0JrQuNGA0LjQu9C7INCb0YPQutC+0L3QuNC9?= <klukonin@gmail.com>
-Date: Thu, 13 Jun 2019 01:50:44 +0500
-Message-ID: <CALYz8yoj0E1MDoh7ztThK_q_ew0EHa=2vbuwxQFNwUfDvsEGiA@mail.gmail.com>
-Subject: Re: [PATCH] batman-adv: Use wifi rx/tx as fallback throughput
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,77 +14,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-=D1=81=D1=80, 12 =D0=B8=D1=8E=D0=BD. 2019 =D0=B3. =D0=B2 11:39, Marek Lindn=
-er <mareklindner@neomailbox.ch>:
->
-> Hi,
->
-> > I have a working solution for this problem. It is not batman-related,
-> > but I decided to share it with you right here.
-> > Please let me clarify some  details.
-> >
-> > 1) Some ath10k firmwares (10.2) do not export tx bitrate. So we can't
-> > rely on it.
-> > 2) Throughput estimation is better to inject from userspace, rather
-> > than make batman estimate it from unreliable sources.
-> > 3) Here is the patch for mac80211 We made for ath10k and such drivers
-> > that do not export expected throughput value.
->
-> you are very right about those issues. However, your patch only provides =
-a
-> quick way to push an arbitrary throughput metric into the batman-adv kern=
-el
-> module. The current discussion is about how such metric could be best der=
-ived
-> in an automated fashion.
->
-> Would you mind sharing your approach to obtaining such a metric that addr=
-esses
-> the problems mentioned above ?
->
-> Thanks,
-> Marek
->
+Hi,
 
-Yes, sure.
+I've asked a quite while back for some ideas regarding the support for hard
+interface settings in batctl [1]. But I got no feedback at all. So I've
+decided to just implement the first option and use it as chance to improve
+the vlan settings.
 
-I can't share a source code because it partially belongs to one
-commercial company.
-But I want and I can share my ideas with empirical evidence.
-Also I will be very glad to help Batman-avd mesh community and become
-a part of it.
+vlan settings
+=============
 
-So here is the algorithm. It has a structure we call matryoshka.
-ET - Expected_throughput.
+The requirement to have a VLAN master device on top of the batadv mesh
+interface is artificially limiting the capabilities of batctl. Not all
+master devices in linux which register a VLAN are from type "vlan" and are
+only registering a single VLAN.
 
-1) ET =3D TX_bitrate * Transmit_probability * Overhead_coefficient
-Transmit_probability is always less than 1 so Expected throughput
-can't be equal to the TX_bitrate. Overhead_coefficient is also should
-be less than 1
+For example VLAN aware bridges can create multiple VLANs. These require
+that the VLAN is identified using the VID and not the vlan device.
 
-2) Transmit_probability =3D 1 - Retry_probability - Error_probability
+It is now possible to specify the vlan using:
 
-3) Retry_probability =3D TX_retries / TX_packets
-
-4) Error_probability =3D TX_errors / TX_packets
-
-5) Overhead_coefficient for 802.11 is fair enough to be 0.65, but can
-be changed after additional testing.
+  $ batctl vlan bat0.8 ap_isolation enable
+  $ batctl -m bat0 vid 8 ap_isolation enable
 
 
-ET =3D TX_bitrate * (1 - (TX_retries + TX_errors) / TX_packets) * 0.65
-Such technique has very large hysteresis which is good to avoid
-flapping between different nodes.
-In my MESH lab this formula works quite well.
-Please ask any questions and feel free to criticize.
+hardif settings
+===============
+
+The infrastructure for the new vlan/vid prefix of commands can now be used
+to introduce another prefix: "hardif".
+
+B.A.T.M.A.N. V introduced two additional settings which are hard (slave)
+interface specific. These can can finally be implemented in batctl. This
+will allow to change/read these settings when sysfs support is not enabled
+in the kernel.
+
+  $ batctl hardif eth0 throughput_override 15mbit
+  $ batctl hardif eth0 elp_interval
+
+Kind regards,
+	Sven
 
 
-Also please note that ath10k tx_bitrate can be fetched from ath10k
-firmware debugfs statistics. Even with 10.2 firmware.
+[1] https://www.open-mesh.org/issues/373
 
+Sven Eckelmann (4):
+  batctl: Make vlan setting explicit
+  batctl: Integrate hardif setting framework
+  batctl: Add elp_interval setting command
+  batctl: Add throughput_override setting command
 
-Best Regards,
-Lukonin Kirill
+ Makefile              |   2 +
+ README.rst            |  33 +++++++++
+ ap_isolation.c        |   5 ++
+ elp_interval.c        | 111 +++++++++++++++++++++++++++++
+ main.c                | 160 +++++++++++++++++++++++++++++++++++-------
+ main.h                |  10 ++-
+ man/batctl.8          |  12 +++-
+ sys.c                 |  57 ++++++++++++---
+ sys.h                 |   5 +-
+ throughput_override.c | 113 +++++++++++++++++++++++++++++
+ 10 files changed, 470 insertions(+), 38 deletions(-)
+ create mode 100644 elp_interval.c
+ create mode 100644 throughput_override.c
+
+-- 
+2.20.1
+
