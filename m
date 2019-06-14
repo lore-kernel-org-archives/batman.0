@@ -1,12 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4/4] batctl: Add throughput_override setting command
-Date: Thu, 13 Jun 2019 21:12:17 +0200
-Message-Id: <20190613191217.28139-5-sven@narfation.org>
-In-Reply-To: <20190613191217.28139-1-sven@narfation.org>
-References: <20190613191217.28139-1-sven@narfation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Fri, 14 Jun 2019 09:11:23 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH] batman-adv: no need to check return value of debugfs_create
+ functions
+Message-ID: <20190614071123.GA2922@kroah.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,198 +16,405 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
+Cc: "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-B.A.T.M.A.N. V introduced a hard interface specific setting called
-throughput. It defines the throughput value to be used by B.A.T.M.A.N. V
-when estimating the link throughput using this interface. If the value is
-set to 0 then batman-adv will try to estimate the throughput by itself.
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Because we don't care if debugfs works or not, this trickles back a bit
+so we can clean things up by making some functions return void instead
+of an error value that is never going to fail.
+
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- Makefile              |   1 +
- README.rst            |  17 +++++++
- man/batctl.8          |   6 +++
- throughput_override.c | 113 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 137 insertions(+)
- create mode 100644 throughput_override.c
+ net/batman-adv/debugfs.c        | 96 +++++++--------------------------
+ net/batman-adv/debugfs.h        |  5 +-
+ net/batman-adv/hard-interface.c |  6 +--
+ net/batman-adv/icmp_socket.c    | 20 ++-----
+ net/batman-adv/icmp_socket.h    |  2 +-
+ net/batman-adv/log.c            | 13 +----
+ net/batman-adv/network-coding.c | 29 +++-------
+ net/batman-adv/network-coding.h |  5 +-
+ 8 files changed, 38 insertions(+), 138 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index f071da2..e3747a2 100755
---- a/Makefile
-+++ b/Makefile
-@@ -67,6 +67,7 @@ $(eval $(call add_command,ping,y))
- $(eval $(call add_command,routing_algo,y))
- $(eval $(call add_command,statistics,y))
- $(eval $(call add_command,tcpdump,y))
-+$(eval $(call add_command,throughput_override,y))
- $(eval $(call add_command,throughputmeter,y))
- $(eval $(call add_command,traceroute,y))
- $(eval $(call add_command,transglobal,y))
-diff --git a/README.rst b/README.rst
-index 92983aa..128f539 100644
---- a/README.rst
-+++ b/README.rst
-@@ -402,6 +402,23 @@ Example::
-   200
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index d38d70ccdd5a..46f6d329edf9 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -293,31 +293,13 @@ static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
+ void batadv_debugfs_init(void)
+ {
+ 	struct batadv_debuginfo **bat_debug;
+-	struct dentry *file;
  
+ 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
+-	if (batadv_debugfs == ERR_PTR(-ENODEV))
+-		batadv_debugfs = NULL;
+-
+-	if (!batadv_debugfs)
+-		goto err;
+-
+-	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
+-		file = debugfs_create_file(((*bat_debug)->attr).name,
+-					   S_IFREG | ((*bat_debug)->attr).mode,
+-					   batadv_debugfs, NULL,
+-					   &(*bat_debug)->fops);
+-		if (!file) {
+-			pr_err("Can't add general debugfs file: %s\n",
+-			       ((*bat_debug)->attr).name);
+-			goto err;
+-		}
+-	}
  
-+batctl throughput override
-+==========================
-+
-+display or modify the throughput override in kbit/s for hard interface
-+
-+Usage::
-+
-+  batctl hardif $hardif throughput_override|to [kbit]
-+
-+Example::
-+
-+  $ batctl hardif eth0 throughput_override 15000
-+  $ batctl hardif eth0 throughput_override 15mbit
-+  $ batctl hardif eth0 throughput_override
-+  15.0 MBit
-+
-+
- batctl loglevel
- ===============
+-	return;
+-err:
+-	debugfs_remove_recursive(batadv_debugfs);
+-	batadv_debugfs = NULL;
++	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug)
++		debugfs_create_file(((*bat_debug)->attr).name,
++				    S_IFREG | ((*bat_debug)->attr).mode,
++				    batadv_debugfs, NULL, &(*bat_debug)->fops);
+ }
  
-diff --git a/man/batctl.8 b/man/batctl.8
-index 690da02..b821896 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -203,6 +203,12 @@ supported routing algorithms are displayed.
- Otherwise the parameter is used to select the routing algorithm for the following
- batX interface to be created.
- .br
-+.IP "\fBhardif <hardif>\fP \fBthroughput_override|to\fP [\fBbandwidth\fP]\fP"
-+If no parameter is given the current througput override is displayed otherwise
-+the parameter is used to set the throughput override for the specified hard
-+interface.
-+Just enter any number (optionally followed by "kbit" or "mbit").
-+.br
- .IP "\fBisolation_mark\fP|\fBmark\fP"
- If no parameter is given the current isolation mark value is displayed.
- Otherwise the parameter is used to set or unset the isolation mark used by the
-diff --git a/throughput_override.c b/throughput_override.c
-new file mode 100644
-index 0000000..28a6588
---- /dev/null
-+++ b/throughput_override.c
-@@ -0,0 +1,113 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2009-2019  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner <mareklindner@neomailbox.ch>
-+ *
-+ * License-Filename: LICENSES/preferred/GPL-2.0
-+ */
-+
-+#include <errno.h>
-+#include <stddef.h>
-+#include <stdint.h>
-+#include <string.h>
-+
-+#include "functions.h"
-+#include "main.h"
-+#include "sys.h"
-+
-+static struct throughput_override_data {
-+	uint32_t throughput_override;
-+} throughput_override;
-+
-+static int parse_throughput_override(struct state *state, int argc, char *argv[])
-+{
-+	struct settings_data *settings = state->cmd->arg;
-+	struct throughput_override_data *data = settings->data;
-+	bool ret;
-+
-+	if (argc != 2) {
-+		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = parse_throughput(argv[1], "throughput override",
-+				&data->throughput_override);
-+	if (!ret)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int print_throughput_override(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct genlmsghdr *ghdr;
-+	int *result = arg;
-+	uint32_t mbit;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (!attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE])
-+		return NL_OK;
-+
-+	mbit = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]);
-+	printf("%u.%u MBit\n", mbit / 10, mbit % 10);
-+
-+	*result = 0;
-+	return NL_STOP;
-+}
-+
-+static int get_attrs_elp_isolation(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+
-+	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
-+
-+	return 0;
-+}
-+
-+static int get_throughput_override(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_GET_HARDIF,
-+				  get_attrs_elp_isolation, print_throughput_override);
-+}
-+
-+static int set_attrs_throughput_override(struct nl_msg *msg, void *arg)
-+{
-+	struct state *state = arg;
-+	struct settings_data *settings = state->cmd->arg;
-+	struct throughput_override_data *data = settings->data;
-+
-+	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
-+	nla_put_u32(msg, BATADV_ATTR_THROUGHPUT_OVERRIDE, data->throughput_override);
-+
-+	return 0;
-+}
-+
-+static int set_throughput_override(struct state *state)
-+{
-+	return sys_simple_nlquery(state, BATADV_CMD_SET_HARDIF,
-+				  set_attrs_throughput_override, NULL);
-+}
-+
-+static struct settings_data batctl_settings_throughput_override = {
-+	.sysfs_name = "throughput_override",
-+	.data = &throughput_override,
-+	.parse = parse_throughput_override,
-+	.netlink_get = get_throughput_override,
-+	.netlink_set = set_throughput_override,
-+};
-+
-+COMMAND_NAMED(SUBCOMMAND_HIF, throughput_override, "to", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_throughput_override,
-+	      "[mbit]        \tdisplay or modify throughput_override setting");
+ /**
+@@ -333,42 +315,24 @@ void batadv_debugfs_destroy(void)
+  * batadv_debugfs_add_hardif() - creates the base directory for a hard interface
+  *  in debugfs.
+  * @hard_iface: hard interface which should be added.
+- *
+- * Return: 0 on success or negative error number in case of failure
+  */
+-int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
++void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct net *net = dev_net(hard_iface->net_dev);
+ 	struct batadv_debuginfo **bat_debug;
+ 	struct dentry *file;
+ 
+-	if (!batadv_debugfs)
+-		goto out;
+-
+ 	if (net != &init_net)
+-		return 0;
++		return;
+ 
+ 	hard_iface->debug_dir = debugfs_create_dir(hard_iface->net_dev->name,
+ 						   batadv_debugfs);
+-	if (!hard_iface->debug_dir)
+-		goto out;
+-
+-	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug) {
+-		file = debugfs_create_file(((*bat_debug)->attr).name,
+-					   S_IFREG | ((*bat_debug)->attr).mode,
+-					   hard_iface->debug_dir,
+-					   hard_iface->net_dev,
+-					   &(*bat_debug)->fops);
+-		if (!file)
+-			goto rem_attr;
+-	}
+ 
+-	return 0;
+-rem_attr:
+-	debugfs_remove_recursive(hard_iface->debug_dir);
+-	hard_iface->debug_dir = NULL;
+-out:
+-	return -ENOMEM;
++	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug)
++		debugfs_create_file(((*bat_debug)->attr).name,
++				    S_IFREG | ((*bat_debug)->attr).mode,
++				    hard_iface->debug_dir, hard_iface->net_dev,
++				    &(*bat_debug)->fops);
+ }
+ 
+ /**
+@@ -379,15 +343,12 @@ void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface)
+ {
+ 	const char *name = hard_iface->net_dev->name;
+ 	struct dentry *dir;
+-	struct dentry *d;
+ 
+ 	dir = hard_iface->debug_dir;
+ 	if (!dir)
+ 		return;
+ 
+-	d = debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
+-	if (!d)
+-		pr_err("Can't rename debugfs dir to %s\n", name);
++	debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
+ }
+ 
+ /**
+@@ -421,42 +382,28 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	struct net *net = dev_net(dev);
+ 	struct dentry *file;
+ 
+-	if (!batadv_debugfs)
+-		goto out;
+-
+ 	if (net != &init_net)
+ 		return 0;
+ 
+ 	bat_priv->debug_dir = debugfs_create_dir(dev->name, batadv_debugfs);
+-	if (!bat_priv->debug_dir)
+-		goto out;
+ 
+-	if (batadv_socket_setup(bat_priv) < 0)
+-		goto rem_attr;
++	batadv_socket_setup(bat_priv);
+ 
+ 	if (batadv_debug_log_setup(bat_priv) < 0)
+ 		goto rem_attr;
+ 
+-	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug) {
+-		file = debugfs_create_file(((*bat_debug)->attr).name,
+-					   S_IFREG | ((*bat_debug)->attr).mode,
+-					   bat_priv->debug_dir,
+-					   dev, &(*bat_debug)->fops);
+-		if (!file) {
+-			batadv_err(dev, "Can't add debugfs file: %s/%s\n",
+-				   dev->name, ((*bat_debug)->attr).name);
+-			goto rem_attr;
+-		}
+-	}
++	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug)
++		debugfs_create_file(((*bat_debug)->attr).name,
++				    S_IFREG | ((*bat_debug)->attr).mode,
++				    bat_priv->debug_dir, dev,
++				    &(*bat_debug)->fops);
+ 
+-	if (batadv_nc_init_debugfs(bat_priv) < 0)
+-		goto rem_attr;
++	batadv_nc_init_debugfs(bat_priv);
+ 
+ 	return 0;
+ rem_attr:
+ 	debugfs_remove_recursive(bat_priv->debug_dir);
+ 	bat_priv->debug_dir = NULL;
+-out:
+ 	return -ENOMEM;
+ }
+ 
+@@ -469,15 +416,12 @@ void batadv_debugfs_rename_meshif(struct net_device *dev)
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	const char *name = dev->name;
+ 	struct dentry *dir;
+-	struct dentry *d;
+ 
+ 	dir = bat_priv->debug_dir;
+ 	if (!dir)
+ 		return;
+ 
+-	d = debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
+-	if (!d)
+-		pr_err("Can't rename debugfs dir to %s\n", name);
++	debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
+index 7fac680cf740..054f32b8d562 100644
+--- a/net/batman-adv/debugfs.h
++++ b/net/batman-adv/debugfs.h
+@@ -22,7 +22,7 @@ void batadv_debugfs_destroy(void);
+ int batadv_debugfs_add_meshif(struct net_device *dev);
+ void batadv_debugfs_rename_meshif(struct net_device *dev);
+ void batadv_debugfs_del_meshif(struct net_device *dev);
+-int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
++void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
+ void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface);
+ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
+ 
+@@ -54,9 +54,8 @@ static inline void batadv_debugfs_del_meshif(struct net_device *dev)
+ }
+ 
+ static inline
+-int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
++void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
+ {
+-	return 0;
+ }
+ 
+ static inline
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 79d1731b8306..e1084a94fcac 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -920,9 +920,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	hard_iface->soft_iface = NULL;
+ 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
+ 
+-	ret = batadv_debugfs_add_hardif(hard_iface);
+-	if (ret)
+-		goto free_sysfs;
++	batadv_debugfs_add_hardif(hard_iface);
+ 
+ 	INIT_LIST_HEAD(&hard_iface->list);
+ 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
+@@ -944,8 +942,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 
+ 	return hard_iface;
+ 
+-free_sysfs:
+-	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+ free_if:
+ 	kfree(hard_iface);
+ release_dev:
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 0a91c8661357..0a70b66e8770 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -314,25 +314,11 @@ static const struct file_operations batadv_fops = {
+ /**
+  * batadv_socket_setup() - Create debugfs "socket" file
+  * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: 0 on success or negative error number in case of failure
+  */
+-int batadv_socket_setup(struct batadv_priv *bat_priv)
++void batadv_socket_setup(struct batadv_priv *bat_priv)
+ {
+-	struct dentry *d;
+-
+-	if (!bat_priv->debug_dir)
+-		goto err;
+-
+-	d = debugfs_create_file(BATADV_ICMP_SOCKET, 0600, bat_priv->debug_dir,
+-				bat_priv, &batadv_fops);
+-	if (!d)
+-		goto err;
+-
+-	return 0;
+-
+-err:
+-	return -ENOMEM;
++	debugfs_create_file(BATADV_ICMP_SOCKET, 0600, bat_priv->debug_dir,
++			    bat_priv, &batadv_fops);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
+index 35eecbfd2e65..c92c29c406a9 100644
+--- a/net/batman-adv/icmp_socket.h
++++ b/net/batman-adv/icmp_socket.h
+@@ -15,7 +15,7 @@ struct batadv_icmp_header;
+ 
+ #define BATADV_ICMP_SOCKET "socket"
+ 
+-int batadv_socket_setup(struct batadv_priv *bat_priv);
++void batadv_socket_setup(struct batadv_priv *bat_priv);
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
+ 
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index f79ebd5b46e9..9366f3a1888e 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -192,25 +192,16 @@ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ {
+ 	struct dentry *d;
+ 
+-	if (!bat_priv->debug_dir)
+-		goto err;
+-
+ 	bat_priv->debug_log = kzalloc(sizeof(*bat_priv->debug_log), GFP_ATOMIC);
+ 	if (!bat_priv->debug_log)
+-		goto err;
++		return -ENOMEM;
+ 
+ 	spin_lock_init(&bat_priv->debug_log->lock);
+ 	init_waitqueue_head(&bat_priv->debug_log->queue_wait);
+ 
+-	d = debugfs_create_file("log", 0400, bat_priv->debug_dir, bat_priv,
++	debugfs_create_file("log", 0400, bat_priv->debug_dir, bat_priv,
+ 				&batadv_log_fops);
+-	if (!d)
+-		goto err;
+-
+ 	return 0;
+-
+-err:
+-	return -ENOMEM;
+ }
+ 
+ /**
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index c5e7906045f3..580609389f0f 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1951,34 +1951,19 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
+ /**
+  * batadv_nc_init_debugfs() - create nc folder and related files in debugfs
+  * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: 0 on success or negative error number in case of failure
+  */
+-int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
++void batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
+ {
+-	struct dentry *nc_dir, *file;
++	struct dentry *nc_dir;
+ 
+ 	nc_dir = debugfs_create_dir("nc", bat_priv->debug_dir);
+-	if (!nc_dir)
+-		goto out;
+ 
+-	file = debugfs_create_u8("min_tq", 0644, nc_dir, &bat_priv->nc.min_tq);
+-	if (!file)
+-		goto out;
++	debugfs_create_u8("min_tq", 0644, nc_dir, &bat_priv->nc.min_tq);
+ 
+-	file = debugfs_create_u32("max_fwd_delay", 0644, nc_dir,
+-				  &bat_priv->nc.max_fwd_delay);
+-	if (!file)
+-		goto out;
++	debugfs_create_u32("max_fwd_delay", 0644, nc_dir,
++			   &bat_priv->nc.max_fwd_delay);
+ 
+-	file = debugfs_create_u32("max_buffer_time", 0644, nc_dir,
+-				  &bat_priv->nc.max_buffer_time);
+-	if (!file)
+-		goto out;
+-
+-	return 0;
+-
+-out:
+-	return -ENOMEM;
++	debugfs_create_u32("max_buffer_time", 0644, nc_dir,
++			   &bat_priv->nc.max_buffer_time);
+ }
+ #endif
+diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
+index 74f56113a5d0..a63ac58b1e72 100644
+--- a/net/batman-adv/network-coding.h
++++ b/net/batman-adv/network-coding.h
+@@ -40,7 +40,7 @@ void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
+ void batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb);
+ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset);
+-int batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
++void batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
+ 
+ #else /* ifdef CONFIG_BATMAN_ADV_NC */
+ 
+@@ -111,9 +111,8 @@ static inline int batadv_nc_nodes_seq_print_text(struct seq_file *seq,
+ 	return 0;
+ }
+ 
+-static inline int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
++static inline void batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
+ {
+-	return 0;
+ }
+ 
+ #endif /* ifdef CONFIG_BATMAN_ADV_NC */
 -- 
-2.20.1
+2.22.0
 
