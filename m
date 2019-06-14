@@ -1,12 +1,14 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Date: Fri, 14 Jun 2019 09:11:23 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH] batman-adv: no need to check return value of debugfs_create
- functions
-Message-ID: <20190614071123.GA2922@kroah.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: no need to check return value of
+ debugfs_create functions
+Date: Fri, 14 Jun 2019 20:16:45 +0200
+Message-ID: <2060405.LLBHa7GSGR@sven-edge>
+In-Reply-To: <20190614071123.GA2922@kroah.com>
+References: <20190614071123.GA2922@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: multipart/signed; boundary="nextPart3167038.yAbhmPq4Nh";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,405 +18,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
-Cc: "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
 
-When calling debugfs functions, there is no need to ever check the
-return value.  The function can work or not, but the code logic should
-never do something different based on this.
+--nextPart3167038.yAbhmPq4Nh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Because we don't care if debugfs works or not, this trickles back a bit
-so we can clean things up by making some functions return void instead
-of an error value that is never going to fail.
+On Friday, 14 June 2019 09:11:23 CEST Greg Kroah-Hartman wrote:
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic should
+> never do something different based on this.
+> 
+> Because we don't care if debugfs works or not, this trickles back a bit
+> so we can clean things up by making some functions return void instead
+> of an error value that is never going to fail.
+> 
+> Cc: Marek Lindner <mareklindner@neomailbox.ch>
+> Cc: Simon Wunderlich <sw@simonwunderlich.de>
+> Cc: Antonio Quartulli <a@unstable.cc>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: b.a.t.m.a.n@lists.open-mesh.org
+> Cc: netdev@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
 
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- net/batman-adv/debugfs.c        | 96 +++++++--------------------------
- net/batman-adv/debugfs.h        |  5 +-
- net/batman-adv/hard-interface.c |  6 +--
- net/batman-adv/icmp_socket.c    | 20 ++-----
- net/batman-adv/icmp_socket.h    |  2 +-
- net/batman-adv/log.c            | 13 +----
- net/batman-adv/network-coding.c | 29 +++-------
- net/batman-adv/network-coding.h |  5 +-
- 8 files changed, 38 insertions(+), 138 deletions(-)
+Applied with minor modifications
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index d38d70ccdd5a..46f6d329edf9 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -293,31 +293,13 @@ static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
- void batadv_debugfs_init(void)
- {
- 	struct batadv_debuginfo **bat_debug;
--	struct dentry *file;
- 
- 	batadv_debugfs = debugfs_create_dir(BATADV_DEBUGFS_SUBDIR, NULL);
--	if (batadv_debugfs == ERR_PTR(-ENODEV))
--		batadv_debugfs = NULL;
--
--	if (!batadv_debugfs)
--		goto err;
--
--	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
--		file = debugfs_create_file(((*bat_debug)->attr).name,
--					   S_IFREG | ((*bat_debug)->attr).mode,
--					   batadv_debugfs, NULL,
--					   &(*bat_debug)->fops);
--		if (!file) {
--			pr_err("Can't add general debugfs file: %s\n",
--			       ((*bat_debug)->attr).name);
--			goto err;
--		}
--	}
- 
--	return;
--err:
--	debugfs_remove_recursive(batadv_debugfs);
--	batadv_debugfs = NULL;
-+	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug)
-+		debugfs_create_file(((*bat_debug)->attr).name,
-+				    S_IFREG | ((*bat_debug)->attr).mode,
-+				    batadv_debugfs, NULL, &(*bat_debug)->fops);
- }
- 
- /**
-@@ -333,42 +315,24 @@ void batadv_debugfs_destroy(void)
-  * batadv_debugfs_add_hardif() - creates the base directory for a hard interface
-  *  in debugfs.
-  * @hard_iface: hard interface which should be added.
-- *
-- * Return: 0 on success or negative error number in case of failure
-  */
--int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
-+void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
- {
- 	struct net *net = dev_net(hard_iface->net_dev);
- 	struct batadv_debuginfo **bat_debug;
- 	struct dentry *file;
- 
--	if (!batadv_debugfs)
--		goto out;
--
- 	if (net != &init_net)
--		return 0;
-+		return;
- 
- 	hard_iface->debug_dir = debugfs_create_dir(hard_iface->net_dev->name,
- 						   batadv_debugfs);
--	if (!hard_iface->debug_dir)
--		goto out;
--
--	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug) {
--		file = debugfs_create_file(((*bat_debug)->attr).name,
--					   S_IFREG | ((*bat_debug)->attr).mode,
--					   hard_iface->debug_dir,
--					   hard_iface->net_dev,
--					   &(*bat_debug)->fops);
--		if (!file)
--			goto rem_attr;
--	}
- 
--	return 0;
--rem_attr:
--	debugfs_remove_recursive(hard_iface->debug_dir);
--	hard_iface->debug_dir = NULL;
--out:
--	return -ENOMEM;
-+	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug)
-+		debugfs_create_file(((*bat_debug)->attr).name,
-+				    S_IFREG | ((*bat_debug)->attr).mode,
-+				    hard_iface->debug_dir, hard_iface->net_dev,
-+				    &(*bat_debug)->fops);
- }
- 
- /**
-@@ -379,15 +343,12 @@ void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface)
- {
- 	const char *name = hard_iface->net_dev->name;
- 	struct dentry *dir;
--	struct dentry *d;
- 
- 	dir = hard_iface->debug_dir;
- 	if (!dir)
- 		return;
- 
--	d = debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
--	if (!d)
--		pr_err("Can't rename debugfs dir to %s\n", name);
-+	debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
- }
- 
- /**
-@@ -421,42 +382,28 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
- 	struct net *net = dev_net(dev);
- 	struct dentry *file;
- 
--	if (!batadv_debugfs)
--		goto out;
--
- 	if (net != &init_net)
- 		return 0;
- 
- 	bat_priv->debug_dir = debugfs_create_dir(dev->name, batadv_debugfs);
--	if (!bat_priv->debug_dir)
--		goto out;
- 
--	if (batadv_socket_setup(bat_priv) < 0)
--		goto rem_attr;
-+	batadv_socket_setup(bat_priv);
- 
- 	if (batadv_debug_log_setup(bat_priv) < 0)
- 		goto rem_attr;
- 
--	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug) {
--		file = debugfs_create_file(((*bat_debug)->attr).name,
--					   S_IFREG | ((*bat_debug)->attr).mode,
--					   bat_priv->debug_dir,
--					   dev, &(*bat_debug)->fops);
--		if (!file) {
--			batadv_err(dev, "Can't add debugfs file: %s/%s\n",
--				   dev->name, ((*bat_debug)->attr).name);
--			goto rem_attr;
--		}
--	}
-+	for (bat_debug = batadv_mesh_debuginfos; *bat_debug; ++bat_debug)
-+		debugfs_create_file(((*bat_debug)->attr).name,
-+				    S_IFREG | ((*bat_debug)->attr).mode,
-+				    bat_priv->debug_dir, dev,
-+				    &(*bat_debug)->fops);
- 
--	if (batadv_nc_init_debugfs(bat_priv) < 0)
--		goto rem_attr;
-+	batadv_nc_init_debugfs(bat_priv);
- 
- 	return 0;
- rem_attr:
- 	debugfs_remove_recursive(bat_priv->debug_dir);
- 	bat_priv->debug_dir = NULL;
--out:
- 	return -ENOMEM;
- }
- 
-@@ -469,15 +416,12 @@ void batadv_debugfs_rename_meshif(struct net_device *dev)
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
- 	const char *name = dev->name;
- 	struct dentry *dir;
--	struct dentry *d;
- 
- 	dir = bat_priv->debug_dir;
- 	if (!dir)
- 		return;
- 
--	d = debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
--	if (!d)
--		pr_err("Can't rename debugfs dir to %s\n", name);
-+	debugfs_rename(dir->d_parent, dir, dir->d_parent, name);
- }
- 
- /**
-diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
-index 7fac680cf740..054f32b8d562 100644
---- a/net/batman-adv/debugfs.h
-+++ b/net/batman-adv/debugfs.h
-@@ -22,7 +22,7 @@ void batadv_debugfs_destroy(void);
- int batadv_debugfs_add_meshif(struct net_device *dev);
- void batadv_debugfs_rename_meshif(struct net_device *dev);
- void batadv_debugfs_del_meshif(struct net_device *dev);
--int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
-+void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
- void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface);
- void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
- 
-@@ -54,9 +54,8 @@ static inline void batadv_debugfs_del_meshif(struct net_device *dev)
- }
- 
- static inline
--int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
-+void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
- {
--	return 0;
- }
- 
- static inline
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 79d1731b8306..e1084a94fcac 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -920,9 +920,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	hard_iface->soft_iface = NULL;
- 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 
--	ret = batadv_debugfs_add_hardif(hard_iface);
--	if (ret)
--		goto free_sysfs;
-+	batadv_debugfs_add_hardif(hard_iface);
- 
- 	INIT_LIST_HEAD(&hard_iface->list);
- 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
-@@ -944,8 +942,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 
- 	return hard_iface;
- 
--free_sysfs:
--	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- free_if:
- 	kfree(hard_iface);
- release_dev:
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 0a91c8661357..0a70b66e8770 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -314,25 +314,11 @@ static const struct file_operations batadv_fops = {
- /**
-  * batadv_socket_setup() - Create debugfs "socket" file
-  * @bat_priv: the bat priv with all the soft interface information
-- *
-- * Return: 0 on success or negative error number in case of failure
-  */
--int batadv_socket_setup(struct batadv_priv *bat_priv)
-+void batadv_socket_setup(struct batadv_priv *bat_priv)
- {
--	struct dentry *d;
--
--	if (!bat_priv->debug_dir)
--		goto err;
--
--	d = debugfs_create_file(BATADV_ICMP_SOCKET, 0600, bat_priv->debug_dir,
--				bat_priv, &batadv_fops);
--	if (!d)
--		goto err;
--
--	return 0;
--
--err:
--	return -ENOMEM;
-+	debugfs_create_file(BATADV_ICMP_SOCKET, 0600, bat_priv->debug_dir,
-+			    bat_priv, &batadv_fops);
- }
- 
- /**
-diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
-index 35eecbfd2e65..c92c29c406a9 100644
---- a/net/batman-adv/icmp_socket.h
-+++ b/net/batman-adv/icmp_socket.h
-@@ -15,7 +15,7 @@ struct batadv_icmp_header;
- 
- #define BATADV_ICMP_SOCKET "socket"
- 
--int batadv_socket_setup(struct batadv_priv *bat_priv);
-+void batadv_socket_setup(struct batadv_priv *bat_priv);
- 
- #ifdef CONFIG_BATMAN_ADV_DEBUGFS
- 
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index f79ebd5b46e9..9366f3a1888e 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -192,25 +192,16 @@ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
- {
- 	struct dentry *d;
- 
--	if (!bat_priv->debug_dir)
--		goto err;
--
- 	bat_priv->debug_log = kzalloc(sizeof(*bat_priv->debug_log), GFP_ATOMIC);
- 	if (!bat_priv->debug_log)
--		goto err;
-+		return -ENOMEM;
- 
- 	spin_lock_init(&bat_priv->debug_log->lock);
- 	init_waitqueue_head(&bat_priv->debug_log->queue_wait);
- 
--	d = debugfs_create_file("log", 0400, bat_priv->debug_dir, bat_priv,
-+	debugfs_create_file("log", 0400, bat_priv->debug_dir, bat_priv,
- 				&batadv_log_fops);
--	if (!d)
--		goto err;
--
- 	return 0;
--
--err:
--	return -ENOMEM;
- }
- 
- /**
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index c5e7906045f3..580609389f0f 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1951,34 +1951,19 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
- /**
-  * batadv_nc_init_debugfs() - create nc folder and related files in debugfs
-  * @bat_priv: the bat priv with all the soft interface information
-- *
-- * Return: 0 on success or negative error number in case of failure
-  */
--int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
-+void batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
- {
--	struct dentry *nc_dir, *file;
-+	struct dentry *nc_dir;
- 
- 	nc_dir = debugfs_create_dir("nc", bat_priv->debug_dir);
--	if (!nc_dir)
--		goto out;
- 
--	file = debugfs_create_u8("min_tq", 0644, nc_dir, &bat_priv->nc.min_tq);
--	if (!file)
--		goto out;
-+	debugfs_create_u8("min_tq", 0644, nc_dir, &bat_priv->nc.min_tq);
- 
--	file = debugfs_create_u32("max_fwd_delay", 0644, nc_dir,
--				  &bat_priv->nc.max_fwd_delay);
--	if (!file)
--		goto out;
-+	debugfs_create_u32("max_fwd_delay", 0644, nc_dir,
-+			   &bat_priv->nc.max_fwd_delay);
- 
--	file = debugfs_create_u32("max_buffer_time", 0644, nc_dir,
--				  &bat_priv->nc.max_buffer_time);
--	if (!file)
--		goto out;
--
--	return 0;
--
--out:
--	return -ENOMEM;
-+	debugfs_create_u32("max_buffer_time", 0644, nc_dir,
-+			   &bat_priv->nc.max_buffer_time);
- }
- #endif
-diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
-index 74f56113a5d0..a63ac58b1e72 100644
---- a/net/batman-adv/network-coding.h
-+++ b/net/batman-adv/network-coding.h
-@@ -40,7 +40,7 @@ void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
- void batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
- int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset);
--int batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
-+void batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
- 
- #else /* ifdef CONFIG_BATMAN_ADV_NC */
- 
-@@ -111,9 +111,8 @@ static inline int batadv_nc_nodes_seq_print_text(struct seq_file *seq,
- 	return 0;
- }
- 
--static inline int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
-+static inline void batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
- {
--	return 0;
- }
- 
- #endif /* ifdef CONFIG_BATMAN_ADV_NC */
--- 
-2.22.0
+
+>  /**
+> @@ -333,42 +315,24 @@ void batadv_debugfs_destroy(void)
+>   * batadv_debugfs_add_hardif() - creates the base directory for a hard interface
+>   *  in debugfs.
+>   * @hard_iface: hard interface which should be added.
+> - *
+> - * Return: 0 on success or negative error number in case of failure
+>   */
+> -int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
+> +void batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
+>  {
+>  	struct net *net = dev_net(hard_iface->net_dev);
+>  	struct batadv_debuginfo **bat_debug;
+>  	struct dentry *file;
+
+
+The file variable should be removed here (it is now unused).
+
+> @@ -421,42 +382,28 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+>         struct net *net = dev_net(dev);
+>         struct dentry *file;
+
+
+Same here
+
+> --- a/net/batman-adv/log.c
+> +++ b/net/batman-adv/log.c
+> @@ -192,25 +192,16 @@ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+>  {
+>         struct dentry *d;
+
+Same here
+
+Thanks,
+	Sven
+--nextPart3167038.yAbhmPq4Nh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl0D5I0ACgkQXYcKB8Em
+e0YXEhAAp0mV/u+w8uWC64czNeI7fb0U7mUY4n9g5uPWtnrRO7CMZv7y5Xvo2hUM
+1oDKB8sP6vdP5QnKKMqBH7UDctB+YqsqzM8Fel3yjnVjaKtdftQMXc+pTgT4zflI
+1IW4XWa8OfNlr7km5wRwnTM4cZtVpdV7mtuOtc2+QHKKjtqRjsElrdIw0HeRXX3u
+vhdNGFRgFjW2ihYGrgFH1ZFBXU8Onx2bbZl8wc6M+BHLO/etbd87HlCNeAeEdjPd
+/UIEvPGF4iI3IsKbt4yimXTn6kqA9q6VG+DkBLVwcLDTixEgYtt7rYWBAq9haSud
+0yeltXJ1eeWSG392LVPp8+8ZCEKOTsbclSDYtQUEiJZLhPuTWy7brkbbgnU0aiBd
+mfjVDZ7lyTWoM0jtahUDa5zezq+5aG8+80ZLZ+6Vcg0qln8dNT7cN00wSRX3C4Zc
+A21eMvDx3YqpNC4svA3/ZIw1RnBea77F4xgZ/JXismLIwm4XbukoGgP9J2F4LK4G
+U3wV5ea8IHLi2+Su0UKuGNg9QpgjHW5WwyJ2E7GoRug1t5f/jwDp0f1p3t1dGSuo
+MwS+H2eWsD9BJdw6xc/c7uXbp8L1abE001aroi3zzLvUw0iUbfcbHOUVr1FvTfJr
+i5Qy8gO9WgyOYhYpR1r5to92QuueKH/BQh53xVYKT/uMZNcZW0E=
+=9ifG
+-----END PGP SIGNATURE-----
+
+--nextPart3167038.yAbhmPq4Nh--
+
+
 
