@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH v2 1/6] batctl: Make vlan setting explicit
-Date: Sun, 23 Jun 2019 15:07:04 +0200
-Message-Id: <20190623130709.24751-2-sven@narfation.org>
+Subject: [PATCH v2 2/6] batctl: Integrate hardif setting framework
+Date: Sun, 23 Jun 2019 15:07:05 +0200
+Message-Id: <20190623130709.24751-3-sven@narfation.org>
 In-Reply-To: <20190623130709.24751-1-sven@narfation.org>
 References: <20190623130709.24751-1-sven@narfation.org>
 MIME-Version: 1.0
@@ -18,601 +18,235 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The requirement to have a VLAN master device on top of the batadv mesh
-interface is artificially limiting the capabilities of batctl. Not all
-master devices in linux which register a VLAN are from type "vlan" and are
-only registering a single VLAN.
+batctl currently supports settings which are either mesh interface or vlan
+specific. But B.A.T.M.A.N. V introduced two additional settings which are
+hard (slave) interface specific.
 
-For example VLAN aware bridges can create multiple VLANs. These require
-that the VLAN is identified using the VID and not the vlan device.
+To support these, an additional command prefix called hardif is implemented
+for some sysfs commands:
+
+  $ batctl hardif eth0 ...
+
+Alternative form is to use the prefix selector "slave"
+
+  $ batctl slave eth0 ...
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- ap_isolation.c |  13 +++-
- functions.c    |  61 ++++++++++++---
- functions.h    |   4 +-
- main.c         | 200 +++++++++++++++++++++++++++++++++++++++++++------
- main.h         |  13 +++-
- man/batctl.8   |   8 +-
- sys.c          |  50 ++++++++++---
- 7 files changed, 294 insertions(+), 55 deletions(-)
+ functions.c | 22 ++++++++++++++++++++++
+ functions.h |  1 +
+ main.c      | 27 ++++++++++++++++++++++++++-
+ main.h      |  8 +++++++-
+ sys.c       | 15 +++++++++++++++
+ sys.h       |  5 +++--
+ 6 files changed, 74 insertions(+), 4 deletions(-)
 
-diff --git a/ap_isolation.c b/ap_isolation.c
-index 71dcd00..36fd4d6 100644
---- a/ap_isolation.c
-+++ b/ap_isolation.c
-@@ -28,7 +28,7 @@ static int get_attrs_ap_isolation(struct nl_msg *msg, void *arg)
- {
- 	struct state *state = arg;
- 
--	if (state->vid >= 0)
-+	if (state->selector == SP_VLAN)
- 		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
- 
- 	return 0;
-@@ -38,7 +38,7 @@ static int get_ap_isolation(struct state *state)
- {
- 	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
- 
--	if (state->vid >= 0)
-+	if (state->selector == SP_VLAN)
- 		nl_cmd = BATADV_CMD_GET_VLAN;
- 
- 	return sys_simple_nlquery(state, nl_cmd, get_attrs_ap_isolation,
-@@ -53,7 +53,7 @@ static int set_attrs_ap_isolation(struct nl_msg *msg, void *arg)
- 
- 	nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION_ENABLED, data->val);
- 
--	if (state->vid >= 0)
-+	if (state->selector == SP_VLAN)
- 		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
- 
- 	return 0;
-@@ -63,7 +63,7 @@ static int set_ap_isolation(struct state *state)
- {
- 	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
- 
--	if (state->vid >= 0)
-+	if (state->selector == SP_VLAN)
- 		nl_cmd = BATADV_CMD_SET_VLAN;
- 
- 	return sys_simple_nlquery(state, nl_cmd, set_attrs_ap_isolation, NULL);
-@@ -81,3 +81,8 @@ COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
- 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
- 	      &batctl_settings_ap_isolation,
- 	      "[0|1]             \tdisplay or modify ap_isolation setting");
-+
-+COMMAND_NAMED(SUBCOMMAND_VID, ap_isolation, "ap", handle_sys_setting,
-+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-+	      &batctl_settings_ap_isolation,
-+	      "[0|1]             \tdisplay or modify ap_isolation setting for vlan device or id");
 diff --git a/functions.c b/functions.c
-index aad6327..61ea487 100644
+index 61ea487..4ffa86c 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -919,32 +919,44 @@ static int query_rtnl_link_single(int mesh_ifindex,
+@@ -998,6 +998,28 @@ int translate_vid(struct state *state, const char *vidstr)
  	return 0;
  }
  
--int translate_mesh_iface(struct state *state)
-+int translate_vlan_iface(struct state *state, const char *vlandev)
++int translate_hard_iface(struct state *state, const char *hardif)
++{
++	struct rtnl_link_iface_data link_data;
++	unsigned int arg_ifindex;
++
++	arg_ifindex = if_nametoindex(hardif);
++	if (arg_ifindex == 0)
++		return -ENODEV;
++
++	query_rtnl_link_single(arg_ifindex, &link_data);
++	if (!link_data.master_found)
++		return -ENOLINK;
++
++	if (!if_indextoname(link_data.master, state->mesh_iface))
++		return -ENOLINK;
++
++	state->hif = arg_ifindex;
++	state->selector = SP_HARDIF;
++
++	return 0;
++}
++
+ static int check_mesh_iface_netlink(struct state *state)
  {
  	struct rtnl_link_iface_data link_data;
- 	unsigned int arg_ifindex;
- 
--	arg_ifindex = if_nametoindex(state->arg_iface);
-+	arg_ifindex = if_nametoindex(vlandev);
- 	if (arg_ifindex == 0)
--		goto fallback_meshif;
-+		return -ENODEV;
- 
- 	query_rtnl_link_single(arg_ifindex, &link_data);
- 	if (!link_data.vid_found)
--		goto fallback_meshif;
-+		return -ENODEV;
- 
- 	if (!link_data.link_found)
--		goto fallback_meshif;
-+		return -EINVAL;
- 
- 	if (!link_data.kind_found)
--		goto fallback_meshif;
-+		return -EINVAL;
- 
- 	if (strcmp(link_data.kind, "vlan") != 0)
--		goto fallback_meshif;
-+		return -EINVAL;
- 
- 	if (!if_indextoname(link_data.link, state->mesh_iface))
--		goto fallback_meshif;
-+		return -ENODEV;
- 
- 	state->vid = link_data.vid;
-+	state->selector = SP_VLAN;
-+
-+	return 0;
-+}
-+
-+int translate_mesh_iface_vlan(struct state *state, const char *vlandev)
-+{
-+	int ret;
-+
-+	ret = translate_vlan_iface(state, vlandev);
-+	if (ret < 0)
-+		goto fallback_meshif;
- 
- 	return 0;
- 
-@@ -952,9 +964,36 @@ int translate_mesh_iface(struct state *state)
- 	/* if there is no vid then the argument must be the
- 	 * mesh interface
- 	 */
--	snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s",
--		 state->arg_iface);
--	state->vid = -1;
-+	snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s", vlandev);
-+	state->selector = SP_NONE_OR_MESHIF;
-+
-+	return 0;
-+}
-+
-+int translate_vid(struct state *state, const char *vidstr)
-+{
-+	unsigned long vid;
-+	char *endptr;
-+
-+	if (vidstr[0] == '\0') {
-+		fprintf(stderr, "Error - unparsable vid\n");
-+		return -EINVAL;
-+	}
-+
-+	vid = strtoul(vidstr, &endptr, 0);
-+	if (!endptr || *endptr != '\0') {
-+		fprintf(stderr, "Error - unparsable vid\n");
-+		return -EINVAL;
-+	}
-+
-+	if (vid > 4095) {
-+		fprintf(stderr, "Error - too large vid (max 4095)\n");
-+		return -ERANGE;
-+	}
-+
-+	/* get mesh interface and overwrite vid afterwards */
-+	state->vid = vid;
-+	state->selector = SP_VLAN;
- 
- 	return 0;
- }
 diff --git a/functions.h b/functions.h
-index d4a5568..7474c40 100644
+index 7474c40..0a08870 100644
 --- a/functions.h
 +++ b/functions.h
-@@ -50,7 +50,9 @@ struct ether_addr *translate_mac(const char *mesh_iface,
- struct ether_addr *resolve_mac(const char *asc);
- int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
- int netlink_simple_request(struct nl_msg *msg);
--int translate_mesh_iface(struct state *state);
-+int translate_mesh_iface_vlan(struct state *state, const char *vlandev);
-+int translate_vlan_iface(struct state *state, const char *vlandev);
-+int translate_vid(struct state *state, const char *vidstr);
+@@ -53,6 +53,7 @@ int netlink_simple_request(struct nl_msg *msg);
+ int translate_mesh_iface_vlan(struct state *state, const char *vlandev);
+ int translate_vlan_iface(struct state *state, const char *vlandev);
+ int translate_vid(struct state *state, const char *vidstr);
++int translate_hard_iface(struct state *state, const char *hardif);
  int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len);
  int check_mesh_iface(struct state *state);
  int check_mesh_iface_ownership(struct state *state, char *hard_iface);
 diff --git a/main.c b/main.c
-index 278683c..3090877 100644
+index 3090877..f81109b 100644
 --- a/main.c
 +++ b/main.c
-@@ -28,48 +28,75 @@ extern const struct command *__stop___command[];
- 
- static void print_usage(void)
- {
--	enum command_type type[] = {
--		SUBCOMMAND,
--		DEBUGTABLE,
-+	struct {
-+		const char *label;
-+		uint32_t types;
-+	} type[] = {
-+		{
-+			.label = "commands:\n",
-+			.types = BIT(SUBCOMMAND) |
-+				 BIT(SUBCOMMAND_VID),
-+		},
-+		{
-+			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
-+			.types = BIT(DEBUGTABLE),
-+		},
-+	};
-+	const char *default_prefixes[] = {
-+		"",
-+		NULL,
-+	};
-+	const char *vlan_prefixes[] = {
-+		"vlan <vdev> ",
-+		"vid <vid> ",
-+		NULL,
+@@ -35,7 +35,8 @@ static void print_usage(void)
+ 		{
+ 			.label = "commands:\n",
+ 			.types = BIT(SUBCOMMAND) |
+-				 BIT(SUBCOMMAND_VID),
++				 BIT(SUBCOMMAND_VID) |
++				 BIT(SUBCOMMAND_HIF),
+ 		},
+ 		{
+ 			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
+@@ -51,6 +52,10 @@ static void print_usage(void)
+ 		"vid <vid> ",
+ 		NULL,
  	};
++	const char *hardif_prefixes[] = {
++		"hardif <netdev> ",
++		NULL,
++	};
  	const struct command **p;
--	char buf[32];
-+	const char **prefixes;
-+	const char **prefix;
-+	char buf[64];
- 	size_t i;
- 
- 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
- 	fprintf(stderr, "options:\n");
--	fprintf(stderr, " \t-m mesh interface or VLAN created on top of a mesh interface (default 'bat0')\n");
-+	fprintf(stderr, " \t-m mesh interface (default 'bat0')\n");
- 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
- 	fprintf(stderr, " \t-v print version\n");
- 
- 	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
- 		fprintf(stderr, "\n");
- 
--		switch (type[i]) {
--		case SUBCOMMAND:
--			fprintf(stderr, "commands:\n");
--			break;
--		case DEBUGTABLE:
--			fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
--			break;
--		}
-+		fprintf(stderr, "%s", type[i].label);
- 
- 		for (p = __start___command; p < __stop___command; p++) {
- 			const struct command *cmd = *p;
- 
--			if (cmd->type != type[i])
-+			if (!(BIT(cmd->type) & type[i].types))
- 				continue;
- 
- 			if (!cmd->usage)
- 				continue;
- 
--			if (strcmp(cmd->name, cmd->abbr) == 0)
--				snprintf(buf, sizeof(buf), "%s", cmd->name);
--			else
--				snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
--					 cmd->abbr);
-+			switch (cmd->type) {
-+			case SUBCOMMAND_VID:
-+				prefixes = vlan_prefixes;
+ 	const char **prefixes;
+ 	const char **prefix;
+@@ -81,6 +86,9 @@ static void print_usage(void)
+ 			case SUBCOMMAND_VID:
+ 				prefixes = vlan_prefixes;
+ 				break;
++			case SUBCOMMAND_HIF:
++				prefixes = hardif_prefixes;
 +				break;
-+			default:
-+				prefixes = default_prefixes;
-+				break;
-+			}
-+
-+			for (prefix = &prefixes[0]; *prefix; prefix++) {
-+				if (strcmp(cmd->name, cmd->abbr) == 0)
-+					snprintf(buf, sizeof(buf), "%s%s",
-+						 *prefix, cmd->name);
-+				else
-+					snprintf(buf, sizeof(buf), "%s%s|%s",
-+						 *prefix, cmd->name, cmd->abbr);
- 
--			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
-+				fprintf(stderr, " \t%-35s%s\n", buf,
-+					cmd->usage);
-+			}
- 		}
+ 			default:
+ 				prefixes = default_prefixes;
+ 				break;
+@@ -153,6 +161,9 @@ static const struct command *find_command(struct state *state, const char *name)
+ 	case SP_VLAN:
+ 		types = BIT(SUBCOMMAND_VID);
+ 		break;
++	case SP_HARDIF:
++		types = BIT(SUBCOMMAND_HIF);
++		break;
+ 	default:
+ 		return NULL;
  	}
- }
-@@ -93,13 +120,17 @@ static void version(void)
- 	exit(EXIT_SUCCESS);
- }
- 
--static const struct command *find_command(const char *name)
-+static const struct command *find_command_by_types(uint32_t types,
-+						   const char *name)
- {
- 	const struct command **p;
- 
- 	for (p = __start___command; p < __stop___command; p++) {
- 		const struct command *cmd = *p;
- 
-+		if (!(BIT(cmd->type) & types))
-+			continue;
-+
- 		if (strcmp(cmd->name, name) == 0)
- 			return cmd;
- 
-@@ -110,13 +141,123 @@ static const struct command *find_command(const char *name)
- 	return NULL;
- }
- 
-+static const struct command *find_command(struct state *state, const char *name)
-+{
-+	uint32_t types;
-+
-+	switch (state->selector) {
-+	case SP_NONE_OR_MESHIF:
-+		types = BIT(SUBCOMMAND) |
-+			BIT(DEBUGTABLE);
-+		break;
-+	case SP_VLAN:
-+		types = BIT(SUBCOMMAND_VID);
-+		break;
-+	default:
-+		return NULL;
-+	}
-+
-+	return find_command_by_types(types, name);
-+}
-+
-+static int detect_selector_prefix(int argc, char *argv[],
-+				  enum selector_prefix *selector)
-+{
-+	/* not enough remaining arguments to detect anything */
-+	if (argc < 2)
-+		return -EINVAL;
-+
-+	/* only detect selector prefix which identifies meshif */
-+	if (strcmp(argv[0], "vlan") == 0) {
-+		*selector = SP_VLAN;
+@@ -171,6 +182,10 @@ static int detect_selector_prefix(int argc, char *argv[],
+ 	if (strcmp(argv[0], "vlan") == 0) {
+ 		*selector = SP_VLAN;
+ 		return 2;
++	} else if (strcmp(argv[0], "hardif") == 0 ||
++		   strcmp(argv[0], "slave") == 0) {
++		*selector = SP_HARDIF;
 +		return 2;
-+	}
-+
-+	return 0;
-+}
-+
-+static int parse_meshif_args(struct state *state, int argc, char *argv[])
-+{
-+	enum selector_prefix selector;
-+	int parsed_args;
-+	char *dev_arg;
-+	int ret;
-+
-+	parsed_args = detect_selector_prefix(argc, argv, &selector);
-+	if (parsed_args < 1)
-+		goto fallback_meshif_vlan;
-+
-+	dev_arg = argv[parsed_args - 1];
-+
-+	switch (selector) {
-+	case SP_VLAN:
-+		ret = translate_vlan_iface(state, dev_arg);
+ 	}
+ 
+ 	return 0;
+@@ -197,7 +212,17 @@ static int parse_meshif_args(struct state *state, int argc, char *argv[])
+ 				dev_arg, strerror(-ret));
+ 			return ret;
+ 		}
++		return parsed_args;
++	case SP_HARDIF:
++		ret = translate_hard_iface(state, dev_arg);
 +		if (ret < 0) {
-+			fprintf(stderr, "Error - invalid vlan device %s: %s\n",
++			fprintf(stderr, "Error - invalid hardif %s: %s\n",
 +				dev_arg, strerror(-ret));
 +			return ret;
 +		}
-+
-+		return parsed_args;
-+	case SP_NONE_OR_MESHIF:
-+		/* not allowed - see detect_selector_prefix */
-+		break;
-+	}
-+
-+fallback_meshif_vlan:
-+	/* parse vlan as part of -m parameter or mesh_dfl_iface */
-+	translate_mesh_iface_vlan(state, state->arg_iface);
-+	return 0;
-+}
-+
-+static int parse_dev_args(struct state *state, int argc, char *argv[])
-+{
-+	int dev_arguments;
-+	int ret;
-+
-+	/* try to parse selector prefix which can be used to identify meshif */
-+	dev_arguments = parse_meshif_args(state, argc, argv);
-+	if (dev_arguments < 0)
-+		return dev_arguments;
-+
-+	/* try to parse secondary prefix selectors which cannot be used to
-+	 * identify the meshif
-+	 */
-+	argv += dev_arguments;
-+	argc -= dev_arguments;
-+
-+	switch (state->selector) {
-+	case SP_NONE_OR_MESHIF:
-+		/* continue below */
-+		break;
-+	default:
-+		return dev_arguments;
-+	}
-+
-+	/* enough room for additional selectors? */
-+	if (argc < 2)
-+		return dev_arguments;
-+
-+	if (strcmp(argv[0], "vid") == 0) {
-+		ret = translate_vid(state, argv[1]);
-+		if (ret < 0)
-+			return ret;
-+
-+		return dev_arguments + 2;
-+	}
-+
-+	return dev_arguments;
-+}
-+
- int main(int argc, char **argv)
- {
- 	const struct command *cmd;
- 	struct state state = {
- 		.arg_iface = mesh_dfl_iface,
-+		.selector = SP_NONE_OR_MESHIF,
- 		.cmd = NULL,
- 	};
-+	int dev_arguments;
- 	int opt;
- 	int ret;
  
-@@ -152,7 +293,20 @@ int main(int argc, char **argv)
- 	argc -= optind;
- 	optind = 0;
- 
--	cmd = find_command(argv[0]);
-+	/* parse arguments to identify vlan, ... */
-+	dev_arguments = parse_dev_args(&state, argc, argv);
-+	if (dev_arguments < 0)
-+		goto err;
-+
-+	argv += dev_arguments;
-+	argc -= dev_arguments;
-+
-+	if (argc == 0) {
-+		fprintf(stderr, "Error - no command specified\n");
-+		goto err;
-+	}
-+
-+	cmd = find_command(&state, argv[0]);
- 	if (!cmd) {
- 		fprintf(stderr,
- 			"Error - no valid command or debug table specified: %s\n",
-@@ -162,8 +316,6 @@ int main(int argc, char **argv)
- 
- 	state.cmd = cmd;
- 
--	translate_mesh_iface(&state);
--
- 	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
- 	    check_mesh_iface(&state) < 0) {
- 		fprintf(stderr,
++		snprintf(state->hard_iface, sizeof(state->hard_iface), "%s",
++			 dev_arg);
+ 		return parsed_args;
+ 	case SP_NONE_OR_MESHIF:
+ 		/* not allowed - see detect_selector_prefix */
 diff --git a/main.h b/main.h
-index 3978797..846efed 100644
+index 846efed..e3a95b5 100644
 --- a/main.h
 +++ b/main.h
-@@ -56,13 +56,20 @@ enum command_flags {
- 	COMMAND_FLAG_INVERSE = BIT(2),
+@@ -59,11 +59,13 @@ enum command_flags {
+ enum selector_prefix {
+ 	SP_NONE_OR_MESHIF,
+ 	SP_VLAN,
++	SP_HARDIF,
  };
  
-+enum selector_prefix {
-+	SP_NONE_OR_MESHIF,
-+	SP_VLAN,
-+};
-+
  enum command_type {
  	SUBCOMMAND,
-+	SUBCOMMAND_VID,
+ 	SUBCOMMAND_VID,
++	SUBCOMMAND_HIF,
  	DEBUGTABLE,
  };
  
- struct state {
- 	char *arg_iface;
-+	enum selector_prefix selector;
+@@ -72,7 +74,11 @@ struct state {
+ 	enum selector_prefix selector;
  	char mesh_iface[IF_NAMESIZE];
  	unsigned int mesh_ifindex;
- 	int vid;
-@@ -84,7 +91,7 @@ struct command {
- };
+-	int vid;
++	char hard_iface[IF_NAMESIZE];
++	union {
++		unsigned int hif;
++		int vid;
++	};
+ 	const struct command *cmd;
  
- #define COMMAND_NAMED(_type, _name, _abbr, _handler, _flags, _arg, _usage) \
--	static const struct command command_ ## _name = { \
-+	static const struct command command_ ## _name ## _ ## _type = { \
- 		.type = (_type), \
- 		.name = (#_name), \
- 		.abbr = _abbr, \
-@@ -93,8 +100,8 @@ struct command {
- 		.arg = (_arg), \
- 		.usage = (_usage), \
- 	}; \
--	static const struct command *__command_ ## _name \
--	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name
-+	static const struct command *__command_ ## _name ## _ ## _type \
-+	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name ## _ ## _type
- 
- #define COMMAND(_type, _handler, _abbr, _flags, _arg, _usage) \
- 	COMMAND_NAMED(_type, _handler, _abbr, _handler, _flags, _arg, _usage)
-diff --git a/man/batctl.8 b/man/batctl.8
-index 0b43031..a5656cf 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -46,7 +46,7 @@ performances, is also included.
- .SH OPTIONS
- .TP
- .I \fBoptions:
--\-m     specify mesh interface or VLAN created on top of a mesh interface (default 'bat0')
-+\-m     specify mesh interface (default 'bat0')
- .br
- \-h     print general batctl help
- .br
-@@ -70,7 +70,11 @@ originator interval. The interval is in units of milliseconds.
- .br
- .IP "\fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
- If no parameter is given the current ap isolation setting is displayed. Otherwise the parameter is used to enable or
--disable ap isolation. This command can be used in conjunction with "\-m" option to target per VLAN configurations.
-+disable ap isolation.
-+.br
-+.IP "<\fBvlan <vdev>\fP|\fBvid <vid>\fP> \fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
-+If no parameter is given the current ap isolation setting for the specified VLAN is displayed. Otherwise the parameter is used to enable or
-+disable ap isolation for the specified VLAN.
- .br
- .IP "\fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
- If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable
+ 	struct nl_sock *sock;
 diff --git a/sys.c b/sys.c
-index 39123db..61a314d 100644
+index 61a314d..b9555ee 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -141,9 +141,35 @@ int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
- 
- static void settings_usage(struct state *state)
- {
--	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
--		state->cmd->name, state->cmd->abbr,
--		state->cmd->usage ? state->cmd->usage : "");
-+	const char *default_prefixes[] = {
-+		"",
+@@ -150,6 +150,10 @@ static void settings_usage(struct state *state)
+ 		"vid <vid> ",
+ 		NULL,
+ 	};
++	const char *hardif_prefixes[] = {
++		"hardif <netdev> ",
 +		NULL,
 +	};
-+	const char *vlan_prefixes[] = {
-+		"vlan <vdev> ",
-+		"vid <vid> ",
-+		NULL,
-+	};
-+	const char *linestart = "Usage:";
-+	const char **prefixes;
-+	const char **prefix;
-+
-+	switch (state->cmd->type) {
-+	case SUBCOMMAND_VID:
-+		prefixes = vlan_prefixes;
+ 	const char *linestart = "Usage:";
+ 	const char **prefixes;
+ 	const char **prefix;
+@@ -158,6 +162,9 @@ static void settings_usage(struct state *state)
+ 	case SUBCOMMAND_VID:
+ 		prefixes = vlan_prefixes;
+ 		break;
++	case SUBCOMMAND_HIF:
++		prefixes = hardif_prefixes;
 +		break;
-+	default:
-+		prefixes = default_prefixes;
+ 	default:
+ 		prefixes = default_prefixes;
+ 		break;
+@@ -271,6 +278,14 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+ 			 state->mesh_iface, state->vid);
+ 		break;
++	case SP_HARDIF:
++		/* if a hard interface was specified then change the path to
++		 * point to the proper ${hardif}/batman-adv path in the sysfs
++		 * tree.
++		 */
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_HARDIF_PATH,
++			 state->hard_iface);
 +		break;
-+	}
-+
-+	for (prefix = &prefixes[0]; *prefix; prefix++) {
-+		fprintf(stderr, "%s batctl [options] %s%s|%s [parameters] %s\n",
-+			linestart, *prefix, state->cmd->name, state->cmd->abbr,
-+			state->cmd->usage ? state->cmd->usage : "");
-+
-+		linestart = "      ";
-+	}
- 
- 	fprintf(stderr, "parameters:\n");
- 	fprintf(stderr, " \t -h print this help\n");
-@@ -233,15 +259,19 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
- 		return EXIT_FAILURE;
  	}
  
--	/* if the specified interface is a VLAN then change the path to point
--	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
--	 */
--	if (state->vid >= 0)
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
--			 state->mesh_iface, state->vid);
--	else
-+	switch (state->selector) {
-+	case SP_NONE_OR_MESHIF:
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
- 			 state->mesh_iface);
-+		break;
-+	case SP_VLAN:
-+		/* if the specified interface is a VLAN then change the path to
-+		 * point to the proper "vlan%{vid}" subfolder in the sysfs tree.
-+		 */
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
-+			 state->mesh_iface, state->vid);
-+		break;
-+	}
- 
  	if (argc == 1) {
- 		res = sys_read_setting(state, path_buff, settings->sysfs_name);
+diff --git a/sys.h b/sys.h
+index d4f2fcf..b6f0f90 100644
+--- a/sys.h
++++ b/sys.h
+@@ -21,8 +21,9 @@
+ #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+ #define SYS_IFACE_PATH		"/sys/class/net"
+ #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
+-#define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+-#define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
++#define SYS_HARDIF_PATH		SYS_IFACE_DIR "batman_adv/"
++#define SYS_MESH_IFACE_FMT	SYS_HARDIF_PATH "mesh_iface"
++#define SYS_IFACE_STATUS_FMT	SYS_HARDIF_PATH "iface_status"
+ #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+ #define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
+ #define VLAN_ID_MAX_LEN		4
 -- 
 2.20.1
 
