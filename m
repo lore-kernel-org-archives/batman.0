@@ -1,14 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v5 0/2] batman-adv: Add routable multicast optimizations
-Date: Sun, 23 Jun 2019 10:05:57 +0200
-Message-ID: <1876992.RhjCZf4M3I@sven-edge>
-In-Reply-To: <2692232.m69ynxnPBa@sven-edge>
-References: <20190611205841.5841-1-linus.luessing@c0d3.blue>
- <2692232.m69ynxnPBa@sven-edge>
+Subject: [PATCH v2 0/6] batctl: Add vid support and hardif settings
+Date: Sun, 23 Jun 2019 15:07:03 +0200
+Message-Id: <20190623130709.24751-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart16441695.MQhMsqncTK";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,45 +16,112 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart16441695.MQhMsqncTK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi,
 
-On Friday, 14 June 2019 20:37:09 CEST Sven Eckelmann wrote:
-> Applied. But please don't forget about the missing changes in the related 
-> tools:
-> 
-> * https://www.open-mesh.org/issues/390
-> * https://www.open-mesh.org/issues/391
-> * https://www.open-mesh.org/issues/392
+I've asked a quite while back for some ideas regarding the support for hard
+interface settings in batctl [1]. The current consensus seems to be that
+a more iw-like interface is prefered.
 
-The userspace tools support is still missing. See the issues.
+vlan settings
+=============
+
+The requirement to have a VLAN master device on top of the batadv mesh
+interface is artificially limiting the capabilities of batctl. Not all
+master devices in linux which register a VLAN are from type "vlan" and are
+only registering a single VLAN.
+
+For example VLAN aware bridges can create multiple VLANs. These require
+that the VLAN is identified using the VID and not the vlan device.
+
+It is now possible to specify the vlan using:
+
+  $ batctl vlan bat0.8 ap_isolation enable
+  $ batctl meshif bat0 vid 8 ap_isolation enable
+
+
+hardif settings
+===============
+
+The infrastructure for the new vlan/vid prefix of commands can now be used
+to introduce another prefix: "hardif".
+
+B.A.T.M.A.N. V introduced two additional settings which are hard (slave)
+interface specific. These can can finally be implemented in batctl. This
+will allow to change/read these settings when sysfs support is not enabled
+in the kernel.
+
+  $ batctl hardif eth0 throughput_override 15mbit
+  $ batctl hardif eth0 elp_interval
+
+
+Changes
+=======
+
+v2
+--
+
+* replaced (while still being compatible) -m option with "meshif"/"dev" prefix
+* added alternative "slave" for "hardif" prefix
+* automatically detect meshif for "hardif"/"slave"
+* introduced enum selector_prefix to make code to select correct
+  subcommands/code paths better readable
+* add helper to automatically guess the type of netdev to allow omission of
+  meshif/slave/vlan/... in some situations
+
+v1
+--
+
+* initial version
+
+[1] https://www.open-mesh.org/issues/373
 
 Kind regards,
-	Sven
---nextPart16441695.MQhMsqncTK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+        Sven
 
------BEGIN PGP SIGNATURE-----
+Sven Eckelmann (6):
+  batctl: Make vlan setting explicit
+  batctl: Integrate hardif setting framework
+  batctl: Add elp_interval setting command
+  batctl: Add throughput_override setting command
+  batctl: Replace '-m meshif' option with selector prefix
+  batctl: Allow to omit explicit prefix name
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl0PMuUACgkQXYcKB8Em
-e0aFcBAAzP0cqwrs2tiEYT6AIncUm5ozzWH+nBFk/4OfZNM/6dk8myn8iSbuLnRK
-WXxl8INLFnvAwCVent+zlp2E1+XQ8o3bHi0p7L2wNPxJZrCjv3CTt9+Yo44mPoHi
-lVc+1zgwV8s6bcHMEKnMrdKIg+xF8riExrIMfHm66jjGAd74VLUvYqpJadjvTp23
-Eq0WzETHZoN/ej+JvlPwxIJawLY6Dwj9qCZfEQTojpieP6HVaQdJ/xt3t6Rr8sac
-BTFNW+RR9dOvUPNZRhb9F7gkUrO4tilzuJhDFiQrXe5S8KHKP6hec1CGMUlto+RV
-dXzbrxa1leCwuhBAI/cjszjD8fg7WdCA1Kluv+AY76t4RsUALRGdwwSuTWjS2m0U
-H6vV13V+PJFmkNJjO3uXD7bRvxsiAstUj8WwSQOJio1Q6R+U6VFhfwHREfXhHyMC
-snY85jgGNb6Nrvu8uuKJsHHVDjBLMpPMMoTxzDh44wThGUTBlxlDmXP4/xrahmH7
-GiCucRQN3ODCRUI+i8eHYttSVgvAuOxE58GvJdRj0lSoWp/iYkykdLD5/eg1aCym
-xokn8dCyus3OKQ7KAJoMXi5YgpkP6mgGWMEiI+XyxVxgoiGBtu40h7isN90hf7d7
-Itin6uvkTuSr53OARirLegClILDitkqnJutbyJG8eOpfWPzp8M0=
-=kaf4
------END PGP SIGNATURE-----
+ Makefile                |   2 +
+ README.rst              |  33 +++++
+ aggregation.c           |   2 +-
+ ap_isolation.c          |  15 ++-
+ bonding.c               |   2 +-
+ bridge_loop_avoidance.c |   2 +-
+ distributed_arp_table.c |   2 +-
+ elp_interval.c          | 111 ++++++++++++++++
+ fragmentation.c         |   2 +-
+ functions.c             | 119 +++++++++++++++---
+ functions.h             |   8 +-
+ gw_mode.c               |   2 +-
+ hop_penalty.c           |   2 +-
+ interface.c             |   2 +-
+ isolation_mark.c        |   2 +-
+ loglevel.c              |   2 +-
+ main.c                  | 273 ++++++++++++++++++++++++++++++++++++----
+ main.h                  |  23 +++-
+ man/batctl.8            |  60 +++++----
+ multicast_fanout.c      |   2 +-
+ multicast_forceflood.c  |   2 +-
+ multicast_mode.c        |   2 +-
+ network_coding.c        |   2 +-
+ orig_interval.c         |   2 +-
+ ping.c                  |   2 +-
+ statistics.c            |   2 +-
+ sys.c                   |  73 +++++++++--
+ sys.h                   |   5 +-
+ throughput_override.c   | 113 +++++++++++++++++
+ throughputmeter.c       |   2 +-
+ traceroute.c            |   2 +-
+ translate.c             |   2 +-
+ 32 files changed, 772 insertions(+), 103 deletions(-)
+ create mode 100644 elp_interval.c
+ create mode 100644 throughput_override.c
 
---nextPart16441695.MQhMsqncTK--
-
-
+-- 
+2.20.1
 
