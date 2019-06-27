@@ -1,11 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/2] pull request for net: batman-adv 2019-06-27
-Date: Thu, 27 Jun 2019 12:31:17 +0200
-Message-Id: <20190627103119.6969-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH 1/2] batman-adv: fix for leaked TVLV handler.
+Date: Thu, 27 Jun 2019 12:31:18 +0200
+Message-Id: <20190627103119.6969-2-sw@simonwunderlich.de>
+In-Reply-To: <20190627103119.6969-1-sw@simonwunderlich.de>
+References: <20190627103119.6969-1-sw@simonwunderlich.de>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +15,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Jeremy Sowden <jeremy@azazel.net>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Jeremy Sowden <jeremy@azazel.net>
 
-here are some bugfixes which we would like to have integrated into net.
+A handler for BATADV_TVLV_ROAM was being registered when the
+translation-table was initialized, but not unregistered when the
+translation-table was freed.  Unregister it.
 
-Please pull or let me know of any problem!
-
-Thank you,
-      Simon
-
-The following changes since commit a188339ca5a396acc588e5851ed7e19f66b0ebd9:
-
-  Linux 5.2-rc1 (2019-05-19 15:47:09 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20190627
-
-for you to fetch changes up to 9e6b5648bbc4cd48fab62cecbb81e9cc3c6e7e88:
-
-  batman-adv: Fix duplicated OGMs on NETDEV_UP (2019-06-02 13:33:48 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - fix a leaked TVLV handler which wasn't unregistered, by Jeremy Sowden
-
- - fix duplicated OGMs when interfaces are set UP, by Sven Eckelmann
-
-----------------------------------------------------------------
-Jeremy Sowden (1):
-      batman-adv: fix for leaked TVLV handler.
-
-Sven Eckelmann (1):
-      batman-adv: Fix duplicated OGMs on NETDEV_UP
-
- net/batman-adv/bat_iv_ogm.c        | 4 ++--
- net/batman-adv/hard-interface.c    | 3 +++
+Fixes: 122edaa05940 ("batman-adv: tvlv - convert roaming adv packet to use tvlv unicast packets")
+Reported-by: syzbot+d454a826e670502484b8@syzkaller.appspotmail.com
+Signed-off-by: Jeremy Sowden <jeremy@azazel.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
  net/batman-adv/translation-table.c | 2 ++
- net/batman-adv/types.h             | 3 +++
- 4 files changed, 10 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 1ddfd5e011ee..8a482c5ec67b 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -3813,6 +3813,8 @@ static void batadv_tt_purge(struct work_struct *work)
+  */
+ void batadv_tt_free(struct batadv_priv *bat_priv)
+ {
++	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_ROAM, 1);
++
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_TT, 1);
+ 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_TT, 1);
+ 
+-- 
+2.11.0
+
