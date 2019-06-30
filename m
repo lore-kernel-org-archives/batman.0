@@ -1,13 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 2/2] batctl: mcast_flags: Add support for MCASTv2 RTR(4|6)
- flags
-Date: Sat, 29 Jun 2019 10:28:18 +0200
-Message-Id: <20190629082818.29466-2-sven@narfation.org>
-In-Reply-To: <20190629082818.29466-1-sven@narfation.org>
-References: <20190629082818.29466-1-sven@narfation.org>
+Return-Path: <3gJEYXQkbAPMntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date: Sun, 30 Jun 2019 03:40:00 -0700
+In-Reply-To: <0000000000003ec128058c7624ec@google.com>
+Message-ID: <0000000000003326c1058c8822c7@google.com>
+Subject: Re: WARNING in kernfs_create_dir_ns
+From: syzbot <syzbot+38f5d5cf7ae88c46b11a@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,58 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, gregkh@linuxfoundation.org, hongjiefang@asrmicro.com, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tj@kernel.org, ulf.hansson@linaro.org
 
-The batman-adv commit 0a7733468f95 ("batman-adv: mcast: detect, distribute
-and maintain multicast router presence") added support for two new flags
-BATADV_MCAST_WANT_NO_RTR4 and BATADV_MCAST_WANT_NO_RTR6. These are
-announced in IV_OGM and OGMv2.
+syzbot has bisected this bug to:
 
-The mcast_flags debug table requires support for it to make debugging of
-router-to-router multicast problems in networks easier.
+commit 7f38abf220e2c800a2c451372e9f07ed5fd0ea49
+Author: Hongjie Fang <hongjiefang@asrmicro.com>
+Date:   Tue Jul 31 02:55:09 2018 +0000
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- mcast_flags.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+     mmc: core: improve reasonableness of bus width setting for HS400es
 
-diff --git a/mcast_flags.c b/mcast_flags.c
-index a1fdf31..6af544b 100644
---- a/mcast_flags.c
-+++ b/mcast_flags.c
-@@ -80,10 +80,12 @@ static int mcast_flags_callback(struct nl_msg *msg, void *arg)
- 	if (attrs[BATADV_ATTR_MCAST_FLAGS]) {
- 		flags = nla_get_u32(attrs[BATADV_ATTR_MCAST_FLAGS]);
- 
--		printf("[%c%c%c]\n",
-+		printf("[%c%c%c%s%s]\n",
- 		       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
- 		       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
--		       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
-+		       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.',
-+		       !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
-+		       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
- 	} else {
- 		printf("-\n");
- 	}
-@@ -124,7 +126,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
-         }
- 
- 	ret = asprintf(&header,
--		"Multicast flags (own flags: [%c%c%c])\n"
-+		"Multicast flags (own flags: [%c%c%c%s%s])\n"
- 		 "* Bridged [U]\t\t\t\t%c\n"
- 		 "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n"
- 		 "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n"
-@@ -133,6 +135,8 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
- 		 (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
- 		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
- 		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
-+	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
-+	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
- 		 bridged ? 'U' : '.',
- 		 querier4, querier6, shadowing4, shadowing6,
- 		 "Originator", "Flags");
--- 
-2.20.1
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=129d6755a00000
+start commit:   72825454 Merge branch 'x86-urgent-for-linus' of git://git...
+git tree:       upstream
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=119d6755a00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=169d6755a00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=9a31528e58cc12e2
+dashboard link: https://syzkaller.appspot.com/bug?extid=38f5d5cf7ae88c46b11a
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12a6c439a00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1353c323a00000
 
+Reported-by: syzbot+38f5d5cf7ae88c46b11a@syzkaller.appspotmail.com
+Fixes: 7f38abf220e2 ("mmc: core: improve reasonableness of bus width  
+setting for HS400es")
+
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
