@@ -1,20 +1,19 @@
-Return-Path: <idosch@idosch.org>
-Date: Tue, 2 Jul 2019 20:11:58 +0300
-From: Ido Schimmel <idosch@idosch.org>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Wed, 3 Jul 2019 01:13:08 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
 Subject: Re: [RFC net-next] net: dsa: add support for MC_DISABLED attribute
-Message-ID: <20190702171158.GA7182@splinter>
+Message-ID: <20190702231308.GA2414@otheros>
 References: <20190620235639.24102-1-vivien.didelot@gmail.com>
  <5d653a4d-3270-8e53-a5e0-88ea5e7a4d3f@gmail.com>
  <20190621172952.GB9284@t480s.localdomain>
  <20190623070949.GB13466@splinter>
  <20190623072605.2xqb56tjydqz2jkx@shell.armlinux.org.uk>
  <20190623074427.GA21875@splinter> <20190629162945.GB17143@splinter>
- <20190630165601.GC2500@otheros>
+ <20190630165601.GC2500@otheros> <20190702171158.GA7182@splinter>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190630165601.GC2500@otheros>
+In-Reply-To: <20190702171158.GA7182@splinter>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,68 +23,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?iso-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Cc: Russell King - ARM Linux admin <linux@armlinux.org.uk>, nikolay@cumulusnetworks.com, Ido Schimmel <idosch@mellanox.com>, Vivien Didelot <vivien.didelot@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Jiri Pirko <jiri@resnulli.us>, "andrew@lunn.ch" <andrew@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Ido Schimmel <idosch@idosch.org>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, Jiri Pirko <jiri@resnulli.us>, nikolay@cumulusnetworks.com, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, bridge@lists.linux-foundation.org, Russell King - ARM Linux admin <linux@armlinux.org.uk>, "davem@davemloft.net" <davem@davemloft.net>, Ido Schimmel <idosch@mellanox.com>, Vivien Didelot <vivien.didelot@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Jun 30, 2019 at 06:56:01PM +0200, Linus L=FCssing wrote:
-> > On Sun, Jun 23, 2019 at 10:44:27AM +0300, Ido Schimmel wrote:
-> > > See commit b00589af3b04 ("bridge: disable snooping if there is no
-> > > querier"). I think that's unfortunate behavior that we need because
-> > > multicast snooping is enabled by default. If it weren't enabled by
-> > > default, then anyone enabling it would also make sure there's a queri=
-er
-> > > in the network.
->=20
-> I do not quite understand that point. In a way, that's what we
-> have right now, isn't it? By default it's disabled, because by
-> default there is no querier on the link. So anyone wanting to use
-> multicast snooping will need to make sure there's a querier in the
-> network.
+Hi Ido,
 
-Hi Linus,
+> Do you differentiate between IPv4 and IPv6 in batman-adv?
 
-Querier state is not reflected to drivers ATM, so drivers believe the
-bridge is multicast aware and unregistered multicast packets are only
-flooded to mrouter ports. Hosts that are silent (because there is no
-querier) never get the traffic addressed to them (f.e., IPv6 neighbour
-solicitation).
+For most things, yes: The querier state is kept separately for
+IPv4 and IPv6. And we do have something like a "router node"
+flag to signalize that a node needs all multicast traffic, which
+is split into IPv4 and IPv6.
 
-> Overall I think the querier (election) mechanism in the standards could
-> need an update. While the lowest-address first might have
-> worked well back then, in uniform, fully wired networks where the
-> position of the querier did not matter, this is not a good
-> solution anymore in networks involving wireless, dynamic connections.
-> Especially in wireless mesh networks this is a bit of an issue for
-> us. Ideally, the querier mechanism were dismissed in favour of simply
-> unsolicited, periodic IGMP/MLD reports...
->=20
-> But of course, updating IETF standards is no solution for now.=20
->=20
-> While more complicated, it would not be impossible to consider the
-> querier state, would it? I mean you probably already need to
-> consider the case of a user disabling multicast snooping during
-> runtime, right?=20
+The "MDB" equivalent in batman-adv (multicast entries in our "TT",
+translation table) are on MAC address base right now, not on an IP
+address base yet, so that sounds similar to what you do in mlxsw?
 
-Sure, this is implemented.
+Regarding querier state, we periodically ask the
+bridge via "br_multicast_has_querier_anywhere(dev, ETH_P_IP)"
+and "br_multicast_has_querier_anywhere(dev, ETH_P_IPV6)".
 
-> So similarly, you could react to appearing or disappearing queriers?
+(Something more event based with handler functions would probably
+be nicer, but this was the easier thing to start with.)
 
-Yes, but it's a bit more complicated since we need to differentiate
-between IPv4 and IPv6. If the bridge is multicast aware, but there is
-only IPv4 querier on the link, then:
 
-1. All the IPv6 MDB entries need to be removed from the device. At least
-in mlxsw, we do not have a way to ignore only IPv6 entries. From the
-device's perspective, an MDB entry is just a multicast DMAC with a
-bitmap of ports packets should be replicated to.
+> 1. All the IPv6 MDB entries need to be removed from the device. At least
+> in mlxsw, we do not have a way to ignore only IPv6 entries. From the
+> device's perspective, an MDB entry is just a multicast DMAC with a
+> bitmap of ports packets should be replicated to.
 
-2. We need to split the flood tables used for IPv4 and IPv6 unregistered
-multicast packets. For IPv4, packets should only be flooded to mrouter
-ports whereas for IPv6 packets should be flooded to all the member
-ports.
+Ah, I see, yes. We had a similar "issue". Initially we just always
+added any multicast entry into our translation table offered by
+the IP stack or bridge, no matter what a querier state or "router
+node" state said. Which would have led to a node receiving two
+copies of a multicast packet if it were both a querier or router
+and were also having a listener announced via IGMP/MLD.
 
-Do you differentiate between IPv4 and IPv6 in batman-adv?
+So there we also just recently changed that, to filter out
+IPv6 multicast TT entries if this node were also announcing itself as
+an MLD querier or IPv6 router. And same, independently for
+IPv4/IGMP.
 
-> Cheers, Linus
+> 2. We need to split the flood tables used for IPv4 and IPv6 unregistered
+> multicast packets. For IPv4, packets should only be flooded to mrouter
+> ports whereas for IPv6 packets should be flooded to all the member
+> ports.
 
-Thanks for the feedback!
+This one I do not fully understand yet. Why don't you apply the
+"flood to all ports" (in the no IGMP querier present case)
+for IPv4, too?
+
+Sure, for IPv4 nothing "essential" will break, as IPv4 unicast
+does not rely on multicast (contrary to IPv6, due to NDP, as you
+mentioned). But still there would be potential multicast packet loss
+for a 239.x.x.x listener on the local link, for instance, wouldn't
+there?
+
+
+If I'm not mistaken, we do not apply differing behaviour for IPv4
+vs. IPv6 in the bridge either and would flood on all ports for IPv4
+with no querier present, too.
+
+Regards, Linus
