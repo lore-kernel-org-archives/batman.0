@@ -1,8 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH v3 0/6] batctl: Add vid support and hardif settings
-Date: Tue,  9 Jul 2019 19:26:45 +0200
-Message-Id: <20190709172651.5869-1-sven@narfation.org>
+Subject: [PATCH v3 2/6] batctl: Integrate hardif setting framework
+Date: Tue,  9 Jul 2019 19:26:47 +0200
+Message-Id: <20190709172651.5869-3-sven@narfation.org>
+In-Reply-To: <20190709172651.5869-1-sven@narfation.org>
+References: <20190709172651.5869-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,117 +18,230 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+batctl currently supports settings which are either mesh interface or vlan
+specific. But B.A.T.M.A.N. V introduced two additional settings which are
+hard (slave) interface specific.
 
-I've asked a quite while back for some ideas regarding the support for hard
-interface settings in batctl [1]. The current consensus seems to be that
-a more iw-like interface is prefered.
+To support these, an additional command prefix called hardif is implemented
+for some sysfs commands:
 
-vlan settings
-=============
+  $ batctl hardif eth0 ...
 
-The requirement to have a VLAN master device on top of the batadv mesh
-interface is artificially limiting the capabilities of batctl. Not all
-master devices in linux which register a VLAN are from type "vlan" and are
-only registering a single VLAN.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ functions.c | 22 ++++++++++++++++++++++
+ functions.h |  1 +
+ main.c      | 26 +++++++++++++++++++++++++-
+ main.h      |  8 +++++++-
+ sys.c       | 15 +++++++++++++++
+ sys.h       |  5 +++--
+ 6 files changed, 73 insertions(+), 4 deletions(-)
 
-For example VLAN aware bridges can create multiple VLANs. These require
-that the VLAN is identified using the VID and not the vlan device.
-
-It is now possible to specify the vlan using:
-
-  $ batctl vlan bat0.8 ap_isolation enable
-  $ batctl meshif bat0 vid 8 ap_isolation enable
-
-
-hardif settings
-===============
-
-The infrastructure for the new vlan/vid prefix of commands can now be used
-to introduce another prefix: "hardif".
-
-B.A.T.M.A.N. V introduced two additional settings which are hard (slave)
-interface specific. These can can finally be implemented in batctl. This
-will allow to change/read these settings when sysfs support is not enabled
-in the kernel.
-
-  $ batctl hardif eth0 throughput_override 15mbit
-  $ batctl hardif eth0 elp_interval
-
-
-Changes
-=======
-
-v3
---
-
-* drop prefix "dev" and "slave"
-
-v2
---
-
-* replaced (while still being compatible) -m option with "meshif"/"dev" prefix
-* added alternative "slave" for "hardif" prefix
-* automatically detect meshif for "hardif"/"slave"
-* introduced enum selector_prefix to make code to select correct
-  subcommands/code paths better readable
-* add helper to automatically guess the type of netdev to allow omission of
-  meshif/slave/vlan/... in some situations
-
-v1
---
-
-* initial version
-
-[1] https://www.open-mesh.org/issues/373
-
-Kind regards,
-        Sven
-
-Sven Eckelmann (6):
-  batctl: Make vlan setting explicit
-  batctl: Integrate hardif setting framework
-  batctl: Add elp_interval setting command
-  batctl: Add throughput_override setting command
-  batctl: Replace '-m meshif' option with selector prefix
-  batctl: Allow to omit explicit prefix name
-
- Makefile                |   2 +
- README.rst              |  33 +++++
- aggregation.c           |   2 +-
- ap_isolation.c          |  15 ++-
- bonding.c               |   2 +-
- bridge_loop_avoidance.c |   2 +-
- distributed_arp_table.c |   2 +-
- elp_interval.c          | 111 ++++++++++++++++
- fragmentation.c         |   2 +-
- functions.c             | 119 +++++++++++++++---
- functions.h             |   8 +-
- gw_mode.c               |   2 +-
- hop_penalty.c           |   2 +-
- interface.c             |   2 +-
- isolation_mark.c        |   2 +-
- loglevel.c              |   2 +-
- main.c                  | 271 ++++++++++++++++++++++++++++++++++++----
- main.h                  |  23 +++-
- man/batctl.8            |  60 +++++----
- multicast_fanout.c      |   2 +-
- multicast_forceflood.c  |   2 +-
- multicast_mode.c        |   2 +-
- network_coding.c        |   2 +-
- orig_interval.c         |   2 +-
- ping.c                  |   2 +-
- statistics.c            |   2 +-
- sys.c                   |  73 +++++++++--
- sys.h                   |   5 +-
- throughput_override.c   | 113 +++++++++++++++++
- throughputmeter.c       |   2 +-
- traceroute.c            |   2 +-
- translate.c             |   2 +-
- 32 files changed, 770 insertions(+), 103 deletions(-)
- create mode 100644 elp_interval.c
- create mode 100644 throughput_override.c
-
+diff --git a/functions.c b/functions.c
+index 61ea487..4ffa86c 100644
+--- a/functions.c
++++ b/functions.c
+@@ -998,6 +998,28 @@ int translate_vid(struct state *state, const char *vidstr)
+ 	return 0;
+ }
+ 
++int translate_hard_iface(struct state *state, const char *hardif)
++{
++	struct rtnl_link_iface_data link_data;
++	unsigned int arg_ifindex;
++
++	arg_ifindex = if_nametoindex(hardif);
++	if (arg_ifindex == 0)
++		return -ENODEV;
++
++	query_rtnl_link_single(arg_ifindex, &link_data);
++	if (!link_data.master_found)
++		return -ENOLINK;
++
++	if (!if_indextoname(link_data.master, state->mesh_iface))
++		return -ENOLINK;
++
++	state->hif = arg_ifindex;
++	state->selector = SP_HARDIF;
++
++	return 0;
++}
++
+ static int check_mesh_iface_netlink(struct state *state)
+ {
+ 	struct rtnl_link_iface_data link_data;
+diff --git a/functions.h b/functions.h
+index 7474c40..0a08870 100644
+--- a/functions.h
++++ b/functions.h
+@@ -53,6 +53,7 @@ int netlink_simple_request(struct nl_msg *msg);
+ int translate_mesh_iface_vlan(struct state *state, const char *vlandev);
+ int translate_vlan_iface(struct state *state, const char *vlandev);
+ int translate_vid(struct state *state, const char *vidstr);
++int translate_hard_iface(struct state *state, const char *hardif);
+ int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len);
+ int check_mesh_iface(struct state *state);
+ int check_mesh_iface_ownership(struct state *state, char *hard_iface);
+diff --git a/main.c b/main.c
+index 3090877..3b3a16f 100644
+--- a/main.c
++++ b/main.c
+@@ -35,7 +35,8 @@ static void print_usage(void)
+ 		{
+ 			.label = "commands:\n",
+ 			.types = BIT(SUBCOMMAND) |
+-				 BIT(SUBCOMMAND_VID),
++				 BIT(SUBCOMMAND_VID) |
++				 BIT(SUBCOMMAND_HIF),
+ 		},
+ 		{
+ 			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
+@@ -51,6 +52,10 @@ static void print_usage(void)
+ 		"vid <vid> ",
+ 		NULL,
+ 	};
++	const char *hardif_prefixes[] = {
++		"hardif <netdev> ",
++		NULL,
++	};
+ 	const struct command **p;
+ 	const char **prefixes;
+ 	const char **prefix;
+@@ -81,6 +86,9 @@ static void print_usage(void)
+ 			case SUBCOMMAND_VID:
+ 				prefixes = vlan_prefixes;
+ 				break;
++			case SUBCOMMAND_HIF:
++				prefixes = hardif_prefixes;
++				break;
+ 			default:
+ 				prefixes = default_prefixes;
+ 				break;
+@@ -153,6 +161,9 @@ static const struct command *find_command(struct state *state, const char *name)
+ 	case SP_VLAN:
+ 		types = BIT(SUBCOMMAND_VID);
+ 		break;
++	case SP_HARDIF:
++		types = BIT(SUBCOMMAND_HIF);
++		break;
+ 	default:
+ 		return NULL;
+ 	}
+@@ -171,6 +182,9 @@ static int detect_selector_prefix(int argc, char *argv[],
+ 	if (strcmp(argv[0], "vlan") == 0) {
+ 		*selector = SP_VLAN;
+ 		return 2;
++	} else if (strcmp(argv[0], "hardif") == 0) {
++		*selector = SP_HARDIF;
++		return 2;
+ 	}
+ 
+ 	return 0;
+@@ -197,7 +211,17 @@ static int parse_meshif_args(struct state *state, int argc, char *argv[])
+ 				dev_arg, strerror(-ret));
+ 			return ret;
+ 		}
++		return parsed_args;
++	case SP_HARDIF:
++		ret = translate_hard_iface(state, dev_arg);
++		if (ret < 0) {
++			fprintf(stderr, "Error - invalid hardif %s: %s\n",
++				dev_arg, strerror(-ret));
++			return ret;
++		}
+ 
++		snprintf(state->hard_iface, sizeof(state->hard_iface), "%s",
++			 dev_arg);
+ 		return parsed_args;
+ 	case SP_NONE_OR_MESHIF:
+ 		/* not allowed - see detect_selector_prefix */
+diff --git a/main.h b/main.h
+index 846efed..e3a95b5 100644
+--- a/main.h
++++ b/main.h
+@@ -59,11 +59,13 @@ enum command_flags {
+ enum selector_prefix {
+ 	SP_NONE_OR_MESHIF,
+ 	SP_VLAN,
++	SP_HARDIF,
+ };
+ 
+ enum command_type {
+ 	SUBCOMMAND,
+ 	SUBCOMMAND_VID,
++	SUBCOMMAND_HIF,
+ 	DEBUGTABLE,
+ };
+ 
+@@ -72,7 +74,11 @@ struct state {
+ 	enum selector_prefix selector;
+ 	char mesh_iface[IF_NAMESIZE];
+ 	unsigned int mesh_ifindex;
+-	int vid;
++	char hard_iface[IF_NAMESIZE];
++	union {
++		unsigned int hif;
++		int vid;
++	};
+ 	const struct command *cmd;
+ 
+ 	struct nl_sock *sock;
+diff --git a/sys.c b/sys.c
+index 61a314d..b9555ee 100644
+--- a/sys.c
++++ b/sys.c
+@@ -150,6 +150,10 @@ static void settings_usage(struct state *state)
+ 		"vid <vid> ",
+ 		NULL,
+ 	};
++	const char *hardif_prefixes[] = {
++		"hardif <netdev> ",
++		NULL,
++	};
+ 	const char *linestart = "Usage:";
+ 	const char **prefixes;
+ 	const char **prefix;
+@@ -158,6 +162,9 @@ static void settings_usage(struct state *state)
+ 	case SUBCOMMAND_VID:
+ 		prefixes = vlan_prefixes;
+ 		break;
++	case SUBCOMMAND_HIF:
++		prefixes = hardif_prefixes;
++		break;
+ 	default:
+ 		prefixes = default_prefixes;
+ 		break;
+@@ -271,6 +278,14 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+ 			 state->mesh_iface, state->vid);
+ 		break;
++	case SP_HARDIF:
++		/* if a hard interface was specified then change the path to
++		 * point to the proper ${hardif}/batman-adv path in the sysfs
++		 * tree.
++		 */
++		snprintf(path_buff, PATH_BUFF_LEN, SYS_HARDIF_PATH,
++			 state->hard_iface);
++		break;
+ 	}
+ 
+ 	if (argc == 1) {
+diff --git a/sys.h b/sys.h
+index d4f2fcf..b6f0f90 100644
+--- a/sys.h
++++ b/sys.h
+@@ -21,8 +21,9 @@
+ #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+ #define SYS_IFACE_PATH		"/sys/class/net"
+ #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
+-#define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+-#define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
++#define SYS_HARDIF_PATH		SYS_IFACE_DIR "batman_adv/"
++#define SYS_MESH_IFACE_FMT	SYS_HARDIF_PATH "mesh_iface"
++#define SYS_IFACE_STATUS_FMT	SYS_HARDIF_PATH "iface_status"
+ #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+ #define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
+ #define VLAN_ID_MAX_LEN		4
 -- 
 2.20.1
 
