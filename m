@@ -1,15 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Unknown symbol cfg80211_get_station
-Date: Wed, 10 Jul 2019 11:56:18 +0200
-Message-ID: <10352586.3EjdGBoHHf@bentobox>
-In-Reply-To: <e8205d24-56d7-14fd-6cd8-367791c2c003@canonical.com>
-References: <cef22736-91db-6a22-6da4-35a4d53a4adc@web.de>
- <91929546.yq5N1g86sx@bentobox>
- <e8205d24-56d7-14fd-6cd8-367791c2c003@canonical.com>
+Return-Path: <kurschev@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2860183.0W94i3AjuZ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+From: Ricardo Cerrato <kurschev@gmail.com>
+Date: Wed, 10 Jul 2019 22:44:07 -0500
+Message-ID: <CAH-WULkD2g8KvzWT0=CxcvF5ja54p3qW_OZukM52gtoTkQXb_w@mail.gmail.com>
+Subject: How to run batman-adv on interfaces in AP / Station mode?
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,68 +14,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Stefan Bader <stefan.bader@canonical.com>
-Cc: Moritz Warning <moritzwarning@web.de>, b.a.t.m.a.n@lists.open-mesh.org, Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2860183.0W94i3AjuZ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello all!
 
-On Wednesday, 10 July 2019 10:56:36 CEST Stefan Bader wrote:
-[...]
-> >> As Jens pointed out the missing modules are in linux-modules-extra not in
-> >> linux-modules (the former is not installed by default).
-> > 
-> > Who is Jens and where did he point something out?
-> > 
-> > On Saturday, 6 July 2019 17:22:01 CEST Moritz Warning wrote:
-> >> The module linux-modules-extra-4.15.0-1032 installs the following files:
-> 
-> Sorry, I meant Moritz ^
+I recently configured a mesh with two nodes running Debian and
+batman-adv and two wireless adapters TP-LINK TL-WN422G configured in
+IBSS mode, and to allow non-mesh clients (like my cellphone) to use
+the mesh I had to use another wireless adapter (same TL-WN422G)
+configured in AP mode and bridged to the mesh interface (bat0).
+Recently I found in the FAQ:
 
-But he said something else. Or maybe I misunderstood him.
+"Can batman-adv run on interfaces in AP / Station / etc mode ?
+Q: Can BATMAN advanced run on interfaces in AP / Station mode?
+A: Yes, because batman-adv doesn't know anything about stuff below the
+ethernet interface. So you could also use it over layer 2 ethernet
+tunnels, wifi ap, wifi sta, wifi adhoc, ethernet or even write a
+virtual interface which prints everything on paper and scans the paper
+on the remote machine (but you should be fast or increase the ogm
+interval)."
 
-I think Moritz meant that he didn't find the cfg80211.ko for his kernel. And 
-thus cannot run batman-adv due to the missing dependency (which was introduced 
-because the kernel was compiled with cfg80211 but the cfg80211.ko was then not 
-shipped).
+I guess it is possible use the same adapter as AP and mesh client..
+I my tests I found the AP mode and IBSS modes are mutually exclusive,
+but I didn't find examples on how to create a mesh without IBSS...
 
-I also just tried to find linux-modules-extra-4.15.0-1032 but there are only 
-following packages in bionic:
+Could you provide and example of configuration or some information
+about how to do this?
 
-* linux-modules-extra-4.15.0-1032-azure
-* linux-modules-extra-4.15.0-1032-gcp
-* linux-modules-extra-4.15.0-1032-gke
+I would like to create a mesh and allow non-mesh clients (like any
+mobile) to connect and use a messenger service that will run over that
+mesh and it would be great if every node of the mesh (using one
+TL-WN422G adapter) can be also an AP for any client.
 
-There is none which looks like it is for aws (something like 
-linux-modules-extra-4.15.0-1032-aws).
+The adapters have the following supported modes and combinations:
 
-Kind regards,
-	Sven
+Supported interface modes:
+ * IBSS
+ * managed
+ * AP
+ * AP/VLAN
+ * monitor
+ * mesh point
+ * P2P-client
+ * P2P-GO
+ * outside context of a BSS
 
---nextPart2860183.0W94i3AjuZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+valid interface combinations:
+ * #{ managed, P2P-client } <= 2, #{ AP, mesh point, P2P-GO } <= 2,
+   total <= 2, #channels <= 1
 
------BEGIN PGP SIGNATURE-----
+I'm using Debian Stretch on the nodes
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl0ltkIACgkQXYcKB8Em
-e0aAfRAApXem234OPMx1XoX9WsdRYNAfSGntheief8N8q7jEsdu+iHoh8KTNHaCu
-yFFN2VmYHtxukhRxLeCeYvHLZ45NMgX9qsGRAcq/sB+R2ZrxGmHE1g5QHe+maY0J
-NuCm0EN7Xh66tRtm5O4sNYJ4ioer2I4GCAkPPO8RI4ZwNHgr69WOK4VNNtKKvd2M
-3SG7a+XW27eSuPfdN5D9vOiYwoNFV/5YcVgZthk3YV20WJpQWUXhtlCx2D9LcQgh
-V92YB3kWzqLaadD42R9J4AH2SiGCIVBW4oLno6+2+BEeE+PoKfUvyanMACDJn+u5
-1j7PRm1Yo4E1AI3QO5/DYcBeaWFJ5mwjj0t3Ox2ICkhoUMHiT4ayUfJNCD/unEJj
-oi+mpMy/poip8bBRT7uoubYf8FHNz0itAGJY8THaFekgFixV3ZjyROUf5xKDeCpn
-6pR5nanovPj1Tujk3A6jA2VLckW4k4u6dH6XYE06C7XcnDjNxBL1WnOgbT77FmRA
-JDtYYqnfMhDROlTpcaNpCTr8zfHT3s8GSOJY7WeWBjGV6oM2o92N7U3h7V1a1VP2
-HgcoxInN1jgGfRj4UxcfG5YU1jypraH48orPUISUD1Dein5Vp8Fxwe8Xic683ael
-DSuD5cd54ZCd1fxVmBiXsrs9aTSTDoEqTZF3PoRoNS69kuopWbk=
-=bCeB
------END PGP SIGNATURE-----
-
---nextPart2860183.0W94i3AjuZ--
-
-
-
+Thanks in advance!
