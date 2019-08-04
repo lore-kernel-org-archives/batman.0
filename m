@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v2 1/2] batman-adv: BATMAN_V: introduce per hard-iface
- OGMv2 queues
-Date: Sun, 04 Aug 2019 20:36:34 +0200
-Message-ID: <2424516.9MKKcQ5zTs@sven-edge>
-In-Reply-To: <20190804180632.489-2-linus.luessing@c0d3.blue>
-References: <20190804180632.489-1-linus.luessing@c0d3.blue>
- <20190804180632.489-2-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH v3 0/2] batman-adv: BATMAN_V: OGMv2 packet aggregation
+Date: Sun,  4 Aug 2019 20:54:52 +0200
+Message-Id: <20190804185454.975-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1800788.icWLctkV9F";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,51 +17,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1800788.icWLctkV9F
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi,
 
-On Sunday, 4 August 2019 20:06:31 CEST Linus L=FCssing wrote:
-> +        * @aggr_len: length of the OGM aggregate (excluding ethernet fra=
-me
-> +        *  size)
+This small patchset implements the transmission side for the OGMv2
+packet aggregation in BATMAN_V. The receiver part was already
+implemented and seems to work nicely.
 
-Did you really mean "ethernet frame size" here? Not ethernet header size? A=
-t=20
-least this would match following part of the second patch:
+The first patch implements the necessary queueing mechanism, utilizing
+skb queues.
 
-On Sunday, 4 August 2019 20:06:32 CEST Linus L=FCssing wrote:
-> +       skb_aggr =3D dev_alloc_skb(aggr_len + ETH_HLEN + NET_IP_ALIGN);
-> +       if (!skb_aggr) {
-> +               batadv_v_ogm_aggr_list_free(hard_iface);
-> +               return;
-> +       }
+The second patch then implements the actual OGMv2 packet aggregation for
+the queued packets.
 
-Kind regards,
-	Sven
---nextPart1800788.icWLctkV9F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
+Opportunities for later improvements (left out on purpose, to keep this
+patchset simple):
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl1HJbIACgkQXYcKB8Em
-e0azaw//dR7OmSoGy/YcQuBvVgVhdIoCUnqyCXICr6cDfZ7V4XNHQbBZaKKO6cdO
-80FF0JADmhRO7BMrwMc1x3lLMDK8DqNs6ckBXp4/TfZHiRRrjWRj/vSn+j2eKEND
-ees8EyXewfgFREX7sfnHW6QoNJ468GKCWO9Q/PBFVYneHpW0aDXf+oYfzBE8qUUX
-GU6Rm1rWkLLXMrSRGOtbDFxl+AoVSvOzaZdaqhYaB6xoAr2hjzVEyEWcwRXeY7Cz
-6fXANFsrzkri6GLBuvEC83pBV2HmNZEyViIgrn2LzNjUfOFyniVgy0LMs0ngizb5
-Lztx1/1MD7FCtvH1QUSyFZassKheipJJx6pp6DHyBAGaf0Vk6zpmONL/xHeUkMHK
-s4kvQY88eREyZsIjLOzqbOt3nVPPP8bav+AMoRW4eYSov3z/YRfT7Ik5i9LjERS/
-8gk48w6JV3Ss+RaIlQZVzPQTJhCKcFsOzFnMsBHj0g7oJ3h9mx4gR4dgQ7o41+xJ
-K7eyTI4eY7TYGpo/Aruo+wBaK+XOdbFkeaamC3ilvz3T/xpBAFZ5n1NZz6jGR5e6
-DxXD1UuUNwDsu6JTgs4BQ77HpHQQ0WCFraHdfsvuuSByaE1fD5+YZlM4DKIaFg0S
-yRNw5wl4/GCTA2M+nK2NpmnPhziVja3JHUeqWKcdRrX2xYLoevA=
-=jPM6
------END PGP SIGNATURE-----
+* Reset queue timer on full queue / if flushing in batadv_v_ogm_queue_on_if():
+  -> to avoid sending small aggregates in the worker afterwards
+* Remove BATADV_MAX_AGGREGATION_BYTES (512 bytes) limitation:
+  -> not needed for BATMAN_V, would break compatibility though...
+(* Increase BATADV_MAX_AGGREGATION_MS (100ms):
+   -> BATMAN_V has less averaging, therefore could use slower OGM intervals
+      and therefore slightly larger aggregtion time window)
 
---nextPart1800788.icWLctkV9F--
+Regards, Linus
 
+
+Ref./obsolete: Previous, generic aggregation patchset:
+https://patchwork.open-mesh.org/patch/17013/
+
+==
+
+Changelog v3:
+
+* PATCH 1/2:
+  * added missing include for linux/lockdep.h
+  * removed inline for batadv_v_ogm_len()
+  * adjusted @aggr_len kerneldoc in types.h
+* PATCH 2/2:
+  * moved skb_aggr declaration in batadv_v_ogm_aggr_send() to own line
+
+Changelog v2:
+
+* PATCH 1/2:
+  * added lockdep_assert_held()
+  * fixed aggr_len kerneldoc in types.h
+  * fixed alignment in batadv_v_ogm_queue_left()
+  * added missing includes in bat_v_ogm.{c,h}
+  * fixed @hard_iface kerneldoc for batadv_v_ogm_aggr_list_free()
+  * removed unused bat_priv in batadv_v_ogm_aggr_work()
+* PATCH 2/2:
+  * unchanged
 
 
