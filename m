@@ -1,12 +1,13 @@
-Return-Path: <moritzwarning@web.de>
-From: Moritz Warning <moritzwarning@web.de>
-Subject: netlink error with openwrt-19.07 branch
-Message-ID: <9e7c2d2d-0dab-f03d-1868-d8a3a59f781c@web.de>
-Date: Sun, 4 Aug 2019 15:03:42 +0200
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: netlink error with openwrt-19.07 branch
+Date: Sun, 04 Aug 2019 15:05:09 +0200
+Message-ID: <7826622.ItRAI9TNZf@sven-edge>
+In-Reply-To: <9e7c2d2d-0dab-f03d-1868-d8a3a59f781c@web.de>
+References: <9e7c2d2d-0dab-f03d-1868-d8a3a59f781c@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-IE
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="nextPart8647991.ULLJopCRKm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,25 +19,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-hi,
+--nextPart8647991.ULLJopCRKm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-the OpenWrt branch openwrt-19.07 uses linux-4.14.134 and batman-adv 2019.2 (package release 4).
+On Sunday, 4 August 2019 15:03:42 CEST Moritz Warning wrote:
+[...]
+> Is this a known error?
 
-Compiling gives me this error:
+https://github.com/openwrt-routing/packages/commit/b04d24313d57b80b0af67f759d855619a2fbd768
 
-home/user/openwrt/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/batman-adv-2019.2/net/batman-adv/netlink.c:1346:4: error: 'const struct genl_ops' has no member named 'validate'
-   .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
-    ^~~~~~~~
-/home/user/openwrt/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/batman-adv-2019.2/net/batman-adv/netlink.c:1346:15: error: 'GENL_DONT_VALIDATE_STRICT' undeclared here (not in a function); did you mean 'MACSEC_VALIDATE_STRICT'?
-   .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
-               ^~~~~~~~~~~~~~~~~~~~~~~~~
-               MACSEC_VALIDATE_STRICT
-/home/user/openwrt/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/batman-adv-2019.2/net/batman-adv/netlink.c:1346:43: error: 'GENL_DONT_VALIDATE_DUMP' undeclared here (not in a function); did you mean 'GENL_DONT_VALIDATE_STRICT'?
-   .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
-                                           ^~~~~~~~~~~~~~~~~~~~~~~
-                                           GENL_DONT_VALIDATE_STRICT
-/home/user/openwrt/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/batman-adv-2019.2/net/batman-adv/netlink.c:1353:4: error: 'const struct genl_ops' has no member named 'validate'
-   .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+Kind regards,
+	Sven
 
 
-Is this a known error?
+--nextPart8647991.ULLJopCRKm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl1G2AUACgkQXYcKB8Em
+e0av1BAAnQNYJog+X6uqpdN7ehs0xph+Jvk4kQnRq77B7wISR3nYYuIQYm2Gfloj
+MUyMychLLiYZuaNfRefM6CNNrrDPOv4nHazZNmx28J+hQMgWHbp3M8QxrRztGinL
+T3KuwXLjWHoIFvZIeFXGHnjDpp94+aNKp5ZRMQL2lUw03f9C4rhPjrZmzPg8++qZ
+aKgWleFYIwXbT9rtIw/fgs+/YKA9p9ds1iblV9n36dqcLTqQ+X02g2gBsmtzmLYX
+90+PYla1HGEqPDAELKZ4dFMtmwqQ/cseF5/eHbNDUomREasDK5LMnoaXsJ5Zlkkd
+rd0AgweTuCBSrQZxi7dG4eIxw/gFO3fM+foxpKMCMdF+NaFwXHsB9Z1oX8Atc7P/
++WOUaWdDNO2DYck2SF/xY+abH4zAEiC/lRbyDECRcDUvNuKXwRGB33sd4tf/YSFQ
+oHvQK5saCQNoVqXbkRgD0XwGeqIhtE7zDC6rUSs87KkO1/QS5OyT9iD775VN57Bb
+xPoRyyfa0P0/zinQcL4ElbCk1cfZCw5NT7u8gmgbcHfDi0kNkU4MYvW0yBAkt26G
+CMGtFtRcO1/bz/WmX9RRr1aDGtsypHysAs7mn3i681T1OR4SBn7JKOTegx+8r7hU
+QoE9dQcrw+ARJpkyKDaicG30Fs6YR0X78n6C7qm/weMmp9Ax+LM=
+=lpev
+-----END PGP SIGNATURE-----
+
+--nextPart8647991.ULLJopCRKm--
+
+
+
