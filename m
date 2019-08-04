@@ -1,9 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] alfred: vis: Fix ifindex check when registering interface
-Date: Fri,  2 Aug 2019 08:35:53 +0200
-Message-Id: <20190802063553.5666-1-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH 0/2] batman-adv: BATMAN_V: OGMv2 packet aggregation
+Date: Sun,  4 Aug 2019 06:28:53 +0200
+Message-Id: <20190804042855.29327-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,29 +17,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The return value of if_nametoindex should be checked before the rtnl query
-is send to the kernel. Otherwise we might try to operate on an ifindex
-which doesn't exist in the kernel - which will never register any interface.
+Hi,
 
-Fixes: a34f044de561 ("alfred: vis: Use rtnl to query list of hardifs of meshif")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- vis/vis.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This small patchset implements the transmission side for the OGMv2
+packet aggregation in BATMAN_V. The receiver part was already
+implemented and seems to work nicely.
 
-diff --git a/vis/vis.c b/vis/vis.c
-index 8df3056..cdc5524 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -617,7 +617,7 @@ static int register_interfaces(struct globals *globals)
- 	};
- 
- 	register_arg.ifindex = if_nametoindex(globals->interface);
--	if (!globals->interface)
-+	if (!register_arg.ifindex)
- 		return EXIT_FAILURE;
- 
- 
--- 
-2.20.1
+The first patch implements the necessary queueing mechanism, utilizing
+skb queues.
+
+The second patch then implements the actual OGMv2 packet aggregation for
+the queued packets.
+
+
+Opportunities for later improvements (left out on purpose, to keep this
+patchset simple):
+
+* Reset queue timer on full queue / if flushing in batadv_v_ogm_queue_on_if():
+  -> to avoid sending small aggregates in the worker afterwards
+* Remove BATADV_MAX_AGGREGATION_BYTES (512 bytes) limitation:
+  -> not needed for BATMAN_V, would break compatibility though...
+(* Increase BATADV_MAX_AGGREGATION_MS (100ms):
+   -> BATMAN_V has less averaging, therefore could use slower OGM intervals
+      and therefore slightly larger aggregtion time window)
+
+Regards, Linus
+
+
+Ref./obsolete: Previous, generic aggregation patchset:
+https://patchwork.open-mesh.org/patch/17013/
+
+
 
