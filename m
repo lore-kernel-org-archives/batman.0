@@ -1,10 +1,10 @@
 Return-Path: <davem@davemloft.net>
-Date: Thu, 08 Aug 2019 11:26:36 -0700 (PDT)
-Message-Id: <20190808.112636.698040063448774208.davem@davemloft.net>
-Subject: Re: [PATCH 0/2] pull request for net: batman-adv 2019-08-08
+Date: Thu, 08 Aug 2019 11:29:11 -0700 (PDT)
+Message-Id: <20190808.112911.1552825941758779885.davem@davemloft.net>
+Subject: Re: [PATCH 0/4] pull request for net-next: batman-adv 2019-08-08
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20190808130208.2124-1-sw@simonwunderlich.de>
-References: <20190808130208.2124-1-sw@simonwunderlich.de>
+In-Reply-To: <20190808130619.4481-1-sw@simonwunderlich.de>
+References: <20190808130619.4481-1-sw@simonwunderlich.de>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -21,10 +21,12 @@ To: sw@simonwunderlich.de
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  8 Aug 2019 15:02:06 +0200
+Date: Thu,  8 Aug 2019 15:06:15 +0200
 
-> here are some bugfixes which we would like to have integrated into net.
+> here is a small feature/cleanup pull request of batman-adv to go into net-next.
 > 
 > Please pull or let me know of any problem!
 
-Pulled.
+Pulled, thanks.
+
+That lockdep annotation in the 4th patch really helped with the review.
