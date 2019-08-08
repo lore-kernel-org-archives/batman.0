@@ -1,11 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/2] batman-adv: Fix netlink dumping of all mcast_flags buckets
-Date: Thu,  8 Aug 2019 15:02:07 +0200
-Message-Id: <20190808130208.2124-2-sw@simonwunderlich.de>
+Subject: [PATCH 2/2] batman-adv: Fix deletion of RTR(4|6) mcast list entries
+Date: Thu,  8 Aug 2019 15:02:08 +0200
+Message-Id: <20190808130208.2124-3-sw@simonwunderlich.de>
 In-Reply-To: <20190808130208.2124-1-sw@simonwunderlich.de>
 References: <20190808130208.2124-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,37 +18,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The bucket variable is only updated outside the loop over the mcast_flags
-buckets. It will only be updated during a dumping run when the dumping has
-to be interrupted and a new message has to be started.
+The multicast code uses the lists bat_priv->mcast.want_all_rtr*_list to
+store all all originator nodes which don't have the flag no-RTR4 or no-RTR6
+set. When an originator is purged, it has to be removed from these lists.
 
-This could result in repeated or missing entries when the multicast flags
-are dumped to userspace.
+Since all entries without the BATADV_MCAST_WANT_NO_RTR4/6 are stored in
+these lists, they have to be handled like entries which have these flags
+set to force the update routines to remove them from the lists when purging
+the originator.
 
-Fixes: d2d489b7d851 ("batman-adv: Add inconsistent multicast netlink dump detection")
+Not doing so will leave a pointer to a freed memory region inside the list.
+Trying to operate on these lists will then cause an use-after-free error:
+
+  BUG: KASAN: use-after-free in batadv_mcast_want_rtr4_update+0x335/0x3a0 [batman_adv]
+  Write of size 8 at addr ffff888007b41a38 by task swapper/0/0
+
+Fixes: 61caf3d109f5 ("batman-adv: mcast: detect, distribute and maintain multicast router presence")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/multicast.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/multicast.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 67d7f83009ae..a3488cfb3d1e 100644
+index a3488cfb3d1e..1d5bdf3a4b65 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
-@@ -2303,7 +2303,7 @@ __batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid,
+@@ -2420,8 +2420,10 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
+ 	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
+ 	batadv_mcast_want_ipv4_update(bat_priv, orig, BATADV_NO_FLAGS);
+ 	batadv_mcast_want_ipv6_update(bat_priv, orig, BATADV_NO_FLAGS);
+-	batadv_mcast_want_rtr4_update(bat_priv, orig, BATADV_NO_FLAGS);
+-	batadv_mcast_want_rtr6_update(bat_priv, orig, BATADV_NO_FLAGS);
++	batadv_mcast_want_rtr4_update(bat_priv, orig,
++				      BATADV_MCAST_WANT_NO_RTR4);
++	batadv_mcast_want_rtr6_update(bat_priv, orig,
++				      BATADV_MCAST_WANT_NO_RTR6);
  
- 	while (bucket_tmp < hash->size) {
- 		if (batadv_mcast_flags_dump_bucket(msg, portid, cb, hash,
--						   *bucket, &idx_tmp))
-+						   bucket_tmp, &idx_tmp))
- 			break;
- 
- 		bucket_tmp++;
+ 	spin_unlock_bh(&orig->mcast_handler_lock);
+ }
 -- 
 2.20.1
 
