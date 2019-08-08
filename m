@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/2] pull request for net: batman-adv 2019-08-08
-Date: Thu,  8 Aug 2019 15:02:06 +0200
-Message-Id: <20190808130208.2124-1-sw@simonwunderlich.de>
+Subject: [PATCH 1/2] batman-adv: Fix netlink dumping of all mcast_flags buckets
+Date: Thu,  8 Aug 2019 15:02:07 +0200
+Message-Id: <20190808130208.2124-2-sw@simonwunderlich.de>
+In-Reply-To: <20190808130208.2124-1-sw@simonwunderlich.de>
+References: <20190808130208.2124-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,40 +17,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+From: Sven Eckelmann <sven@narfation.org>
 
-here are some bugfixes which we would like to have integrated into net.
+The bucket variable is only updated outside the loop over the mcast_flags
+buckets. It will only be updated during a dumping run when the dumping has
+to be interrupted and a new message has to be started.
 
-Please pull or let me know of any problem!
+This could result in repeated or missing entries when the multicast flags
+are dumped to userspace.
 
-Thank you,
-      Simon
+Fixes: d2d489b7d851 ("batman-adv: Add inconsistent multicast netlink dump detection")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/multicast.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 67d7f83009ae..a3488cfb3d1e 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -2303,7 +2303,7 @@ __batadv_mcast_flags_dump(struct sk_buff *msg, u32 portid,
+ 
+ 	while (bucket_tmp < hash->size) {
+ 		if (batadv_mcast_flags_dump_bucket(msg, portid, cb, hash,
+-						   *bucket, &idx_tmp))
++						   bucket_tmp, &idx_tmp))
+ 			break;
+ 
+ 		bucket_tmp++;
+-- 
+2.20.1
 
-  Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20190808
-
-for you to fetch changes up to f7af86ccf1882084293b11077deec049fd01da63:
-
-  batman-adv: Fix deletion of RTR(4|6) mcast list entries (2019-07-22 21:34:58 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - Fix netlink dumping of all mcast_flags buckets, by Sven Eckelmann
-
- - Fix deletion of RTR(4|6) mcast list entries, by Sven Eckelmann
-
-----------------------------------------------------------------
-Sven Eckelmann (2):
-      batman-adv: Fix netlink dumping of all mcast_flags buckets
-      batman-adv: Fix deletion of RTR(4|6) mcast list entries
-
- net/batman-adv/multicast.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
