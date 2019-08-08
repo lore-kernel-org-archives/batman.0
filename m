@@ -1,12 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3 2/2] batman-adv: BATMAN_V: aggregate OGMv2 packets
-Date: Sun,  4 Aug 2019 20:54:54 +0200
-Message-Id: <20190804185454.975-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20190804185454.975-1-linus.luessing@c0d3.blue>
-References: <20190804185454.975-1-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/2] pull request for net: batman-adv 2019-08-08
+Date: Thu,  8 Aug 2019 15:02:06 +0200
+Message-Id: <20190808130208.2124-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,70 +15,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-Instead of transmitting individual OGMv2 packets from the aggregation
-queue merge those OGMv2 packets into a single one and transmit this
-aggregate instead.
+Hi David,
 
-This reduces overhead as it saves an ethernet header and a transmission
-per aggregated OGMv2 packet.
+here are some bugfixes which we would like to have integrated into net.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/bat_v_ogm.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+Please pull or let me know of any problem!
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index f517423a..1d540504 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -191,18 +191,44 @@ static void batadv_v_ogm_aggr_list_free(struct batadv_hard_iface *hard_iface)
-  * batadv_v_ogm_aggr_send() - flush & send aggregation queue
-  * @hard_iface: the interface with the aggregation queue to flush
-  *
-+ * Aggregates all OGMv2 packets currently in the aggregation queue into a
-+ * single OGMv2 packet and transmits this aggregate.
-+ *
-+ * The aggregation queue is empty after this call.
-+ *
-  * Caller needs to hold the hard_iface->bat_v.aggr_list_lock.
-  */
- static void batadv_v_ogm_aggr_send(struct batadv_hard_iface *hard_iface)
- {
-+	unsigned int aggr_len = hard_iface->bat_v.aggr_len;
-+	struct sk_buff *skb_aggr;
-+	unsigned int ogm_len;
- 	struct sk_buff *skb;
- 
- 	lockdep_assert_held(&hard_iface->bat_v.aggr_list_lock);
- 
-+	if (!aggr_len)
-+		return;
-+
-+	skb_aggr = dev_alloc_skb(aggr_len + ETH_HLEN + NET_IP_ALIGN);
-+	if (!skb_aggr) {
-+		batadv_v_ogm_aggr_list_free(hard_iface);
-+		return;
-+	}
-+
-+	skb_reserve(skb_aggr, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reset_network_header(skb_aggr);
-+
- 	while ((skb = skb_dequeue(&hard_iface->bat_v.aggr_list))) {
- 		hard_iface->bat_v.aggr_len -= batadv_v_ogm_len(skb);
--		batadv_v_ogm_send_to_if(skb, hard_iface);
-+
-+		ogm_len = batadv_v_ogm_len(skb);
-+		skb_put_data(skb_aggr, skb->data, ogm_len);
-+
-+		consume_skb(skb);
- 	}
-+
-+	batadv_v_ogm_send_to_if(skb_aggr, hard_iface);
- }
- 
- /**
--- 
-2.22.0
+Thank you,
+      Simon
 
+The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+
+  Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20190808
+
+for you to fetch changes up to f7af86ccf1882084293b11077deec049fd01da63:
+
+  batman-adv: Fix deletion of RTR(4|6) mcast list entries (2019-07-22 21:34:58 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - Fix netlink dumping of all mcast_flags buckets, by Sven Eckelmann
+
+ - Fix deletion of RTR(4|6) mcast list entries, by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (2):
+      batman-adv: Fix netlink dumping of all mcast_flags buckets
+      batman-adv: Fix deletion of RTR(4|6) mcast list entries
+
+ net/batman-adv/multicast.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
