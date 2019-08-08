@@ -1,11 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/4] batman-adv: Replace usage of strlcpy with strscpy
-Date: Thu,  8 Aug 2019 15:06:17 +0200
-Message-Id: <20190808130619.4481-3-sw@simonwunderlich.de>
+Subject: [PATCH 4/4] batman-adv: BATMAN_V: aggregate OGMv2 packets
+Date: Thu,  8 Aug 2019 15:06:19 +0200
+Message-Id: <20190808130619.4481-5-sw@simonwunderlich.de>
 In-Reply-To: <20190808130619.4481-1-sw@simonwunderlich.de>
 References: <20190808130619.4481-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,64 +18,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The strscpy was introduced to fix some API problems around strlcpy. And
-checkpatch started to report recently that strlcpy is deprecated and
-strscpy is preferred.
+Instead of transmitting individual OGMv2 packets from the aggregation
+queue merge those OGMv2 packets into a single one and transmit this
+aggregate instead.
 
-The functionality introduced in commit 30035e45753b ("string: provide
-strscpy()") improves following points compared to strlcpy:
+This reduces overhead as it saves an ethernet header and a transmission
+per aggregated OGMv2 packet.
 
-* it doesn't read from memory beyond (src + size)
-* provides an easy way to check for destination buffer overflow
-* robust against asynchronous source buffer changes
-
-Since batman-adv doesn't depend on any of the previously mentioned behavior
-changes, the usage of strlcpy can simply be replaced by strscpy to silence
-checkpatch.
-
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/soft-interface.c | 8 ++++----
- net/batman-adv/sysfs.c          | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_v_ogm.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index c7a2e77ca1da..a1146cb10919 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -943,10 +943,10 @@ static const struct net_device_ops batadv_netdev_ops = {
- static void batadv_get_drvinfo(struct net_device *dev,
- 			       struct ethtool_drvinfo *info)
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 52c990b54de5..319249f0f85f 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -191,18 +191,44 @@ static void batadv_v_ogm_aggr_list_free(struct batadv_hard_iface *hard_iface)
+  * batadv_v_ogm_aggr_send() - flush & send aggregation queue
+  * @hard_iface: the interface with the aggregation queue to flush
+  *
++ * Aggregates all OGMv2 packets currently in the aggregation queue into a
++ * single OGMv2 packet and transmits this aggregate.
++ *
++ * The aggregation queue is empty after this call.
++ *
+  * Caller needs to hold the hard_iface->bat_v.aggr_list_lock.
+  */
+ static void batadv_v_ogm_aggr_send(struct batadv_hard_iface *hard_iface)
  {
--	strlcpy(info->driver, "B.A.T.M.A.N. advanced", sizeof(info->driver));
--	strlcpy(info->version, BATADV_SOURCE_VERSION, sizeof(info->version));
--	strlcpy(info->fw_version, "N/A", sizeof(info->fw_version));
--	strlcpy(info->bus_info, "batman", sizeof(info->bus_info));
-+	strscpy(info->driver, "B.A.T.M.A.N. advanced", sizeof(info->driver));
-+	strscpy(info->version, BATADV_SOURCE_VERSION, sizeof(info->version));
-+	strscpy(info->fw_version, "N/A", sizeof(info->fw_version));
-+	strscpy(info->bus_info, "batman", sizeof(info->bus_info));
++	unsigned int aggr_len = hard_iface->bat_v.aggr_len;
++	struct sk_buff *skb_aggr;
++	unsigned int ogm_len;
+ 	struct sk_buff *skb;
+ 
+ 	lockdep_assert_held(&hard_iface->bat_v.aggr_list_lock);
+ 
++	if (!aggr_len)
++		return;
++
++	skb_aggr = dev_alloc_skb(aggr_len + ETH_HLEN + NET_IP_ALIGN);
++	if (!skb_aggr) {
++		batadv_v_ogm_aggr_list_free(hard_iface);
++		return;
++	}
++
++	skb_reserve(skb_aggr, ETH_HLEN + NET_IP_ALIGN);
++	skb_reset_network_header(skb_aggr);
++
+ 	while ((skb = skb_dequeue(&hard_iface->bat_v.aggr_list))) {
+ 		hard_iface->bat_v.aggr_len -= batadv_v_ogm_len(skb);
+-		batadv_v_ogm_send_to_if(skb, hard_iface);
++
++		ogm_len = batadv_v_ogm_len(skb);
++		skb_put_data(skb_aggr, skb->data, ogm_len);
++
++		consume_skb(skb);
+ 	}
++
++	batadv_v_ogm_send_to_if(skb_aggr, hard_iface);
  }
  
- /* Inspired by drivers/net/ethernet/dlink/sundance.c:1702
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 1efcb97039cd..e5bbc28ed12c 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1070,7 +1070,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 	dev_hold(net_dev);
- 	INIT_WORK(&store_work->work, batadv_store_mesh_iface_work);
- 	store_work->net_dev = net_dev;
--	strlcpy(store_work->soft_iface_name, buff,
-+	strscpy(store_work->soft_iface_name, buff,
- 		sizeof(store_work->soft_iface_name));
- 
- 	queue_work(batadv_event_workqueue, &store_work->work);
+ /**
 -- 
 2.20.1
 
