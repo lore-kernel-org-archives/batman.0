@@ -1,15 +1,14 @@
-Return-Path: <moritzwarning@web.de>
-Subject: Re: batman_v default throughput
-References: <dc998970-a36c-cbb5-8de5-2ed2a3833d57@web.de>
- <44509c82-e60d-c94c-e686-faf08e0ec875@unstable.cc>
-From: Moritz Warning <moritzwarning@web.de>
-Message-ID: <9ff7477f-8d1f-9db4-8415-2f89b571532d@web.de>
-Date: Sun, 11 Aug 2019 23:57:36 +0200
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Mon, 12 Aug 2019 00:07:56 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [RFC] batman-adv: ELP - use wifi tx bitrate as fallback throughput
+Message-ID: <20190811220756.GL2407@otheros>
+References: <20190811130705.4544-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-In-Reply-To: <44509c82-e60d-c94c-e686-faf08e0ec875@unstable.cc>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-IE
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190811130705.4544-1-mareklindner@neomailbox.ch>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,80 +18,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Antonio.
+On Sun, Aug 11, 2019 at 09:07:05PM +0800, Marek Lindner wrote:
+> From: René Treffer <treffer@measite.de>
+> 
+> Some wifi drivers (e.g. ath10k) provide per-station rx/tx values but no
+> estimated throughput. Setting a better estimate than the default 1 MBit
+> makes these devices work well with B.A.T.M.A.N. V.
+> 
+> Signed-off-by: René Treffer <treffer@measite.de>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
 
-On 8/9/19 10:26 AM, Antonio Quartulli wrote:
-> Hi Moritz,
->
-> On 08/08/2019 23:05, Moritz Warning wrote:
->> Hi,
->>
->> the Freifunk network in Ulm has a batman_V network of >80 nodes. [0]
->>
->> For the map, we use the link throughput value from batman-adv to calcul=
-ate a link value (capped at 40 MBit/s for 100%).
->> The default for VPN connections seem to be 1 MBit/s - when batman-adv d=
-oesn't know the throughput from the driver.
->>
->> Is there a way to the set this throughput or can batman-adv measure it?
->>
->
-> I think we discussed this topic in all its details (with Marek) during
-> WMBv10, no?
-Could be. I do not remember what was discussed..
+In general, I like this approach. It's simple and roughly matches
+our conservative assumptions we used for broadcast packets, too.
+That is 3x transmissions per packet.
 
->
-> However, if you need to refresh the concept, you can look at the
-> function that takes care of selecting the throughput:
-> batadv_v_elp_get_throughput() in bat_v_elp.c
->
->
-> The function is invoked for each neighbour/link across a given interface
-> and can be summarized as follows:
-> - if any throughput_override was set by the user for this iface, just
-> use this value;
-> - otherwise, if the iface is wifi, ask the wifi stack for the
-> expected-throughput (computed by minstrel for ath9k and other SoftMAC
-> drivers);
-> - otherwise, ask the ethtool module if there is a known link speed for
-> this iface;
-> - otherwise, if none of the above worked, use the default throughput
-> (1Mbps).
->
->
-> As also mentioned at WBMv10, Marek and I had worked on a patchset that
-> enables the tp_meter to measure the speed of a link, when no other
-> throughput is available (i.e. for VPN or other virtual links). The
-> patchset is still pending here [1].
-That might be a nice fallback instead of employing a cranky iperf setup.
-But (imho) it should be off/not compiled in by default and maybe only perf=
-orm the check once, so to not to scare people into thinking batman-adv con=
-sumes too much bandwidth for testing.
+Lukonin's approach sounds more accurate in theory. But should
+probably have a bit more testing and reviewable test results due to
+it's slightly higher complexity.
 
->
-> We suggested you to manifest your interest about that patchset, so that
-> the discussion could move on, but it seemed you were not motivated
-> enough (at least back then).
->
-> Maybe you could take this chance to revive that thread? :-)
-Hm, I do not have that email in my email client anymore.
-But it's good to know that there is a patch set that I can apply.
-
->
->
-> Cheers,
->
->
-> [1]
-> https://www.mail-archive.com/b.a.t.m.a.n@lists.open-mesh.org/msg17833.ht=
-ml
->
->
->> Thanks!
->>
->> [0]: https://map11.freifunk-ulm.de/meshviewer
->>
->
-
+Regards, Linus
