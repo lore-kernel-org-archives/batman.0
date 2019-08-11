@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-Subject: Re: batman_v default throughput
-References: <dc998970-a36c-cbb5-8de5-2ed2a3833d57@web.de>
- <44509c82-e60d-c94c-e686-faf08e0ec875@unstable.cc>
- <2467054.VIeW2bLlCS@sven-edge>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <900e6d8e-d6f3-2e94-477e-6eb3f4377cc4@unstable.cc>
-Date: Fri, 9 Aug 2019 10:46:26 +0200
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: [PATCH] batman-adv: Use wifi rx/tx as fallback throughput
+Date: Sun, 11 Aug 2019 20:50:38 +0800
+Message-ID: <2541950.y14E6QPJ2z@rousseau>
+In-Reply-To: <8c0c76dc-5c6b-da84-8e11-700222641db8@measite.de>
+References: <20190609101922.2366-1-treffer@measite.de>
+ <4907494.lMUJSmCnaO@rousseau>
+ <8c0c76dc-5c6b-da84-8e11-700222641db8@measite.de>
 MIME-Version: 1.0
-In-Reply-To: <2467054.VIeW2bLlCS@sven-edge>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="aBi8Yjz6aceOIzhQv3Emn5UjGnihUiZj1"
+Content-Type: multipart/signed; boundary="nextPart2656540.9Z6To5SbFb";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,92 +19,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---aBi8Yjz6aceOIzhQv3Emn5UjGnihUiZj1
-Content-Type: multipart/mixed; boundary="3iZN24GisRr7kNAOE8XxuEdO9bUh08TX0";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
-Message-ID: <900e6d8e-d6f3-2e94-477e-6eb3f4377cc4@unstable.cc>
-Subject: Re: batman_v default throughput
-References: <dc998970-a36c-cbb5-8de5-2ed2a3833d57@web.de>
- <44509c82-e60d-c94c-e686-faf08e0ec875@unstable.cc>
- <2467054.VIeW2bLlCS@sven-edge>
-In-Reply-To: <2467054.VIeW2bLlCS@sven-edge>
-
---3iZN24GisRr7kNAOE8XxuEdO9bUh08TX0
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
+--nextPart2656540.9Z6To5SbFb
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Hi,
-
-On 09/08/2019 10:45, Sven Eckelmann wrote:
-> On Friday, 9 August 2019 10:26:24 CEST Antonio Quartulli wrote:
->> As also mentioned at WBMv10, Marek and I had worked on a patchset that=
-
->> enables the tp_meter to measure the speed of a link, when no other
->> throughput is available (i.e. for VPN or other virtual links). The
->> patchset is still pending here [1].
+On Monday, 10 June 2019 18:06:23 HKT Ren=E9 Treffer wrote:
+> > I also don't quite understand what the '!!!' thing is trying to indicat=
+e.
+> > What is being compared ? But it may be due to my misunderstandings abov=
+e.
+>
+> I haven't done an actual throughput test, and I would expect the outputs
+> of my heuristic to be worse.
+> So I wanted to give slightly lower values than the expected throughput.
 >=20
-> It isn't pending. All patches of this series [1] are marked as "changes=
+> The other way to think about it: if you were to replace the
+> expected_throughput input where would you over-estimate the link quality
+> now?
+
+Sorry, I don't follow that train of thought. Due to the lack of numbers=20
+comparing the magic formula (tx /3) with actual throughput we (Antonio and =
+I)=20
+ran a few tests on ath10k devices using your patch. Surprising to us, this=
 =20
-> requested" since almost a year.
->=20
+approach worked quite well.=20
 
-You're right - I used the wrong word.
-When I said "pending" I meant that some $work was done, patches are now
-idling. Hence my call for "a motivational email" on that thread :)
+I will re-post your patch as RFC to encourage others to test the resulting=
+=20
+B.A.T.M.A.N. V routing decisions. If you happen to have tested more on your=
+=20
+end, please share your results.
 
-Thanks for the clarification though!
+Also, why considering rx on top of tx still isn't clear. Could you explain=
+=20
+some more ?
 
-> The only pending patches are the ones you didn't review yet [2].
->=20
-
-oh, thanks for the reminder!
-
-
-Cheers,
+Thanks,
+Marek
 
 
-> Kind regards,
-> 	Sven
->=20
-> [1] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?series=3D=
-157&submitter=3D&state=3D*&q=3D&archive=3Dboth&delegate=3D
-> [2] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?series=3D=
-&submitter=3D&state=3D&q=3D&archive=3Dboth&delegate=3D7
->=20
 
---=20
-Antonio Quartulli
-
-
---3iZN24GisRr7kNAOE8XxuEdO9bUh08TX0--
-
---aBi8Yjz6aceOIzhQv3Emn5UjGnihUiZj1
+--nextPart2656540.9Z6To5SbFb
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEE3o8ejP0lUW4GTX3J9FVsWUWDDm0FAl1NMuIACgkQ9FVsWUWD
-Dm1LHQ//aXpOy5ClbvX96VDPDalT97Kq+wwh6gN944R7pmNOU5elruNJAxr6ICR3
-qSHoPCZ807f035/uFUZV5p0XI/g/AoROjVUDwHptt0Zs8wefEF8Hzi2QL4Q5pIQB
-sfUwslVmr4bik+LThWp6mNrw4js9BsrxHaMrbBGnDTbz82e6YvOZHGQdPecs9ug5
-qLF3XBgJnn23RiG5/ZOE74r2ki4+LyJJBo4yrI6VLR8XBv/xpAwE9gKHk3e/JRT3
-mcTXTbVR5gVZC5VUqrDLe2juR0NXimHPVzz8uDjKca/7/h2vYa6dM1gMlD+wPvEY
-opouagd08Cka8FvFE+NxKXlnoDcpAL9xrrveKQ+N7NFPjU43KMe97xjYE0keC+Pd
-+Tyd1VkGNNiYpgPHT906QOaXsSj0GK6i3ihJpNVHYHithL74O4/0FtxpnpBWW7aC
-RKmhg52VLcd0ajWrLHqiU/apYy1hqGuNvdbSS5FBOa3xQmR873ET5nD4oPQeCZBT
-jte73ai9pgAJC6UQwkibJVaNiYhulurZTQpUQoELfeQFx5TjBbTVtw/S9ltdM/64
-7bamUR1bKEjZUzFN2rzWe4jL1y7KzRlBXlYAj0c2xgFQpbNBOUufymon528I1+oy
-PTp87kitoIb1YL2VhvVgSHCeBp/zkVjhyzRI0NzVCX8RHAs6H6I=
-=0nKF
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAl1QDx4ACgkQU1VOj+62
+HMBmnAf+JaF3IDMS3Rl7xwTEYlsJI9Ppp/XMxw0Clp4Xs2YkBJv84ea/NxUuv+uQ
+zFwp79epkDuYvKh4+yag3MtzVFfDtH2uhjwTQNuV32I6vF52O2PQABismMKvoiv+
+OrGLA9/fem2mZ+LFjluNB8krhOYuFlwvVQkNIBtJoWV+oHiWvaWbE+utB+7QyBAt
+wX331mT3BcFMf4KtSMrNa8fktjesvM2lZfhptU0CQg2qDM1PYxUtZUu0vty/qlxO
+ZhPJsE0P57RUcC/GBKYZln85zbm5hUSE6fQLVIDUWkcmcfINtDiEyDKBnDHuSmLx
+aEyaQNXROxctJa1lsIMxUt2IgUkxiw==
+=7Z7W
 -----END PGP SIGNATURE-----
 
---aBi8Yjz6aceOIzhQv3Emn5UjGnihUiZj1--
+--nextPart2656540.9Z6To5SbFb--
+
+
+
