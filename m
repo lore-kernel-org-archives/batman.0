@@ -1,13 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH v2 2/2] batman-adv: Only read OGM2 tvlv_len after buffer len
- check
-Date: Fri, 23 Aug 2019 14:34:28 +0200
-Message-Id: <20190823123428.8076-2-sven@narfation.org>
-In-Reply-To: <20190823123428.8076-1-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+Subject: Re: [PATCH v2 1/2] batman-adv: Only read OGM tvlv_len after buffer
+ len check
 References: <20190823123428.8076-1-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <9dfd127f-fff4-228f-2607-5fa23ac9654d@unstable.cc>
+Date: Fri, 23 Aug 2019 18:16:51 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190823123428.8076-1-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="IV7n8BnOgbCDlHxUjEqN2Gki97598xkh2"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,67 +19,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: syzbot+355cab184197dbbfa384@syzkaller.appspotmail.com
 
-Multiple batadv_ogm2_packet can be stored in an skbuff. The functions
-batadv_v_ogm_send_to_if() uses batadv_v_ogm_aggr_packet() to check if there
-is another additional batadv_ogm2_packet in the skb or not before they
-continue processing the packet.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--IV7n8BnOgbCDlHxUjEqN2Gki97598xkh2
+Content-Type: multipart/mixed; boundary="8rJH72LJMMtQLFRLlEf4bNk0UEY8Pza8M";
+ protected-headers="v1"
+From: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+Cc: syzbot+355cab184197dbbfa384@syzkaller.appspotmail.com
+Message-ID: <9dfd127f-fff4-228f-2607-5fa23ac9654d@unstable.cc>
+Subject: Re: [PATCH v2 1/2] batman-adv: Only read OGM tvlv_len after buffer
+ len check
+References: <20190823123428.8076-1-sven@narfation.org>
+In-Reply-To: <20190823123428.8076-1-sven@narfation.org>
 
-The length for such an OGM2 is BATADV_OGM2_HLEN +
-batadv_ogm2_packet->tvlv_len. The check must first check that at least
-BATADV_OGM2_HLEN bytes are available before it accesses tvlv_len (which is
-part of the header. Otherwise it might try read outside of the currently
-available skbuff to get the content of tvlv_len.
+--8rJH72LJMMtQLFRLlEf4bNk0UEY8Pza8M
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bat_v_ogm.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+Hi,
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 319249f0..dc4f7430 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -806,17 +806,23 @@ batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
-  * batadv_v_ogm_aggr_packet() - checks if there is another OGM aggregated
-  * @buff_pos: current position in the skb
-  * @packet_len: total length of the skb
-- * @tvlv_len: tvlv length of the previously considered OGM
-+ * @ogm2_packet: potential OGM2 in buffer
-  *
-  * Return: true if there is enough space for another OGM, false otherwise.
-  */
--static bool batadv_v_ogm_aggr_packet(int buff_pos, int packet_len,
--				     __be16 tvlv_len)
-+static bool
-+batadv_v_ogm_aggr_packet(int buff_pos, int packet_len,
-+			 const struct batadv_ogm2_packet *ogm2_packet)
- {
- 	int next_buff_pos = 0;
- 
--	next_buff_pos += buff_pos + BATADV_OGM2_HLEN;
--	next_buff_pos += ntohs(tvlv_len);
-+	/* check if there is enough space for the header */
-+	next_buff_pos += buff_pos + sizeof(*ogm2_packet);
-+	if (next_buff_pos > packet_len)
-+		return false;
-+
-+	/* check if there is enough space for the optional TVLV */
-+	next_buff_pos += ntohs(ogm2_packet->tvlv_len);
- 
- 	return (next_buff_pos <= packet_len) &&
- 	       (next_buff_pos <= BATADV_MAX_AGGREGATION_BYTES);
-@@ -993,7 +999,7 @@ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
- 	ogm_packet = (struct batadv_ogm2_packet *)skb->data;
- 
- 	while (batadv_v_ogm_aggr_packet(ogm_offset, skb_headlen(skb),
--					ogm_packet->tvlv_len)) {
-+					ogm_packet)) {
- 		batadv_v_ogm_process(skb, ogm_offset, if_incoming);
- 
- 		ogm_offset += BATADV_OGM2_HLEN;
--- 
-2.20.1
+On 23/08/2019 14:34, Sven Eckelmann wrote:
+> Multiple batadv_ogm_packet can be stored in an skbuff. The functions
+> batadv_iv_ogm_send_to_if()/batadv_iv_ogm_receive() use
+> batadv_iv_ogm_aggr_packet() to check if there is another additional
+> batadv_ogm_packet in the skb or not before they continue processing the=
 
+> packet.
+>=20
+> The length for such an OGM is BATADV_OGM_HLEN +
+> batadv_ogm_packet->tvlv_len. The check must first check that at least
+> BATADV_OGM_HLEN bytes are available before it accesses tvlv_len (which =
+is
+> part of the header. Otherwise it might try read outside of the currentl=
+y
+> available skbuff to get the content of tvlv_len.
+>=20
+> Fixes: 0b6aa0d43767 ("batman-adv: tvlv - basic infrastructure")
+> Reported-by: syzbot+355cab184197dbbfa384@syzkaller.appspotmail.com
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Acked-by: Antonio Quartulli <a@unstable.cc>
+
+--=20
+Antonio Quartulli
+
+
+--8rJH72LJMMtQLFRLlEf4bNk0UEY8Pza8M--
+
+--IV7n8BnOgbCDlHxUjEqN2Gki97598xkh2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEE3o8ejP0lUW4GTX3J9FVsWUWDDm0FAl1gEXMACgkQ9FVsWUWD
+Dm3Rsw/+Miu9BLOSfl8YIm/UsbqhxSbLq1hylH7/q70LDOc8o8e0iRr86hFeOsY7
+uKA/4tTSpDX/5LzWOvJ3QtSpUHbgvnd50q3kvsDoK5oy4B+Bk1zEhVwCSuFkPS7G
+nREBYkvHoU8p6keVZASB/6F6zX+iK3Kih5ZNSz08HI6jBgfIGQ4jipWOufe56bxP
+0AwCEVeMKMlQ3sZNoF5V9P2L8qfKEV9ZHxlrss9aLuHElgptQjMdqk/BFGSLXwaX
+kWoq1KK8AZziLbMDrQcuVfblmvT0xK/TSbo39Q+/WGUb828/9XxyTOlbrXObKXex
+9MEL8EUQ4iIg/T4CRCWyx8fX8a1iVa8eTytEuJx9fYFzKfmoM/AAydJ3zMbGDCIQ
+13ErpoLvw291At/V7tR52Yo5eTIJAKlm+Ukmj/xDbY5Rq6FNnH4rRo4mFAaN3g7y
+en+bvLI1pK2Vk0Mq883VXVLD3lUaNJYWRVaYh2Hfa1OEDLgcW42W52td6JObpAoz
+KcY71ms/3it6kF2WRekar28m0DQ+wRVUGuv9LDJms50cERiWC6MWUGGZ4E835SiI
+G04dE7VniJfQaciexrG7HsZd4oRKiWZUq7cPFbacNxxujFxQCGUg1nPGgys8RrjE
+ddnFtYgfkZWhDTDD65+QJlTrA0Ego9bpjqc7z+R9qsJ227xfZdA=
+=IUwu
+-----END PGP SIGNATURE-----
+
+--IV7n8BnOgbCDlHxUjEqN2Gki97598xkh2--
