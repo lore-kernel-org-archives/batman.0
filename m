@@ -1,13 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH maint 2/2] batman-adv: Avoid free/alloc race when handling OGM
- buffer
-Date: Thu,  3 Oct 2019 18:43:53 +0200
-Message-Id: <20191003164353.14095-2-sven@narfation.org>
-In-Reply-To: <20191003164353.14095-1-sven@narfation.org>
-References: <20191003164353.14095-1-sven@narfation.org>
+Return-Path: <34gybXQkbAFsLRSD3EE7K3IIB6.9HH9E7NL7K5HGM7GM.5HF@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date: Mon, 07 Oct 2019 03:01:06 -0700
+Message-ID: <000000000000604e8905944f211f@google.com>
+Subject: KCSAN: data-race in find_next_bit / rcu_report_exp_cpu_mult
+From: syzbot <syzbot+134336b86f728d6e55a0@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,145 +14,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, syzbot+0cc629f19ccb8534935b@syzkaller.appspotmail.com
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, elver@google.com, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Each slave interface of an B.A.T.M.A.N. IV virtual interface has an OGM
-packet buffer which is initialized using data from the RTNL protected
-netdevice notifier and other rtnetlink related hooks. It is sent regularly
-via various slave interfaces of the batadv virtual interface and in this
-process also modified (realloced) to integrate additional state information
-via TVLV containers.
+Hello,
 
-It must be avoided that the worker item is executed without a common lock
-with the netdevice notifier/rtnetlink helpers. Otherwise it can either
-happen that half modified/freed data is sent out or functions modifying the
-OGM buffer try to access already freed memory regions.
+syzbot found the following crash on:
 
-Reported-by: syzbot+0cc629f19ccb8534935b@syzkaller.appspotmail.com
-Fixes: ea6f8d42a595 ("batman-adv: move /proc interface handling to /sys")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+HEAD commit:    b4bd9343 x86, kcsan: Enable KCSAN for x86
+git tree:       https://github.com/google/ktsan.git kcsan
+console output: https://syzkaller.appspot.com/x/log.txt?x=11edb20d600000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=c0906aa620713d80
+dashboard link: https://syzkaller.appspot.com/bug?extid=134336b86f728d6e55a0
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+
+Unfortunately, I don't have any reproducer for this crash yet.
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+134336b86f728d6e55a0@syzkaller.appspotmail.com
+
+==================================================================
+BUG: KCSAN: data-race in find_next_bit / rcu_report_exp_cpu_mult
+
+write to 0xffffffff85a7f140 of 8 bytes by task 7 on cpu 0:
+  rcu_report_exp_cpu_mult+0x4f/0xa0 kernel/rcu/tree_exp.h:244
+  rcu_report_exp_rdp+0x6c/0x90 kernel/rcu/tree_exp.h:254
+  rcu_preempt_deferred_qs_irqrestore+0x3bb/0x580 kernel/rcu/tree_plugin.h:475
+  rcu_read_unlock_special+0xec/0x370 kernel/rcu/tree_plugin.h:659
+  __rcu_read_unlock+0xcf/0xe0 kernel/rcu/tree_plugin.h:394
+  rcu_read_unlock include/linux/rcupdate.h:645 [inline]
+  batadv_nc_purge_orig_hash net/batman-adv/network-coding.c:411 [inline]
+  batadv_nc_worker+0x13a/0x390 net/batman-adv/network-coding.c:718
+  process_one_work+0x3d4/0x890 kernel/workqueue.c:2269
+  worker_thread+0xa0/0x800 kernel/workqueue.c:2415
+  kthread+0x1d4/0x200 drivers/block/aoe/aoecmd.c:1253
+  ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:352
+
+read to 0xffffffff85a7f140 of 8 bytes by task 7251 on cpu 1:
+  _find_next_bit lib/find_bit.c:39 [inline]
+  find_next_bit+0x57/0xe0 lib/find_bit.c:70
+  sync_rcu_exp_select_node_cpus+0x28e/0x510 kernel/rcu/tree_exp.h:375
+  sync_rcu_exp_select_cpus+0x30c/0x590 kernel/rcu/tree_exp.h:439
+  rcu_exp_sel_wait_wake kernel/rcu/tree_exp.h:575 [inline]
+  wait_rcu_exp_gp+0x25/0x40 kernel/rcu/tree_exp.h:589
+  process_one_work+0x3d4/0x890 kernel/workqueue.c:2269
+  worker_thread+0xa0/0x800 kernel/workqueue.c:2415
+  kthread+0x1d4/0x200 drivers/block/aoe/aoecmd.c:1253
+  ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:352
+
+Reported by Kernel Concurrency Sanitizer on:
+CPU: 1 PID: 7251 Comm: kworker/1:4 Not tainted 5.3.0+ #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Workqueue: rcu_gp wait_rcu_exp_gp
+==================================================================
+
+
 ---
-See https://www.open-mesh.org/issues/400
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
- net/batman-adv/bat_iv_ogm.c | 33 +++++++++++++++++++++++++++------
- net/batman-adv/types.h      |  4 ++--
- 2 files changed, 29 insertions(+), 8 deletions(-)
-
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index d78938e3..e20c3813 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -29,6 +29,7 @@
- #include <linux/random.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-+#include <linux/rtnetlink.h>
- #include <linux/seq_file.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
-@@ -193,6 +194,8 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 	unsigned char *ogm_buff;
- 	u32 random_seqno;
- 
-+	ASSERT_RTNL();
-+
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
- 	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
-@@ -217,6 +220,8 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 
- static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- {
-+	ASSERT_RTNL();
-+
- 	kfree(hard_iface->bat_iv.ogm_buff);
- 	hard_iface->bat_iv.ogm_buff = NULL;
- }
-@@ -226,6 +231,8 @@ static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
- 	struct batadv_ogm_packet *batadv_ogm_packet;
- 	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
- 
-+	ASSERT_RTNL();
-+
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
- 	ether_addr_copy(batadv_ogm_packet->orig,
- 			hard_iface->net_dev->dev_addr);
-@@ -239,6 +246,8 @@ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
- 	struct batadv_ogm_packet *batadv_ogm_packet;
- 	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
- 
-+	ASSERT_RTNL();
-+
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
- 	batadv_ogm_packet->ttl = BATADV_TTL;
- }
-@@ -753,6 +762,8 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	u16 tvlv_len = 0;
- 	unsigned long send_time;
- 
-+	ASSERT_RTNL();
-+
- 	if (hard_iface->if_status == BATADV_IF_NOT_IN_USE ||
- 	    hard_iface->if_status == BATADV_IF_TO_BE_REMOVED)
- 		return;
-@@ -1643,16 +1654,12 @@ static void batadv_iv_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 	batadv_orig_node_put(orig_node);
- }
- 
--static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
-+static void
-+batadv_iv_send_outstanding_forw_packet(struct batadv_forw_packet *forw_packet)
- {
--	struct delayed_work *delayed_work;
--	struct batadv_forw_packet *forw_packet;
- 	struct batadv_priv *bat_priv;
- 	bool dropped = false;
- 
--	delayed_work = to_delayed_work(work);
--	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
--				   delayed_work);
- 	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
- 
- 	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
-@@ -1681,6 +1688,20 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 		batadv_forw_packet_free(forw_packet, dropped);
- }
- 
-+static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
-+{
-+	struct delayed_work *delayed_work;
-+	struct batadv_forw_packet *forw_packet;
-+
-+	delayed_work = to_delayed_work(work);
-+	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
-+				   delayed_work);
-+
-+	rtnl_lock();
-+	batadv_iv_send_outstanding_forw_packet(forw_packet);
-+	rtnl_unlock();
-+}
-+
- static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 				 struct batadv_hard_iface *if_incoming)
- {
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index bb7b4ab1..437d92e1 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -73,10 +73,10 @@ enum batadv_dhcp_recipient {
-  * struct batadv_hard_iface_bat_iv - per hard-interface B.A.T.M.A.N. IV data
-  */
- struct batadv_hard_iface_bat_iv {
--	/** @ogm_buff: buffer holding the OGM packet */
-+	/** @ogm_buff: buffer holding the OGM packet. rtnl protected */
- 	unsigned char *ogm_buff;
- 
--	/** @ogm_buff_len: length of the OGM packet buffer */
-+	/** @ogm_buff_len: length of the OGM packet buffer. rtnl protected */
- 	int ogm_buff_len;
- 
- 	/** @ogm_seqno: OGM sequence number - used to identify each OGM */
--- 
-2.20.1
-
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
