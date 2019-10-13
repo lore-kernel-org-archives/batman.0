@@ -1,20 +1,13 @@
-Return-Path: <boqun.feng@gmail.com>
-Date: Tue, 8 Oct 2019 11:58:34 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-Subject: Re: KCSAN: data-race in find_next_bit / rcu_report_exp_cpu_mult
-Message-ID: <20191008035834.GB2609633@tardis>
-References: <000000000000604e8905944f211f@google.com>
- <CANpmjNNmSOagbTpffHr4=Yedckx9Rm2NuGqC9UqE+AOz5f1-ZQ@mail.gmail.com>
- <20191007134304.GA2609633@tardis>
- <20191008001131.GB255532@google.com>
- <20191008021233.GD2689@paulmck-ThinkPad-P72>
- <20191008025056.GA2701514@tardis>
- <20191008033353.GK2689@paulmck-ThinkPad-P72>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH maint 2/2] batman-adv: Avoid OGM workqueue synchronous cancel
+ deadlock
+Date: Sun, 13 Oct 2019 21:03:07 +0200
+Message-Id: <20191013190307.11796-2-sven@narfation.org>
+In-Reply-To: <20191013190307.11796-1-sven@narfation.org>
+References: <20191013190307.11796-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
-Content-Disposition: inline
-In-Reply-To: <20191008033353.GK2689@paulmck-ThinkPad-P72>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,101 +17,270 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "Paul E. McKenney" <paulmck@kernel.org>
-Cc: Joel Fernandes <joel@joelfernandes.org>, Marco Elver <elver@google.com>, syzbot <syzbot+134336b86f728d6e55a0@syzkaller.appspotmail.com>, josh@joshtriplett.org, rostedt@goodmis.org, mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com, rcu@vger.kernel.org, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+batadv_forw_packet_list_free can be called when an interface is being
+disabled. Under this circumstance, the rntl_lock will be held and while it
+calls cancel_delayed_work_sync.
 
---wRRV7LY7NUeQGEoC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+cancel_delayed_work_sync will stop the execution of the current context
+when the work item is currently processed. It can now happen that the
+cancel_delayed_work_sync was called when rtnl_lock was already called in
+batadv_iv_send_outstanding_bat_ogm_packet or when it was in the process of
+calling it. In this case, batadv_iv_send_outstanding_bat_ogm_packet waits
+for the lock and cancel_delayed_work_sync (which holds the rtnl_lock) is
+waiting for batadv_iv_send_outstanding_bat_ogm_packet to finish.
 
-On Mon, Oct 07, 2019 at 08:33:53PM -0700, Paul E. McKenney wrote:
-[...]
-> > ---
-> >  kernel/rcu/tree_exp.h | 17 +++++++----------
-> >  1 file changed, 7 insertions(+), 10 deletions(-)
-> >=20
-> > diff --git a/kernel/rcu/tree_exp.h b/kernel/rcu/tree_exp.h
-> > index af7e7b9c86af..fb51752ac9a6 100644
-> > --- a/kernel/rcu/tree_exp.h
-> > +++ b/kernel/rcu/tree_exp.h
-> > @@ -372,12 +372,10 @@ static void sync_rcu_exp_select_node_cpus(struct =
-work_struct *wp)
-> >  	raw_spin_unlock_irqrestore_rcu_node(rnp, flags);
-> > =20
-> >  	/* IPI the remaining CPUs for expedited quiescent state. */
-> > -	for_each_leaf_node_cpu_mask(rnp, cpu, rnp->expmask) {
-> > +	for_each_leaf_node_cpu_mask(rnp, cpu, mask_ofl_ipi) {
-> >  		unsigned long mask =3D leaf_node_cpu_bit(rnp, cpu);
-> >  		struct rcu_data *rdp =3D per_cpu_ptr(&rcu_data, cpu);
-> > =20
-> > -		if (!(mask_ofl_ipi & mask))
-> > -			continue;
-> >  retry_ipi:
-> >  		if (rcu_dynticks_in_eqs_since(rdp, rdp->exp_dynticks_snap)) {
-> >  			mask_ofl_test |=3D mask;
->=20
-> This part I have already on -rcu branch "dev".
->=20
-> > @@ -389,10 +387,10 @@ static void sync_rcu_exp_select_node_cpus(struct =
-work_struct *wp)
-> >  		}
-> >  		ret =3D smp_call_function_single(cpu, rcu_exp_handler, NULL, 0);
-> >  		put_cpu();
-> > -		if (!ret) {
-> > -			mask_ofl_ipi &=3D ~mask;
-> > +		/* the CPU responses the IPI, and it will report QS itself */
-> > +		if (!ret)
-> >  			continue;
-> > -		}
-> > +
-> >  		/* Failed, raced with CPU hotplug operation. */
-> >  		raw_spin_lock_irqsave_rcu_node(rnp, flags);
-> >  		if ((rnp->qsmaskinitnext & mask) &&
-> > @@ -403,13 +401,12 @@ static void sync_rcu_exp_select_node_cpus(struct =
-work_struct *wp)
-> >  			schedule_timeout_uninterruptible(1);
-> >  			goto retry_ipi;
-> >  		}
-> > -		/* CPU really is offline, so we can ignore it. */
-> > -		if (!(rnp->expmask & mask))
-> > -			mask_ofl_ipi &=3D ~mask;
-> > +		/* CPU really is offline, and we need its QS. */
-> > +		if (rnp->expmask & mask)
-> > +			mask_ofl_test |=3D mask;
-> >  		raw_spin_unlock_irqrestore_rcu_node(rnp, flags);
-> >  	}
-> >  	/* Report quiescent states for those that went offline. */
-> > -	mask_ofl_test |=3D mask_ofl_ipi;
-> >  	if (mask_ofl_test)
-> >  		rcu_report_exp_cpu_mult(rnp, mask_ofl_test, false);
-> >  }
->=20
-> Would you be willing to port this optimization on top of current -rcu
-> branch "dev" with an suitably modified commit message?
->=20
+This can only be avoided by not using (conflicting) blocking locks while
+cancel_delayed_work_sync is called. It also has the benefit that the
+ogm scheduling functionality can avoid unnecessary delays which can be
+introduced by a global lock.
 
-Sure, will do ;-)
+Fixes: 9b8ceef26c69 ("batman-adv: Avoid free/alloc race when handling OGM buffer")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_iv_ogm.c     | 86 +++++++++++++++++++++------------
+ net/batman-adv/hard-interface.c |  2 +
+ net/batman-adv/types.h          |  7 ++-
+ 3 files changed, 61 insertions(+), 34 deletions(-)
 
-Regards,
-Boqun
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index e20c3813..5b0b20e6 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -22,6 +22,8 @@
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
++#include <linux/mutex.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/pkt_sched.h>
+@@ -29,7 +31,6 @@
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+-#include <linux/rtnetlink.h>
+ #include <linux/seq_file.h>
+ #include <linux/skbuff.h>
+ #include <linux/slab.h>
+@@ -194,7 +195,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	unsigned char *ogm_buff;
+ 	u32 random_seqno;
+ 
+-	ASSERT_RTNL();
++	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+@@ -202,8 +203,10 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 
+ 	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
+ 	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
+-	if (!ogm_buff)
++	if (!ogm_buff) {
++		mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 		return -ENOMEM;
++	}
+ 
+ 	hard_iface->bat_iv.ogm_buff = ogm_buff;
+ 
+@@ -215,41 +218,59 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	batadv_ogm_packet->reserved = 0;
+ 	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
+ 
++	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
++
+ 	return 0;
+ }
+ 
+ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
+ {
+-	ASSERT_RTNL();
++	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+ 	kfree(hard_iface->bat_iv.ogm_buff);
+ 	hard_iface->bat_iv.ogm_buff = NULL;
++
++	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ }
+ 
+ static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+-	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
++	void *ogm_buff;
+ 
+-	ASSERT_RTNL();
++	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
++	ogm_buff = hard_iface->bat_iv.ogm_buff;
++	if (!ogm_buff)
++		goto unlock;
++
++	batadv_ogm_packet = ogm_buff;
+ 	ether_addr_copy(batadv_ogm_packet->orig,
+ 			hard_iface->net_dev->dev_addr);
+ 	ether_addr_copy(batadv_ogm_packet->prev_sender,
+ 			hard_iface->net_dev->dev_addr);
++
++unlock:
++	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ }
+ 
+ static void
+ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+-	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
++	void *ogm_buff;
+ 
+-	ASSERT_RTNL();
++	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
++	ogm_buff = hard_iface->bat_iv.ogm_buff;
++	if (!ogm_buff)
++		goto unlock;
++
++	batadv_ogm_packet = ogm_buff;
+ 	batadv_ogm_packet->ttl = BATADV_TTL;
++
++unlock:
++	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ }
+ 
+ /* when do we schedule our own ogm to be sent */
+@@ -751,7 +772,11 @@ batadv_iv_ogm_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
+ 	}
+ }
+ 
+-static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
++/**
++ * batadv_iv_ogm_schedule_buff() - schedule submission of hardif ogm buffer
++ * @hard_iface: interface whose ogm buffer should be transmitted
++ */
++static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
+@@ -762,11 +787,7 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	u16 tvlv_len = 0;
+ 	unsigned long send_time;
+ 
+-	ASSERT_RTNL();
+-
+-	if (hard_iface->if_status == BATADV_IF_NOT_IN_USE ||
+-	    hard_iface->if_status == BATADV_IF_TO_BE_REMOVED)
+-		return;
++	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+ 	/* the interface gets activated here to avoid race conditions between
+ 	 * the moment of activating the interface in
+@@ -834,6 +855,17 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 		batadv_hardif_put(primary_if);
+ }
+ 
++static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
++{
++	if (hard_iface->if_status == BATADV_IF_NOT_IN_USE ||
++	    hard_iface->if_status == BATADV_IF_TO_BE_REMOVED)
++		return;
++
++	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
++	batadv_iv_ogm_schedule_buff(hard_iface);
++	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
++}
++
+ /**
+  * batadv_iv_orig_ifinfo_sum() - Get bcast_own sum for originator over iterface
+  * @orig_node: originator which reproadcasted the OGMs directly
+@@ -1654,12 +1686,16 @@ static void batadv_iv_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 	batadv_orig_node_put(orig_node);
+ }
+ 
+-static void
+-batadv_iv_send_outstanding_forw_packet(struct batadv_forw_packet *forw_packet)
++static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+ {
++	struct delayed_work *delayed_work;
++	struct batadv_forw_packet *forw_packet;
+ 	struct batadv_priv *bat_priv;
+ 	bool dropped = false;
+ 
++	delayed_work = to_delayed_work(work);
++	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
++				   delayed_work);
+ 	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
+ 
+ 	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
+@@ -1688,20 +1724,6 @@ batadv_iv_send_outstanding_forw_packet(struct batadv_forw_packet *forw_packet)
+ 		batadv_forw_packet_free(forw_packet, dropped);
+ }
+ 
+-static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+-{
+-	struct delayed_work *delayed_work;
+-	struct batadv_forw_packet *forw_packet;
+-
+-	delayed_work = to_delayed_work(work);
+-	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
+-				   delayed_work);
+-
+-	rtnl_lock();
+-	batadv_iv_send_outstanding_forw_packet(forw_packet);
+-	rtnl_unlock();
+-}
+-
+ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 				 struct batadv_hard_iface *if_incoming)
+ {
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index c90e4734..afb52282 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -18,6 +18,7 @@
+ #include <linux/kref.h>
+ #include <linux/limits.h>
+ #include <linux/list.h>
++#include <linux/mutex.h>
+ #include <linux/netdevice.h>
+ #include <linux/printk.h>
+ #include <linux/rculist.h>
+@@ -929,6 +930,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	INIT_LIST_HEAD(&hard_iface->list);
+ 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
+ 
++	mutex_init(&hard_iface->bat_iv.ogm_buff_mutex);
+ 	spin_lock_init(&hard_iface->neigh_list_lock);
+ 	kref_init(&hard_iface->refcount);
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index eded9167..aa038b91 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -74,14 +74,17 @@ enum batadv_dhcp_recipient {
+  * struct batadv_hard_iface_bat_iv - per hard-interface B.A.T.M.A.N. IV data
+  */
+ struct batadv_hard_iface_bat_iv {
+-	/** @ogm_buff: buffer holding the OGM packet. rtnl protected */
++	/** @ogm_buff: buffer holding the OGM packet */
+ 	unsigned char *ogm_buff;
+ 
+-	/** @ogm_buff_len: length of the OGM packet buffer. rtnl protected */
++	/** @ogm_buff_len: length of the OGM packet buffer */
+ 	int ogm_buff_len;
+ 
+ 	/** @ogm_seqno: OGM sequence number - used to identify each OGM */
+ 	atomic_t ogm_seqno;
++
++	/** @ogm_buff_mutex: lock protecting ogm_buff and ogm_buff_len */
++	struct mutex ogm_buff_mutex;
+ };
+ 
+ /**
+-- 
+2.20.1
 
-> 							Thanx, Paul
-
---wRRV7LY7NUeQGEoC
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEj5IosQTPz8XU1wRHSXnow7UH+rgFAl2cCWYACgkQSXnow7UH
-+rhz7Af+Nij364bAg8HkjALb5BhcfB+hJC9AgMEcFVjStzO0s8BnctHvtlQeh0nM
-DKIuwC+YwUX4c1uwWWtI4EQlCwseOQJLFaC3QP7sdyqIzziLeUeL4QEhinAONiAA
-nlp9qS/qChRQ21B0RsvxFhT/SoWrpCf7x78rVTjpi2lOc7fopFEX52CeGwwioWLL
-o7gfkrBtGhSTwkYI9OCJOiOrzmFLxvkSwKqlYuvC8T5IUSV5LQKWEyEo8bCwEAzs
-fNZo4Svq/PhE5nIBOzvy2P/Wfc3VK5MAbe977ptBzV1rEpvnZl/6MA0yp18YwuKC
-v0op9RMzpBPyNhZeacKMGigiNyq9lA==
-=+lHp
------END PGP SIGNATURE-----
-
---wRRV7LY7NUeQGEoC--
