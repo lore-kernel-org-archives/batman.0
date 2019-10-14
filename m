@@ -1,8 +1,9 @@
-Return-Path: <3K4-jXQkbAMo8EF0q11u7q55yt.w44w1uA8u7s439u39.s42@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <3DfKjXQkbAHQkqrcSddWjShhaV.YggYdWmkWjUgflWfl.Uge@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Date: Sun, 13 Oct 2019 13:55:07 -0700
-Message-ID: <00000000000059b6d40594d0f776@google.com>
-Subject: WARNING in batadv_iv_send_outstanding_bat_ogm_packet
+Date: Sun, 13 Oct 2019 20:57:01 -0700
+In-Reply-To: <00000000000059b6d40594d0f776@google.com>
+Message-ID: <0000000000002ba5570594d6dc99@google.com>
+Subject: Re: WARNING in batadv_iv_send_outstanding_bat_ogm_packet
 From: syzbot <syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,72 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: a@unstable.cc, akpm@osdl.org, arvind.yadav.cs@gmail.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kgene@kernel.org, krzk@kernel.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, mareklindner@neomailbox.ch, mchehab@kernel.org, mchehab@s-opensource.com, mingo@kernel.org, netdev@vger.kernel.org, oleg@tv-sign.ru, roland@redhat.com, s.nawrocki@samsung.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, viro@zeniv.linux.org.uk
 
-Hello,
+syzbot has bisected this bug to:
 
-syzbot found the following crash on:
+commit 26d051e301f67cdd2ea3404abb43902f13214efa
+Author: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date:   Thu Jun 29 08:21:35 2017 +0000
 
-HEAD commit:    da940012 Merge tag 'char-misc-5.4-rc3' of git://git.kernel..
+     media: exynos4-is: fimc-is-i2c: constify dev_pm_ops structures
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=10a0aff0e00000
+start commit:   da940012 Merge tag 'char-misc-5.4-rc3' of git://git.kernel..
 git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=13ffd808e00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=12a0aff0e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=14a0aff0e00000
 kernel config:  https://syzkaller.appspot.com/x/.config?x=2d2fd92a28d3e50
 dashboard link: https://syzkaller.appspot.com/bug?extid=c0b807de416427ff3dd1
-compiler:       clang version 9.0.0 (/home/glider/llvm/clang  
-80fee25776c2fb61e74c1ecb1a523375c2500b69)
 syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=141ffd77600000
 C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=11edd580e00000
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
 Reported-by: syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
+Fixes: 26d051e301f6 ("media: exynos4-is: fimc-is-i2c: constify dev_pm_ops  
+structures")
 
-------------[ cut here ]------------
-WARNING: CPU: 1 PID: 30 at net/batman-adv/bat_iv_ogm.c:382  
-batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:382 [inline]
-WARNING: CPU: 1 PID: 30 at net/batman-adv/bat_iv_ogm.c:382  
-batadv_iv_send_outstanding_bat_ogm_packet+0x6b4/0x770  
-net/batman-adv/bat_iv_ogm.c:1663
-Kernel panic - not syncing: panic_on_warn set ...
-CPU: 1 PID: 30 Comm: kworker/u4:2 Not tainted 5.4.0-rc2+ #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
-Google 01/01/2011
-Workqueue: bat_events batadv_iv_send_outstanding_bat_ogm_packet
-Call Trace:
-  __dump_stack lib/dump_stack.c:77 [inline]
-  dump_stack+0x1d8/0x2f8 lib/dump_stack.c:113
-  panic+0x264/0x7a9 kernel/panic.c:221
-  __warn+0x20e/0x210 kernel/panic.c:582
-  report_bug+0x1b6/0x2f0 lib/bug.c:195
-  fixup_bug arch/x86/kernel/traps.c:179 [inline]
-  do_error_trap+0xd7/0x440 arch/x86/kernel/traps.c:272
-  do_invalid_op+0x36/0x40 arch/x86/kernel/traps.c:291
-  invalid_op+0x23/0x30 arch/x86/entry/entry_64.S:1028
-RIP: 0010:batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:382 [inline]
-RIP: 0010:batadv_iv_send_outstanding_bat_ogm_packet+0x6b4/0x770  
-net/batman-adv/bat_iv_ogm.c:1663
-Code: 66 05 00 eb 05 e8 9c 48 23 fa 48 83 c4 68 5b 41 5c 41 5d 41 5e 41 5f  
-5d c3 e8 88 48 23 fa 0f 0b e9 34 ff ff ff e8 7c 48 23 fa <0f> 0b e9 28 ff  
-ff ff 89 d9 80 e1 07 80 c1 03 38 c1 0f 8c c1 f9 ff
-RSP: 0018:ffff8880a9abfc48 EFLAGS: 00010293
-RAX: ffffffff874fe8a4 RBX: ffff888094160870 RCX: ffff8880a9ab2080
-RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000002
-RBP: ffff8880a9abfcd8 R08: ffffffff874fe28e R09: ffffed10123e6969
-R10: ffffed10123e6969 R11: 0000000000000000 R12: ffff888091f34000
-R13: dffffc0000000000 R14: ffff8880a80c5000 R15: ffff8880a4481400
-  process_one_work+0x7ef/0x10e0 kernel/workqueue.c:2269
-  worker_thread+0xc01/0x1630 kernel/workqueue.c:2415
-  kthread+0x332/0x350 kernel/kthread.c:255
-  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
-Kernel Offset: disabled
-Rebooting in 86400 seconds..
-
-
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-syzbot can test patches for this bug, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
