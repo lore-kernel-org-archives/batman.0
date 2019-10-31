@@ -1,11 +1,10 @@
-Return-Path: <3_Ue4XQkbAGISYZKALLERAPPID.GOOGLEUSERCONTENT.COM@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <christophe.jaillet@wanadoo.fr>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] batman-adv: Simplify 'batadv_v_ogm_aggr_list_free()'
+Date: Thu, 31 Oct 2019 08:42:55 +0100
+Message-Id: <20191031074255.3234-1-christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Date: Tue, 29 Oct 2019 07:09:01 -0700
-In-Reply-To: <0000000000009ea5720595dc03a3@google.com>
-Message-ID: <0000000000007792ff05960d289d@google.com>
-Subject: Re: BUG: MAX_LOCKDEP_KEYS too low!
-From: syzbot <syzbot+692f39f040c1f415567b@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,26 +14,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, alex.aring@gmail.com, allison@lohutok.net, andrew@lunn.ch, andy@greyhouse.net, ap420073@gmail.com, aroulin@cumulusnetworks.com, ast@domdv.de, b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, cleech@redhat.com, daniel@iogearbox.net, davem@davemloft.net, dcaratti@redhat.com, dsa@cumulusnetworks.com, edumazet@google.com, f.fainelli@gmail.com, fw@strlen.de, gregkh@linuxfoundation.org, gustavo@embeddedor.com, gvaradar@cisco.com, haiyangz@microsoft.com, idosch@mellanox.com, info@metux.net, ivan.khoronzhuk@linaro.org, j.vosburgh@gmail.com, j@w1.fi, jakub.kicinski@netronome.com, jhs@mojatatu.com, jiri@mellanox.com, jiri@resnulli.us, johan.hedberg@gmail.com, johannes.berg@intel.com, john.hurley@netronome.com, jwi@linux.ibm.com, kstewart@linuxfoundation.org, kvalo@codeaurora.org, kys@microsoft.com, lariel@mellanox.com, linmiaohe@huawei.com, linux-bluetooth@vger.kernel.org, linux-hams@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ppp@vger.kernel.org, linux-wireless@vger.kernel.org, linux-wpan@vger.kernel.org, liuhangbin@gmail.com, marcel@holtmann.org, mareklindner@neomailbox.ch
+To: davem@davemloft.net, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-syzbot has bisected this bug to:
+Use 'skb_queue_purge()' instead of re-implementing it.
 
-commit ab92d68fc22f9afab480153bd82a20f6e2533769
-Author: Taehee Yoo <ap420073@gmail.com>
-Date:   Mon Oct 21 18:47:51 2019 +0000
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+BTW, I don't really see the need of 'aggr_list_lock'. I think that the code
+could be refactored to drop 'aggr_list_lock' and use the already existing
+'aggr_list.lock'.
+This would require to use the lock-free __skb_... variants when working on
+'aggr_list'.
 
-     net: core: add generic lockdep keys
+As far as I understand, the use of 'aggr_list' and 'aggr_list_lock' is
+limited to bat_v_ogm.c'. So the impact would be limited.
+This would avoid a useless locking that never fails, so the performance
+gain should be really limited.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=12e05224e00000
-start commit:   60c1769a Add linux-next specific files for 20191028
-git tree:       linux-next
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=11e05224e00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=16e05224e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=cb86688f30db053d
-dashboard link: https://syzkaller.appspot.com/bug?extid=692f39f040c1f415567b
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10be9ed0e00000
+So, I'm not sure this would be more readable and/or future proof, so
+I just note it here to open the discussion.
 
-Reported-by: syzbot+692f39f040c1f415567b@syzkaller.appspotmail.com
-Fixes: ab92d68fc22f ("net: core: add generic lockdep keys")
+If interested, I have a (compiled tested only) patch that implements this
+change.
+---
+ net/batman-adv/bat_v_ogm.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index dc4f7430cb5a..b841c83d9c3b 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -177,13 +177,9 @@ static bool batadv_v_ogm_queue_left(struct sk_buff *skb,
+  */
+ static void batadv_v_ogm_aggr_list_free(struct batadv_hard_iface *hard_iface)
+ {
+-	struct sk_buff *skb;
+-
+ 	lockdep_assert_held(&hard_iface->bat_v.aggr_list_lock);
+ 
+-	while ((skb = skb_dequeue(&hard_iface->bat_v.aggr_list)))
+-		kfree_skb(skb);
+-
++	skb_queue_purge(&hard_iface->bat_v.aggr_list);
+ 	hard_iface->bat_v.aggr_len = 0;
+ }
+ 
+-- 
+2.20.1
+
