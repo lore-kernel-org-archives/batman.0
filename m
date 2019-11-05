@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 5/5] batman-adv: Drop lockdep.h include for soft-interface.c
-Date: Tue,  5 Nov 2019 10:35:31 +0100
-Message-Id: <20191105093531.11398-6-sw@simonwunderlich.de>
+Subject: [PATCH 1/5] batman-adv: Start new development cycle
+Date: Tue,  5 Nov 2019 10:35:27 +0100
+Message-Id: <20191105093531.11398-2-sw@simonwunderlich.de>
 In-Reply-To: <20191105093531.11398-1-sw@simonwunderlich.de>
 References: <20191105093531.11398-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -17,32 +17,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
-
-The commit ab92d68fc22f ("net: core: add generic lockdep keys") removed
-all lockdep functionality from soft-interface.c but didn't remove the
-include for this functionality.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/soft-interface.c | 1 -
- 1 file changed, 1 deletion(-)
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 697f2da12487..832e156c519e 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -22,7 +22,6 @@
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
--#include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/percpu.h>
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 6967f2e4c3f4..c7b340ddd0e7 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -13,7 +13,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+ 
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2019.4"
++#define BATADV_SOURCE_VERSION "2019.5"
+ #endif
+ 
+ /* B.A.T.M.A.N. parameters */
 -- 
 2.20.1
 
