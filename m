@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/5] batman-adv: Start new development cycle
-Date: Tue,  5 Nov 2019 10:35:27 +0100
-Message-Id: <20191105093531.11398-2-sw@simonwunderlich.de>
+Subject: [PATCH 4/5] batman-adv: Use 'fallthrough' pseudo keyword
+Date: Tue,  5 Nov 2019 10:35:30 +0100
+Message-Id: <20191105093531.11398-5-sw@simonwunderlich.de>
 In-Reply-To: <20191105093531.11398-1-sw@simonwunderlich.de>
 References: <20191105093531.11398-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -17,26 +17,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Sven Eckelmann <sven@narfation.org>
+
+The usage of the '/* fall through */' comments in switches are no longer
+marked as non-deprecated variant of implicit fall throughs for switch
+statements. The commit 294f69e662d1 ("compiler_attributes.h: Add
+'fallthrough' pseudo keyword for switch/case use") introduced a replacement
+keyword which should be used instead.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/multicast.c      | 2 +-
+ net/batman-adv/soft-interface.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 6967f2e4c3f4..c7b340ddd0e7 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -13,7 +13,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 1d5bdf3a4b65..f9ec8e7507b6 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -1421,7 +1421,7 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		if (*orig)
+ 			return BATADV_FORW_SINGLE;
  
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2019.4"
-+#define BATADV_SOURCE_VERSION "2019.5"
- #endif
+-		/* fall through */
++		fallthrough;
+ 	case 0:
+ 		return BATADV_FORW_NONE;
+ 	default:
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 5ee8e9a100f9..697f2da12487 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -230,7 +230,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 			break;
+ 		}
  
- /* B.A.T.M.A.N. parameters */
+-		/* fall through */
++		fallthrough;
+ 	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
+@@ -455,7 +455,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 		if (vhdr->h_vlan_encapsulated_proto != htons(ETH_P_BATMAN))
+ 			break;
+ 
+-		/* fall through */
++		fallthrough;
+ 	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
 -- 
 2.20.1
 
