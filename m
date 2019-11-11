@@ -2,11 +2,11 @@ Return-Path: <xbing6@gmail.com>
 Reply-To: xbing6@gmail.com
 From: Xuebing Wang <xbing6@gmail.com>
 Subject: Any suggestions about configuring batman-adv gateways + modems
-Message-ID: <17dae71f-1ff8-a6c9-c2e5-fec78db34b29@gmail.com>
-Date: Mon, 11 Nov 2019 08:52:03 +0800
+Message-ID: <8b190923-5db5-17b2-da46-538b377d862a@gmail.com>
+Date: Mon, 11 Nov 2019 09:32:13 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Language: en-US
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,39 +17,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomailbox.ch
+To: mareklindner@neomailbox.ch, b.a.t.m.a.n@lists.open-mesh.org
 
 Hi Marek,
 
-Thank you for your help, as I did not subscribe to the mailing list, I 
-did not get your reply. I subscribe to the mailing list now and I am 
-writing a new email thread.
+Thank you very much for your help.
 
+ >> When modem at gateway (for WAN uplink) is down and loses internet
+ >> connection (but batman-adv connections with clients are good and dhcp
+ >> server works good), can batman-adv clients know that internet 
+connection is
+ >> lost and "roam" to another gateway with good internet connection?
+ >
+ >Seems you are looking for this:
+ >https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
 
- >> We have been building openwrt 15.05 + batman-adv mesh network for over 2
- >> years, they work great.
- >
- >hopefully, the batman-adv version you are using is newer than 15.05 ...
- >
- >
- >> 1) My first thought is to use batman-adv gateway (with 4G modem
- >> connected) as dhcp server, and forward batman-adv interface to wan
- >> interface (modem).
- >>
- >> 1.1)  But, there is an issue with this setup. Once a modem is down,
- >> nodes that are connected to this batman-adv gateway (with modem) can not
- >> automatically "roam" to another batman-adv gateway (with good modem
- >> connection).
- >
- >Why not ? What should prevent nodes or clients to choose another 
-batman-adv
- >gateway ?
+Yes, batman-adv gateway is what I am using.
 
-When modem (for WAN uplink) at gateway is down and loses internet 
-connection (but batman-adv connections with clients are good and dhcp 
-server works good), can batman-adv clients know that internet connection 
-at gateway is lost and "roam" to another gateway with good internet 
-connection?
+Do I need to write or find a daemon at gateway to sense internet 
+connection, once internet connection is lost (and does not recover 
+within like 2-5 minutes) then advertise batman-adv mesh network by 
+"batctl gw_mode client" to turn this node to be a client?
 
 Thanks.
 Xuebing Wang
