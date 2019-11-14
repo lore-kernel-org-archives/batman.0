@@ -1,13 +1,10 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: Any suggestions about configuring batman-adv gateways + modems
-Date: Mon, 11 Nov 2019 09:37:59 +0800
-Message-ID: <2770026.qIgyRiqjke@rousseau>
-In-Reply-To: <8b190923-5db5-17b2-da46-538b377d862a@gmail.com>
-References: <8b190923-5db5-17b2-da46-538b377d862a@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Strip dots from variable macro kerneldoc
+Date: Thu, 14 Nov 2019 22:12:37 +0100
+Message-Id: <20191114211237.19063-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1986170.X7SbLmUq57";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +14,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, xbing6@gmail.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1986170.X7SbLmUq57
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The commit 43756e347f21 ("scripts/kernel-doc: Add support for named
+variable macro arguments") changed the handling of variable macro
+parameters. The three dots of the argument must no longer be added to the
+kernel doc. The support for the old format is scheduled to be removed in
+the future.
 
-Hi,
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/log.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-> Yes, batman-adv gateway is what I am using.
-> 
-> Do I need to write or find a daemon at gateway to sense internet
-> connection, once internet connection is lost (and does not recover
-> within like 2-5 minutes) then advertise batman-adv mesh network by
-> "batctl gw_mode client" to turn this node to be a client?
-
-you can have a mechanism to detect if the uplink connectivity is down and then 
-have the batman-adv gateway switch to client. When the uplink is back, you can 
-switch to gateway mode again.
-
-Depending on how your uplink works, you may not need to write a separate 
-daemon to check (though you can if you want). Most uplink solutions provide 
-some kind of scriptable event for up/down changes. Depends very much on your 
-setup and what you'd like to react to. 
-
-Cheers,
-Marek
-
---nextPart1986170.X7SbLmUq57
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAl3Iu3cACgkQU1VOj+62
-HMAIewf9GsRKaRoRT8xehmsxdKdq6xW5WXgWkVXnuF3/8p0t+3fN4cdaLo7B95m7
-kucfarAoAhZDt5vfvyw/flyCcNLiO4DRmXpXEyh/5SbGqfmity+Qm5B3ix0wyIFg
-YNznlB+6WCwvAikc+U0HbFbGH/LMsnUBQuRGyTkU7xuxGXbQvD/l1dpe2NF4KcZ9
-hZREfUitBk5Ofr1syzEhJULtGNyw6cUXewWLWy9mPY++17JIbqxE0XfjN2WxDlWI
-eRW3z98Ad82/0CZDOU56mcU/qYsmepXmpIdS077ujXBSm2GqHtlJiqxm6teDEsB5
-zdT5j1HZoz15D0fsqRVTidWC+bPARw==
-=SdU9
------END PGP SIGNATURE-----
-
---nextPart1986170.X7SbLmUq57--
-
-
+diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
+index 741cfa3719ff..41fd900121c5 100644
+--- a/net/batman-adv/log.h
++++ b/net/batman-adv/log.h
+@@ -74,7 +74,7 @@ __printf(2, 3);
+  * @bat_priv: the bat priv with all the soft interface information
+  * @ratelimited: whether output should be rate limited
+  * @fmt: format string
+- * @arg...: variable arguments
++ * @arg: variable arguments
+  */
+ #define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)		\
+ 	do {								\
+@@ -98,7 +98,7 @@ static inline void _batadv_dbg(int type __always_unused,
+  * batadv_dbg() - Store debug output without ratelimiting
+  * @type: type of debug message
+  * @bat_priv: the bat priv with all the soft interface information
+- * @arg...: format string and variable arguments
++ * @arg: format string and variable arguments
+  */
+ #define batadv_dbg(type, bat_priv, arg...) \
+ 	_batadv_dbg(type, bat_priv, 0, ## arg)
+@@ -107,7 +107,7 @@ static inline void _batadv_dbg(int type __always_unused,
+  * batadv_dbg_ratelimited() - Store debug output with ratelimiting
+  * @type: type of debug message
+  * @bat_priv: the bat priv with all the soft interface information
+- * @arg...: format string and variable arguments
++ * @arg: format string and variable arguments
+  */
+ #define batadv_dbg_ratelimited(type, bat_priv, arg...) \
+ 	_batadv_dbg(type, bat_priv, 1, ## arg)
+@@ -116,7 +116,7 @@ static inline void _batadv_dbg(int type __always_unused,
+  * batadv_info() - Store message in debug buffer and print it to kmsg buffer
+  * @net_dev: the soft interface net device
+  * @fmt: format string
+- * @arg...: variable arguments
++ * @arg: variable arguments
+  */
+ #define batadv_info(net_dev, fmt, arg...)				\
+ 	do {								\
+@@ -130,7 +130,7 @@ static inline void _batadv_dbg(int type __always_unused,
+  * batadv_err() - Store error in debug buffer and print it to kmsg buffer
+  * @net_dev: the soft interface net device
+  * @fmt: format string
+- * @arg...: variable arguments
++ * @arg: variable arguments
+  */
+ #define batadv_err(net_dev, fmt, arg...)				\
+ 	do {								\
+-- 
+2.20.1
 
