@@ -1,11 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Host endianness dependent DHT lookup
-Date: Thu, 28 Nov 2019 11:01:24 +0100
-Message-ID: <1815609.duLnqLk4gF@sven-edge>
+Return-Path: <a@unstable.cc>
+Subject: Re: Host endianness dependent DHT lookup
+References: <1815609.duLnqLk4gF@sven-edge>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <29e86b84-9f03-030e-8681-1d4a7b83bf0c@unstable.cc>
+Date: Thu, 28 Nov 2019 11:13:21 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2061994.47J4SoBXhB";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <1815609.duLnqLk4gF@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="R2iJoC1flewOdhqlbwkiYbgcieOyErQrW"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,56 +18,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2061994.47J4SoBXhB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--R2iJoC1flewOdhqlbwkiYbgcieOyErQrW
+Content-Type: multipart/mixed; boundary="FripAv6tSDWOpLg3cW89hSy2gdiywOgsm"
+
+--FripAv6tSDWOpLg3cW89hSy2gdiywOgsm
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-I just saw following in batadv_hash_dat():
+On 28/11/2019 11:01, Sven Eckelmann wrote:
+> Hi,
+>=20
+> I just saw following in batadv_hash_dat():
+>=20
+> 	key =3D (const unsigned char *)&dat->vid;
+> 	for (i =3D 0; i < sizeof(dat->vid); i++) {
+> 		hash +=3D key[i];
+> 		hash +=3D (hash << 10);
+> 		hash ^=3D (hash >> 6);
+> 	}
+>=20
+> But the vid is in host order - not big endian like the IP part. So the =
 
-	key = (const unsigned char *)&dat->vid;
-	for (i = 0; i < sizeof(dat->vid); i++) {
-		hash += key[i];
-		hash += (hash << 10);
-		hash ^= (hash >> 6);
-	}
+> batadv_dat_select_candidates will select different candidates depending=
+ on=20
+> whether it is a little or big endian system, right?
+>=20
 
-But the vid is in host order - not big endian like the IP part. So the 
-batadv_dat_select_candidates will select different candidates depending on 
-whether it is a little or big endian system, right?
+That sounds like a correct statement.
 
-If this is a correct assumption, then we would have this problem since 
-3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan aware")
+We access the VID byte by byte, therefore different endianness will lead
+to different hash values (and thus different candidate selection).
 
-Kind regards,
-	Sven
---nextPart2061994.47J4SoBXhB
+I imagine I haven't observed this issue so far because I always worked
+with networks made up by very similar hardware.
+
+> If this is a correct assumption, then we would have this problem since =
+
+> 3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan aware")
+>=20
+
+That's it. Very nice catch!
+
+Will you send a patch?
+I guess converting the VID into network order before accessing it should
+be enough, no?
+
+
+Thanks!
+
+Regards,
+
+--=20
+Antonio Quartulli
+
+
+--FripAv6tSDWOpLg3cW89hSy2gdiywOgsm--
+
+--R2iJoC1flewOdhqlbwkiYbgcieOyErQrW
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl3fmvQACgkQXYcKB8Em
-e0aLIg/+PF29YIOfDRsKe19X2mQUEfd0xyAnfZysdI2y96JJ9Qj481P/KlszUkTD
-/GwyiOQG/trh8KTNqnYd1xzYGALfURIENE8N/4yp73RJG25v3jpdfzi8qoV/FLpD
-24lppW2aVuBGR3vvL9oUszLpUsgH8zbf9Ng0JAqCGVka2FBVXRCAA/hcbeazZ9OO
-0pMgXWeR4x+sgadboOGqruBq+dRSdexC25fW/S3DQViMeU+HKTtn8bFcQeTtyrCL
-vdOkffUvoEA42z7k3q8w6ziVp5kYdwzGdTeCfbkAAOydP9LcndroG2HE1/rp1BeX
-5+5zTVvrr+YY/2OErtzQ3+zbO2tzoVhp6m6NZ9kUqhTnj/tCctUyK5CHKjUuVFn7
-7qUTpktV45lQTB627pH4OyviikfQ1CBxCrBGR9LofT9JGIPjNJD5BSQzv0in/Zx3
-hWrDyTrZWxf6yFs9MhfxfCeInFMx0WrFyYUlPik2+feUmICH+9rfIK2J+xgrl3K5
-QbFf/neXNb0MRyje5xlvwPjrLzd+WGMODlzUcuokVNzgaDhNApedPZwlxrPCYRrU
-JV4qJuMj3zv0e8sE/Sk/isKImWjUeyOdiwIxnnlqvdtsADOH/BPc8G25lB5kGzG0
-5hQ3pDYDrWjfmWQcBpBNo6szkR1btrbIqwEKUFyLS4Adh1am3r8=
-=iTzo
+iQIzBAEBCAAdFiEEOj/Eejms5Fxtp0v4pNfqZUlHtXIFAl3fncUACgkQpNfqZUlH
+tXI/UA//RoWrsUN1ycbNNk5ssKW5rT33B+WWWVmAgbjO9gpTANk96NeChasJ0aaL
+7dXswjcCfZJO5YDxPXCGpCXYhtKtK0sMrg5gQ+CPTH8+QzOODnqX0PRgR7h4Z12Z
+bZycGgbufJLC29cxWe3IWABInVXdhvo6IUje/NUnMA47QbBqelYZEbwjOnVHFOCi
+ap9icuPOcgxq9vVZ87zUaxijjHbdhA/Eq9ODi4jpIih7M1WM943Qe+m137Pp4DoA
+EPUyCbmLGANWQUF9MpP+3tAQngkM49LYtde+mBoUHdVxVHnq5UsVwTKQv4A2yt2g
+dxEt0nxcm6qMdfhIREWfRu6idkBOiK8IIqI9MfmmTIobR2h4UotHN4WVDeTgVw4F
+79N8Fc6fIohgShuOweb/ww8G0qccxKn6vFOKV/8StU6xB8JyR3VnTJZRdYWf0Jbb
+pbXDYaLBrAGON1SFoTG+5oTfjezJqMzuElZV827Kc3vA8ycc5Zg3sbyIDrhsRR4a
+QYQBO1gw3AHFDKy6lgoEOoxHCaaSyPbpRK5mNB7AZ86v9+cj1wiLkejGLUQpsPsd
+qDVg3PdUuwMS5sAQ2U8iXBVvTwmeKTFQB4SXfcv8CUEvHS7ix8w/lC1R77wpUWHS
+GjYRfzIcL1vqvuWp9SWertydw7R7Cy78zVqYJGpTeDqMwWEFWQ8=
+=aIIA
 -----END PGP SIGNATURE-----
 
---nextPart2061994.47J4SoBXhB--
-
-
-
+--R2iJoC1flewOdhqlbwkiYbgcieOyErQrW--
