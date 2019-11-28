@@ -1,14 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH] batman-adv: ELP - use wifi tx bitrate as fallback
- throughput
-Date: Tue, 26 Nov 2019 10:29:43 +0800
-Message-ID: <4586508.ZjQXdf9tYs@rousseau>
-In-Reply-To: <20191126022738.29214-1-mareklindner@neomailbox.ch>
-References: <20191126022738.29214-1-mareklindner@neomailbox.ch>
+Return-Path: <3ISrfXQkbAOYaghSITTMZIXXQL.OWWOTMcaMZKWVbMVb.KWU@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9271938.pX6P5OlBZX";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Date: Wed, 27 Nov 2019 18:00:01 -0800
+In-Reply-To: <00000000000038b5c205983c2df4@google.com>
+Message-ID: <0000000000009aa32205985e78b6@google.com>
+Subject: Re: WARNING in mark_lock (3)
+From: syzbot <syzbot+a229d8d995b74f8c4b6c@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,41 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jakub.kicinski@netronome.com, jhs@mojatatu.com, jiri@resnulli.us, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, vinicius.gomes@intel.com, wang.yi59@zte.com.cn, xiyou.wangcong@gmail.com
 
---nextPart9271938.pX6P5OlBZX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+syzbot has bisected this bug to:
 
-On Tuesday, 26 November 2019 10:27:38 HKT Marek Lindner wrote:
-> Some wifi drivers (e.g. ath10k) provide per-station rx/tx values but no
-> estimated throughput. Setting a better estimate than the default 1 MBit
-> makes these devices work well with B.A.T.M.A.N. V.
+commit d665c1281bc89ac85b8b0c058c22a3f94640a1d6
+Author: Yi Wang <wang.yi59@zte.com.cn>
+Date:   Mon Oct 21 23:57:42 2019 +0000
 
-I have been testing this patch for 2-3 months in production setups and while 
-the approach isn't perfect, it produced acceptable results.
+     net: sched: taprio: fix -Wmissing-prototypes warnings
 
-Cheers,
-Marek
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=132ee536e00000
+start commit:   89d57ddd Merge tag 'media/v5.5-1' of git://git.kernel.org/..
+git tree:       upstream
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=10aee536e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=172ee536e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=595c15c951695d1b
+dashboard link: https://syzkaller.appspot.com/bug?extid=a229d8d995b74f8c4b6c
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1511af5ee00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=16e0f17ae00000
 
---nextPart9271938.pX6P5OlBZX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Reported-by: syzbot+a229d8d995b74f8c4b6c@syzkaller.appspotmail.com
+Fixes: d665c1281bc8 ("net: sched: taprio: fix -Wmissing-prototypes  
+warnings")
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAl3cjhcACgkQU1VOj+62
-HMA94wgAhqqbtzaqWaR1M17CtS20V0vtaQE2s33uowouckDdFHPrWBHBiNbutiSe
-GxXS9Jrwp7wbiMm532w8jTmscmy1/dV2SRr9tVTaEg83TWbzfOc9XpYbB20urA2L
-g8Qzmj2aRd9IVzrZFG3T7v/0rC5M4/CvLn4ht+cCsdAB/fp+G6hpl8UoWnuWCfy0
-K0divCZDmTvDLf279hQ1zFIF6mBPH9E+oeGayhDBXYXlvKiKin2/dU5aKj+wVzwd
-1Agc6xIIQ89bvyskiE04xZrfSVYM3zZfnpHr4BZ8SI7YWyXsGC+6ISqztBmm6w8M
-jphHnCePYaXd3AB4mXrH2dOFCuRH1Q==
-=cmOV
------END PGP SIGNATURE-----
-
---nextPart9271938.pX6P5OlBZX--
-
-
-
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
