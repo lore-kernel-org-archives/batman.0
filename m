@@ -1,10 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Annotate bitwise integer pointer casts
-Date: Thu, 28 Nov 2019 12:55:58 +0100
-Message-Id: <20191128115558.9435-1-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+Subject: Re: [PATCH maint] batman-adv: Fix DAT candidate selection on little
+ endian systems
+References: <20191128114349.7794-1-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <33c8e3ca-8377-a9be-1c11-a56785d61af4@unstable.cc>
+Date: Thu, 28 Nov 2019 14:19:37 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20191128114349.7794-1-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="LAknDfYw5VduG9SmTIr57xxxT0rYHximk"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,69 +19,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
 
-The sparse commit 6002ded74587 ("add a flag to warn on casts to/from
-bitwise pointers") introduced a check for non-direct casts from/to
-restricted datatypes (when -Wbitwise-pointer is enabled).
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--LAknDfYw5VduG9SmTIr57xxxT0rYHximk
+Content-Type: multipart/mixed; boundary="hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y"
 
-This triggered various warnings in batman-adv when some (already big
-endian) buffer content was casted to/from the corresponding big endian
-integer data types. But these were correct and can therefore be marked with
-__force to signalize sparse an intended cast from/to a bitwise type.
+--hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/distributed-arp-table.c | 8 +++++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+Hi,
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 663a53b6..0eff3358 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -844,7 +844,7 @@ static bool batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
- 
- 	/* handle as ANNOUNCE frame */
- 	backbone_gw->lasttime = jiffies;
--	crc = ntohs(*((__be16 *)(&an_addr[4])));
-+	crc = ntohs(*((__force __be16 *)(&an_addr[4])));
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "%s(): ANNOUNCE vid %d (sent by %pM)... CRC = %#.4x\n",
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index b0af3a11..5004e38f 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -246,7 +246,7 @@ static u8 *batadv_arp_hw_src(struct sk_buff *skb, int hdr_size)
-  */
- static __be32 batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
-+	return *(__force __be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
- }
- 
- /**
-@@ -270,7 +270,9 @@ static u8 *batadv_arp_hw_dst(struct sk_buff *skb, int hdr_size)
-  */
- static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4);
-+	u8 *dst = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4;
-+
-+	return *(__force __be32 *)dst;
- }
- 
- /**
-@@ -287,7 +289,7 @@ static u32 batadv_hash_dat(const void *data, u32 size)
- 	const unsigned char *key;
- 	u32 i;
- 
--	key = (const unsigned char *)&dat->ip;
-+	key = (__force const unsigned char *)&dat->ip;
- 	for (i = 0; i < sizeof(dat->ip); i++) {
- 		hash += key[i];
- 		hash += (hash << 10);
--- 
-2.20.1
+On 28/11/2019 12:43, Sven Eckelmann wrote:
+> The distributed arp table is using a DHT to store and retrieve MAC addr=
+ess
+> information for an IP address. This is done using unicast messages to
+> selected peers. The potential peers are looked up using the IP address =
+and
+> the VID.
+>=20
+> While the IP address is always stored in big endian byte order, it is n=
+ot
+> the case of the VID. It can (depending on the host system) either be bi=
+g
+> endian or little endian. The host must therefore always convert it to b=
+ig
+> endian to ensure that all devices calculate the same peers for the same=
 
+> lookup data.
+>=20
+> Fixes: 3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan a=
+ware")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Thanks a lot for fixing this subtle bug.
+
+Acked-by: Antonio Quartulli <a@unstable.cc>
+
+
+
+
+--=20
+Antonio Quartulli
+
+
+--hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y--
+
+--LAknDfYw5VduG9SmTIr57xxxT0rYHximk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEOj/Eejms5Fxtp0v4pNfqZUlHtXIFAl3fyWkACgkQpNfqZUlH
+tXIhgQ/+MEUm/Bo8O/fP457vZz29iP+aXQGLGnJFrHxFnXg6hEl18EVXBzv/aB45
+1oVKUeS9/wqa1GL39T61kFKhvHVzGemnqhOi26ToYqy7Fby37zVYneCxiOFPjxNu
+9B3TpkGrwKAlI36CbZNUeIBgo+LIeb4qU7oW2is4tR146ezedACDurJ+rg3BTZM2
+O5461Z26/17puSkR4w9skoC7Cbo35hJKbG947umCMcfi37Uldy+AzQjo6T+E7Opu
+41Lh2Hgw9nYk+XD3UYAvTUIqd08+u2e9BHNRBeCc6s+vphUml9udlDPdr0R71/yA
+0tCwG/JLQlKOIrWIQpFfjkBud6z4d/qae2PaLWpCxPOt48Xq9i90ihXkhKtZHnDy
+lTzSebWU3yBYcIaCX9cxN79Cz4h9BnlVm5EpOIyJwdmzNjrg0WLrzqVbzNg/idaU
+Iv3CR8alaTGr9p/NbKVHRslsVkMeVVmqSTCercmfJc32nAdj7rhkRTuXmEwiWfF8
+QcLygjAmcgxd3L47kt6dQgQWzGJoYfmJkgbngRkiVXY0OapIZ+xsuYHvyyo2AHRy
+o1yVon7mpnvPaq1XowZUzQdNBPPQqwjv0LxMTPpGSXEgs9JD9Rexrg1ewWVlIDkV
+XMNqQ5WSZ2BXuuSwGXrWBGMmXBGGOZEWn9Qp1xhMMl6s7P5An+A=
+=q+7c
+-----END PGP SIGNATURE-----
+
+--LAknDfYw5VduG9SmTIr57xxxT0rYHximk--
