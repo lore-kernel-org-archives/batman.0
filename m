@@ -1,15 +1,10 @@
-Return-Path: <a@unstable.cc>
-Subject: Re: [PATCH maint] batman-adv: Fix DAT candidate selection on little
- endian systems
-References: <20191128114349.7794-1-sven@narfation.org>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <33c8e3ca-8377-a9be-1c11-a56785d61af4@unstable.cc>
-Date: Thu, 28 Nov 2019 14:19:37 +0100
+Return-Path: <3sWDgXQkbAOgcijUKVVObKZZSN.QYYQVOecObMYXdOXd.MYW@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-In-Reply-To: <20191128114349.7794-1-sven@narfation.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="LAknDfYw5VduG9SmTIr57xxxT0rYHximk"
+Date: Thu, 28 Nov 2019 16:05:05 -0800
+Message-ID: <000000000000723a32059870fbd4@google.com>
+Subject: general protection fault in smack_socket_sendmsg (2)
+From: syzbot <syzbot+131d2229316b7012ac06@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,74 +14,97 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+To: a@unstable.cc, andrew@lunn.ch, b.a.t.m.a.n@lists.open-mesh.org, casey@schaufler-ca.com, davem@davemloft.net, f.fainelli@gmail.com, jmorris@namei.org, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, serge@hallyn.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, vivien.didelot@savoirfairelinux.com
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---LAknDfYw5VduG9SmTIr57xxxT0rYHximk
-Content-Type: multipart/mixed; boundary="hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y"
+Hello,
 
---hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+syzbot found the following crash on:
 
-Hi,
+HEAD commit:    0be0ee71 vfs: properly and reliably lock f_pos in fdget_po..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=12c49ef2e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=330a1f54d1edb817
+dashboard link: https://syzkaller.appspot.com/bug?extid=131d2229316b7012ac06
+compiler:       clang version 9.0.0 (/home/glider/llvm/clang  
+80fee25776c2fb61e74c1ecb1a523375c2500b69)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=13bb67cee00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12460136e00000
 
-On 28/11/2019 12:43, Sven Eckelmann wrote:
-> The distributed arp table is using a DHT to store and retrieve MAC addr=
-ess
-> information for an IP address. This is done using unicast messages to
-> selected peers. The potential peers are looked up using the IP address =
-and
-> the VID.
->=20
-> While the IP address is always stored in big endian byte order, it is n=
-ot
-> the case of the VID. It can (depending on the host system) either be bi=
-g
-> endian or little endian. The host must therefore always convert it to b=
-ig
-> endian to ensure that all devices calculate the same peers for the same=
+The bug was bisected to:
 
-> lookup data.
->=20
-> Fixes: 3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan a=
-ware")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+commit 8ae5bcdc5d98a99e59f194101e7acd2e9d055758
+Author: Vivien Didelot <vivien.didelot@savoirfairelinux.com>
+Date:   Fri May 19 21:00:54 2017 +0000
 
-Thanks a lot for fixing this subtle bug.
+     net: dsa: add MDB notifier
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=17ec2f5ae00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=141c2f5ae00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=101c2f5ae00000
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+131d2229316b7012ac06@syzkaller.appspotmail.com
+Fixes: 8ae5bcdc5d98 ("net: dsa: add MDB notifier")
+
+kasan: CONFIG_KASAN_INLINE enabled
+kasan: GPF could be caused by NULL-ptr deref or user memory access
+general protection fault: 0000 [#1] PREEMPT SMP KASAN
+CPU: 1 PID: 7989 Comm: kworker/1:4 Not tainted 5.4.0-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Workqueue: krxrpcd rxrpc_peer_keepalive_worker
+RIP: 0010:smack_socket_sendmsg+0x5b/0x480 security/smack/smack_lsm.c:3675
+Code: e8 fa 03 6b fe 4c 89 e8 48 c1 e8 03 42 80 3c 38 00 74 08 4c 89 ef e8  
+74 46 a4 fe 4d 8b 65 00 48 83 c3 18 48 89 d8 48 c1 e8 03 <42> 80 3c 38 00  
+74 08 48 89 df e8 56 46 a4 fe 4c 8b 33 49 8d 9e 08
+RSP: 0018:ffff88808a58f9c8 EFLAGS: 00010206
+RAX: 0000000000000003 RBX: 0000000000000018 RCX: ffff8880a1270280
+RDX: 0000000000000000 RSI: ffff88808a58fb18 RDI: 0000000000000000
+RBP: ffff88808a58fa80 R08: ffffffff83442500 R09: ffff88808a58fb86
+R10: ffffed10114b1f72 R11: 0000000000000000 R12: ffff8880a124c114
+R13: ffff88808a58fb18 R14: dffffc0000000000 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff8880aeb00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fe2d48c9e78 CR3: 0000000098a23000 CR4: 00000000001406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+  security_socket_sendmsg+0x6c/0xd0 security/security.c:2013
+  sock_sendmsg net/socket.c:655 [inline]
+  kernel_sendmsg+0x77/0x140 net/socket.c:678
+  rxrpc_send_keepalive+0x254/0x3c0 net/rxrpc/output.c:655
+  rxrpc_peer_keepalive_dispatch net/rxrpc/peer_event.c:376 [inline]
+  rxrpc_peer_keepalive_worker+0x76e/0xb40 net/rxrpc/peer_event.c:437
+  process_one_work+0x7ef/0x10e0 kernel/workqueue.c:2269
+  worker_thread+0xc01/0x1630 kernel/workqueue.c:2415
+  kthread+0x332/0x350 kernel/kthread.c:255
+  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
+Modules linked in:
+---[ end trace 8b748724da7e3b28 ]---
+RIP: 0010:smack_socket_sendmsg+0x5b/0x480 security/smack/smack_lsm.c:3675
+Code: e8 fa 03 6b fe 4c 89 e8 48 c1 e8 03 42 80 3c 38 00 74 08 4c 89 ef e8  
+74 46 a4 fe 4d 8b 65 00 48 83 c3 18 48 89 d8 48 c1 e8 03 <42> 80 3c 38 00  
+74 08 48 89 df e8 56 46 a4 fe 4c 8b 33 49 8d 9e 08
+RSP: 0018:ffff88808a58f9c8 EFLAGS: 00010206
+RAX: 0000000000000003 RBX: 0000000000000018 RCX: ffff8880a1270280
+RDX: 0000000000000000 RSI: ffff88808a58fb18 RDI: 0000000000000000
+RBP: ffff88808a58fa80 R08: ffffffff83442500 R09: ffff88808a58fb86
+R10: ffffed10114b1f72 R11: 0000000000000000 R12: ffff8880a124c114
+R13: ffff88808a58fb18 R14: dffffc0000000000 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff8880aeb00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fe2d48c9e78 CR3: 0000000098a23000 CR4: 00000000001406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
 
 
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-
---=20
-Antonio Quartulli
-
-
---hQOjp5mCQR5M4HmCWOLx8qYv1PlGLLm4Y--
-
---LAknDfYw5VduG9SmTIr57xxxT0rYHximk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEOj/Eejms5Fxtp0v4pNfqZUlHtXIFAl3fyWkACgkQpNfqZUlH
-tXIhgQ/+MEUm/Bo8O/fP457vZz29iP+aXQGLGnJFrHxFnXg6hEl18EVXBzv/aB45
-1oVKUeS9/wqa1GL39T61kFKhvHVzGemnqhOi26ToYqy7Fby37zVYneCxiOFPjxNu
-9B3TpkGrwKAlI36CbZNUeIBgo+LIeb4qU7oW2is4tR146ezedACDurJ+rg3BTZM2
-O5461Z26/17puSkR4w9skoC7Cbo35hJKbG947umCMcfi37Uldy+AzQjo6T+E7Opu
-41Lh2Hgw9nYk+XD3UYAvTUIqd08+u2e9BHNRBeCc6s+vphUml9udlDPdr0R71/yA
-0tCwG/JLQlKOIrWIQpFfjkBud6z4d/qae2PaLWpCxPOt48Xq9i90ihXkhKtZHnDy
-lTzSebWU3yBYcIaCX9cxN79Cz4h9BnlVm5EpOIyJwdmzNjrg0WLrzqVbzNg/idaU
-Iv3CR8alaTGr9p/NbKVHRslsVkMeVVmqSTCercmfJc32nAdj7rhkRTuXmEwiWfF8
-QcLygjAmcgxd3L47kt6dQgQWzGJoYfmJkgbngRkiVXY0OapIZ+xsuYHvyyo2AHRy
-o1yVon7mpnvPaq1XowZUzQdNBPPQqwjv0LxMTPpGSXEgs9JD9Rexrg1ewWVlIDkV
-XMNqQ5WSZ2BXuuSwGXrWBGMmXBGGOZEWn9Qp1xhMMl6s7P5An+A=
-=q+7c
------END PGP SIGNATURE-----
-
---LAknDfYw5VduG9SmTIr57xxxT0rYHximk--
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
