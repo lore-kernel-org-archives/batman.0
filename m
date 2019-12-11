@@ -1,12 +1,10 @@
-Return-Path: <35Y3kXQkbAIg4ABwmxxq3m11up.s00sxq64q3o0z5qz5.o0y@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Replace FIELD_SIZEOF with sizeof_field
+Date: Wed, 11 Dec 2019 09:52:17 +0100
+Message-Id: <20191211085217.7878-1-sven@narfation.org>
 MIME-Version: 1.0
-Date: Sun, 01 Dec 2019 20:07:01 -0800
-In-Reply-To: <000000000000c280ba05988b6242@google.com>
-Message-ID: <000000000000293e9f0598b0b69d@google.com>
-Subject: Re: BUG: sleeping function called from invalid context in
- __alloc_pages_nodemask
-From: syzbot <syzbot+4925d60532bf4c399608@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,27 +14,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, akpm@linux-foundation.org, alex.aring@gmail.com, allison@lohutok.net, andrew@lunn.ch, andy@greyhouse.net, ap420073@gmail.com, aryabinin@virtuozzo.com, ast@domdv.de, b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, christophe.leroy@c-s.fr, cleech@redhat.com, daniel@iogearbox.net, davem@davemloft.net, dja@axtens.net, dsa@cumulusnetworks.com, dvyukov@google.com, edumazet@google.com, f.fainelli@gmail.com, fw@strlen.de, glider@google.com, gor@linux.ibm.com, gregkh@linuxfoundation.org, gustavo@embeddedor.com, gvaradar@cisco.com, haiyangz@microsoft.com, hdanton@sina.com, idosch@mellanox.com, info@metux.net, j.vosburgh@gmail.com, j@w1.fi, jakub.kicinski@netronome.com, jhs@mojatatu.com, jiri@resnulli.us, johan.hedberg@gmail.com, johannes.berg@intel.com, jwi@linux.ibm.com, kasan-dev@googlegroups.com, kstewart@linuxfoundation.org, kvalo@codeaurora.org, kys@microsoft.com, lariel@mellanox.com, linmiaohe@huawei.com, linux-bluetooth@vger.kernel.org, linux-hams@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-ppp@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-syzbot has bisected this bug to:
+The prefered way of getting the size of a member of a struct is the common
+macro sizeof_field from stddef.h and not the FIELD_SIZEOF (with multiple
+definitions).
 
-commit ab92d68fc22f9afab480153bd82a20f6e2533769
-Author: Taehee Yoo <ap420073@gmail.com>
-Date:   Mon Oct 21 18:47:51 2019 +0000
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/stddef.h | 24 ++++++++++++++++++++++++
+ net/batman-adv/main.c         |  2 +-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
+ create mode 100644 compat-include/linux/stddef.h
 
-     net: core: add generic lockdep keys
+diff --git a/compat-include/linux/stddef.h b/compat-include/linux/stddef.h
+new file mode 100644
+index 00000000..dd18840e
+--- /dev/null
++++ b/compat-include/linux/stddef.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2007-2019  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_STDDEF_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_STDDEF_H_
++
++#include <linux/version.h>
++#include_next <linux/stddef.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 16, 0)
++
++#ifndef sizeof_field
++#define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
++#endif
++
++#endif /* < KERNEL_VERSION(4, 16, 0) */
++
++#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_STDDEF_H_ */
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 4a89177d..4811ec65 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -548,7 +548,7 @@ static void batadv_recv_handler_init(void)
+ 	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_change) != 12);
+ 	BUILD_BUG_ON(sizeof(struct batadv_tvlv_roam_adv) != 8);
+ 
+-	i = FIELD_SIZEOF(struct sk_buff, cb);
++	i = sizeof_field(struct sk_buff, cb);
+ 	BUILD_BUG_ON(sizeof(struct batadv_skb_cb) > i);
+ 
+ 	/* broadcast packet */
+-- 
+2.20.1
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15769712e00000
-start commit:   419593da Add linux-next specific files for 20191129
-git tree:       linux-next
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=17769712e00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=13769712e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=7c04b0959e75c206
-dashboard link: https://syzkaller.appspot.com/bug?extid=4925d60532bf4c399608
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16148e9ce00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12a1f786e00000
-
-Reported-by: syzbot+4925d60532bf4c399608@syzkaller.appspotmail.com
-Fixes: ab92d68fc22f ("net: core: add generic lockdep keys")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
