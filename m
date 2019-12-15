@@ -1,9 +1,10 @@
-Return-Path: <3Ns7yXQkbAJMFLM7x881ExCC50.3BB381HF1EzBAG1AG.zB9@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <35Iv1XQkbAMc5BCxnyyr4n22vq.t11tyr75r4p106r06.p1z@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Date: Thu, 12 Dec 2019 15:33:10 -0800
-Message-ID: <0000000000000ce4b105998a2b08@google.com>
-Subject: KCSAN: data-race in add_timer / timer_clear_idle (2)
-From: syzbot <syzbot+c051abeff5e2e8ac40f0@syzkaller.appspotmail.com>
+Date: Sat, 14 Dec 2019 17:27:00 -0800
+In-Reply-To: <000000000000c71dcf0579b0553f@google.com>
+Message-ID: <000000000000dcc9b10599b3fd5e@google.com>
+Subject: Re: KASAN: use-after-free Read in ext4_xattr_set_entry (2)
+From: syzbot <syzbot+4a39a025912b265cacef@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -14,67 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, elver@google.com, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: a@unstable.cc, adilger.kernel@dilger.ca, afd@ti.com, b.a.t.m.a.n@lists.open-mesh.org, chris@lapa.com.au, davem@davemloft.net, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, pali.rohar@gmail.com, sre@kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tytso@mit.edu
 
-Hello,
+syzbot has bisected this bug to:
 
-syzbot found the following crash on:
+commit 8835cae5f2abd7f7a3143afe357f416aff5517a4
+Author: Chris Lapa <chris@lapa.com.au>
+Date:   Wed Jan 11 01:44:47 2017 +0000
 
-HEAD commit:    ef798c30 x86, kcsan: Enable KCSAN for x86
-git tree:       https://github.com/google/ktsan.git kcsan
-console output: https://syzkaller.appspot.com/x/log.txt?x=156e052ee00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=8077a73bd604a9d4
-dashboard link: https://syzkaller.appspot.com/bug?extid=c051abeff5e2e8ac40f0
-compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+     power: supply: bq27xxx: adds specific support for bq27520-g4 revision.
 
-Unfortunately, I don't have any reproducer for this crash yet.
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=16661f41e00000
+start commit:   ae4b064e Merge tag 'afs-fixes-20191211' of git://git.kerne..
+git tree:       upstream
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=15661f41e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=11661f41e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=79f79de2a27d3e3d
+dashboard link: https://syzkaller.appspot.com/bug?extid=4a39a025912b265cacef
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=15ec1332e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=163455dee00000
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+c051abeff5e2e8ac40f0@syzkaller.appspotmail.com
+Reported-by: syzbot+4a39a025912b265cacef@syzkaller.appspotmail.com
+Fixes: 8835cae5f2ab ("power: supply: bq27xxx: adds specific support for  
+bq27520-g4 revision.")
 
-==================================================================
-BUG: KCSAN: data-race in add_timer / timer_clear_idle
-
-read to 0xffff88812be1b6e4 of 1 bytes by task 23 on cpu 1:
-  forward_timer_base kernel/time/timer.c:892 [inline]
-  __mod_timer kernel/time/timer.c:1009 [inline]
-  mod_timer kernel/time/timer.c:1100 [inline]
-  add_timer+0x3a6/0x550 kernel/time/timer.c:1136
-  __queue_delayed_work+0x13b/0x1d0 kernel/workqueue.c:1649
-  queue_delayed_work_on+0xf3/0x110 kernel/workqueue.c:1674
-  queue_delayed_work include/linux/workqueue.h:509 [inline]
-  batadv_mcast_start_timer net/batman-adv/multicast.c:71 [inline]
-  batadv_mcast_mla_update+0x11ad/0x19e0 net/batman-adv/multicast.c:949
-  process_one_work+0x3d4/0x890 kernel/workqueue.c:2269
-  worker_thread+0xa0/0x800 kernel/workqueue.c:2415
-  kthread+0x1d4/0x200 drivers/block/aoe/aoecmd.c:1253
-  ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:352
-
-write to 0xffff88812be1b6e4 of 1 bytes by task 0 on cpu 0:
-  timer_clear_idle+0x42/0x50 kernel/time/timer.c:1675
-  tick_nohz_restart_sched_tick kernel/time/tick-sched.c:839 [inline]
-  __tick_nohz_idle_restart_tick+0x36/0x1b0 kernel/time/tick-sched.c:1140
-  tick_nohz_idle_exit+0x1af/0x1e0 kernel/time/tick-sched.c:1181
-  do_idle+0xb1/0x280 kernel/sched/idle.c:276
-  cpu_startup_entry+0x1b/0x20 kernel/sched/idle.c:355
-  rest_init+0xec/0xf6 init/main.c:452
-  arch_call_rest_init+0x17/0x37
-  start_kernel+0x838/0x85e init/main.c:786
-  x86_64_start_reservations+0x29/0x2b arch/x86/kernel/head64.c:490
-  x86_64_start_kernel+0x72/0x76 arch/x86/kernel/head64.c:471
-  secondary_startup_64+0xa4/0xb0 arch/x86/kernel/head_64.S:241
-
-Reported by Kernel Concurrency Sanitizer on:
-CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.4.0-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
-Google 01/01/2011
-==================================================================
-
-
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
