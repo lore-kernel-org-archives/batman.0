@@ -1,12 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: openwrt batman-adv
-Date: Tue, 24 Dec 2019 10:03:10 +0100
-Message-ID: <2363117.f9ZONqFbmS@sven-edge>
-In-Reply-To: <tencent_01E5105A2CC20B1B047FF188EFCF47E55D08@qq.com>
+Subject: Re: =?UTF-8?B?5Zue5aSN77ya?= openwrt batman-adv
+Date: Sat, 28 Dec 2019 06:40:41 +0100
+Message-ID: <43821815.iu2yF5aFiK@sven-edge>
+In-Reply-To: <tencent_CA5610319E19CB95CA9DB432847536DEFF09@qq.com>
 References: <tencent_01E5105A2CC20B1B047FF188EFCF47E55D08@qq.com>
+ <2363117.f9ZONqFbmS@sven-edge>
+ <tencent_CA5610319E19CB95CA9DB432847536DEFF09@qq.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1619690.nZUtLWqyvc";
+Content-Type: multipart/signed; boundary="nextPart40451064.sOvTPcQMsJ";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,68 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?utf-8?B?5byg6bmP?= <1805692831@qq.com>
+To: =?utf-8?B?5byg6bmP?= <1805692831@qq.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1619690.nZUtLWqyvc
+--nextPart40451064.sOvTPcQMsJ
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="UTF-8"
 
-On Tuesday, 24 December 2019 09:37:12 CET =E5=BC=A0=E9=B9=8F wrote:
-> Hi,
->     The platform I work on is openwrt mips, the kernel I use is version 3=
-=2E3; the version using batman is relatively low, and I want to use the new=
-er version batman on version 3.3, but I encounter many problems during comp=
-ilation, and I don't know it Whether it works ?
+On Saturday, 28 December 2019 03:32:17 CET =E5=BC=A0=E9=B9=8F wrote:
+>      Thank you very much for your reply!
+>      I have ported the pre-2019.2 version of batman to the 3.3 kernel and=
+ it is available for doing
 
-We dropped the support for kernels lower than 3.16.80 a long time ago [1]. =
-It=20
-is irresponsible to still ship such an old kernel (and batman-adv) version=
+Please don't do this. Now you are not only having the known bugs from Linux=
 =20
-with known security problems. And the last OpenWrt version which used 3.3 w=
-as=20
-something like 12.09 (Attitude Adjustment) from 2013. It is isn't supported=
- by=20
-OpenWrt upstream since many year.
+3.3 but also the known bugs [1] from the pre-2019.2 batman-adv.
 
-Please tell your hardware (+software) supplier to provide an up-to-date=20
-software package for your system. But since it is OpenWrt, you should just=
-=20
-grab 19.07 [2] and use it - and if it is just a OpenWrt fork and the hardwa=
-re=20
-supplier never submitted the support to the official OpenWrt then please te=
-ll=20
-your hw supplier to get the support correctly integrated in OpenWrt.
+The correct approach is to get your used software updated to a non-EOL=20
+version.
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/7ab78d556b343b592aa80f4=
-d84b2dfd14019f2d8
-[2] https://downloads.openwrt.org/releases/
---nextPart1619690.nZUtLWqyvc
+[1] https://git.open-mesh.org/batman-adv.git/blob/HEAD:/CHANGELOG.rst
+--nextPart40451064.sOvTPcQMsJ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl4B1E4ACgkQXYcKB8Em
-e0bipQ/7B0uL5ox9tXATZq7NIGY97BhMIdO+8hAEuhNOKIVAYvonMkePTJdJmpG+
-l+fWnUsZcHQNNmORQUqEhr2rUTQvqzZyFatbGWS5bIcxz85gtKdzXE2ej5vSHUtH
-MjOHuE/Dp8McPnrBpTaKdE0tp7doIoRn/WLeS76Ch/lPrsikcLLXUwbz3b+okfNQ
-nE1Xtw4PMsnulqb+wXSMaRmTj+1P3yQ/on9quruwC5jEdM/Ob8m+GdHKf4Tf8x1R
-Z5ZB6lc6VrpFb1IAG794xT2UByCjwkw2/LYm0WhGEORQU6jNch9C3h1oBKhnv496
-BVzxSDOL3UuNX4zYkzX7Rr287ezryGmevfg2S7SxrEH8heAQzoZ1uV4yhwtJwVEy
-OxZ8HqWvYeEJjvgWUReIpB0mz/qA+uFZ0oOFTEcMi8vYqj2THiNcwmrDTEPzWcA8
-pC60MhHyP4hpgId9Vfw1G0ycFIJSd5pklDPANTYoDdH56eRdgYyclDTpMWEoH/+M
-iT7mhMVQ/5wi/WucJRZtk1OGi0wY28HQq7Uj/hTBVPc+AtitQvREZGPvla+6n669
-FHf8R8qfEHBHxgQHlWm9NLY1o8ek5C6l9liQKgUQnZV3wyVCHuAQ9j/iB0SrWlyV
-7JWxSuW5A6fO6BksoQUzeheEFMnm68dXZB4mZJN9HBwDpcEmao4=
-=KiKk
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl4G6tkACgkQXYcKB8Em
+e0YU+g//caOS3gvLRoqsieypBRrLp4g19TyXEnDDk7Pe2UVAh+zgCtXgidF9N9D+
+ntzZboPqX7mhTS3njaNVwEm7lPdUzv2Suamv71IA4itS6zp52w6DpYy4a4s0mfs5
+7k9kzaMyx05SeMoJkHRA9lHy5ImAcpAnRCqdlSKA9N+4swDffR6DDYh3FUzCkqh4
+Bj+3gWCWN+3POazuKYLRL/XSwKa5d4cTvC2OUR5BS4XM06Z1MRwksLWK1+xzHmFk
+Cknm7wgMCFq9O5nqXhlw1/OaJkxw1TR+xf1YVIg2Nczz5Dc4fcj3CH7sOOBLBz0P
+NroGDbjgCFqoQI+0o6xkhoI2LOa/m4LZO6tibXU4MXrpBgv5XYaFyq/FBrIBf7Y+
+L06h0BNzbdw80aQHZBA6ICfaJ1wuiDYQb9/FB3QECKu/lRhk52YPOmxJ9Si5i7v9
+Jakx95a3WsS5P4gKzeCev26SpjhTFWNPgWbZn9FRbTwTeq6TLYz00JCBzz6L1hrs
+XpPMyGVAUn1KwVmQ0qxz1OTHk5ZWiyEWkLZ9Nq5EvG0ivbcmtsIkTjOv+9FA1sr5
+OyMcOZ1ehHvcrNqeKIBxuC+6PdMa8qQNGtkqujGBM/oLUat7SnDmjh6JKQq9LHoB
+nw2c1F/W6JQuWM8qg38LvP743/ldO6ygLy1KTpOGLcN15OqaH7U=
+=CnE0
 -----END PGP SIGNATURE-----
 
---nextPart1619690.nZUtLWqyvc--
+--nextPart40451064.sOvTPcQMsJ--
 
 
 
