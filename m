@@ -1,10 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Disable CONFIG_BATMAN_ADV_SYSFS by default
-Date: Wed,  1 Jan 2020 00:55:39 +0100
-Message-Id: <20191231235539.18041-1-sven@narfation.org>
+Subject: Re: [PATCH 3/8] net: batman-adv: remove unneeded MODULE_VERSION()
+ usage
+Date: Sat, 04 Jan 2020 20:59:30 +0100
+Message-ID: <3299640.fQ7R2JBGAg@sven-edge>
+In-Reply-To: <20200104195131.16577-3-info@metux.net>
+References: <20200104195131.16577-1-info@metux.net>
+ <20200104195131.16577-3-info@metux.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart26314590.TLOP3i5lGz";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,62 +19,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, marcel@holtmann.org, johan.hedberg@gmail.com, roopa@cumulusnetworks.com, nikolay@cumulusnetworks.com, edumazet@google.com, kuznet@ms2.inr.ac.ru, yoshfuji@linux-ipv6.org, jon.maloy@ericsson.com, ying.xue@windriver.com, kafai@fb.com, songliubraving@fb.com, yhs@fb.com, andriin@fb.com, netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-hyperv@vger.kernel.org, bpf@vger.kernel.org, Matthias Schiffer <mschiffer@universe-factory.net>, b.a.t.m.a.n@lists.open-mesh.org
 
-The sysfs support in batman-adv is deprecated since a while and will be
-removed completely next year.
+--nextPart26314590.TLOP3i5lGz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-All tools which were known to the batman-adv development team are
-supporting the batman-adv netlink interface since a while. Thus
-disabling CONFIG_BATMAN_ADV_SYSFS by default should not cause problems on
-most systems. It is still possible to enable it in case it is still
-required in a specific setup.
+On Saturday, 4 January 2020 20:51:26 CET Enrico Weigelt, metux IT consult wrote:
+> Remove MODULE_VERSION(), as it isn't needed at all: the only version
+> making sense is the kernel version.
+> 
+> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+> ---
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile               | 2 +-
- README.external.rst    | 2 +-
- net/batman-adv/Kconfig | 1 -
- 3 files changed, 2 insertions(+), 3 deletions(-)
+While it is not strictly required, there are still some consumers that need 
+this information to detect the version when installing various modules via 
+backports.
 
-diff --git a/Makefile b/Makefile
-index e391a1e7..448a14d6 100644
---- a/Makefile
-+++ b/Makefile
-@@ -17,7 +17,7 @@ export CONFIG_BATMAN_ADV_NC=n
- # B.A.T.M.A.N. multicast optimizations:
- export CONFIG_BATMAN_ADV_MCAST=y
- # B.A.T.M.A.N. sysfs support:
--export CONFIG_BATMAN_ADV_SYSFS=y
-+export CONFIG_BATMAN_ADV_SYSFS=n
- # B.A.T.M.A.N. tracing support:
- export CONFIG_BATMAN_ADV_TRACING=n
- # B.A.T.M.A.N. V routing algorithm (experimental):
-diff --git a/README.external.rst b/README.external.rst
-index 6db0117d..5a5da14e 100644
---- a/README.external.rst
-+++ b/README.external.rst
-@@ -49,7 +49,7 @@ module).  Available  options  and  their    possible   values are
-  * ``CONFIG_BATMAN_ADV_DAT=[y*|n]`` (B.A.T.M.A.N. Distributed ARP Table)
-  * ``CONFIG_BATMAN_ADV_MCAST=[y*|n]`` (B.A.T.M.A.N. multicast optimizations)
-  * ``CONFIG_BATMAN_ADV_NC=[y|n*]`` (B.A.T.M.A.N. Network Coding)
-- * ``CONFIG_BATMAN_ADV_SYSFS=[y*|n]`` (B.A.T.M.A.N. sysfs support)
-+ * ``CONFIG_BATMAN_ADV_SYSFS=[y|n*]`` (B.A.T.M.A.N. sysfs support)
-  * ``CONFIG_BATMAN_ADV_TRACING=[y|n*]`` (B.A.T.M.A.N. tracing support)
-  * ``CONFIG_BATMAN_ADV_BATMAN_V=[y*|n]`` (B.A.T.M.A.N. V routing algorithm)
- 
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index 045b2b18..c762758a 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -100,7 +100,6 @@ config BATMAN_ADV_DEBUG
- config BATMAN_ADV_SYSFS
- 	bool "batman-adv sysfs entries"
- 	depends on BATMAN_ADV
--	default y
- 	help
- 	  Say Y here if you want to enable batman-adv device configuration and
- 	  status interface through sysfs attributes. It is replaced by the
--- 
-2.20.1
+Kind regards,
+	Sven
+--nextPart26314590.TLOP3i5lGz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl4Q7qIACgkQXYcKB8Em
+e0ZWtxAAoeAT2LXc/P9gl9ouGpP+eXTe1HrRHNFos1gCKLRDX8CKmAy7GISoF1Nh
+qFnDKzO0HjCvVymbjkW1o2XA6FmMbMiJmU0kQ7elcgsWAkEcE2fa/+aIaoCMGXbf
+laWSCknJBtCfNii8G20PMnk41Gl7q0EO3tU51SWkJS3smDMCom02tQ3KI4Nth7Jk
+0oG9X9piCtsqOAdKm4xc0TQ47cC3R0G0Bi3Mp0Z0h5TPVkJwM9seZYqwQzudC0lG
+PxaWQKqcGwwbsyqkrltGg6PPIVDAOvBQs44TPJFgLNh9Cr1RX7zYWqHu7lB7K8Sg
+55DWm8lpmmf9AE+C18FqStkbpmoaqIalW+pxSo38GCVXhK0/2h5pbKu0uawy053Q
+AGVgxM6QvwfeCwK5QYZ+L8W886pwlWmhlA9PctQLbZB8LRyqbNd93wUIPfLe/BdG
+zR3vi4yV0TUQl4sKANMch14tImMoOdTiRHhbeIgpf2JtKNwJtXpROC7Eu7QDmdTM
+V0SBH+iUMGTOyN8+U0JyP3Vu4vpDhubB9XS9yf36DVfdOVQRNJmcgAYUdcEZv4dE
+gsDbjhHBsiz3qpdP3ixG4K/MohhpDuSfJE3yysPw4PwYr627x769ksDQKBO5qhzH
+s7H9oUOVjbHtuOjbk8rd1pX4xZQLPWju+ScoRsME9MECVqn3uRE=
+=HJk2
+-----END PGP SIGNATURE-----
+
+--nextPart26314590.TLOP3i5lGz--
+
+
 
