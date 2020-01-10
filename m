@@ -1,11 +1,12 @@
-Return-Path: <3-GkSXgkbAA05BCxnyyr4n22vq.t11tyr75r4p106r06.p1z@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <schlenkerjulian@outlook.com>
+From: Julian Schlenker <schlenkerjulian@outlook.com>
+Subject: Extracting topology information from batman adv
+Date: Fri, 10 Jan 2020 12:07:18 +0000
+Message-ID: <AM7PR07MB62635634B9432C2F27D81433AA380@AM7PR07MB6263.eurprd07.prod.outlook.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Date: Sun, 05 Jan 2020 14:58:00 -0800
-In-Reply-To: <000000000000ab3f800598cec624@google.com>
-Message-ID: <000000000000802598059b6c7989@google.com>
-Subject: Re: WARNING: bad unlock balance in sch_direct_xmit
-From: syzbot <syzbot+4ec99438ed7450da6272@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,27 +16,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, alex.aring@gmail.com, allison@lohutok.net, andrew@lunn.ch, andy@greyhouse.net, ap420073@gmail.com, ast@domdv.de, b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, cleech@redhat.com, daniel@iogearbox.net, davem@davemloft.net, dsa@cumulusnetworks.com, f.fainelli@gmail.com, fw@strlen.de, gregkh@linuxfoundation.org, gustavo@embeddedor.com, haiyangz@microsoft.com, info@metux.net, j.vosburgh@gmail.com, j@w1.fi, jakub.kicinski@netronome.com, jhs@mojatatu.com, jiri@resnulli.us, johan.hedberg@gmail.com, johannes.berg@intel.com, jwi@linux.ibm.com, kstewart@linuxfoundation.org, kvalo@codeaurora.org, kys@microsoft.com, linmiaohe@huawei.com, linux-bluetooth@vger.kernel.org, linux-hams@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ppp@vger.kernel.org, linux-wireless@vger.kernel.org, linux-wpan@vger.kernel.org, liuhangbin@gmail.com, marcel@holtmann.org, mareklindner@neomailbox.ch, mkubecek@suse.cz, mmanning@vyatta.att-mail.com, netdev@vger.kernel.org, nikolay@cumulusnetworks.com, oss-drivers@netronome.com, paulus@samba.org, ralf@linux-mips.org, roopa@cumulusnetworks.com, sashal@kernel.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-syzbot has bisected this bug to:
+Hello there,
 
-commit ab92d68fc22f9afab480153bd82a20f6e2533769
-Author: Taehee Yoo <ap420073@gmail.com>
-Date:   Mon Oct 21 18:47:51 2019 +0000
+for a project I have to start different processes on different nodes within=
+ an ad-hoc network. Besides CPU load and other factors I would like to use =
+the network information in my decision making. For example having a hop cou=
+nt would be great.
 
-     net: core: add generic lockdep keys
+I did have a look into the alfred man page, especially the "batadv-vis -f j=
+sondoc" command. This one seems to do the job although I am not sure what t=
+he "metric" stands for exactly.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15e88ec6e00000
-start commit:   36487907 Merge branch 'akpm' (patches from Andrew)
-git tree:       upstream
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=17e88ec6e00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=13e88ec6e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=f2f3ef188b7e16cf
-dashboard link: https://syzkaller.appspot.com/bug?extid=4ec99438ed7450da6272
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1722c5c1e00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=167aee3ee00000
+Or is maybe using batman, not batman adv a better fit, as I do not rely on =
+any additional Layer3 services? In addition the remapping of mac to ip both=
+ers me a bit.
 
-Reported-by: syzbot+4ec99438ed7450da6272@syzkaller.appspotmail.com
-Fixes: ab92d68fc22f ("net: core: add generic lockdep keys")
+Thanks in advance!
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+Best regards
+Julian
