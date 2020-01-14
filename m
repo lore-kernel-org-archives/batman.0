@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/7] batman-adv: Strip dots from variable macro kerneldoc
-Date: Tue, 14 Jan 2020 15:23:46 +0100
-Message-Id: <20200114142351.26622-3-sw@simonwunderlich.de>
+Subject: [PATCH 3/7] batman-adv: Fix typo metAdata
+Date: Tue, 14 Jan 2020 15:23:47 +0100
+Message-Id: <20200114142351.26622-4-sw@simonwunderlich.de>
 In-Reply-To: <20200114142351.26622-1-sw@simonwunderlich.de>
 References: <20200114142351.26622-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -21,67 +21,34 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The commit 43756e347f21 ("scripts/kernel-doc: Add support for named
-variable macro arguments") changed the handling of variable macro
-parameters. The three dots of the argument must no longer be added to the
-kernel doc. The support for the old format is scheduled to be removed in
-the future.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/log.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/types.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
-index 741cfa3719ff..41fd900121c5 100644
---- a/net/batman-adv/log.h
-+++ b/net/batman-adv/log.h
-@@ -74,7 +74,7 @@ __printf(2, 3);
-  * @bat_priv: the bat priv with all the soft interface information
-  * @ratelimited: whether output should be rate limited
-  * @fmt: format string
-- * @arg...: variable arguments
-+ * @arg: variable arguments
-  */
- #define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)		\
- 	do {								\
-@@ -98,7 +98,7 @@ static inline void _batadv_dbg(int type __always_unused,
-  * batadv_dbg() - Store debug output without ratelimiting
-  * @type: type of debug message
-  * @bat_priv: the bat priv with all the soft interface information
-- * @arg...: format string and variable arguments
-+ * @arg: format string and variable arguments
-  */
- #define batadv_dbg(type, bat_priv, arg...) \
- 	_batadv_dbg(type, bat_priv, 0, ## arg)
-@@ -107,7 +107,7 @@ static inline void _batadv_dbg(int type __always_unused,
-  * batadv_dbg_ratelimited() - Store debug output with ratelimiting
-  * @type: type of debug message
-  * @bat_priv: the bat priv with all the soft interface information
-- * @arg...: format string and variable arguments
-+ * @arg: format string and variable arguments
-  */
- #define batadv_dbg_ratelimited(type, bat_priv, arg...) \
- 	_batadv_dbg(type, bat_priv, 1, ## arg)
-@@ -116,7 +116,7 @@ static inline void _batadv_dbg(int type __always_unused,
-  * batadv_info() - Store message in debug buffer and print it to kmsg buffer
-  * @net_dev: the soft interface net device
-  * @fmt: format string
-- * @arg...: variable arguments
-+ * @arg: variable arguments
-  */
- #define batadv_info(net_dev, fmt, arg...)				\
- 	do {								\
-@@ -130,7 +130,7 @@ static inline void _batadv_dbg(int type __always_unused,
-  * batadv_err() - Store error in debug buffer and print it to kmsg buffer
-  * @net_dev: the soft interface net device
-  * @fmt: format string
-- * @arg...: variable arguments
-+ * @arg: variable arguments
-  */
- #define batadv_err(net_dev, fmt, arg...)				\
- 	do {								\
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 47718a82eaf2..bdf9827b5f63 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -457,7 +457,7 @@ struct batadv_orig_node {
+ 	/**
+ 	 * @tt_lock: prevents from updating the table while reading it. Table
+ 	 *  update is made up by two operations (data structure update and
+-	 *  metdata -CRC/TTVN-recalculation) and they have to be executed
++	 *  metadata -CRC/TTVN-recalculation) and they have to be executed
+ 	 *  atomically in order to avoid another thread to read the
+ 	 *  table/metadata between those.
+ 	 */
+@@ -1011,7 +1011,7 @@ struct batadv_priv_tt {
+ 	/**
+ 	 * @commit_lock: prevents from executing a local TT commit while reading
+ 	 *  the local table. The local TT commit is made up by two operations
+-	 *  (data structure update and metdata -CRC/TTVN- recalculation) and
++	 *  (data structure update and metadata -CRC/TTVN- recalculation) and
+ 	 *  they have to be executed atomically in order to avoid another thread
+ 	 *  to read the table/metadata between those.
+ 	 */
 -- 
 2.20.1
 
