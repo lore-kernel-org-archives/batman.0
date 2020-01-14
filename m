@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/7] batman-adv: Start new development cycle
-Date: Tue, 14 Jan 2020 15:23:45 +0100
-Message-Id: <20200114142351.26622-2-sw@simonwunderlich.de>
-In-Reply-To: <20200114142351.26622-1-sw@simonwunderlich.de>
-References: <20200114142351.26622-1-sw@simonwunderlich.de>
+Subject: [PATCH 1/1] batman-adv: Fix DAT candidate selection on little endian
+ systems
+Date: Tue, 14 Jan 2020 15:16:46 +0100
+Message-Id: <20200114141646.23598-2-sw@simonwunderlich.de>
+In-Reply-To: <20200114141646.23598-1-sw@simonwunderlich.de>
+References: <20200114141646.23598-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,26 +18,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Sven Eckelmann <sven@narfation.org>
+
+The distributed arp table is using a DHT to store and retrieve MAC address
+information for an IP address. This is done using unicast messages to
+selected peers. The potential peers are looked up using the IP address and
+the VID.
+
+While the IP address is always stored in big endian byte order, this is not
+the case of the VID. It can (depending on the host system) either be big
+endian or little endian. The host must therefore always convert it to big
+endian to ensure that all devices calculate the same peers for the same
+lookup data.
+
+Fixes: be1db4f6615b ("batman-adv: make the Distributed ARP Table vlan aware")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/distributed-arp-table.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index c7b340ddd0e7..fd8c0728ddc7 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -13,7 +13,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index b0af3a11d406..ec7bf5a4a9fc 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -285,6 +285,7 @@ static u32 batadv_hash_dat(const void *data, u32 size)
+ 	u32 hash = 0;
+ 	const struct batadv_dat_entry *dat = data;
+ 	const unsigned char *key;
++	__be16 vid;
+ 	u32 i;
  
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2019.5"
-+#define BATADV_SOURCE_VERSION "2020.0"
- #endif
+ 	key = (const unsigned char *)&dat->ip;
+@@ -294,7 +295,8 @@ static u32 batadv_hash_dat(const void *data, u32 size)
+ 		hash ^= (hash >> 6);
+ 	}
  
- /* B.A.T.M.A.N. parameters */
+-	key = (const unsigned char *)&dat->vid;
++	vid = htons(dat->vid);
++	key = (__force const unsigned char *)&vid;
+ 	for (i = 0; i < sizeof(dat->vid); i++) {
+ 		hash += key[i];
+ 		hash += (hash << 10);
 -- 
 2.20.1
 
