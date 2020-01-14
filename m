@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 5/7] batman-adv: Annotate bitwise integer pointer casts
-Date: Tue, 14 Jan 2020 15:23:49 +0100
-Message-Id: <20200114142351.26622-6-sw@simonwunderlich.de>
+Subject: [PATCH 7/7] batman-adv: Disable CONFIG_BATMAN_ADV_SYSFS by default
+Date: Tue, 14 Jan 2020 15:23:51 +0100
+Message-Id: <20200114142351.26622-8-sw@simonwunderlich.de>
 In-Reply-To: <20200114142351.26622-1-sw@simonwunderlich.de>
 References: <20200114142351.26622-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -21,68 +21,33 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The sparse commit 6002ded74587 ("add a flag to warn on casts to/from
-bitwise pointers") introduced a check for non-direct casts from/to
-restricted datatypes (when -Wbitwise-pointer is enabled).
+The sysfs support in batman-adv is deprecated since a while and will be
+removed completely next year.
 
-This triggered various warnings in batman-adv when some (already big
-endian) buffer content was casted to/from the corresponding big endian
-integer data types. But these were correct and can therefore be marked with
-__force to signalize sparse an intended cast from/to a bitwise type.
+All tools which were known to the batman-adv development team are
+supporting the batman-adv netlink interface since a while. Thus
+disabling CONFIG_BATMAN_ADV_SYSFS by default should not cause problems on
+most systems. It is still possible to enable it in case it is still
+required in a specific setup.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/distributed-arp-table.c | 8 +++++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ net/batman-adv/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 663a53b6d36e..0eff33580f95 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -844,7 +844,7 @@ static bool batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
- 
- 	/* handle as ANNOUNCE frame */
- 	backbone_gw->lasttime = jiffies;
--	crc = ntohs(*((__be16 *)(&an_addr[4])));
-+	crc = ntohs(*((__force __be16 *)(&an_addr[4])));
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "%s(): ANNOUNCE vid %d (sent by %pM)... CRC = %#.4x\n",
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index b0af3a11d406..5004e38fe792 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -246,7 +246,7 @@ static u8 *batadv_arp_hw_src(struct sk_buff *skb, int hdr_size)
-  */
- static __be32 batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
-+	return *(__force __be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
- }
- 
- /**
-@@ -270,7 +270,9 @@ static u8 *batadv_arp_hw_dst(struct sk_buff *skb, int hdr_size)
-  */
- static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4);
-+	u8 *dst = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4;
-+
-+	return *(__force __be32 *)dst;
- }
- 
- /**
-@@ -287,7 +289,7 @@ static u32 batadv_hash_dat(const void *data, u32 size)
- 	const unsigned char *key;
- 	u32 i;
- 
--	key = (const unsigned char *)&dat->ip;
-+	key = (__force const unsigned char *)&dat->ip;
- 	for (i = 0; i < sizeof(dat->ip); i++) {
- 		hash += key[i];
- 		hash += (hash << 10);
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 045b2b183213..c762758a4649 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -100,7 +100,6 @@ config BATMAN_ADV_DEBUG
+ config BATMAN_ADV_SYSFS
+ 	bool "batman-adv sysfs entries"
+ 	depends on BATMAN_ADV
+-	default y
+ 	help
+ 	  Say Y here if you want to enable batman-adv device configuration and
+ 	  status interface through sysfs attributes. It is replaced by the
 -- 
 2.20.1
 
