@@ -1,10 +1,10 @@
 Return-Path: <davem@davemloft.net>
-Date: Wed, 15 Jan 2020 13:45:02 -0800 (PST)
-Message-Id: <20200115.134502.1655641866201079006.davem@davemloft.net>
-Subject: Re: [PATCH 0/1] pull request for net: batman-adv 2020-01-14
+Date: Wed, 15 Jan 2020 14:04:32 -0800 (PST)
+Message-Id: <20200115.140432.1776246565261037371.davem@davemloft.net>
+Subject: Re: [PATCH 0/7] pull request for net-next: batman-adv 2020-01-14
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20200114141646.23598-1-sw@simonwunderlich.de>
-References: <20200114141646.23598-1-sw@simonwunderlich.de>
+In-Reply-To: <20200114142351.26622-1-sw@simonwunderlich.de>
+References: <20200114142351.26622-1-sw@simonwunderlich.de>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -21,10 +21,10 @@ To: sw@simonwunderlich.de
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 14 Jan 2020 15:16:45 +0100
+Date: Tue, 14 Jan 2020 15:23:44 +0100
 
-> here is a bugfix which we would like to have integrated into net.
+> here is a small feature/cleanup pull request of batman-adv to go into net-next.
 > 
 > Please pull or let me know of any problem!
 
-Pulled, thanks Simon.
+Also pulled, thanks Simon.
