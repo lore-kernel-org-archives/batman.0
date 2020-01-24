@@ -1,9 +1,9 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.4 1/9] batman-adv: Fix DAT candidate selection on
+Subject: [PATCH AUTOSEL 4.9 01/18] batman-adv: Fix DAT candidate selection on
  little endian systems
-Date: Fri, 24 Jan 2020 09:22:13 -0500
-Message-Id: <20200124142221.31201-1-sashal@kernel.org>
+Date: Fri, 24 Jan 2020 09:21:40 -0500
+Message-Id: <20200124142157.30931-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -42,10 +42,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index c2dff7c6e9607..76808c5e81836 100644
+index df7c6a0801885..3b440b8d7c052 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -226,6 +226,7 @@ static u32 batadv_hash_dat(const void *data, u32 size)
+@@ -242,6 +242,7 @@ static u32 batadv_hash_dat(const void *data, u32 size)
  	u32 hash = 0;
  	const struct batadv_dat_entry *dat = data;
  	const unsigned char *key;
@@ -53,7 +53,7 @@ index c2dff7c6e9607..76808c5e81836 100644
  	u32 i;
  
  	key = (const unsigned char *)&dat->ip;
-@@ -235,7 +236,8 @@ static u32 batadv_hash_dat(const void *data, u32 size)
+@@ -251,7 +252,8 @@ static u32 batadv_hash_dat(const void *data, u32 size)
  		hash ^= (hash >> 6);
  	}
  
