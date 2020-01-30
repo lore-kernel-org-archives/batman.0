@@ -1,13 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Internet connection problem with Batman
-Date: Thu, 30 Jan 2020 16:49:40 +0100
-Message-ID: <14371342.ShFETse3VS@bentobox>
-In-Reply-To: <1e9ca23deab35c772fdfc80feb96437f@eisox.com>
-References: <1e9ca23deab35c772fdfc80feb96437f@eisox.com>
+Return-Path: <3IDwzXgkbAF0NTUF5GG9M5KKD8.BJJBG9PN9M7JIO9IO.7JH@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3255925.PlAbV6GDRu";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Date: Thu, 30 Jan 2020 12:27:12 -0800
+Message-ID: <00000000000038fa02059d614893@google.com>
+Subject: KMSAN: uninit-value in batadv_interface_tx (2)
+From: syzbot <syzbot+24458cef7d37351dd0c3@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,117 +14,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: faycel.benhajkhalifa@eisox.com
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, glider@google.com, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
---nextPart3255925.PlAbV6GDRu
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-On Thursday, 30 January 2020 16:24:55 CET faycel.benhajkhalifa@eisox.com 
-wrote:
-> Hello,
-> I saw that you are contributing to BATMAN, may I ask you a few questions 
-> about my installation?
+syzbot found the following crash on:
 
-Not all here are contributing to batman-adv. But at least some of the guys on 
-the mailing list use batman-adv.
+HEAD commit:    686a4f77 kmsan: don't compile memmove
+git tree:       https://github.com/google/kmsan.git master
+console output: https://syzkaller.appspot.com/x/log.txt?x=11aff3c9e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=e10654781bc1f11c
+dashboard link: https://syzkaller.appspot.com/bug?extid=24458cef7d37351dd0c3
+compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
 
-> I have several boards with OpenWRT firmware:
-> I have 8 connected mesh boards.
-> Internet connection on the boards is not always available.
-> When a board no longer has an internet connection, I connect to another 
-> board and try the following commands:
-[...]
+Unfortunately, I don't have any reproducer for this crash yet.
 
-What do you ping from where? Please try to reduce the complexity of your tests 
-step by step. The simpler they are, the better to pinpoint the problem. So 
-don't try to ping from one node to the internet but to the actual gateway. Or 
-just to the next hop.
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+24458cef7d37351dd0c3@syzkaller.appspotmail.com
 
-What is the topology? Are the nodes in the mesh direct neighbors or are you 
-using multiple hops?
+=====================================================
+BUG: KMSAN: uninit-value in batadv_interface_tx+0x10cf/0x2450 net/batman-adv/soft-interface.c:264
+CPU: 1 PID: 16 Comm: ksoftirqd/1 Not tainted 5.5.0-rc5-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x1c9/0x220 lib/dump_stack.c:118
+ kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:118
+ __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:215
+ batadv_interface_tx+0x10cf/0x2450 net/batman-adv/soft-interface.c:264
+ __netdev_start_xmit include/linux/netdevice.h:4447 [inline]
+ netdev_start_xmit include/linux/netdevice.h:4461 [inline]
+ xmit_one net/core/dev.c:3420 [inline]
+ dev_hard_start_xmit+0x531/0xab0 net/core/dev.c:3436
+ __dev_queue_xmit+0x37de/0x4220 net/core/dev.c:4013
+ dev_queue_xmit+0x4b/0x60 net/core/dev.c:4046
+ hsr_xmit net/hsr/hsr_forward.c:228 [inline]
+ hsr_forward_do net/hsr/hsr_forward.c:285 [inline]
+ hsr_forward_skb+0x2614/0x30d0 net/hsr/hsr_forward.c:361
+ hsr_handle_frame+0x385/0x4b0 net/hsr/hsr_slave.c:43
+ __netif_receive_skb_core+0x21de/0x5840 net/core/dev.c:5051
+ __netif_receive_skb_one_core net/core/dev.c:5148 [inline]
+ __netif_receive_skb net/core/dev.c:5264 [inline]
+ process_backlog+0x936/0x1410 net/core/dev.c:6095
+ napi_poll net/core/dev.c:6532 [inline]
+ net_rx_action+0x786/0x1ab0 net/core/dev.c:6600
+ __do_softirq+0x311/0x83d kernel/softirq.c:293
+ run_ksoftirqd+0x25/0x40 kernel/softirq.c:607
+ smpboot_thread_fn+0x493/0x980 kernel/smpboot.c:165
+ kthread+0x4b5/0x4f0 kernel/kthread.c:256
+ ret_from_fork+0x35/0x40 arch/x86/entry/entry_64.S:353
 
-Did you check each hop with tcpdump? Are the packets arriving at each hop and 
-(for intermediate) nodes are forwarded correctly? The forwarding can only be 
-seen on the lower interfaces (interfaces in the batadv interface bat0). The 
-arrival can be seen on the upper layer (bat0) and on the lower layers. The 
-interesting part would be now where the packet or the answer is lost. Or maybe 
-the peer is not even answering on the ICMP echo request for some reason.
+Uninit was stored to memory at:
+ kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
+ kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
+ kmsan_memcpy_memmove_metadata+0x272/0x2e0 mm/kmsan/kmsan.c:247
+ kmsan_memcpy_metadata+0xb/0x10 mm/kmsan/kmsan.c:267
+ __msan_memcpy+0x43/0x50 mm/kmsan/kmsan_instr.c:116
+ pskb_expand_head+0x38b/0x1b00 net/core/skbuff.c:1637
+ __skb_pad+0x47f/0x900 net/core/skbuff.c:1805
+ __skb_put_padto include/linux/skbuff.h:3193 [inline]
+ skb_put_padto include/linux/skbuff.h:3212 [inline]
+ send_hsr_supervision_frame+0x122d/0x1500 net/hsr/hsr_device.c:310
+ hsr_announce+0x1e2/0x370 net/hsr/hsr_device.c:341
+ call_timer_fn+0x218/0x510 kernel/time/timer.c:1404
+ expire_timers kernel/time/timer.c:1449 [inline]
+ __run_timers+0xcff/0x1210 kernel/time/timer.c:1773
+ run_timer_softirq+0x2d/0x50 kernel/time/timer.c:1786
+ __do_softirq+0x311/0x83d kernel/softirq.c:293
 
-What protocol are you using above bat0? IPv6/IPv4? When it is IPv4, did you 
-check that the MAC addresses in the ARP table are correct? Did you try to 
-disable DAT in batman-adv? The disabling of DAT might be required when you 
-cannot guarantee that IPv4 addresses stay the same until the DAT cache 
-expires.
-
-Did you check whether you have IPv4/IPv6 conflicts?
-
-Did you check whether you have MAC address conflicts (either on the lower 
-interfaces or on the bat0/br0 interfaces)?
-
-Is only the internet connection not working or is something already failing in 
-the path to your gateway?
-
-Are the gateway and the node trying to get internet access using the correct 
-IPv6/IPv4 routes?
-
-Do you have multiple DHCP(v6)/RADV servers in the network which have 
-conflicting configurations?
-
-Do you manually set the gateway mode to client and have at least one node in 
-the network which have gateway mode set to server but is not actually 
-providing a valid DHCP answer.
-
-Did you check whether you have some loops in your network (over the bat0 
-interfaces - which seems to be bridged to other interfaces).
-
-Did you check whether the bridge is blocking the access to correct outgoing 
-port? Or whether a device behind your gateway device is blocking the 
-connection?
-
-Did you check whether your ip(6)tables is blocking some relevant traffic? Did 
-you check whether something is going wrong in the some offloading HW?
-
-Did you make sure that network-coding is disabled for the bat0 interface.
-
-What makes you think that batman-adv is the reason for the problem for 
-internet outage? batman-adv is by default not interested in layer 3/4/... 
-stuff. And thus it is not handling your internet access. There are some 
-optimizations like gw_mode and distributed_arp_table (DAT) that can try to 
-optimize the routing of some (usually broadcasted) packets. The broadcasted 
-packets will then reach the desired destination faster (or in DAT's case get 
-an answer faster) - but that is not the main task batman-adv does.
-
-It seems like you provided some config. But this seems to be a config for a 
-device which directly has internet access and not internet over batman-adv. So 
-not a node which has the internet outage problem.
-
-Kind regards,
-	Sven
---nextPart3255925.PlAbV6GDRu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl4y+xQACgkQXYcKB8Em
-e0ZbYw//bfoJW/qIyx+JAQVh5qtcOwsgIVmXxhCmTGe5c+V8zV5voeMXk3Skss2r
-4CovlL0KWVF68q5n2PTZQy7Dk84a5513lBnaLHl4fb7fOM2fdHo0v4Jg3FTcLOBV
-lJRHxb+NVpzS7vi3P9pO3G+tVxUy9S4sgVIBAtsIrCm+UiNoLwaweM+xv4o82oHX
-wR2NuA3RqJJneeGCtGB2vuMAtRZmxtzrEgBeG1PBT4LyZNIua2vWbURni4sjCNet
-JBgCsYf9fPtkDQXQdVXYGh0wCRQmWNDusFk4JcVMWvGSYfEfqQRo1yXwsyZ1dv+W
-EIpNiYK89HSIHWAXEB49BQuqvVs/1SKWvB2MabOu/zfy/xKCTP4pzffdRmNVpKfR
-9bQwGctNKys1hiOy/Mx2ndkvr6X2PDGArj/FQFXWdghKWCMCK+W/4m4APHW2hBCe
-V1i0su3l7A1JplwnK7joN+T9BRyoO95VjBTk2v2J/JN8J5ly9UC5hvqYV1JsKTpJ
-PeuX/HIvAI1P2fZkKIKD+Z8MFucGPNpRzIywMYwjNuzDngf3a484kHMd1GOGJT4l
-Z3Qng99W0+/FY2THE/xFnPQdOwtZ5dn0hlo/nGiJXll+IQB3eFBzCiyikjq6vknG
-dgJ1ONXjGdgpPX0eNUKYybjtwn+H7D4Qc0i/Zyj47+2oiqlSjVU=
-=kleI
------END PGP SIGNATURE-----
-
---nextPart3255925.PlAbV6GDRu--
+Uninit was created at:
+ kmsan_save_stack_with_flags+0x3c/0x90 mm/kmsan/kmsan.c:144
+ kmsan_internal_alloc_meta_for_pages mm/kmsan/kmsan_shadow.c:307 [inline]
+ kmsan_alloc_page+0x12a/0x310 mm/kmsan/kmsan_shadow.c:336
+ __alloc_pages_nodemask+0x57f2/0x5f60 mm/page_alloc.c:4800
+ __alloc_pages include/linux/gfp.h:498 [inline]
+ __alloc_pages_node include/linux/gfp.h:511 [inline]
+ alloc_pages_node include/linux/gfp.h:525 [inline]
+ __page_frag_cache_refill mm/page_alloc.c:4875 [inline]
+ page_frag_alloc+0x3ae/0x910 mm/page_alloc.c:4905
+ __netdev_alloc_skb+0x703/0xbb0 net/core/skbuff.c:455
+ __netdev_alloc_skb_ip_align include/linux/skbuff.h:2801 [inline]
+ netdev_alloc_skb_ip_align include/linux/skbuff.h:2811 [inline]
+ batadv_iv_ogm_aggregate_new net/batman-adv/bat_iv_ogm.c:558 [inline]
+ batadv_iv_ogm_queue_add+0x10da/0x1900 net/batman-adv/bat_iv_ogm.c:670
+ batadv_iv_ogm_schedule_buff net/batman-adv/bat_iv_ogm.c:829 [inline]
+ batadv_iv_ogm_schedule+0xcf1/0x13c0 net/batman-adv/bat_iv_ogm.c:865
+ batadv_iv_send_outstanding_bat_ogm_packet+0xbae/0xd50 net/batman-adv/bat_iv_ogm.c:1718
+ process_one_work+0x1552/0x1ef0 kernel/workqueue.c:2264
+ worker_thread+0xef6/0x2450 kernel/workqueue.c:2410
+ kthread+0x4b5/0x4f0 kernel/kthread.c:256
+ ret_from_fork+0x35/0x40 arch/x86/entry/entry_64.S:353
+=====================================================
 
 
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
