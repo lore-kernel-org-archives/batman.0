@@ -1,14 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] net: batman-adv: Use built-in RCU list checking
-Date: Sun, 16 Feb 2020 17:17:36 +0100
-Message-ID: <14125758.fD4hS3u3Vl@sven-edge>
-In-Reply-To: <20200216155243.GB4542@madhuparna-HP-Notebook>
-References: <20200216144718.2841-1-madhuparnabhowmik10@gmail.com>
- <1634394.jP7ydfi60B@sven-edge> <20200216155243.GB4542@madhuparna-HP-Notebook>
+Subject: [PATCH] batman-adv: Avoid RCU list-traversal in spinlock
+Date: Sun, 16 Feb 2020 19:00:25 +0100
+Message-Id: <20200216180025.14271-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2027361.KDeqtIc2Nz";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,52 +14,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
-Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, joel@joelfernandes.org, frextrite@gmail.com, linux-kernel-mentees@lists.linuxfoundation.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: frextrite@gmail.com, joel@joelfernandes.org, Sven Eckelmann <sven@narfation.org>, Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
 
---nextPart2027361.KDeqtIc2Nz
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The new CONFIG_PROVE_RCU_LIST requires a condition statement in
+(h)list_for_each_entry_rcu when the code might be executed in a non RCU
+non-reader section with the writer lock. Otherwise lockdep might cause a
+false positive warning like
 
-On Sunday, 16 February 2020 16:52:44 CET Madhuparna Bhowmik wrote:
-[...]
-> > I understand this part. I was asking how you've identified them. Did you use 
-> > any tool for that? coccinelle, sparse, ...
-> 
-> Not really, I did it manually by inspecting each occurence.
+  =============================
+  WARNING: suspicious RCU usage
+  -----------------------------
+  translation-table.c:940 RCU-list traversed in non-reader section!!
 
-In that case, I don't understand why you didn't convert the occurrences from 
-hlist_for_each_entry_rcu to hlist_for_each_entry [1]. Because a manual
-inspection should have noticed that there will always be the lock around
-these ones.
+batman-adv is (mostly) following the examples from the RCU documenation and
+is using the normal list-traversal primitives instead of the RCU
+list-traversal primitives when the writer (spin)lock is held.
 
-KInd regards,
-	Sven
+The remaining users of RCU list-traversal primitives with writer spinlock
+have to be converted to the same style as the rest of the code.
 
-[1] https://www.kernel.org/doc/html/v5.6-rc1/RCU/whatisRCU.html#analogy-with-reader-writer-locking
---nextPart2027361.KDeqtIc2Nz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Reported-by: Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/translation-table.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl5JayAACgkQXYcKB8Em
-e0arqxAAs2BMDdBX1BL6F26UneTAZ8w5R8MOruf6/NJycj1OzwF9X96BeX0cyj4q
-Gnryzgqb3/LXfZPWhF2HSLjuPeVjgiJOoF5S+3n9R00k0Oitqo53gFHirNzLqFYu
-bJThufWSFbq3agNcYgrjYe15pyOe46r9Vt/aGyjVsvX+f8J/7PRFCTkznhluzo9C
-tmLWbM4tbVJu8JDUD3PY/vR9SxPShYqDOlFz45bqmzHb7Dcr2fLYZC/jlbzd5af+
-xTNCsjsk2U9pwR+te1MaIqJ6BDrIljis4HXLCdAMuL5ny1QKrNL1Hj/iS9ycxCnh
-1lUNi0HGdRtGcpXbRBIiLkykMJMiIZoep+PkP5CND2WELURBBRVrys8xvwDD3mxJ
-xdvhXKAkMv2qaJpbGIQWEf/p+UDbXQXr9Xa1UeUOOHjpC8eNm1FYtKKzTL0W74lE
-9KSt086kB2Y9pUMAGQWoIDyb1QKTxQV+jzx9YJEL2AzGO0NEwd+d0UJrxXX+qNbF
-BKd+EqdAIR/PfAp2pA4PIxAvieu9Z3jCnXkEURkhS19Rgu1G/0iBq6p8abj+CW8a
-7OBNe+13SISLc0rMoX/nbH/Pwxq9MlqRJifFr05S77mKEvdNS8tz0KwN/ZVMSfA+
-2dDdXfKzPo3BGnfSOtj7G1wgUMBWOFXVLnFytQEyYXMdlWC47Ks=
-=70Ud
------END PGP SIGNATURE-----
-
---nextPart2027361.KDeqtIc2Nz--
-
-
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 85293283..2d52356a 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -862,7 +862,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	u8 *tt_change_ptr;
+ 
+ 	spin_lock_bh(&orig_node->vlan_list_lock);
+-	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
++	hlist_for_each_entry(vlan, &orig_node->vlan_list, list) {
+ 		num_vlan++;
+ 		num_entries += atomic_read(&vlan->tt.num_entries);
+ 	}
+@@ -888,7 +888,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	(*tt_data)->num_vlan = htons(num_vlan);
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
+-	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
++	hlist_for_each_entry(vlan, &orig_node->vlan_list, list) {
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
+ 
+@@ -937,7 +937,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 	int change_offset;
+ 
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+-	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++	hlist_for_each_entry(vlan, &bat_priv->softif_vlan_list, list) {
+ 		vlan_entries = atomic_read(&vlan->tt.num_entries);
+ 		if (vlan_entries < 1)
+ 			continue;
+-- 
+2.20.1
 
