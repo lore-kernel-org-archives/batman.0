@@ -1,10 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Avoid RCU list-traversal in spinlock
-Date: Sun, 16 Feb 2020 19:00:25 +0100
-Message-Id: <20200216180025.14271-1-sven@narfation.org>
+Return-Path: <emiliemeyer1016@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Emilie Meyer <emiliemeyer1016@gmail.com>
+Date: Sun, 16 Feb 2020 10:20:41 -0800
+Message-ID: <CAFF9uhp7M94yAPhWnpUkBwLzQa8rgxMGdBYU2CNQ203QtJZs9g@mail.gmail.com>
+Subject: Issue with bridging LAN and mesh network
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,62 +15,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: frextrite@gmail.com, joel@joelfernandes.org, Sven Eckelmann <sven@narfation.org>, Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
 
-The new CONFIG_PROVE_RCU_LIST requires a condition statement in
-(h)list_for_each_entry_rcu when the code might be executed in a non RCU
-non-reader section with the writer lock. Otherwise lockdep might cause a
-false positive warning like
+Hi all
 
-  =============================
-  WARNING: suspicious RCU usage
-  -----------------------------
-  translation-table.c:940 RCU-list traversed in non-reader section!!
+I have tried to set up a mesh network according to the following tutorial:
 
-batman-adv is (mostly) following the examples from the RCU documenation and
-is using the normal list-traversal primitives instead of the RCU
-list-traversal primitives when the writer (spin)lock is held.
+https://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
 
-The remaining users of RCU list-traversal primitives with writer spinlock
-have to be converted to the same style as the rest of the code.
+Everything goes well until the steps for creating a bridge between
+eth0 and bat0.
+When running the command as shown below, it fails.
 
-Reported-by: Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/translation-table.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+root@OpenWrt:~# ip link set eth0 master mesh-bridge
+ip: either "dev" is duplicate, or "master" is garbage
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 85293283..2d52356a 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -862,7 +862,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	u8 *tt_change_ptr;
- 
- 	spin_lock_bh(&orig_node->vlan_list_lock);
--	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
-+	hlist_for_each_entry(vlan, &orig_node->vlan_list, list) {
- 		num_vlan++;
- 		num_entries += atomic_read(&vlan->tt.num_entries);
- 	}
-@@ -888,7 +888,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	(*tt_data)->num_vlan = htons(num_vlan);
- 
- 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
--	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
-+	hlist_for_each_entry(vlan, &orig_node->vlan_list, list) {
- 		tt_vlan->vid = htons(vlan->vid);
- 		tt_vlan->crc = htonl(vlan->tt.crc);
- 
-@@ -937,7 +937,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	int change_offset;
- 
- 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
--	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+	hlist_for_each_entry(vlan, &bat_priv->softif_vlan_list, list) {
- 		vlan_entries = atomic_read(&vlan->tt.num_entries);
- 		if (vlan_entries < 1)
- 			continue;
+I suspect that the ip version (BusyBox v1.28.4) I got does not support bridging?
+Sincerely hope that someone can please guide me to solve this issue.
+
+This is my HW/SW:
+HW: TP-Link TL-WR841N and Ubiquiti M2 Bullet
+OpenWrt 18.06.4, r7808-ef686b7292
+
+As you see I have not the newest HW so that's the reason why I have
+initially tried to use OpenWrt version 18.06.4 and not the newest
+version.
+Anyone that have experience with Batman on these wifi devices, please share.
+
+Many thanks in advance for your help.
+
 -- 
-2.20.1
+Regards
 
+Emilie
