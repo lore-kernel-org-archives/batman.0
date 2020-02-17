@@ -1,16 +1,10 @@
-Return-Path: <madhuparnabhowmik10@gmail.com>
-From: Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>
-Date: Mon, 17 Feb 2020 17:35:25 +0530
-Subject: Re: [PATCH] net: batman-adv: Use built-in RCU list checking
-Message-ID: <20200217120524.GA12888@madhuparna-HP-Notebook>
-References: <20200216144718.2841-1-madhuparnabhowmik10@gmail.com>
- <1634394.jP7ydfi60B@sven-edge>
- <20200216155243.GB4542@madhuparna-HP-Notebook>
- <14125758.fD4hS3u3Vl@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH maint] batman-adv: Don't schedule OGM for disabled interface
+Date: Mon, 17 Feb 2020 15:16:41 +0100
+Message-Id: <20200217141641.26999-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <14125758.fD4hS3u3Vl@sven-edge>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,34 +14,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Madhuparna Bhowmik <madhuparnabhowmik10@gmail.com>, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, joel@joelfernandes.org, frextrite@gmail.com, linux-kernel-mentees@lists.linuxfoundation.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, syzbot+a98f2016f40b9cd3818a@syzkaller.appspotmail.com, syzbot+ac36b6a33c28a491e929@syzkaller.appspotmail.com, Hillf Danton <hdanton@sina.com>
 
-On Sun, Feb 16, 2020 at 05:17:36PM +0100, Sven Eckelmann wrote:
-> On Sunday, 16 February 2020 16:52:44 CET Madhuparna Bhowmik wrote:
-> [...]
-> > > I understand this part. I was asking how you've identified them. Did you use 
-> > > any tool for that? coccinelle, sparse, ...
-> > 
-> > Not really, I did it manually by inspecting each occurence.
-> 
-> In that case, I don't understand why you didn't convert the occurrences from 
-> hlist_for_each_entry_rcu to hlist_for_each_entry [1]. Because a manual
-> inspection should have noticed that there will always be the lock around
-> these ones.
->
-Hi Sven,
-I have been working on similar issues (passing cond argument to
-list_for_each_entry_Rcu()). That's why may be I didn't notice that in
-this case rcu variant is not required.
-Thank you for taking a closer look and fixing it the right way.
+A transmission scheduling for an interface which is currently dropped by
+batadv_iv_ogm_iface_disable could still be in progress. The B.A.T.M.A.N. V
+is simply cancelling the workqueue item in an synchronous way but this is
+not possible with B.A.T.M.A.N. IV because the OGM submissions are
+intertwined.
 
-Regards,
-Madhuparna
+Instead it has to stop submitting the OGM when it detect that the buffer
+pointer is set to NULL.
 
-> KInd regards,
-> 	Sven
-> 
-> [1] https://www.kernel.org/doc/html/v5.6-rc1/RCU/whatisRCU.html#analogy-with-reader-writer-locking
+Reported-by: syzbot+a98f2016f40b9cd3818a@syzkaller.appspotmail.com
+Reported-by: syzbot+ac36b6a33c28a491e929@syzkaller.appspotmail.com
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Cc: Hillf Danton <hdanton@sina.com>
 
+I had this one in the pipeline but didn't find the time to correctly test
+it. You already send your one to syzkaller - do you want to rework your one
+(to also catch the broken submission on the same interface) and submit it?
+Or is this patch also ok for you? If it is, do you want to be mentioned in
+some way or form in this patch?
+---
+ net/batman-adv/bat_iv_ogm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 5b0b20e6..bd514c36 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -789,6 +789,10 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 
+ 	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
++	/* interface already disabled in batadv_iv_ogm_iface_disable */
++	if (!*ogm_buff)
++		return;
++
+ 	/* the interface gets activated here to avoid race conditions between
+ 	 * the moment of activating the interface in
+ 	 * hardif_activate_interface() where the originator mac is set and
+-- 
+2.20.1
 
