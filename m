@@ -1,12 +1,18 @@
-Return-Path: <3m-lMXgkbAJoMSTE4FF8L4JJC7.AIIAF8OM8L6IHN8HN.6IG@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <srn@coolheads.com>
+Reply-To: srn@coolheads.com
+Subject: Re: can't find logged information
+References: <24aa48bb-8f52-78be-28df-98ec2e2a054b@coolheads.com>
+ <1851274.gzzsXW5Q3G@prime>
+ <a687012a-8857-22f3-0623-d82bad19e7bc@coolheads.com>
+ <2230258.gT3E0N9OL2@prime>
+From: Steve Newcomb <srn@coolheads.com>
+Message-ID: <e8843ba8-f0b4-728f-eebd-5ca55ac2828b@coolheads.com>
+Date: Wed, 19 Feb 2020 10:00:35 -0500
 MIME-Version: 1.0
-Date: Tue, 18 Feb 2020 23:54:03 -0800
-In-Reply-To: <0000000000006d7b1e059c7db653@google.com>
-Message-ID: <000000000000908c50059ee9173a@google.com>
-Subject: Re: KASAN: use-after-free Read in bitmap_ip_ext_cleanup
-From: syzbot <syzbot+b554d01b6c7870b17da2@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <2230258.gT3E0N9OL2@prime>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
 Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,33 +22,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, coreteam@netfilter.org, davem@davemloft.net, florent.fourcot@wifirst.fr, fw@strlen.de, jeremy@azazel.net, johannes.berg@intel.com, kadlec@blackhole.kfki.hu, kadlec@netfilter.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, nikolay@cumulusnetworks.com, pablo@netfilter.org, roopa@cumulusnetworks.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-syzbot suspects this bug was fixed by commit:
+I'm very grateful for your very helpful attention to my bizarre problem,=20
+Simon.
 
-commit 32c72165dbd0e246e69d16a3ad348a4851afd415
-Author: Kadlecsik J=C3=B3zsef <kadlec@blackhole.kfki.hu>
-Date:   Sun Jan 19 21:06:49 2020 +0000
+Two days ago, my efforts to instrument the nodes had the weird=20
+side-effect of making the problem go away.=A0 So now I have no problem;=20
+only the mystery remains, and I have little hope of resolving it.
 
-    netfilter: ipset: use bitmap infrastructure completely
+For the record, below are some details that seem relevant, at least to me.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=3D17079245e000=
-00
-start commit:   8f8972a3 Merge tag 'mtd/fixes-for-5.5-rc7' of git://git.ke.=
-.
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=3Dd9290aeb7e6cf1c=
-4
-dashboard link: https://syzkaller.appspot.com/bug?extid=3Db554d01b6c7870b17=
-da2
-userspace arch: i386
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=3D145948d6e0000=
-0
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=3D16202cc9e00000
 
-If the result looks correct, please mark the bug fixed by replying with:
 
-#syz fix: netfilter: ipset: use bitmap infrastructure completely
+On 2/19/20 4:50 AM, Simon Wunderlich wrote:
+>
+>> -----------------------------------------------------------------------
+>>
+>> When nodes become unreachable, they do so only partially.  Consider this
+>> weirdness I encountered two days ago:  Given nodes a, b, c, d, from the
+>> perspective of a, d has disappeared; in other words, "a# batctl ping d"
+>> doesn't work.  But I ssh'd from a to b, then from b to c, then from c to
+>> d, all successfully.  And "a# batctl ping d" still wasn't working, even
+>> though I was talking to d through that chain of ssh pipes.  Any ideas on
+>> what that might mean?  (When I reboot a -- the gateway -- everything
+>> always works again, usually for many hours, but never as long as a whole
+>> day.)
+> Hmm, that's strange indeed. Did you have good connection between all those
+> devices? There is a certain "horizon", e.g. if you have many weak links i=
+n a
+> daisy chain the the OGMs are dropped before they are reaching the end of =
+the
+> path.
+>
+> Did you see node D in the originator table of node A?
+As discussed below, when I added instrumentation, the problem=20
+disappeared.=A0 (*insert muffled scream here*)
+>
+>> ----------------------------------------------------------------------
+>>
+>> Do I have a problem because the two meshes, and everything connected to
+>> them, all share the same LAN?  I note "received a claim frame from
+>> another group" in the above log excerpt.  (I don't know what that means,
+>> but I'm guessing that the two meshes are getting each other's
+>> maintenance traffic.)  Should the two meshes be separate subnets?
+> It's possible and perfectly fine if you have two meshes connected to the =
+same
+> LAN like this:
+>
+> https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-=
+Testcases#Two-meshes-connected-by-one-LAN
+>
+> Just make sure that the meshes are properly disconnected and not rejoin f=
+rom
+> time to time (e.g. by having different SSIDs)
+I think I had missed this page.=A0 Thanks for pointing it out.
+>
+>> In a similar vein: Should each node be running its own subnet?
+>>
+>> ----------------------------------------------------------------------
+>>
+>> Should I try changing all nodes over to BATMAN_V, rebooting them all,
+>> and hoping they re-establish contact?  (It would be massively
+>> inconvenient to have to reset them all physically.)
+> No, BATMAN V will not magically fix this.
+Then I won't switch to BATMAN_V.=A0 "If it ain't broke, don't fix it."
+>
+>> ----------------------------------------------------------------------
+>>
+>> Should I try turning off bridge loop avoidance?
+> bridge loop avoidance should be on as soon as you have any two nodes conn=
+ected
+> to the same LAN and mesh at one time.
+Then I guess I don't need BLA.=A0 I'm tempted to turn it off just to avoid =
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisectio=
-n
+the overhead, because only the gateways have wired access to the LAN,=20
+and all other nodes have only their respective meshes.
+>
+> I think we should work on your a - b - c - d chain and find out why a can=
+'t
+> talk to d. That seems like the most obvious symptom.
+I would do that if it were still broken!
+
+Here's what I did, in some detail: rosepark dot us hash Feb182020
+
+
+
