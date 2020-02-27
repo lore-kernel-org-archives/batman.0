@@ -1,160 +1,110 @@
-Return-Path: <dvyukov@google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Node AP's
+Date: Thu, 27 Feb 2020 17:11:23 +0100
+Message-ID: <5758265.JSquzJLQuT@bentobox>
+In-Reply-To: <CANdV1hR-=nwrXkZTAh7C9LjW7MRbxEPeCpV4V7odiUV2dk0QcA@mail.gmail.com>
+References: <CANdV1hR-=nwrXkZTAh7C9LjW7MRbxEPeCpV4V7odiUV2dk0QcA@mail.gmail.com>
 MIME-Version: 1.0
-References: <0000000000003cbb40059f4e0346@google.com>
- <CAHC9VhQVXk5ucd3=7OC=BxEkZGGLfXv9bESX67Mr-TRmTwxjEg@mail.gmail.com>
- <17916d0509978e14d9a5e9eb52d760fa57460542.camel@redhat.com>
- <CAHC9VhQnbdJprbdTa_XcgUJaiwhzbnGMWJqHczU54UMk0AFCtw@mail.gmail.com>
-In-Reply-To: <CAHC9VhQnbdJprbdTa_XcgUJaiwhzbnGMWJqHczU54UMk0AFCtw@mail.gmail.com>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Thu, 27 Feb 2020 16:39:59 +0100
-Message-ID: <CACT4Y+azQXLcPqtJG9zbj8hxqw4jE3dcwUj5T06bdL3uMaZk+Q@mail.gmail.com>
-Subject: Re: kernel panic: audit: backlog limit exceeded
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; boundary="nextPart2279995.2Smy5gWWIt";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Paul Moore <paul@paul-moore.com>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Eric Paris <eparis@redhat.com>, syzbot <syzbot+9a5e789e4725b9ef1316@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, Dan Carpenter <dan.carpenter@oracle.com>, David Miller <davem@davemloft.net>, fzago@cray.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, john.hammond@intel.com, linux-audit@redhat.com, LKML <linux-kernel@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, sw@simonwunderlich.de, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, syzkaller <syzkaller@googlegroups.com>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Zach Barnett <zacharyc.barnett@gmail.com>
 
-On Mon, Feb 24, 2020 at 11:47 PM Paul Moore <paul@paul-moore.com> wrote:
->
-> On Mon, Feb 24, 2020 at 5:43 PM Eric Paris <eparis@redhat.com> wrote:
-> > https://syzkaller.appspot.com/x/repro.syz?x=151b1109e00000 (the
-> > reproducer listed) looks like it is literally fuzzing the AUDIT_SET.
-> > Which seems like this is working as designed if it is setting the
-> > failure mode to 2.
->
-> So it is, good catch :)  I saw the panic and instinctively chalked
-> that up to a mistaken config, not expecting that it was what was being
-> tested.
+--nextPart2279995.2Smy5gWWIt
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Yes, this audit failure mode is quite unpleasant for fuzzing. And
-since this is not a top-level syscall argument value, it's effectively
-impossible to filter out in the fuzzer. Maybe another use case for the
-"fuzer lockdown" feature +Tetsuo proposed.
-With the current state of the things, I think we only have an option
-to disable fuzzing of audit. Which is pity because it has found 5 or
-so real bugs in audit too.
-But this happened anyway because audit is only reachable from init pid
-namespace and syzkaller always unshares pid namespace for sandboxing
-reasons, that was removed accidentally and that's how it managed to
-find the bugs. But the unshare is restored now:
-https://github.com/google/syzkaller/commit/5e0e1d1450d7c3497338082fc28912fdd7f93a3c
+On Thursday, 27 February 2020 16:13:48 CET Zach Barnett wrote:
+> I looking for clarification about the following question
+> 
+> How can I connect non-mesh clients to my batman-adv network ?
 
-As a side effect all other real bugs in audit will be auto-obsoleted
-in future if not fixed because they will stop happening.
-
-#syz invalid
+Bridge (easiest way) or route the traffic from non-mesh interface to the 
+batadv interface (and vice versa). [1]
 
 
-> > On Mon, 2020-02-24 at 17:38 -0500, Paul Moore wrote:
-> > > On Mon, Feb 24, 2020 at 3:18 AM syzbot
-> > > <syzbot+9a5e789e4725b9ef1316@syzkaller.appspotmail.com> wrote:
-> > > > Hello,
-> > > >
-> > > > syzbot found the following crash on:
-> > > >
-> > > > HEAD commit:    36a44bcd Merge branch 'bnxt_en-shutdown-and-kexec-
-> > > > kdump-re..
-> > > > git tree:       net
-> > > > console output:
-> > > > https://syzkaller.appspot.com/x/log.txt?x=148bfdd9e00000
-> > > > kernel config:
-> > > > https://syzkaller.appspot.com/x/.config?x=768cc3d3e277cc16
-> > > > dashboard link:
-> > > > https://syzkaller.appspot.com/bug?extid=9a5e789e4725b9ef1316
-> > > > compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-> > > > syz repro:
-> > > > https://syzkaller.appspot.com/x/repro.syz?x=151b1109e00000
-> > > > C reproducer:
-> > > > https://syzkaller.appspot.com/x/repro.c?x=128bfdd9e00000
-> > > >
-> > > > The bug was bisected to:
-> > > >
-> > > > commit 0c1b9970ddd4cc41002321c3877e7f91aacb896d
-> > > > Author: Dan Carpenter <dan.carpenter@oracle.com>
-> > > > Date:   Fri Jul 28 14:42:27 2017 +0000
-> > > >
-> > > >     staging: lustre: lustre: Off by two in lmv_fid2path()
-> > > >
-> > > > bisection log:
-> > > > https://syzkaller.appspot.com/x/bisect.txt?x=17e6c3e9e00000
-> > > > final crash:
-> > > > https://syzkaller.appspot.com/x/report.txt?x=1416c3e9e00000
-> > > > console output:
-> > > > https://syzkaller.appspot.com/x/log.txt?x=1016c3e9e00000
-> > > >
-> > > > IMPORTANT: if you fix the bug, please add the following tag to the
-> > > > commit:
-> > > > Reported-by: syzbot+9a5e789e4725b9ef1316@syzkaller.appspotmail.com
-> > > > Fixes: 0c1b9970ddd4 ("staging: lustre: lustre: Off by two in
-> > > > lmv_fid2path()")
-> > > >
-> > > > audit: audit_backlog=13 > audit_backlog_limit=7
-> > > > audit: audit_lost=1 audit_rate_limit=0 audit_backlog_limit=7
-> > > > Kernel panic - not syncing: audit: backlog limit exceeded
-> > > > CPU: 1 PID: 9913 Comm: syz-executor024 Not tainted 5.6.0-rc1-
-> > > > syzkaller #0
-> > > > Hardware name: Google Google Compute Engine/Google Compute Engine,
-> > > > BIOS Google 01/01/2011
-> > > > Call Trace:
-> > > >  __dump_stack lib/dump_stack.c:77 [inline]
-> > > >  dump_stack+0x197/0x210 lib/dump_stack.c:118
-> > > >  panic+0x2e3/0x75c kernel/panic.c:221
-> > > >  audit_panic.cold+0x32/0x32 kernel/audit.c:307
-> > > >  audit_log_lost kernel/audit.c:377 [inline]
-> > > >  audit_log_lost+0x8b/0x180 kernel/audit.c:349
-> > > >  audit_log_start kernel/audit.c:1788 [inline]
-> > > >  audit_log_start+0x70e/0x7c0 kernel/audit.c:1745
-> > > >  audit_log+0x95/0x120 kernel/audit.c:2345
-> > > >  xt_replace_table+0x61d/0x830 net/netfilter/x_tables.c:1413
-> > > >  __do_replace+0x1da/0x950 net/ipv6/netfilter/ip6_tables.c:1084
-> > > >  do_replace net/ipv6/netfilter/ip6_tables.c:1157 [inline]
-> > > >  do_ip6t_set_ctl+0x33a/0x4c8 net/ipv6/netfilter/ip6_tables.c:1681
-> > > >  nf_sockopt net/netfilter/nf_sockopt.c:106 [inline]
-> > > >  nf_setsockopt+0x77/0xd0 net/netfilter/nf_sockopt.c:115
-> > > >  ipv6_setsockopt net/ipv6/ipv6_sockglue.c:949 [inline]
-> > > >  ipv6_setsockopt+0x147/0x180 net/ipv6/ipv6_sockglue.c:933
-> > > >  tcp_setsockopt net/ipv4/tcp.c:3165 [inline]
-> > > >  tcp_setsockopt+0x8f/0xe0 net/ipv4/tcp.c:3159
-> > > >  sock_common_setsockopt+0x94/0xd0 net/core/sock.c:3149
-> > > >  __sys_setsockopt+0x261/0x4c0 net/socket.c:2130
-> > > >  __do_sys_setsockopt net/socket.c:2146 [inline]
-> > > >  __se_sys_setsockopt net/socket.c:2143 [inline]
-> > > >  __x64_sys_setsockopt+0xbe/0x150 net/socket.c:2143
-> > > >  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
-> > > >  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-> > > > RIP: 0033:0x44720a
-> > > > Code: 49 89 ca b8 37 00 00 00 0f 05 48 3d 01 f0 ff ff 0f 83 1a e0
-> > > > fb ff c3 66 0f 1f 84 00 00 00 00 00 49 89 ca b8 36 00 00 00 0f 05
-> > > > <48> 3d 01 f0 ff ff 0f 83 fa df fb ff c3 66 0f 1f 84 00 00 00 00 00
-> > > > RSP: 002b:00007ffd032dec78 EFLAGS: 00000286 ORIG_RAX:
-> > > > 0000000000000036
-> > > > RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000044720a
-> > > > RDX: 0000000000000040 RSI: 0000000000000029 RDI: 0000000000000003
-> > > > RBP: 00007ffd032deda0 R08: 00000000000003b8 R09: 0000000000004000
-> > > > R10: 00000000006d7b40 R11: 0000000000000286 R12: 00007ffd032deca0
-> > > > R13: 00000000006d9d60 R14: 0000000000000029 R15: 00000000006d7ba0
-> > > > Kernel Offset: disabled
-> > > > Rebooting in 86400 seconds..
-> > > >
-> > > >
-> > > > ---
-> > > > This bug is generated by a bot. It may contain errors.
-> > > > See https://goo.gl/tpsmEJ for more information about syzbot.
-> > > > syzbot engineers can be reached at syzkaller@googlegroups.com.
-> > > >
-> > > > syzbot will keep track of this bug report. See:
-> > > > https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-> > > > For information about bisection process see:
-> > > > https://goo.gl/tpsmEJ#bisection
-> > > > syzbot can test patches for this bug, for details see:
-> > > > https://goo.gl/tpsmEJ#testing-patches
-> > >
-> > > Similar to syzbot report 72461ac44b36c98f58e5, see my comments there.
+> Does this mean that for an existing batman node to allow non-mesh
+> clients to join (I.E. cell phone, wifi camera, etc..), then 2
+> interfaces are required?
+
+Not necessarily but in most situation you want to use different (operation) 
+modes for sending batman-adv and non-batman-adv traffic over wifi. But it is 
+possible to use the same link layer interface. This is often the case when you 
+want to use ethernet for transporting the batman-adv traffic and the client 
+traffic.
+
+Just keep in mind that you cannot directly bridge an interface and have it at
+the same time as batadv slave interface. So you have to split this interface
+up somehow.
+
+For ethernet, it is recommended to put the batman-adv traffic in something
+like V(X)LAN on top of the ethernet device.
+
+Other option could also be to use a macvlan on top of the ethernet interface - 
+your ethernet interface just needs to support promiscious mode for receiving 
+and allow to send with a different mac address. Then you have basically two 
+virtual ethernet interfaces.
+
+But you could even create fancy things with veth pairs. Put one end in the 
+same bridge as the actual real ethernet interface. And then add the other end 
+as slave to the batadv interface. And then you can put the batadv interface in 
+the first bridge. You should most likely add some ebtables filter for 0x4305 
+ethernet frames at the correct positions. But I would call this
+"experimental".
+
+Just keep in mind that all the bridging will not work with client mode
+interfaces (non-AP STA interfaces in infrastructure mode).
+
+> For example, if I have a pi-zero W in a wooded area, and I want a
+> camera to connect to it, then do I need to add an additional usb
+> network adapter to the Pi.  One Interface for the Bat0 Mesh and One
+> interface an an entry point for non-mesh clients.
+
+I hope you are not talking about wifi usb network adapters. Because they are 
+(often/always) quite shitty in non-infrastructure modes. And also often
+shitty in infrastructure mode in the AP role.
+
+But regarding wifi PHYs under Linux - they usually support multiple virtual
+interfaces on the same PHY. Just check the interface combinations
+information from "iw phy"
+
+Kind regards,
+	Sven
+
+[1] https://www.open-mesh.org/projects/batman-adv/wiki/Faq#How-can-I-connect-non-mesh-clients-to-my-batman-adv-network-
+--nextPart2279995.2Smy5gWWIt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl5X6isACgkQXYcKB8Em
+e0bHxg//TyF0wVGBO8GqVfvg/bYT9KlPNYMZif3p9Q+Q791JjU1iRu5cx560ZeCG
+jlkLAWggTrwZu42YYSYh2zE8XD9pKPk4K8gzT7oc9lYNEOxjRTXiFu+6ub1Sh+KN
+k4dSsBBnFlXMM5lHr1lklxiRw3S1qXs8Qv9t+0i5WtEaJdc1YZhuuYp0h2zZO5bJ
+AxIieRju9WLe6FTNoJUOVrbjKHWcWX5DSMLpm3LMYkSxOAM1KOvWK59SYt84Nwh0
+EMxkyWeepFvDkyFj0dl4GVGfbDAq2niC1G4KEb6+m+yR9YSgWaij/srQYgsFQ4a3
+8uu7raUS6BQyPhT/+eGeZ5StXDuw59A2NKodlBCiSe6mtrGCTEjAdjiTtDSxfCmM
+/WIWEr/KuN1ITEdDM4K/4j+Cj+LCq0kI/+oR3SjJVVwGULUhUDNnz21I+QjGN5UM
+ZQneS7oQ1menYLX2SnEsaZEAtcLcMkCvRyvHhkWYoK1rRYyzwpt9vV0yirGTGIZs
+5u1lMy4NeQMNi2ZS3LKlNi131VNpR1bu2XuI0xZhVEO9fQ+LJpmkgTwzJo60/MnQ
+Hjeh85EnINX4KRi0gfiZcbWuBvWk/QHMOlBtksQ8dHWgmue81fCmbQltpAlp1d5k
+7DmYuRuZc56f7mfHSmT5gSzvGqzdG47Giqg6yrpmDo0fKULfOag=
+=V0ZV
+-----END PGP SIGNATURE-----
+
+--nextPart2279995.2Smy5gWWIt--
+
+
+
