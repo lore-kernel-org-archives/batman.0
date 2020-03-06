@@ -1,69 +1,64 @@
-Return-Path: <dvyukov@google.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/3] pull request for net-next: batman-adv 2020-03-06
+Date: Fri,  6 Mar 2020 13:13:14 +0100
+Message-Id: <20200306121317.28931-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-References: <0000000000003cbb40059f4e0346@google.com>
- <CAHC9VhQVXk5ucd3=7OC=BxEkZGGLfXv9bESX67Mr-TRmTwxjEg@mail.gmail.com>
- <17916d0509978e14d9a5e9eb52d760fa57460542.camel@redhat.com>
- <CAHC9VhQnbdJprbdTa_XcgUJaiwhzbnGMWJqHczU54UMk0AFCtw@mail.gmail.com>
- <CACT4Y+azQXLcPqtJG9zbj8hxqw4jE3dcwUj5T06bdL3uMaZk+Q@mail.gmail.com>
- <CAHC9VhRRDJzyene2_40nhnxRV_ufgyaU=RrFxYGsnxR4Z_AWWw@mail.gmail.com>
-In-Reply-To: <CAHC9VhRRDJzyene2_40nhnxRV_ufgyaU=RrFxYGsnxR4Z_AWWw@mail.gmail.com>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Mon, 2 Mar 2020 09:42:41 +0100
-Message-ID: <CACT4Y+YkJSLt+-0_wvSHfxi8J1Tn=H-NBeZ+E3h-TAKu53vyqw@mail.gmail.com>
-Subject: Re: kernel panic: audit: backlog limit exceeded
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Paul Moore <paul@paul-moore.com>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Eric Paris <eparis@redhat.com>, syzbot <syzbot+9a5e789e4725b9ef1316@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, Dan Carpenter <dan.carpenter@oracle.com>, David Miller <davem@davemloft.net>, fzago@cray.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, john.hammond@intel.com, linux-audit@redhat.com, LKML <linux-kernel@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, sw@simonwunderlich.de, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, syzkaller <syzkaller@googlegroups.com>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-On Fri, Feb 28, 2020 at 1:14 AM Paul Moore <paul@paul-moore.com> wrote:
->
-> On Thu, Feb 27, 2020 at 10:40 AM Dmitry Vyukov <dvyukov@google.com> wrote:
-> > On Mon, Feb 24, 2020 at 11:47 PM Paul Moore <paul@paul-moore.com> wrote:
-> > > On Mon, Feb 24, 2020 at 5:43 PM Eric Paris <eparis@redhat.com> wrote:
-> > > > https://syzkaller.appspot.com/x/repro.syz?x=151b1109e00000 (the
-> > > > reproducer listed) looks like it is literally fuzzing the AUDIT_SET.
-> > > > Which seems like this is working as designed if it is setting the
-> > > > failure mode to 2.
-> > >
-> > > So it is, good catch :)  I saw the panic and instinctively chalked
-> > > that up to a mistaken config, not expecting that it was what was being
-> > > tested.
-> >
-> > Yes, this audit failure mode is quite unpleasant for fuzzing. And
-> > since this is not a top-level syscall argument value, it's effectively
-> > impossible to filter out in the fuzzer. Maybe another use case for the
-> > "fuzer lockdown" feature +Tetsuo proposed.
-> > With the current state of the things, I think we only have an option
-> > to disable fuzzing of audit. Which is pity because it has found 5 or
-> > so real bugs in audit too.
-> > But this happened anyway because audit is only reachable from init pid
-> > namespace and syzkaller always unshares pid namespace for sandboxing
-> > reasons, that was removed accidentally and that's how it managed to
-> > find the bugs. But the unshare is restored now:
-> > https://github.com/google/syzkaller/commit/5e0e1d1450d7c3497338082fc28912fdd7f93a3c
-> >
-> > As a side effect all other real bugs in audit will be auto-obsoleted
-> > in future if not fixed because they will stop happening.
->
-> On the plus side, I did submit fixes for the other real audit bugs
-> that syzbot found recently and Linus pulled them into the tree today
-> so at least we have that small victory.
+Hi David,
 
-+1!
+here is a small cleanup pull request of batman-adv to go into net-next.
 
-> We could consider adding a fuzz-friendly build time config which would
-> disable the panic failsafe, but it probably isn't worth it at the
-> moment considering the syzbot's pid namespace limitations.
->
-> --
-> paul moore
-> www.paul-moore.com
+Please pull or let me know of any problem!
+
+Thank you,
+      Simon
+
+The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
+
+  Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20200306
+
+for you to fetch changes up to 5f27eb055d5c5814785fb9cf0ae4a4c150a8f334:
+
+  batman-adv: Replace zero-length array with flexible-array member (2020-02-17 22:43:42 +0100)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - bump version strings, by Simon Wunderlich
+
+ - Avoid RCU list-traversal in spinlock, by Sven Eckelmann
+
+ - Replace zero-length array with flexible-array member,
+   by Gustavo A. R. Silva
+
+----------------------------------------------------------------
+Gustavo A. R. Silva (1):
+      batman-adv: Replace zero-length array with flexible-array member
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Sven Eckelmann (1):
+      batman-adv: Avoid RCU list-traversal in spinlock
+
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ net/batman-adv/main.h                  | 2 +-
+ net/batman-adv/translation-table.c     | 8 ++++----
+ 3 files changed, 6 insertions(+), 6 deletions(-)
