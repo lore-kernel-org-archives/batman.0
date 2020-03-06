@@ -1,11 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/3] batman-adv: Replace zero-length array with flexible-array
- member
-Date: Fri,  6 Mar 2020 13:13:17 +0100
-Message-Id: <20200306121317.28931-4-sw@simonwunderlich.de>
-In-Reply-To: <20200306121317.28931-1-sw@simonwunderlich.de>
-References: <20200306121317.28931-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/1] pull request for net: batman-adv 2020-03-06
+Date: Fri,  6 Mar 2020 13:06:17 +0100
+Message-Id: <20200306120618.25714-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,58 +15,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Sven Eckelman <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Hi David,
 
-The current codebase makes use of the zero-length array language
-extension to the C90 standard, but the preferred mechanism to declare
-variable-length types such as these ones is a flexible array member[1][2],
-introduced in C99:
+here is a bugfix which we would like to have integrated into net.
 
-struct foo {
-        int stuff;
-        struct boo array[];
-};
+Please pull or let me know of any problem!
 
-By making use of the mechanism above, we will get a compiler warning
-in case the flexible array does not occur last in the structure, which
-will help us prevent some kind of undefined behavior bugs from being
-inadvertently introduced[3] to the codebase from now on.
+Thank you,
+      Simon
 
-Also, notice that, dynamic memory allocations won't be affected by
-this change:
+The following changes since commit bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9:
 
-"Flexible array members have incomplete type, and so the sizeof operator
-may not be applied. As a quirk of the original implementation of
-zero-length arrays, sizeof evaluates to zero."[1]
+  Linux 5.6-rc1 (2020-02-09 16:08:48 -0800)
 
-This issue was found with the help of Coccinelle.
+are available in the Git repository at:
 
-[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-[2] https://github.com/KSPP/linux/issues/21
-[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20200306
 
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Signed-off-by: Sven Eckelman <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+for you to fetch changes up to 8e8ce08198de193e3d21d42e96945216e3d9ac7f:
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 3d21dd83f8cc..b85da4b7a77b 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -88,7 +88,7 @@ struct batadv_dhcp_packet {
- 	__u8 sname[64];
- 	__u8 file[128];
- 	__be32 magic;
--	__u8 options[0];
-+	__u8 options[];
- };
- 
- #define BATADV_DHCP_YIADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->yiaddr)
--- 
-2.20.1
+  batman-adv: Don't schedule OGM for disabled interface (2020-02-18 09:07:55 +0100)
 
+----------------------------------------------------------------
+Here is a batman-adv bugfix:
+
+ - Don't schedule OGM for disabled interface, by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (1):
+      batman-adv: Don't schedule OGM for disabled interface
+
+ net/batman-adv/bat_iv_ogm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
