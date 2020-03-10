@@ -1,12 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/1] batman-adv: Don't schedule OGM for disabled interface
-Date: Fri,  6 Mar 2020 13:06:18 +0100
-Message-Id: <20200306120618.25714-2-sw@simonwunderlich.de>
+Return-Path: <davem@davemloft.net>
+Date: Mon, 09 Mar 2020 19:25:36 -0700 (PDT)
+Message-Id: <20200309.192536.558429690765622744.davem@davemloft.net>
+Subject: Re: [PATCH 0/1] pull request for net: batman-adv 2020-03-06
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <20200306120618.25714-1-sw@simonwunderlich.de>
 References: <20200306120618.25714-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +17,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, syzbot+a98f2016f40b9cd3818a@syzkaller.appspotmail.com, syzbot+ac36b6a33c28a491e929@syzkaller.appspotmail.com, Hillf Danton <hdanton@sina.com>, Simon Wunderlich <sw@simonwunderlich.de>
+To: sw@simonwunderlich.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri,  6 Mar 2020 13:06:17 +0100
 
-A transmission scheduling for an interface which is currently dropped by
-batadv_iv_ogm_iface_disable could still be in progress. The B.A.T.M.A.N. V
-is simply cancelling the workqueue item in an synchronous way but this is
-not possible with B.A.T.M.A.N. IV because the OGM submissions are
-intertwined.
+> here is a bugfix which we would like to have integrated into net.
+> 
+> Please pull or let me know of any problem!
 
-Instead it has to stop submitting the OGM when it detect that the buffer
-pointer is set to NULL.
-
-Reported-by: syzbot+a98f2016f40b9cd3818a@syzkaller.appspotmail.com
-Reported-by: syzbot+ac36b6a33c28a491e929@syzkaller.appspotmail.com
-Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Cc: Hillf Danton <hdanton@sina.com>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bat_iv_ogm.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index f0209505e41a..a7c8dd7ae513 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -789,6 +789,10 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
- 
- 	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
- 
-+	/* interface already disabled by batadv_iv_ogm_iface_disable */
-+	if (!*ogm_buff)
-+		return;
-+
- 	/* the interface gets activated here to avoid race conditions between
- 	 * the moment of activating the interface in
- 	 * hardif_activate_interface() where the originator mac is set and
--- 
-2.20.1
-
+Pulled, thanks Simon.
