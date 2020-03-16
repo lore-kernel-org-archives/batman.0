@@ -1,12 +1,13 @@
-Return-Path: <3vnVvXgkbAGERXYJ9KKDQ9OOHC.FNNFKDTRDQBNMSDMS.BNL@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: batman-adv gateway issue
+Date: Mon, 16 Mar 2020 15:41:11 +0100
+Message-ID: <5958820.XUMrd2Zpsg@bentobox>
+In-Reply-To: <CADSehqO-iKQ9BVWd_WjR28uZmpwmmLLjctg6AQj_xMAHvtRPdQ@mail.gmail.com>
+References: <CADSehqO-iKQ9BVWd_WjR28uZmpwmmLLjctg6AQj_xMAHvtRPdQ@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 16 Mar 2020 05:49:02 -0700
-In-Reply-To: <00000000000043aa29059c91459e@google.com>
-Message-ID: <00000000000066871f05a0f83e9d@google.com>
-Subject: Re: KASAN: slab-out-of-bounds Read in bitmap_ipmac_gc
-From: syzbot <syzbot+c1a1fb435465986efe35@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart1786744.QDPt55KuLz";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,32 +17,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, allison@lohutok.net, b.a.t.m.a.n@lists.open-mesh.org, coreteam@netfilter.org, davem@davemloft.net, fw@strlen.de, gregkh@linuxfoundation.org, info@metux.net, jeremy@azazel.net, kadlec@blackhole.kfki.hu, kadlec@netfilter.org, kstewart@linuxfoundation.org, linux-kernel@vger.kernel.org, lipeng321@huawei.com, liuyonglong@huawei.com, mareklindner@neomailbox.ch, netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, pablo@netfilter.org, salil.mehta@huawei.com, sbrivio@redhat.com, shuliubin@huawei.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tglx@linutronix.de, yisen.zhuang@huawei.com
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Maksim Iushchenko <maxim.yuschenko1@gmail.com>
 
-syzbot suspects this bug was fixed by commit:
+--nextPart1786744.QDPt55KuLz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-commit 32c72165dbd0e246e69d16a3ad348a4851afd415
-Author: Kadlecsik J=C3=B3zsef <kadlec@blackhole.kfki.hu>
-Date:   Sun Jan 19 21:06:49 2020 +0000
+On Monday, 16 March 2020 13:15:18 CET Maksim Iushchenko wrote:
+> Hello,
+> I use batman-adv to create a mesh network and recently I faced an
+> issue related to batman-adv gateways.
 
-    netfilter: ipset: use bitmap infrastructure completely
+What are batman-adv gateways? Are you talking about the batman-adv gateway 
+feature? This feature is only about IPv4 DHCP (broadcast) requests.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=3D1074c2a9e000=
-00
-start commit:   d96d875e Merge tag 'fixes_for_v5.5-rc8' of git://git.kerne.=
-.
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=3Dcf8e288883e40ab=
-a
-dashboard link: https://syzkaller.appspot.com/bug?extid=3Dc1a1fb435465986ef=
-e35
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=3D14e36185e0000=
-0
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=3D104a7a11e00000
+[...]
+> Please, suggest me how can I distribute default route to all nodes in
+> the mesh network in the case where nodes have static IPv6-addresses
+> (and also it is necessary to maintain the actual default gateway on
+> the nodes). 
 
-If the result looks correct, please mark the bug fixed by replying with:
+This has nothing to do with batman-adv. Sounds more like IPv6 router 
+advertisement.
 
-#syz fix: netfilter: ipset: use bitmap infrastructure completely
+Kind regards,
+	Sven
+--nextPart1786744.QDPt55KuLz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisectio=
-n
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl5vkAcACgkQXYcKB8Em
+e0ZARhAArCOJwRgVFHyA9CTBQ2P/9f4C/FPp0XW0qTARH5SQfL5ut3CfsLLoFuOi
+vVXq1wJEzAIE0PYRJDsL1caXbBpKxvw0xKWQU6hu/gDkeecj0l/MEwWD+p/ciyNF
+BhSLW2mYimYBjk+YOei+jgE3HhXKwHQJtNDdr8J4ax7DpnwpP5gRP9W0q63qdUGs
+/Fl6zEYMlOe9pYRUMcMb3EcUTXKLQ9DvQcNkUzl8Vq6MCLC+mdm0O9f11/UOc6h8
+tq7FOhri0jhsF7QN37IgBOpyqcw/ppKYxD2eJc5q4KYhjqXECU0S2f3E/OpEl6bf
+TJ3em7TkQmDyWOggt6XOLeuo+klNUhDzd3cryo3M/KwIC5J56oUGzfRq8sQsqT/o
+YAa95rqLUQRbamV8Ou0xeYCekk3A3d438sjuYF2nmGd0oPkP4To5nYKY9fMVEe2P
+mIhqaVmqhoBhvGzX7LXKwiTW+PKoB2mhhLlgQepo9lw5RLaC8a7OHeh68lMcEnF/
+ZYSRw0oZWXuyr58vV0+eZdGkXjAEl3vLgYkOp11xHqbsCVHsC5zGemfDwBqxjAFw
+xqHvkkRKHWUpnFD+gO+qcTMb0AMq1AlxdxZdsh6M9rzujTnWcVhWq/2LfwTQ2ZNi
+EcXmDIO76/iTWs8gQWJEas/nBADwvukDn1sgatSzcsh/8Z0hbk0=
+=PxYw
+-----END PGP SIGNATURE-----
+
+--nextPart1786744.QDPt55KuLz--
+
+
+
