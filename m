@@ -1,11 +1,11 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.5 05/84] batman-adv: Don't schedule OGM for disabled
- interface
-Date: Wed, 18 Mar 2020 16:52:02 -0400
-Message-Id: <20200318205321.16066-5-sashal@kernel.org>
-In-Reply-To: <20200318205321.16066-1-sashal@kernel.org>
-References: <20200318205321.16066-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 03/28] batman-adv: Don't schedule OGM for
+ disabled interface
+Date: Wed, 18 Mar 2020 16:55:30 -0400
+Message-Id: <20200318205555.17447-3-sashal@kernel.org>
+In-Reply-To: <20200318205555.17447-1-sashal@kernel.org>
+References: <20200318205555.17447-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -45,12 +45,12 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 5b0b20e6da956..d88a4de022372 100644
+index 8b3f9441b3a01..5d5e5401a9ea2 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -789,6 +789,10 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
- 
- 	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
+@@ -926,6 +926,10 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
+ 		return;
  
 +	/* interface already disabled by batadv_iv_ogm_iface_disable */
 +	if (!*ogm_buff)
