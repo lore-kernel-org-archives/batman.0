@@ -1,11 +1,11 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.4 04/73] batman-adv: Don't schedule OGM for disabled
+Subject: [PATCH AUTOSEL 5.5 05/84] batman-adv: Don't schedule OGM for disabled
  interface
-Date: Wed, 18 Mar 2020 16:52:28 -0400
-Message-Id: <20200318205337.16279-4-sashal@kernel.org>
-In-Reply-To: <20200318205337.16279-1-sashal@kernel.org>
-References: <20200318205337.16279-1-sashal@kernel.org>
+Date: Wed, 18 Mar 2020 16:52:02 -0400
+Message-Id: <20200318205321.16066-5-sashal@kernel.org>
+In-Reply-To: <20200318205321.16066-1-sashal@kernel.org>
+References: <20200318205321.16066-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
