@@ -1,14 +1,11 @@
-Return-Path: <marcelo.leitner@gmail.com>
-Date: Thu, 19 Mar 2020 22:17:09 -0300
-From: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>
-Subject: Re: general protection fault in sctp_ulpevent_nofity_peer_addr_change
-Message-ID: <20200320011709.GE3756@localhost.localdomain>
-References: <00000000000074219d05a139e082@google.com>
- <00000000000041ca9305a13ea3e0@google.com>
+Return-Path: <3Hmd4XgkbAMc5BCxnyyr4n22vq.t11tyr75r4p106r06.p1z@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <00000000000041ca9305a13ea3e0@google.com>
+Date: Mon, 23 Mar 2020 00:37:02 -0700
+In-Reply-To: <000000000000e9e518059fd84189@google.com>
+Message-ID: <0000000000007ab36905a180b328@google.com>
+Subject: Re: KASAN: use-after-free Write in hci_sock_bind (2)
+From: syzbot <syzbot+04e804c8c2224b6a9497@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,16 +15,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+3950016bd95c2ca0377b@syzkaller.appspotmail.com>
-Cc: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, b.zolnierkie@samsung.com, davem@davemloft.net, dri-devel@lists.freedesktop.org, kuba@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org, lkundrak@v3.sk, mareklindner@neomailbox.ch, netdev@vger.kernel.org, nhorman@tuxdriver.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, vyasevich@gmail.com
+To: a@unstable.cc, andrew@lunn.ch, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, f.fainelli@gmail.com, johan.hedberg@gmail.com, kuba@kernel.org, linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org, marcel@holtmann.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-On Thu, Mar 19, 2020 at 05:48:02PM -0700, syzbot wrote:
-> syzbot has bisected this bug to:
-> 
-> commit da2648390ce3d409218b6bbbf2386d8ddeec2265
-> Author: Lubomir Rintel <lkundrak@v3.sk>
-> Date:   Thu Dec 20 18:13:09 2018 +0000
-> 
->     pxa168fb: trivial typo fix
+syzbot has bisected this bug to:
 
-Certainly not ;-)
+commit 7d13eca09ed5e477f6ecfd97a35058762228b5e4
+Author: Florian Fainelli <f.fainelli@gmail.com>
+Date:   Sat Aug 27 22:34:20 2016 +0000
+
+    Documentation: networking: dsa: Remove platform device TODO
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1746f3f9e00000
+start commit:   770fbb32 Add linux-next specific files for 20200228
+git tree:       linux-next
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=14c6f3f9e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=10c6f3f9e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=576314276bce4ad5
+dashboard link: https://syzkaller.appspot.com/bug?extid=04e804c8c2224b6a9497
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=11fc5e75e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=10707013e00000
+
+Reported-by: syzbot+04e804c8c2224b6a9497@syzkaller.appspotmail.com
+Fixes: 7d13eca09ed5 ("Documentation: networking: dsa: Remove platform device TODO")
+
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
