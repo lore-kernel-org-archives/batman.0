@@ -1,9 +1,9 @@
-Return-Path: <3MIGDXgkbADspvwhXiiboXmmfa.dlldibrpboZlkqbkq.Zlj@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <3M8aFXgkbANAEKL6w770DwBB4z.2AA270GE0DyA9F09F.yA8@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Date: Tue, 31 Mar 2020 10:43:12 -0700
-Message-ID: <0000000000000a8e8605a22a1ae0@google.com>
-Subject: INFO: rcu detected stall in netlink_sendmsg (4)
-From: syzbot <syzbot+0fb70e87d8e0ac278fe9@syzkaller.appspotmail.com>
+Date: Thu, 02 Apr 2020 04:02:11 -0700
+Message-ID: <0000000000008c5a4605a24cbb16@google.com>
+Subject: WARNING in ext4_da_update_reserve_space
+From: syzbot <syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -14,96 +14,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: a@unstable.cc, adilger.kernel@dilger.ca, b.a.t.m.a.n@lists.open-mesh.org, benh@kernel.crashing.org, davem@davemloft.net, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mareklindner@neomailbox.ch, mpe@ellerman.id.au, muriloo@linux.ibm.com, netdev@vger.kernel.org, paulus@samba.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tytso@mit.edu
 
 Hello,
 
 syzbot found the following crash on:
 
-HEAD commit:    ae661dec Merge branch 'ifla_xdp_expected_fd'
-git tree:       bpf-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=12245647e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=b5acf5ac38a50651
-dashboard link: https://syzkaller.appspot.com/bug?extid=0fb70e87d8e0ac278fe9
+HEAD commit:    1a147b74 Merge branch 'DSA-mtu'
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=14237713e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=46ee14d4915944bc
+dashboard link: https://syzkaller.appspot.com/bug?extid=67e4f16db666b1c8253c
 compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12237713e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=10ec7c97e00000
 
-Unfortunately, I don't have any reproducer for this crash yet.
+The bug was bisected to:
+
+commit 658b0f92bc7003bc734471f61bf7cd56339eb8c3
+Author: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Date:   Wed Aug 1 21:33:15 2018 +0000
+
+    powerpc/traps: Print unhandled signals in a separate function
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15979f5be00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=17979f5be00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=13979f5be00000
 
 IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+0fb70e87d8e0ac278fe9@syzkaller.appspotmail.com
+Reported-by: syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com
+Fixes: 658b0f92bc70 ("powerpc/traps: Print unhandled signals in a separate function")
 
-rcu: INFO: rcu_preempt self-detected stall on CPU
-rcu: 	0-....: (1 GPs behind) idle=5c2/1/0x4000000000000002 softirq=376075/376076 fqs=5176 
-	(t=10500 jiffies g=506061 q=176208)
-NMI backtrace for cpu 0
-CPU: 0 PID: 17281 Comm: syz-executor.5 Not tainted 5.6.0-rc5-syzkaller #0
+EXT4-fs warning (device sda1): ext4_da_update_reserve_space:344: ext4_da_update_reserve_space: ino 15722, used 1 with only 0 reserved data blocks
+------------[ cut here ]------------
+WARNING: CPU: 1 PID: 359 at fs/ext4/inode.c:348 ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:344
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 1 PID: 359 Comm: kworker/u4:5 Not tainted 5.6.0-rc7-syzkaller #0
 Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: writeback wb_workfn (flush-8:0)
 Call Trace:
- <IRQ>
  __dump_stack lib/dump_stack.c:77 [inline]
  dump_stack+0x188/0x20d lib/dump_stack.c:118
- nmi_cpu_backtrace.cold+0x70/0xb1 lib/nmi_backtrace.c:101
- nmi_trigger_cpumask_backtrace+0x231/0x27e lib/nmi_backtrace.c:62
- trigger_single_cpu_backtrace include/linux/nmi.h:164 [inline]
- rcu_dump_cpu_stacks+0x169/0x1b3 kernel/rcu/tree_stall.h:254
- print_cpu_stall kernel/rcu/tree_stall.h:475 [inline]
- check_cpu_stall kernel/rcu/tree_stall.h:549 [inline]
- rcu_pending kernel/rcu/tree.c:3030 [inline]
- rcu_sched_clock_irq.cold+0x518/0xc55 kernel/rcu/tree.c:2276
- update_process_times+0x25/0x60 kernel/time/timer.c:1726
- tick_sched_handle+0x9b/0x180 kernel/time/tick-sched.c:171
- tick_sched_timer+0x4e/0x140 kernel/time/tick-sched.c:1314
- __run_hrtimer kernel/time/hrtimer.c:1517 [inline]
- __hrtimer_run_queues+0x32c/0xdd0 kernel/time/hrtimer.c:1579
- hrtimer_interrupt+0x312/0x770 kernel/time/hrtimer.c:1641
- local_apic_timer_interrupt arch/x86/kernel/apic/apic.c:1119 [inline]
- smp_apic_timer_interrupt+0x15b/0x600 arch/x86/kernel/apic/apic.c:1144
- apic_timer_interrupt+0xf/0x20 arch/x86/entry/entry_64.S:829
- </IRQ>
-RIP: 0010:arch_local_irq_restore arch/x86/include/asm/paravirt.h:759 [inline]
-RIP: 0010:lock_release+0x45f/0x7c0 kernel/locking/lockdep.c:4505
-Code: 94 08 00 00 00 00 00 00 48 c1 e8 03 80 3c 10 00 0f 85 d0 02 00 00 48 83 3d 6d 1d 1b 08 00 0f 84 71 01 00 00 48 8b 3c 24 57 9d <0f> 1f 44 00 00 48 b8 00 00 00 00 00 fc ff df 48 01 c3 48 c7 03 00
-RSP: 0018:ffffc90003d9ec30 EFLAGS: 00000282 ORIG_RAX: ffffffffffffff13
-RAX: 1ffffffff12e7698 RBX: 1ffff920007b3d89 RCX: 1ffff110098769b9
-RDX: dffffc0000000000 RSI: 1ffff110098769c5 RDI: 0000000000000282
-RBP: ffff88804c3b4540 R08: 0000000000000004 R09: fffffbfff14cc269
-R10: fffffbfff14cc268 R11: ffffffff8a661347 R12: bc95c6993a9665e0
-R13: ffffffff87a36fb1 R14: ffff88804c3b4dd0 R15: 0000000000000003
- __raw_spin_unlock_bh include/linux/spinlock_api_smp.h:174 [inline]
- _raw_spin_unlock_bh+0x12/0x30 kernel/locking/spinlock.c:207
- spin_unlock_bh include/linux/spinlock.h:383 [inline]
- batadv_tt_local_purge_pending_clients+0x2a1/0x3b0 net/batman-adv/translation-table.c:3914
- batadv_tt_local_resize_to_mtu+0x96/0x130 net/batman-adv/translation-table.c:4198
- batadv_update_min_mtu net/batman-adv/hard-interface.c:626 [inline]
- batadv_hardif_activate_interface.part.0.cold+0xc6/0x294 net/batman-adv/hard-interface.c:653
- batadv_hardif_activate_interface net/batman-adv/hard-interface.c:800 [inline]
- batadv_hardif_enable_interface+0x9f2/0xaa0 net/batman-adv/hard-interface.c:792
- batadv_softif_slave_add+0x92/0x150 net/batman-adv/soft-interface.c:859
- do_set_master net/core/rtnetlink.c:2470 [inline]
- do_set_master+0x1d7/0x230 net/core/rtnetlink.c:2443
- do_setlink+0xaa2/0x3680 net/core/rtnetlink.c:2605
- __rtnl_newlink+0xad5/0x1590 net/core/rtnetlink.c:3266
- rtnl_newlink+0x64/0xa0 net/core/rtnetlink.c:3391
- rtnetlink_rcv_msg+0x44e/0xad0 net/core/rtnetlink.c:5454
- netlink_rcv_skb+0x15a/0x410 net/netlink/af_netlink.c:2478
- netlink_unicast_kernel net/netlink/af_netlink.c:1303 [inline]
- netlink_unicast+0x537/0x740 net/netlink/af_netlink.c:1329
- netlink_sendmsg+0x882/0xe10 net/netlink/af_netlink.c:1918
- sock_sendmsg_nosec net/socket.c:652 [inline]
- sock_sendmsg+0xcf/0x120 net/socket.c:672
- ____sys_sendmsg+0x6b9/0x7d0 net/socket.c:2343
- ___sys_sendmsg+0x100/0x170 net/socket.c:2397
- __sys_sendmsg+0xec/0x1b0 net/socket.c:2430
- do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:294
- entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45c849
-Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007f043b72fc78 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
-RAX: ffffffffffffffda RBX: 00007f043b7306d4 RCX: 000000000045c849
-RDX: 0000000000000000 RSI: 00000000200001c0 RDI: 0000000000000003
-RBP: 000000000076bf00 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00000000ffffffff
-R13: 00000000000009f5 R14: 00000000004ccac9 R15: 000000000076bf0c
+ panic+0x2e3/0x75c kernel/panic.c:221
+ __warn.cold+0x2f/0x35 kernel/panic.c:582
+ report_bug+0x27b/0x2f0 lib/bug.c:195
+ fixup_bug arch/x86/kernel/traps.c:174 [inline]
+ fixup_bug arch/x86/kernel/traps.c:169 [inline]
+ do_error_trap+0x12b/0x220 arch/x86/kernel/traps.c:267
+ do_invalid_op+0x32/0x40 arch/x86/kernel/traps.c:286
+ invalid_op+0x23/0x30 arch/x86/entry/entry_64.S:1027
+RIP: 0010:ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:348
+Code: 02 00 0f 85 94 01 00 00 48 8b 7d 28 49 c7 c0 20 72 3c 88 41 56 48 c7 c1 80 60 3c 88 53 ba 58 01 00 00 4c 89 c6 e8 1e 6d 0d 00 <0f> 0b 48 b8 00 00 00 00 00 fc ff df 4c 89 ea 48 c1 ea 03 0f b6 04
+RSP: 0018:ffffc90002197288 EFLAGS: 00010296
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffffffff820bf066 RDI: fffff52000432e21
+RBP: ffff888086b744c8 R08: 0000000000000091 R09: ffffed1015ce6659
+R10: ffffed1015ce6658 R11: ffff8880ae7332c7 R12: 0000000000000001
+R13: ffff888086b74990 R14: 0000000000000000 R15: ffff888086b74a40
+ ext4_ext_map_blocks+0x24aa/0x37d0 fs/ext4/extents.c:4500
+ ext4_map_blocks+0x4cb/0x1650 fs/ext4/inode.c:622
+ mpage_map_one_extent fs/ext4/inode.c:2365 [inline]
+ mpage_map_and_submit_extent fs/ext4/inode.c:2418 [inline]
+ ext4_writepages+0x19eb/0x3080 fs/ext4/inode.c:2772
+ do_writepages+0xfa/0x2a0 mm/page-writeback.c:2344
+ __writeback_single_inode+0x12a/0x1410 fs/fs-writeback.c:1452
+ writeback_sb_inodes+0x515/0xdd0 fs/fs-writeback.c:1716
+ wb_writeback+0x2a5/0xd90 fs/fs-writeback.c:1892
+ wb_do_writeback fs/fs-writeback.c:2037 [inline]
+ wb_workfn+0x339/0x11c0 fs/fs-writeback.c:2078
+ process_one_work+0x94b/0x1690 kernel/workqueue.c:2266
+ worker_thread+0x96/0xe20 kernel/workqueue.c:2412
+ kthread+0x357/0x430 kernel/kthread.c:255
+ ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
 
 
 ---
@@ -113,3 +97,6 @@ syzbot engineers can be reached at syzkaller@googlegroups.com.
 
 syzbot will keep track of this bug report. See:
 https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
