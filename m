@@ -1,90 +1,53 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Utilize prandom_u32_max for random [0, max) values
-Date: Mon, 13 Apr 2020 21:37:24 +0200
-Message-Id: <20200413193725.28182-1-sven@narfation.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Return-Path: <xiyuyang19@fudan.edu.cn>
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Subject: [PATCH] batman-adv: Fix refcnt leak in batadv_show_throughput_override
+Date: Wed, 15 Apr 2020 16:31:50 +0800
+Message-Id: <1586939510-69461-1-git-send-email-xiyuyang19@fudan.edu.cn>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
+	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: yuanxzhang@fudan.edu.cn, kjlu@umn.edu, Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>
 
-The kernel provides a function to create random values from 0 - (max-1)
-since commit f337db64af05 ("random32: add prandom_u32_max and convert open
-coded users"). Simply use this function to replace code sections which use
-prandom_u32 and a handcrafted method to map it to the correct range.
+batadv_show_throughput_override() invokes batadv_hardif_get_by_netdev(),
+which gets a batadv_hard_iface object from net_dev with increased refcnt
+and its reference is assigned to a local pointer 'hard_iface'.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+When batadv_show_throughput_override() returns, "hard_iface" becomes
+invalid, so the refcount should be decreased to keep refcount balanced.
+
+The issue happens in the normal path of
+batadv_show_throughput_override(), which forgets to decrease the refcnt
+increased by batadv_hardif_get_by_netdev() before the function returns,
+causing a refcnt leak.
+
+Fix this issue by calling batadv_hardif_put() before the
+batadv_show_throughput_override() returns in the normal path.
+
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
 ---
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- net/batman-adv/bat_v_elp.c  | 2 +-
- net/batman-adv/bat_v_ogm.c  | 4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/sysfs.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index a7c8dd7a..e87f19c8 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -280,7 +280,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- 	unsigned int msecs;
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 97736696d042..0f962dcd239e 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -1190,6 +1190,7 @@ static ssize_t batadv_show_throughput_override(struct kobject *kobj,
  
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
+ 	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
  
- 	return jiffies + msecs_to_jiffies(msecs);
- }
-@@ -288,7 +288,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- /* when do we schedule a ogm packet to be sent */
- static unsigned long batadv_iv_ogm_fwd_send_time(void)
- {
--	return jiffies + msecs_to_jiffies(prandom_u32() % (BATADV_JITTER / 2));
-+	return jiffies + msecs_to_jiffies(prandom_u32_max(BATADV_JITTER / 2));
- }
- 
- /* apply hop penalty for a normal link */
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 1e3172db..353e49c4 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -49,7 +49,7 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&hard_iface->bat_v.elp_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
- 
- 	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_v.elp_wq,
- 			   msecs_to_jiffies(msecs));
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 96946621..0959d32b 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -88,7 +88,7 @@ static void batadv_v_ogm_start_queue_timer(struct batadv_hard_iface *hard_iface)
- 	unsigned int msecs = BATADV_MAX_AGGREGATION_MS * 1000;
- 
- 	/* msecs * [0.9, 1.1] */
--	msecs += prandom_u32() % (msecs / 5) - (msecs / 10);
-+	msecs += prandom_u32_max(msecs / 5) - (msecs / 10);
- 	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_v.aggr_wq,
- 			   msecs_to_jiffies(msecs / 1000));
- }
-@@ -107,7 +107,7 @@ static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
- 		return;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
- 	queue_delayed_work(batadv_event_workqueue, &bat_priv->bat_v.ogm_wq,
- 			   msecs_to_jiffies(msecs));
++	batadv_hardif_put(hard_iface);
+ 	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
+ 		       tp_override % 10);
  }
 -- 
-2.20.1
+2.7.4
 
