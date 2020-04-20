@@ -1,75 +1,55 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/5] pull request for net-next: batman-adv 2020-04-27
-Date: Mon, 27 Apr 2020 17:06:02 +0200
-Message-Id: <20200427150607.31401-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Return-Path: <xiyuyang19@fudan.edu.cn>
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Subject: [PATCH] batman-adv: Fix refcnt leak in batadv_v_ogm_process
+Date: Mon, 20 Apr 2020 13:37:20 +0800
+Message-Id: <1587361040-83099-1-git-send-email-xiyuyang19@fudan.edu.cn>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: yuanxzhang@fudan.edu.cn, kjlu@umn.edu, Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>
 
-Hi David,
+batadv_v_ogm_process() invokes batadv_hardif_neigh_get(), which returns
+a reference of the neighbor object to "hardif_neigh" with increased
+refcount.
 
-here is a small cleanup pull request of batman-adv to go into net-next.
+When batadv_v_ogm_process() returns, "hardif_neigh" becomes invalid, so
+the refcount should be decreased to keep refcount balanced.
 
-Please pull or let me know of any problem!
+The reference counting issue happens in one exception handling paths of
+batadv_v_ogm_process(). When batadv_v_ogm_orig_get() fails to get the
+orig node and returns NULL, the refcnt increased by
+batadv_hardif_neigh_get() is not decreased, causing a refcnt leak.
 
-Thank you,
-      Simon
+Fix this issue by jumping to "out" label when batadv_v_ogm_orig_get()
+fails to get the orig node.
 
-The following changes since commit 8f3d9f354286745c751374f5f1fcafee6b3f31=
-36:
+Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+---
+ net/batman-adv/bat_v_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  Linux 5.7-rc1 (2020-04-12 12:35:55 -0700)
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 969466218999..80b87b1f4e3a 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -893,7 +893,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 
+ 	orig_node = batadv_v_ogm_orig_get(bat_priv, ogm_packet->orig);
+ 	if (!orig_node)
+-		return;
++		goto out;
+ 
+ 	neigh_node = batadv_neigh_node_get_or_create(orig_node, if_incoming,
+ 						     ethhdr->h_source);
+-- 
+2.7.4
 
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-2020=
-0427
-
-for you to fetch changes up to e73f94d1b6f05f6f22434c63de255a9dec6fd23d:
-
-  batman-adv: remove unused inline function batadv_arp_change_timeout (20=
-20-04-24 15:22:41 +0200)
-
-----------------------------------------------------------------
-This cleanup patchset includes the following patches:
-
- - bump version strings, by Simon Wunderlich
-
- - fix spelling error, by Sven Eckelmann
-
- - drop unneeded types.h include, by Sven Eckelmann
-
- - change random number generation to prandom_u32_max(),
-   by Sven Eckelmann
-
- - remove unused function batadv_arp_change_timeout(), by Yue Haibing
-
-----------------------------------------------------------------
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (3):
-      batman-adv: Fix spelling error in term buffer
-      batman-adv: trace: Drop unneeded types.h include
-      batman-adv: Utilize prandom_u32_max for random [0, max) values
-
-YueHaibing (1):
-      batman-adv: remove unused inline function batadv_arp_change_timeout
-
- net/batman-adv/bat_iv_ogm.c            | 4 ++--
- net/batman-adv/bat_v_elp.c             | 2 +-
- net/batman-adv/bat_v_ogm.c             | 4 ++--
- net/batman-adv/distributed-arp-table.h | 5 -----
- net/batman-adv/main.h                  | 2 +-
- net/batman-adv/trace.h                 | 1 -
- net/batman-adv/types.h                 | 2 +-
- 7 files changed, 7 insertions(+), 13 deletions(-)
