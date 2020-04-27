@@ -1,95 +1,164 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 4/5] batman-adv: Utilize prandom_u32_max for random [0, max) values
-Date: Mon, 27 Apr 2020 17:06:06 +0200
-Message-Id: <20200427150607.31401-5-sw@simonwunderlich.de>
-In-Reply-To: <20200427150607.31401-1-sw@simonwunderlich.de>
-References: <20200427150607.31401-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
-
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: configuration issue
+Date: Mon, 27 Apr 2020 17:27:30 +0200
+Message-ID: <1684592.5WYlJ4OYfx@bentobox>
+In-Reply-To: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com>
+References: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3756528.ibSLklOHiU"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Oguzhan Kayhan <oguzhan@kayhan.name.tr>
 
-The kernel provides a function to create random values from 0 - (max-1)
-since commit f337db64af05 ("random32: add prandom_u32_max and convert open
-coded users"). Simply use this function to replace code sections which use
-prandom_u32 and a handcrafted method to map it to the correct range.
+ 
+--nextPart3756528.ibSLklOHiU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- net/batman-adv/bat_v_elp.c  | 2 +-
- net/batman-adv/bat_v_ogm.c  | 4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+On Monday, 27 April 2020 14:26:40 CEST Oguzhan Kayhan wrote:
+> Hello
+> I am running batman over a openwrt 18.06
+> default batman config over this firmware is batman-adv 2017.4
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index a7c8dd7ae513..e87f19c82e8d 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -280,7 +280,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
- 
- 	return jiffies + msecs_to_jiffies(msecs);
- }
-@@ -288,7 +288,7 @@ batadv_iv_ogm_emit_send_time(const struct batadv_priv *bat_priv)
- /* when do we schedule a ogm packet to be sent */
- static unsigned long batadv_iv_ogm_fwd_send_time(void)
- {
--	return jiffies + msecs_to_jiffies(prandom_u32() % (BATADV_JITTER / 2));
-+	return jiffies + msecs_to_jiffies(prandom_u32_max(BATADV_JITTER / 2));
- }
- 
- /* apply hop penalty for a normal link */
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 1e3172db7492..353e49c40e7f 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -49,7 +49,7 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
- 	unsigned int msecs;
- 
- 	msecs = atomic_read(&hard_iface->bat_v.elp_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
- 
- 	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_v.elp_wq,
- 			   msecs_to_jiffies(msecs));
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 969466218999..0959d32be65c 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -88,7 +88,7 @@ static void batadv_v_ogm_start_queue_timer(struct batadv_hard_iface *hard_iface)
- 	unsigned int msecs = BATADV_MAX_AGGREGATION_MS * 1000;
- 
- 	/* msecs * [0.9, 1.1] */
--	msecs += prandom_u32() % (msecs / 5) - (msecs / 10);
-+	msecs += prandom_u32_max(msecs / 5) - (msecs / 10);
- 	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_v.aggr_wq,
- 			   msecs_to_jiffies(msecs / 1000));
- }
-@@ -107,7 +107,7 @@ static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
- 		return;
- 
- 	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
--	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	msecs += prandom_u32_max(2 * BATADV_JITTER);
- 	queue_delayed_work(batadv_event_workqueue, &bat_priv->bat_v.ogm_wq,
- 			   msecs_to_jiffies(msecs));
- }
--- 
-2.20.1
+This is odd. 18.06 is using batman-adv 2018.1 (2018.1-11 at the moment). 
+Sounds like something went wrong with your routing feed.
+
+
+[...]
+> config wifi-iface
+>         option device 'radio0'
+>         option ifname 'mesh0'
+>         option network 'mesh'
+>         option mode 'adhoc'
+>         option ssid 'mesh'
+>         option bssid '02:CA:FE:CA:CA:40'
+>         option mcast_rate '18000'
+[...]
+
+Please think about switching to meshpoint without forwarding.
+
+    config wifi-iface 'wmesh'
+        option device 'radio0'
+        option ifname 'mesh0'
+        option network 'bat0_hardif_mesh0'
+        option mode 'mesh'
+        option mesh_id 'mesh'
+        option mesh_fwding '0'
+        option mesh_ttl '1'
+        option 'mcast_rate' '18000'
+
+At least in my experience, the IBSS support in the device firmware is either
+not there or starting to rot.
+
+
+> I have two systems present..
+> One board is with 802.11n radio. other is 802.11ac radio
+> This is the only difference..same image compiled running on both devices..
+[...]
+> This configuration works fine..
+> But if I run same config on the second node with 802.11ac radio.. it fails..
+> So I dig around and changed the config as follows.. And it started to work..
+> batman-adv is same..no difference
+[...]
+> config interface 'bat0_hardif_eth0'
+>         option mtu '1532'
+>         option proto 'batadv'
+>         option mesh 'bat0'
+>         option ifname 'eth0'
+
+Hum, where is the ethernet coming from? This is not used in the other 
+configuration as slave interface for bat0. And it should also fail if you do 
+something like this on the 11n device and don't use a separate interface
+section in /etc/config/network for it.
+
+Besides this, what is the change? I don't see one.
+
+And if you just wanted to have eth0 as slave and the wlan interface as slave - 
+then yes, you need two different interfaces with proto batadv (batadv_hardif 
+in OpenWrt 19.07) in /etc/config/network. It is not possible to have multiple 
+slave interfaces in /etc/config/network attached to a single master interface 
+using a single (non-"bridge" type) interface section . This is a limitation
+of netifd.
+
+> I have two questions so far..
+> 
+> Why the first config does not work over second system..(Wifi works
+> fine but. for mesh. i needed to change the config like this)
+> 
+> Second question.. I can live with different config.. Ok..
+> But I want to use eth0 and eth2 and mesh network as a bridge...
+
+"as a bridge"? Maybe you mean in a bridge? Should work right of the box with eth2:
+
+    config interface 'bat0_hardif_wlan'
+            option mtu '1532'
+            option proto 'batadv'
+            option mesh 'bat0'
+    
+    config interface 'bat0_hardif_eth0'
+            option mtu '1532'
+            option proto 'batadv'
+            option mesh 'bat0'
+            option ifname 'eth0'
+
+    config interface 'lan'
+            option type 'bridge'
+            option ifname 'eth2 bat0'
+            option proto 'static'
+
+
+If you want to use eth0, eth2 and bat0 in a bridge then it would look like this:
+
+    config interface 'bat0_hardif_wlan'
+            option mtu '1532'
+            option proto 'batadv'
+            option mesh 'bat0'
+
+    config interface 'lan'
+            option type 'bridge'
+            option ifname 'eth0 eth2 bat0'
+            option proto 'static'
+
+> But whenever i add any of this interfaces on bridge.. batman-adv fails..
+> What am I missing???
+
+A device just cannot be in a bridge and in batadv at the same time. Just not 
+possible because the bridge would steal all the ethernet packets before 
+batman-adv would receive them. So it is not even allowed to have two masters 
+(batadv interface and a bridge) for a single interface (wlan0, eth0, ...).
+
+Kind regards,
+	Sven
+
+--nextPart3756528.ibSLklOHiU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl6m+eIACgkQXYcKB8Em
+e0ae9g//QECsAAdFuxDwu4WF+bsZlxMxaGnM/vYraAc71dliXjX4IK5bwbPfE/6L
+z5RCguLxsXtL63E5tCtmZAe5IRrmFI8NJzvAs3Asf+9L9Dc25vdHJxKYv0J+uCxl
+rlji3V3bnwR8nDyyqYTAITSaaPMx6bqfa3di4JbwqAEXz/QXbvTboaZdXEcesTW5
+FFPr837+0zen4H+j6RuJBaW0AkE67/A/nnMEqAJ7jL3NuyemZ6j4diYP0WzhpW1J
+r1avxQuHb0Ay73c2ouCXmk3DD+nXXzedRuiPZkqOcU9ViDJbv06ihOpBOhp81KGm
+JvVm71A4GwiU11JS6CsE1vlBH/VDW5a2XzdIitsn4Mwmid0gdLqeotyN8V/NZStj
+34OOPAIkME8Sjw7m8VuHM4OwY5lIwusy3POUD/iYAmuZmS8r75oXK2+bKt7qZKuz
+NmRaaPqXuYdahVZYfCju3xuciBjx6DNACOL84MmtWtcmx09pYoGP3+bv1+rn0X1h
+nkwPwjrNXU5WfmcwUVQdKkuYY1RbrdHsI4c7p7vk3+dxmV2O46VE2K7xuYfk76Fp
+jwSGKNtJIyHkVLIPr+NwLiE7sBTWwti7n8BPYBJeO3Cx3A7qW6XDCc8WGlaL+0W9
+y4Zj0YRIWeRUqBYhA2qyezZKsO3NyvZUD9gg8BklBUd+s0F+kio=
+=QWor
+-----END PGP SIGNATURE-----
+
+--nextPart3756528.ibSLklOHiU--
+
 
