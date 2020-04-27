@@ -1,164 +1,83 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: configuration issue
-Date: Mon, 27 Apr 2020 17:27:30 +0200
-Message-ID: <1684592.5WYlJ4OYfx@bentobox>
-In-Reply-To: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com>
-References: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/4] batman-adv: fix batadv_nc_random_weight_tq
+Date: Mon, 27 Apr 2020 17:00:36 +0200
+Message-Id: <20200427150039.28730-2-sw@simonwunderlich.de>
+In-Reply-To: <20200427150039.28730-1-sw@simonwunderlich.de>
+References: <20200427150039.28730-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3756528.ibSLklOHiU"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Oguzhan Kayhan <oguzhan@kayhan.name.tr>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, George Spelvin <lkml@sdf.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: George Spelvin <lkml@sdf.org>
+
+and change to pseudorandom numbers, as this is a traffic dithering
+operation that doesn't need crypto-grade.
+
+The previous code operated in 4 steps:
+
+1. Generate a random byte 0 <= rand_tq <= 255
+2. Multiply it by BATADV_TQ_MAX_VALUE - tq
+3. Divide by 255 (= BATADV_TQ_MAX_VALUE)
+4. Return BATADV_TQ_MAX_VALUE - rand_tq
+
+This would apperar to scale (BATADV_TQ_MAX_VALUE - tq) by a random
+value between 0/255 and 255/255.
+
+But!  The intermediate value between steps 3 and 4 is stored in a u8
+variable.  So it's truncated, and most of the time, is less than 255, after
+which the division produces 0.  Specifically, if tq is odd, the product is
+always even, and can never be 255.  If tq is even, there's exactly one
+random byte value that will produce a product byte of 255.
+
+Thus, the return value is 255 (511/512 of the time) or 254 (1/512
+of the time).
+
+If we assume that the truncation is a bug, and the code is meant to scale
+the input, a simpler way of looking at it is that it's returning a random
+value between tq and BATADV_TQ_MAX_VALUE, inclusive.
+
+Well, we have an optimized function for doing just that.
+
+Fixes: 3c12de9a5c75 ("batman-adv: network coding - code and transmit packets if possible")
+Signed-off-by: George Spelvin <lkml@sdf.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/network-coding.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 8f0717c3f7b5..b0469d15da0e 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1009,15 +1009,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+  */
+ static u8 batadv_nc_random_weight_tq(u8 tq)
+ {
+-	u8 rand_val, rand_tq;
+-
+-	get_random_bytes(&rand_val, sizeof(rand_val));
+-
+ 	/* randomize the estimated packet loss (max TQ - estimated TQ) */
+-	rand_tq = rand_val * (BATADV_TQ_MAX_VALUE - tq);
+-
+-	/* normalize the randomized packet loss */
+-	rand_tq /= BATADV_TQ_MAX_VALUE;
++	u8 rand_tq = prandom_u32_max(BATADV_TQ_MAX_VALUE + 1 - tq);
  
---nextPart3756528.ibSLklOHiU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Monday, 27 April 2020 14:26:40 CEST Oguzhan Kayhan wrote:
-> Hello
-> I am running batman over a openwrt 18.06
-> default batman config over this firmware is batman-adv 2017.4
-
-This is odd. 18.06 is using batman-adv 2018.1 (2018.1-11 at the moment). 
-Sounds like something went wrong with your routing feed.
-
-
-[...]
-> config wifi-iface
->         option device 'radio0'
->         option ifname 'mesh0'
->         option network 'mesh'
->         option mode 'adhoc'
->         option ssid 'mesh'
->         option bssid '02:CA:FE:CA:CA:40'
->         option mcast_rate '18000'
-[...]
-
-Please think about switching to meshpoint without forwarding.
-
-    config wifi-iface 'wmesh'
-        option device 'radio0'
-        option ifname 'mesh0'
-        option network 'bat0_hardif_mesh0'
-        option mode 'mesh'
-        option mesh_id 'mesh'
-        option mesh_fwding '0'
-        option mesh_ttl '1'
-        option 'mcast_rate' '18000'
-
-At least in my experience, the IBSS support in the device firmware is either
-not there or starting to rot.
-
-
-> I have two systems present..
-> One board is with 802.11n radio. other is 802.11ac radio
-> This is the only difference..same image compiled running on both devices..
-[...]
-> This configuration works fine..
-> But if I run same config on the second node with 802.11ac radio.. it fails..
-> So I dig around and changed the config as follows.. And it started to work..
-> batman-adv is same..no difference
-[...]
-> config interface 'bat0_hardif_eth0'
->         option mtu '1532'
->         option proto 'batadv'
->         option mesh 'bat0'
->         option ifname 'eth0'
-
-Hum, where is the ethernet coming from? This is not used in the other 
-configuration as slave interface for bat0. And it should also fail if you do 
-something like this on the 11n device and don't use a separate interface
-section in /etc/config/network for it.
-
-Besides this, what is the change? I don't see one.
-
-And if you just wanted to have eth0 as slave and the wlan interface as slave - 
-then yes, you need two different interfaces with proto batadv (batadv_hardif 
-in OpenWrt 19.07) in /etc/config/network. It is not possible to have multiple 
-slave interfaces in /etc/config/network attached to a single master interface 
-using a single (non-"bridge" type) interface section . This is a limitation
-of netifd.
-
-> I have two questions so far..
-> 
-> Why the first config does not work over second system..(Wifi works
-> fine but. for mesh. i needed to change the config like this)
-> 
-> Second question.. I can live with different config.. Ok..
-> But I want to use eth0 and eth2 and mesh network as a bridge...
-
-"as a bridge"? Maybe you mean in a bridge? Should work right of the box with eth2:
-
-    config interface 'bat0_hardif_wlan'
-            option mtu '1532'
-            option proto 'batadv'
-            option mesh 'bat0'
-    
-    config interface 'bat0_hardif_eth0'
-            option mtu '1532'
-            option proto 'batadv'
-            option mesh 'bat0'
-            option ifname 'eth0'
-
-    config interface 'lan'
-            option type 'bridge'
-            option ifname 'eth2 bat0'
-            option proto 'static'
-
-
-If you want to use eth0, eth2 and bat0 in a bridge then it would look like this:
-
-    config interface 'bat0_hardif_wlan'
-            option mtu '1532'
-            option proto 'batadv'
-            option mesh 'bat0'
-
-    config interface 'lan'
-            option type 'bridge'
-            option ifname 'eth0 eth2 bat0'
-            option proto 'static'
-
-> But whenever i add any of this interfaces on bridge.. batman-adv fails..
-> What am I missing???
-
-A device just cannot be in a bridge and in batadv at the same time. Just not 
-possible because the bridge would steal all the ethernet packets before 
-batman-adv would receive them. So it is not even allowed to have two masters 
-(batadv interface and a bridge) for a single interface (wlan0, eth0, ...).
-
-Kind regards,
-	Sven
-
---nextPart3756528.ibSLklOHiU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl6m+eIACgkQXYcKB8Em
-e0ae9g//QECsAAdFuxDwu4WF+bsZlxMxaGnM/vYraAc71dliXjX4IK5bwbPfE/6L
-z5RCguLxsXtL63E5tCtmZAe5IRrmFI8NJzvAs3Asf+9L9Dc25vdHJxKYv0J+uCxl
-rlji3V3bnwR8nDyyqYTAITSaaPMx6bqfa3di4JbwqAEXz/QXbvTboaZdXEcesTW5
-FFPr837+0zen4H+j6RuJBaW0AkE67/A/nnMEqAJ7jL3NuyemZ6j4diYP0WzhpW1J
-r1avxQuHb0Ay73c2ouCXmk3DD+nXXzedRuiPZkqOcU9ViDJbv06ihOpBOhp81KGm
-JvVm71A4GwiU11JS6CsE1vlBH/VDW5a2XzdIitsn4Mwmid0gdLqeotyN8V/NZStj
-34OOPAIkME8Sjw7m8VuHM4OwY5lIwusy3POUD/iYAmuZmS8r75oXK2+bKt7qZKuz
-NmRaaPqXuYdahVZYfCju3xuciBjx6DNACOL84MmtWtcmx09pYoGP3+bv1+rn0X1h
-nkwPwjrNXU5WfmcwUVQdKkuYY1RbrdHsI4c7p7vk3+dxmV2O46VE2K7xuYfk76Fp
-jwSGKNtJIyHkVLIPr+NwLiE7sBTWwti7n8BPYBJeO3Cx3A7qW6XDCc8WGlaL+0W9
-y4Zj0YRIWeRUqBYhA2qyezZKsO3NyvZUD9gg8BklBUd+s0F+kio=
-=QWor
------END PGP SIGNATURE-----
-
---nextPart3756528.ibSLklOHiU--
-
+ 	/* convert to (randomized) estimated tq again */
+ 	return BATADV_TQ_MAX_VALUE - rand_tq;
+-- 
+2.20.1
 
