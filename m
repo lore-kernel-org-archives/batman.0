@@ -1,8 +1,10 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/4] pull request for net: batman-adv 2020-04-27
-Date: Mon, 27 Apr 2020 17:00:35 +0200
-Message-Id: <20200427150039.28730-1-sw@simonwunderlich.de>
+Subject: [PATCH 1/5] batman-adv: Start new development cycle
+Date: Mon, 27 Apr 2020 17:06:03 +0200
+Message-Id: <20200427150607.31401-2-sw@simonwunderlich.de>
+In-Reply-To: <20200427150607.31401-1-sw@simonwunderlich.de>
+References: <20200427150607.31401-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
@@ -15,47 +17,23 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi David,
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-here are some bugfixes which we would like to have integrated into net.
-
-Please pull or let me know of any problem!
-
-Thank you,
-      Simon
-
-The following changes since commit 8f3d9f354286745c751374f5f1fcafee6b3f31=
-36:
-
-  Linux 5.7-rc1 (2020-04-12 12:35:55 -0700)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20200=
-427
-
-for you to fetch changes up to 6f91a3f7af4186099dd10fa530dd7e0d9c29747d:
-
-  batman-adv: Fix refcnt leak in batadv_v_ogm_process (2020-04-21 10:08:0=
-5 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - fix random number generation in network coding, by George Spelvin
-
- - fix reference counter leaks, by Xiyu Yang (3 patches)
-
-----------------------------------------------------------------
-George Spelvin (1):
-      batman-adv: fix batadv_nc_random_weight_tq
-
-Xiyu Yang (3):
-      batman-adv: Fix refcnt leak in batadv_show_throughput_override
-      batman-adv: Fix refcnt leak in batadv_store_throughput_override
-      batman-adv: Fix refcnt leak in batadv_v_ogm_process
-
- net/batman-adv/bat_v_ogm.c      | 2 +-
- net/batman-adv/network-coding.c | 9 +--------
- net/batman-adv/sysfs.c          | 3 ++-
- 3 files changed, 4 insertions(+), 10 deletions(-)
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 2a234d0ad445..61d8dbe8c954 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -13,7 +13,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+=20
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2020.1"
++#define BATADV_SOURCE_VERSION "2020.2"
+ #endif
+=20
+ /* B.A.T.M.A.N. parameters */
+--=20
+2.20.1
