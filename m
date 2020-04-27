@@ -1,28 +1,51 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Mon, 27 Apr 2020 13:04:47 -0700 (PDT)
-Message-Id: <20200427.130447.1235579121316146606.davem@davemloft.net>
-Subject: Re: [PATCH 0/5] pull request for net-next: batman-adv 2020-04-27
-From: David Miller <davem@davemloft.net>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 5/5] batman-adv: remove unused inline function batadv_arp_change_timeout
+Date: Mon, 27 Apr 2020 17:06:07 +0200
+Message-Id: <20200427150607.31401-6-sw@simonwunderlich.de>
 In-Reply-To: <20200427150607.31401-1-sw@simonwunderlich.de>
 References: <20200427150607.31401-1-sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, YueHaibing <yuehaibing@huawei.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 27 Apr 2020 17:06:02 +0200
+From: YueHaibing <yuehaibing@huawei.com>
 
-> here is a small cleanup pull request of batman-adv to go into net-next.
-> 
-> Please pull or let me know of any problem!
+There's no callers in-tree.
 
-Also pulled, thanks again.
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/distributed-arp-table.h | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+index 2bff2f4a325c..4e031661682a 100644
+--- a/net/batman-adv/distributed-arp-table.h
++++ b/net/batman-adv/distributed-arp-table.h
+@@ -163,11 +163,6 @@ static inline void batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
+ {
+ }
+ 
+-static inline void batadv_arp_change_timeout(struct net_device *soft_iface,
+-					     const char *name)
+-{
+-}
+-
+ static inline int batadv_dat_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+-- 
+2.20.1
+
