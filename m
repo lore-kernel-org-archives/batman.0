@@ -1,62 +1,61 @@
-Return-Path: <sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/4] batman-adv: Fix refcnt leak in batadv_show_throughput_override
-Date: Mon, 27 Apr 2020 17:00:37 +0200
-Message-Id: <20200427150039.28730-3-sw@simonwunderlich.de>
-In-Reply-To: <20200427150039.28730-1-sw@simonwunderlich.de>
-References: <20200427150039.28730-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/4] pull request for net: batman-adv 2020-04-27
+Date: Mon, 27 Apr 2020 17:00:35 +0200
+Message-Id: <20200427150039.28730-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Hi David,
 
-batadv_show_throughput_override() invokes batadv_hardif_get_by_netdev(),
-which gets a batadv_hard_iface object from net_dev with increased refcnt
-and its reference is assigned to a local pointer 'hard_iface'.
+here are some bugfixes which we would like to have integrated into net.
 
-When batadv_show_throughput_override() returns, "hard_iface" becomes
-invalid, so the refcount should be decreased to keep refcount balanced.
+Please pull or let me know of any problem!
 
-The issue happens in the normal path of
-batadv_show_throughput_override(), which forgets to decrease the refcnt
-increased by batadv_hardif_get_by_netdev() before the function returns,
-causing a refcnt leak.
+Thank you,
+      Simon
 
-Fix this issue by calling batadv_hardif_put() before the
-batadv_show_throughput_override() returns in the normal path.
+The following changes since commit 8f3d9f354286745c751374f5f1fcafee6b3f31=
+36:
 
-Fixes: 0b5ecc6811bd ("batman-adv: add throughput override attribute to hard_ifaces")
-Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/sysfs.c | 1 +
- 1 file changed, 1 insertion(+)
+  Linux 5.7-rc1 (2020-04-12 12:35:55 -0700)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index c45962d8527b..c0b00268aac4 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1190,6 +1190,7 @@ static ssize_t batadv_show_throughput_override(struct kobject *kobj,
- 
- 	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
- 
-+	batadv_hardif_put(hard_iface);
- 	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
- 		       tp_override % 10);
- }
--- 
-2.20.1
+are available in the Git repository at:
 
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20200=
+427
+
+for you to fetch changes up to 6f91a3f7af4186099dd10fa530dd7e0d9c29747d:
+
+  batman-adv: Fix refcnt leak in batadv_v_ogm_process (2020-04-21 10:08:0=
+5 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - fix random number generation in network coding, by George Spelvin
+
+ - fix reference counter leaks, by Xiyu Yang (3 patches)
+
+----------------------------------------------------------------
+George Spelvin (1):
+      batman-adv: fix batadv_nc_random_weight_tq
+
+Xiyu Yang (3):
+      batman-adv: Fix refcnt leak in batadv_show_throughput_override
+      batman-adv: Fix refcnt leak in batadv_store_throughput_override
+      batman-adv: Fix refcnt leak in batadv_v_ogm_process
+
+ net/batman-adv/bat_v_ogm.c      | 2 +-
+ net/batman-adv/network-coding.c | 9 +--------
+ net/batman-adv/sysfs.c          | 3 ++-
+ 3 files changed, 4 insertions(+), 10 deletions(-)
