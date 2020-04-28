@@ -1,110 +1,63 @@
-Return-Path: <moritzwarning@web.de>
-Subject: Re: batman cpu usage of multiple instances
-References: <97bf748d-16e5-d088-118f-6f3678300191@web.de>
- <11503500.qvHmQplXmE@bentobox>
-From: Moritz Warning <moritzwarning@web.de>
-Message-ID: <6467ca72-a8af-0a85-f490-57ffe4763794@web.de>
-Date: Sat, 18 Apr 2020 09:49:05 +0200
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: configuration issue
+Date: Tue, 28 Apr 2020 13:17:18 +0200
+Message-ID: <6242566.y7phzM5aPs@bentobox>
+In-Reply-To: <CANKYHpf+GVA8zWuc-eZXh_6aW5FkpM3Oj3QbTKiTkfDZvUgGHA@mail.gmail.com>
+References: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com> <9817716.HyuBmzvnZK@bentobox> <CANKYHpf+GVA8zWuc-eZXh_6aW5FkpM3Oj3QbTKiTkfDZvUgGHA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <11503500.qvHmQplXmE@bentobox>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="JnHHbHhz9FgtcIuX6bkVjxE0Bu3ikfgk4"
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart5874877.ucWHjBDv3O"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Oguzhan Kayhan <oguzhan@kayhan.name.tr>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---JnHHbHhz9FgtcIuX6bkVjxE0Bu3ikfgk4
-Content-Type: multipart/mixed; boundary="gKXBTivO4fyTsNeSiv0uVJVSZ552Rhzt7";
- protected-headers="v1"
-From: Moritz Warning <moritzwarning@web.de>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <6467ca72-a8af-0a85-f490-57ffe4763794@web.de>
-Subject: Re: batman cpu usage of multiple instances
-References: <97bf748d-16e5-d088-118f-6f3678300191@web.de>
- <11503500.qvHmQplXmE@bentobox>
-In-Reply-To: <11503500.qvHmQplXmE@bentobox>
+ 
+--nextPart5874877.ucWHjBDv3O
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---gKXBTivO4fyTsNeSiv0uVJVSZ552Rhzt7
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+On Tuesday, 28 April 2020 12:36:53 CEST Oguzhan Kayhan wrote:
+[...]
+> It failed when I add
+>  option encryption 'psk2'
+>  option key 'thisisaverysecretkey'
 
-On 4/17/20 7:51 AM, Sven Eckelmann wrote:
-> On Friday, 17 April 2020 03:23:23 CEST Moritz Warning wrote:
->> I have many batman-adv instances (~1000) running on one computer in a =
-Linux network namespace each.
->>
->> Top shows me that a single kernel worker is handling batman-adv:
->>   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ C=
-OMMAND
->> 29251 root      20   0       0      0      0 R  99.3   0.0  18:03.27 k=
-worker/u32:3+bat_events
->=20
-> This bat_events is mostly for sending the OGMs/ELPs/BCAST-retries. Usua=
-lly not=20
-> a bottleneck but your configuration is rather special and thus can be a=
-=20
-> limiting factor.=20
->=20
->> Is there a way to let those multiple batman-adv instances make use of =
-the other cores?
->=20
-> A quick way to change this is to go to batadv_init in net/batman-adv/ma=
-in.c=20
-> and change the create_singlethread_workqueue() call to create_workqueue=
-().
->=20
-> Kind reagrds,
-> 	Sven
->=20
+Just in case you didn't read in in my previous mail: Make sure that you have 
+wpad-mesh(-openssl) installed and check if there is any relevant patch missing 
+which prevents wpad-mesh to start up correctly. And no, wpad-full is not good 
+enough - it is missing SAE and mesh support.
 
-Thanks for the idea, but it turned out to make the situation slightly wor=
-se.
-While bat_events is only consuming very little CPU resources now,
-now the ksoftirqd/X instances take up 100% of each CPU thread.
+Kind regards,
+	Sven
 
-The maximum of traffic is generated at 170 nodes producing 14KB/s traffic=
- send per node,
-which is much more than expected. This is a grid of nodes, maybe a differ=
-ent topology will do better.
-
-I am open for new ideas. :-)
-
-Thanks,
-Moritz
-
-
---gKXBTivO4fyTsNeSiv0uVJVSZ552Rhzt7--
-
---JnHHbHhz9FgtcIuX6bkVjxE0Bu3ikfgk4
+--nextPart5874877.ucWHjBDv3O
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEBtNBFtOYRL0Whm9U5yAWyf8FrDwFAl6asPkACgkQ5yAWyf8F
-rDyhBhAAvSPJ1KdnpWnRd2arzivhUpVRfdszYqVLxdjs9YFoy4ECldyprJ2o7/bd
-+hEhiE/D5SNkELsgMER6iOXISWoXhWP9mC1MSzlJBytXe0PDoht0KGEK4PphqIFE
-xRQVeKFjCbgBa/ukP3P3cDjEs2NFjtrrKvJ7ZYUZZ4DnDPXE54gObsTSd9k4tG9e
-QYp54S21sr6J8QEB7Wt39KRQKhZ6977nkbK6hKCdnnoD3jUBOYIrhZM/+plsdoAM
-f0Ys9aVjBE+baFKZtJEuZZyF4jCbgHadA0L5HFEVnUcQq2dVJkXanMcOKTQbgUxr
-AtWBdlrMsm6ob2CRqf7HC94H3IKgmCLR8Adj1pZTlzSmH82IwGWliW7hIuuNheLI
-z7cFghhoNVM1tL1gdyOn2EvkmKJf1ol7Q1cYKDfobqGJR1rx0346U4mKLKDxo7dv
-14IqjEKKWjvCGr/k6UH0K60L9dEvnWdnG7a89DnwaKUXP0mwa7/+OR3nwoQPa/T8
-m/lOOh5W6zdbPAYkOMU2WnTDAITf/TGoPynKF/Ec72x2JcC1Fk2K5r1f6im2uqJA
-66XGOEYq5Jy/Qf8Tfkx89qOMs7pXOHy/fBhY/0wZgiXXXDjzLbrQI68hhpm/Q6U7
-4nSjomeKOhiRj8okTvnm0B0G+kE3DPdz/jYVojg+IA+Si2MWEw8=
-=GLxn
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl6oEL4ACgkQXYcKB8Em
+e0aqpRAAuYjslDJvZ+Wfk5HlNrFq/pR8+qVdJ910h9ILpiN2WGfx8VlY0Qq5s2bk
+0jp8AMqt640b+EkOfpWMj7MSYePBSSqkoOqLED02g0G9lFBDmdKsgweJ5wvMPrr8
+4qc6GHbB69HsEWOzHySQCIZEXi5u7msjPM7S3kt4YoLkHtnIw5j59GCQCJCZVDQW
+zqlCR5uF4XbWkOdhoOQzhNSar4fjUDswyWr2hkRwkpP75a+1GO0abj2gBwQGNK3S
+PKg6yTKlJ1IEfGekWfdVxFx7WqLuoPEPL3jY2EoZo2Tl8B0Y0UGCFp5UEgw0EZHt
+RI1s+kC7tjr/a6hfq5gWmijNKb/kfAUs8Aoqzm1M0z96PJvdN3LjgIu+Q/Rkckvx
+/xWryfX6G5SWBqznFLN4/YtdlGi0v7y1aaEUuxsLS5mWqcd/bzBRjG++bus1p31D
+c5uU4JzQB0GCXP6GK4vkvNkz2PN5REowikiJsY08LHskDrAQN05HD/3IfTWDWOlt
+EJaKqP9z4p5DT6pFJyygFWN/canBH7erIU7vPbc5jHYHSAftNLYlS4+Q896v/YIu
+IsjpxPnYsNmTi/sv3h/phTW5100OcKgfrGkW/9HUOyzBjfAb4rzXX9AoFFWMoWJL
+/GvtXaREtKii7or1Zzhyy4BKmxWXnh0X4jDDs7BSbJAlOE+3LZk=
+=9YR9
 -----END PGP SIGNATURE-----
 
---JnHHbHhz9FgtcIuX6bkVjxE0Bu3ikfgk4--
+--nextPart5874877.ucWHjBDv3O--
+
+
