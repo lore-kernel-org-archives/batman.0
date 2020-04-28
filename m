@@ -1,78 +1,234 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: Fix refcnt leak in batadv_v_ogm_process
-Date: Mon, 20 Apr 2020 07:53:31 +0200
-Message-ID: <6844758.PSh0Y5hloC@bentobox>
-In-Reply-To: <1587361040-83099-1-git-send-email-xiyuyang19@fudan.edu.cn>
-References: <1587361040-83099-1-git-send-email-xiyuyang19@fudan.edu.cn>
+Return-Path: <oguzhan@kayhan.name.tr>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3626795.PeB5Tdf7to"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+References: <CANKYHpeiWj7w2KEnkEfjUHWKfbhEAj7kMVE5hL5xv6O_1ZVFwg@mail.gmail.com>
+ <1684592.5WYlJ4OYfx@bentobox> <CANKYHpe_cG=dKv5z4tecjb24U_P2ipWoQPownNCxKySU_FozQw@mail.gmail.com>
+ <5962426.I90Fg3i1QP@bentobox> <CANKYHpcZU09emNFy3yf4K0F5s8gzT6giosqfCDNj278f6Z3_mQ@mail.gmail.com>
+In-Reply-To: <CANKYHpcZU09emNFy3yf4K0F5s8gzT6giosqfCDNj278f6Z3_mQ@mail.gmail.com>
+From: Oguzhan Kayhan <oguzhan@kayhan.name.tr>
+Date: Tue, 28 Apr 2020 12:28:25 +0300
+Message-ID: <CANKYHpcYxPD1tF4EB2hFT891X=FwqiRbo3xCTofxSgdteqES6g@mail.gmail.com>
+Subject: Re: configuration issue
+Content-Type: text/plain; charset="UTF-8"
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, yuanxzhang@fudan.edu.cn, kjlu@umn.edu, Xin Tan <tanxin.ctf@gmail.com>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart3626795.PeB5Tdf7to
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello
+Yes, changing to 80211s mode seems to work.
 
-On Monday, 20 April 2020 07:37:20 CEST Xiyu Yang wrote:
-> batadv_v_ogm_process() invokes batadv_hardif_neigh_get(), which returns
-> a reference of the neighbor object to "hardif_neigh" with increased
-> refcount.
-> 
-> When batadv_v_ogm_process() returns, "hardif_neigh" becomes invalid, so
-> the refcount should be decreased to keep refcount balanced.
-> 
-> The reference counting issue happens in one exception handling paths of
-> batadv_v_ogm_process(). When batadv_v_ogm_orig_get() fails to get the
-> orig node and returns NULL, the refcnt increased by
-> batadv_hardif_neigh_get() is not decreased, causing a refcnt leak.
-> 
-> Fix this issue by jumping to "out" label when batadv_v_ogm_orig_get()
-> fails to get the orig node.
-> 
-> Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
-> Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-> Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
-> ---
->  net/batman-adv/bat_v_ogm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Now my config is as follows on both wifi nodes
 
-Applied [1]
+wireless:
+config wifi-iface 'wmesh'
+        option device 'radio0'
+        option ifname 'mesh0'
+        option mode 'mesh'
+        option mesh_id 'test'
+        option mesh_fwding '0'
+        option mesh_ttl '1'
+        option mcast_rate '18000'
+        option encryption 'none'
 
-Thanks,
-	Sven
+network:
 
-[1] https://git.open-mesh.org/linux-merge.git/commit/afba933d9875cdf31c973a1ecf05de7129a142c4
---nextPart3626795.PeB5Tdf7to
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+config interface 'eth1'
+        option ifname 'eth1'
+        option proto 'static'
+        option mtu '1500'
+        option ipaddr '10.1.200.7'
+        option netmask '255.255.255.0'
+        option gateway '10.1.200.1'
 
------BEGIN PGP SIGNATURE-----
+config interface 'bat0_hardif_wlan'
+            option mtu '1532'
+            option proto 'batadv'
+            option mesh 'bat0'
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl6dONsACgkQXYcKB8Em
-e0b6aA/9EgeHxmgaw9nEaGwVPQxs/aDz3TGXDZAVPhtj4/dd/uXxbvJ9USAG8veI
-XgBtMWRDj7jQP41+1CGYaPePAid6tZ4/hE0mEFg5d7+1gnf2rFCZ8CN0ox9GhGN2
-pccBnmMuJpHWIyxABUjCwbtYFw+fTbGAIV1Hm1y610JgXGmszcjfcqtY6LNaw3b0
-A8azcTlyZiAPJ+tCzUYb33hrxeNb9yqgaZSHMDXOpzcg/L8iR9xvgpgYRZi5DBj6
-E2EDpPWknflOfd4lX3FVrHzql7V2URKnDUBhhMc76Nea5qVLFqn8vKgW2IdbYwt+
-zTjGSqmwsme0pOEAI8xJkXGbwC3X4LhssidHHLRQb3vUu5UU+ShrEhGw+ack9IeE
-QUr9nGgpX3Yf6bu7jmEnIFZHG47A2l+KHbyxWpVsN9vnRMWKfvD82cqjfbglS5Xp
-y3V3RrREXN5hlKQ5jpn9vnJmlI0XmoWBiXjVkZHO2S2XPhXxf0FcwYCtCoGQGDa7
-qYc3adPv/pAf09g4rB1DYsB7/BXPjuz1JMf9zpdrGoJ/E+2z5xKRYbhiZX95TFSk
-n2ay85irBwRODSC4tgIzqJdH0udGUKxWAOo26dLOmZRTC1DUN+6IxfdGetGg7Y58
-9aZWNtXkhaeAtZyIU4VT191pyWf13nuL5luP3EPST1n/T5/nQCc=
-=oZeN
------END PGP SIGNATURE-----
+config interface 'bat0_hardif_eth0'
+        option mtu '1532'
+        option proto 'batadv'
+        option mesh 'bat0'
+        option ifname 'mesh0'
 
---nextPart3626795.PeB5Tdf7to--
+config interface 'lan'
+            option type 'bridge'
+            option ifname 'eth2 eth0 bat0'
+            option proto 'static'
 
 
+
+
+Now here comes the second part..
+How can I make the encryption over mesh?
+
+with ad-hoc there were wpa-2psk encryption on luci interface..
+But with 80211s, there is no encryption available on luci, and also
+wireless connection can not be establisehd if i manaully write any psk
+etc on wifi settings.
+
+Is there a walkthru for this specially for openwrt?
+
+Regards
+
+
+On Mon, Apr 27, 2020 at 9:18 PM Oguzhan Kayhan <oguzhan@kayhan.name.tr> wrote:
+>
+> That helps a lot Sven..
+> I notified gateworks about it..
+> And also I will try the examples you provided.
+>
+> Best Regards
+>
+>
+>
+> On Mon, Apr 27, 2020 at 8:19 PM Sven Eckelmann <sven@narfation.org> wrote:
+>>
+>> On Monday, 27 April 2020 18:35:29 CEST Oguzhan Kayhan wrote:
+>> [...]
+>> > *I 'm running Gateworks Newport as controller board. And updated from their
+>> > repository Thats the version they had..Actually I tried updating the feeds
+>> > to the latest version but, It threw error on compiling..So , didnt waste
+>> > too much time and stick on the 2017.4 version.But if needed, I will try to
+>> > update versions also.*
+>>
+>> Please write them and ask them to adjust their repositories to actually ship
+>> OpenWrt 18.06 with the up-to-date feeds. We don't support 2017.4 anymore and
+>> will not provide patch backports for 2017.4-0 from openwrt-routing. But we
+>> have a lot of stable backport patches in 2018.1-11. And 2018.1-11 build likes
+>> a charm when the main OpenWrt repository is actually an 18.06.
+>>
+>> And to me, it looks like Gateworks 18.0x is not even based on OpenWrt 18.06
+>> but on something which was forked 7 months (1287 commits) before the release
+>> of 18.06.0 - and we are currently at OpenWrt 18.06.8 on the old stable branch
+>> and 19.07.2 on the current stable branch.
+>>
+>> You don't even have the "newest" (up to 28 month old) security fixes in
+>> gateworks 18.0x - and there are quite at some security and stability patches
+>> which you should get integrated.
+>>
+>> > > [...]
+>> > > > config wifi-iface
+>> > > >         option device 'radio0'
+>> > > >         option ifname 'mesh0'
+>> > > >         option network 'mesh'
+>> > > >         option mode 'adhoc'
+>> > > >         option ssid 'mesh'
+>> > > >         option bssid '02:CA:FE:CA:CA:40'
+>> > > >         option mcast_rate '18000'
+>> > > [...]
+>> > >
+>> > > Please think about switching to meshpoint without forwarding.
+>> >
+>> >
+>> > *I'd be glad if you give more detail what you mean.*
+>>
+>> The example configuration was given below. What more details do you need? You
+>> already noticed yourself that it doesn't support IBSS/adhoc.
+>>
+>> >
+>> > >
+>> > >     config wifi-iface 'wmesh'
+>> > >         option device 'radio0'
+>> > >         option ifname 'mesh0'
+>> > >         option network 'bat0_hardif_mesh0'
+>> > >         option mode 'mesh'
+>> > >         option mesh_id 'mesh'
+>> > >         option mesh_fwding '0'
+>> > >         option mesh_ttl '1'
+>> > >         option 'mcast_rate' '18000'
+>> > >
+>> > > At least in my experience, the IBSS support in the device firmware is
+>> > either
+>> > > not there or starting to rot.
+>> > >
+>> >
+>> >
+>> >
+>> > *That might be the problem.On 802.11ac card, iw phy gives supported
+>> > interface modes as;managed, AP, AP/VLAN,monitor, Meshpoint      but 802.11n
+>> > gives IBSS,managed, AP, AP/VLAN,monitor, Meshpoint, p2p-client, p2p-go
+>> > modes..*
+>> > *So.. does it shows 802.11ac doesnt support batman?
+>>
+>> Hu? batman-adv is not IBSS. It can run on all kind of interface types. But it
+>> makes more sense to run it on meshpoint without forwarding (mesh_fwding 0) or
+>> IBSS/adhoc.
+>>
+>> > or is there any other
+>> > ways to try besides ad-hoc mode? Both cards are DoodleLabs*
+>>
+>> Use a meshpoint interface without forwarding. As shown in the example
+>> configuration in my first mail.
+>>
+>>
+>> [...]
+>> > > A device just cannot be in a bridge and in batadv at the same time. Just
+>> > not
+>> > > possible because the bridge would steal all the ethernet packets before
+>> > > batman-adv would receive them. So it is not even allowed to have two
+>> > masters
+>> > > (batadv interface and a bridge) for a single interface (wlan0, eth0, ...).
+>> > >
+>> >
+>> > *So, what is the correct way to do that then..*
+>> > *Any examples for this scenario?*
+>>
+>> Don't try to add the ethernet in both bridge and batman-adv as slave. Doesn't
+>> work - so I cannot give you an example.
+>>
+>> If you want to still transport stuff over ethernet which is also used to
+>> bridge to some other interface, try macvlan or vlan's on top of the ethernet
+>> interface. The macvlan will create a new ethernet interface which just uses a
+>> different mac address. A vlan interface on top of the ethernet will just but a
+>> vlan header between the ethernet header and the next layer. So I am guessing
+>> you want to first try macvlan (requires kmod-macvlan):
+>>
+>>     config interface 'bat0_hardif_wlan'
+>>             option mtu '1532'
+>>             option proto 'batadv'
+>>             option mesh 'bat0'
+>>
+>>     config interface 'lan'
+>>             option type 'bridge'
+>>             option ifname 'eth2 eth0 bat0'
+>>             option proto 'static'
+>>
+>>     config device 'veth0'
+>>             option name 'veth0'
+>>             option type 'macvlan'
+>>             option ifname 'eth0'
+>>
+>>     config interface 'bat0_hardif_eth0'
+>>             option mtu '1532'
+>>             option proto 'batadv'
+>>             option mesh 'bat0'
+>>             option ifname 'veth0'
+>>
+>> Or if it is no problem to use VLANs (here 123):
+>>
+>>     config interface 'bat0_hardif_wlan'
+>>             option mtu '1532'
+>>             option proto 'batadv'
+>>             option mesh 'bat0'
+>>
+>>     config interface 'lan'
+>>             option type 'bridge'
+>>             option ifname 'eth2 eth0 bat0'
+>>             option proto 'static'
+>>
+>>     config interface 'bat0_hardif_eth0'
+>>             option mtu '1532'
+>>             option proto 'batadv'
+>>             option mesh 'bat0'
+>>             option ifname 'eth0.123'
+>>
+>> Kind regards,
+>>         Sven
