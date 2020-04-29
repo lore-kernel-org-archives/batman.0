@@ -1,51 +1,45 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 5/5] batman-adv: remove unused inline function batadv_arp_change_timeout
-Date: Mon, 27 Apr 2020 17:06:07 +0200
-Message-Id: <20200427150607.31401-6-sw@simonwunderlich.de>
-In-Reply-To: <20200427150607.31401-1-sw@simonwunderlich.de>
-References: <20200427150607.31401-1-sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: [PATCH] batctl: fix endianness when reading radiotap header
+Date: Wed, 29 Apr 2020 12:09:44 +0200
+Message-Id: <20200429100944.1163472-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, YueHaibing <yuehaibing@huawei.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-From: YueHaibing <yuehaibing@huawei.com>
+All radiotap header fields are specified in little endian byte-order.
+Header length conversion is necessary on some platforms.
 
-There's no callers in-tree.
-
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/distributed-arp-table.h | 5 -----
- 1 file changed, 5 deletions(-)
+ tcpdump.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index 2bff2f4a325c..4e031661682a 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -163,11 +163,6 @@ static inline void batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- {
- }
- 
--static inline void batadv_arp_change_timeout(struct net_device *soft_iface,
--					     const char *name)
--{
--}
--
- static inline int batadv_dat_init(struct batadv_priv *bat_priv)
- {
- 	return 0;
--- 
-2.20.1
-
+diff --git a/tcpdump.c b/tcpdump.c
+index 4b9e4f6..1beace1 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -1144,10 +1144,10 @@ static int monitor_header_length(unsigned char *p=
+acket_buff, ssize_t buff_len, i
+ 			return -1;
+=20
+ 		radiotap_hdr =3D (struct radiotap_header*)packet_buff;
+-		if (buff_len <=3D radiotap_hdr->it_len)
++		if (buff_len <=3D le16toh(radiotap_hdr->it_len))
+ 			return -1;
+ 		else
+-			return radiotap_hdr->it_len;
++			return le16toh(radiotap_hdr->it_len);
+ 	}
+=20
+ 	return -1;
+--=20
+2.25.1
