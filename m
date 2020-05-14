@@ -1,8 +1,8 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 07/39] batman-adv: Fix refcnt leak in batadv_v_ogm_process
-Date: Thu, 14 May 2020 14:54:24 -0400
-Message-Id: <20200514185456.21060-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 05/39] batman-adv: Fix refcnt leak in batadv_show_throughput_override
+Date: Thu, 14 May 2020 14:54:22 -0400
+Message-Id: <20200514185456.21060-5-sashal@kernel.org>
 In-Reply-To: <20200514185456.21060-1-sashal@kernel.org>
 References: <20200514185456.21060-1-sashal@kernel.org>
 MIME-Version: 1.0
@@ -21,46 +21,45 @@ Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>, Sven Ec
 
 From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 
-[ Upstream commit 6f91a3f7af4186099dd10fa530dd7e0d9c29747d ]
+[ Upstream commit f872de8185acf1b48b954ba5bd8f9bc0a0d14016 ]
 
-batadv_v_ogm_process() invokes batadv_hardif_neigh_get(), which returns
-a reference of the neighbor object to "hardif_neigh" with increased
-refcount.
+batadv_show_throughput_override() invokes batadv_hardif_get_by_netdev(),
+which gets a batadv_hard_iface object from net_dev with increased refcnt
+and its reference is assigned to a local pointer 'hard_iface'.
 
-When batadv_v_ogm_process() returns, "hardif_neigh" becomes invalid, so
-the refcount should be decreased to keep refcount balanced.
+When batadv_show_throughput_override() returns, "hard_iface" becomes
+invalid, so the refcount should be decreased to keep refcount balanced.
 
-The reference counting issue happens in one exception handling paths of
-batadv_v_ogm_process(). When batadv_v_ogm_orig_get() fails to get the
-orig node and returns NULL, the refcnt increased by
-batadv_hardif_neigh_get() is not decreased, causing a refcnt leak.
+The issue happens in the normal path of
+batadv_show_throughput_override(), which forgets to decrease the refcnt
+increased by batadv_hardif_get_by_netdev() before the function returns,
+causing a refcnt leak.
 
-Fix this issue by jumping to "out" label when batadv_v_ogm_orig_get()
-fails to get the orig node.
+Fix this issue by calling batadv_hardif_put() before the
+batadv_show_throughput_override() returns in the normal path.
 
-Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
+Fixes: 0b5ecc6811bd ("batman-adv: add throughput override attribute to hard_ifaces")
 Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- net/batman-adv/bat_v_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/sysfs.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index cec31769bb3fc..f0abbbdafe07f 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -734,7 +734,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 2ef9b136fc394..e44a7f29d598e 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -1114,6 +1114,7 @@ static ssize_t batadv_show_throughput_override(struct kobject *kobj,
  
- 	orig_node = batadv_v_ogm_orig_get(bat_priv, ogm_packet->orig);
- 	if (!orig_node)
--		return;
-+		goto out;
+ 	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
  
- 	neigh_node = batadv_neigh_node_get_or_create(orig_node, if_incoming,
- 						     ethhdr->h_source);
++	batadv_hardif_put(hard_iface);
+ 	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
+ 		       tp_override % 10);
+ }
 -- 
 2.20.1
 
