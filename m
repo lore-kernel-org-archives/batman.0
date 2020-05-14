@@ -1,62 +1,86 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Network stops passing traffic randomly
-Date: Mon, 25 May 2020 15:22:35 +0200
-Message-ID: <2567784.gV1U3syDZD@bentobox>
-In-Reply-To: <CAL3ir7+RWLrYOzjNQh1VwiKg1sxSgHZMwwqx=9xSfXFnFjE_KQ@mail.gmail.com>
-References: <20200525083512.832.13419@diktynna.open-mesh.org> <32459667.Id32LJz2i1@bentobox> <CAL3ir7+RWLrYOzjNQh1VwiKg1sxSgHZMwwqx=9xSfXFnFjE_KQ@mail.gmail.com>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 04/39] batman-adv: fix batadv_nc_random_weight_tq
+Date: Thu, 14 May 2020 14:54:21 -0400
+Message-Id: <20200514185456.21060-4-sashal@kernel.org>
+In-Reply-To: <20200514185456.21060-1-sashal@kernel.org>
+References: <20200514185456.21060-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3978634.na8LbQeXfl"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Daniel Ghansah <smartwires@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: George Spelvin <lkml@sdf.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
+From: George Spelvin <lkml@sdf.org>
+
+[ Upstream commit fd0c42c4dea54335967c5a86f15fc064235a2797 ]
+
+and change to pseudorandom numbers, as this is a traffic dithering
+operation that doesn't need crypto-grade.
+
+The previous code operated in 4 steps:
+
+1. Generate a random byte 0 <= rand_tq <= 255
+2. Multiply it by BATADV_TQ_MAX_VALUE - tq
+3. Divide by 255 (= BATADV_TQ_MAX_VALUE)
+4. Return BATADV_TQ_MAX_VALUE - rand_tq
+
+This would apperar to scale (BATADV_TQ_MAX_VALUE - tq) by a random
+value between 0/255 and 255/255.
+
+But!  The intermediate value between steps 3 and 4 is stored in a u8
+variable.  So it's truncated, and most of the time, is less than 255, after
+which the division produces 0.  Specifically, if tq is odd, the product is
+always even, and can never be 255.  If tq is even, there's exactly one
+random byte value that will produce a product byte of 255.
+
+Thus, the return value is 255 (511/512 of the time) or 254 (1/512
+of the time).
+
+If we assume that the truncation is a bug, and the code is meant to scale
+the input, a simpler way of looking at it is that it's returning a random
+value between tq and BATADV_TQ_MAX_VALUE, inclusive.
+
+Well, we have an optimized function for doing just that.
+
+Fixes: 3c12de9a5c75 ("batman-adv: network coding - code and transmit packets if possible")
+Signed-off-by: George Spelvin <lkml@sdf.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ net/batman-adv/network-coding.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 7a7dcac205667..7aacec24958eb 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1017,15 +1017,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+  */
+ static u8 batadv_nc_random_weight_tq(u8 tq)
+ {
+-	u8 rand_val, rand_tq;
+-
+-	get_random_bytes(&rand_val, sizeof(rand_val));
+-
+ 	/* randomize the estimated packet loss (max TQ - estimated TQ) */
+-	rand_tq = rand_val * (BATADV_TQ_MAX_VALUE - tq);
+-
+-	/* normalize the randomized packet loss */
+-	rand_tq /= BATADV_TQ_MAX_VALUE;
++	u8 rand_tq = prandom_u32_max(BATADV_TQ_MAX_VALUE + 1 - tq);
  
---nextPart3978634.na8LbQeXfl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Monday, 25 May 2020 15:19:22 CEST Daniel Ghansah wrote:
-> Hi Sven,
-> Yes I did ping via the IP, there is no response, I am using IPV4
-
-Ok, when your underlying layer (mesh0) is not working then you should not 
-expect batman-adv to work.
-
-
-Btw. the `batctl dc` output doesn't look like your tested the IPv4 ping
-on mesh0 but on bat0 - not what I've asked for.
-
-Kind regards,
-	Sven
---nextPart3978634.na8LbQeXfl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7LxpsACgkQXYcKB8Em
-e0Y0yhAAlTYTug2ywa55d7AFRBnJuITswGs6JdiDNRfMpflk5Er/tOsV2smHyAgk
-dlOzKBZ8mjYWGx0WgTuho6f72RCBamb2hR+8554R8AVMhJgsVkfKQ2apdB/GqYF9
-HMPSClzIYPUvIkQv37FocLht/c7MkNlHFumMnyz3VDPYFcbZnrKA9QKRMutXGSoX
-6+ei4mSqd7ArVwoDJdkSkdSaaASAGCa1HBzniXqIfRohdvPv4jSYnl4spZPTWVhD
-lznaRpkrX4hRZOiUUSuTy+c/W85MVDYNxopqoon8MB90AvQt0Uvbhpx+nGLZHuoV
-LwIlJQ3eNFNj0BMD/RliC22wqJwK9OAMd10mIMpchXPe0h5VaXNWXIsLbXbtOlf/
-W/5OuK4IiZ8c3ZV5aheCcGVWi0YStdQ/Y2ylGmloQSqKNcPNY9ISDopo5COaj3uQ
-2uiUs8Li7VcHV5ixZw5GSKmzcTz27wNGRf4t7Un4/EMgUqsAW8jPN+L9W7d74PaH
-N16rZl5lGG4pHGAUidFzvDhVyKDMAMpCBumXa64Q7gQrDq4YuOSwaS9A3Kcc8RrM
-MC++Tlcf6MAUt9kry/gNV32csiERwLZyiB3a97yYDciww9h45S5J52WxLQNvVMWd
-SNxEgvUHgtQjmWZd29W1QvYon5BC/w0VbMYmW3kq0fpBXzBTTjA=
-=RCLK
------END PGP SIGNATURE-----
-
---nextPart3978634.na8LbQeXfl--
-
+ 	/* convert to (randomized) estimated tq again */
+ 	return BATADV_TQ_MAX_VALUE - rand_tq;
+-- 
+2.20.1
 
