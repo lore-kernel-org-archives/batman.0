@@ -1,8 +1,8 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 05/27] batman-adv: Fix refcnt leak in batadv_show_throughput_override
-Date: Thu, 14 May 2020 14:55:28 -0400
-Message-Id: <20200514185550.21462-5-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 04/27] batman-adv: fix batadv_nc_random_weight_tq
+Date: Thu, 14 May 2020 14:55:27 -0400
+Message-Id: <20200514185550.21462-4-sashal@kernel.org>
 In-Reply-To: <20200514185550.21462-1-sashal@kernel.org>
 References: <20200514185550.21462-1-sashal@kernel.org>
 MIME-Version: 1.0
@@ -17,49 +17,70 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+Cc: George Spelvin <lkml@sdf.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+From: George Spelvin <lkml@sdf.org>
 
-[ Upstream commit f872de8185acf1b48b954ba5bd8f9bc0a0d14016 ]
+[ Upstream commit fd0c42c4dea54335967c5a86f15fc064235a2797 ]
 
-batadv_show_throughput_override() invokes batadv_hardif_get_by_netdev(),
-which gets a batadv_hard_iface object from net_dev with increased refcnt
-and its reference is assigned to a local pointer 'hard_iface'.
+and change to pseudorandom numbers, as this is a traffic dithering
+operation that doesn't need crypto-grade.
 
-When batadv_show_throughput_override() returns, "hard_iface" becomes
-invalid, so the refcount should be decreased to keep refcount balanced.
+The previous code operated in 4 steps:
 
-The issue happens in the normal path of
-batadv_show_throughput_override(), which forgets to decrease the refcnt
-increased by batadv_hardif_get_by_netdev() before the function returns,
-causing a refcnt leak.
+1. Generate a random byte 0 <= rand_tq <= 255
+2. Multiply it by BATADV_TQ_MAX_VALUE - tq
+3. Divide by 255 (= BATADV_TQ_MAX_VALUE)
+4. Return BATADV_TQ_MAX_VALUE - rand_tq
 
-Fix this issue by calling batadv_hardif_put() before the
-batadv_show_throughput_override() returns in the normal path.
+This would apperar to scale (BATADV_TQ_MAX_VALUE - tq) by a random
+value between 0/255 and 255/255.
 
-Fixes: 0b5ecc6811bd ("batman-adv: add throughput override attribute to hard_ifaces")
-Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+But!  The intermediate value between steps 3 and 4 is stored in a u8
+variable.  So it's truncated, and most of the time, is less than 255, after
+which the division produces 0.  Specifically, if tq is odd, the product is
+always even, and can never be 255.  If tq is even, there's exactly one
+random byte value that will produce a product byte of 255.
+
+Thus, the return value is 255 (511/512 of the time) or 254 (1/512
+of the time).
+
+If we assume that the truncation is a bug, and the code is meant to scale
+the input, a simpler way of looking at it is that it's returning a random
+value between tq and BATADV_TQ_MAX_VALUE, inclusive.
+
+Well, we have an optimized function for doing just that.
+
+Fixes: 3c12de9a5c75 ("batman-adv: network coding - code and transmit packets if possible")
+Signed-off-by: George Spelvin <lkml@sdf.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- net/batman-adv/sysfs.c | 1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/network-coding.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 31d7e239a1fd6..d3fb5396f9473 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -1120,6 +1120,7 @@ static ssize_t batadv_show_throughput_override(struct kobject *kobj,
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index a7b5cf08d3630..09549885cd147 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1012,15 +1012,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+  */
+ static u8 batadv_nc_random_weight_tq(u8 tq)
+ {
+-	u8 rand_val, rand_tq;
+-
+-	get_random_bytes(&rand_val, sizeof(rand_val));
+-
+ 	/* randomize the estimated packet loss (max TQ - estimated TQ) */
+-	rand_tq = rand_val * (BATADV_TQ_MAX_VALUE - tq);
+-
+-	/* normalize the randomized packet loss */
+-	rand_tq /= BATADV_TQ_MAX_VALUE;
++	u8 rand_tq = prandom_u32_max(BATADV_TQ_MAX_VALUE + 1 - tq);
  
- 	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
- 
-+	batadv_hardif_put(hard_iface);
- 	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
- 		       tp_override % 10);
- }
+ 	/* convert to (randomized) estimated tq again */
+ 	return BATADV_TQ_MAX_VALUE - rand_tq;
 -- 
 2.20.1
 
