@@ -1,60 +1,66 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re:
-References: <CADSehqPoEQGqdURG0g8OO85Dvb5dL0eExwG+-9uum8=wz9VXsg@mail.gmail.com>
-From: fboehm@aon.at
-Message-ID: <08019330-dc15-cf5f-eaf2-4ee3cfac8aa5@aon.at>
-Date: Thu, 14 May 2020 12:29:27 +0200
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 07/27] batman-adv: Fix refcnt leak in batadv_v_ogm_process
+Date: Thu, 14 May 2020 14:55:30 -0400
+Message-Id: <20200514185550.21462-7-sashal@kernel.org>
+In-Reply-To: <20200514185550.21462-1-sashal@kernel.org>
+References: <20200514185550.21462-1-sashal@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <CADSehqPoEQGqdURG0g8OO85Dvb5dL0eExwG+-9uum8=wz9VXsg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-Maksim, for clarification:
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 
-ATWILC3000 is a Wifi-Module for low-end embedded systems. This module 
-consists of a Wifi-Chip + a small processor. The processor does stuff 
-like authentication/registration with the Wifi network, WPA-Encryption 
-and this kind of things. A typical use-case would be to add a Wifi 
-interface to some sort of IoT device or some sort of computer peripheral 
-device (like a Wifi-enabled printer or a smart-speaker).
+[ Upstream commit 6f91a3f7af4186099dd10fa530dd7e0d9c29747d ]
 
-Looking at the driver code it might not be impossible but it's just very 
-unlikely that you will be happy to use it in combination with Batman. 
-You would first of all need to connect the module to a much more 
-powerful processor that runs Linux and Batman. But assuming you anyway 
-need such a powerful processor for your application then you have a good 
-chance that you can use a real Wifi-Adapter (with USB or PICe interface) 
-instead of such a Wifi-Module.
+batadv_v_ogm_process() invokes batadv_hardif_neigh_get(), which returns
+a reference of the neighbor object to "hardif_neigh" with increased
+refcount.
 
-Regards,
-Franz
+When batadv_v_ogm_process() returns, "hardif_neigh" becomes invalid, so
+the refcount should be decreased to keep refcount balanced.
 
+The reference counting issue happens in one exception handling paths of
+batadv_v_ogm_process(). When batadv_v_ogm_orig_get() fails to get the
+orig node and returns NULL, the refcnt increased by
+batadv_hardif_neigh_get() is not decreased, causing a refcnt leak.
 
-Am 14.05.20 um 10:17 schrieb Maksim Iushchenko:
-> Hello,
-> I am creating a Wi-Fi ad-hoc network based on batman-adv. I read that
-> batman-adv is able to work with any types of interfaces, but I still
-> have a question related to ad-hoc networking. Will Wi-Fi ad-hoc
-> network (based on batman-adv) work if Wi-Fi chip does not support
-> 802.11s standard?
-> Unfortunately, there is no mention of ad-hoc mode support in
-> documentation of many Wi-Fi chips.
->
-> How to check if a Wi-Fi chip is suited to be used to create a Wi-Fi
-> ad-hoc network based on batman-adv?
->
-> For example, is ATWILC3000-MR110CA an appropriate chip to build a
-> Wi-Fi ad-hoc network based on batman-adv? Or maybe you could suggest
-> any another Wi-Fi chips?
->
-> Thanks in advance
+Fix this issue by jumping to "out" label when batadv_v_ogm_orig_get()
+fails to get the orig node.
+
+Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ net/batman-adv/bat_v_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index b0cae59bd327c..d2e6885479cb1 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -709,7 +709,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 
+ 	orig_node = batadv_v_ogm_orig_get(bat_priv, ogm_packet->orig);
+ 	if (!orig_node)
+-		return;
++		goto out;
+ 
+ 	neigh_node = batadv_neigh_node_get_or_create(orig_node, if_incoming,
+ 						     ethhdr->h_source);
+-- 
+2.20.1
 
