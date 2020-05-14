@@ -1,68 +1,66 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/3] pull request for net-next: batman-adv 2020-05-26
-Date: Tue, 26 May 2020 12:00:04 +0200
-Message-Id: <20200526100007.10501-1-sw@simonwunderlich.de>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 06/27] batman-adv: Fix refcnt leak in batadv_store_throughput_override
+Date: Thu, 14 May 2020 14:55:29 -0400
+Message-Id: <20200514185550.21462-6-sashal@kernel.org>
+In-Reply-To: <20200514185550.21462-1-sashal@kernel.org>
+References: <20200514185550.21462-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-Hi David,
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 
-here is a small cleanup pull request of batman-adv to go into net-next.
+[ Upstream commit 6107c5da0fca8b50b4d3215e94d619d38cc4a18c ]
 
-Please pull or let me know of any problem!
+batadv_show_throughput_override() invokes batadv_hardif_get_by_netdev(),
+which gets a batadv_hard_iface object from net_dev with increased refcnt
+and its reference is assigned to a local pointer 'hard_iface'.
 
-Thank you,
-      Simon
+When batadv_store_throughput_override() returns, "hard_iface" becomes
+invalid, so the refcount should be decreased to keep refcount balanced.
 
-The following changes since commit 1a33e10e4a95cb109ff1145098175df3113313=
-ef:
+The issue happens in one error path of
+batadv_store_throughput_override(). When batadv_parse_throughput()
+returns NULL, the refcnt increased by batadv_hardif_get_by_netdev() is
+not decreased, causing a refcnt leak.
 
-  net: partially revert dynamic lockdep key changes (2020-05-04 12:05:56 =
--0700)
+Fix this issue by jumping to "out" label when batadv_parse_throughput()
+returns NULL.
 
-are available in the Git repository at:
+Fixes: 0b5ecc6811bd ("batman-adv: add throughput override attribute to hard_ifaces")
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ net/batman-adv/sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-2020=
-0526
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index d3fb5396f9473..121e9e7d28cc5 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -1087,7 +1087,7 @@ static ssize_t batadv_store_throughput_override(struct kobject *kobj,
+ 	ret = batadv_parse_throughput(net_dev, buff, "throughput_override",
+ 				      &tp_override);
+ 	if (!ret)
+-		return count;
++		goto out;
+ 
+ 	old_tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
+ 	if (old_tp_override == tp_override)
+-- 
+2.20.1
 
-for you to fetch changes up to 9ad346c90509ebd983f60da7d082f261ad329507:
-
-  batman-adv: Revert "disable ethtool link speed detection when auto nego=
-tiation off" (2020-05-26 09:23:33 +0200)
-
-----------------------------------------------------------------
-This cleanup patchset includes the following patches:
-
- - Fix revert dynamic lockdep key changes for batman-adv,
-   by Sven Eckelmann
-
- - use rcu_replace_pointer() where appropriate, by Antonio Quartulli
-
- - Revert "disable ethtool link speed detection when auto negotiation
-   off", by Sven Eckelmann
-
-----------------------------------------------------------------
-Antonio Quartulli (1):
-      batman-adv: use rcu_replace_pointer() where appropriate
-
-Sven Eckelmann (2):
-      batman-adv: Revert "Drop lockdep.h include for soft-interface.c"
-      batman-adv: Revert "disable ethtool link speed detection when auto =
-negotiation off"
-
- net/batman-adv/bat_v_elp.c      | 15 +--------------
- net/batman-adv/gateway_client.c |  4 ++--
- net/batman-adv/hard-interface.c |  4 ++--
- net/batman-adv/routing.c        |  4 ++--
- net/batman-adv/soft-interface.c |  1 +
- 5 files changed, 8 insertions(+), 20 deletions(-)
