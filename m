@@ -1,12 +1,10 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: QoS over batman-adv
-Date: Mon, 11 May 2020 08:38:32 +0200
-Message-ID: <2200656.2eICcKID6T@bentobox>
-In-Reply-To: <CAG5qQ7j1FzdwTqcAPcG=tBp5YTFm4UiOgVdSuk0qL5-pT6KB+A@mail.gmail.com>
-References: <CAG5qQ7j1FzdwTqcAPcG=tBp5YTFm4UiOgVdSuk0qL5-pT6KB+A@mail.gmail.com>
+From: Antonio Quartulli <a@unstable.cc>
+Subject: [PATCH] batman-adv: use rcu_replace_pointer() where appropriate
+Date: Wed, 20 May 2020 10:41:40 +0200
+Message-Id: <20200520084140.18624-1-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6114849.T8T7SrjxRy"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,55 +13,114 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Xuebing Wang <xbing6@gmail.com>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
 
- 
---nextPart6114849.T8T7SrjxRy
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In a63fc6b7 ("rcu: Upgrade rcu_swap_protected() to rcu_replace_pointer()"=
+)
+a new helper macro named rcu_replace_pointer() was introduced to
+simplify code requiring to switch an rcu pointer to a new value while
+extracting the old one.
 
-On Monday, 11 May 2020 05:33:39 CEST Xuebing Wang wrote:
-> Hi Simon and community,
-> 
-> We have been using batman-adv on OpenWRT 15.05
-[...]
-> We are exploring the idea of QoS over batman-adv to transmit small
-> quantity of high priority data. Any suggestions? Thanks.
+Use rcu_replace_pointer() where appropriate to make code slimer.
 
-First step: Update OpenWrt to something which is not EOL since many years. 
-This will also update the batman-adv version to a version which is actually 
-supported in openwrt-routing.
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
+ compat-include/linux/rcupdate.h | 27 +++++++++++++++++++++++++++
+ net/batman-adv/gateway_client.c |  4 ++--
+ net/batman-adv/hard-interface.c |  4 ++--
+ net/batman-adv/routing.c        |  4 ++--
+ 4 files changed, 33 insertions(+), 6 deletions(-)
+ create mode 100644 compat-include/linux/rcupdate.h
 
-And then you will get the dsfield or 802.1Q values propagated to the mac80211 
-layer (as part of the priority field of the skbuff).
-
-If you want to have QoS on a higher layer (before it enters batman-adv) then 
-just use the normal queuing disciplines of the Linux kernel.
-
-Kind regards,
-	Sven
---nextPart6114849.T8T7SrjxRy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl648ugACgkQXYcKB8Em
-e0btYw//TGQq6LsdW35YXpkA/xeeOrAKoGr/+s/29LU8xu3m7HkiSmettAAjeifM
-gmI91z0x1Cf4JHmAaGqF3plhSgFWl3N+Kepe9oYeZSobh94tngxC7yjN7MmfQ7rt
-U+KLz/aywdc+SRfxdeNc2z4L3BdosuB7MclkVxod/wIwuZ9ttJJP8uklNgx1F/OZ
-GGO2N6K0AI9sdY/vDOZ8x1CSW6Z3uP7jpSuPFhfvOqPqWCEtB3tSTikcQ776UUgd
-NX+Iep4mUXFCqZoKWHMb2YnXNN3SDuFFufiKttGMA/uY+00eUGvI/HloAlSTaOlm
-Hc0ojS0ylgF12FkawwP5arb0J64FP4OHPL6Xtiz8DkrBkl4lknZnDZaFuM8VM8Qt
-YQuujx5frKW/GIbj4+XkOF9jMIbUeKwIRBRiAFqLX2jfAsFHQKxUt47+385EPJb4
-A0UfIjZSOpJzcQj0wlHIHE5JLSZ4GsYvAYmDAlNgtz59x/Jwi7+NwTVCc3UeJldj
-Md/S0vr7GCtFIkn+4z91olRVJviGnALtnCRPZB6gebAvctCYFfKQv5L4arUu6LSG
-4luuRQ7HcbY4xL5wqy4LYRD4mCqZAqwIMoKxbG91kGQZkLs6nSXZfIURQnWxiNJf
-yQ8alx0s+0HmR3DklIX8DOkGtKDxNK+TUjbkWHkdUguWBfu7qbM=
-=KnUS
------END PGP SIGNATURE-----
-
---nextPart6114849.T8T7SrjxRy--
-
-
+diff --git a/compat-include/linux/rcupdate.h b/compat-include/linux/rcupd=
+ate.h
+new file mode 100644
+index 00000000..731aa951
+--- /dev/null
++++ b/compat-include/linux/rcupdate.h
+@@ -0,0 +1,27 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2020  B.A.T.M.A.N. contributors:
++ *
++ * Antonio Quartulli
++ *
++ * This file contains macros for maintaining compatibility with older ve=
+rsions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_
++
++#include <linux/version.h>
++#include_next <linux/rcupdate.h>
++
++#if LINUX_VERSION_IS_LESS(5, 5, 0)
++
++#define rcu_replace_pointer(rcu_ptr, ptr, c)				\
++({									\
++	typeof(ptr) __tmp =3D rcu_dereference_protected((rcu_ptr), (c));	\
++	rcu_assign_pointer((rcu_ptr), (ptr));				\
++	__tmp;								\
++})
++
++#endif /* LINUX_VERSION_IS_LESS(5, 5, 0) */
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_ */
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_cli=
+ent.c
+index e22e4928..a18dcc68 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -146,8 +146,8 @@ static void batadv_gw_select(struct batadv_priv *bat_=
+priv,
+ 	if (new_gw_node)
+ 		kref_get(&new_gw_node->refcount);
+=20
+-	curr_gw_node =3D rcu_dereference_protected(bat_priv->gw.curr_gw, 1);
+-	rcu_assign_pointer(bat_priv->gw.curr_gw, new_gw_node);
++	curr_gw_node =3D rcu_replace_pointer(bat_priv->gw.curr_gw, new_gw_node,
++					   true);
+=20
+ 	if (curr_gw_node)
+ 		batadv_gw_node_put(curr_gw_node);
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interf=
+ace.c
+index c7e98a40..3a256af9 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -473,8 +473,8 @@ static void batadv_primary_if_select(struct batadv_pr=
+iv *bat_priv,
+ 	if (new_hard_iface)
+ 		kref_get(&new_hard_iface->refcount);
+=20
+-	curr_hard_iface =3D rcu_dereference_protected(bat_priv->primary_if, 1);
+-	rcu_assign_pointer(bat_priv->primary_if, new_hard_iface);
++	curr_hard_iface =3D rcu_replace_pointer(bat_priv->primary_if,
++					      new_hard_iface, 1);
+=20
+ 	if (!new_hard_iface)
+ 		goto out;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 3632bd97..d343382e 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -71,13 +71,13 @@ static void _batadv_update_route(struct batadv_priv *=
+bat_priv,
+ 	 * the code needs to ensure the curr_router variable contains a pointer
+ 	 * to the replaced best neighbor.
+ 	 */
+-	curr_router =3D rcu_dereference_protected(orig_ifinfo->router, true);
+=20
+ 	/* increase refcount of new best neighbor */
+ 	if (neigh_node)
+ 		kref_get(&neigh_node->refcount);
+=20
+-	rcu_assign_pointer(orig_ifinfo->router, neigh_node);
++	curr_router =3D rcu_replace_pointer(orig_ifinfo->router, neigh_node,
++					  true);
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 	batadv_orig_ifinfo_put(orig_ifinfo);
+=20
+--=20
+2.26.2
