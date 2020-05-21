@@ -1,86 +1,29 @@
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 04/39] batman-adv: fix batadv_nc_random_weight_tq
-Date: Thu, 14 May 2020 14:54:21 -0400
-Message-Id: <20200514185456.21060-4-sashal@kernel.org>
-In-Reply-To: <20200514185456.21060-1-sashal@kernel.org>
-References: <20200514185456.21060-1-sashal@kernel.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+From: Alexey Ermakov <axel101@gmail.com>
+Date: Thu, 21 May 2020 20:13:18 +0300
+Message-ID: <CAOVt3fEEaLx8-58NjVXU0L6XToB5FPvGjFaEoZBeRCL+Eh-QWw@mail.gmail.com>
+Subject: Batman-adv packet retranslation
+Content-Type: text/plain; charset="UTF-8"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: George Spelvin <lkml@sdf.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: George Spelvin <lkml@sdf.org>
+Hi, All.
 
-[ Upstream commit fd0c42c4dea54335967c5a86f15fc064235a2797 ]
+There is a problem with retranslating packets in B.A.T.M.A.N. V mode.
+I have 3 stations, st1, st2 and st3 with one active network interface.
+This interface is configured so that st1 and st3 can see only st2.
+I expect that if I join these stations in a bat0 network, then station
+2 will act as a repeater and all three stations will be visible in the
+bat0 network.
+This works fine if I selecting B.A.T.M.A.N. IV algorithm, but doesn't
+work in B.A.T.M.A.N.V.
 
-and change to pseudorandom numbers, as this is a traffic dithering
-operation that doesn't need crypto-grade.
-
-The previous code operated in 4 steps:
-
-1. Generate a random byte 0 <= rand_tq <= 255
-2. Multiply it by BATADV_TQ_MAX_VALUE - tq
-3. Divide by 255 (= BATADV_TQ_MAX_VALUE)
-4. Return BATADV_TQ_MAX_VALUE - rand_tq
-
-This would apperar to scale (BATADV_TQ_MAX_VALUE - tq) by a random
-value between 0/255 and 255/255.
-
-But!  The intermediate value between steps 3 and 4 is stored in a u8
-variable.  So it's truncated, and most of the time, is less than 255, after
-which the division produces 0.  Specifically, if tq is odd, the product is
-always even, and can never be 255.  If tq is even, there's exactly one
-random byte value that will produce a product byte of 255.
-
-Thus, the return value is 255 (511/512 of the time) or 254 (1/512
-of the time).
-
-If we assume that the truncation is a bug, and the code is meant to scale
-the input, a simpler way of looking at it is that it's returning a random
-value between tq and BATADV_TQ_MAX_VALUE, inclusive.
-
-Well, we have an optimized function for doing just that.
-
-Fixes: 3c12de9a5c75 ("batman-adv: network coding - code and transmit packets if possible")
-Signed-off-by: George Spelvin <lkml@sdf.org>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- net/batman-adv/network-coding.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 7a7dcac205667..7aacec24958eb 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1017,15 +1017,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
-  */
- static u8 batadv_nc_random_weight_tq(u8 tq)
- {
--	u8 rand_val, rand_tq;
--
--	get_random_bytes(&rand_val, sizeof(rand_val));
--
- 	/* randomize the estimated packet loss (max TQ - estimated TQ) */
--	rand_tq = rand_val * (BATADV_TQ_MAX_VALUE - tq);
--
--	/* normalize the randomized packet loss */
--	rand_tq /= BATADV_TQ_MAX_VALUE;
-+	u8 rand_tq = prandom_u32_max(BATADV_TQ_MAX_VALUE + 1 - tq);
- 
- 	/* convert to (randomized) estimated tq again */
- 	return BATADV_TQ_MAX_VALUE - rand_tq;
--- 
-2.20.1
-
+--
+Ermakov Alexey.
