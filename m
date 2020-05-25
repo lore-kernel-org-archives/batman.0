@@ -1,49 +1,57 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/3] batman-adv: Revert "Drop lockdep.h include for soft-interface.c"
-Date: Tue, 26 May 2020 12:00:05 +0200
-Message-Id: <20200526100007.10501-2-sw@simonwunderlich.de>
-In-Reply-To: <20200526100007.10501-1-sw@simonwunderlich.de>
-References: <20200526100007.10501-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Network stops passing traffic randomly
+Date: Mon, 25 May 2020 15:45:55 +0200
+Message-ID: <2230073.iNTqy5gN2v@bentobox>
+In-Reply-To: <CAL3ir7+RWLrYOzjNQh1VwiKg1sxSgHZMwwqx=9xSfXFnFjE_KQ@mail.gmail.com>
+References: <20200525083512.832.13419@diktynna.open-mesh.org> <32459667.Id32LJz2i1@bentobox> <CAL3ir7+RWLrYOzjNQh1VwiKg1sxSgHZMwwqx=9xSfXFnFjE_KQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart10397467.7FXaOZt9hp"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Daniel Ghansah <smartwires@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-The commit 1a33e10e4a95 ("net: partially revert dynamic lockdep key
-changes") reverts the commit ab92d68fc22f ("net: core: add generic lockdep
-keys"). But it forgot to also revert the commit 5759af0682b3 ("batman-adv:
-Drop lockdep.h include for soft-interface.c") which depends on the latter.
+ 
+--nextPart10397467.7FXaOZt9hp
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/soft-interface.c | 1 +
- 1 file changed, 1 insertion(+)
+On Monday, 25 May 2020 15:19:22 CEST Daniel Ghansah wrote:
+> [B.A.T.M.A.N. adv openwrt-2018.1-5, MainIF/MAC: mesh0/e8:5b:b7:00:10:73
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 822af540b854..0ddd80130ea3 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -22,6 +22,7 @@
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
-+#include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/percpu.h>
--- 
-2.20.1
+Just noticed another thing - why is your revision of batman-adv so low? The 
+OpenWrt 18.06.x version of batman-adv is already at 2018.1-11.
+
+Kind regards,
+	Sven
+--nextPart10397467.7FXaOZt9hp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7LzBMACgkQXYcKB8Em
+e0YQjg//dyyplxEg3sM5wLmKMI6+kBZxggOopGHnph4WB90yGODeHpl98ZPPX+qt
++K47amdttirl1jeFLCNMS3Wj89FPOzekseRJJxOIe3gLUEcHcmCG46308nvFS7pi
+GMECcMGHsOS3R/kJRBBwsEz0kCy6hbOPzTKpRw/L2mkQ/ClGwAXhW9EETwGuS/M/
+o3Mqqy4PkEPQxNhIFaFXMrPNXgB4EO9T/ywMwax99JKYguyEjgTLDxGc7QWUwHL6
+89660sH9OUNXxhsZwE8UaPcAe6kPgyoDL8ry1EQAw17iEXPPoc1aHjaEI4OGJJhK
+BRXLDmLiGuHQk1m09ZvubU8iA5m5DxziqpNex4KHYYxGATX4DcMNvRyAPCDM5wVs
+PYluoNe5xvU2fFFGmb6Kp+eUFwjLYq4oaHchs7SbBKplFxJlvgczBClKpR5nD0jW
+WMSY/+dCmM7x2kI4eh0yK2O8s9S7wiz8ZdsMUvVvFOdqQ9KyOlZiD63dXlM7gbWv
+PdT9f5c8BlUDVW7vO+tfbIYbxisSPDSY0XRg4JKk8XJN36y/FsAfvaBg+ljfCX5M
+F4WOqa7QhZasvWOqrnyD5PeiHrVYP7kLhek7dSlhaRMlFoXWxCPAzc1wh526AtOx
+iWLi26vJFr1V+pKCNZc8wunYxxJTxxU62z0Y77reMEgxciCDpuc=
+=pTKv
+-----END PGP SIGNATURE-----
+
+--nextPart10397467.7FXaOZt9hp--
+
 
