@@ -1,12 +1,15 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: Batman-adv packet retranslation
-Date: Fri, 22 May 2020 13:41:41 +0200
-Message-ID: <14217483.HvAlGTDFyM@rousseau>
-In-Reply-To: <CAOVt3fEEaLx8-58NjVXU0L6XToB5FPvGjFaEoZBeRCL+Eh-QWw@mail.gmail.com>
-References: <CAOVt3fEEaLx8-58NjVXU0L6XToB5FPvGjFaEoZBeRCL+Eh-QWw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6604068.RrEA1Lxpi4"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+References: <CAOVt3fEEaLx8-58NjVXU0L6XToB5FPvGjFaEoZBeRCL+Eh-QWw@mail.gmail.com>
+ <2164745.TYCVdmGlQZ@sven-edge> <CAOVt3fG9AbAEMP+uKLy8Hsnub6=hAJG2Ekg3vrC__AqVJAdZHw@mail.gmail.com>
+ <4309595.MtDqpTPQ1e@rousseau>
+In-Reply-To: <4309595.MtDqpTPQ1e@rousseau>
+From: Alexey Ermakov <axel101@gmail.com>
+Date: Mon, 25 May 2020 17:59:23 +0300
+Message-ID: <CAOVt3fEbtq-9aR-p-uEhukb+sdWduay3WfZi6GpwtdVdZpe=vQ@mail.gmail.com>
+Subject: Re: Batman-adv packet retranslation
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,47 +17,143 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
- 
---nextPart6604068.RrEA1Lxpi4
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+> To give advice on what to change, please provide the batman-adv routing t=
+ables
+> which allow us to understand how batman-adv sees your network. Please ref=
+er to
+> Sven's email with various examples.
 
-Hi Alexey,
-
-> There is a problem with retranslating packets in B.A.T.M.A.N. V mode.
-> I have 3 stations, st1, st2 and st3 with one active network interface.
-> This interface is configured so that st1 and st3 can see only st2.
-> I expect that if I join these stations in a bat0 network, then station
-> 2 will act as a repeater and all three stations will be visible in the
-> bat0 network.
-> This works fine if I selecting B.A.T.M.A.N. IV algorithm, but doesn't
-> work in B.A.T.M.A.N.V.
-
-can you please provide more information as to what does not work exactly ?
-The neighbors don't find each other ? Payload traffic does not flow ? ...
-
-Kind regards,
-Marek Lindner
-
---nextPart6604068.RrEA1Lxpi4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAl7HunUACgkQU1VOj+62
-HMDl9Qf8CK9jniGVk16p7tqmfo2zIHNemGvNa1PKE0zsNJAytxwnymN6RYLjCtOB
-vW98GnaF/IfVN0uZ0FRxO7D5f4Y6XhdTsRug320Xf1SHqvU1uXonC0inXLXIZd/V
-0SMF94PFeaDspjolrUBMP0Wz50DfWesO49r2a+2i+SKsaFulqtfidEFkspfYki3o
-zJZC+W+Gw9o6GmERAPuchlfsnw5bVT7cIBHwaXtHG7boK7c2VkxqjNRtXxEkZZjx
-+Iej8nz7kZbrpbNx4JHr051L/6YLhGJhXngrXCaY4ZYGhciQUnwQuCMqGjv82q7Y
-bzMoHzdCQbsj6w0+Jw0avNed2zypCg==
-=IIgr
------END PGP SIGNATURE-----
-
---nextPart6604068.RrEA1Lxpi4--
+Below I provide ethernet MAC addresses, tables with throughput overrid
+to 100kbit/s and tables without output override.
+Note that in case without override batman detects throughput about
+100mbit/s. This is not quiet correct, because as I say before, nodes
+connects to modems and throughput from node to modem is 100mbit/s, but
+actual speed of modem is 145 kbit/s=D0=B1 therefore I should set throughput
+override
 
 
+
+eth0 interface MAC adresses:
+
+Node 1:
+
+node1# ip -o link show dev eth0
+31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
+bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
+fe:00:00:c3:5b:13 brd ff:ff:ff:ff:ff:ff
+
+
+Node 2:
+
+node2# ip -o link show dev eth0
+31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
+bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
+fe:00:00:3b:9b:13 brd ff:ff:ff:ff:ff:ff
+
+---
+
+Node 3:
+
+node3# ip -o link show dev eth0
+31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
+bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
+fe:00:00:31:ed:13 brd ff:ff:ff:ff:ff:ff
+
+Tables with throughput overrid to 100kbit/s:
+
+ -- Node 1 tables --
+
+node1# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
+(bat0/fe:ee:f9:fe:00:68 BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:3b:9b:13    0.750s (        0.1)  fe:00:00:3b:9b:13 [    eth0]
+node1# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
+(bat0/fe:ee:f9:fe:00:68 BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:3b:9b:13    0.410s (        0.1) [    eth0]
+
+ -- Node 2 tables --
+
+node2# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
+(bat0/6a:53:d2:c1:6f:2e BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:31:ed:13    0.190s (        0.1)  fe:00:00:31:ed:13 [    eth0]
+ * fe:00:00:c3:5b:13    0.210s (        0.1)  fe:00:00:c3:5b:13 [    eth0]
+node2# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
+(bat0/6a:53:d2:c1:6f:2e BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:31:ed:13    0.320s (        0.1) [    eth0]
+fe:00:00:c3:5b:13    0.120s (        0.1) [    eth0]
+
+ -- Node 3 tables --
+
+node3# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
+(bat0/fa:be:fa:e6:5b:7a BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:3b:9b:13    0.650s (        0.1)  fe:00:00:3b:9b:13 [    eth0]
+node3# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
+(bat0/fa:be:fa:e6:5b:7a BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:3b:9b:13    0.500s (        0.1) [    eth0]
+
+-----------------------------------------
+
+Tables without throughput override:
+
+-- Node 1 tables --
+
+node1# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
+(bat0/26:f5:9a:68:f5:2d BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:3b:9b:13    0.090s (      100.0)  fe:00:00:3b:9b:13 [    eth0]
+ * fe:00:00:31:ed:13    0.350s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
+ * fe:00:00:c3:5b:13    1.330s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
+node1# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
+(bat0/26:f5:9a:68:f5:2d BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:3b:9b:13    0.010s (      100.0) [    eth0]
+
+-- Node 2 tables --
+
+node2# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
+(bat0/6a:5d:4e:09:dc:f4 BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:31:ed:13    0.150s (      100.0)  fe:00:00:31:ed:13 [    eth0]
+ * fe:00:00:c3:5b:13    0.080s (      100.0)  fe:00:00:c3:5b:13 [    eth0]
+node2# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
+(bat0/6a:5d:4e:09:dc:f4 BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:31:ed:13    0.440s (      100.0) [    eth0]
+fe:00:00:c3:5b:13    0.060s (      100.0) [    eth0]
+
+-- Node 3 tables --
+
+node3# batctl o
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
+(bat0/12:a7:e0:9e:f3:b6 BATMAN_V)]
+   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
+]
+ * fe:00:00:3b:9b:13    0.100s (      100.0)  fe:00:00:3b:9b:13 [    eth0]
+ * fe:00:00:c3:5b:13    0.200s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
+node3# batctl n
+[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
+(bat0/12:a7:e0:9e:f3:b6 BATMAN_V)]
+IF             Neighbor              last-seen
+fe:00:00:3b:9b:13    0.300s (      100.0) [    eth0]
