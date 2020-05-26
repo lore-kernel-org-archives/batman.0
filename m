@@ -1,84 +1,92 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: use rcu_replace_pointer() where appropriate
-Date: Fri, 22 May 2020 14:26:39 +0200
-Message-ID: <10146887.DO00CSXobA@sven-edge>
-In-Reply-To: <20200520084140.18624-1-a@unstable.cc>
-References: <20200520084140.18624-1-a@unstable.cc>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 2/3] batman-adv: use rcu_replace_pointer() where appropriate
+Date: Tue, 26 May 2020 12:00:06 +0200
+Message-Id: <20200526100007.10501-3-sw@simonwunderlich.de>
+In-Reply-To: <20200526100007.10501-1-sw@simonwunderlich.de>
+References: <20200526100007.10501-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3167353.ThBlhzVWR0"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Antonio Quartulli <a@unstable.cc>
+
+In commit a63fc6b75cca ("rcu: Upgrade rcu_swap_protected() to
+rcu_replace_pointer()") a new helper macro named rcu_replace_pointer() was
+introduced to simplify code requiring to switch an rcu pointer to a new
+value while extracting the old one.
+
+Use rcu_replace_pointer() where appropriate to make code slimer.
+
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/gateway_client.c | 4 ++--
+ net/batman-adv/hard-interface.c | 4 ++--
+ net/batman-adv/routing.c        | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index e22e49289677..a18dcc686dc3 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -146,8 +146,8 @@ static void batadv_gw_select(struct batadv_priv *bat_priv,
+ 	if (new_gw_node)
+ 		kref_get(&new_gw_node->refcount);
  
---nextPart3167353.ThBlhzVWR0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Wednesday, 20 May 2020 10:41:40 CEST Antonio Quartulli wrote:
-> In a63fc6b7 ("rcu: Upgrade rcu_swap_protected() to rcu_replace_pointer()")
-> a new helper macro named rcu_replace_pointer() was introduced to
-> simplify code requiring to switch an rcu pointer to a new value while
-> extracting the old one.
-
-Please use the reference style 'commit a63fc6b75cca ("rcu: Upgrade 
-rcu_swap_protected() to rcu_replace_pointer()")' in the future [1]. checkpatch 
-will also report something like this when it detects a short commit id:
-
-    ERROR: Please use git commit description style 'commit <12+ chars of sha1> ("<title line>")' - ie: 'commit a63fc6b75cca ("rcu: Upgrade rcu_swap_protected() to rcu_replace_pointer()")'
-
-I will change this for you.
-
-[...]
-> +#if LINUX_VERSION_IS_LESS(5, 5, 0)
-> +
-> +#define rcu_replace_pointer(rcu_ptr, ptr, c)				\
-> +({									\
-> +	typeof(ptr) __tmp = rcu_dereference_protected((rcu_ptr), (c));	\
-> +	rcu_assign_pointer((rcu_ptr), (ptr));				\
-> +	__tmp;								\
-> +})
-> +
-> +#endif /* LINUX_VERSION_IS_LESS(5, 5, 0) */
-
-To avoid problems with a (potentially) backported patch in the stable
-kernels - please #undef rcu_replace_pointer first. I will do this for you.
-
-Applied.
-
-Thanks,
-	Sven
-
-[1] https://www.kernel.org/doc/html/v4.17/process/submitting-patches.html#describe-your-changes
---nextPart3167353.ThBlhzVWR0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7HxP8ACgkQXYcKB8Em
-e0aSZBAAz8NWYjaQXmxDCI88c220XEOrRpamVovBXIVdPyplMHlZyug64zvYgMID
-fh37gLRc3BY1/kyb0jlvV5Fr352r4/iYVUXBEv+xtPxf5b6ZH2sRAKJ49Ea7B3zt
-0QTGPT144nnhNhehGuFGjr7vapDpVM6bRSJJd+b8TXSvBTn+SYYeqRbFdU+okiWb
-C5r+tdGAckwmapE7YCLG+P1v1rwJey88UUhFc7hSzR2Zq+A/oCtbIbBlJItwOcuz
-YLaFbVyTv7bC30ubqZRXWPpbGeC1jJAeuMtQMGad9f0mlnq0WYh3PBMpQ3hMLghq
-xH5xYd/r+NcHtVe/Lejywh5XFxBiL6xGMHMi2VRRoUEFjaUgCOaXwcsW7EEuEjm3
-uQ3ScB2EUq4ayGSs3LWfKg2sZiIaJb88lva1RD4OrO7WvEfULwkZJudDKA4vbKR4
-nT3ugufKyHEgUp/Uw70WNT3JqMePQJUAL+/Dus7hlI3Mi0Rq44Wsn1l9eUKXNKWF
-x7F4YmLX7b/yFOiqhWv7SKC9lqv5E3NAXRCnQQC5Go3JKcRtbUvXaJatfTwpf5i8
-cmBwYmMIsDsS+4CtMaRfM9I4JfnA+C2ViKTAFqx6YVej1voabfpnyc7052rOhoak
-DHZcouvd8Vlqz6JiRyr8Oj1W5SxsEveX83Pd2DHdSNEFq0jBKyo=
-=Azxs
------END PGP SIGNATURE-----
-
---nextPart3167353.ThBlhzVWR0--
-
+-	curr_gw_node = rcu_dereference_protected(bat_priv->gw.curr_gw, 1);
+-	rcu_assign_pointer(bat_priv->gw.curr_gw, new_gw_node);
++	curr_gw_node = rcu_replace_pointer(bat_priv->gw.curr_gw, new_gw_node,
++					   true);
+ 
+ 	if (curr_gw_node)
+ 		batadv_gw_node_put(curr_gw_node);
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index c7e98a40dd33..3a256af92784 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -473,8 +473,8 @@ static void batadv_primary_if_select(struct batadv_priv *bat_priv,
+ 	if (new_hard_iface)
+ 		kref_get(&new_hard_iface->refcount);
+ 
+-	curr_hard_iface = rcu_dereference_protected(bat_priv->primary_if, 1);
+-	rcu_assign_pointer(bat_priv->primary_if, new_hard_iface);
++	curr_hard_iface = rcu_replace_pointer(bat_priv->primary_if,
++					      new_hard_iface, 1);
+ 
+ 	if (!new_hard_iface)
+ 		goto out;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 3632bd976c56..d343382e9664 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -71,13 +71,13 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
+ 	 * the code needs to ensure the curr_router variable contains a pointer
+ 	 * to the replaced best neighbor.
+ 	 */
+-	curr_router = rcu_dereference_protected(orig_ifinfo->router, true);
+ 
+ 	/* increase refcount of new best neighbor */
+ 	if (neigh_node)
+ 		kref_get(&neigh_node->refcount);
+ 
+-	rcu_assign_pointer(orig_ifinfo->router, neigh_node);
++	curr_router = rcu_replace_pointer(orig_ifinfo->router, neigh_node,
++					  true);
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 	batadv_orig_ifinfo_put(orig_ifinfo);
+ 
+-- 
+2.20.1
 
