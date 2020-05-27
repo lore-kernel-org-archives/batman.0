@@ -1,33 +1,43 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] alfred: Switch mailing list subscription page
+Date: Wed, 27 May 2020 23:29:46 +0200
+Message-Id: <20200527212946.10259-1-sven@narfation.org>
 MIME-Version: 1.0
-From: Maksim Iushchenko <maxim.yuschenko1@gmail.com>
-Date: Thu, 14 May 2020 10:17:07 +0200
-Message-ID: <CADSehqPoEQGqdURG0g8OO85Dvb5dL0eExwG+-9uum8=wz9VXsg@mail.gmail.com>
-Subject: 
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hello,
-I am creating a Wi-Fi ad-hoc network based on batman-adv. I read that
-batman-adv is able to work with any types of interfaces, but I still
-have a question related to ad-hoc networking. Will Wi-Fi ad-hoc
-network (based on batman-adv) work if Wi-Fi chip does not support
-802.11s standard?
-Unfortunately, there is no mention of ad-hoc mode support in
-documentation of many Wi-Fi chips.
+The mailman installation on lists.open-mesh.org was switched from mailman2
+to mailman3. The URL to the subscription webpage changed in this process.
 
-How to check if a Wi-Fi chip is suited to be used to create a Wi-Fi
-ad-hoc network based on batman-adv?
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ README.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-For example, is ATWILC3000-MR110CA an appropriate chip to build a
-Wi-Fi ad-hoc network based on batman-adv? Or maybe you could suggest
-any another Wi-Fi chips?
+diff --git a/README.rst b/README.rst
+index d7446a3..76664ee 100644
+--- a/README.rst
++++ b/README.rst
+@@ -329,7 +329,7 @@ IRC:
+   #batman on irc.freenode.org
+ Mailing-list:
+   b.a.t.m.a.n@open-mesh.org (optional subscription at
+-  https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
++  https://lists.open-mesh.org/mailman3/postorius/lists/b.a.t.m.a.n.lists.open-mesh.org/)
+ 
+ If you have test reports/patches/ideas, please read the wiki for further
+ instruction on how to contribute:
+-- 
+2.20.1
 
-Thanks in advance
