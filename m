@@ -1,159 +1,81 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <greearb@candelatech.com>
+Subject: Re: Network stops passing traffic randomly
+References: <20200525083512.832.13419@diktynna.open-mesh.org>
+ <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
+ <1970963.L7oaDoOIKM@sven-edge>
+ <04932e2f-d727-46ce-ef68-2c79062cf196@coolheads.com>
+From: Ben Greear <greearb@candelatech.com>
+Message-ID: <41ed807d-5bbf-8cd0-53e8-0951c84b4889@candelatech.com>
+Date: Thu, 28 May 2020 14:28:50 -0700
 MIME-Version: 1.0
-References: <CAOVt3fEEaLx8-58NjVXU0L6XToB5FPvGjFaEoZBeRCL+Eh-QWw@mail.gmail.com>
- <2164745.TYCVdmGlQZ@sven-edge> <CAOVt3fG9AbAEMP+uKLy8Hsnub6=hAJG2Ekg3vrC__AqVJAdZHw@mail.gmail.com>
- <4309595.MtDqpTPQ1e@rousseau>
-In-Reply-To: <4309595.MtDqpTPQ1e@rousseau>
-From: Alexey Ermakov <axel101@gmail.com>
-Date: Mon, 25 May 2020 17:59:23 +0300
-Message-ID: <CAOVt3fEbtq-9aR-p-uEhukb+sdWduay3WfZi6GpwtdVdZpe=vQ@mail.gmail.com>
-Subject: Re: Batman-adv packet retranslation
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+In-Reply-To: <04932e2f-d727-46ce-ef68-2c79062cf196@coolheads.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-> To give advice on what to change, please provide the batman-adv routing t=
-ables
-> which allow us to understand how batman-adv sees your network. Please ref=
-er to
-> Sven's email with various examples.
-
-Below I provide ethernet MAC addresses, tables with throughput overrid
-to 100kbit/s and tables without output override.
-Note that in case without override batman detects throughput about
-100mbit/s. This is not quiet correct, because as I say before, nodes
-connects to modems and throughput from node to modem is 100mbit/s, but
-actual speed of modem is 145 kbit/s=D0=B1 therefore I should set throughput
-override
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: srn@coolheads.com, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: smartwires@gmail.com
 
 
 
-eth0 interface MAC adresses:
+On 05/28/2020 01:59 PM, Steve Newcomb wrote:
+>
+>
+> On 5/28/20 3:19 PM, Sven Eckelmann wrote:
+>> On Thursday, 28 May 2020 21:03:20 CEST Steve Newcomb wrote:
+>>> I have seen Sven's remark about unicast packets.  I'm not sanguine about
+>>> getting Qualcomm to fix a driver for an older product.
+>> I am slightly confused now about the mentioning of the candelatech driver.
+>>
+>> Just to sync both of you up:
+>>
+>> * Are you using ath10k-ct with the ath10k-firmware*-ct or are you using ath10k
+>>    with the ath10k-firmware*?
+>> * And are you using IBSS or 802.11s (meshpoint with mesh_fwding=0)? Is this
+>>    encrypted or not encrypted?
+> Speaking only for myself:
+>
+> CONFIG_PACKAGE_ath10k-firmware-qca988x=y
+> CONFIG_PACKAGE_kmod-ath10k=y
+> # CONFIG_PACKAGE_ath10k-firmware-qca988x-ct is not set
+> # CONFIG_PACKAGE_kmod-ath10k-ct is not set
+>
+> option mesh_fwding '0'
+> option encryption 'psk2+ccmp'
 
-Node 1:
+wave-1 ath10k-ct does not support mesh, and while it supports ADHOC, it has issues
+sometimes, especially when using encryption, and I have not had interest to debug it
+so far.
 
-node1# ip -o link show dev eth0
-31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
-bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
-fe:00:00:c3:5b:13 brd ff:ff:ff:ff:ff:ff
+wave-2 firmware supports mesh, and I think adhoc is stable as well.  I have not done
+any serious testing on either mesh nor adhoc though.
 
+I've tested DFS in STA/AP mode and that works fine on my driver/firmware, possibly
+due to us setting the regdom as a fwcfg option, I suppose.
 
-Node 2:
+Thanks,
+Ben
 
-node2# ip -o link show dev eth0
-31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
-bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
-fe:00:00:3b:9b:13 brd ff:ff:ff:ff:ff:ff
+>
+>>
+>>> The Candela
+>>> Technologies driver refuses to function on the DFS channels (100, 116,
+>>> 132), which in my large, populous US residential environment work far,
+>>> far better than channels 36 or 149.
+>> Was this reported to Ben Greear?
+> Not yet, no.  I am planning to do that when I can get serious about testing the adhoc alternative.  I tried it just long enough to discover that DFS didn't work (log message was something like "forbidden" (can't remember exactly what it said right now, but that was the sense of it), although I had specified country 'US' and the driver seemed to be aware of the corresponding hex code.  No such log message appeared when channel was 36 or 149.  I said to myself: hmmm, at least the QCA driver *sort-of* works in my environment and returned to it.
+>>
+>> Kind regards,
+>>     Sven
+>
 
----
-
-Node 3:
-
-node3# ip -o link show dev eth0
-31: eth0@eth2: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master
-bat0 state UP mode DEFAULT group default qlen 1000\    link/ether
-fe:00:00:31:ed:13 brd ff:ff:ff:ff:ff:ff
-
-Tables with throughput overrid to 100kbit/s:
-
- -- Node 1 tables --
-
-node1# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
-(bat0/fe:ee:f9:fe:00:68 BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:3b:9b:13    0.750s (        0.1)  fe:00:00:3b:9b:13 [    eth0]
-node1# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
-(bat0/fe:ee:f9:fe:00:68 BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:3b:9b:13    0.410s (        0.1) [    eth0]
-
- -- Node 2 tables --
-
-node2# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
-(bat0/6a:53:d2:c1:6f:2e BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:31:ed:13    0.190s (        0.1)  fe:00:00:31:ed:13 [    eth0]
- * fe:00:00:c3:5b:13    0.210s (        0.1)  fe:00:00:c3:5b:13 [    eth0]
-node2# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
-(bat0/6a:53:d2:c1:6f:2e BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:31:ed:13    0.320s (        0.1) [    eth0]
-fe:00:00:c3:5b:13    0.120s (        0.1) [    eth0]
-
- -- Node 3 tables --
-
-node3# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
-(bat0/fa:be:fa:e6:5b:7a BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:3b:9b:13    0.650s (        0.1)  fe:00:00:3b:9b:13 [    eth0]
-node3# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
-(bat0/fa:be:fa:e6:5b:7a BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:3b:9b:13    0.500s (        0.1) [    eth0]
-
------------------------------------------
-
-Tables without throughput override:
-
--- Node 1 tables --
-
-node1# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
-(bat0/26:f5:9a:68:f5:2d BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:3b:9b:13    0.090s (      100.0)  fe:00:00:3b:9b:13 [    eth0]
- * fe:00:00:31:ed:13    0.350s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
- * fe:00:00:c3:5b:13    1.330s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
-node1# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:c3:5b:13
-(bat0/26:f5:9a:68:f5:2d BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:3b:9b:13    0.010s (      100.0) [    eth0]
-
--- Node 2 tables --
-
-node2# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
-(bat0/6a:5d:4e:09:dc:f4 BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:31:ed:13    0.150s (      100.0)  fe:00:00:31:ed:13 [    eth0]
- * fe:00:00:c3:5b:13    0.080s (      100.0)  fe:00:00:c3:5b:13 [    eth0]
-node2# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:3b:9b:13
-(bat0/6a:5d:4e:09:dc:f4 BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:31:ed:13    0.440s (      100.0) [    eth0]
-fe:00:00:c3:5b:13    0.060s (      100.0) [    eth0]
-
--- Node 3 tables --
-
-node3# batctl o
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
-(bat0/12:a7:e0:9e:f3:b6 BATMAN_V)]
-   Originator        last-seen ( throughput)  Nexthop           [outgoingIF=
-]
- * fe:00:00:3b:9b:13    0.100s (      100.0)  fe:00:00:3b:9b:13 [    eth0]
- * fe:00:00:c3:5b:13    0.200s (       88.2)  fe:00:00:3b:9b:13 [    eth0]
-node3# batctl n
-[B.A.T.M.A.N. adv 2020.1, MainIF/MAC: eth0/fe:00:00:31:ed:13
-(bat0/12:a7:e0:9e:f3:b6 BATMAN_V)]
-IF             Neighbor              last-seen
-fe:00:00:3b:9b:13    0.300s (      100.0) [    eth0]
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
