@@ -2,13 +2,11 @@ Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 Subject: Re: Network stops passing traffic randomly
 References: <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
  <20200529001302.832.66710@diktynna.open-mesh.org>
- <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
- <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
 From: Steve Newcomb <srn@coolheads.com>
-Message-ID: <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
-Date: Tue, 2 Jun 2020 22:06:40 -0400
+Message-ID: <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
+Date: Mon, 1 Jun 2020 22:05:04 -0400
 MIME-Version: 1.0
-In-Reply-To: <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
+In-Reply-To: <20200529001302.832.66710@diktynna.open-mesh.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
@@ -19,37 +17,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Ben Greear <greearb@candelatech.com>, b.a.t.m.a.n@lists.open-mesh.org, smartwires@gmail.com
+To: b.a.t.m.a.n@lists.open-mesh.org, Ben Greear <greearb@candelatech.com>, smartwires@gmail.com
 
 
 
-On 6/2/20 4:02 PM, Ben Greear wrote:
-> Have you tried using IPQ4019 based systems?=C2=A0 They seem pretty=20
-> affordable, and the 3-radio Linksys MR8300 & EA8300 seem pretty stable
-> in my testing recently (in AP mode, not tested mesh).
-No.=C2=A0 Used, on E-bay, the cheaper of the two, the EA8300=C2=A0 is at =
-least=20
-twice as expensive as what we're using now.=C2=A0 To buy a dozen or so in=
+On 5/28/20 8:13 PM, smartwires@gmail.com wrote:
+> Steve, I am also using ap with a QCA9558 SOC and Also using ath10k-firm=
+ware-qca988x . I have also considered using adhoc.
+
+I think I discovered something yesterday that explains everything, and=20
+it's very reproducible.=C2=A0 The mesh mode in the QCA firmware works=20
+reliably in the lab and in the field, but only when there are 3 or fewer=20
+nodes.=C2=A0 If I add one more node, the mesh will completely fail, eithe=
+r=20
+immediately or within a few hours.=C2=A0 If the nodes are strung out in a=
 =20
-hope of getting them to work with Batman is out of the question, alas.
+daisy chain, failure is usually, but not always, delayed for a while,=20
+and the links break in a piecemeal fashion, one at a time.=C2=A0 If the n=
+odes=20
+are close enough to each other, total failure occurs quite quickly.=C2=A0=
+ I=20
+surmise that the 802.11s implementation in the QCA driver was not tested=20
+with more than 3 nodes, or perhaps it wasn't designed to support more=20
+than 3 nodes.=C2=A0 Sigh.
 
-Ben, I fully understand your lack of incentive to spend your time on=20
-drivers for older hardware.=C2=A0 This is not your problem, really. (Unle=
-ss,=20
-like me, you are seeking ways to address the digital divide, where low=20
-entry cost is the key consideration.=C2=A0 Every dollar cheaper means mor=
-e=20
-people can connect, which was important even before the pandemic began.=C2=
-=A0=20
-I selected these Archer [AC]7 v[245] units because there are so many of=20
-them for sale that they are kind of hard to sell.=C2=A0 True, I didn't kn=
-ow=20
-the QCA driver would limit me to 3 nodes per mesh, nor did I know your=20
-driver couldn't support encryption nor DFS, at least not out of the=20
-box.=C2=A0 It looked like a reasonable bet at the time; with 2 drivers to=
-=20
-choose from, what could go wrong?=C2=A0 Oh, well, nothing worthwhile was =
-ever=20
-easy.)
+Sven, I think this epiphany obviates the need for your test (which I=20
+still haven't figured out how to execute in the field), but I'll return=20
+to that effort if you think I should.
 
-Steve
+So in the end, unless I replace the hardware throughout the neighborhood=20
+with far more expensive hardware, I must find a way to use Ben's driver,=20
+or to have no mesh network with more than 3 nodes in it.
+
