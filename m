@@ -1,108 +1,127 @@
-Return-Path: <markbirss@gmail.com>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Re: Network stops passing traffic randomly
+References: <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
+ <20200529001302.832.66710@diktynna.open-mesh.org>
+ <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
+ <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
+ <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
+ <92655f2e-4ec4-5e1b-4ea9-b1df87a88aac@candelatech.com>
+From: Steve Newcomb <srn@coolheads.com>
+Message-ID: <c917d6e6-d3c1-61f5-1846-794f6cc06824@coolheads.com>
+Date: Wed, 3 Jun 2020 11:35:55 -0400
 MIME-Version: 1.0
-References: <CADg1mwL07UQqmUctQexAFCgFMrXBiF=rB1EdRqb3agveSEkckQ@mail.gmail.com>
- <1986026.lAXmxmQttu@sven-edge> <CADg1mwLTTq-wjxvPvkTBb2J9qtSs_+BxhNsSW0DGTeo6QiWXbA@mail.gmail.com>
- <12351834.0eS7jaRIYG@bentobox>
-In-Reply-To: <12351834.0eS7jaRIYG@bentobox>
-From: Mark Birss <markbirss@gmail.com>
-Date: Thu, 25 Jun 2020 13:56:18 +0200
-Message-ID: <CADg1mwLt_cw7frwgYC6hyjQ4wO35UA0GNLw=MERAgUjNvM4SjQ@mail.gmail.com>
-Subject: Re: BATMAN-adv Debug options
-Content-Type: text/plain; charset="UTF-8"
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+In-Reply-To: <92655f2e-4ec4-5e1b-4ea9-b1df87a88aac@candelatech.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
+Reply-To: srn@coolheads.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Sorry about the reply not including the mailing address, i  made error
-clicking wrong reply icon
-
-> As for originator and neighbours this can also be checked by batctl or1
-> proc file system.
-
-No i meant /sys/kernel/debug as I run recent Batman adv 2020-1
-
-Thank you for pointing out the correct wiki links, I could not find them
-
-I will create another topic for some other questions,
-
-Thank you
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Ben Greear <greearb@candelatech.com>, b.a.t.m.a.n@lists.open-mesh.org, smartwires@gmail.com
 
 
-On Thu, Jun 25, 2020 at 1:44 PM Sven Eckelmann <sven@narfation.org> wrote:
->
-> [please never contact me privately about batman-adv without a really good
->  reason. Cc at least the mailing list]
->
-> On Thursday, 25 June 2020 13:12:34 CEST Mark Birss wrote:
-> > "Is the lower layer working or did the lower layer break? Can be
-> > tested easily with multicast/broadcast and unicast pings on the lower
-> > device."
-> >
-> > How to do this ?
->
-> ping/ping6.
->
-> * unicast: just ping as normal the lower device (not bat0) IPv4 address or
->   (link local) IPv6 address
-> * multicast: just send from both sides an multicast ping. For example
->   ff02::1%wlan0 and check if the remote (not your own device) responds with a
->   unicast reply
->
-> > As for originator and neighbours this can also be checked by batctl or
-> > proc file system.
->
-> proc? If you have batman-adv entries in proc then you should definitely
-> upgrade. This was removed in 2010.
->
-> Should this have been a question about where to find the originators and
-> neighbors table? And you can see this via "batctl meshif bat0 originators"
-> and "batctl meshif bat0 neighbors". The "meshif bat0" has to replaced with
-> "-m bat0" on older batctl versions.
->
-> > Another question is there a breakdown of the meaning of the messages for
-> >
-> > $ cat /sys/kernel/debug/batman_adv/bat0/log
-> >
-> > The additional debug output is by default disabled. It can be enabled
-> > during run time. Following log_levels are defined:
->
-> No idea what you want here. The help text already says what each message type
-> is about. If you don't know what a specific feature is then please check the
-> wiki [1].
->
-> > and what is the Flags here
-> >
-> > root@LiMe-a376eb:~# batctl tl
-> > [B.A.T.M.A.N. adv 2020.1-openwrt-2, MainIF/MAC:
-> > dummy0/aa:84:86:a3:76:eb (bat0/72:8b:cf:a4:00:77 BATMAN_IV), TTVN: 4]
-> > Client             VID Flags    Last seen (CRC       )
-> > 72:8b:cf:a4:00:77   -1 [.P....]   0.000   (0x1c349131)
-> > 50:3e:aa:06:6f:4d   -1 [......]   0.280   (0x1c349131)
-> > 72:8b:cf:a4:00:77    0 [.P....]   0.000   (0x9243e316)
-> > cc:2d:e0:47:b3:56   -1 [......]   0.980   (0x1c349131)
-> > 72:8b:cf:a4:00:77    1 [.P....]   0.000   (0xdb7f9e31)
->
-> The flags here are
->
-> * 'R' BATADV_TT_CLIENT_ROAM
-> * 'N' BATADV_TT_CLIENT_NEW
-> * 'X' BATADV_TT_CLIENT_PENDING
-> * 'W' BATADV_TT_CLIENT_WIFI
-> * 'I' BATADV_TT_CLIENT_ISOLA
-> * 'P' BATADV_TT_CLIENT_NOPURGE
->
-> And they are documented in the wiki [2]
->
-> Kind regards,
->         Sven
->
-> [1] https://www.open-mesh.org/projects/batman-adv/wiki/Protocol_information
-> [2] https://www.open-mesh.org/projects/batman-adv/wiki/TT-Flags
+
+On 6/3/20 8:48 AM, Ben Greear wrote:
+ > I'm working with the TIP project, which aims to provide stable=20
+OpenWrt capable hardware, among lots of other things.
+ >
+ > I know some others in that group are interested in low cost=20
+solutions, so curious to know what price you think is
+ > viable for your market...
+ >
+ > https://telecominfraproject.com/wifi/
+
+Ben, your question is appropriately industrial, but I've already given=20
+my answer, which is: "Less is more."=C2=A0 The lower the price, the more=20
+human capital is protected from the abyss of the digital divide.
+
+True, the primary problem is not so much the one-time cost of a cheap=20
+radio.=C2=A0 However, one way to address the primary problem is to give=20
+public-spirited digital-haves a way to lift up their digital-have-not=20
+neighbors.=C2=A0 With mesh computing, that means purchasing multiple rout=
+ers=20
+and making gifts of at least one of them, along with the gift of=20
+access.=C2=A0 What can the digital-haves afford to give, besides access?=C2=
+=A0=20
+Typically, not much.
+
+What follows is a rant.=C2=A0 Advice: skip it.
+
+---------------------------------------------
+
+Let me explain my perspective, here.
+
+Personally, I believe that there is no difference between the=20
+information highway and any other public highway.=C2=A0 The digital divid=
+e is=20
+compelling evidence of oppression of the poor by the wealthy.=C2=A0 The=20
+nature of the oppression is comparable to highway tolls that restrict=20
+the mobility of the poor.=C2=A0 Since the capture of US federal regulator=
+y=20
+bodies by the telecom industry, and in the absence of effective telecom=20
+regulation in the public interest, the only course available to people=20
+who want to relieve the damage caused by the exclusion of the=20
+dispossessed is to work around the edges, which is what I'm doing.=C2=A0=20
+While I would welcome industrial help, I expect none, because I'm only=20
+interested in the prosperity of the *entire* public.=C2=A0 (In my retirem=
+ent,=20
+I can just barely afford to be.)
+
+I'm unfamiliar with the Telecom Infra Project (TIP).=C2=A0 However, I spe=
+nt=20
+more than 20 years voluntarily working on ANSI and ISO information=20
+interchange standards (ISO 10743, 10744, 13250), and I know exactly what=20
+I'm talking about when I say that the public interest is unlikely to be=20
+served by industrial consortia who say things like what the TIP website=20
+says:
+
+ =C2=A0=C2=A0=C2=A0=C2=A0 "We believe that accelerating innovation couple=
+d with new business=20
+approaches and cost efficiencies will help the industry build the=20
+networks of the future and create business opportunities for new and=20
+existing companies, alike."
+
+
+Such information technology consortia are typically violators of the=20
+spirit, and generally the letter, of the antitrust legislation that has=20
+been on the books since the end of the gilded age that preceded the=20
+current gilded age, and which no recent U.S. administration has seen fit=20
+to enforce.=C2=A0 They are simply dog fights in which the public interest=
+ has=20
+no dog.=C2=A0 The reason for their existence is to form alliances between=
+=C2=A0=20
+aggregations of capital as they conspire against the market-leading=20
+aggregations of capital.
+
+ANSI (the American National Standards Institute) promulgates rules for=20
+such activities that keep all participants from violating antitrust law=20
+-- from being "conspiracies in restraint of trade" -- but you never hear=20
+about ANSI standards any more because nobody bothers to avoid antitrust=20
+prosecution.=C2=A0 There isn't any, basically.=C2=A0 Why put up with burd=
+ensome=20
+transparency rules?=C2=A0 Why put up with the sandbagging machinations of=
+=20
+representatives of the actual market leaders?=C2=A0 Open societies are=20
+expensive, frustrating, and annoying.
+
+The purpose of a business is to make a profit, and that incentive *does*=20
+serve the public interest, but only in the context of regulation that=20
+forces the public interest to be served by it.=C2=A0 In the case of the U=
+S=20
+telecom industry, and basically since the Consent Decree of 1982,=20
+regulation has served the interests of its investors, but not the public=20
+interest.=C2=A0 The history is appalling, really, and the story keeps get=
+ting=20
+worse.
+
+That's just how things are these days, as we flush whole sections of=20
+each generation's human potential down the toilet.=C2=A0 It bothers me a=20
+lot.=C2=A0 For each succeeding generation, the cost of each generation's =
+loss=20
+is exponentially increased.=C2=A0 Try not to think about it.
+
+
