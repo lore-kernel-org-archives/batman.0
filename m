@@ -1,13 +1,12 @@
-Return-Path: <ebiederm@xmission.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-References: <000000000000d788c905a7dfa3f4@google.com>
-Date: Fri, 12 Jun 2020 08:41:47 -0500
-In-Reply-To: <000000000000d788c905a7dfa3f4@google.com> (syzbot's message of
-	"Fri, 12 Jun 2020 02:24:11 -0700")
-Message-ID: <87sgf0pfj8.fsf@x220.int.ebiederm.org>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 025/106] batman-adv: Revert "disable ethtool link speed detection when auto negotiation off"
+Date: Mon,  8 Jun 2020 19:21:17 -0400
+Message-Id: <20200608232238.3368589-25-sashal@kernel.org>
+In-Reply-To: <20200608232238.3368589-1-sashal@kernel.org>
+References: <20200608232238.3368589-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: KASAN: use-after-free Write in fsnotify_detach_connector_from_object
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,178 +16,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com>
-Cc: a@unstable.cc, adobriyan@gmail.com, akpm@linux-foundation.org, alex.dewar@gmx.co.uk, amir73il@gmail.com, anton.ivanov@cambridgegreys.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jack@suse.cz, jdike@addtoit.com, kuba@kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-um@lists.infradead.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, richard@nod.at, sfr@canb.auug.org.au, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sven Eckelmann <sven@narfation.org>, Matthias Schiffer <mschiffer@universe-factory.net>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com> writes:
+From: Sven Eckelmann <sven@narfation.org>
 
-> Hello,
->
-> syzbot found the following crash on:
->
-> HEAD commit:    7ae77150 Merge tag 'powerpc-5.8-1' of git://git.kernel.org..
-> git tree:       upstream
-> console output: https://syzkaller.appspot.com/x/log.txt?x=120b26c1100000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=d195fe572fb15312
-> dashboard link: https://syzkaller.appspot.com/bug?extid=7d2debdcdb3cb93c1e5e
-> compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1724b246100000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=14ceb3de100000
->
-> The bug was bisected to:
+[ Upstream commit 9ad346c90509ebd983f60da7d082f261ad329507 ]
 
-That bisection can not be correct.  The commit only added code, and the
-code that was added is not in any of the call traces.  Further
-the failure on the final commit was different than the other commits
-in your bisection.
+The commit 8c46fcd78308 ("batman-adv: disable ethtool link speed detection
+when auto negotiation off") disabled the usage of ethtool's link_ksetting
+when auto negotation was enabled due to invalid values when used with
+tun/tap virtual net_devices. According to the patch, automatic measurements
+should be used for these kind of interfaces.
 
-I will believe commit 69879c01a0c3f70e0887cfb4d9ff439814361e46 ("proc:
-Remove the now unnecessary internal mount of proc") is the point at
-which things start failing for your reproducer.  That is the change
-that makes it possible to actually unmount proc, and for it's super
-block to be freed.
+But there are major flaws with this argumentation:
 
-Now I don't know why fsnotify is holding on after a filesystem has been
-unmounted.  At first glance this looks like a bug in inotify.
+* automatic measurements are not implemented
+* auto negotiation has nothing to do with the validity of the retrieved
+  values
 
-It looks like your reproducer is doing:
+The first point has to be fixed by a longer patch series. The "validity"
+part of the second point must be addressed in the same patch series by
+dropping the usage of ethtool's link_ksetting (thus always doing automatic
+measurements over ethernet).
 
-	mkdir ./file
-        mount -t proc ./file
-        inotify_init()
-        inotify_add_watch(./file, ...);
-        umount(./file)
-        ...
-        exit(0);
-        <kaboom>
+Drop the patch again to have more default values for various net_device
+types/configurations. The user can still overwrite them using the
+batadv_hardif's BATADV_ATTR_THROUGHPUT_OVERRIDE.
 
-Then after the exit inotify is falling over because the filesystem has
-already been unmounted.
+Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ net/batman-adv/bat_v_elp.c | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
 
-Can anyone who is more familiar with inotify/fsnotify give a clue why
-the unmount of the filesystem is not clearing the watch?
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 5da183b2f4c9..af3da6cdfc79 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -132,20 +132,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	rtnl_lock();
+ 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
+ 	rtnl_unlock();
+-
+-	/* Virtual interface drivers such as tun / tap interfaces, VLAN, etc
+-	 * tend to initialize the interface throughput with some value for the
+-	 * sake of having a throughput number to export via ethtool. This
+-	 * exported throughput leaves batman-adv to conclude the interface
+-	 * throughput is genuine (reflecting reality), thus no measurements
+-	 * are necessary.
+-	 *
+-	 * Based on the observation that those interface types also tend to set
+-	 * the link auto-negotiation to 'off', batman-adv shall check this
+-	 * setting to differentiate between genuine link throughput information
+-	 * and placeholders installed by virtual interfaces.
+-	 */
+-	if (ret == 0 && link_settings.base.autoneg == AUTONEG_ENABLE) {
++	if (ret == 0) {
+ 		/* link characteristics might change over time */
+ 		if (link_settings.base.duplex == DUPLEX_FULL)
+ 			hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
+-- 
+2.25.1
 
-Is it a generic bug or is there something proc is not doing?
-
-Eric
-
-
-> commit 76313c70c52f930af4afd21684509ca52297ea71
-> Author: Eric W. Biederman <ebiederm@xmission.com>
-> Date:   Wed Feb 19 16:37:15 2020 +0000
->
->     uml: Create a private mount of proc for mconsole
->
-> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=117c4912100000
-> final crash:    https://syzkaller.appspot.com/x/report.txt?x=137c4912100000
-> console output: https://syzkaller.appspot.com/x/log.txt?x=157c4912100000
->
-> IMPORTANT: if you fix the bug, please add the following tag to the commit:
-> Reported-by: syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com
-> Fixes: 76313c70c52f ("uml: Create a private mount of proc for mconsole")
->
-> ==================================================================
-> BUG: KASAN: use-after-free in atomic64_inc include/asm-generic/atomic-instrumented.h:1049 [inline]
-> BUG: KASAN: use-after-free in atomic_long_inc include/asm-generic/atomic-long.h:160 [inline]
-> BUG: KASAN: use-after-free in fsnotify_detach_connector_from_object+0x25e/0x380 fs/notify/mark.c:185
-> Write of size 8 at addr ffff88809fd7e7c0 by task syz-executor972/8021
->
-> CPU: 1 PID: 8021 Comm: syz-executor972 Not tainted 5.7.0-syzkaller #0
-> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-> Call Trace:
->  __dump_stack lib/dump_stack.c:77 [inline]
->  dump_stack+0x188/0x20d lib/dump_stack.c:118
->  print_address_description.constprop.0.cold+0xd3/0x413 mm/kasan/report.c:383
->  __kasan_report mm/kasan/report.c:513 [inline]
->  kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
->  check_memory_region_inline mm/kasan/generic.c:186 [inline]
->  check_memory_region+0x141/0x190 mm/kasan/generic.c:192
->  atomic64_inc include/asm-generic/atomic-instrumented.h:1049 [inline]
->  atomic_long_inc include/asm-generic/atomic-long.h:160 [inline]
->  fsnotify_detach_connector_from_object+0x25e/0x380 fs/notify/mark.c:185
->  fsnotify_put_mark+0x367/0x580 fs/notify/mark.c:250
->  fsnotify_clear_marks_by_group+0x33f/0x490 fs/notify/mark.c:764
->  fsnotify_destroy_group+0xc9/0x300 fs/notify/group.c:61
->  inotify_release+0x33/0x40 fs/notify/inotify/inotify_user.c:271
->  __fput+0x33e/0x880 fs/file_table.c:281
->  task_work_run+0xf4/0x1b0 kernel/task_work.c:123
->  exit_task_work include/linux/task_work.h:22 [inline]
->  do_exit+0xb3f/0x2de0 kernel/exit.c:806
->  do_group_exit+0x125/0x340 kernel/exit.c:904
->  __do_sys_exit_group kernel/exit.c:915 [inline]
->  __se_sys_exit_group kernel/exit.c:913 [inline]
->  __x64_sys_exit_group+0x3a/0x50 kernel/exit.c:913
->  do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:295
->  entry_SYSCALL_64_after_hwframe+0x49/0xb3
-> RIP: 0033:0x445448
-> Code: Bad RIP value.
-> RSP: 002b:00007ffe48521018 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 0000000000445448
-> RDX: 0000000000000000 RSI: 000000000000003c RDI: 0000000000000000
-> RBP: 00000000004cca90 R08: 00000000000000e7 R09: ffffffffffffffd0
-> R10: 00007ffe48521060 R11: 0000000000000246 R12: 0000000000000001
-> R13: 00000000006e0340 R14: 0000000000000007 R15: 000000000000002d
->
-> Allocated by task 8026:
->  save_stack+0x1b/0x40 mm/kasan/common.c:48
->  set_track mm/kasan/common.c:56 [inline]
->  __kasan_kmalloc mm/kasan/common.c:494 [inline]
->  __kasan_kmalloc.constprop.0+0xbf/0xd0 mm/kasan/common.c:467
->  kmem_cache_alloc_trace+0x153/0x7d0 mm/slab.c:3551
->  kmalloc include/linux/slab.h:555 [inline]
->  kzalloc include/linux/slab.h:669 [inline]
->  alloc_super+0x52/0x9d0 fs/super.c:203
->  sget_fc+0x13f/0x790 fs/super.c:530
->  vfs_get_super+0x6d/0x2d0 fs/super.c:1186
->  vfs_get_tree+0x89/0x2f0 fs/super.c:1547
->  do_new_mount fs/namespace.c:2874 [inline]
->  do_mount+0x1306/0x1b40 fs/namespace.c:3199
->  __do_sys_mount fs/namespace.c:3409 [inline]
->  __se_sys_mount fs/namespace.c:3386 [inline]
->  __x64_sys_mount+0x18f/0x230 fs/namespace.c:3386
->  do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:295
->  entry_SYSCALL_64_after_hwframe+0x49/0xb3
->
-> Freed by task 23:
->  save_stack+0x1b/0x40 mm/kasan/common.c:48
->  set_track mm/kasan/common.c:56 [inline]
->  kasan_set_free_info mm/kasan/common.c:316 [inline]
->  __kasan_slab_free+0xf7/0x140 mm/kasan/common.c:455
->  __cache_free mm/slab.c:3426 [inline]
->  kfree+0x109/0x2b0 mm/slab.c:3757
->  process_one_work+0x965/0x16a0 kernel/workqueue.c:2268
->  worker_thread+0x96/0xe20 kernel/workqueue.c:2414
->  kthread+0x388/0x470 kernel/kthread.c:268
->  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:351
->
-> The buggy address belongs to the object at ffff88809fd7e000
->  which belongs to the cache kmalloc-4k of size 4096
-> The buggy address is located 1984 bytes inside of
->  4096-byte region [ffff88809fd7e000, ffff88809fd7f000)
-> The buggy address belongs to the page:
-> page:ffffea00027f5f80 refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 head:ffffea00027f5f80 order:1 compound_mapcount:0
-> flags: 0xfffe0000010200(slab|head)
-> raw: 00fffe0000010200 ffffea000247aa88 ffffea000242ef08 ffff8880aa002000
-> raw: 0000000000000000 ffff88809fd7e000 0000000100000001 0000000000000000
-> page dumped because: kasan: bad access detected
->
-> Memory state around the buggy address:
->  ffff88809fd7e680: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->  ffff88809fd7e700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->>ffff88809fd7e780: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->                                            ^
->  ffff88809fd7e800: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->  ffff88809fd7e880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-> ==================================================================
->
->
-> ---
-> This bug is generated by a bot. It may contain errors.
-> See https://goo.gl/tpsmEJ for more information about syzbot.
-> syzbot engineers can be reached at syzkaller@googlegroups.com.
->
-> syzbot will keep track of this bug report. See:
-> https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
-> syzbot can test patches for this bug, for details see:
-> https://goo.gl/tpsmEJ#testing-patches
