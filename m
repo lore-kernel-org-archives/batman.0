@@ -1,50 +1,83 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: Network stops passing traffic randomly
-References: <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
- <20200529001302.832.66710@diktynna.open-mesh.org>
- <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
- <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
- <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
-From: Ben Greear <greearb@candelatech.com>
-Message-ID: <92655f2e-4ec4-5e1b-4ea9-b1df87a88aac@candelatech.com>
-Date: Wed, 3 Jun 2020 05:48:24 -0700
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 051/175] batman-adv: Revert "disable ethtool link speed detection when auto negotiation off"
+Date: Mon,  8 Jun 2020 19:16:44 -0400
+Message-Id: <20200608231848.3366970-51-sashal@kernel.org>
+In-Reply-To: <20200608231848.3366970-1-sashal@kernel.org>
+References: <20200608231848.3366970-1-sashal@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: srn@coolheads.com, b.a.t.m.a.n@lists.open-mesh.org, smartwires@gmail.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sven Eckelmann <sven@narfation.org>, Matthias Schiffer <mschiffer@universe-factory.net>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
+From: Sven Eckelmann <sven@narfation.org>
 
+[ Upstream commit 9ad346c90509ebd983f60da7d082f261ad329507 ]
 
-On 06/02/2020 07:06 PM, Steve Newcomb wrote:
->
->
-> On 6/2/20 4:02 PM, Ben Greear wrote:
->> Have you tried using IPQ4019 based systems?  They seem pretty affordable, and the 3-radio Linksys MR8300 & EA8300 seem pretty stable
->> in my testing recently (in AP mode, not tested mesh).
-> No.  Used, on E-bay, the cheaper of the two, the EA8300  is at least twice as expensive as what we're using now.  To buy a dozen or so in hope of getting them to work with Batman is out of the question, alas.
->
-> Ben, I fully understand your lack of incentive to spend your time on drivers for older hardware.  This is not your problem, really. (Unless, like me, you are seeking ways to address the digital divide, where low entry cost is the key consideration.  Every dollar cheaper means more people can connect, which was important even before the pandemic began.  I selected these Archer [AC]7 v[245] units because there are so many of them for sale that they are kind of hard to sell.  True, I didn't know the QCA driver would limit me to 3 nodes per mesh, nor did I know your driver couldn't support encryption nor DFS, at least not out of the box.  It looked like a reasonable bet at the time; with 2 drivers to choose from, what could go wrong?  Oh, well, nothing worthwhile was ever easy.)
->
-> Steve
+The commit 8c46fcd78308 ("batman-adv: disable ethtool link speed detection
+when auto negotiation off") disabled the usage of ethtool's link_ksetting
+when auto negotation was enabled due to invalid values when used with
+tun/tap virtual net_devices. According to the patch, automatic measurements
+should be used for these kind of interfaces.
 
-I'm working with the TIP project, which aims to provide stable OpenWrt capable hardware, among lots of other things.
+But there are major flaws with this argumentation:
 
-I know some others in that group are interested in low cost solutions, so curious to know what price you think is
-viable for your market...
+* automatic measurements are not implemented
+* auto negotiation has nothing to do with the validity of the retrieved
+  values
 
-https://telecominfraproject.com/wifi/
+The first point has to be fixed by a longer patch series. The "validity"
+part of the second point must be addressed in the same patch series by
+dropping the usage of ethtool's link_ksetting (thus always doing automatic
+measurements over ethernet).
 
-Thanks,
-Ben
+Drop the patch again to have more default values for various net_device
+types/configurations. The user can still overwrite them using the
+batadv_hardif's BATADV_ATTR_THROUGHPUT_OVERRIDE.
 
+Reported-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ net/batman-adv/bat_v_elp.c | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 2614a9caee00..a39af0eefad3 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -120,20 +120,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	rtnl_lock();
+ 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
+ 	rtnl_unlock();
+-
+-	/* Virtual interface drivers such as tun / tap interfaces, VLAN, etc
+-	 * tend to initialize the interface throughput with some value for the
+-	 * sake of having a throughput number to export via ethtool. This
+-	 * exported throughput leaves batman-adv to conclude the interface
+-	 * throughput is genuine (reflecting reality), thus no measurements
+-	 * are necessary.
+-	 *
+-	 * Based on the observation that those interface types also tend to set
+-	 * the link auto-negotiation to 'off', batman-adv shall check this
+-	 * setting to differentiate between genuine link throughput information
+-	 * and placeholders installed by virtual interfaces.
+-	 */
+-	if (ret == 0 && link_settings.base.autoneg == AUTONEG_ENABLE) {
++	if (ret == 0) {
+ 		/* link characteristics might change over time */
+ 		if (link_settings.base.duplex == DUPLEX_FULL)
+ 			hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
 -- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
+2.25.1
+
