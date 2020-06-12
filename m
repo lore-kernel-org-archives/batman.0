@@ -1,76 +1,104 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: batadv gw_mode client 0?
-Date: Wed, 24 Jun 2020 23:12:18 +0200
-Message-ID: <3573996.TXEB8fxZsQ@sven-edge>
-In-Reply-To: <FE41926B-5684-45D8-B9AE-17D46DA1C8C7@xecoenergy.com>
-References: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com> <2094569.NUmnuQNPM9@sven-edge> <FE41926B-5684-45D8-B9AE-17D46DA1C8C7@xecoenergy.com>
+Return-Path: <ebiederm@xmission.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+References: <000000000000d788c905a7dfa3f4@google.com>
+Date: Fri, 12 Jun 2020 14:15:51 -0500
+In-Reply-To: <000000000000d788c905a7dfa3f4@google.com> (syzbot's message of
+	"Fri, 12 Jun 2020 02:24:11 -0700")
+Message-ID: <87mu58p02g.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3048125.H8yJaoMOXz"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain
+Subject: [PATCH] proc: Use new_inode not new_inode_pseudo
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Rob Cowart <rob.cowart@xecoenergy.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, adobriyan@gmail.com, akpm@linux-foundation.org, alex.dewar@gmx.co.uk, amir73il@gmail.com, anton.ivanov@cambridgegreys.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jack@suse.cz, jdike@addtoit.com, kuba@kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-um@lists.infradead.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, richard@nod.at, sfr@canb.auug.org.au, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
+
+Recently syzbot reported that unmounting proc when there is an ongoing
+inotify watch on the root directory of proc could result in a use
+after free when the watch is removed after the unmount of proc
+when the watcher exits.
+
+Commit 69879c01a0c3 ("proc: Remove the now unnecessary internal mount
+of proc") made it easier to unmount proc and allowed syzbot to see the
+problem, but looking at the code it has been around for a long time.
+
+Looking at the code the fsnotify watch should have been removed by
+fsnotify_sb_delete in generic_shutdown_super.  Unfortunately the inode
+was allocated with new_inode_pseudo instead of new_inode so the inode
+was not on the sb->s_inodes list.  Which prevented
+fsnotify_unmount_inodes from finding the inode and removing the watch
+as well as made it so the "VFS: Busy inodes after unmount" warning
+could not find the inodes to warn about them.
+
+Make all of the inodes in proc visible to generic_shutdown_super,
+and fsnotify_sb_delete by using new_inode instead of new_inode_pseudo.
+The only functional difference is that new_inode places the inodes
+on the sb->s_inodes list.
+
+I wrote a small test program and I can verify that without changes it
+can trigger this issue, and by replacing new_inode_pseudo with
+new_inode the issues goes away.
+
+Cc: stable@vger.kernel.org
+Link: https://lkml.kernel.org/r/000000000000d788c905a7dfa3f4@google.com
+Reported-by: syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com
+Fixes: 0097875bd415 ("proc: Implement /proc/thread-self to point at the directory of the current thread")
+Fixes: 021ada7dff22 ("procfs: switch /proc/self away from proc_dir_entry")
+Fixes: 51f0885e5415 ("vfs,proc: guarantee unique inodes in /proc")
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+---
+ fs/proc/inode.c       | 2 +-
+ fs/proc/self.c        | 2 +-
+ fs/proc/thread_self.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index f40c2532c057..28d6105e908e 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -617,7 +617,7 @@ const struct inode_operations proc_link_inode_operations = {
  
---nextPart3048125.H8yJaoMOXz
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Wednesday, 24 June 2020 22:37:29 CEST Rob Cowart wrote:
-> Are there any docs that talk about what B.A.T.M.A.N. V vs B.A.T.M.A.N. IV is good for?  The decision to upgrade was made before I got here, I'm not sure anyone understood that IV would still be supported/expected to be used.
-
-There is a summary page about B.A.T.M.A.N. V [1] which you should read first. 
-And you should definitely not use B.A.T.M.A.N. V when the "throughput based 
-metric" is not able to retrieve any meaningful values for your link partners
-and you are not able to give the routing protocol anything useful to work with.
-
-And B.A.T.M.A.N. IV is still the default and cannot be compiled out. And the
-configuration option for B.A.T.M.A.N. V still has following sentence at the 
-end:
-
-	  B.A.T.M.A.N. V is currently considered experimental and not
-	  compatible to B.A.T.M.A.N. IV networks.
-
-So while it is definitely less experimental than some years ago, it tends to 
-still have problems to get useful throughput information from the drivers of 
-the lower device(s).
-
-But both protocol versions have their Pros and Cons - but with your current 
-setup (with your current drivers), I have have big doubts that B.A.T.M.A.N. V 
-has any benefits for you. But I could be wrong.
-
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/BATMAN_V
---nextPart3048125.H8yJaoMOXz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7zwbIACgkQXYcKB8Em
-e0apmBAA1xybBWMNr1jAZpJ/++vPGBEU41Qk974+RN7Sm7zFrERrpAMV4SUB5NUN
-KmwjVOUyYbWLTAtIpkCl2GzIN9GWybgZbouLbyMGVuLpQHTWarOcpgRQqAxzJVF+
-iAUvyHdBi1QhXJPwiR6KRVn11CzvSr0b/xP6Rt7np1gzayM2g+t8HqqG9SO9muhk
-9YU4ME0Da/de5/EkohBvD3rNHjPgBvHej+5X4k5XM+fXVF/f1+P4hTV13MtQ1hEB
-Ogd3rp6Sz5i2E88fZq7wOvUbXiikmmaRGilou4P8UrkT3UVPLFMthjNg30GjnCvs
-dVoIK/IiXtwZrNc4z55Fdszn9sQdbIwRIab1Ovpz6jgpQGL29/ytfRHpkRdySsR6
-LnSO4l4bG3gl/XshrWLSFS1e8r1BZsLc12AOKP6vvNWNunXWkQvhxXiw0+QxhNT9
-vV+GCF/FBrBzFmeJtxO6W6qQiyHtVsXrSDnaHNMFoHMteNSIphKhPYqqsOI1jXvi
-rOTJjRyf0DrrW52TyQa+sp+Pq9f43ubBZX3Vpa8tCXo2uGJ8Mr5xxjY9vVhmz7Tn
-NtL/l6rbTAWLCPezsTHOCtV4P6ZAUjULzbWBPb3y1dW4ixI/Jm0tihzaK0KVAkHX
-5X9hwfdoE0MEBR4X9f3g+VOemIU+ZUcqwZj4IxdX/n/BNTMFmf4=
-=AWN9
------END PGP SIGNATURE-----
-
---nextPart3048125.H8yJaoMOXz--
-
+ struct inode *proc_get_inode(struct super_block *sb, struct proc_dir_entry *de)
+ {
+-	struct inode *inode = new_inode_pseudo(sb);
++	struct inode *inode = new_inode(sb);
+ 
+ 	if (inode) {
+ 		inode->i_ino = de->low_ino;
+diff --git a/fs/proc/self.c b/fs/proc/self.c
+index ca5158fa561c..72cd69bcaf4a 100644
+--- a/fs/proc/self.c
++++ b/fs/proc/self.c
+@@ -43,7 +43,7 @@ int proc_setup_self(struct super_block *s)
+ 	inode_lock(root_inode);
+ 	self = d_alloc_name(s->s_root, "self");
+ 	if (self) {
+-		struct inode *inode = new_inode_pseudo(s);
++		struct inode *inode = new_inode(s);
+ 		if (inode) {
+ 			inode->i_ino = self_inum;
+ 			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+diff --git a/fs/proc/thread_self.c b/fs/proc/thread_self.c
+index ac284f409568..a553273fbd41 100644
+--- a/fs/proc/thread_self.c
++++ b/fs/proc/thread_self.c
+@@ -43,7 +43,7 @@ int proc_setup_thread_self(struct super_block *s)
+ 	inode_lock(root_inode);
+ 	thread_self = d_alloc_name(s->s_root, "thread-self");
+ 	if (thread_self) {
+-		struct inode *inode = new_inode_pseudo(s);
++		struct inode *inode = new_inode(s);
+ 		if (inode) {
+ 			inode->i_ino = thread_self_inum;
+ 			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+-- 
+2.20.1
 
