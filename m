@@ -1,87 +1,194 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: Network stops passing traffic randomly
-References: <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
- <20200529001302.832.66710@diktynna.open-mesh.org>
- <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
- <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
- <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
- <92655f2e-4ec4-5e1b-4ea9-b1df87a88aac@candelatech.com>
- <c917d6e6-d3c1-61f5-1846-794f6cc06824@coolheads.com>
- <3659b31b-1f8b-1e21-43f5-b47f6e11d338@candelatech.com>
-From: Steve Newcomb <srn@coolheads.com>
-Message-ID: <310fffa6-ff96-cb48-355f-00e773c1a4d7@coolheads.com>
-Date: Wed, 3 Jun 2020 13:56:32 -0400
+Return-Path: <ebiederm@xmission.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+References: <000000000000d788c905a7dfa3f4@google.com>
+Date: Fri, 12 Jun 2020 08:41:47 -0500
+In-Reply-To: <000000000000d788c905a7dfa3f4@google.com> (syzbot's message of
+	"Fri, 12 Jun 2020 02:24:11 -0700")
+Message-ID: <87sgf0pfj8.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <3659b31b-1f8b-1e21-43f5-b47f6e11d338@candelatech.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-Reply-To: srn@coolheads.com, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain
+Subject: Re: KASAN: use-after-free Write in fsnotify_detach_connector_from_object
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Ben Greear <greearb@candelatech.com>, b.a.t.m.a.n@lists.open-mesh.org, smartwires@gmail.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, adobriyan@gmail.com, akpm@linux-foundation.org, alex.dewar@gmx.co.uk, amir73il@gmail.com, anton.ivanov@cambridgegreys.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jack@suse.cz, jdike@addtoit.com, kuba@kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-um@lists.infradead.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, richard@nod.at, sfr@canb.auug.org.au, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
+syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com> writes:
 
-
-On 6/3/20 12:42 PM, Ben Greear wrote:
-> If you are trying to lift up a broad swath of the world, then you need=20
-> scale and vision, and part of that is how
-> to make it self sustaining.=C2=A0 Giving a few crumbs to folks is less=20
-> useful in my mind than helping give them the means
-> to make their own bread.=C2=A0 Think someone starting a company that wa=
-nts=20
-> to deploy 10k hotspots with 40k satellite
-> wifi mesh nodes....
-Your vision is deeply correct, but so is mine.=C2=A0 One difference betwe=
-en=20
-the two ideas is that yours is top-down, with the purpose of offering a=20
-service, while mine is bottom-up, with the purpose of developing=20
-community and neighborliness, regardless of service provider(s). =C2=A0 (=
-I'm=20
-an admirer of the late Fred Rogers, and I'm not ashamed to admit it.)
-
-But you are right, too.=C2=A0 I'm also an admirer of the Indian cataract=20
-surgery guy (can't remember his name) who insisted that all patients pay=20
-for their surgery "because charity doesn't scale".=C2=A0 He ultimately bu=
-ilt=20
-a mind-boggling practice that, among other things, presumably now=20
-manufactures most of the world's intraocular lenses.
-
+> Hello,
 >
-> Open source software (and maybe hardware) with high volume,=20
-> affordable, and solid hardware
-> is one of the core aims of TIP.=C2=A0 Think of a price and minimum hard=
-ware=20
-> that meets your goals,
-> if I find someone that can make such a thing at such a price, I'll let=20
-> you know.
-Fair enough.=C2=A0 How about a *delivered* price, i.e. an out-of-pocket c=
-ost,=20
-of $50.=C2=A0 Obviously a minimum of 2 radios, 128 Mb, and reasonable CPU=
-=20
-power.=C2=A0 Since we're forward-looking, here, with support for the new=20
-channels now presumably forthcoming from the FCC.
-> If you want wave-1 ath10k to mesh, my advice is to use 7 virtual=20
-> station vdevs and one AP on each radio.=C2=A0 ath10k-ct
-> firmware and software will support this nicely.=C2=A0 Have those 7 stat=
-ions=20
-> connect to peers' AP vdevs.=C2=A0 Do routing mesh
-> magic through this topology.=C2=A0 Then you don't care about anything o=
-ther=20
-> than STA + AP working.=C2=A0 This might also scale to other platforms
-> that don't support IBSS or MESH well.=20
-Many thanks, Ben.=C2=A0 This is a helpful idea, and I daresay not many pe=
-ople=20
-could have come up with it.=C2=A0 (Certainly not I!)=C2=A0 You have just =
-given me=20
-some homework to do, and I'm grateful for it.=C2=A0 Bravo. If I get anywh=
-ere=20
-with it, you'll be the first to know.
+> syzbot found the following crash on:
+>
+> HEAD commit:    7ae77150 Merge tag 'powerpc-5.8-1' of git://git.kernel.org..
+> git tree:       upstream
+> console output: https://syzkaller.appspot.com/x/log.txt?x=120b26c1100000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=d195fe572fb15312
+> dashboard link: https://syzkaller.appspot.com/bug?extid=7d2debdcdb3cb93c1e5e
+> compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1724b246100000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=14ceb3de100000
+>
+> The bug was bisected to:
 
-Steve
+That bisection can not be correct.  The commit only added code, and the
+code that was added is not in any of the call traces.  Further
+the failure on the final commit was different than the other commits
+in your bisection.
+
+I will believe commit 69879c01a0c3f70e0887cfb4d9ff439814361e46 ("proc:
+Remove the now unnecessary internal mount of proc") is the point at
+which things start failing for your reproducer.  That is the change
+that makes it possible to actually unmount proc, and for it's super
+block to be freed.
+
+Now I don't know why fsnotify is holding on after a filesystem has been
+unmounted.  At first glance this looks like a bug in inotify.
+
+It looks like your reproducer is doing:
+
+	mkdir ./file
+        mount -t proc ./file
+        inotify_init()
+        inotify_add_watch(./file, ...);
+        umount(./file)
+        ...
+        exit(0);
+        <kaboom>
+
+Then after the exit inotify is falling over because the filesystem has
+already been unmounted.
+
+Can anyone who is more familiar with inotify/fsnotify give a clue why
+the unmount of the filesystem is not clearing the watch?
+
+Is it a generic bug or is there something proc is not doing?
+
+Eric
 
 
+> commit 76313c70c52f930af4afd21684509ca52297ea71
+> Author: Eric W. Biederman <ebiederm@xmission.com>
+> Date:   Wed Feb 19 16:37:15 2020 +0000
+>
+>     uml: Create a private mount of proc for mconsole
+>
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=117c4912100000
+> final crash:    https://syzkaller.appspot.com/x/report.txt?x=137c4912100000
+> console output: https://syzkaller.appspot.com/x/log.txt?x=157c4912100000
+>
+> IMPORTANT: if you fix the bug, please add the following tag to the commit:
+> Reported-by: syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com
+> Fixes: 76313c70c52f ("uml: Create a private mount of proc for mconsole")
+>
+> ==================================================================
+> BUG: KASAN: use-after-free in atomic64_inc include/asm-generic/atomic-instrumented.h:1049 [inline]
+> BUG: KASAN: use-after-free in atomic_long_inc include/asm-generic/atomic-long.h:160 [inline]
+> BUG: KASAN: use-after-free in fsnotify_detach_connector_from_object+0x25e/0x380 fs/notify/mark.c:185
+> Write of size 8 at addr ffff88809fd7e7c0 by task syz-executor972/8021
+>
+> CPU: 1 PID: 8021 Comm: syz-executor972 Not tainted 5.7.0-syzkaller #0
+> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+> Call Trace:
+>  __dump_stack lib/dump_stack.c:77 [inline]
+>  dump_stack+0x188/0x20d lib/dump_stack.c:118
+>  print_address_description.constprop.0.cold+0xd3/0x413 mm/kasan/report.c:383
+>  __kasan_report mm/kasan/report.c:513 [inline]
+>  kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
+>  check_memory_region_inline mm/kasan/generic.c:186 [inline]
+>  check_memory_region+0x141/0x190 mm/kasan/generic.c:192
+>  atomic64_inc include/asm-generic/atomic-instrumented.h:1049 [inline]
+>  atomic_long_inc include/asm-generic/atomic-long.h:160 [inline]
+>  fsnotify_detach_connector_from_object+0x25e/0x380 fs/notify/mark.c:185
+>  fsnotify_put_mark+0x367/0x580 fs/notify/mark.c:250
+>  fsnotify_clear_marks_by_group+0x33f/0x490 fs/notify/mark.c:764
+>  fsnotify_destroy_group+0xc9/0x300 fs/notify/group.c:61
+>  inotify_release+0x33/0x40 fs/notify/inotify/inotify_user.c:271
+>  __fput+0x33e/0x880 fs/file_table.c:281
+>  task_work_run+0xf4/0x1b0 kernel/task_work.c:123
+>  exit_task_work include/linux/task_work.h:22 [inline]
+>  do_exit+0xb3f/0x2de0 kernel/exit.c:806
+>  do_group_exit+0x125/0x340 kernel/exit.c:904
+>  __do_sys_exit_group kernel/exit.c:915 [inline]
+>  __se_sys_exit_group kernel/exit.c:913 [inline]
+>  __x64_sys_exit_group+0x3a/0x50 kernel/exit.c:913
+>  do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:295
+>  entry_SYSCALL_64_after_hwframe+0x49/0xb3
+> RIP: 0033:0x445448
+> Code: Bad RIP value.
+> RSP: 002b:00007ffe48521018 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
+> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 0000000000445448
+> RDX: 0000000000000000 RSI: 000000000000003c RDI: 0000000000000000
+> RBP: 00000000004cca90 R08: 00000000000000e7 R09: ffffffffffffffd0
+> R10: 00007ffe48521060 R11: 0000000000000246 R12: 0000000000000001
+> R13: 00000000006e0340 R14: 0000000000000007 R15: 000000000000002d
+>
+> Allocated by task 8026:
+>  save_stack+0x1b/0x40 mm/kasan/common.c:48
+>  set_track mm/kasan/common.c:56 [inline]
+>  __kasan_kmalloc mm/kasan/common.c:494 [inline]
+>  __kasan_kmalloc.constprop.0+0xbf/0xd0 mm/kasan/common.c:467
+>  kmem_cache_alloc_trace+0x153/0x7d0 mm/slab.c:3551
+>  kmalloc include/linux/slab.h:555 [inline]
+>  kzalloc include/linux/slab.h:669 [inline]
+>  alloc_super+0x52/0x9d0 fs/super.c:203
+>  sget_fc+0x13f/0x790 fs/super.c:530
+>  vfs_get_super+0x6d/0x2d0 fs/super.c:1186
+>  vfs_get_tree+0x89/0x2f0 fs/super.c:1547
+>  do_new_mount fs/namespace.c:2874 [inline]
+>  do_mount+0x1306/0x1b40 fs/namespace.c:3199
+>  __do_sys_mount fs/namespace.c:3409 [inline]
+>  __se_sys_mount fs/namespace.c:3386 [inline]
+>  __x64_sys_mount+0x18f/0x230 fs/namespace.c:3386
+>  do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:295
+>  entry_SYSCALL_64_after_hwframe+0x49/0xb3
+>
+> Freed by task 23:
+>  save_stack+0x1b/0x40 mm/kasan/common.c:48
+>  set_track mm/kasan/common.c:56 [inline]
+>  kasan_set_free_info mm/kasan/common.c:316 [inline]
+>  __kasan_slab_free+0xf7/0x140 mm/kasan/common.c:455
+>  __cache_free mm/slab.c:3426 [inline]
+>  kfree+0x109/0x2b0 mm/slab.c:3757
+>  process_one_work+0x965/0x16a0 kernel/workqueue.c:2268
+>  worker_thread+0x96/0xe20 kernel/workqueue.c:2414
+>  kthread+0x388/0x470 kernel/kthread.c:268
+>  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:351
+>
+> The buggy address belongs to the object at ffff88809fd7e000
+>  which belongs to the cache kmalloc-4k of size 4096
+> The buggy address is located 1984 bytes inside of
+>  4096-byte region [ffff88809fd7e000, ffff88809fd7f000)
+> The buggy address belongs to the page:
+> page:ffffea00027f5f80 refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 head:ffffea00027f5f80 order:1 compound_mapcount:0
+> flags: 0xfffe0000010200(slab|head)
+> raw: 00fffe0000010200 ffffea000247aa88 ffffea000242ef08 ffff8880aa002000
+> raw: 0000000000000000 ffff88809fd7e000 0000000100000001 0000000000000000
+> page dumped because: kasan: bad access detected
+>
+> Memory state around the buggy address:
+>  ffff88809fd7e680: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>  ffff88809fd7e700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>>ffff88809fd7e780: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>                                            ^
+>  ffff88809fd7e800: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>  ffff88809fd7e880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+> ==================================================================
+>
+>
+> ---
+> This bug is generated by a bot. It may contain errors.
+> See https://goo.gl/tpsmEJ for more information about syzbot.
+> syzbot engineers can be reached at syzkaller@googlegroups.com.
+>
+> syzbot will keep track of this bug report. See:
+> https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+> syzbot can test patches for this bug, for details see:
+> https://goo.gl/tpsmEJ#testing-patches
