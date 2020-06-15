@@ -1,157 +1,117 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <jack@suse.cz>
+Date: Mon, 15 Jun 2020 09:38:36 +0200
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] proc: Use new_inode not new_inode_pseudo
+Message-ID: <20200615073836.GD9449@quack2.suse.cz>
+References: <000000000000d788c905a7dfa3f4@google.com>
+ <87mu58p02g.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-References: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com>
- <8393812.UZvHzlbVaM@sven-edge> <E3FD8A72-966A-4CBB-A036-8C0A4152983D@xecoenergy.com>
- <2094569.NUmnuQNPM9@sven-edge> <FE41926B-5684-45D8-B9AE-17D46DA1C8C7@xecoenergy.com>
-In-Reply-To: <FE41926B-5684-45D8-B9AE-17D46DA1C8C7@xecoenergy.com>
-From: Mark Birss <markbirss@gmail.com>
-Date: Wed, 24 Jun 2020 23:01:30 +0200
-Message-ID: <CADg1mwK62tGw8kkXSYpZ2H2XOmCWa21L29YnJ3AyNih15+1vMw@mail.gmail.com>
-Subject: Re: batadv gw_mode client 0?
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87mu58p02g.fsf@x220.int.ebiederm.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com>, a@unstable.cc, adobriyan@gmail.com, akpm@linux-foundation.org, alex.dewar@gmx.co.uk, amir73il@gmail.com, anton.ivanov@cambridgegreys.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jack@suse.cz, jdike@addtoit.com, kuba@kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-um@lists.infradead.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, richard@nod.at, sfr@canb.auug.org.au, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Hi
+On Fri 12-06-20 14:15:51, Eric W. Biederman wrote:
+> 
+> Recently syzbot reported that unmounting proc when there is an ongoing
+> inotify watch on the root directory of proc could result in a use
+> after free when the watch is removed after the unmount of proc
+> when the watcher exits.
+> 
+> Commit 69879c01a0c3 ("proc: Remove the now unnecessary internal mount
+> of proc") made it easier to unmount proc and allowed syzbot to see the
+> problem, but looking at the code it has been around for a long time.
+> 
+> Looking at the code the fsnotify watch should have been removed by
+> fsnotify_sb_delete in generic_shutdown_super.  Unfortunately the inode
+> was allocated with new_inode_pseudo instead of new_inode so the inode
+> was not on the sb->s_inodes list.  Which prevented
+> fsnotify_unmount_inodes from finding the inode and removing the watch
+> as well as made it so the "VFS: Busy inodes after unmount" warning
+> could not find the inodes to warn about them.
+> 
+> Make all of the inodes in proc visible to generic_shutdown_super,
+> and fsnotify_sb_delete by using new_inode instead of new_inode_pseudo.
+> The only functional difference is that new_inode places the inodes
+> on the sb->s_inodes list.
+> 
+> I wrote a small test program and I can verify that without changes it
+> can trigger this issue, and by replacing new_inode_pseudo with
+> new_inode the issues goes away.
+> 
+> Cc: stable@vger.kernel.org
+> Link: https://lkml.kernel.org/r/000000000000d788c905a7dfa3f4@google.com
+> Reported-by: syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com
+> Fixes: 0097875bd415 ("proc: Implement /proc/thread-self to point at the directory of the current thread")
+> Fixes: 021ada7dff22 ("procfs: switch /proc/self away from proc_dir_entry")
+> Fixes: 51f0885e5415 ("vfs,proc: guarantee unique inodes in /proc")
+> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-I don't want to hi-jack your initial conversation here.
+Thanks for analysing this! I agree with the analysis and the patch looks
+good to me. You can add:
 
-I just recently been using BATMAN-adv over ethernet
+Reviewed-by: Jan Kara <jack@suse.cz>
 
-So yes BATMAN_V shows link speed throughput 1000Mbps  for me instead
-of #255 with BATMAN-VI
+								Honza
 
-I wanted to ask about debugging also, what other debug if any options
-are there that i can use ?
-
-I have enabled
-
-
-echo "CONFIG_BATMAN_ADV_DEBUG=y" >> .config
-echo "CONFIG_BATMAN_ADV_DEBUGFS=y" >> .config
-echo "CONFIG_BATMAN_ADV_BLA=y" >> .config
-echo "CONFIG_BATMAN_ADV_DAT=y" >> .config
-echo "CONFIG_BATMAN_ADV_MCAST=y" >> .config
-echo "CONFIG_BATMAN_ADV_NC=n" >> .config
-echo "CONFIG_BATMAN_ADV_BATMAN_V=y" >> .config
-echo "CONFIG_BATMAN_ADV_SYSFS=y" >> .config
-echo "CONFIG_BATMAN_ADV_TRACING=y" >> .config
-
-
-echo 255 > /sys/class/net/bat0/mesh/log_level
-cat /sys/kernel/debug/batman_adv/bat0/log
-
-
-
-since i want to understand why on wifi mesh seems to crash for me ath10k
-
-
-On Wed, Jun 24, 2020 at 10:42 PM Rob Cowart <rob.cowart@xecoenergy.com> wrote:
->
->
->
-> > On Jun 24, 2020, at 3:13 PM, Sven Eckelmann <sven@narfation.org> wrote:
-> >
-> > On Wednesday, 24 June 2020 22:02:38 CEST Rob Cowart wrote:
-> > [....]
-> >> Is anything wrong with these?
-> >
-> > Most likely not, but someone on the mailing list with deeper knowledge on
-> > B.A.T.M.A.N. V's echo location protocol could actually check whether non-
-> > symmetric settings on different nodes could create problems or not. Or if
-> > having both ELP and OGM2 interval set to the same value could have negative
-> > side effects.
-> >
-> >
-> >> Our gateway:
-> >>
-> >> pi@raspberrypi:~/xeco-master/enola-daemon $ cat /sys/class/net/wlan0/batman_adv/elp_interval
-> >> 500
-> >> pi@raspberrypi:~/xeco-master/enola-daemon $ cat /sys/class/net/bat0/mesh/orig_interval
-> >> 1000
-> >>
-> >> nodes:
-> >> pi@raspberrypi:~ $ cat /sys/class/net/wlan0/batman_adv/elp_interval
-> >> 30000
-> >> pi@raspberrypi:~ $ cat /sys/class/net/bat0/mesh/orig_interval
-> >> 30000
-> > [...]
-> >
-> > On Wednesday, 24 June 2020 21:23:09 CEST Rob Cowart wrote:
-> >> IF             Neighbor              last-seen
-> >> b8:27:eb:4e:73:6d   25.330s (        1.0) [     wlan0]
-> >> b8:27:eb:ff:0e:b6   23.320s (        1.0) [     wlan0]
-> >> b8:27:eb:08:13:37   18.850s (        1.0) [     wlan0]
-> >> b8:27:eb:aa:1e:6d   37.010s (        1.0) [     wlan0]
-> >> b8:27:eb:35:c6:77   63.590s (        1.0) [     wlan0]
-> >> b8:27:eb:e9:34:41   18.280s (        1.0) [     wlan0]
-> >> b8:27:eb:84:ca:90   30.560s (        1.0) [     wlan0]
-> >> b8:27:eb:1e:eb:cd   27.410s (        1.0) [     wlan0]
-> >> b8:27:eb:cb:80:34   23.100s (        1.0) [     wlan0]
-> >
-> > Btw. it looks to me like B.A.T.M.A.N. V is a really bad choice for your setup.
-> > All links have the throughput value 1.0 Mbit/s. This sounds to me like the
-> > wifi driver doesn't provide the required expected_throughput. And so you have
-> > a REALLY, REALLY, REALLY bad metric when you are using 1.0 everywhere. So if
-> > you want to continue experimenting with B.A.T.M.A.N. V then you should try to
-> > get this fixed in your wifi driver or just switch to B.A.T.M.A.N. IV with
-> > increased multicast rate.
-> Are there any docs that talk about what B.A.T.M.A.N. V vs B.A.T.M.A.N. IV is good for?  The decision to upgrade was made before I got here, I'm not sure anyone understood that IV would still be supported/expected to be used.
-> >
-> >
-> >> Lots of stuff I don't understand here, looks like loopback is very busy?
-> >
-> > Not sure what you mean here with loopback. I will just leave the whole output
-> > here in case somebody else on the mailing list wants to figure it out.
-> >
-> >> pi@raspberrypi:~/xeco-master/enola-daemon $ sudo batctl td wlan0
-> >> 15:01:52.075412 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 704843962, v 15, interval 500ms, length 20
-> >> 15:01:52.076036 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.076507 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.076854 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.077456 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.077937 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.078028 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.078657 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.079155 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.079246 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.079894 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.080480 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.080965 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.081435 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.081904 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.081995 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.082435 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.082539 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.082957 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >> 15:01:52.415359 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:fb:4e:58, seq 500807384, throughput MAX, ttl 50, v 15, length 60, tvlv_len 40
-> >>      TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
-> >>              VLAN ID -1, crc 0xf0cfd284
-> >>      TVLV GWv1: down 10.0Mbps, up 2.0Mbps
-> >>      TVLV DATv1: enabled
-> >> 15:01:52.423153 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:aa:1e:6d, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, length 60, tvlv_len 40
-> >>      TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
-> >>              VLAN ID -1, crc 0xf0cfd284
-> >>      TVLV GWv1: down 10.0Mbps, up 2.0Mbps
-> >>      TVLV DATv1: enabled
-> >> 15:01:52.424280 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:cb:80:34, seq 500807384, throughput 14.9Mbps, ttl 49, v 15, length 60, tvlv_len 40
-> >>      TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
-> >>              VLAN ID -1, crc 0xf0cfd284
-> >>      TVLV GWv1: down 10.0Mbps, up 2.0Mbps
-> >>      TVLV DATv1: enabled
-> >> 15:01:52.428556 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:84:ca:90, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, length 60, tvlv_len 40
-> >>      TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
-> >>              VLAN ID -1, crc 0xf0cfd284
-> >>      TVLV GWv1: down 10.0Mbps, up 2.0Mbps
-> >>      TVLV DATv1: enabled
-> >> 15:01:52.575301 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 704843963, v 15, interval 500ms, length 20
-> >> 15:01:52.575486 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
-> >
-> > Kind regards,
-> >       Sven
+> ---
+>  fs/proc/inode.c       | 2 +-
+>  fs/proc/self.c        | 2 +-
+>  fs/proc/thread_self.c | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+> index f40c2532c057..28d6105e908e 100644
+> --- a/fs/proc/inode.c
+> +++ b/fs/proc/inode.c
+> @@ -617,7 +617,7 @@ const struct inode_operations proc_link_inode_operations = {
+>  
+>  struct inode *proc_get_inode(struct super_block *sb, struct proc_dir_entry *de)
+>  {
+> -	struct inode *inode = new_inode_pseudo(sb);
+> +	struct inode *inode = new_inode(sb);
+>  
+>  	if (inode) {
+>  		inode->i_ino = de->low_ino;
+> diff --git a/fs/proc/self.c b/fs/proc/self.c
+> index ca5158fa561c..72cd69bcaf4a 100644
+> --- a/fs/proc/self.c
+> +++ b/fs/proc/self.c
+> @@ -43,7 +43,7 @@ int proc_setup_self(struct super_block *s)
+>  	inode_lock(root_inode);
+>  	self = d_alloc_name(s->s_root, "self");
+>  	if (self) {
+> -		struct inode *inode = new_inode_pseudo(s);
+> +		struct inode *inode = new_inode(s);
+>  		if (inode) {
+>  			inode->i_ino = self_inum;
+>  			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+> diff --git a/fs/proc/thread_self.c b/fs/proc/thread_self.c
+> index ac284f409568..a553273fbd41 100644
+> --- a/fs/proc/thread_self.c
+> +++ b/fs/proc/thread_self.c
+> @@ -43,7 +43,7 @@ int proc_setup_thread_self(struct super_block *s)
+>  	inode_lock(root_inode);
+>  	thread_self = d_alloc_name(s->s_root, "thread-self");
+>  	if (thread_self) {
+> -		struct inode *inode = new_inode_pseudo(s);
+> +		struct inode *inode = new_inode(s);
+>  		if (inode) {
+>  			inode->i_ino = thread_self_inum;
+>  			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+> -- 
+> 2.20.1
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
