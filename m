@@ -1,19 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: Network stops passing traffic randomly
-References: <c022e032-f283-8432-2d3e-3013cf91773b@coolheads.com>
- <20200529001302.832.66710@diktynna.open-mesh.org>
- <174b4bab-d84e-899d-3ecf-34bfdccff4fd@coolheads.com>
- <8cb674e5-26b2-e992-61e6-5969cc50358f@candelatech.com>
- <f99daabf-2081-c6af-779d-580f8d352b59@coolheads.com>
- <92655f2e-4ec4-5e1b-4ea9-b1df87a88aac@candelatech.com>
- <c917d6e6-d3c1-61f5-1846-794f6cc06824@coolheads.com>
-From: Ben Greear <greearb@candelatech.com>
-Message-ID: <3659b31b-1f8b-1e21-43f5-b47f6e11d338@candelatech.com>
-Date: Wed, 3 Jun 2020 09:42:45 -0700
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: batadv gw_mode client 0?
+Date: Tue, 16 Jun 2020 09:01:26 +0200
+Message-ID: <20687769.zqcOZmODRP@bentobox>
+In-Reply-To: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com>
+References: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com>
 MIME-Version: 1.0
-In-Reply-To: <c917d6e6-d3c1-61f5-1846-794f6cc06824@coolheads.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="nextPart2296441.xZy9kG0TSa"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -21,44 +14,52 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: srn@coolheads.com, b.a.t.m.a.n@lists.open-mesh.org, smartwires@gmail.com
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Rob Cowart <rob.cowart@xecoenergy.com>
+
+ 
+--nextPart2296441.xZy9kG0TSa
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Monday, 15 June 2020 22:45:34 CEST Rob Cowart wrote:
+[...]
+>but something we found was all of our nodes were using gw_mode client 0, and we realized this isn't listed in the spec.  Do you know what it does in that case, does it use the default of 20?
+
+I have no idea where "client 0" is coming from. This is not a valid output 
+from batctl or the sysfs files. I must now assume that 0 refers to the 
+selection class.
+
+selection class 0 is not valid for B.A.T.M.A.N. IV and will also be rejected 
+by the netlink and sysfs code for B.A.T.M.A.N. IV.
+
+If you were really able to set this somehow(tm) then it should (mis)behave 
+like gw class 2 (when I remember correctly).
+
+Kind regards,
+	Sven
+--nextPart2296441.xZy9kG0TSa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7obkYACgkQXYcKB8Em
+e0a4ohAAzqUmDvAgRpboRv8EmErgohKe7CR9uBX78RzfX9If6uUkqoqPIPTljdAh
+Cb1U8yKLaCbyFk2v3IW56UV822IXcUUQwAArIy/7X+d41s671CdLWDzfj1tVP523
+xqVwiqAKsBG63QDlQ53Qxj9l3m+lVMM4VYHbgOqDMBxXDEp+FANvWe9rU1v2SRIw
++GgwmpfkSq2vHDMSSmO6thEzVr8QVZ0OH0cPVoU5X+gVkFRGV031m+TAk9eNWnrI
+Jr8qSxGukBw+J6VXG+JjIcOimDJ4Bq0Wv0nr+0CPIn00pgBlv2v3W4aQ+ojoRAKc
+5xsjh27PXqDwIJfmPxd3qdiujhHCJ8EKY58b7BZGQblLn85dN9NLKtJlQS4WdGnS
+9GT8kTMrxmELT2qfxh2LJrDCUNeKXe0c15/lxdfjXAKqXWzdkTrcrFf3843hOHL0
+4QRm5oRNsY8yfbIreKLhYGAdmwxgbn9np4h4WqM/fNo2cFFTsKBn09eMY8auBn7g
+jgbPk1+w5UfViH8xfPkwD6KAHDwY6DDQhNBM1s464QjuVE2mSONoeO5UrzS6p21D
+2rxhggklWCyHRfeHVZ7b8Y7IRa/ak7IXsO0KmOrLu86J6ZRswASVBzh3n3hstx/f
+NX7sVNNWbDQ2EKqowrEHKv7o1AGzdrIbUC8/vkpj0DJjpmJSac0=
+=TTtX
+-----END PGP SIGNATURE-----
+
+--nextPart2296441.xZy9kG0TSa--
 
 
-
-On 06/03/2020 08:35 AM, Steve Newcomb wrote:
->
->
-> On 6/3/20 8:48 AM, Ben Greear wrote:
->> I'm working with the TIP project, which aims to provide stable OpenWrt capable hardware, among lots of other things.
->>
->> I know some others in that group are interested in low cost solutions, so curious to know what price you think is
->> viable for your market...
->>
->> https://telecominfraproject.com/wifi/
->
-> Ben, your question is appropriately industrial, but I've already given my answer, which is: "Less is more."  The lower the price, the more human capital is protected from the abyss of the digital divide.
->
-> True, the primary problem is not so much the one-time cost of a cheap radio.  However, one way to address the primary problem is to give public-spirited digital-haves a way to lift up their digital-have-not neighbors.  With mesh computing, that means purchasing multiple routers and making gifts of at least one of them, along with the gift of access.  What can the digital-haves afford to give, besides access?  Typically, not much.
->
-> What follows is a rant.  Advice: skip it.
-
-If you are trying to lift up a broad swath of the world, then you need scale and vision, and part of that is how
-to make it self sustaining.  Giving a few crumbs to folks is less useful in my mind than helping give them the means
-to make their own bread.  Think someone starting a company that wants to deploy 10k hotspots with 40k satellite
-wifi mesh nodes....
-
-Open source software (and maybe hardware) with high volume, affordable, and solid hardware
-is one of the core aims of TIP.  Think of a price and minimum hardware that meets your goals,
-if I find someone that can make such a thing at such a price, I'll let you know.
-
-If you want wave-1 ath10k to mesh, my advice is to use 7 virtual station vdevs and one AP on each radio.  ath10k-ct
-firmware and software will support this nicely.  Have those 7 stations connect to peers' AP vdevs.  Do routing mesh
-magic through this topology.  Then you don't care about anything other than STA + AP working.  This might also scale to other platforms
-that don't support IBSS or MESH well.
-
-Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
