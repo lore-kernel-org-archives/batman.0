@@ -1,52 +1,103 @@
-Return-Path: <SRS0=h/PO=75=vger.kernel.org=linux-wireless-owner@kernel.org>
-Subject: Re: [PATCH] mac80211: mesh: add mesh_param "mesh_nolearn" to skip
- path discovery
-References: <20200616095358.20143-1-linus.luessing@c0d3.blue>
-From: =?UTF-8?Q?Linus_L=c3=bcssing?= <ll@simonwunderlich.de>
-Message-ID: <cbe4863e-44f3-c0e4-a4f3-1b0a69f7a386@simonwunderlich.de>
-Date: Tue, 16 Jun 2020 12:16:51 +0200
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH v2] iw: mesh: add mesh_param "mesh_nolearn" to skip path discovery
+Date: Tue, 16 Jun 2020 12:39:11 +0200
+Message-Id: <20200616103911.20501-2-linus.luessing@c0d3.blue>
+In-Reply-To: <20200616103911.20501-1-linus.luessing@c0d3.blue>
+References: <20200616103911.20501-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-In-Reply-To: <20200616095358.20143-1-linus.luessing@c0d3.blue>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-Sender: linux-wireless-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-> The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
-> this scenario, leading to a reduced delay, reduced packet buffering and
-> simplifies HWMP in general.
+From: Linus Lüssing <ll@simonwunderlich.de>
 
-Also another small remark regarding the simplification:
+Currently, before being able to forward a packet between two 802.11s
+nodes, both a PLINK handshake is performed upon receiving a beacon and
+then later a PREQ/PREP exchange for path discovery is performed on
+demand upon receiving a data frame to forward.
 
-Next to the timer re-arming bug / crash [0] we also stumbled over 
-another bug when using encryption on the 802.11s interfaces which we 
-could quite solve yet:
+When running a mesh protocol on top of an 802.11s interface, like
+batman-adv, we do not need the multi-hop mesh routing capabilities of
+802.11s and usually set mesh_fwding=0. However, even with mesh_fwding=0
+the PREQ/PREP path discovery is still performed on demand. Even though
+in this scenario the next hop PREQ/PREP will determine is always the
+direct 11s neighbor node.
 
-We are seeing packet loss every four seconds due to a "DECRYPT CRC ERR". 
-We could narrow this down to the PREQ. This somehow makes the receiver 
-unable to decrypt the packet in hardware and also the fallback to 
-software decryption fails as the hardware has messed up the encrypted 
-data (looks completely different than what we saw in the air with a 
-third device in monitor mode, unencrypted headers looked ok though). 
-Furthermore, the hardware still sends ACKs for this frame... so no 
-retries on the 802.11 layer, leading to ugly packet loss for one UDP 
-packet every four seconds.
+The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
+this scenario, leading to a reduced delay, reduced packet buffering and
+simplifies HWMP in general.
 
-The hardware we were having this issue with is a Lima board with a QCA4531.
+mesh_nolearn is still rather conservative in that if the packet destination
+is not a direct 11s neighbor, it will fall back to PREQ/PREP path
+discovery.
 
-Setting ath9k nohwcrypt=1 on the sender side helps. And avoiding PREQs 
-with this patch also helped in our batman-adv setup which had 
-mesh_fwding disabled already anyway.
+For normal, multi-hop 802.11s mesh routing it is usually not advisable
+to enable mesh_nolearn as a transmission to a direct but distant neighbor
+might be worse than reaching that same node via a more robust /
+higher throughput etc. multi-hop path.
 
-Regards, Linus
+Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
+---
 
+Changelog v2:
+* unchanged
 
-PS/Disclaimer: This bug was observed on an old LEDE version.
+ mesh.c    | 2 ++
+ nl80211.h | 7 +++++++
+ 2 files changed, 9 insertions(+)
 
+diff --git a/mesh.c b/mesh.c
+index 0650d0c..48bbc3f 100644
+--- a/mesh.c
++++ b/mesh.c
+@@ -264,6 +264,8 @@ static const struct mesh_param_descr _mesh_param_descrs[] =
+ 	_my_nla_put_u16, _parse_u16, _print_u16_in_TUs},
+ 	{"mesh_plink_timeout", NL80211_MESHCONF_PLINK_TIMEOUT,
+ 	_my_nla_put_u32, _parse_u32, _print_u32_in_seconds},
++	{"mesh_nolearn", NL80211_MESHCONF_NOLEARN,
++	_my_nla_put_u8, _parse_u8_as_bool, _print_u8},
+ };
+ 
+ static void print_all_mesh_param_descr(void)
+diff --git a/nl80211.h b/nl80211.h
+index c14666b..4c55e89 100644
+--- a/nl80211.h
++++ b/nl80211.h
+@@ -4228,6 +4228,12 @@ enum nl80211_mesh_power_mode {
+  *	field.  If left unset then the mesh formation field will only
+  *	advertise such if there is an active root mesh path.
+  *
++ * @NL80211_MESHCONF_NOLEARN: Try to avoid multi-hop path discovery (e.g.
++ *	PREQ/PREP for HWMP) if the destination is a direct neighbor. Note that
++ *	this might not be the optimal decision as a multi-hop route might be
++ *	better. So if using this setting you will likely also want to disable
++ *	dot11MeshForwarding and use another mesh routing protocol on top.
++ *
+  * @__NL80211_MESHCONF_ATTR_AFTER_LAST: internal use
+  */
+ enum nl80211_meshconf_params {
+@@ -4261,6 +4267,7 @@ enum nl80211_meshconf_params {
+ 	NL80211_MESHCONF_AWAKE_WINDOW,
+ 	NL80211_MESHCONF_PLINK_TIMEOUT,
+ 	NL80211_MESHCONF_CONNECTED_TO_GATE,
++	NL80211_MESHCONF_NOLEARN,
+ 
+ 	/* keep last */
+ 	__NL80211_MESHCONF_ATTR_AFTER_LAST,
+-- 
+2.27.0
 
-[0]: https://patchwork.kernel.org/patch/11566011/
 
