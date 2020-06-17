@@ -1,12 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3] iw: mesh: add mesh_param "mesh_nolearn" to skip path discovery
-Date: Wed, 17 Jun 2020 09:30:34 +0200
-Message-Id: <20200617073034.26149-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20200617073034.26149-1-linus.luessing@c0d3.blue>
-References: <20200617073034.26149-1-linus.luessing@c0d3.blue>
+Return-Path: <ll@simonwunderlich.de>
+Subject: Re: [PATCH] mac80211: mesh: add mesh_param "mesh_nolearn" to skip
+ path discovery
+From: =?UTF-8?Q?Linus_L=c3=bcssing?= <ll@simonwunderlich.de>
+References: <20200616095358.20143-1-linus.luessing@c0d3.blue>
+ <cbe4863e-44f3-c0e4-a4f3-1b0a69f7a386@simonwunderlich.de>
+Message-ID: <6bef8071-f897-b972-dbf9-17198361dc4e@simonwunderlich.de>
+Date: Wed, 17 Jun 2020 09:45:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <cbe4863e-44f3-c0e4-a4f3-1b0a69f7a386@simonwunderlich.de>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,86 +20,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes.berg@intel.com>
-Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Linus Lüssing <ll@simonwunderlich.de>
+On 16/06/2020 12:16, Linus Lüssing wrote:
+>> The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
+>> this scenario, leading to a reduced delay, reduced packet buffering and
+>> simplifies HWMP in general.
 
-Currently, before being able to forward a packet between two 802.11s
-nodes, both a PLINK handshake is performed upon receiving a beacon and
-then later a PREQ/PREP exchange for path discovery is performed on
-demand upon receiving a data frame to forward.
+And a third observation we've made with HWMP:
 
-When running a mesh protocol on top of an 802.11s interface, like
-batman-adv, we do not need the multi-hop mesh routing capabilities of
-802.11s and usually set mesh_fwding=0. However, even with mesh_fwding=0
-the PREQ/PREP path discovery is still performed on demand. Even though
-in this scenario the next hop PREQ/PREP will determine is always the
-direct 11s neighbor node.
+When running iperf with 16 parallel TCP streams and the default HWMP 
+parameters over two 4x4 802.11ac Wave 2 wifi cards transmitting about 
+800-1000 MBit/s in total, HWMP becomes quite unstable. We see frequent 
+PREQ/PREP retransmissions and also PERR messages, leading to spurious 
+break downs in the throughput.
 
-The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
-this scenario, leading to a reduced delay, reduced packet buffering and
-simplifies HWMP in general.
+When using just 8 TCP streams, so with a little less saturation and 
+stress of the channel, iperf staticstics are stable.
 
-mesh_nolearn is still rather conservative in that if the packet destination
-is not a direct 11s neighbor, it will fall back to PREQ/PREP path
-discovery.
 
-For normal, multi-hop 802.11s mesh routing it is usually not advisable
-to enable mesh_nolearn as a transmission to a direct but distant neighbor
-might be worse than reaching that same node via a more robust /
-higher throughput etc. multi-hop path.
+So maybe there would be some potential for optimizations, too, like 
+somehow prioritizing HWMP messages more, or maybe making the default 
+HWMP parameters a bit more conservative.
 
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
----
 
-Changelog v2/v3:
-* unchanged
+Or just disabling the HWMP PREP/PREQ/PERR exchange with this new 
+configuration option would at least help the ones that are using another 
+mesh routing protocol on top, who are maybe more familiar with the 
+parameters of their specific routing protocol than with the HWMP parameters.
 
- mesh.c    | 2 ++
- nl80211.h | 7 +++++++
- 2 files changed, 9 insertions(+)
-
-diff --git a/mesh.c b/mesh.c
-index 0650d0c..48bbc3f 100644
---- a/mesh.c
-+++ b/mesh.c
-@@ -264,6 +264,8 @@ static const struct mesh_param_descr _mesh_param_descrs[] =
- 	_my_nla_put_u16, _parse_u16, _print_u16_in_TUs},
- 	{"mesh_plink_timeout", NL80211_MESHCONF_PLINK_TIMEOUT,
- 	_my_nla_put_u32, _parse_u32, _print_u32_in_seconds},
-+	{"mesh_nolearn", NL80211_MESHCONF_NOLEARN,
-+	_my_nla_put_u8, _parse_u8_as_bool, _print_u8},
- };
- 
- static void print_all_mesh_param_descr(void)
-diff --git a/nl80211.h b/nl80211.h
-index c14666b..4c55e89 100644
---- a/nl80211.h
-+++ b/nl80211.h
-@@ -4228,6 +4228,12 @@ enum nl80211_mesh_power_mode {
-  *	field.  If left unset then the mesh formation field will only
-  *	advertise such if there is an active root mesh path.
-  *
-+ * @NL80211_MESHCONF_NOLEARN: Try to avoid multi-hop path discovery (e.g.
-+ *	PREQ/PREP for HWMP) if the destination is a direct neighbor. Note that
-+ *	this might not be the optimal decision as a multi-hop route might be
-+ *	better. So if using this setting you will likely also want to disable
-+ *	dot11MeshForwarding and use another mesh routing protocol on top.
-+ *
-  * @__NL80211_MESHCONF_ATTR_AFTER_LAST: internal use
-  */
- enum nl80211_meshconf_params {
-@@ -4261,6 +4267,7 @@ enum nl80211_meshconf_params {
- 	NL80211_MESHCONF_AWAKE_WINDOW,
- 	NL80211_MESHCONF_PLINK_TIMEOUT,
- 	NL80211_MESHCONF_CONNECTED_TO_GATE,
-+	NL80211_MESHCONF_NOLEARN,
- 
- 	/* keep last */
- 	__NL80211_MESHCONF_ATTR_AFTER_LAST,
--- 
-2.27.0
-
+Regards, Linus
