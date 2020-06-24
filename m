@@ -1,11 +1,17 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH] mac80211: mesh: add mesh_param "mesh_nolearn" to skip path discovery
-Date: Tue, 16 Jun 2020 11:53:57 +0200
-Message-Id: <20200616095358.20143-1-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Return-Path: <rob.cowart@xecoenergy.com>
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
+Subject: Re: batadv gw_mode client 0?
+From: Rob Cowart <rob.cowart@xecoenergy.com>
+In-Reply-To: <2094569.NUmnuQNPM9@sven-edge>
+Date: Wed, 24 Jun 2020 15:37:29 -0500
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <FE41926B-5684-45D8-B9AE-17D46DA1C8C7@xecoenergy.com>
+References: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com>
+ <8393812.UZvHzlbVaM@sven-edge>
+ <E3FD8A72-966A-4CBB-A036-8C0A4152983D@xecoenergy.com>
+ <2094569.NUmnuQNPM9@sven-edge>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,264 +21,156 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <ll@simonwunderlich.de>
 
-Currently, before being able to forward a packet between two 802.11s
-nodes, both a PLINK handshake is performed upon receiving a beacon and
-then later a PREQ/PREP exchange for path discovery is performed on
-demand upon receiving a data frame to forward.
 
-When running a mesh protocol on top of an 802.11s interface, like
-batman-adv, we do not need the multi-hop mesh routing capabilities of
-802.11s and usually set mesh_fwding=0. However, even with mesh_fwding=0
-the PREQ/PREP path discovery is still performed on demand. Even though
-in this scenario the next hop PREQ/PREP will determine is always the
-direct 11s neighbor node.
-
-The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
-this scenario, leading to a reduced delay, reduced packet buffering and
-simplifies HWMP in general.
-
-mesh_nolearn is still rather conservative in that if the packet destination
-is not a direct 11s neighbor, it will fall back to PREQ/PREP path
-discovery.
-
-For normal, multi-hop 802.11s mesh routing it is usually not advisable
-to enable mesh_nolearn as a transmission to a direct but distant neighbor
-might be worse than reaching that same node via a more robust /
-higher throughput etc. multi-hop path.
-
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
----
- include/net/cfg80211.h        |  6 ++++++
- include/uapi/linux/nl80211.h  |  7 +++++++
- net/mac80211/cfg.c            |  2 ++
- net/mac80211/debugfs_netdev.c |  2 ++
- net/mac80211/mesh_hwmp.c      | 39 +++++++++++++++++++++++++++++++++++
- net/wireless/mesh.c           |  1 +
- net/wireless/nl80211.c        |  8 ++++++-
- net/wireless/trace.h          |  4 +++-
- 8 files changed, 67 insertions(+), 2 deletions(-)
-
-diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
-index fc7e8807838d..5ffb35592a23 100644
---- a/include/net/cfg80211.h
-+++ b/include/net/cfg80211.h
-@@ -1853,6 +1853,11 @@ struct bss_parameters {
-  *      connected to a mesh gate in mesh formation info.  If false, the
-  *      value in mesh formation is determined by the presence of root paths
-  *      in the mesh path table
-+ * @dot11MeshNolearn: Try to avoid multi-hop path discovery (e.g. PREQ/PREP
-+ *      for HWMP) if the destination is a direct neighbor. Note that this might
-+ *      not be the optimal decision as a multi-hop route might be better. So
-+ *      if using this setting you will likely also want to disable
-+ *      dot11MeshForwarding and use another mesh routing protocol on top.
-  */
- struct mesh_config {
- 	u16 dot11MeshRetryTimeout;
-@@ -1884,6 +1889,7 @@ struct mesh_config {
- 	enum nl80211_mesh_power_mode power_mode;
- 	u16 dot11MeshAwakeWindowDuration;
- 	u32 plink_timeout;
-+	bool dot11MeshNolearn;
- };
- 
- /**
-diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 4e6339ab1fce..f6560bb9644c 100644
---- a/include/uapi/linux/nl80211.h
-+++ b/include/uapi/linux/nl80211.h
-@@ -4236,6 +4236,12 @@ enum nl80211_mesh_power_mode {
-  *	field.  If left unset then the mesh formation field will only
-  *	advertise such if there is an active root mesh path.
-  *
-+ * @NL80211_MESHCONF_NOLEARN: Try to avoid multi-hop path discovery (e.g.
-+ *      PREQ/PREP for HWMP) if the destination is a direct neighbor. Note that
-+ *      this might not be the optimal decision as a multi-hop route might be
-+ *      better. So if using this setting you will likely also want to disable
-+ *      dot11MeshForwarding and use another mesh routing protocol on top.
-+ *
-  * @__NL80211_MESHCONF_ATTR_AFTER_LAST: internal use
-  */
- enum nl80211_meshconf_params {
-@@ -4269,6 +4275,7 @@ enum nl80211_meshconf_params {
- 	NL80211_MESHCONF_AWAKE_WINDOW,
- 	NL80211_MESHCONF_PLINK_TIMEOUT,
- 	NL80211_MESHCONF_CONNECTED_TO_GATE,
-+	NL80211_MESHCONF_NOLEARN,
- 
- 	/* keep last */
- 	__NL80211_MESHCONF_ATTR_AFTER_LAST,
-diff --git a/net/mac80211/cfg.c b/net/mac80211/cfg.c
-index 9b360544ad6f..f48e095e912a 100644
---- a/net/mac80211/cfg.c
-+++ b/net/mac80211/cfg.c
-@@ -2126,6 +2126,8 @@ static int ieee80211_update_mesh_config(struct wiphy *wiphy,
- 	if (_chg_mesh_attr(NL80211_MESHCONF_CONNECTED_TO_GATE, mask))
- 		conf->dot11MeshConnectedToMeshGate =
- 			nconf->dot11MeshConnectedToMeshGate;
-+	if (_chg_mesh_attr(NL80211_MESHCONF_NOLEARN, mask))
-+		conf->dot11MeshNolearn = nconf->dot11MeshNolearn;
- 	ieee80211_mbss_info_change_notify(sdata, BSS_CHANGED_BEACON);
- 	return 0;
- }
-diff --git a/net/mac80211/debugfs_netdev.c b/net/mac80211/debugfs_netdev.c
-index d7e955127d5c..09eab2c3f380 100644
---- a/net/mac80211/debugfs_netdev.c
-+++ b/net/mac80211/debugfs_netdev.c
-@@ -638,6 +638,7 @@ IEEE80211_IF_FILE(dot11MeshAwakeWindowDuration,
- 		  u.mesh.mshcfg.dot11MeshAwakeWindowDuration, DEC);
- IEEE80211_IF_FILE(dot11MeshConnectedToMeshGate,
- 		  u.mesh.mshcfg.dot11MeshConnectedToMeshGate, DEC);
-+IEEE80211_IF_FILE(dot11MeshNolearn, u.mesh.mshcfg.dot11MeshNolearn, DEC);
- #endif
- 
- #define DEBUGFS_ADD_MODE(name, mode) \
-@@ -762,6 +763,7 @@ static void add_mesh_config(struct ieee80211_sub_if_data *sdata)
- 	MESHPARAMS_ADD(power_mode);
- 	MESHPARAMS_ADD(dot11MeshAwakeWindowDuration);
- 	MESHPARAMS_ADD(dot11MeshConnectedToMeshGate);
-+	MESHPARAMS_ADD(dot11MeshNolearn);
- #undef MESHPARAMS_ADD
- }
- #endif
-diff --git a/net/mac80211/mesh_hwmp.c b/net/mac80211/mesh_hwmp.c
-index aa5150929996..cbf94c0b408f 100644
---- a/net/mac80211/mesh_hwmp.c
-+++ b/net/mac80211/mesh_hwmp.c
-@@ -1117,6 +1117,40 @@ void mesh_path_start_discovery(struct ieee80211_sub_if_data *sdata)
- 	kfree(preq_node);
- }
- 
-+/**
-+ * mesh_nexthop_resolve_nolearn - try to set next hop without path discovery
-+ * @skb: 802.11 frame to be sent
-+ * @sdata: network subif the frame will be sent through
-+ *
-+ * Check if the meshDA (addr3) of a unicast frame is a direct neighbor.
-+ * And if so, set the RA (addr1) to it to transmit to this node directly,
-+ * avoiding PREP/PREP path discovery.
-+ *
-+ * Returns: 0 if the next hop was found and -ENOENT otherwise.
-+ */
-+static int mesh_nexthop_resolve_nolearn(struct ieee80211_sub_if_data *sdata,
-+					struct sk_buff *skb)
-+{
-+	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
-+	struct sta_info *sta;
-+
-+	if (is_multicast_ether_addr(hdr->addr1))
-+		return -ENOENT;
-+
-+	rcu_read_lock();
-+	sta = sta_info_get(sdata, hdr->addr3);
-+
-+	if (!sta || sta->mesh->plink_state != NL80211_PLINK_ESTAB) {
-+		rcu_read_unlock();
-+		return -ENOENT;
-+	}
-+	rcu_read_unlock();
-+
-+	memcpy(hdr->addr1, hdr->addr3, ETH_ALEN);
-+	memcpy(hdr->addr2, sdata->vif.addr, ETH_ALEN);
-+	return 0;
-+}
-+
- /**
-  * mesh_nexthop_resolve - lookup next hop; conditionally start path discovery
-  *
-@@ -1132,6 +1166,7 @@ void mesh_path_start_discovery(struct ieee80211_sub_if_data *sdata)
- int mesh_nexthop_resolve(struct ieee80211_sub_if_data *sdata,
- 			 struct sk_buff *skb)
- {
-+	struct ieee80211_if_mesh *ifmsh = &sdata->u.mesh;
- 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
- 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
- 	struct mesh_path *mpath;
-@@ -1146,6 +1181,10 @@ int mesh_nexthop_resolve(struct ieee80211_sub_if_data *sdata,
- 	if (info->control.flags & IEEE80211_TX_CTRL_SKIP_MPATH_LOOKUP)
- 		return 0;
- 
-+	if (ifmsh->mshcfg.dot11MeshNolearn &&
-+	    !mesh_nexthop_resolve_nolearn(sdata, skb))
-+		return 0;
-+
- 	if (!mesh_nexthop_lookup(sdata, skb))
- 		return 0;
- 
-diff --git a/net/wireless/mesh.c b/net/wireless/mesh.c
-index eac5aa1419fc..e4e363138279 100644
---- a/net/wireless/mesh.c
-+++ b/net/wireless/mesh.c
-@@ -78,6 +78,7 @@ const struct mesh_config default_mesh_config = {
- 	.power_mode = NL80211_MESH_POWER_ACTIVE,
- 	.dot11MeshAwakeWindowDuration = MESH_DEFAULT_AWAKE_WINDOW,
- 	.plink_timeout = MESH_DEFAULT_PLINK_TIMEOUT,
-+	.dot11MeshNolearn = false,
- };
- 
- const struct mesh_setup default_mesh_setup = {
-diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-index 263ae395ad44..b0b7f110064f 100644
---- a/net/wireless/nl80211.c
-+++ b/net/wireless/nl80211.c
-@@ -6884,7 +6884,9 @@ static int nl80211_get_mesh_config(struct sk_buff *skb,
- 	    nla_put_u32(msg, NL80211_MESHCONF_PLINK_TIMEOUT,
- 			cur_params.plink_timeout) ||
- 	    nla_put_u8(msg, NL80211_MESHCONF_CONNECTED_TO_GATE,
--		       cur_params.dot11MeshConnectedToMeshGate))
-+		       cur_params.dot11MeshConnectedToMeshGate) ||
-+	    nla_put_u8(msg, NL80211_MESHCONF_NOLEARN,
-+		       cur_params.dot11MeshNolearn))
- 		goto nla_put_failure;
- 	nla_nest_end(msg, pinfoattr);
- 	genlmsg_end(msg, hdr);
-@@ -6942,6 +6944,7 @@ nl80211_meshconf_params_policy[NL80211_MESHCONF_ATTR_MAX+1] = {
- 	[NL80211_MESHCONF_AWAKE_WINDOW] = { .type = NLA_U16 },
- 	[NL80211_MESHCONF_PLINK_TIMEOUT] = { .type = NLA_U32 },
- 	[NL80211_MESHCONF_CONNECTED_TO_GATE] = NLA_POLICY_RANGE(NLA_U8, 0, 1),
-+	[NL80211_MESHCONF_NOLEARN] = { .type = NLA_U8 },
- };
- 
- static const struct nla_policy
-@@ -7093,6 +7096,9 @@ do {									\
- 				  NL80211_MESHCONF_AWAKE_WINDOW, nla_get_u16);
- 	FILL_IN_MESH_PARAM_IF_SET(tb, cfg, plink_timeout, mask,
- 				  NL80211_MESHCONF_PLINK_TIMEOUT, nla_get_u32);
-+	FILL_IN_MESH_PARAM_IF_SET(tb, cfg, dot11MeshNolearn, 0, 1,
-+				  mask, NL80211_MESHCONF_NOLEARN,
-+				  nl80211_check_bool);
- 	if (mask_out)
- 		*mask_out = mask;
- 
-diff --git a/net/wireless/trace.h b/net/wireless/trace.h
-index b23cab016521..6e218a0acd4e 100644
---- a/net/wireless/trace.h
-+++ b/net/wireless/trace.h
-@@ -68,7 +68,8 @@
- 		       __field(u16, ht_opmode)				   \
- 		       __field(u32, dot11MeshHWMPactivePathToRootTimeout)  \
- 		       __field(u16, dot11MeshHWMProotInterval)		   \
--		       __field(u16, dot11MeshHWMPconfirmationInterval)
-+		       __field(u16, dot11MeshHWMPconfirmationInterval)	   \
-+		       __field(bool, dot11MeshNolearn)
- #define MESH_CFG_ASSIGN							      \
- 	do {								      \
- 		__entry->dot11MeshRetryTimeout = conf->dot11MeshRetryTimeout; \
-@@ -109,6 +110,7 @@
- 				conf->dot11MeshHWMProotInterval;	      \
- 		__entry->dot11MeshHWMPconfirmationInterval =		      \
- 				conf->dot11MeshHWMPconfirmationInterval;      \
-+		__entry->dot11MeshNolearn = conf->dot11MeshNolearn;	      \
- 	} while (0)
- 
- #define CHAN_ENTRY __field(enum nl80211_band, band) \
--- 
-2.27.0
+> On Jun 24, 2020, at 3:13 PM, Sven Eckelmann <sven@narfation.org> =
+wrote:
+>=20
+> On Wednesday, 24 June 2020 22:02:38 CEST Rob Cowart wrote:
+> [....]
+>> Is anything wrong with these?
+>=20
+> Most likely not, but someone on the mailing list with deeper knowledge =
+on=20
+> B.A.T.M.A.N. V's echo location protocol could actually check whether =
+non-
+> symmetric settings on different nodes could create problems or not. Or =
+if=20
+> having both ELP and OGM2 interval set to the same value could have =
+negative=20
+> side effects.
+>=20
+>=20
+>> Our gateway:
+>>=20
+>> pi@raspberrypi:~/xeco-master/enola-daemon $ cat =
+/sys/class/net/wlan0/batman_adv/elp_interval=20
+>> 500
+>> pi@raspberrypi:~/xeco-master/enola-daemon $ cat =
+/sys/class/net/bat0/mesh/orig_interval
+>> 1000
+>>=20
+>> nodes:
+>> pi@raspberrypi:~ $ cat /sys/class/net/wlan0/batman_adv/elp_interval
+>> 30000
+>> pi@raspberrypi:~ $ cat /sys/class/net/bat0/mesh/orig_interval
+>> 30000
+> [...]
+>=20
+> On Wednesday, 24 June 2020 21:23:09 CEST Rob Cowart wrote:
+>> IF             Neighbor              last-seen
+>> b8:27:eb:4e:73:6d   25.330s (        1.0) [     wlan0]
+>> b8:27:eb:ff:0e:b6   23.320s (        1.0) [     wlan0]
+>> b8:27:eb:08:13:37   18.850s (        1.0) [     wlan0]
+>> b8:27:eb:aa:1e:6d   37.010s (        1.0) [     wlan0]
+>> b8:27:eb:35:c6:77   63.590s (        1.0) [     wlan0]
+>> b8:27:eb:e9:34:41   18.280s (        1.0) [     wlan0]
+>> b8:27:eb:84:ca:90   30.560s (        1.0) [     wlan0]
+>> b8:27:eb:1e:eb:cd   27.410s (        1.0) [     wlan0]
+>> b8:27:eb:cb:80:34   23.100s (        1.0) [     wlan0]
+>=20
+> Btw. it looks to me like B.A.T.M.A.N. V is a really bad choice for =
+your setup.=20
+> All links have the throughput value 1.0 Mbit/s. This sounds to me like =
+the=20
+> wifi driver doesn't provide the required expected_throughput. And so =
+you have=20
+> a REALLY, REALLY, REALLY bad metric when you are using 1.0 everywhere. =
+So if=20
+> you want to continue experimenting with B.A.T.M.A.N. V then you should =
+try to=20
+> get this fixed in your wifi driver or just switch to B.A.T.M.A.N. IV =
+with=20
+> increased multicast rate.
+Are there any docs that talk about what B.A.T.M.A.N. V vs B.A.T.M.A.N. =
+IV is good for?  The decision to upgrade was made before I got here, I'm =
+not sure anyone understood that IV would still be supported/expected to =
+be used.=20
+>=20
+>=20
+>> Lots of stuff I don't understand here, looks like loopback is very =
+busy?
+>=20
+> Not sure what you mean here with loopback. I will just leave the whole =
+output=20
+> here in case somebody else on the mailing list wants to figure it out.
+>=20
+>> pi@raspberrypi:~/xeco-master/enola-daemon $ sudo batctl td wlan0
+>> 15:01:52.075412 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 704843962, v 15, interval 500ms, length 20
+>> 15:01:52.076036 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.076507 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.076854 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.077456 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.077937 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.078028 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.078657 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.079155 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.079246 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.079894 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.080480 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.080965 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.081435 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.081904 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.081995 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.082435 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.082539 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.082957 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>> 15:01:52.415359 BAT b8:27:eb:fb:4e:58: OGM2 via neigh =
+b8:27:eb:fb:4e:58, seq 500807384, throughput MAX, ttl 50, v 15, length =
+60, tvlv_len 40
+>> 	TVLV TTv1: OGM DIFF [.] ttvn=3D1 vlan_num=3D1 entry_num=3D0
+>> 		VLAN ID -1, crc 0xf0cfd284
+>> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+>> 	TVLV DATv1: enabled
+>> 15:01:52.423153 BAT b8:27:eb:fb:4e:58: OGM2 via neigh =
+b8:27:eb:aa:1e:6d, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, =
+length 60, tvlv_len 40
+>> 	TVLV TTv1: OGM DIFF [.] ttvn=3D1 vlan_num=3D1 entry_num=3D0
+>> 		VLAN ID -1, crc 0xf0cfd284
+>> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+>> 	TVLV DATv1: enabled
+>> 15:01:52.424280 BAT b8:27:eb:fb:4e:58: OGM2 via neigh =
+b8:27:eb:cb:80:34, seq 500807384, throughput 14.9Mbps, ttl 49, v 15, =
+length 60, tvlv_len 40
+>> 	TVLV TTv1: OGM DIFF [.] ttvn=3D1 vlan_num=3D1 entry_num=3D0
+>> 		VLAN ID -1, crc 0xf0cfd284
+>> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+>> 	TVLV DATv1: enabled
+>> 15:01:52.428556 BAT b8:27:eb:fb:4e:58: OGM2 via neigh =
+b8:27:eb:84:ca:90, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, =
+length 60, tvlv_len 40
+>> 	TVLV TTv1: OGM DIFF [.] ttvn=3D1 vlan_num=3D1 entry_num=3D0
+>> 		VLAN ID -1, crc 0xf0cfd284
+>> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+>> 	TVLV DATv1: enabled
+>> 15:01:52.575301 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 704843963, v 15, interval 500ms, length 20
+>> 15:01:52.575486 BAT b8:27:eb:fb:4e:58: ELP via iface =
+b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+>=20
+> Kind regards,
+> 	Sven
 
 
