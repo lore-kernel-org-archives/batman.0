@@ -1,11 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH] batman-adv: Introduce a configurable per interface hop penalty
-Date: Mon,  1 Jun 2020 22:35:22 +0200
-Message-Id: <20200601203522.5266-1-linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: batadv gw_mode client 0?
+Date: Wed, 24 Jun 2020 22:13:47 +0200
+Message-ID: <2094569.NUmnuQNPM9@sven-edge>
+In-Reply-To: <E3FD8A72-966A-4CBB-A036-8C0A4152983D@xecoenergy.com>
+References: <927533E5-C265-44BF-B271-1A7A9A084447@xecoenergy.com> <8393812.UZvHzlbVaM@sven-edge> <E3FD8A72-966A-4CBB-A036-8C0A4152983D@xecoenergy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart1643328.Fcg3oQSA6E"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -13,222 +14,132 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Maximilian Wilhelm <max@rfc2324.org>
+To: Rob Cowart <rob.cowart@xecoenergy.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-In some setups multiple hard interfaces with similar link qualities
-or throughput values are available. But people have expressed the desire
-to consider one of them as a backup only.
+ 
+--nextPart1643328.Fcg3oQSA6E
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Some creative solutions are currently in use: Such people are
-configuring multiple batman-adv mesh/soft interfaces, wire them
-together with some veth pairs and then tune the hop penalty to achieve
-an effect similar to a tunable per interface hop penalty.
+On Wednesday, 24 June 2020 22:02:38 CEST Rob Cowart wrote:
+[....]
+> Is anything wrong with these?
 
-This patch introduces a new, configurable, per hard interface hop penalty
-to simplify such setups.
+Most likely not, but someone on the mailing list with deeper knowledge on 
+B.A.T.M.A.N. V's echo location protocol could actually check whether non-
+symmetric settings on different nodes could create problems or not. Or if 
+having both ELP and OGM2 interval set to the same value could have negative 
+side effects.
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
- include/uapi/linux/batman_adv.h |  3 ++-
- net/batman-adv/bat_iv_ogm.c     | 17 +++++++++--------
- net/batman-adv/bat_v_ogm.c      | 13 ++++++++++---
- net/batman-adv/hard-interface.c |  2 ++
- net/batman-adv/netlink.c        | 14 ++++++++++++--
- net/batman-adv/types.h          |  6 ++++++
- 6 files changed, 41 insertions(+), 14 deletions(-)
 
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_=
-adv.h
-index 617c180f..dac57936 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -427,7 +427,8 @@ enum batadv_nl_attrs {
-=20
- 	/**
- 	 * @BATADV_ATTR_HOP_PENALTY: defines the penalty which will be applied
--	 *  to an originator message's tq-field on every hop.
-+	 *  to an originator message's tq-field on every hop and/or per
-+	 *  hard interface
- 	 */
- 	BATADV_ATTR_HOP_PENALTY,
-=20
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index e87f19c8..5f7a5c04 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1075,10 +1075,10 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_o=
-rig_node *orig_node,
- 	struct batadv_neigh_ifinfo *neigh_ifinfo;
- 	u8 total_count;
- 	u8 orig_eq_count, neigh_rq_count, neigh_rq_inv, tq_own;
-+	unsigned int tq_iface_hop_penalty =3D BATADV_TQ_MAX_VALUE;
- 	unsigned int neigh_rq_inv_cube, neigh_rq_max_cube;
- 	unsigned int tq_asym_penalty, inv_asym_penalty;
- 	unsigned int combined_tq;
--	unsigned int tq_iface_penalty;
- 	bool ret =3D false;
-=20
- 	/* find corresponding one hop neighbor */
-@@ -1157,31 +1157,32 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_o=
-rig_node *orig_node,
- 	inv_asym_penalty =3D BATADV_TQ_MAX_VALUE * neigh_rq_inv_cube;
- 	inv_asym_penalty /=3D neigh_rq_max_cube;
- 	tq_asym_penalty =3D BATADV_TQ_MAX_VALUE - inv_asym_penalty;
-+	tq_iface_hop_penalty -=3D atomic_read(&if_incoming->hop_penalty);
-=20
- 	/* penalize if the OGM is forwarded on the same interface. WiFi
- 	 * interfaces and other half duplex devices suffer from throughput
- 	 * drops as they can't send and receive at the same time.
- 	 */
--	tq_iface_penalty =3D BATADV_TQ_MAX_VALUE;
- 	if (if_outgoing && if_incoming =3D=3D if_outgoing &&
- 	    batadv_is_wifi_hardif(if_outgoing))
--		tq_iface_penalty =3D batadv_hop_penalty(BATADV_TQ_MAX_VALUE,
--						      bat_priv);
-+		tq_iface_hop_penalty =3D batadv_hop_penalty(tq_iface_hop_penalty,
-+							  bat_priv);
-=20
- 	combined_tq =3D batadv_ogm_packet->tq *
- 		      tq_own *
- 		      tq_asym_penalty *
--		      tq_iface_penalty;
-+		      tq_iface_hop_penalty;
- 	combined_tq /=3D BATADV_TQ_MAX_VALUE *
- 		       BATADV_TQ_MAX_VALUE *
- 		       BATADV_TQ_MAX_VALUE;
- 	batadv_ogm_packet->tq =3D combined_tq;
-=20
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "bidirectional: orig =3D %pM neigh =3D %pM =3D> own_bcast =3D %2i, =
-real recv =3D %2i, local tq: %3i, asym_penalty: %3i, iface_penalty: %3i, =
-total tq: %3i, if_incoming =3D %s, if_outgoing =3D %s\n",
-+		   "bidirectional: orig =3D %pM neigh =3D %pM =3D> own_bcast =3D %2i, =
-real recv =3D %2i, local tq: %3i, asym_penalty: %3i, iface_hop_penalty: %=
-3i, total tq: %3i, if_incoming =3D %s, if_outgoing =3D %s\n",
- 		   orig_node->orig, orig_neigh_node->orig, total_count,
--		   neigh_rq_count, tq_own, tq_asym_penalty, tq_iface_penalty,
--		   batadv_ogm_packet->tq, if_incoming->net_dev->name,
-+		   neigh_rq_count, tq_own, tq_asym_penalty,
-+		   tq_iface_hop_penalty, batadv_ogm_packet->tq,
-+		   if_incoming->net_dev->name,
- 		   if_outgoing ? if_outgoing->net_dev->name : "DEFAULT");
-=20
- 	/* if link has the minimum required transmission quality
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 18028b9f..1e84ab99 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -455,15 +455,17 @@ void batadv_v_ogm_primary_iface_set(struct batadv_h=
-ard_iface *primary_iface)
-  * @throughput: the current throughput
-  *
-  * Apply a penalty on the current throughput metric value based on the
-- * characteristic of the interface where the OGM has been received. The =
-return
-- * value is computed as follows:
-+ * characteristic of the interface where the OGM has been received.
-+ *
-+ * Initially the per hardif hop penalty is applied to the throughput. Af=
-ter
-+ * that the return value is then computed as follows:
-  * - throughput * 50%          if the incoming and outgoing interface ar=
-e the
-  *                             same WiFi interface and the throughput is=
- above
-  *                             1MBit/s
-  * - throughput                if the outgoing interface is the default
-  *                             interface (i.e. this OGM is processed for=
- the
-  *                             internal table and not forwarded)
-- * - throughput * hop penalty  otherwise
-+ * - throughput * node hop penalty  otherwise
-  *
-  * Return: the penalised throughput metric.
-  */
-@@ -472,9 +474,14 @@ static u32 batadv_v_forward_penalty(struct batadv_pr=
-iv *bat_priv,
- 				    struct batadv_hard_iface *if_outgoing,
- 				    u32 throughput)
- {
-+	int if_hop_penalty =3D atomic_read(&if_incoming->hop_penalty);
- 	int hop_penalty =3D atomic_read(&bat_priv->hop_penalty);
- 	int hop_penalty_max =3D BATADV_TQ_MAX_VALUE;
-=20
-+	/* Apply per hardif hop penalty */
-+	throughput =3D throughput * (hop_penalty_max - if_hop_penalty) /
-+		     hop_penalty_max;
-+
- 	/* Don't apply hop penalty in default originator table. */
- 	if (if_outgoing =3D=3D BATADV_IF_DEFAULT)
- 		return throughput;
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interf=
-ace.c
-index 3a256af9..f8495ff2 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -939,6 +939,8 @@ batadv_hardif_add_interface(struct net_device *net_de=
-v)
- 	if (batadv_is_wifi_hardif(hard_iface))
- 		hard_iface->num_bcasts =3D BATADV_NUM_BCASTS_WIRELESS;
-=20
-+	atomic_set(&hard_iface->hop_penalty, 0);
-+
- 	batadv_v_hardif_init(hard_iface);
-=20
- 	batadv_check_known_mac_addr(hard_iface->net_dev);
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 02ed073f..d4bfc4c5 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -826,6 +826,10 @@ static int batadv_netlink_hardif_fill(struct sk_buff=
- *msg,
- 			goto nla_put_failure;
- 	}
-=20
-+	if (nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY,
-+		       atomic_read(&hard_iface->hop_penalty)))
-+		goto nla_put_failure;
-+
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	if (nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL,
- 			atomic_read(&hard_iface->bat_v.elp_interval)))
-@@ -920,10 +924,16 @@ static int batadv_netlink_set_hardif(struct sk_buff=
- *skb,
- {
- 	struct batadv_hard_iface *hard_iface =3D info->user_ptr[1];
- 	struct batadv_priv *bat_priv =3D info->user_ptr[0];
--
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	struct nlattr *attr;
-=20
-+	if (info->attrs[BATADV_ATTR_HOP_PENALTY]) {
-+		attr =3D info->attrs[BATADV_ATTR_HOP_PENALTY];
-+
-+		atomic_set(&hard_iface->hop_penalty, nla_get_u8(attr));
-+	}
-+
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+
- 	if (info->attrs[BATADV_ATTR_ELP_INTERVAL]) {
- 		attr =3D info->attrs[BATADV_ATTR_ELP_INTERVAL];
-=20
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d152b8e8..f7b52426 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -208,6 +208,12 @@ struct batadv_hard_iface {
- 	/** @rcu: struct used for freeing in an RCU-safe manner */
- 	struct rcu_head rcu;
-=20
-+	/**
-+	 * @hop_penalty: penalty which will be applied to the tq-field
-+	 * of an OGM received via this interface
-+	 */
-+	atomic_t hop_penalty;
-+
- 	/** @bat_iv: per hard-interface B.A.T.M.A.N. IV data */
- 	struct batadv_hard_iface_bat_iv bat_iv;
-=20
---=20
-2.27.0.rc2
+> Our gateway:
+> 
+> pi@raspberrypi:~/xeco-master/enola-daemon $ cat /sys/class/net/wlan0/batman_adv/elp_interval 
+> 500
+> pi@raspberrypi:~/xeco-master/enola-daemon $ cat /sys/class/net/bat0/mesh/orig_interval
+> 1000
+> 
+> nodes:
+> pi@raspberrypi:~ $ cat /sys/class/net/wlan0/batman_adv/elp_interval
+> 30000
+> pi@raspberrypi:~ $ cat /sys/class/net/bat0/mesh/orig_interval
+> 30000
+[...]
+
+On Wednesday, 24 June 2020 21:23:09 CEST Rob Cowart wrote:
+> IF             Neighbor              last-seen
+> b8:27:eb:4e:73:6d   25.330s (        1.0) [     wlan0]
+> b8:27:eb:ff:0e:b6   23.320s (        1.0) [     wlan0]
+> b8:27:eb:08:13:37   18.850s (        1.0) [     wlan0]
+> b8:27:eb:aa:1e:6d   37.010s (        1.0) [     wlan0]
+> b8:27:eb:35:c6:77   63.590s (        1.0) [     wlan0]
+> b8:27:eb:e9:34:41   18.280s (        1.0) [     wlan0]
+> b8:27:eb:84:ca:90   30.560s (        1.0) [     wlan0]
+> b8:27:eb:1e:eb:cd   27.410s (        1.0) [     wlan0]
+> b8:27:eb:cb:80:34   23.100s (        1.0) [     wlan0]
+
+Btw. it looks to me like B.A.T.M.A.N. V is a really bad choice for your setup. 
+All links have the throughput value 1.0 Mbit/s. This sounds to me like the 
+wifi driver doesn't provide the required expected_throughput. And so you have 
+a REALLY, REALLY, REALLY bad metric when you are using 1.0 everywhere. So if 
+you want to continue experimenting with B.A.T.M.A.N. V then you should try to 
+get this fixed in your wifi driver or just switch to B.A.T.M.A.N. IV with 
+increased multicast rate.
+
+
+> Lots of stuff I don't understand here, looks like loopback is very busy?
+ 
+Not sure what you mean here with loopback. I will just leave the whole output 
+here in case somebody else on the mailing list wants to figure it out.
+ 
+> pi@raspberrypi:~/xeco-master/enola-daemon $ sudo batctl td wlan0
+> 15:01:52.075412 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 704843962, v 15, interval 500ms, length 20
+> 15:01:52.076036 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.076507 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.076854 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.077456 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.077937 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.078028 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.078657 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.079155 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.079246 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.079894 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.080480 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.080965 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.081435 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.081904 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.081995 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.082435 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.082539 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.082957 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+> 15:01:52.415359 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:fb:4e:58, seq 500807384, throughput MAX, ttl 50, v 15, length 60, tvlv_len 40
+> 	TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
+> 		VLAN ID -1, crc 0xf0cfd284
+> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+> 	TVLV DATv1: enabled
+> 15:01:52.423153 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:aa:1e:6d, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, length 60, tvlv_len 40
+> 	TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
+> 		VLAN ID -1, crc 0xf0cfd284
+> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+> 	TVLV DATv1: enabled
+> 15:01:52.424280 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:cb:80:34, seq 500807384, throughput 14.9Mbps, ttl 49, v 15, length 60, tvlv_len 40
+> 	TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
+> 		VLAN ID -1, crc 0xf0cfd284
+> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+> 	TVLV DATv1: enabled
+> 15:01:52.428556 BAT b8:27:eb:fb:4e:58: OGM2 via neigh b8:27:eb:84:ca:90, seq 500807384, throughput 15.0Mbps, ttl 49, v 15, length 60, tvlv_len 40
+> 	TVLV TTv1: OGM DIFF [.] ttvn=1 vlan_num=1 entry_num=0
+> 		VLAN ID -1, crc 0xf0cfd284
+> 	TVLV GWv1: down 10.0Mbps, up 2.0Mbps
+> 	TVLV DATv1: enabled
+> 15:01:52.575301 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 704843963, v 15, interval 500ms, length 20
+> 15:01:52.575486 BAT b8:27:eb:fb:4e:58: ELP via iface b8:27:eb:fb:4e:58, seq 0, v 15, interval 0ms, length 200
+
+Kind regards,
+	Sven
+--nextPart1643328.Fcg3oQSA6E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl7zs/sACgkQXYcKB8Em
+e0ajLw/9ET4LI0mrT0ojnIVKTwQW+lj9wZ94sOV2x7bHiLO8Rtiq3JBZ/YXAlsrV
+I5kDtdLBuOmI7/dkELDECvLdN60pWMAA7o/dKCeedJJdEkmJj/IHul+wWW63hY4K
+md7EkzXcSpOj6I3hDjMhPcnZM41HX+t8PYcMG/DWrHcvs1Le9HGe1vsc6I0c7bEQ
+CswxFWLqy5+j14qoa9Lrr8GBsQGsevmJpr2nONUACdOmBHlPJ6f1cr64DJ8tQxVm
+pyhYRjw2woWT/5yqlWqIN1TNo3+e6oA+OCODaqTSOZlElvvKrAZRZACL7hhtlTM+
+fI56gQIv9KPNiPP+m//2djEM5gUD85qLA/Hg9N7LqZabStPdkRDdivbdcJJ+Dmi6
+Ob3csjjDvzSW2RQ7sk/WLdllorMQzEbPVj5g3ykNy+/fEcHdPIxdYwZoSJvsj/5P
+hBczFJ3Nq6U+wc+2mnPKGaMUxu2GceBQilKS4O6ABspQODV2lKLNnwhjrLrR771C
+daLBtl+iVCgiN+7mXyzA7azpqrx5Ng+PPOCnDdkpSbVxb8G4CzAdnfeJ0Q/N5XrL
+X+ajFQq9lmTm/JcLGJ07Ovr8gRMgKZnSRgn75RnBuee38z9qKGBa/n5hQ1BuhsAK
+Kd2CUXb27XDhZ0RMZQa7mF+g7QLbOk2T+R+NPPDRDIgTl7+jP7g=
+=Iysi
+-----END PGP SIGNATURE-----
+
+--nextPart1643328.Fcg3oQSA6E--
+
+
