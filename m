@@ -1,12 +1,14 @@
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.4 03/14] batman-adv: fix batadv_nc_random_weight_tq
-Date: Thu, 14 May 2020 14:56:14 -0400
-Message-Id: <20200514185625.21753-3-sashal@kernel.org>
-In-Reply-To: <20200514185625.21753-1-sashal@kernel.org>
-References: <20200514185625.21753-1-sashal@kernel.org>
+Return-Path: <markbirss@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CADg1mwL07UQqmUctQexAFCgFMrXBiF=rB1EdRqb3agveSEkckQ@mail.gmail.com>
+ <1986026.lAXmxmQttu@sven-edge> <CADg1mwLTTq-wjxvPvkTBb2J9qtSs_+BxhNsSW0DGTeo6QiWXbA@mail.gmail.com>
+ <12351834.0eS7jaRIYG@bentobox>
+In-Reply-To: <12351834.0eS7jaRIYG@bentobox>
+From: Mark Birss <markbirss@gmail.com>
+Date: Thu, 25 Jun 2020 13:56:18 +0200
+Message-ID: <CADg1mwLt_cw7frwgYC6hyjQ4wO35UA0GNLw=MERAgUjNvM4SjQ@mail.gmail.com>
+Subject: Re: BATMAN-adv Debug options
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,71 +18,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: George Spelvin <lkml@sdf.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Sasha Levin <sashal@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: George Spelvin <lkml@sdf.org>
+Sorry about the reply not including the mailing address, i  made error
+clicking wrong reply icon
 
-[ Upstream commit fd0c42c4dea54335967c5a86f15fc064235a2797 ]
+> As for originator and neighbours this can also be checked by batctl or1
+> proc file system.
 
-and change to pseudorandom numbers, as this is a traffic dithering
-operation that doesn't need crypto-grade.
+No i meant /sys/kernel/debug as I run recent Batman adv 2020-1
 
-The previous code operated in 4 steps:
+Thank you for pointing out the correct wiki links, I could not find them
 
-1. Generate a random byte 0 <= rand_tq <= 255
-2. Multiply it by BATADV_TQ_MAX_VALUE - tq
-3. Divide by 255 (= BATADV_TQ_MAX_VALUE)
-4. Return BATADV_TQ_MAX_VALUE - rand_tq
+I will create another topic for some other questions,
 
-This would apperar to scale (BATADV_TQ_MAX_VALUE - tq) by a random
-value between 0/255 and 255/255.
+Thank you
 
-But!  The intermediate value between steps 3 and 4 is stored in a u8
-variable.  So it's truncated, and most of the time, is less than 255, after
-which the division produces 0.  Specifically, if tq is odd, the product is
-always even, and can never be 255.  If tq is even, there's exactly one
-random byte value that will produce a product byte of 255.
 
-Thus, the return value is 255 (511/512 of the time) or 254 (1/512
-of the time).
-
-If we assume that the truncation is a bug, and the code is meant to scale
-the input, a simpler way of looking at it is that it's returning a random
-value between tq and BATADV_TQ_MAX_VALUE, inclusive.
-
-Well, we have an optimized function for doing just that.
-
-Fixes: 3c12de9a5c75 ("batman-adv: network coding - code and transmit packets if possible")
-Signed-off-by: George Spelvin <lkml@sdf.org>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- net/batman-adv/network-coding.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 86c69208da2b7..91de807a8f03a 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -991,15 +991,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
-  */
- static u8 batadv_nc_random_weight_tq(u8 tq)
- {
--	u8 rand_val, rand_tq;
--
--	get_random_bytes(&rand_val, sizeof(rand_val));
--
- 	/* randomize the estimated packet loss (max TQ - estimated TQ) */
--	rand_tq = rand_val * (BATADV_TQ_MAX_VALUE - tq);
--
--	/* normalize the randomized packet loss */
--	rand_tq /= BATADV_TQ_MAX_VALUE;
-+	u8 rand_tq = prandom_u32_max(BATADV_TQ_MAX_VALUE + 1 - tq);
- 
- 	/* convert to (randomized) estimated tq again */
- 	return BATADV_TQ_MAX_VALUE - rand_tq;
--- 
-2.20.1
-
+On Thu, Jun 25, 2020 at 1:44 PM Sven Eckelmann <sven@narfation.org> wrote:
+>
+> [please never contact me privately about batman-adv without a really good
+>  reason. Cc at least the mailing list]
+>
+> On Thursday, 25 June 2020 13:12:34 CEST Mark Birss wrote:
+> > "Is the lower layer working or did the lower layer break? Can be
+> > tested easily with multicast/broadcast and unicast pings on the lower
+> > device."
+> >
+> > How to do this ?
+>
+> ping/ping6.
+>
+> * unicast: just ping as normal the lower device (not bat0) IPv4 address or
+>   (link local) IPv6 address
+> * multicast: just send from both sides an multicast ping. For example
+>   ff02::1%wlan0 and check if the remote (not your own device) responds with a
+>   unicast reply
+>
+> > As for originator and neighbours this can also be checked by batctl or
+> > proc file system.
+>
+> proc? If you have batman-adv entries in proc then you should definitely
+> upgrade. This was removed in 2010.
+>
+> Should this have been a question about where to find the originators and
+> neighbors table? And you can see this via "batctl meshif bat0 originators"
+> and "batctl meshif bat0 neighbors". The "meshif bat0" has to replaced with
+> "-m bat0" on older batctl versions.
+>
+> > Another question is there a breakdown of the meaning of the messages for
+> >
+> > $ cat /sys/kernel/debug/batman_adv/bat0/log
+> >
+> > The additional debug output is by default disabled. It can be enabled
+> > during run time. Following log_levels are defined:
+>
+> No idea what you want here. The help text already says what each message type
+> is about. If you don't know what a specific feature is then please check the
+> wiki [1].
+>
+> > and what is the Flags here
+> >
+> > root@LiMe-a376eb:~# batctl tl
+> > [B.A.T.M.A.N. adv 2020.1-openwrt-2, MainIF/MAC:
+> > dummy0/aa:84:86:a3:76:eb (bat0/72:8b:cf:a4:00:77 BATMAN_IV), TTVN: 4]
+> > Client             VID Flags    Last seen (CRC       )
+> > 72:8b:cf:a4:00:77   -1 [.P....]   0.000   (0x1c349131)
+> > 50:3e:aa:06:6f:4d   -1 [......]   0.280   (0x1c349131)
+> > 72:8b:cf:a4:00:77    0 [.P....]   0.000   (0x9243e316)
+> > cc:2d:e0:47:b3:56   -1 [......]   0.980   (0x1c349131)
+> > 72:8b:cf:a4:00:77    1 [.P....]   0.000   (0xdb7f9e31)
+>
+> The flags here are
+>
+> * 'R' BATADV_TT_CLIENT_ROAM
+> * 'N' BATADV_TT_CLIENT_NEW
+> * 'X' BATADV_TT_CLIENT_PENDING
+> * 'W' BATADV_TT_CLIENT_WIFI
+> * 'I' BATADV_TT_CLIENT_ISOLA
+> * 'P' BATADV_TT_CLIENT_NOPURGE
+>
+> And they are documented in the wiki [2]
+>
+> Kind regards,
+>         Sven
+>
+> [1] https://www.open-mesh.org/projects/batman-adv/wiki/Protocol_information
+> [2] https://www.open-mesh.org/projects/batman-adv/wiki/TT-Flags
