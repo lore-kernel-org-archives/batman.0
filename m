@@ -1,104 +1,74 @@
-Return-Path: <ebiederm@xmission.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-References: <000000000000d788c905a7dfa3f4@google.com>
-Date: Fri, 12 Jun 2020 14:15:51 -0500
-In-Reply-To: <000000000000d788c905a7dfa3f4@google.com> (syzbot's message of
-	"Fri, 12 Jun 2020 02:24:11 -0700")
-Message-ID: <87mu58p02g.fsf@x220.int.ebiederm.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: bits 10 to 15 in OGM packets
+Date: Thu, 25 Jun 2020 16:06:38 +0200
+Message-ID: <1752987.3nn1Mqi339@bentobox>
+In-Reply-To: <CADhofF8ExwW+kYPDTX1W4ZZz_6gs3zEvzu_7oe1WrkP3-+fpiQ@mail.gmail.com>
+References: <CADhofF8ExwW+kYPDTX1W4ZZz_6gs3zEvzu_7oe1WrkP3-+fpiQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [PATCH] proc: Use new_inode not new_inode_pseudo
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart20168081.oS1hcQqD1i"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com>
-Cc: a@unstable.cc, adobriyan@gmail.com, akpm@linux-foundation.org, alex.dewar@gmx.co.uk, amir73il@gmail.com, anton.ivanov@cambridgegreys.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, jack@suse.cz, jdike@addtoit.com, kuba@kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-um@lists.infradead.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, richard@nod.at, sfr@canb.auug.org.au, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Rahul Bothra <rrbothra@gmail.com>, Tom Henderson <tomh@tomh.org>, tahiliani.nitk@gmail.com
 
-
-Recently syzbot reported that unmounting proc when there is an ongoing
-inotify watch on the root directory of proc could result in a use
-after free when the watch is removed after the unmount of proc
-when the watcher exits.
-
-Commit 69879c01a0c3 ("proc: Remove the now unnecessary internal mount
-of proc") made it easier to unmount proc and allowed syzbot to see the
-problem, but looking at the code it has been around for a long time.
-
-Looking at the code the fsnotify watch should have been removed by
-fsnotify_sb_delete in generic_shutdown_super.  Unfortunately the inode
-was allocated with new_inode_pseudo instead of new_inode so the inode
-was not on the sb->s_inodes list.  Which prevented
-fsnotify_unmount_inodes from finding the inode and removing the watch
-as well as made it so the "VFS: Busy inodes after unmount" warning
-could not find the inodes to warn about them.
-
-Make all of the inodes in proc visible to generic_shutdown_super,
-and fsnotify_sb_delete by using new_inode instead of new_inode_pseudo.
-The only functional difference is that new_inode places the inodes
-on the sb->s_inodes list.
-
-I wrote a small test program and I can verify that without changes it
-can trigger this issue, and by replacing new_inode_pseudo with
-new_inode the issues goes away.
-
-Cc: stable@vger.kernel.org
-Link: https://lkml.kernel.org/r/000000000000d788c905a7dfa3f4@google.com
-Reported-by: syzbot+7d2debdcdb3cb93c1e5e@syzkaller.appspotmail.com
-Fixes: 0097875bd415 ("proc: Implement /proc/thread-self to point at the directory of the current thread")
-Fixes: 021ada7dff22 ("procfs: switch /proc/self away from proc_dir_entry")
-Fixes: 51f0885e5415 ("vfs,proc: guarantee unique inodes in /proc")
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
----
- fs/proc/inode.c       | 2 +-
- fs/proc/self.c        | 2 +-
- fs/proc/thread_self.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-index f40c2532c057..28d6105e908e 100644
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -617,7 +617,7 @@ const struct inode_operations proc_link_inode_operations = {
  
- struct inode *proc_get_inode(struct super_block *sb, struct proc_dir_entry *de)
- {
--	struct inode *inode = new_inode_pseudo(sb);
-+	struct inode *inode = new_inode(sb);
- 
- 	if (inode) {
- 		inode->i_ino = de->low_ino;
-diff --git a/fs/proc/self.c b/fs/proc/self.c
-index ca5158fa561c..72cd69bcaf4a 100644
---- a/fs/proc/self.c
-+++ b/fs/proc/self.c
-@@ -43,7 +43,7 @@ int proc_setup_self(struct super_block *s)
- 	inode_lock(root_inode);
- 	self = d_alloc_name(s->s_root, "self");
- 	if (self) {
--		struct inode *inode = new_inode_pseudo(s);
-+		struct inode *inode = new_inode(s);
- 		if (inode) {
- 			inode->i_ino = self_inum;
- 			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
-diff --git a/fs/proc/thread_self.c b/fs/proc/thread_self.c
-index ac284f409568..a553273fbd41 100644
---- a/fs/proc/thread_self.c
-+++ b/fs/proc/thread_self.c
-@@ -43,7 +43,7 @@ int proc_setup_thread_self(struct super_block *s)
- 	inode_lock(root_inode);
- 	thread_self = d_alloc_name(s->s_root, "thread-self");
- 	if (thread_self) {
--		struct inode *inode = new_inode_pseudo(s);
-+		struct inode *inode = new_inode(s);
- 		if (inode) {
- 			inode->i_ino = thread_self_inum;
- 			inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
--- 
-2.20.1
+--nextPart20168081.oS1hcQqD1i
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Thursday, 25 June 2020 15:22:46 CEST Rahul Bothra wrote:
+> I was going through the Internet Draft for B.A.T.M.A.N, and wanted to
+> confirm if the bits 10 to 15 in the OGM packet are supposed to be all
+> zeroes always?
+
+Please don't implement the legacy draft which was never finished. This is 
+really, really, really, really, really, really, really, really, really, 
+really, really, really, really, really, really, really, really, really, 
+really, really, really, really, really, really, really, really, really, 
+really, really, really, really, really, really, really, really, really, 
+really, really, really, really, really, really, really, really, really, 
+really, really, really, really outdated.
+
+But the batmand layer 3 compat version 5 handled these as reserved flags. So 
+it would have been a good idea at that time not to leave them in a random 
+state and just set them to 0. This would have allowed announcements of 
+additional features in the future.
+
+
+See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/
+include/uapi/linux/batadv_packet.h for the B.A.T.M.A.N. IV and B.A.T.M.A.N. V 
+layer 2 packet definitions.
+
+Kind regards,
+	Sven
+--nextPart20168081.oS1hcQqD1i
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl70r24ACgkQXYcKB8Em
+e0Y6/Q//dDw8T4rQLMmUHZ9Np6omSmX6AIE60C80wK0AWG1QZNYx3zj6hvl8gOIA
+ACZQHCFZkwC89SqTaHWWeNVDun0fbavvqcyK+tEZRtC/QVi0Y7qdvrxSbYYIOKWj
+63GkOx5YslZCQIsI5V+AKZ3dZ5rHVju+XCQ7/bcYb1pzOEQoQndX3r+HFe7ZUa/L
+E6LHVe879wbX3C3EvTtRl/KQmSj0U+/pVFhshwlBddwxwMiyB1svv3U++Tzm8HmB
+rmakXpNsqlvy6dPLHRoZwffIVabN+/Gnb7Qssv6dJCChMSxVKZ9V0M7D7GZyeVRV
+eLCXQ+O9kT4EBZv9TvYQr++nQmWGpg1plAJceZae/gmPiTHbpvMmLjxJWXDI2+p3
+2YYL95gC70rC2ePMNkWs4SiLhzM7zJ3/D29jN9Oq4aKTE7zQw91q0I5k9m+lHbAa
+i5SKxE8sbYKd59nAMR0HwioOS5ku81tYtw2KY0CdYedYn7JTfkGw1x+r9wk40xlV
+RFIbTnezCaw7/rRDcpD46sJgUPsVKZ/0KPZJHly+UT1rDZtSqKTGIrEPChpWtGZc
+P+Nz40UqVGU79dvUOnbN+OePdR/LaFYb9IwZioWa0bEugf2FxduV3TqAbg33uFEj
+EWfqb31fhG/rguBJjQjun+h2KcWB8tZOqi5VM0zyAYmjrpIVcgA=
+=twgQ
+-----END PGP SIGNATURE-----
+
+--nextPart20168081.oS1hcQqD1i--
+
 
