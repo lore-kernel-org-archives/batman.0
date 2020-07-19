@@ -1,8 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Drop repeated words in comments
-Date: Fri, 31 Jul 2020 20:35:01 +0200
-Message-Id: <20200731183501.14698-1-sven@narfation.org>
+Return-Path: <rdunlap@infradead.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH] net: batman-adv: types.h: delete duplicated words
+Date: Sun, 19 Jul 2020 11:08:11 -0700
+Message-Id: <20200719180811.11964-1-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,123 +14,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+
+Delete the doubled word "time" in a comment.
+Delete the doubled word "address" in a comment.
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
 Cc: Sven Eckelmann <sven@narfation.org>
-
-checkpatch found various instances of "Possible repeated word" in various
-comments.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 ---
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/fragmentation.c         | 2 +-
- net/batman-adv/hard-interface.c        | 2 +-
- net/batman-adv/multicast.c             | 2 +-
- net/batman-adv/network-coding.c        | 2 +-
- net/batman-adv/send.c                  | 2 +-
- net/batman-adv/soft-interface.c        | 4 ++--
- 7 files changed, 8 insertions(+), 8 deletions(-)
+ net/batman-adv/types.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 91a04ca3..5c41cc52 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1795,7 +1795,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+--- linux-next-20200717.orig/net/batman-adv/types.h
++++ linux-next-20200717/net/batman-adv/types.h
+@@ -1492,7 +1492,7 @@ struct batadv_tp_vars {
+ 	/** @unacked_lock: protect unacked_list */
+ 	spinlock_t unacked_lock;
  
- 	ret = queue_work(batadv_event_workqueue, &backbone_gw->report_work);
+-	/** @last_recv_time: time time (jiffies) a msg was received */
++	/** @last_recv_time: time (jiffies) a msg was received */
+ 	unsigned long last_recv_time;
  
--	/* backbone_gw is unreferenced in the report work function function
-+	/* backbone_gw is unreferenced in the report work function
- 	 * if queue_work() call was successful
- 	 */
- 	if (!ret)
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 9fdbe306..9a47ef8b 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -306,7 +306,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
-  * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
-  * to NULL; 3) Error: Return false and free skb.
-  *
-- * Return: true when the packet is merged or buffered, false when skb is not not
-+ * Return: true when the packet is merged or buffered, false when skb is not
-  * used.
+ 	/** @refcount: number of context where the object is used */
+@@ -1996,7 +1996,7 @@ struct batadv_tt_change_node {
   */
- bool batadv_frag_skb_buffer(struct sk_buff **skb,
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index fa06b51c..715f169c 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -599,7 +599,7 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
- 	/* report to the other components the maximum amount of bytes that
- 	 * batman-adv can send over the wire (without considering the payload
- 	 * overhead). For example, this value is used by TT to compute the
--	 * maximum local table table size
-+	 * maximum local table size
+ struct batadv_tt_req_node {
+ 	/**
+-	 * @addr: mac address address of the originator this request was sent to
++	 * @addr: mac address of the originator this request was sent to
  	 */
- 	atomic_set(&bat_priv->packet_size_max, min_mtu);
+ 	u8 addr[ETH_ALEN];
  
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index bdc4a1fb..1622c3f5 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -207,7 +207,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
- 		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
- 
- 	/* TODO: ask the bridge if a multicast router is present (the bridge
--	 * is capable of performing proper RFC4286 multicast multicast router
-+	 * is capable of performing proper RFC4286 multicast router
- 	 * discovery) instead of searching for a ff02::2 listener here
- 	 */
- 	ret = br_multicast_list_adjacent(dev, &bridge_mcast_list);
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 48d70785..64619b7a 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -250,7 +250,7 @@ static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
- /**
-  * batadv_nc_packet_free() - frees nc packet
-  * @nc_packet: the nc packet to free
-- * @dropped: whether the packet is freed because is is dropped
-+ * @dropped: whether the packet is freed because is dropped
-  */
- static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet,
- 				  bool dropped)
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index d267b948..87017332 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -461,7 +461,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- /**
-  * batadv_forw_packet_free() - free a forwarding packet
-  * @forw_packet: The packet to free
-- * @dropped: whether the packet is freed because is is dropped
-+ * @dropped: whether the packet is freed because is dropped
-  *
-  * This frees a forwarding packet and releases any resources it might
-  * have claimed.
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 23833a0b..9d3974ba 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -649,7 +649,7 @@ static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
- /**
-  * batadv_interface_add_vid() - ndo_add_vid API implementation
-  * @dev: the netdev of the mesh interface
-- * @proto: protocol of the the vlan id
-+ * @proto: protocol of the vlan id
-  * @vid: identifier of the new vlan
-  *
-  * Set up all the internal structures for handling the new vlan on top of the
-@@ -707,7 +707,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- /**
-  * batadv_interface_kill_vid() - ndo_kill_vid API implementation
-  * @dev: the netdev of the mesh interface
-- * @proto: protocol of the the vlan id
-+ * @proto: protocol of the vlan id
-  * @vid: identifier of the deleted vlan
-  *
-  * Destroy all the internal structures used to handle the vlan identified by vid
--- 
-2.20.1
-
