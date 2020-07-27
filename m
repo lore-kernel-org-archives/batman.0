@@ -1,14 +1,13 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Thu, 9 Jul 2020 22:33:44 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: Batman_V Originator Loop Issue
-Message-ID: <20200709203344.GB2269@otheros>
-References: <5716273.fDpRzsxG9E@prime>
- <20200708152649.1176.81859@diktynna.open-mesh.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200708152649.1176.81859@diktynna.open-mesh.org>
+Content-Transfer-Encoding: 7bit
+Subject: Re: Batman_V Originator Loop Issue
+From: lavincent15@gmail.com
+Date: Mon, 27 Jul 2020 16:28:15 -0000
+Message-ID: <20200727162815.30286.54503@diktynna.open-mesh.org>
+In-Reply-To: <20200724202356.GB2357@otheros>
+References: <20200724202356.GB2357@otheros>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -16,29 +15,13 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Luke,
+Linus
 
-On Wed, Jul 08, 2020 at 03:26:49PM -0000, lavincent15@gmail.com wrote:
-> Simon,
-> 
-> When I enable DAT on all of my nodes, the network breaks down. With DAT disabled on all the nodes, the network works fine.
-> 
-> As I develop my project, I would like to take advantage of the mesh wide ARP caching feature DAT. Is there any way I can fix things to where DAT will work on my network?
-> 
-> Thanks,
-> Luke
+I would love to try it out and help with the development, but unfortunately I do not have the time to do that. My internship is coming to a close, and I need to use a version I know works to provide good data.
 
-Would it be possible for you to try an older version of
-batman-adv, like v2019.0? There were a few new feature additions
-for DAT after that one.
+Side note* Do you think you could provide me with a rough equation for when a node decides to use a hop instead of a direct connection? I'm particularly interested in how the nodes use the hop penalty in the equation. Does speeding up the interval increase the speediness of its decision? I'm using this in a mobile node environment and I need it to dynamically switch to the most stable connection.
 
-Btw. did you also try disabling aggregation with your batman-adv
-2020.1 version? That didn't make a difference, right?
-
-(disabling aggregation for BATMAN_V in v2019.0 won't make a difference
-as it wasn't implemented there yet, so if you could try that with
-2020.1 would be great)
-
-Regards, Linus
+Thanks,
+Luke
