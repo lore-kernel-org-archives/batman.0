@@ -1,103 +1,59 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v2] iw: mesh: add mesh_param "mesh_nolearn" to skip path discovery
-Date: Tue, 16 Jun 2020 12:39:11 +0200
-Message-Id: <20200616103911.20501-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20200616103911.20501-1-linus.luessing@c0d3.blue>
-References: <20200616103911.20501-1-linus.luessing@c0d3.blue>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: John Sager <john@sager.me.uk>
+Subject: Delay starting TCP connections across the mesh
+Message-ID: <b2fd830e-1ffd-9575-a406-941d38d6cd7d@sager.me.uk>
+Date: Mon, 27 Jul 2020 11:15:15 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Batman_adv list <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Linus Lüssing <ll@simonwunderlich.de>
+I'm experimenting with a mesh network in the house. It has 4 nodes running 
+batman_adv (BATMAN_IV) on stock OpenWrt 19.07.3 (i.e batman-adv-2019.2) on 
+TP-Link WR902AC devices. The nodes mesh on 'mesh point' links on 2.4GHz and 
+one node connects to the home wired network.
 
-Currently, before being able to forward a packet between two 802.11s
-nodes, both a PLINK handshake is performed upon receiving a beacon and
-then later a PREQ/PREP exchange for path discovery is performed on
-demand upon receiving a data frame to forward.
+In the scenario, I have a laptop connected to the AP on one of the mesh 
+nodes (not the gateway). I make a ssh connection from this to a host on the 
+wired network. There is a consistent delay of about 8 seconds before the 
+'password' prompt comes back from the remote host.
 
-When running a mesh protocol on top of an 802.11s interface, like
-batman-adv, we do not need the multi-hop mesh routing capabilities of
-802.11s and usually set mesh_fwding=0. However, even with mesh_fwding=0
-the PREQ/PREP path discovery is still performed on demand. Even though
-in this scenario the next hop PREQ/PREP will determine is always the
-direct 11s neighbor node.
+I rebuilt OpenWrt 19.07.3 for that device, and ticked all the debug options 
+for batman-adv. Running tcpdump on both soft and hard interfaces, and 
+trace-cmd to capture the debug info, I find the following:
 
-The new mesh_nolearn parameter allows to skip the PREQ/PREP exchange in
-this scenario, leading to a reduced delay, reduced packet buffering and
-simplifies HWMP in general.
+The DNS request and response for the remote host name, and the consequent 
+ARP request and response go through within milliseconds. However the TCP SYN 
+is received by the bat0 interface but is not forwarded on the mesh0 
+interface. SYN re-sends after 1 sec, then 2 sec are not forwarded either. 
+Only the 3rd re-send (after another 4 sec) gets forwarded and then the ssh 
+session proceeds normally.
 
-mesh_nolearn is still rather conservative in that if the packet destination
-is not a direct 11s neighbor, it will fall back to PREQ/PREP path
-discovery.
+Looking at the code, and after adding extra batadv_dbg() calls, I discover 
+that the 'orig_node' returned by 'batadv_transtable_search()' on the dest 
+address is NULL so the SYN gets thrown away by 'batadv_send_skb_unicast()'.
 
-For normal, multi-hop 802.11s mesh routing it is usually not advisable
-to enable mesh_nolearn as a transmission to a direct but distant neighbor
-might be worse than reaching that same node via a more robust /
-higher throughput etc. multi-hop path.
+It is only after receiving an OGM message with a TT update for the remote 
+host MAC from the gateway node that the local translation table gets 
+populated with the remote host's MAC. I should say that I've set the 
+'orig_interval' to 3000 to reduce batman traffic, so that probably has an 
+effect on the delay.
 
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
----
+I do wonder why the ARP response is not used to populate the translation 
+table immediately, as an ARP response is always going to be followed 
+immediately by returning IP packets. The ARPs are snooped for the 
+distributed ARP table anyway so why not use that information for the 
+translation table too?
 
-Changelog v2:
-* unchanged
+regards,
 
- mesh.c    | 2 ++
- nl80211.h | 7 +++++++
- 2 files changed, 9 insertions(+)
-
-diff --git a/mesh.c b/mesh.c
-index 0650d0c..48bbc3f 100644
---- a/mesh.c
-+++ b/mesh.c
-@@ -264,6 +264,8 @@ static const struct mesh_param_descr _mesh_param_descrs[] =
- 	_my_nla_put_u16, _parse_u16, _print_u16_in_TUs},
- 	{"mesh_plink_timeout", NL80211_MESHCONF_PLINK_TIMEOUT,
- 	_my_nla_put_u32, _parse_u32, _print_u32_in_seconds},
-+	{"mesh_nolearn", NL80211_MESHCONF_NOLEARN,
-+	_my_nla_put_u8, _parse_u8_as_bool, _print_u8},
- };
- 
- static void print_all_mesh_param_descr(void)
-diff --git a/nl80211.h b/nl80211.h
-index c14666b..4c55e89 100644
---- a/nl80211.h
-+++ b/nl80211.h
-@@ -4228,6 +4228,12 @@ enum nl80211_mesh_power_mode {
-  *	field.  If left unset then the mesh formation field will only
-  *	advertise such if there is an active root mesh path.
-  *
-+ * @NL80211_MESHCONF_NOLEARN: Try to avoid multi-hop path discovery (e.g.
-+ *	PREQ/PREP for HWMP) if the destination is a direct neighbor. Note that
-+ *	this might not be the optimal decision as a multi-hop route might be
-+ *	better. So if using this setting you will likely also want to disable
-+ *	dot11MeshForwarding and use another mesh routing protocol on top.
-+ *
-  * @__NL80211_MESHCONF_ATTR_AFTER_LAST: internal use
-  */
- enum nl80211_meshconf_params {
-@@ -4261,6 +4267,7 @@ enum nl80211_meshconf_params {
- 	NL80211_MESHCONF_AWAKE_WINDOW,
- 	NL80211_MESHCONF_PLINK_TIMEOUT,
- 	NL80211_MESHCONF_CONNECTED_TO_GATE,
-+	NL80211_MESHCONF_NOLEARN,
- 
- 	/* keep last */
- 	__NL80211_MESHCONF_ATTR_AFTER_LAST,
--- 
-2.27.0
-
+John Sager
 
