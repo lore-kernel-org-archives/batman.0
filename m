@@ -1,11 +1,10 @@
-Return-Path: 
-  <3BpUEXwkbAEEv12ndoohudsslg.jrrjohxvhufrqwhqw.frp@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Drop repeated words in comments
+Date: Fri, 31 Jul 2020 20:35:01 +0200
+Message-Id: <20200731183501.14698-1-sven@narfation.org>
 MIME-Version: 1.0
-Date: Tue, 07 Jul 2020 08:30:14 -0700
-Message-ID: <000000000000f06edf05a9dbaa44@google.com>
-Subject: general protection fault in batadv_iv_ogm_schedule_buff (2)
-From: syzbot <syzbot+2eeeb5ad0766b57394d8@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,71 +14,123 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hello,
+checkpatch found various instances of "Possible repeated word" in various
+comments.
 
-syzbot found the following crash on:
-
-HEAD commit:    7cc2a8ea Merge tag 'block-5.8-2020-07-01' of git://git.ker..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=130b828f100000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=7be693511b29b338
-dashboard link: https://syzkaller.appspot.com/bug?extid=2eeeb5ad0766b57394d8
-compiler:       gcc (GCC) 10.1.0-syz 20200507
-
-Unfortunately, I don't have any reproducer for this crash yet.
-
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+2eeeb5ad0766b57394d8@syzkaller.appspotmail.com
-
-general protection fault, probably for non-canonical address 0xdffffc000000000e: 0000 [#1] PREEMPT SMP KASAN
-KASAN: null-ptr-deref in range [0x0000000000000070-0x0000000000000077]
-CPU: 1 PID: 9126 Comm: kworker/u4:9 Not tainted 5.8.0-rc3-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Workqueue: bat_events batadv_iv_send_outstanding_bat_ogm_packet
-RIP: 0010:batadv_iv_ogm_schedule_buff+0xd1e/0x1410 net/batman-adv/bat_iv_ogm.c:843
-Code: 80 3c 28 00 0f 85 ee 05 00 00 4d 8b 3f 49 81 ff e0 e9 4e 8d 0f 84 dd 02 00 00 e8 bd 80 ae f9 49 8d 7f 70 48 89 f8 48 c1 e8 03 <42> 80 3c 28 00 0f 85 af 06 00 00 48 8b 44 24 08 49 8b 6f 70 80 38
-RSP: 0018:ffffc90004e97b98 EFLAGS: 00010202
-RAX: 000000000000000e RBX: ffff8880a7471800 RCX: ffffffff87c5394d
-RDX: ffff88804cf02380 RSI: ffffffff87c536a3 RDI: 0000000000000070
-RBP: 0000000000077000 R08: 0000000000000001 R09: ffff8880a875a02b
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000007
-R13: dffffc0000000000 R14: ffff888051ad4c40 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8880ae700000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000400200 CR3: 0000000061cac000 CR4: 00000000001426e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- batadv_iv_ogm_schedule net/batman-adv/bat_iv_ogm.c:869 [inline]
- batadv_iv_ogm_schedule net/batman-adv/bat_iv_ogm.c:862 [inline]
- batadv_iv_send_outstanding_bat_ogm_packet+0x5c8/0x800 net/batman-adv/bat_iv_ogm.c:1722
- process_one_work+0x94c/0x1670 kernel/workqueue.c:2269
- worker_thread+0x64c/0x1120 kernel/workqueue.c:2415
- kthread+0x3b5/0x4a0 kernel/kthread.c:291
- ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:293
-Modules linked in:
----[ end trace f5c5eda032070cd1 ]---
-RIP: 0010:batadv_iv_ogm_schedule_buff+0xd1e/0x1410 net/batman-adv/bat_iv_ogm.c:843
-Code: 80 3c 28 00 0f 85 ee 05 00 00 4d 8b 3f 49 81 ff e0 e9 4e 8d 0f 84 dd 02 00 00 e8 bd 80 ae f9 49 8d 7f 70 48 89 f8 48 c1 e8 03 <42> 80 3c 28 00 0f 85 af 06 00 00 48 8b 44 24 08 49 8b 6f 70 80 38
-RSP: 0018:ffffc90004e97b98 EFLAGS: 00010202
-RAX: 000000000000000e RBX: ffff8880a7471800 RCX: ffffffff87c5394d
-RDX: ffff88804cf02380 RSI: ffffffff87c536a3 RDI: 0000000000000070
-RBP: 0000000000077000 R08: 0000000000000001 R09: ffff8880a875a02b
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000007
-R13: dffffc0000000000 R14: ffff888051ad4c40 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8880ae700000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000400200 CR3: 000000009480d000 CR4: 00000000001426e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-
-
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ net/batman-adv/bridge_loop_avoidance.c | 2 +-
+ net/batman-adv/fragmentation.c         | 2 +-
+ net/batman-adv/hard-interface.c        | 2 +-
+ net/batman-adv/multicast.c             | 2 +-
+ net/batman-adv/network-coding.c        | 2 +-
+ net/batman-adv/send.c                  | 2 +-
+ net/batman-adv/soft-interface.c        | 4 ++--
+ 7 files changed, 8 insertions(+), 8 deletions(-)
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 91a04ca3..5c41cc52 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1795,7 +1795,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 
+ 	ret = queue_work(batadv_event_workqueue, &backbone_gw->report_work);
+ 
+-	/* backbone_gw is unreferenced in the report work function function
++	/* backbone_gw is unreferenced in the report work function
+ 	 * if queue_work() call was successful
+ 	 */
+ 	if (!ret)
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 9fdbe306..9a47ef8b 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -306,7 +306,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+  * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
+  * to NULL; 3) Error: Return false and free skb.
+  *
+- * Return: true when the packet is merged or buffered, false when skb is not not
++ * Return: true when the packet is merged or buffered, false when skb is not
+  * used.
+  */
+ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index fa06b51c..715f169c 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -599,7 +599,7 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ 	/* report to the other components the maximum amount of bytes that
+ 	 * batman-adv can send over the wire (without considering the payload
+ 	 * overhead). For example, this value is used by TT to compute the
+-	 * maximum local table table size
++	 * maximum local table size
+ 	 */
+ 	atomic_set(&bat_priv->packet_size_max, min_mtu);
+ 
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index bdc4a1fb..1622c3f5 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -207,7 +207,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
+ 		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
+ 
+ 	/* TODO: ask the bridge if a multicast router is present (the bridge
+-	 * is capable of performing proper RFC4286 multicast multicast router
++	 * is capable of performing proper RFC4286 multicast router
+ 	 * discovery) instead of searching for a ff02::2 listener here
+ 	 */
+ 	ret = br_multicast_list_adjacent(dev, &bridge_mcast_list);
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 48d70785..64619b7a 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -250,7 +250,7 @@ static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
+ /**
+  * batadv_nc_packet_free() - frees nc packet
+  * @nc_packet: the nc packet to free
+- * @dropped: whether the packet is freed because is is dropped
++ * @dropped: whether the packet is freed because is dropped
+  */
+ static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet,
+ 				  bool dropped)
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index d267b948..87017332 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -461,7 +461,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ /**
+  * batadv_forw_packet_free() - free a forwarding packet
+  * @forw_packet: The packet to free
+- * @dropped: whether the packet is freed because is is dropped
++ * @dropped: whether the packet is freed because is dropped
+  *
+  * This frees a forwarding packet and releases any resources it might
+  * have claimed.
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 23833a0b..9d3974ba 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -649,7 +649,7 @@ static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
+ /**
+  * batadv_interface_add_vid() - ndo_add_vid API implementation
+  * @dev: the netdev of the mesh interface
+- * @proto: protocol of the the vlan id
++ * @proto: protocol of the vlan id
+  * @vid: identifier of the new vlan
+  *
+  * Set up all the internal structures for handling the new vlan on top of the
+@@ -707,7 +707,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ /**
+  * batadv_interface_kill_vid() - ndo_kill_vid API implementation
+  * @dev: the netdev of the mesh interface
+- * @proto: protocol of the the vlan id
++ * @proto: protocol of the vlan id
+  * @vid: identifier of the deleted vlan
+  *
+  * Destroy all the internal structures used to handle the vlan identified by vid
+-- 
+2.20.1
+
