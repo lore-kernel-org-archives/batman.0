@@ -1,10 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/5] pull request for net-next: batman-adv 2020-08-24
-Date: Mon, 24 Aug 2020 18:27:36 +0200
-Message-Id: <20200824162741.880-1-sw@simonwunderlich.de>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Scientific research
+Date: Sun, 16 Aug 2020 22:52:22 +0200
+Message-ID: <5875846.8nX1ehlX3a@sven-edge>
+In-Reply-To: <159663455103.1225.17359938306185241419@diktynna.open-mesh.org>
+References: <1533568759.456734.1596634544852.ref@mail.yahoo.com> <159663455103.1225.17359938306185241419@diktynna.open-mesh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart6242944.YmMhbTAbEu"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -12,70 +14,82 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org, Venceslas Ngounou <venceslas_2008@yahoo.fr>
 
-Hi David,
+ 
+--nextPart6242944.YmMhbTAbEu
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-here is a small cleanup pull request of batman-adv to go into net-next.
+Hi,
 
-Please pull or let me know of any problem!
+to be honest, the documentation needs an overhaul. There were some ideas to 
+move it to sphinx and to have a more coherent structure. I've started with the 
+conversion to restructuredText [1] some years ago but the person interested(?) 
+in doing more work on the documentation in sphinx didn't continue the work. 
+Maybe I have to lure Linus and Simon with some ice cream and discuss some 
+ideas with them.
 
-Thank you,
-      Simon
+On Wednesday, 5 August 2020 15:35:44 CEST Venceslas Ngounou via B.A.T.M.A.N wrote:
+> - An up to date documentation on Echo Location Protocol (ELP). On open-mesh.org, the dedicated page has the mention OUTDATED.
 
-The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bb=
-f5:
+Yes, I've added the "outdated" because this documentation describes some ideas 
+various people had. But they were not synced when the actual protocol was 
+implemented. Things (most likely not complete) which don't line up:
 
-  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
+* actual packet format is completely wrong
+* not neighbors are announced but the "own" originator
+* padding is not used for broadcast ELPs
+* unicast ELPs are completely valid (for rate control probe packets)
 
-are available in the Git repository at:
+Would be nice if the page could be checked and fixed by someone more familiar 
+with ELP.
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-2020=
-0824
+> - An up to date documentation on the different packet types
 
-for you to fetch changes up to 0093870aa891594d170e1dc9aa192a30d530d755:
+What do you have in mind here? Best documentation for the actual binary format 
+is the uapi file batadv_packet.h [2]
 
-  batman-adv: Migrate to linux/prandom.h (2020-08-18 19:39:54 +0200)
+> - Scientific papers (if any) related to the design or the modeling of the actuel version of BATMAN-adv.
 
-----------------------------------------------------------------
-This cleanup patchset includes the following patches:
+Since batman-adv was never a traditional academic project, there were no 
+papers written about it by the original authors during the development.
 
- - bump version strings, by Simon Wunderlich
+But there are two pages with pointers to various papers [3,4] but there 
+weren't updated in the last 3 years. So you might find more interesting things 
+on Google Scholar [5].
 
- - Drop unused function batadv_hardif_remove_interfaces(),
-   by Sven Eckelmann
+Kind regards,
+	Sven
 
- - delete duplicated words, by Randy Dunlap
 
- - Drop (even more) repeated words in comments, by Sven Eckelmann
+[1] https://git.open-mesh.org/doc.git
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/batadv_packet.h
+[3] https://www.open-mesh.org/projects/open-mesh/wiki/Experience#Papers
+[4] https://www.open-mesh.org/projects/open-mesh/wiki/New_papers
+[5] https://scholar.google.com/scholar?q=batman-adv
+--nextPart6242944.YmMhbTAbEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
- - Migrate to linux/prandom.h, by Sven Eckelmann
+-----BEGIN PGP SIGNATURE-----
 
-----------------------------------------------------------------
-Randy Dunlap (1):
-      batman-adv: types.h: delete duplicated words
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl85nIYACgkQXYcKB8Em
+e0ZyMg//W9l9QQbus+spMs37Gz107OqOdHE9WJyHTUqBBFtom2HIIFxheeQFwQiZ
+YMONxpV09Teu250JxVNmoCCjtjAD0ajUMq8EzaiZzof86PL6DOx4Gk6m1UXyR3H6
+TuQqXaziCooFGGk4OKX2an9kVdGdqJSwgA/cPc2dER2IQH239h53cGkeqwG5BoH2
+cG2lYwiNB6EBRb8SMg0/3KnmbFzBM66m4f/5sPpwKkMegLg0eyOo939NgHHG1MTm
+Wu8HVH0+lUpP04ncl1TizMHA6WMA09CUtK3NfgVQOzYRUZFCpOruEevJ30ijoLTB
+I9OeZ1GGiZMBllrBEUFDM03WShKtvqUV9UQ5UboNhR3j4mzLtnlCr3p05BW4pAY7
+JKadecLHoprTlIY8xmLHbUf0K5JUzVkqTYINQpdOqd0qK32tHzlGpgshUFvsR8I5
+4tEbGGEzaI7epgThWp/DaxYF0GIK7Z2xieoSg8Vpoq9RNhDym96U8uvwLXM0pVHO
+DD63RISVWygnmqj71FPf9Sqx3dC+naZX6Ac0KHjCt4qAuo6FSD8v+kooB5yppO0l
+FRA27Obe2mTXtdIo8kni6hkPoT0INh1sknuMYZpuN39jD2LIvD+Sof58dA4Sh2Hq
+BXhZhTKrHLjhPijOHkUt0EtO0htEnVOFljDEh4lwzgN7tNThT6A=
+=FWEI
+-----END PGP SIGNATURE-----
 
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
+--nextPart6242944.YmMhbTAbEu--
 
-Sven Eckelmann (3):
-      batman-adv: Drop unused function batadv_hardif_remove_interfaces()
-      batman-adv: Drop repeated words in comments
-      batman-adv: Migrate to linux/prandom.h
 
- net/batman-adv/bat_iv_ogm.c            |  1 +
- net/batman-adv/bat_v_elp.c             |  1 +
- net/batman-adv/bat_v_ogm.c             |  1 +
- net/batman-adv/bridge_loop_avoidance.c |  2 +-
- net/batman-adv/fragmentation.c         |  2 +-
- net/batman-adv/hard-interface.c        | 19 +------------------
- net/batman-adv/hard-interface.h        |  1 -
- net/batman-adv/main.c                  |  1 -
- net/batman-adv/main.h                  |  2 +-
- net/batman-adv/multicast.c             |  2 +-
- net/batman-adv/network-coding.c        |  4 ++--
- net/batman-adv/send.c                  |  2 +-
- net/batman-adv/soft-interface.c        |  4 ++--
- net/batman-adv/types.h                 |  4 ++--
- 14 files changed, 15 insertions(+), 31 deletions(-)
