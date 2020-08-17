@@ -1,10 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/5] batman-adv: types.h: delete duplicated words
-Date: Mon, 24 Aug 2020 18:27:39 +0200
-Message-Id: <20200824162741.880-4-sw@simonwunderlich.de>
-In-Reply-To: <20200824162741.880-1-sw@simonwunderlich.de>
-References: <20200824162741.880-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH v2] batman-adv: Migrate to linux/prandom.h
+Date: Mon, 17 Aug 2020 15:47:25 +0200
+Message-Id: <20200817134725.4149-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,43 +14,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Randy Dunlap <rdunlap@infradead.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+The commit c0842fbc1b18 ("random32: move the pseudo-random 32-bit
+definitions to prandom.h") introduced a new header for the pseudo random
+functions from (previously) linux/random.h. One future goal of the
+prandom.h change is to make code to switch just the new header file and to
+avoid the implicit include. This would allow the removal of the implicit
+include from random.h
 
-Delete the doubled word "time" in a comment.
-Delete the doubled word "address" in a comment.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/types.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+v2:
+- handle stable kernels in compat code
 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index ed519efa3c36..965336a3b89d 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1492,7 +1492,7 @@ struct batadv_tp_vars {
- 	/** @unacked_lock: protect unacked_list */
- 	spinlock_t unacked_lock;
- 
--	/** @last_recv_time: time time (jiffies) a msg was received */
-+	/** @last_recv_time: time (jiffies) a msg was received */
- 	unsigned long last_recv_time;
- 
- 	/** @refcount: number of context where the object is used */
-@@ -1996,7 +1996,7 @@ struct batadv_tt_change_node {
-  */
- struct batadv_tt_req_node {
- 	/**
--	 * @addr: mac address address of the originator this request was sent to
-+	 * @addr: mac address of the originator this request was sent to
- 	 */
- 	u8 addr[ETH_ALEN];
- 
+ compat-include/linux/prandom.h  | 24 ++++++++++++++++++++++++
+ net/batman-adv/bat_iv_ogm.c     |  1 +
+ net/batman-adv/bat_v_elp.c      |  1 +
+ net/batman-adv/bat_v_ogm.c      |  1 +
+ net/batman-adv/network-coding.c |  2 +-
+ 5 files changed, 28 insertions(+), 1 deletion(-)
+ create mode 100644 compat-include/linux/prandom.h
+
+diff --git a/compat-include/linux/prandom.h b/compat-include/linux/prandom.h
+new file mode 100644
+index 00000000..2863a57d
+--- /dev/null
++++ b/compat-include/linux/prandom.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_PRANDOM_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_PRANDOM_H_
++
++#include <linux/version.h>
++#if LINUX_VERSION_IS_GEQ(5, 8, 1) || \
++    (LINUX_VERSION_IS_GEQ(4, 14, 193) && LINUX_VERSION_IS_LESS(4, 15, 0)) || \
++    (LINUX_VERSION_IS_GEQ(4, 19, 138) && LINUX_VERSION_IS_LESS(4, 20, 0)) || \
++    (LINUX_VERSION_IS_GEQ(5, 4, 57) && LINUX_VERSION_IS_LESS(5, 5, 0)) || \
++    (LINUX_VERSION_IS_GEQ(5, 7, 14) && LINUX_VERSION_IS_LESS(5, 8, 0))
++#include_next <linux/prandom.h>
++#else
++#include <linux/random.h>
++#endif
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_PRANDOM_H_ */
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index a4faf5f9..206d0b42 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -27,6 +27,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/pkt_sched.h>
++#include <linux/prandom.h>
+ #include <linux/printk.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index d35aca0e..79a7dfc3 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -20,6 +20,7 @@
+ #include <linux/kref.h>
+ #include <linux/netdevice.h>
+ #include <linux/nl80211.h>
++#include <linux/prandom.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 717fe657..8c1148fc 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -20,6 +20,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/mutex.h>
+ #include <linux/netdevice.h>
++#include <linux/prandom.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 64619b7a..61ddd6d7 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -26,8 +26,8 @@
+ #include <linux/lockdep.h>
+ #include <linux/net.h>
+ #include <linux/netdevice.h>
++#include <linux/prandom.h>
+ #include <linux/printk.h>
+-#include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/seq_file.h>
 -- 
 2.20.1
 
