@@ -1,10 +1,15 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Re: [PATCH] batman-adv: bla: use netif_rx_ni when not in interrupt
+ context
+References: <20200818144610.8094-1-jussi.kivilinna@haltian.com>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <987760ed-17d2-d486-5dd1-d40418f62ac1@unstable.cc>
+Date: Tue, 18 Aug 2020 22:12:49 +0200
 MIME-Version: 1.0
-Date: Wed, 26 Aug 2020 07:38:23 -0700
-Message-ID: <0000000000009383f505adc8c5a0@google.com>
-Subject: general protection fault in nexthop_is_blackhole
-From: syzbot <syzbot+b2c08a2f5cfef635cc3a@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200818144610.8094-1-jussi.kivilinna@haltian.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -12,109 +17,60 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, andriin@fb.com, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, daniel@iogearbox.net, davem@davemloft.net, hariprasad.kelam@gmail.com, herbert@gondor.apana.org.au, john.fastabend@gmail.com, kafai@fb.com, kpsingh@chromium.org, kuba@kernel.org, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, songliubraving@fb.com, steffen.klassert@secunet.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, yhs@fb.com, yoshfuji@linux-ipv6.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Jussi Kivilinna <jussi.kivilinna@haltian.com>
 
-Hello,
+Hi,
 
-syzbot found the following issue on:
+On 18/08/2020 16:46, Jussi Kivilinna wrote:
+> batadv_bla_send_claim() gets called from worker thread context through
+> batadv_bla_periodic_work(), thus netif_rx_ni needs to be used in that
+> case. This fixes "NOHZ: local_softirq_pending 08" log messages seen
+> when batman-adv is enabled.
+> 
+> Signed-off-by: Jussi Kivilinna <jussi.kivilinna@haltian.com>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+> index 5c41cc52bc53..ab6cec3c7586 100644
+> --- a/net/batman-adv/bridge_loop_avoidance.c
+> +++ b/net/batman-adv/bridge_loop_avoidance.c
+> @@ -437,7 +437,10 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, u8 *mac,
+>  	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+>  			   skb->len + ETH_HLEN);
+>  
+> -	netif_rx(skb);
+> +	if (in_interrupt())
+> +		netif_rx(skb);
+> +	else
+> +		netif_rx_ni(skb);
 
-HEAD commit:    c3d8f220 Merge tag 'kbuild-fixes-v5.9' of git://git.kernel..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=11c48c96900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=bb68b9e8a8cc842f
-dashboard link: https://syzkaller.appspot.com/bug?extid=b2c08a2f5cfef635cc3a
-compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14d75e39900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12aea519900000
+What's the downside in calling netif_rx_ni() all the times?
+Is there any possible side effect?
+(consider this call is not along the fast path)
 
-The issue was bisected to:
+On top of that, I just checked the definition of in_interrupt() and I
+got this comment:
 
-commit de47c5d8e11dda678e4354eeb4235e58e92f7cd2
-Author: Hariprasad Kelam <hariprasad.kelam@gmail.com>
-Date:   Sat Jun 8 09:00:50 2019 +0000
-
-    af_key: make use of BUG_ON macro
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=10450972900000
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=12450972900000
-console output: https://syzkaller.appspot.com/x/log.txt?x=14450972900000
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+b2c08a2f5cfef635cc3a@syzkaller.appspotmail.com
-Fixes: de47c5d8e11d ("af_key: make use of BUG_ON macro")
-
-IPv6: RTM_NEWROUTE with no NLM_F_CREATE or NLM_F_REPLACE
-IPv6: NLM_F_CREATE should be set when creating new route
-IPv6: NLM_F_CREATE should be set when creating new route
-general protection fault, probably for non-canonical address 0xdffffc0000000010: 0000 [#1] PREEMPT SMP KASAN
-KASAN: null-ptr-deref in range [0x0000000000000080-0x0000000000000087]
-CPU: 0 PID: 7050 Comm: syz-executor320 Not tainted 5.9.0-rc1-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-RIP: 0010:nexthop_is_blackhole+0x145/0x250 include/net/nexthop.h:240
-Code: 4d fa 49 83 c6 10 4c 89 f0 48 c1 e8 03 42 80 3c 38 00 74 08 4c 89 f7 e8 39 f0 8c fa 49 8b 1e 48 83 eb 80 48 89 d8 48 c1 e8 03 <42> 80 3c 38 00 74 08 48 89 df e8 1c f0 8c fa 48 8b 1b e8 e4 4e 02
-RSP: 0018:ffffc900061172b8 EFLAGS: 00010202
-RAX: 0000000000000010 RBX: 0000000000000080 RCX: ffff888091444300
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000001
-RBP: 0000000000000001 R08: ffffffff8727dfc7 R09: ffffed1012299e09
-R10: ffffed1012299e09 R11: 0000000000000000 R12: dffffc0000000000
-R13: ffff8880919da280 R14: ffff8880a9576610 R15: dffffc0000000000
-FS:  0000000001a89880(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000020000300 CR3: 00000000a7555000 CR4: 00000000001506f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- rt6_fill_node+0xfe9/0x1f90 net/ipv6/route.c:5584
- inet6_rt_notify+0x2ab/0x500 net/ipv6/route.c:6017
- fib6_add_rt2node net/ipv6/ip6_fib.c:1246 [inline]
- fib6_add+0x203b/0x3bd0 net/ipv6/ip6_fib.c:1473
- __ip6_ins_rt net/ipv6/route.c:1317 [inline]
- ip6_route_add+0x84/0x120 net/ipv6/route.c:3744
- inet6_rtm_newroute+0x22f/0x2150 net/ipv6/route.c:5360
- rtnetlink_rcv_msg+0x889/0xd40 net/core/rtnetlink.c:5563
- netlink_rcv_skb+0x190/0x3a0 net/netlink/af_netlink.c:2470
- netlink_unicast_kernel net/netlink/af_netlink.c:1304 [inline]
- netlink_unicast+0x786/0x940 net/netlink/af_netlink.c:1330
- netlink_sendmsg+0xa57/0xd70 net/netlink/af_netlink.c:1919
- sock_sendmsg_nosec net/socket.c:651 [inline]
- sock_sendmsg net/socket.c:671 [inline]
- ____sys_sendmsg+0x519/0x800 net/socket.c:2353
- ___sys_sendmsg net/socket.c:2407 [inline]
- __sys_sendmsg+0x2b1/0x360 net/socket.c:2440
- do_syscall_64+0x31/0x70 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-RIP: 0033:0x443ef9
-Code: e8 8c 07 03 00 48 83 c4 18 c3 0f 1f 80 00 00 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 0f 83 bb 09 fc ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007ffd64ccd428 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000443ef9
-RDX: 0000000000000000 RSI: 0000000020000300 RDI: 0000000000000003
-RBP: 00007ffd64ccd430 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 000000000000b6f1
-R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-Modules linked in:
----[ end trace e62dc7d3de715e59 ]---
-RIP: 0010:nexthop_is_blackhole+0x145/0x250 include/net/nexthop.h:240
-Code: 4d fa 49 83 c6 10 4c 89 f0 48 c1 e8 03 42 80 3c 38 00 74 08 4c 89 f7 e8 39 f0 8c fa 49 8b 1e 48 83 eb 80 48 89 d8 48 c1 e8 03 <42> 80 3c 38 00 74 08 48 89 df e8 1c f0 8c fa 48 8b 1b e8 e4 4e 02
-RSP: 0018:ffffc900061172b8 EFLAGS: 00010202
-RAX: 0000000000000010 RBX: 0000000000000080 RCX: ffff888091444300
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000001
-RBP: 0000000000000001 R08: ffffffff8727dfc7 R09: ffffed1012299e09
-R10: ffffed1012299e09 R11: 0000000000000000 R12: dffffc0000000000
-R13: ffff8880919da280 R14: ffff8880a9576610 R15: dffffc0000000000
-FS:  0000000001a89880(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000020000300 CR3: 00000000a7555000 CR4: 00000000001506f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+ * Note: due to the BH disabled confusion: in_softirq(),in_interrupt()
+really
+ *       should not be used in new code.
 
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+Check
+https://elixir.bootlin.com/linux/latest/source/include/linux/preempt.h#L85
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
-syzbot can test patches for this issue, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+Is that something we should consider or is the comment bogus?
+
+
+Regards,
+
+
+>  out:
+>  	if (primary_if)
+>  		batadv_hardif_put(primary_if);
+> 
+
+-- 
+Antonio Quartulli
