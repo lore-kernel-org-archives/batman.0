@@ -1,65 +1,89 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/3] batman-adv: Avoid uninitialized chaddr when handling DHCP
-Date: Mon, 24 Aug 2020 18:21:09 +0200
-Message-Id: <20200824162111.29220-2-sw@simonwunderlich.de>
-In-Reply-To: <20200824162111.29220-1-sw@simonwunderlich.de>
-References: <20200824162111.29220-1-sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Is netif_rx_ni safe from interrupt context? (Re: [PATCH] batman-adv:
+ bla: use netif_rx_ni when not in interrupt context)
+References: <20200818144610.8094-1-jussi.kivilinna@haltian.com>
+ <987760ed-17d2-d486-5dd1-d40418f62ac1@unstable.cc>
+From: Jussi Kivilinna <jussi.kivilinna@haltian.com>
+Message-ID: <92c88618-23ec-2e30-1d79-b84f8d193bc3@haltian.com>
+Date: Wed, 19 Aug 2020 10:39:52 +0300
+In-Reply-To: <987760ed-17d2-d486-5dd1-d40418f62ac1@unstable.cc>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, syzbot+ab16e463b903f5a37036@syzkaller.appspotmail.com, Antonio Quartulli <a@unstable.cc>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Antonio Quartulli <a@unstable.cc>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, netdev@vger.kernel.org
 
-From: Sven Eckelmann <sven@narfation.org>
+Hello,
 
-The gateway client code can try to optimize the delivery of DHCP packets to
-avoid broadcasting them through the whole mesh. But also transmissions to
-the client can be optimized by looking up the destination via the chaddr of
-the DHCP packet.
++CC netdev mailing-list
 
-But the chaddr is currently only done when chaddr is fully inside the
-non-paged area of the skbuff. Otherwise it will not be initialized and the
-unoptimized path should have been taken.
+On 18.8.2020 23.12, Antonio Quartulli wrote:
+> Hi,
+> 
+> On 18/08/2020 16:46, Jussi Kivilinna wrote:
+>> batadv_bla_send_claim() gets called from worker thread context through
+>> batadv_bla_periodic_work(), thus netif_rx_ni needs to be used in that
+>> case. This fixes "NOHZ: local_softirq_pending 08" log messages seen
+>> when batman-adv is enabled.
+>>
+>> Signed-off-by: Jussi Kivilinna <jussi.kivilinna@haltian.com>
+>> ---
+>>  net/batman-adv/bridge_loop_avoidance.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+>> index 5c41cc52bc53..ab6cec3c7586 100644
+>> --- a/net/batman-adv/bridge_loop_avoidance.c
+>> +++ b/net/batman-adv/bridge_loop_avoidance.c
+>> @@ -437,7 +437,10 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, u8 *mac,
+>>  	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+>>  			   skb->len + ETH_HLEN);
+>>  
+>> -	netif_rx(skb);
+>> +	if (in_interrupt())
+>> +		netif_rx(skb);
+>> +	else
+>> +		netif_rx_ni(skb);
+> 
+> What's the downside in calling netif_rx_ni() all the times?
+> Is there any possible side effect?
+> (consider this call is not along the fast path)
 
-But the implementation didn't handle this correctly. It didn't retrieve the
-correct chaddr but still tried to perform the TT lookup with this
-uninitialized memory.
+Good question. I tried to find answer for this but found documentation being lacking 
+on the issue, so I looked for examples and used 'in_interrupt/netif_rx/netif_rx_ni' 
+bit that appears in few other places: 
+ https://elixir.bootlin.com/linux/v5.8/source/drivers/net/caif/caif_hsi.c#L469
+ https://elixir.bootlin.com/linux/v5.8/source/drivers/net/wireless/broadcom/brcm80211/brcmfmac/core.c#L425
+ https://elixir.bootlin.com/linux/v5.8/source/drivers/net/wireless/marvell/libertas/rx.c#L153
+ https://elixir.bootlin.com/linux/v5.8/source/drivers/net/wireless/marvell/mwifiex/uap_txrx.c#L356
+ https://elixir.bootlin.com/linux/v5.8/source/net/caif/chnl_net.c#L121
 
-Reported-by: syzbot+ab16e463b903f5a37036@syzkaller.appspotmail.com
-Fixes: 6c413b1c22a2 ("batman-adv: send every DHCP packet as bat-unicast")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/gateway_client.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Maybe someone on netdev mailing-list could give hint on this matter - should 
+'in_interrupt()?netif_rx(skb):netif_rx_ni(skb)' be used if context is not known or 
+is just using 'netif_rx_ni(skb)' ok? 
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index a18dcc686dc3..ef3f85b576c4 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -703,8 +703,10 @@ batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
- 
- 	chaddr_offset = *header_len + BATADV_DHCP_CHADDR_OFFSET;
- 	/* store the client address if the message is going to a client */
--	if (ret == BATADV_DHCP_TO_CLIENT &&
--	    pskb_may_pull(skb, chaddr_offset + ETH_ALEN)) {
-+	if (ret == BATADV_DHCP_TO_CLIENT) {
-+		if (!pskb_may_pull(skb, chaddr_offset + ETH_ALEN))
-+			return BATADV_DHCP_NO;
-+
- 		/* check if the DHCP packet carries an Ethernet DHCP */
- 		p = skb->data + *header_len + BATADV_DHCP_HTYPE_OFFSET;
- 		if (*p != BATADV_DHCP_HTYPE_ETHERNET)
--- 
-2.20.1
+> 
+> On top of that, I just checked the definition of in_interrupt() and I
+> got this comment:
+> 
+>  * Note: due to the BH disabled confusion: in_softirq(),in_interrupt()
+> really
+>  *       should not be used in new code.
+> 
+> 
+> Check
+> https://elixir.bootlin.com/linux/latest/source/include/linux/preempt.h#L85
+> 
+> Is that something we should consider or is the comment bogus?
 
+It very well be that the existing code that I looked at may not be the best 
+for reuse today.
+
+-Jussi
