@@ -1,8 +1,8 @@
 Return-Path: <rdunlap@infradead.org>
 From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 1/8] net: batman-adv: bridge_loop_avoidance.c: delete duplicated word
-Date: Sat, 22 Aug 2020 16:13:28 -0700
-Message-Id: <20200822231335.31304-2-rdunlap@infradead.org>
+Subject: [PATCH 8/8] net: batman-adv: types.h: delete duplicated words
+Date: Sat, 22 Aug 2020 16:13:35 -0700
+Message-Id: <20200822231335.31304-9-rdunlap@infradead.org>
 In-Reply-To: <20200822231335.31304-1-rdunlap@infradead.org>
 References: <20200822231335.31304-1-rdunlap@infradead.org>
 MIME-Version: 1.0
@@ -19,7 +19,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: netdev@vger.kernel.org
 Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
 
-Drop the repeated word "function".
+Drop the repeated words "time" and "address".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
@@ -30,17 +30,26 @@ Cc: b.a.t.m.a.n@lists.open-mesh.org
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/types.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-next-20200731.orig/net/batman-adv/bridge_loop_avoidance.c
-+++ linux-next-20200731/net/batman-adv/bridge_loop_avoidance.c
-@@ -1795,7 +1795,7 @@ batadv_bla_loopdetect_check(struct batad
+--- linux-next-20200731.orig/net/batman-adv/types.h
++++ linux-next-20200731/net/batman-adv/types.h
+@@ -1492,7 +1492,7 @@ struct batadv_tp_vars {
+ 	/** @unacked_lock: protect unacked_list */
+ 	spinlock_t unacked_lock;
  
- 	ret = queue_work(batadv_event_workqueue, &backbone_gw->report_work);
+-	/** @last_recv_time: time time (jiffies) a msg was received */
++	/** @last_recv_time: time (jiffies) a msg was received */
+ 	unsigned long last_recv_time;
  
--	/* backbone_gw is unreferenced in the report work function function
-+	/* backbone_gw is unreferenced in the report work function
- 	 * if queue_work() call was successful
+ 	/** @refcount: number of context where the object is used */
+@@ -1996,7 +1996,7 @@ struct batadv_tt_change_node {
+  */
+ struct batadv_tt_req_node {
+ 	/**
+-	 * @addr: mac address address of the originator this request was sent to
++	 * @addr: mac address of the originator this request was sent to
  	 */
- 	if (!ret)
+ 	u8 addr[ETH_ALEN];
+ 
