@@ -1,39 +1,55 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <rdunlap@infradead.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH 7/8] net: batman-adv: soft-interface.c: delete duplicated words
+Date: Sat, 22 Aug 2020 16:13:34 -0700
+Message-Id: <20200822231335.31304-8-rdunlap@infradead.org>
+In-Reply-To: <20200822231335.31304-1-rdunlap@infradead.org>
+References: <20200822231335.31304-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Date: Tue, 04 Aug 2020 06:01:06 -0700
-In-Reply-To: <000000000000a7eb5e05abeb197d@google.com>
-Message-ID: <0000000000002da68705ac0cd9ab@google.com>
-Subject: Re: general protection fault in hci_event_packet
-From: syzbot <syzbot+0bef568258653cff272f@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, geert@linux-m68k.org, javier@osg.samsung.com, johan.hedberg@gmail.com, kuba@kernel.org, linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org, linux@armlinux.org.uk, marcel@holtmann.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: netdev@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
 
-syzbot has bisected this issue to:
+Drop the repeated word "the" in two places.
 
-commit 941992d2944789641470626e9336d663236b1d28
-Author: Javier Martinez Canillas <javier@osg.samsung.com>
-Date:   Mon Sep 12 14:03:34 2016 +0000
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+---
+ net/batman-adv/soft-interface.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-    ethernet: amd: use IS_ENABLED() instead of checking for built-in or module
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=155180c2900000
-start commit:   bcf87687 Linux 5.8
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=175180c2900000
-console output: https://syzkaller.appspot.com/x/log.txt?x=135180c2900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=4b489d75d0c8859d
-dashboard link: https://syzkaller.appspot.com/bug?extid=0bef568258653cff272f
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1043af04900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12ca1dea900000
-
-Reported-by: syzbot+0bef568258653cff272f@syzkaller.appspotmail.com
-Fixes: 941992d29447 ("ethernet: amd: use IS_ENABLED() instead of checking for built-in or module")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+--- linux-next-20200731.orig/net/batman-adv/soft-interface.c
++++ linux-next-20200731/net/batman-adv/soft-interface.c
+@@ -649,7 +649,7 @@ static void batadv_softif_destroy_vlan(s
+ /**
+  * batadv_interface_add_vid() - ndo_add_vid API implementation
+  * @dev: the netdev of the mesh interface
+- * @proto: protocol of the the vlan id
++ * @proto: protocol of the vlan id
+  * @vid: identifier of the new vlan
+  *
+  * Set up all the internal structures for handling the new vlan on top of the
+@@ -707,7 +707,7 @@ static int batadv_interface_add_vid(stru
+ /**
+  * batadv_interface_kill_vid() - ndo_kill_vid API implementation
+  * @dev: the netdev of the mesh interface
+- * @proto: protocol of the the vlan id
++ * @proto: protocol of the vlan id
+  * @vid: identifier of the deleted vlan
+  *
+  * Destroy all the internal structures used to handle the vlan identified by vid
