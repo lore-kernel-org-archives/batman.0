@@ -1,10 +1,10 @@
-Return-Path: <rdunlap@infradead.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 6/8] net: batman-adv: send.c: fix duplicated word
-Date: Sat, 22 Aug 2020 16:13:33 -0700
-Message-Id: <20200822231335.31304-7-rdunlap@infradead.org>
-In-Reply-To: <20200822231335.31304-1-rdunlap@infradead.org>
-References: <20200822231335.31304-1-rdunlap@infradead.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 5/5] batman-adv: Migrate to linux/prandom.h
+Date: Mon, 24 Aug 2020 18:27:41 +0200
+Message-Id: <20200824162741.880-6-sw@simonwunderlich.de>
+In-Reply-To: <20200824162741.880-1-sw@simonwunderlich.de>
+References: <20200824162741.880-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,31 +16,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-Change "is is" to "it is".
+From: Sven Eckelmann <sven@narfation.org>
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jakub Kicinski <kuba@kernel.org>
+The commit c0842fbc1b18 ("random32: move the pseudo-random 32-bit
+definitions to prandom.h") introduced a new header for the pseudo random
+functions from (previously) linux/random.h. One future goal of the
+prandom.h change is to make code to switch just the new header file and to
+avoid the implicit include. This would allow the removal of the implicit
+include from random.h
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/send.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c     | 1 +
+ net/batman-adv/bat_v_elp.c      | 1 +
+ net/batman-adv/bat_v_ogm.c      | 1 +
+ net/batman-adv/network-coding.c | 2 +-
+ 4 files changed, 4 insertions(+), 1 deletion(-)
 
---- linux-next-20200731.orig/net/batman-adv/send.c
-+++ linux-next-20200731/net/batman-adv/send.c
-@@ -461,7 +461,7 @@ int batadv_send_skb_via_gw(struct batadv
- /**
-  * batadv_forw_packet_free() - free a forwarding packet
-  * @forw_packet: The packet to free
-- * @dropped: whether the packet is freed because is is dropped
-+ * @dropped: whether the packet is freed because it is dropped
-  *
-  * This frees a forwarding packet and releases any resources it might
-  * have claimed.
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index a4faf5f904d9..206d0b424712 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -27,6 +27,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/pkt_sched.h>
++#include <linux/prandom.h>
+ #include <linux/printk.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index d35aca0e969a..79a7dfc32e76 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -20,6 +20,7 @@
+ #include <linux/kref.h>
+ #include <linux/netdevice.h>
+ #include <linux/nl80211.h>
++#include <linux/prandom.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 0f8495b9eeb1..11c3f98ba938 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -20,6 +20,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/mutex.h>
+ #include <linux/netdevice.h>
++#include <linux/prandom.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 64619b7a3a77..61ddd6d709a0 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -26,8 +26,8 @@
+ #include <linux/lockdep.h>
+ #include <linux/net.h>
+ #include <linux/netdevice.h>
++#include <linux/prandom.h>
+ #include <linux/printk.h>
+-#include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/seq_file.h>
+-- 
+2.20.1
+
