@@ -1,48 +1,58 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Jussi Kivilinna <jussi.kivilinna@haltian.com>
-Subject: [PATCH] batman-adv: bla: use netif_rx_ni when not in interrupt context
-Date: Tue, 18 Aug 2020 17:46:10 +0300
-Message-Id: <20200818144610.8094-1-jussi.kivilinna@haltian.com>
-Content-Type: text/plain
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 3/5] batman-adv: types.h: delete duplicated words
+Date: Mon, 24 Aug 2020 18:27:39 +0200
+Message-Id: <20200824162741.880-4-sw@simonwunderlich.de>
+In-Reply-To: <20200824162741.880-1-sw@simonwunderlich.de>
+References: <20200824162741.880-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jussi Kivilinna <jussi.kivilinna@haltian.com>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Randy Dunlap <rdunlap@infradead.org>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-batadv_bla_send_claim() gets called from worker thread context through
-batadv_bla_periodic_work(), thus netif_rx_ni needs to be used in that
-case. This fixes "NOHZ: local_softirq_pending 08" log messages seen
-when batman-adv is enabled.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Jussi Kivilinna <jussi.kivilinna@haltian.com>
+Delete the doubled word "time" in a comment.
+Delete the doubled word "address" in a comment.
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ net/batman-adv/types.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/brid=
-ge_loop_avoidance.c
-index 5c41cc52bc53..ab6cec3c7586 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -437,7 +437,10 @@ static void batadv_bla_send_claim(struct batadv_priv=
- *bat_priv, u8 *mac,
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
-=20
--	netif_rx(skb);
-+	if (in_interrupt())
-+		netif_rx(skb);
-+	else
-+		netif_rx_ni(skb);
- out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
---=20
-2.25.1
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index ed519efa3c36..965336a3b89d 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1492,7 +1492,7 @@ struct batadv_tp_vars {
+ 	/** @unacked_lock: protect unacked_list */
+ 	spinlock_t unacked_lock;
+ 
+-	/** @last_recv_time: time time (jiffies) a msg was received */
++	/** @last_recv_time: time (jiffies) a msg was received */
+ 	unsigned long last_recv_time;
+ 
+ 	/** @refcount: number of context where the object is used */
+@@ -1996,7 +1996,7 @@ struct batadv_tt_change_node {
+  */
+ struct batadv_tt_req_node {
+ 	/**
+-	 * @addr: mac address address of the originator this request was sent to
++	 * @addr: mac address of the originator this request was sent to
+ 	 */
+ 	u8 addr[ETH_ALEN];
+ 
+-- 
+2.20.1
+
