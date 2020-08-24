@@ -1,55 +1,67 @@
-Return-Path: <rdunlap@infradead.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 7/8] net: batman-adv: soft-interface.c: delete duplicated words
-Date: Sat, 22 Aug 2020 16:13:34 -0700
-Message-Id: <20200822231335.31304-8-rdunlap@infradead.org>
-In-Reply-To: <20200822231335.31304-1-rdunlap@infradead.org>
-References: <20200822231335.31304-1-rdunlap@infradead.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/3] pull request for net: batman-adv 2020-08-24
+Date: Mon, 24 Aug 2020 18:21:08 +0200
+Message-Id: <20200824162111.29220-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Drop the repeated word "the" in two places.
+Hi David,
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jakub Kicinski <kuba@kernel.org>
----
- net/batman-adv/soft-interface.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+here are some bugfixes which we would like to have integrated into net.
 
---- linux-next-20200731.orig/net/batman-adv/soft-interface.c
-+++ linux-next-20200731/net/batman-adv/soft-interface.c
-@@ -649,7 +649,7 @@ static void batadv_softif_destroy_vlan(s
- /**
-  * batadv_interface_add_vid() - ndo_add_vid API implementation
-  * @dev: the netdev of the mesh interface
-- * @proto: protocol of the the vlan id
-+ * @proto: protocol of the vlan id
-  * @vid: identifier of the new vlan
-  *
-  * Set up all the internal structures for handling the new vlan on top of the
-@@ -707,7 +707,7 @@ static int batadv_interface_add_vid(stru
- /**
-  * batadv_interface_kill_vid() - ndo_kill_vid API implementation
-  * @dev: the netdev of the mesh interface
-- * @proto: protocol of the the vlan id
-+ * @proto: protocol of the vlan id
-  * @vid: identifier of the deleted vlan
-  *
-  * Destroy all the internal structures used to handle the vlan identified by vid
+Please pull or let me know of any problem!
+
+Thank you,
+      Simon
+
+The following changes since commit 9123e3a74ec7b934a4a099e98af6a61c2f80bb=
+f5:
+
+  Linux 5.9-rc1 (2020-08-16 13:04:57 -0700)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20200=
+824
+
+for you to fetch changes up to 279e89b2281af3b1a9f04906e157992c19c9f163:
+
+  batman-adv: bla: use netif_rx_ni when not in interrupt context (2020-08=
+-18 19:40:03 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - Avoid uninitialized memory access when handling DHCP, by Sven Eckelman=
+n
+
+ - Fix check for own OGM in OGM receive handler, by Linus Luessing
+
+ - Fix netif_rx access for non-interrupt context in BLA, by Jussi Kivilin=
+na
+
+----------------------------------------------------------------
+Jussi Kivilinna (1):
+      batman-adv: bla: use netif_rx_ni when not in interrupt context
+
+Linus L=C3=BCssing (1):
+      batman-adv: Fix own OGM check in aggregated OGMs
+
+Sven Eckelmann (1):
+      batman-adv: Avoid uninitialized chaddr when handling DHCP
+
+ net/batman-adv/bat_v_ogm.c             | 11 ++++++-----
+ net/batman-adv/bridge_loop_avoidance.c |  5 ++++-
+ net/batman-adv/gateway_client.c        |  6 ++++--
+ 3 files changed, 14 insertions(+), 8 deletions(-)
