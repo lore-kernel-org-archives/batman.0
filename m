@@ -1,39 +1,94 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 2/5] batman-adv: Drop unused function batadv_hardif_remove_interfaces()
+Date: Mon, 24 Aug 2020 18:27:38 +0200
+Message-Id: <20200824162741.880-3-sw@simonwunderlich.de>
+In-Reply-To: <20200824162741.880-1-sw@simonwunderlich.de>
+References: <20200824162741.880-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Wed, 05 Aug 2020 00:31:08 -0700
-In-Reply-To: <000000000000a39e4905abeb193f@google.com>
-Message-ID: <000000000000ed214e05ac1c5ae8@google.com>
-Subject: Re: general protection fault in hci_phy_link_complete_evt
-From: syzbot <syzbot+18e38290a2a263b31aa0@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, johan.hedberg@gmail.com, johannes.berg@intel.com, johannes@sipsolutions.net, kuba@kernel.org, kvalo@codeaurora.org, linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, linux@armlinux.org.uk, marcel@holtmann.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-syzbot has bisected this issue to:
+From: Sven Eckelmann <sven@narfation.org>
 
-commit b59abfbed638037f3b51eeb73266892cd2df177f
-Author: Johannes Berg <johannes.berg@intel.com>
-Date:   Thu Sep 15 13:30:03 2016 +0000
+The function batadv_hardif_remove_interfaces was meant to remove all
+interfaces which are currently in the list of known (compatible) hardifs
+during module unload. But the function unregister_netdevice_notifier is
+called in batadv_exit before batadv_hardif_remove_interfaces. This will
+trigger NETDEV_UNREGISTER events for all available interfaces and in this
+process remove all interfaces from batadv_hardif_list. And
+batadv_hardif_remove_interfaces only operated on this (empty) list.
 
-    mac80211_hwsim: statically initialize hwsim_radios list
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 17 -----------------
+ net/batman-adv/hard-interface.h |  1 -
+ net/batman-adv/main.c           |  1 -
+ 3 files changed, 19 deletions(-)
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15dd5f98900000
-start commit:   c0842fbc random32: move the pseudo-random 32-bit definitio..
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=17dd5f98900000
-console output: https://syzkaller.appspot.com/x/log.txt?x=13dd5f98900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=cf567e8c7428377e
-dashboard link: https://syzkaller.appspot.com/bug?extid=18e38290a2a263b31aa0
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17e4e094900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1143e7ca900000
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index fa06b51c0144..f95be90adaab 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -976,23 +976,6 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_hardif_put(hard_iface);
+ }
+ 
+-/**
+- * batadv_hardif_remove_interfaces() - Remove all hard interfaces
+- */
+-void batadv_hardif_remove_interfaces(void)
+-{
+-	struct batadv_hard_iface *hard_iface, *hard_iface_tmp;
+-
+-	rtnl_lock();
+-	list_for_each_entry_safe(hard_iface, hard_iface_tmp,
+-				 &batadv_hardif_list, list) {
+-		list_del_rcu(&hard_iface->list);
+-		batadv_hardif_generation++;
+-		batadv_hardif_remove_interface(hard_iface);
+-	}
+-	rtnl_unlock();
+-}
+-
+ /**
+  * batadv_hard_if_event_softif() - Handle events for soft interfaces
+  * @event: NETDEV_* event to handle
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index bad2e50135e8..b1855d9d0b06 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -100,7 +100,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 				   struct net *net, const char *iface_name);
+ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 				     enum batadv_hard_if_cleanup autodel);
+-void batadv_hardif_remove_interfaces(void);
+ int batadv_hardif_min_mtu(struct net_device *soft_iface);
+ void batadv_update_min_mtu(struct net_device *soft_iface);
+ void batadv_hardif_release(struct kref *ref);
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 519c08c2cfba..70fee9b42e25 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -137,7 +137,6 @@ static void __exit batadv_exit(void)
+ 	batadv_netlink_unregister();
+ 	rtnl_link_unregister(&batadv_link_ops);
+ 	unregister_netdevice_notifier(&batadv_hard_if_notifier);
+-	batadv_hardif_remove_interfaces();
+ 
+ 	flush_workqueue(batadv_event_workqueue);
+ 	destroy_workqueue(batadv_event_workqueue);
+-- 
+2.20.1
 
-Reported-by: syzbot+18e38290a2a263b31aa0@syzkaller.appspotmail.com
-Fixes: b59abfbed638 ("mac80211_hwsim: statically initialize hwsim_radios list")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
