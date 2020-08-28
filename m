@@ -1,46 +1,34 @@
-Return-Path: <rdunlap@infradead.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH 2/8] net: batman-adv: fragmentation.c: delete duplicated word
-Date: Sat, 22 Aug 2020 16:13:29 -0700
-Message-Id: <20200822231335.31304-3-rdunlap@infradead.org>
-In-Reply-To: <20200822231335.31304-1-rdunlap@infradead.org>
-References: <20200822231335.31304-1-rdunlap@infradead.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+From: Chuck Ritola <cjritola@gmail.com>
+Date: Fri, 28 Aug 2020 18:00:59 -0400
+Message-ID: <CA+RexfHNV+HY28OiuHKNy4Rn=MM4gxOU0xCiVG0z56dfnv_z6g@mail.gmail.com>
+Subject: Is it possible to send all batman-adv traffic through http proxy cache?
+Content-Type: text/plain; charset="UTF-8"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Drop the repeated word "not".
+Is it possible to send all batman-adv ethernet traffic through an HTTP
+proxy cache such as Squid?
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jakub Kicinski <kuba@kernel.org>
----
- net/batman-adv/fragmentation.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This is for building a fairly large mesh network on amateur radio with
+some links having limited bandwidth. To improve performance a proxy
+cache would be installed inside each node, which stores to cache any
+HTTP responses tagged as cacheable and sniffs for HTTP requests
+through said switch for requests matching any cache entry. It then
+blocks the request from being forwarded and responds to the request
+itself with the cached data.
 
---- linux-next-20200731.orig/net/batman-adv/fragmentation.c
-+++ linux-next-20200731/net/batman-adv/fragmentation.c
-@@ -306,7 +306,7 @@ free:
-  * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
-  * to NULL; 3) Error: Return false and free skb.
-  *
-- * Return: true when the packet is merged or buffered, false when skb is not not
-+ * Return: true when the packet is merged or buffered, false when skb is not
-  * used.
-  */
- bool batadv_frag_skb_buffer(struct sk_buff **skb,
+I'm having difficulty figuring out how to get batman-adv to pass all
+of its raw ethernet traffic (presumably with mesh headers removed)
+through outside software such as Squid before performing its
+switching.
+
+Another consideration was ALFRED but it doesn't appear to be easily
+integratable with existing software.
