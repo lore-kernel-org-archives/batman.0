@@ -1,85 +1,65 @@
-Return-Path: 
-  <3OvVZXwkbAI09FG1r22v8r66zu.x55x2vB9v8t54Av4A.t53@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Re: Is it possible to send all batman-adv traffic through http proxy
+ cache?
+References: <CA+RexfHNV+HY28OiuHKNy4Rn=MM4gxOU0xCiVG0z56dfnv_z6g@mail.gmail.com>
+ <20200904184403.GA2391@otheros>
+From: "A. James Lewis" <james@fsck.co.uk>
+Message-ID: <c746bd54-37d3-cb62-a647-a07176289733@fsck.co.uk>
+Date: Fri, 4 Sep 2020 20:03:24 +0100
 MIME-Version: 1.0
-Date: Thu, 10 Sep 2020 02:43:22 -0700
-Message-ID: <000000000000229d5a05aef26677@google.com>
-Subject: general protection fault in batadv_iv_ogm_schedule (2)
-From: syzbot <syzbot+870c4745cc7a955e17e2@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+In-Reply-To: <20200904184403.GA2391@otheros>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello,
+You could set up a transparent proxy, in the route to the batman=20
+gateway,,, you've have to look at the exact details of how the=20
+routing/NAT is set up, but I'd bet you could do some pretty clever stuff:=
+-
 
-syzbot found the following issue on:
+https://tldp.org/HOWTO/TransparentProxy.html
 
-HEAD commit:    34d4ddd3 Merge tag 'linux-kselftest-5.9-rc5' of git://git...
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=13db7cdd900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=8f5c353182ed6199
-dashboard link: https://syzkaller.appspot.com/bug?extid=870c4745cc7a955e17e2
-compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
-
-Unfortunately, I don't have any reproducer for this issue yet.
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+870c4745cc7a955e17e2@syzkaller.appspotmail.com
-
-general protection fault, probably for non-canonical address 0xdffffc000000000e: 0000 [#1] PREEMPT SMP KASAN
-KASAN: null-ptr-deref in range [0x0000000000000070-0x0000000000000077]
-CPU: 1 PID: 6396 Comm: kworker/u4:8 Not tainted 5.9.0-rc4-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Workqueue: bat_events batadv_iv_send_outstanding_bat_ogm_packet
-RIP: 0010:batadv_iv_ogm_schedule_buff net/batman-adv/bat_iv_ogm.c:843 [inline]
-RIP: 0010:batadv_iv_ogm_schedule+0x925/0xf40 net/batman-adv/bat_iv_ogm.c:869
-Code: 00 48 c1 e8 03 48 89 44 24 28 48 c7 c5 48 e7 3a 8c 0f 1f 40 00 49 8d 5f 70 48 89 d8 48 c1 e8 03 48 b9 00 00 00 00 00 fc ff df <80> 3c 08 00 74 08 48 89 df e8 7d e0 a9 f9 48 8b 1b 48 b8 00 00 00
-RSP: 0018:ffffc90019cd7b88 EFLAGS: 00010202
-RAX: 000000000000000e RBX: 0000000000000070 RCX: dffffc0000000000
-RDX: 0000000000000000 RSI: 0000000000000007 RDI: 0000000000000000
-RBP: ffffffff8c3ae748 R08: ffffffff880ae416 R09: ffffed10152b4c06
-R10: ffffed10152b4c06 R11: 0000000000000000 R12: 0000000000000007
-R13: ffff8880a95a6028 R14: ffff8880a7f17870 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000000 CR3: 00000000931c4000 CR4: 00000000001526e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- batadv_iv_send_outstanding_bat_ogm_packet+0x68c/0x7c0 net/batman-adv/bat_iv_ogm.c:1723
- process_one_work+0x789/0xfc0 kernel/workqueue.c:2269
- worker_thread+0xaa4/0x1460 kernel/workqueue.c:2415
- kthread+0x37e/0x3a0 drivers/block/aoe/aoecmd.c:1234
- ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:294
-Modules linked in:
----[ end trace 3bb6c6ec8627e29b ]---
-RIP: 0010:batadv_iv_ogm_schedule_buff net/batman-adv/bat_iv_ogm.c:843 [inline]
-RIP: 0010:batadv_iv_ogm_schedule+0x925/0xf40 net/batman-adv/bat_iv_ogm.c:869
-Code: 00 48 c1 e8 03 48 89 44 24 28 48 c7 c5 48 e7 3a 8c 0f 1f 40 00 49 8d 5f 70 48 89 d8 48 c1 e8 03 48 b9 00 00 00 00 00 fc ff df <80> 3c 08 00 74 08 48 89 df e8 7d e0 a9 f9 48 8b 1b 48 b8 00 00 00
-RSP: 0018:ffffc90019cd7b88 EFLAGS: 00010202
-RAX: 000000000000000e RBX: 0000000000000070 RCX: dffffc0000000000
-RDX: 0000000000000000 RSI: 0000000000000007 RDI: 0000000000000000
-RBP: ffffffff8c3ae748 R08: ffffffff880ae416 R09: ffffed10152b4c06
-R10: ffffed10152b4c06 R11: 0000000000000000 R12: 0000000000000007
-R13: ffff8880a95a6028 R14: ffff8880a7f17870 R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000000 CR3: 00000000931c4000 CR4: 00000000001526e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+James
 
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+On 04/09/2020 19:44, Linus L=C3=BCssing wrote:
+> Hi,
+>
+> On Fri, Aug 28, 2020 at 06:00:59PM -0400, Chuck Ritola wrote:
+>> Is it possible to send all batman-adv ethernet traffic through an HTTP
+>> proxy cache such as Squid?
+> Not really, there are a bunch of headers too many for an HTTP
+> caching proxy to work with batman-adv.
+>
+> I'm wondering, are HTTP caching proxies actually still useful these
+> days where all major sides have switched to HTTPS?
+>
+>> Another consideration was ALFRED but it doesn't appear to be easily
+>> integratable with existing software.
+> Alfred is more useful for little bits of information, not really
+> for complete packet streams.
+>
+>
+> The "best" solution I could think of right now for limited uplink
+> bandwidths is hosting content within your mesh network instead.
+> Like setting up a Seafile or MediaGoblin, for instance.
+>
+> Or using P2P technologies, like Bittorrent. Although you might
+> need to be careful with this particular one that it won't greedly
+> occupy the rest of the bandwidth your uplink has left, if content is
+> still mainly shared over the uplink and not within the mesh.
+>
+> Regards, Linus
+--=20
+*=E0=B8=84. =EF=BB=9D=E0=B8=84=E0=B9=93=D1=94=E0=B8=A3 =C9=AD=D1=94=E0=B8=
+=AC=E0=B9=80=E0=B8=A3* (james@fsck.co.uk)
+"Engineering does not require science. Science helps a lot but people
+built perfectly good brick walls long before they knew why cement works."
