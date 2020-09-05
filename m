@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: [PATCH maint v5 1/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from LAN
-Date: Tue, 15 Sep 2020 09:11:49 +0200
-Message-ID: <1726730.ZNdbpBcDRY@prime>
-In-Reply-To: <20200914195347.10505-2-linus.luessing@c0d3.blue>
-References: <20200914195347.10505-1-linus.luessing@c0d3.blue> <20200914195347.10505-2-linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH maint v2 3/4] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
+Date: Sat, 05 Sep 2020 09:14:18 +0200
+Message-ID: <266559078.Ph8ahLCQK0@sven-desktop>
+In-Reply-To: <20200904182803.8428-4-linus.luessing@c0d3.blue>
+References: <20200904182803.8428-1-linus.luessing@c0d3.blue> <20200904182803.8428-4-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2542353.8oxAI3WAsd"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart1634379.hfMa9LtLtK"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -18,70 +18,55 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 
  
---nextPart2542353.8oxAI3WAsd
+--nextPart1634379.hfMa9LtLtK
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday, September 14, 2020 9:53:45 PM CEST Linus L=FCssing wrote:
-> Scenario:
-> * Multicast frame send from a BLA backbone (multiple nodes with
->   their bat0 bridged together, with BLA enabled)
+On Friday, 4 September 2020 20:28:02 CEST Linus L=FCssing wrote:
+> For DHCPv6: This is even trickier... DHCPv6 potentially uses
+> non-broadcast multicast addresses. However according to RFC8415, section
+> 7.1 it seems that currently multicast is only used from a DHCPv6 client
+> to a DHCPv6 server, but not the other way round.
 >=20
-> Issue:
-> * BLA backbone nodes receive the frame multiple times on bat0
->=20
-> For multicast frames received via batman-adv broadcast packets the
-> originator of the broadcast packet is checked before decapsulating and
-> forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
-> batadv_recv_bcast_packet()). If it came from a node which shares the
-> same BLA backbone with us then it is not forwarded to bat0 to avoid a
-> loop.
->=20
-> When sending a multicast frame in a non-4-address batman-adv unicast
-> packet we are currently missing this check - and cannot do so because
-> the batman-adv unicast packet has no originator address field.
->=20
-> However, we can simply fix this on the sender side by only sending the
-> multicast frame via unicasts to interested nodes which do not share the
-> same BLA backbone with us. This also nicely avoids some unnecessary
-> transmissions on mesh side.
->=20
-> Note that no infinite loop was observed, probably because of dropping
-> via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
-> utterly confuse switches/bridges, ICMPv6 duplicate address detection and
-> neighbor discovery and therefore leads to long delays before being able
-> to establish TCP connections, for instance. And it also leads to the Linux
-> bridge printing messages like:
-> "br-lan: received packet on eth1 with own address as source address ..."
->=20
-> Fixes: 405cc1e5a81e ("batman-adv: Modified forwarding behaviour for
-> multicast packets") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.b=
-lue>
-> ---
+> Working through the gateway feature part in batadv_interface_tx() it can
+> be inferred that a DHCPv6 packet to a DHCP client would have been the only
+> option for a DHCPv6 multicast packet to be sent via unicast through the
+> gateway feature. Ergo, the newly introduced claim check won't wrongly
+> drop a DHCPv6 packet received via the gateway feature either.
 
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
---nextPart2542353.8oxAI3WAsd
+I don't really get this part. Shouldn't it be the other way around in the=20
+code? But I haven't the time at the moment to check  the code - maybe we ca=
+n=20
+discuss this on Monday.
+
+And I would also like to ask Simon to check the BLA patches before I merge=
+=20
+them.
+
+Kind regards,
+	Sven
+--nextPart1634379.hfMa9LtLtK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAl9gaTUACgkQoSvjmEKS
-nqFC0BAArYCUDmW2StTjFSFDh6qDbKHDeLNOhY71xO0CQCcBUJbh22uMg7ysctqp
-T4/w7THcjgD5iOAIzCyvqhwt2GvqwllM4uFe+lVnDjrO33YW70MZfMEZWIWfKcn6
-bezuZZmqqr762z4NuFa9mbgvNWSLkjY6iU2PY67SDy7SPHtGoqLXe/W1B3DsQW/W
-3WIPtOx1cLO8xlXF6mULZmkr6lssowF+otCSx8k17Pwl1GDzl65VRDePNGpqK+Qa
-Cy044p7WMUOSmiJY9JoQ9R2Ur2aWBTvLcyBJwrByS0N20YMvYZlZ1ol7cRdP1NsS
-4T27wrkmVHAqih0kXdlyy/ui4YeOM1EPnPnsPHpXXi9uxEBCMS0z2Fmh7IzqAx6r
-AvFbNHGSI6b2HSSP6oF4LYSoVfBmsZePT48GU47UwY6DWriG396HiBZEuE/Sf9fC
-QuMUPItTWbPwVxtKajYfYe8/LPNfLA2M4wkXyRjPwptefI7QZb+ALb1JTZQbwQBz
-xMd4T2MYgW+ZVCfv23sZsqJ6BqzfJTmRUjQkGW/mPXSvBBZadHjsAfn5SW88mly0
-7jLOycBYsfkrsBilUR7tYffhbEHpBlR54y1t1idgGi6W94ZQIp8vKhkjZGZPBQQO
-g2ZUszZHsK9nDuJOZefj8GWDlotD3LA/cSIvlztoF0NjdTvrmXU=
-=z+YY
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9TOsoACgkQXYcKB8Em
+e0YYbQ/+OLgyG3CceXOO3AZiVvLzOwlvcjCnPMag4hhRJS+mzyIg6qP2rpuej2HH
+BjT+o/3I96FMfkeNvEofFNmyNdZVD2pq9MvQJxBqlg6Ww78jHnYMJ9SU9ZmtnjgM
+IsoGtW/s5dtl2qvI63yUI+DxXEWH78X6QKGIDlUdtxVAopHnn/BnC62eMtleC5ug
+VNbJlO4f+Fj3jUBZmTqdoei/QYdHqw4GxHt+89DBdBS3uHasgugd9Q7aQUxAhC74
+t01KrqlL+LtcM9uz+9yGCwoLqtWSncY5ie6c2t41SHtsRq8YlYObuNUyZFcoyVsU
+1d6cl/icgfveNvmiLbbF6V5dsaTTUKgRaG2T3gXz2bkGsaHCauCzBmrR8JUpf9fo
+DHsSeHgPKaBv8ZyVtHGNi9nDGCiL2FigtX8Ujlz4BDXymrahiXmbzvh/Rw2sQMH+
+2kTi0yZBVBmxLW8xRZvRa9cjmbjPEke7D5e6RH89EtMye23ZLaFcLSoqc7AOKA1q
+y2S3FxyHL8VEOJ45dC1ZYxYcpbY8y4j92Z9EyGH/CyLaGa2NL5EOb6JoHcJlEX+Q
+LqfX04sN6iPVGJ1Kk+x0KTsrBf1JDVZqQO6HLxwCV6ZCR7ywOEnvX3IyJhWQwKEB
+K+H4yYmjUKRuLVavIi0EKhw7XiwZYa3qLJMBf41DjKNoxI31MfM=
+=7Ump
 -----END PGP SIGNATURE-----
 
---nextPart2542353.8oxAI3WAsd--
+--nextPart1634379.hfMa9LtLtK--
 
 
