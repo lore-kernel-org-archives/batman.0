@@ -1,12 +1,17 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH maint v3 3/3] batman-adv: mcast: fix duplicate mcast packets from BLA backbone to mesh
-Date: Mon, 14 Sep 2020 21:12:00 +0200
-Message-ID: <6205936.0nzyDX8fZS@sven-edge>
-In-Reply-To: <20200914012136.5278-4-linus.luessing@c0d3.blue>
-References: <20200914012136.5278-1-linus.luessing@c0d3.blue> <20200914012136.5278-4-linus.luessing@c0d3.blue>
+Date: Wed, 9 Sep 2020 17:27:56 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [PATCH maint v2 4/4] batman-adv: mcast: fix duplicate mcast
+ packets from BLA backbone to mesh
+Message-ID: <20200909152756.GD2391@otheros>
+References: <20200904182803.8428-1-linus.luessing@c0d3.blue>
+ <20200904182803.8428-5-linus.luessing@c0d3.blue>
+ <3191833.Be6Uz4tNrB@prime>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2913249.5A1q0F6Dos"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <3191833.Be6Uz4tNrB@prime>
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,53 +19,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
- 
---nextPart2913249.5A1q0F6Dos
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+On Wed, Sep 09, 2020 at 02:15:51PM +0200, Simon Wunderlich wrote:
+> On Friday, September 4, 2020 8:28:03 PM CEST Linus L=C3=BCssing wrote:
+> > @@ -1626,7 +1626,8 @@ bool batadv_bla_check_bcast_duplist(struct bata=
+dv_priv
+> > *bat_priv, if (entry->crc !=3D crc)
+> >                         continue;
+> >=20
+> > -               if (batadv_compare_eth(entry->orig, bcast_packet->ori=
+g))
+> > +               if (!is_zero_ether_addr(entry->orig) &&
+> > +                   batadv_compare_eth(entry->orig, orig))
+> >                         continue;
+> >=20
+> >                 /* this entry seems to match: same crc, not too old,
+>=20
+> Shouldn't this check also be skipped if the orig parameter is a zero ma=
+c=20
+> address? i.e.:
+>=20
+> if (!is_zero_ether_addr(orig)) {
+> 	if (!is_zero_ether_addr(entry->orig) && batadv_compare_eth(entry->orig=
+,=20
+> orig))
+> 		continue;
+> }
 
-On Monday, 14 September 2020 03:21:36 CEST Linus L=FCssing wrote:
-> + * Check if it is on our broadcast list. Another gateway might have sent=
- the
-> + * same packet because it is connected to the same backbone, so we have =
-to
-> + * remove this duplicate.
-> +
->   * This is performed by checking the CRC, which will tell us
+Would be redundant. If entry->orig is non-zero and
+the compare_eth() says they are equal, then orig must also be
+non-zero.
 
-There is a "*" missing in the last added kerneldoc line. This causes follow=
-ing=20
-warning message:
-
-    ./net/batman-adv/bridge_loop_avoidance.c:1594: warning: bad line:
-
-Kind regards,
-	Sven
---nextPart2913249.5A1q0F6Dos
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9fwIAACgkQXYcKB8Em
-e0aixRAAocvatDu9B2RFS6mRWR3gg/p+8zo6/ChIKgxx7mHxWA/F0mTfttRFg/c8
-faCYeK9RLtlNY30awDJhjjwaV2qRN0g8g2huS/o3bRIWrcELAQMKCJKYd2+tJvtH
-tptBPmqBI9Fjs9pt47jsLUKb1vvZ8dfP+OR6eLU+CUOEdaR1qOh9DMQ65GNwZ3u4
-WLou8FU14T2bEOl+8m0A4USfyQuNzxpPO92UpdpBDp2IqEd6wLs4MupnfPz1ov8a
-AMDYsqmXy8Y/XubeTCSUmDbP+C8P6CmcPU6sgI6bDU1e9vouKLue2Gyj4436iHEO
-2yp89yG8sDBti67Jd/Zq7yMImWC3e9XVTT9nxGuS70x7l4c6pD8kEkEAaP/JgUsz
-uy84PTOwqKw7mBbMNm9qeCa9bU1Ub+JJ2Qv+McvoNUrP0Ec2QdXIHldBFzjxADK2
-SOdnSfOxVPuO1EFdUT9OKdYOcuFG5SpjaiCI+7jRAQWjtqs/q/8rz8wbDjNV7oqo
-ModikdSYVOiGOWECpmYP4UmSblrvi4VM+uNqxIELnhBInRfkgOyXdMUo92gmnnRa
-+qrHKTAmPkD1IZbKlHuSipHGfqdCk/em26vpsU9DkLPyH/3YZKrHy6KhCG+o6wgh
-n24+iE975KMgRg4v4lqJLIe/YIidzH3SpErd3CXkHvTp8WUS4D8=
-=5xOJ
------END PGP SIGNATURE-----
-
---nextPart2913249.5A1q0F6Dos--
-
-
+I initially wanted to leave the code as unchanged as possible for
+net / maint. Should I do the restructuring to enhance readability, with
+the bool in this patch or in additional patch for net-next?
