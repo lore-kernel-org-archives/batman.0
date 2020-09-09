@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: alfred/batman issue
-Date: Tue, 08 Sep 2020 14:12:06 +0200
-Message-ID: <4723062.gsoOXRqoEn@ripper>
-In-Reply-To: <CANKYHpe825qzeW9g7HbrHcacsO36x0=W_nRBCGKy_UfybvL7gw@mail.gmail.com>
-References: <CANKYHpe825qzeW9g7HbrHcacsO36x0=W_nRBCGKy_UfybvL7gw@mail.gmail.com>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: [PATCH maint v2 3/4] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
+Date: Wed, 09 Sep 2020 14:06:06 +0200
+Message-ID: <2973088.WcO1NEu1zB@prime>
+In-Reply-To: <20200904182803.8428-4-linus.luessing@c0d3.blue>
+References: <20200904182803.8428-1-linus.luessing@c0d3.blue> <20200904182803.8428-4-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1657020.gspWTsGk6h"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart3649128.l6d68pAvci"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,46 +15,96 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Oguzhan Kayhan <oguzhan@kayhan.name.tr>
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 
  
---nextPart1657020.gspWTsGk6h
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart3649128.l6d68pAvci
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Tuesday, 8 September 2020 14:04:11 CEST Oguzhan Kayhan wrote:
-> I set up a batman mesh network between 3 nodes..all running
-> B.A.T.M.A.N. adv openwrt-2018.4-0 on batman V protocol.
-> And also installed alfred which version 2016.5
+On Friday, September 4, 2020 8:28:02 PM CEST Linus L=FCssing wrote:
+> For DHCPv6: This is even trickier... DHCPv6 potentially uses
+> non-broadcast multicast addresses. However according to RFC8415, section
+> 7.1 it seems that currently multicast is only used from a DHCPv6 client
+> to a DHCPv6 server, but not the other way round.
+>=20
+> Working through the gateway feature part in batadv_interface_tx() it can
+> be inferred that a DHCPv6 packet to a DHCP client would have been the only
+> option for a DHCPv6 multicast packet to be sent via unicast through the
+> gateway feature. Ergo, the newly introduced claim check won't wrongly
+> drop a DHCPv6 packet received via the gateway feature either.
 
-There is no B.A.T.M.A.N. V support in batadv-vis [1] (and also not alfred).
+I also don't get this part. Maybe it helps if you can explain the two=20
+directions (client -> server, server -> client), and in which cases there c=
+an=20
+be multicast, and then describe why your check is sufficient?
 
-Kind regards,
-	Sven
+>=20
+> Fixes: e32470167379 ("batman-adv: check incoming packet type for bla")
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/net/batman-adv/bridge_loop_avoidance.c
+> b/net/batman-adv/bridge_loop_avoidance.c index d8c5d317..9603a6d0 100644
+> --- a/net/batman-adv/bridge_loop_avoidance.c
+> +++ b/net/batman-adv/bridge_loop_avoidance.c
+> @@ -1848,7 +1848,8 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv,
+> struct sk_buff *skb,
+>=20
+>         if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
+>                 /* don't allow broadcasts while requests are in flight */
+> -               if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast)
+> +               if (is_multicast_ether_addr(ethhdr->h_dest) &&
+> +                   (!is_broadcast_ether_addr(ethhdr->h_dest) || is_bcast=
+))
+>                         goto handled;
 
-[1] https://www.open-mesh.org/issues/251
---nextPart1657020.gspWTsGk6h
+Isn't this exactly the same logic as it was before?
+
+is_multicast =3D=3D 0, is_bcast =3D 0 =3D> 0
+is_multicast =3D=3D 0, is_bcast =3D 1 =3D> 0
+is_multicast =3D=3D 1, is_bcast =3D 0 =3D> 0
+is_multicast =3D=3D 1, is_bcast =3D 1 =3D> 1
+
+
+>=20
+>         ether_addr_copy(search_claim.addr, ethhdr->h_source);
+> @@ -1885,7 +1886,8 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv,
+> struct sk_buff *skb, }
+>=20
+>         /* if it is a broadcast ... */
+> -       if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast) {
+> +       if (is_multicast_ether_addr(ethhdr->h_dest) &&
+> +           (!is_broadcast_ether_addr(ethhdr->h_dest) || is_bcast)) {
+>                 /* ... drop it. the responsible gateway is in charge.
+>                  *
+>                  * We need to check is_bcast because with the gateway
+
+Same here.
+--nextPart3649128.l6d68pAvci
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9XdRYACgkQXYcKB8Em
-e0bORhAA0V3ITDIqbudLOuVGq0YU63AmslefyHtAoIaKpXmQov06Ud+mqSz+XlUO
-sEPsy97d/d2k9XLyo19osFPvFPTTICuieJQwUSCU3X9VZ7pmjpjGD1FHQrYjgaRJ
-S2r8WhRVmaSLgWssIwRU9kurT7wfoWzJVQH4lYcNKaML5SsM2v6PmiZkb6rgF8LI
-L9eQIfOm91ABorAj6riaNVQ0rP8zFsYMbAp8VThydulbk2ePo67NYokQvu9WHwAQ
-5KS0sFuEbn5qwyHTkhsy/ZRhz+r/rcJOmRlke68Q0BvclZ/JZ0sP5VXm22pHm/Ey
-hUU6VvQL3r4FzrQtxURbQEWw5lDSm2LBmW/4NH0BVa3iTVMsqI+mli4RLzfdb//N
-i3VFlqGSVUDNBWOMISxMVuy7dsRx7emo9+8bRgcCtb+kHOzDiLeo4M2QlZkVpNCM
-TRhi987pjzVzr5sFtUNgqQWmQSoWnnYgf2IQfid/7kiYsb6gfWkNqrbqqem2IheE
-wzlGAHFpt3UxXt3XtdIsB4G1jrJrdqXdEb4sjbaMelhCbLmLazVP2xCmdbddQE89
-m2TaIQbv/jldyuBGrZrF9AV+ybn2lOFtnu1wvIOPQvUK7uNd9TG7kNqsUrAKSAvc
-7p3SH4KPM06VbUbbdf8Nh2pLzjxSILy6AcrcSuIKoXrI95gITj4=
-=OX0n
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAl9YxS4ACgkQoSvjmEKS
+nqGIThAAgJy9p1rF0pWcg9adkuwiivoCRBYC3s57IN8xs2g+v5xN+SgCKBXSglG9
+Osfu6Or4ds1oNUCts7PhRx4/H5l+nFp73netDRVsWyg7V+h6VbeV6McH0p7rCdwV
+Uf1Z3BcF7AF7iRSmjpp+DcGKqODI8QqcPqvOz4FKcnjBnXT8H5c0fqQPfL4ifL5n
+dfClBgHe1JEdjuWiaoOoow405CNMquOVcSJ7RqxA4eCtO0kEeeCv0MYE9v8KEGdQ
+U34g9UO+vk8cTtrZZ3uVHjr715GTxIl5BeN+wHbNh3Caek5f+xdMZDMVXFwBQpei
+hX0li8GJih8t7//Hg+HAjMRsIQNhRbrFSfn8PL+XXjgNoWK5nOWxFSLL261O76ph
+WbH63KYvpTWU9oiclIBXm8MYG6+VMVmMXTQ6oDnsBM257J4rFoha+OomMuqdgxB5
+VAbQZ5TRCO21g2CpuTfYU+OSQd4my/wLAfBsA6DhDoitubGUkCCj3QxvRlagnCDU
+y4PHSrZWXeTAKsQKDrvKtLKHhID3zLvCKR64E/N99/irtRndvBMR0R7R21nYzoXL
+B+3/zIHTrHGPwx+nIvTVP29U4hwbruOH0jfokTR6/dQbx+oNMVxXTjry9x6kke84
+GZXueiPK2yPcyPEFqWNUQwEj5XvSxHUadU9xpfVozpS21bmXESE=
+=zd5R
 -----END PGP SIGNATURE-----
 
---nextPart1657020.gspWTsGk6h--
+--nextPart3649128.l6d68pAvci--
 
 
