@@ -1,17 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Wed, 9 Sep 2020 16:53:57 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [PATCH maint v2 3/4] batman-adv: mcast: fix duplicate mcast
- packets in BLA backbone from mesh
-Message-ID: <20200909145357.GB2391@otheros>
-References: <20200904182803.8428-1-linus.luessing@c0d3.blue>
- <20200904182803.8428-4-linus.luessing@c0d3.blue>
- <2973088.WcO1NEu1zB@prime>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Running multiple batman-adv namespaces on the same broadcast domain
+Date: Wed, 09 Sep 2020 11:05:11 +0200
+Message-ID: <7459754.hIpYFi07Vt@ripper>
+In-Reply-To: <CADJ1cUSff_g-tB28HHeR5GrYHHtch7f+bdQQ85HdZx4dhLdTvw@mail.gmail.com>
+References: <CADJ1cUTq=Bpj9SQdS5Y6aXKcPR9XqkxKn_Sj5sRMmN1R=qX_2g@mail.gmail.com> <34120415.8pMx1AJBNe@ripper> <CADJ1cUSff_g-tB28HHeR5GrYHHtch7f+bdQQ85HdZx4dhLdTvw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2973088.WcO1NEu1zB@prime>
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart2953339.uSJZPQ8N1e"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -19,76 +14,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Alessandro Bolletta <abolletta@netter.io>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Sep 09, 2020 at 02:06:06PM +0200, Simon Wunderlich wrote:
-> >         if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
-> >                 /* don't allow broadcasts while requests are in fligh=
-t */
-> > -               if (is_multicast_ether_addr(ethhdr->h_dest) && is_bca=
-st)
-> > +               if (is_multicast_ether_addr(ethhdr->h_dest) &&
-> > +                   (!is_broadcast_ether_addr(ethhdr->h_dest) || is_b=
-cast))
-> >                         goto handled;
->=20
-> Isn't this exactly the same logic as it was before?
->=20
-> is_multicast =3D=3D 0, is_bcast =3D 0 =3D> 0
-> is_multicast =3D=3D 0, is_bcast =3D 1 =3D> 0
-> is_multicast =3D=3D 1, is_bcast =3D 0 =3D> 0
-> is_multicast =3D=3D 1, is_bcast =3D 1 =3D> 1
+ 
+--nextPart2953339.uSJZPQ8N1e
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The 3rd one should be different. Note that "is_bcast" is not the same as
-is_broadcast_ether_addr(ethhdr->h_dest). The former refers to the
-batman-adv packet header, while the latter refers to the
-destination MAC of the inner ethernet header.
+On Wednesday, 9 September 2020 10:50:24 CEST Alessandro Bolletta wrote:
+[...]
+> Great, this is exactly what I'm looking for! I'm running this for some
+> experimental purposes. Are you running VXLANs in multicast modes?
+
+I am using it between datacenters with handcrafted forwarding rules. And I am 
+using gluon which uses link local "multicast" mode [1]. 
+
+[...]
+> > I don't like the word "namespaces" here. Because this reverse to a completely
+> > different concept in the linux kernel.
+> >
+> 
+> Yeah, I'm sorry but I didn't know how to call them. "Mesh clouds" is a
+> more exact term to call our batX?
+
+I would call them batadv interfaces. And the thing behind it - maybe mesh 
+cloud.
+
+> > And I don't know what you will end using - so I cannot say if this will work
+> > or is tested.
+> >
+> 
+> I will use them in a scenario where a have 3 hosts connected by an
+> ethernet card each and a switch. Then, I have to connect at layer 2
+> these hosts to batman, but I need to separate their traffic through
+> different batman-adv "mesh clouds" (in my case I can't use VLANs, QinQ
+> or stuff like that to do so)
+
+I've already used both VLAN and VXLAN (and other things) for stuff like this. 
+But there can always be problems with your kernel/driver/batman-adv/... 
+version or even the hardware. And I can guarantee that all of them will 
+create some kind of cost (overhead, performance, ...).
+
+Kind regards,
+	Sven
+
+[1] https://github.com/freifunk-gluon/gluon/blob/dd76e0898d70a123d8e7f178384fec84890e5251/package/gluon-core/files/lib/netifd/proto/gluon_wired.sh#L39
+--nextPart2953339.uSJZPQ8N1e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9YmscACgkQXYcKB8Em
+e0bOmA/9G5Wrx7A5XTe7397nwYXKk+TKLvUFOeYpCvFxS6HqBDl7auyTuMYD2X+J
+CYw+CNM1zB8Rtw1eALEb3K3239WVLnDIG3BQrjCtFiwsuDOFdnxkEzFRltCGGZel
+qe41gndQxg5wc5YPcEUh5n+haOquq3OzyBhts3VtUhHK/jRkPj6istUIbR27QSBi
+ZCwhCyG5rnTYH5FAAMzLO7AKWef+nH2pFEoVp85fu04tmtAPIk6nF6v8Txdg1P53
+Vo6QnHvE9OOU+BKUvK3M8SaYeSx39I9G6rTnJC1yLT/sKQFEnJ/X8fBLIPNVEXkS
+jOi+D9UYcu6RDBMb3nt+17ahRjUcmFP06/ndGtO6ceQVS9MZpOZk3UmZ4UvS/zFa
+Df52orFtVlumP6E3mhvMMVdETLtj36sG0TIYApH110KuZuD0VfLmXTylZCOM3Qx1
+N+IuPPx/s3gfJXgHujRRgG1AF0D2MVfKHzNzgd4+BvFYwyiX1fMc30PdluCzeNKT
+dLukOz/e1i6DOnFgdPtOgaUQSEzeZYc3Mnmv/m0k9LFiGYSEnwlIo5Rpw9UDhIM/
+ZNppsPLwGhjF1MujkZQmcnUI4yZrp1FV5SLvvCasWzqZILym/Kt4g1kc8qvEFwpn
+inOH7uGAr5eDlyqnbPrlp28Hxmd40Zka3S3+B9OihwZqsurLO2Y=
+=5tcR
+-----END PGP SIGNATURE-----
+
+--nextPart2953339.uSJZPQ8N1e--
 
 
-> On Friday, September 4, 2020 8:28:02 PM CEST Linus L=C3=BCssing wrote:
-> > For DHCPv6: This is even trickier... DHCPv6 potentially uses
-> > non-broadcast multicast addresses. However according to RFC8415, sect=
-ion
-> > 7.1 it seems that currently multicast is only used from a DHCPv6 clie=
-nt
-> > to a DHCPv6 server, but not the other way round.
-> >=20
-> > Working through the gateway feature part in batadv_interface_tx() it =
-can
-> > be inferred that a DHCPv6 packet to a DHCP client would have been the=
- only
-> > option for a DHCPv6 multicast packet to be sent via unicast through t=
-he
-> > gateway feature. Ergo, the newly introduced claim check won't wrongly
-> > drop a DHCPv6 packet received via the gateway feature either.
->=20
-> I also don't get this part. Maybe it helps if you can explain the two=20
-> directions (client -> server, server -> client), and in which cases the=
-re can=20
-> be multicast, and then describe why your check is sufficient?
-
-Hm, actually it's not just the description that is messed up, I
-think. server->client is ok, but client->server isn't...
-
-* DHCPv6 server -> client:
--> Easy, according to RFC8415, section 7.1 this would always be
-   unicast. So neither the Gateway nor Multicast feature would
-   touch it.
-
-* DHCPv6 client -> server:
--> Actually both the gateway feature and multicast feature can use
-   it. I misread the code...
-
-I'm a bit uncertain how to solve the latter now... I see no way to
-distinguish gw vs. mcast feature as is. We also have no flags
-or reserved space in the batadv_unicast_packet available to make
-them distinguishable.
-
-So the only solution I could think of for now is
-excluding DHCPv6 from multicast feature in TX of the originator...
-(in batadv_mcast_forw_mode_check_ipv6(), adding excludes for
-ff02::1:2 and ff05::1:3).
-
-(Even though having the multicast feature handling it would
-have been nice(r) as it'd work without needing a user to
-set and maintain the gateway mode properly.)
