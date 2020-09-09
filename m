@@ -1,34 +1,44 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: MK <mailing.m1@kkk-web.de>
-Subject: Does batman choose DHCP server by random?
-Message-ID: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de>
-Date: Thu, 17 Sep 2020 22:23:24 +0200
+Return-Path: <abolletta@netter.io>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+References: <CADJ1cUTq=Bpj9SQdS5Y6aXKcPR9XqkxKn_Sj5sRMmN1R=qX_2g@mail.gmail.com>
+ <17582207.Wjj8Q8S2kB@ripper>
+In-Reply-To: <17582207.Wjj8Q8S2kB@ripper>
+From: Alessandro Bolletta <abolletta@netter.io>
+Date: Wed, 9 Sep 2020 10:20:20 +0200
+Message-ID: <CADJ1cUSNtDrR-C-L7MHXF3JohbkmBbQBsFzBvBxE2WntUd9Yqw@mail.gmail.com>
+Subject: Re: Running multiple batman-adv namespaces on the same broadcast domain
+Content-Type: text/plain; charset="UTF-8"
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi meshing list.
+Thank you for your tip.
 
-We are running a batman 2020.2 based mesh network.
+Just one more info: is there an hard limit for the number of "bat"
+interfaces on the same host?
+Moreover, is the multiple batX namespaces a scenario that it is
+supposed to work fine, is it well tested or it still does need some
+love?
 
-Clients connect to one gateway but pull IPv4 addresses from _another_
-gateway. This leads to packets flowing between gateways instead of
-leaving the mesh on the shortest route possible.
-
-Is this intended behaviour? Is it random? Is there a config option to
-alter this packet flow?
-
-gw_mode is set to "server" on all gateways, bandwith announcement is the
-same on all gateways (10/10 MBit). So no imbalance here.
-
-Regards,
-Martin
+Il giorno mar 8 set 2020 alle ore 13:28 Sven Eckelmann
+<sven@narfation.org> ha scritto:
+>
+> On Tuesday, 8 September 2020 13:23:32 CEST Alessandro Bolletta wrote:
+> > i'm trying to reproduce a PoC where i'm running multiple batman-adv
+> > instances(eg. bat0, bat1, batX) on the same broadcast domain.
+> [...]
+> > Is this kind of scenario supported?
+>
+> No, you need something which implements separation of top of ethernet to avoid
+> that bat0/bat1/.../batX see each other. E.g. VLAN, VXLAN, ...
+>
+> Kind regards,
+>         Sven
