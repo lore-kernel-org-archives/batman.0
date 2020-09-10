@@ -1,13 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH maint v6 2/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
-Date: Tue, 15 Sep 2020 09:54:09 +0200
-Message-Id: <20200915075410.13932-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20200915075410.13932-1-linus.luessing@c0d3.blue>
-References: <20200915075410.13932-1-linus.luessing@c0d3.blue>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: [PATCH maint v2 4/4] batman-adv: mcast: fix duplicate mcast packets from BLA backbone to mesh
+Date: Thu, 10 Sep 2020 11:32:08 +0200
+Message-ID: <1604713.itQ50Tx4xl@prime>
+In-Reply-To: <20200909152756.GD2391@otheros>
+References: <20200904182803.8428-1-linus.luessing@c0d3.blue> <3191833.Be6Uz4tNrB@prime> <20200909152756.GD2391@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart2266084.Gcmbeqm8zX"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -16,172 +15,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 
-Scenario:
-* Multicast frame send from mesh to a BLA backbone (multiple nodes
-  with their bat0 bridged together, with BLA enabled)
+ 
+--nextPart2266084.Gcmbeqm8zX
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Issue:
-* BLA backbone nodes receive the frame multiple times on bat0,
-  once from mesh->bat0 and once from each backbone_gw from LAN
+On Wednesday, September 9, 2020 5:27:56 PM CEST Linus L=FCssing wrote:
+> On Wed, Sep 09, 2020 at 02:15:51PM +0200, Simon Wunderlich wrote:
+> > On Friday, September 4, 2020 8:28:03 PM CEST Linus L=FCssing wrote:
+> > > @@ -1626,7 +1626,8 @@ bool batadv_bla_check_bcast_duplist(struct
+> > > batadv_priv *bat_priv, if (entry->crc !=3D crc)
+> > >=20
+> > >                         continue;
+> > >=20
+> > > -               if (batadv_compare_eth(entry->orig, bcast_packet->ori=
+g))
+> > > +               if (!is_zero_ether_addr(entry->orig) &&
+> > > +                   batadv_compare_eth(entry->orig, orig))
+> > >=20
+> > >                         continue;
+> > >                =20
+> > >                 /* this entry seems to match: same crc, not too old,
+> >=20
+> > Shouldn't this check also be skipped if the orig parameter is a zero mac
+> > address? i.e.:
+> >=20
+> > if (!is_zero_ether_addr(orig)) {
+> >=20
+> > 	if (!is_zero_ether_addr(entry->orig) && batadv_compare_eth(entry->orig,
+> >=20
+> > orig))
+> >=20
+> > 		continue;
+> >=20
+> > }
+>=20
+> Would be redundant. If entry->orig is non-zero and
+> the compare_eth() says they are equal, then orig must also be
+> non-zero.
 
-For unicast, a node will send only to the best backbone gateway
-according to the TQ. However for multicast we currently cannot determine
-if multiple destination nodes share the same backbone if they don't share
-the same backbone with us. So we need to keep sending the unicasts to
-all backbone gateways and let the backbone gateways decide which one
-will forward the frame. We can use the CLAIM mechanism to make this
-decision.
+OK good point, that's not really obvious (at least to me).
 
-One catch: The batman-adv gateway feature for DHCP packets potentially
-sends multicast packets in the same batman-adv unicast header as the
-multicast optimizations code. And we are not allowed to drop those even
-if we did not claim the source address of the sender, as for such
-packets there is only this one multicast-in-unicast packet.
+>=20
+> I initially wanted to leave the code as unchanged as possible for
+> net / maint. Should I do the restructuring to enhance readability, with
+> the bool in this patch or in additional patch for net-next?
 
-How can we distinguish the two cases?
+Personally, I would prefer having a bit more readability or verbose comment=
+s=20
+in front of those kind of logic if statements. Or avoid those logic=20
+connections and have multiple "ifs" in a row where possible to enhance=20
+readbility.
 
-The gateway feature uses a batman-adv unicast 4 address header. While
-the multicast-to-unicasts feature uses a simple, 3 address batman-adv
-unicast header. So let's use this to distinguish.
+This patch is pretty heavy already as is, adding a bool doesn't make a big=
+=20
+difference IMHO.
 
-Fixes: e32470167379 ("batman-adv: check incoming packet type for bla")
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/bridge_loop_avoidance.c | 34 +++++++++++++++++++-------
- net/batman-adv/bridge_loop_avoidance.h |  4 +--
- net/batman-adv/soft-interface.c        |  6 ++---
- 3 files changed, 30 insertions(+), 14 deletions(-)
+Cheers,
+       Simon
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/brid=
-ge_loop_avoidance.c
-index d8c5d317..3d2a66f2 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1813,7 +1813,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat=
-_priv, struct sk_buff *skb,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the frame to be checked
-  * @vid: the VLAN ID of the frame
-- * @is_bcast: the packet came in a broadcast packet type.
-+ * @packet_type: the batman packet type this frame came in
-  *
-  * batadv_bla_rx avoidance checks if:
-  *  * we have to race for a claim
-@@ -1825,7 +1825,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat=
-_priv, struct sk_buff *skb,
-  * further process the skb.
-  */
- bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
--		   unsigned short vid, bool is_bcast)
-+		   unsigned short vid, int packet_type)
- {
- 	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct ethhdr *ethhdr;
-@@ -1847,9 +1847,24 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, s=
-truct sk_buff *skb,
- 		goto handled;
-=20
- 	if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
--		/* don't allow broadcasts while requests are in flight */
--		if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast)
--			goto handled;
-+		/* don't allow multicast packets while requests are in flight */
-+		if (is_multicast_ether_addr(ethhdr->h_dest))
-+			/* Both broadcast flooding or multicast-via-unicasts
-+			 * delivery might send to multiple backbone gateways
-+			 * sharing the same LAN and therefore need to coordinate
-+			 * which backbone gateway forwards into the LAN,
-+			 * by claiming the payload source address.
-+			 *
-+			 * Broadcast flooding and multicast-via-unicasts
-+			 * delivery use the following two batman packet types.
-+			 * Note: explicitly exclude BATADV_UNICAST_4ADDR,
-+			 * as the DHCP gateway feature will send explicitly
-+			 * to only one BLA gateway, so the claiming process
-+			 * should be avoided there.
-+			 */
-+			if (packet_type =3D=3D BATADV_BCAST ||
-+			    packet_type =3D=3D BATADV_UNICAST)
-+				goto handled;
-=20
- 	ether_addr_copy(search_claim.addr, ethhdr->h_source);
- 	search_claim.vid =3D vid;
-@@ -1884,13 +1899,14 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, =
-struct sk_buff *skb,
- 		goto allow;
- 	}
-=20
--	/* if it is a broadcast ... */
--	if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast) {
-+	/* if it is a multicast ... */
-+	if (is_multicast_ether_addr(ethhdr->h_dest) &&
-+	    (packet_type =3D=3D BATADV_BCAST || packet_type =3D=3D BATADV_UNICA=
-ST)) {
- 		/* ... drop it. the responsible gateway is in charge.
- 		 *
--		 * We need to check is_bcast because with the gateway
-+		 * We need to check packet type because with the gateway
- 		 * feature, broadcasts (like DHCP requests) may be sent
--		 * using a unicast packet type.
-+		 * using a unicast 4 address packet type. See comment above.
- 		 */
- 		goto handled;
- 	} else {
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/brid=
-ge_loop_avoidance.h
-index 41edb2c4..a81c41b6 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -35,7 +35,7 @@ static inline bool batadv_bla_is_loopdetect_mac(const u=
-int8_t *mac)
-=20
- #ifdef CONFIG_BATMAN_ADV_BLA
- bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
--		   unsigned short vid, bool is_bcast);
-+		   unsigned short vid, int packet_type);
- bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   unsigned short vid);
- bool batadv_bla_is_backbone_gw(struct sk_buff *skb,
-@@ -66,7 +66,7 @@ bool batadv_bla_check_claim(struct batadv_priv *bat_pri=
-v, u8 *addr,
-=20
- static inline bool batadv_bla_rx(struct batadv_priv *bat_priv,
- 				 struct sk_buff *skb, unsigned short vid,
--				 bool is_bcast)
-+				 int packet_type)
- {
- 	return false;
- }
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
-ace.c
-index 3d037b17..cdde943c 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -424,10 +424,10 @@ void batadv_interface_rx(struct net_device *soft_if=
-ace,
- 	struct vlan_ethhdr *vhdr;
- 	struct ethhdr *ethhdr;
- 	unsigned short vid;
--	bool is_bcast;
-+	int packet_type;
-=20
- 	batadv_bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
--	is_bcast =3D (batadv_bcast_packet->packet_type =3D=3D BATADV_BCAST);
-+	packet_type =3D batadv_bcast_packet->packet_type;
-=20
- 	skb_pull_rcsum(skb, hdr_size);
- 	skb_reset_mac_header(skb);
-@@ -470,7 +470,7 @@ void batadv_interface_rx(struct net_device *soft_ifac=
-e,
- 	/* Let the bridge loop avoidance check the packet. If will
- 	 * not handle it, we can safely push it up.
- 	 */
--	if (batadv_bla_rx(bat_priv, skb, vid, is_bcast))
-+	if (batadv_bla_rx(bat_priv, skb, vid, packet_type))
- 		goto out;
-=20
- 	if (orig_node)
---=20
-2.28.0
+
+--nextPart2266084.Gcmbeqm8zX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAl9Z8pgACgkQoSvjmEKS
+nqG0WQ/+Ognd7uRujDLikRbIQbgfVJZM6z33riXjzdZibmliOVX1hE8rQ2jLZNgE
+PlvigY1S2ILd7YOI/Kc3Nfe6Xh52AevE7XU7hLXyQU4cqriMM0HUmsp6LGAT1MfR
+oWJ2hemxUGD4KmDyxM6Fp8verutwOeQnrnPhIWmIKDlw5ipx3nB4GBdj8eHBqvMm
+LyY7lQetH0kH4PlSwsnyCbrTAEMdLzfdyj2ugf6ePCh9suBw+XC2bdTTEHNu2R+r
+yfppKanUZxEcJYryzM+wJ6aWO/XaMoX0kdKd04AlaIXq59l05KkA9mfqmF9pJlB3
+5K4TXUz/OnWi0IxklLHeb9CgRPq3BdZf2ObLRBwx+dspqzsXd8ULATMfAl5BQCYJ
+qkwN+JwnqiMb3FKi23vVfS6sR8TLvLtmHsx57aMLWPoFBjsL4TUOKGkiiJ3yXaJQ
+rp8PgWup6QENpEP/kbWNa4MAS3ecRj1cu5lsjRP/GnU/cSnSM8tIExF+CqiwjMl8
+/dwVsqC+fnPYmv5KUnbvTxtvaiwM6wYdBZ6UhbGyI81J4+xkadZ9422jWcYmWXO8
+TsLbuXTWnKlVzvrqC4A4/+4QT90yP/wYWHLS84W+Wrgit7+kRkAikCxzO8Sqoax3
+HmPb1m18ZhP8LzEuL/3Y9i1ePSuTt7zCXr96ue2MYscbbeRGrzg=
+=cfK7
+-----END PGP SIGNATURE-----
+
+--nextPart2266084.Gcmbeqm8zX--
+
+
