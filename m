@@ -1,224 +1,140 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH maint v6 1/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from LAN
-Date: Tue, 15 Sep 2020 09:54:08 +0200
-Message-Id: <20200915075410.13932-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20200915075410.13932-1-linus.luessing@c0d3.blue>
-References: <20200915075410.13932-1-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: Passing VID-aware ethernet frames on plain batX interfaces
+Date: Fri, 11 Sep 2020 17:03:01 +0200
+Message-ID: <1893066.IbdV0THItd@prime>
+In-Reply-To: <CADJ1cURdGjW=q91qFw8vCBs38pAPnBp9=e5qS1WgzV7w06Onwg@mail.gmail.com>
+References: <CADJ1cURtCsWdy6rovfgb_XPhbsTc5epCv3yLgRCLcOVjfNSFdw@mail.gmail.com> <4337705.76P5Ur0oAU@sven-edge> <CADJ1cURdGjW=q91qFw8vCBs38pAPnBp9=e5qS1WgzV7w06Onwg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: multipart/signed; boundary="nextPart43245293.yckCbuvYC3"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: Alessandro Bolletta <abolletta@netter.io>, Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <a@unstable.cc>
 
-Scenario:
-* Multicast frame send from a BLA backbone (multiple nodes with
-  their bat0 bridged together, with BLA enabled)
+ 
+--nextPart43245293.yckCbuvYC3
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Issue:
-* BLA backbone nodes receive the frame multiple times on bat0
+Hi Alessandro,
 
-For multicast frames received via batman-adv broadcast packets the
-originator of the broadcast packet is checked before decapsulating and
-forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
-batadv_recv_bcast_packet()). If it came from a node which shares the
-same BLA backbone with us then it is not forwarded to bat0 to avoid a
-loop.
+to use VLANs in batman-adv, you currently have to explicitly set up VLAN 
+interfaces, as it was already explained. You can not just listen to bat0 and 
+expected VLAN tagged frames to go through.
 
-When sending a multicast frame in a non-4-address batman-adv unicast
-packet we are currently missing this check - and cannot do so because
-the batman-adv unicast packet has no originator address field.
+This is a limitation of the current code, which basically exists since we 
+integrated VLANs into batman-adv. There were some ideas to register VLANs on 
+the fly inside of batman-adv, but the current implementation relies on the 
+setup of VLANs on top of bat0 provided by the system.
 
-However, we can simply fix this on the sender side by only sending the
-multicast frame via unicasts to interested nodes which do not share the
-same BLA backbone with us. This also nicely avoids some unnecessary
-transmissions on mesh side.
+If you want to use those VLANs, you have to set up VLAN interfaces for each 
+VLAN ID you want to use. This can get a bit messy if there are many VLANs, but 
+it works. You can't just bridge bat0 to something else and expect VLAN tagged 
+traffic to come out of bat0.
 
-Note that no infinite loop was observed, probably because of dropping
-via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
-utterly confuse switches/bridges, ICMPv6 duplicate address detection and
-neighbor discovery and therefore leads to long delays before being able
-to establish TCP connections, for instance. And it also leads to the Linu=
-x
-bridge printing messages like:
-"br-lan: received packet on eth1 with own address as source address ..."
+I can't say anything about OVS and to which extent bridges can be skipped, but 
+you'll create VLAN devices in that case too.
 
-Fixes: 405cc1e5a81e ("batman-adv: Modified forwarding behaviour for multi=
-cast packets")
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/multicast.c      | 46 ++++++++++++++++++++++++++-------
- net/batman-adv/multicast.h      | 15 +++++++++++
- net/batman-adv/soft-interface.c |  5 ++--
- 3 files changed, 53 insertions(+), 13 deletions(-)
+We're open to patches to add VLANs on the fly without requiring explicit VLAN 
+interfaces (maybe by snooping, similar to TT or BLA). I've also run into this 
+scenario a couple of times, but the pain level wasn't high enough to change it 
+yet. ;)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index bdc4a1fb..ca24a2e5 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -51,6 +51,7 @@
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
-=20
-+#include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
- #include "log.h"
-@@ -1434,6 +1435,35 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pri=
-v, struct sk_buff *skb,
- 	return BATADV_FORW_ALL;
- }
-=20
-+/**
-+ * batadv_mcast_forw_send_orig() - send a multicast packet to an origina=
-tor
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the multicast packet to send
-+ * @vid: the vlan identifier
-+ * @orig_node: the originator to send the packet to
-+ *
-+ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
-+ */
-+int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb,
-+				unsigned short vid,
-+				struct batadv_orig_node *orig_node)
-+{
-+	/* Avoid sending multicast-in-unicast packets to other BLA
-+	 * gateways - they already got the frame from the LAN side
-+	 * we share with them.
-+	 * TODO: Refactor to take BLA into account earlier, to avoid
-+	 * reducing the mcast_fanout count.
-+	 */
-+	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
-+		dev_kfree_skb(skb);
-+		return NET_XMIT_SUCCESS;
-+	}
-+
-+	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
-+				       orig_node, vid);
-+}
-+
- /**
-  * batadv_mcast_forw_tt() - forwards a packet to multicast listeners
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1471,8 +1501,8 @@ batadv_mcast_forw_tt(struct batadv_priv *bat_priv, =
-struct sk_buff *skb,
- 			break;
- 		}
-=20
--		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
--					orig_entry->orig_node, vid);
-+		batadv_mcast_forw_send_orig(bat_priv, newskb, vid,
-+					    orig_entry->orig_node);
- 	}
- 	rcu_read_unlock();
-=20
-@@ -1513,8 +1543,7 @@ batadv_mcast_forw_want_all_ipv4(struct batadv_priv =
-*bat_priv,
- 			break;
- 		}
-=20
--		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
--					orig_node, vid);
-+		batadv_mcast_forw_send_orig(bat_priv, newskb, vid, orig_node);
- 	}
- 	rcu_read_unlock();
- 	return ret;
-@@ -1551,8 +1580,7 @@ batadv_mcast_forw_want_all_ipv6(struct batadv_priv =
-*bat_priv,
- 			break;
- 		}
-=20
--		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
--					orig_node, vid);
-+		batadv_mcast_forw_send_orig(bat_priv, newskb, vid, orig_node);
- 	}
- 	rcu_read_unlock();
- 	return ret;
-@@ -1618,8 +1646,7 @@ batadv_mcast_forw_want_all_rtr4(struct batadv_priv =
-*bat_priv,
- 			break;
- 		}
-=20
--		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
--					orig_node, vid);
-+		batadv_mcast_forw_send_orig(bat_priv, newskb, vid, orig_node);
- 	}
- 	rcu_read_unlock();
- 	return ret;
-@@ -1656,8 +1683,7 @@ batadv_mcast_forw_want_all_rtr6(struct batadv_priv =
-*bat_priv,
- 			break;
- 		}
-=20
--		batadv_send_skb_unicast(bat_priv, newskb, BATADV_UNICAST, 0,
--					orig_node, vid);
-+		batadv_mcast_forw_send_orig(bat_priv, newskb, vid, orig_node);
- 	}
- 	rcu_read_unlock();
- 	return ret;
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index ebf82599..3e114bc5 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -46,6 +46,11 @@ enum batadv_forw_mode
- batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb=
-,
- 		       struct batadv_orig_node **mcast_single_orig);
-=20
-+int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb,
-+				unsigned short vid,
-+				struct batadv_orig_node *orig_node);
-+
- int batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff =
-*skb,
- 			   unsigned short vid);
-=20
-@@ -71,6 +76,16 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, s=
-truct sk_buff *skb,
- 	return BATADV_FORW_ALL;
- }
-=20
-+static inline int
-+batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+			    struct sk_buff *skb,
-+			    unsigned short vid,
-+			    struct batadv_orig_node *orig_node)
-+{
-+	kfree_skb(skb);
-+	return NET_XMIT_DROP;
-+}
-+
- static inline int
- batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb=
-,
- 		       unsigned short vid)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
-ace.c
-index 23833a0b..3d037b17 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -364,9 +364,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
- *skb,
- 				goto dropped;
- 			ret =3D batadv_send_skb_via_gw(bat_priv, skb, vid);
- 		} else if (mcast_single_orig) {
--			ret =3D batadv_send_skb_unicast(bat_priv, skb,
--						      BATADV_UNICAST, 0,
--						      mcast_single_orig, vid);
-+			ret =3D batadv_mcast_forw_send_orig(bat_priv, skb, vid,
-+							  mcast_single_orig);
- 		} else if (forw_mode =3D=3D BATADV_FORW_SOME) {
- 			ret =3D batadv_mcast_forw_send(bat_priv, skb, vid);
- 		} else {
---=20
-2.28.0
+Cheers,
+       Simon
+
+On Friday, September 11, 2020 4:42:52 PM CEST Alessandro Bolletta wrote:
+> Hi Sven,
+> 
+> I'm sorry for being not so clear in my statements. You can read my
+> last "refactored" mail, which is easier to understand:
+> 
+> Should I must only rely to the related 802.1q interface (eg. bat0.1)
+> or can I receive the whole traffic (untagged and tagged) from the
+> plain bat0 interface, just listening for the incoming traffic on it?
+> 
+> If the answer is the first choice, is it possible to have an approach
+> where I can receive coming from bat0 leveraging on a single interface
+> anyway? Could a linux bridge br0 on the top of bat0 interface make it
+> possible?
+> 
+> For example, if I connect an openvswitch port, configured as trunk port, to
+> a linux bridge br0 that enslaves bat0, could I expect to see the whole
+> traffic inside the batman-adv mesh network (so I mean, both tagged and
+> untagged traffic) also "flowing" inside the other OvS switch ports that are
+> attached to that vlans?
+> Moreover, just out of curiosity, is there also another known way to
+> get rid of the linux bridge br0 in order to get this done (attaching
+> the bat0 directly to the OvS switch, for example)?
+> 
+> Il giorno ven 11 set 2020 alle ore 16:02 Sven Eckelmann
+> 
+> <sven@narfation.org> ha scritto:
+> > On Friday, 11 September 2020 15:03:13 CEST Alessandro Bolletta wrote:
+> > > I see. Ok for transmission purposes, but what if I have to receive a
+> > > tagged
+> > > frame?
+> > 
+> > It should not have been send to the other node when there is no TT entry
+> > for this mac + VID from the receiver.
+> > 
+> > > Should I only rely to the 8021q interface (eg. bat0.1) or receive the
+> > > whole
+> > > traffic (untagged and tagged) from the plain bat0 interface?
+> > 
+> > Hm?
+> > 
+> > > If this is not feasible, is it possible to handle in someway this?
+> > 
+> > Hm?
+> > 
+> > > A linux
+> > > bridge on the top of bat0 interface could make it possible?
+> > 
+> > No, the bridge must also enable the vlan for this bat0 interface.
+> > 
+> > See also
+> > https://www.open-mesh.org/projects/batman-adv/wiki/Faq#BATMAN-Advanced-VLA
+> > N-questions
+> > 
+> > Maybe Antonio wants to add more things to this discussion.
+> > 
+> > Kind regards,
+> > 
+> >         Sven
+
+
+--nextPart43245293.yckCbuvYC3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAl9bkaUACgkQoSvjmEKS
+nqHhwA/+MmoIKPJ+LvsBZPPCiw32nOwImmwwcgJyH+FYqWRxSM+kT7uIkpKI4i+V
+B7qmSZyHA/8RJssCNB4sM8C9PhZNnYRqccbq+u1v17dxYZL8YAKbij7hWsby/v4/
+5RgP0zaNV+Wexw5Jj26u6yPXFfmr/tPipHFed+3hPV5wnCn2GZVtdw63O7kgFEy1
+CzzpLC3Goyh+NIMH0hi2svr0Qf703zSrCN9r0DrC9RtRxttMtqNrEjED5rTR/6DA
+hfzRfT0T8xzMrv0joTs0ddA9jiaXXD0gFPFmLs1URD4v80MHDFvw7vWLHv5iMLTy
+5Seo2+E5Jm4TqQsRE0hFgqpRybOzcKn9o5w1vV8Vt8+gH1mBVagSUTHXRimgt6IS
+t+vTZr3oe9n5YgiiwTqTv4xcU4xee7LD1+y1csSmBCz2LHkvV12nO6zLKf/4xvWM
+DlfmIWWGJ61uGMzg5V/L92kis2bs+sDWI1hgXbH0oNcknoFEtn9lzGlxxaNQ424I
+o9kDD8Jusb4a/7yihD0l0YuUgJn861+1bWTx3g1oE058QANKgbhiwD7QYvJM9mll
+SvUB++4hY7898N79PNEq4XMzNEcYpWRbca/Z8A1UDvG+e3VaNaGJXwd16ZUPHY7/
+2RQOmuzv6nbmGIGEnzfIGFZP4Dy44pP9lxULP/yz7L9ebd5rnAw=
+=G8ZG
+-----END PGP SIGNATURE-----
+
+--nextPart43245293.yckCbuvYC3--
+
+
+
