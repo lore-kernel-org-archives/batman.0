@@ -1,143 +1,65 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH] net: bridge: mcast: rename br_ip's u member to dst
-Date: Sun, 27 Sep 2020 21:12:34 +0200
-Message-Id: <20200927191234.22423-1-linus.luessing@c0d3.blue>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Passing VID-aware ethernet frames on plain batX interfaces
+Date: Fri, 11 Sep 2020 14:48:19 +0200
+Message-ID: <38142483.hY40ij8To5@ripper>
+In-Reply-To: <CADJ1cUSum9bHHBZB3gKdXukoqqDxk_f2nO38YKEDjvyHs0=qXA@mail.gmail.com>
+References: <CADJ1cURtCsWdy6rovfgb_XPhbsTc5epCv3yLgRCLcOVjfNSFdw@mail.gmail.com> <2850909.jKhAPPOaAE@ripper> <CADJ1cUSum9bHHBZB3gKdXukoqqDxk_f2nO38YKEDjvyHs0=qXA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart4070998.WN2MUrjTul"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Nikolay Aleksandrov <nikolay@nvidia.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Alessandro Bolletta <abolletta@netter.io>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
+ 
+--nextPart4070998.WN2MUrjTul
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Since now we have src in br_ip, u no longer makes sense so rename
-it to dst. No functional changes.
+On Friday, 11 September 2020 14:19:59 CEST Alessandro Bolletta wrote:
+> So you mean that it is not feasible to create a (single) linux network
+> interface that let me send traffic on the batman-adv network in an
+> untagged or tagged way, though the same interface I mean?
 
-v2: fix build with CONFIG_BATMAN_ADV_MCAST
+batman-adv is depending on the Linux code telling it what VLAN it should 
+handle (through ndo_vlan_rx_add_vid and ndo_vlan_rx_kill_vid). So something 
+like the 8021q driver or the bridge code for vlans. Only when this was done, 
+it will also handle the addresses in TT. So no, bat0 is not enough to 
+transport something like an ethernet frame tagged as vlan1. You also need 
+bat0.1 (assuming this is the vlan interface for VID 1). But it is then not 
+really relevant for it whether the data was send through bat0.1 or was somehow 
+else tagged and then put into bat0.
 
-CC: Marek Lindner <mareklindner@neomailbox.ch>
-CC: Simon Wunderlich <sw@simonwunderlich.de>
-CC: Antonio Quartulli <a@unstable.cc>
-CC: Sven Eckelmann <sven@narfation.org>
-CC: b.a.t.m.a.n@lists.open-mesh.org
-Signed-off-by: Nikolay Aleksandrov <nikolay@nvidia.com>
-[linus.luessing@c0d3.blue: Add compat code]
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- compat-include/linux/if_bridge.h | 39 ++++++++++++++++++++++++++++++++
- net/batman-adv/multicast.c       | 14 ++++++------
- 2 files changed, 46 insertions(+), 7 deletions(-)
- create mode 100644 compat-include/linux/if_bridge.h
+Kind regards,
+	Sven
+--nextPart4070998.WN2MUrjTul
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/compat-include/linux/if_bridge.h b/compat-include/linux/if_bridge.h
-new file mode 100644
-index 00000000..c4f9bc08
---- /dev/null
-+++ b/compat-include/linux/if_bridge.h
-@@ -0,0 +1,39 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This file contains macros for maintaining compatibility with older versions
-+ * of the Linux kernel.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/if_bridge.h>
-+
-+#if LINUX_VERSION_IS_LESS(5, 10, 0)
-+
-+struct batadv_br_ip {
-+	union {
-+		__be32  ip4;
-+#if IS_ENABLED(CONFIG_IPV6)
-+		struct in6_addr ip6;
-+#endif
-+	} dst;
-+	__be16          proto;
-+	__u16           vid;
-+};
-+
-+struct batadv_br_ip_list {
-+	struct list_head list;
-+	struct batadv_br_ip addr;
-+};
-+
-+#define br_ip batadv_br_ip
-+#define br_ip_list batadv_br_ip_list
-+
-+#endif /* LINUX_VERSION_IS_LESS(5, 10, 0) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_ */
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 0746fe2c..9af99c39 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -221,7 +221,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
- 		 * address here, only IPv6 ones
- 		 */
- 		if (br_ip_entry->addr.proto == htons(ETH_P_IPV6) &&
--		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.u.ip6))
-+		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
- 			flags &= ~BATADV_MCAST_WANT_NO_RTR6;
- 
- 		list_del(&br_ip_entry->list);
-@@ -562,10 +562,10 @@ batadv_mcast_mla_softif_get(struct net_device *dev,
- static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
- {
- 	if (src->proto == htons(ETH_P_IP))
--		ip_eth_mc_map(src->u.ip4, dst);
-+		ip_eth_mc_map(src->dst.ip4, dst);
- #if IS_ENABLED(CONFIG_IPV6)
- 	else if (src->proto == htons(ETH_P_IPV6))
--		ipv6_eth_mc_map(&src->u.ip6, dst);
-+		ipv6_eth_mc_map(&src->dst.ip6, dst);
- #endif
- 	else
- 		eth_zero_addr(dst);
-@@ -609,11 +609,11 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
- 				continue;
- 
- 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
--			    ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
-+			    ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
- 				continue;
- 
- 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR4) &&
--			    !ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
-+			    !ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
- 				continue;
- 		}
- 
-@@ -623,11 +623,11 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
- 				continue;
- 
- 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
--			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.u.ip6))
-+			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.dst.ip6))
- 				continue;
- 
- 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR6) &&
--			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.u.ip6) >
-+			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.dst.ip6) >
- 			    IPV6_ADDR_SCOPE_LINKLOCAL)
- 				continue;
- 		}
--- 
-2.28.0
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9bchMACgkQXYcKB8Em
+e0aV9hAA0NJ2tGfgkJHpplUvb9lOowjty1csFMdxTWc3Et4nnXSLFd7VShS+xUFN
+dsBufc5su/IELiPSbDDyk6I2GLUOvjA26zt+kCDMvov3MitllIV/it0YsR15ajID
+7KvSrHf4fCqLMYvwXm507LDiUfaBk3mQk3SqMLs6DvNbzsZon++hjGSEonU1wxkj
+rMcpkqT6BVRVysKp7pb2bT0MEcOMeRPgJ+uGsIJw21yqutTXuSOeAKSoa58vynjJ
+HUfnFWEOJPC8yISb8pQGiNGCygYdb9o8gyS71VmFee8XqQlnM5RP0I5NG9gzuiuh
+Cv5IDM2SdyeFT3H8eLN1jXrnHc5i64Qu0G1Ar79DbBWun6t9WAGChAiYZrAcPs1h
+POdhhPHzwwXf5kMENm0uAJWY7bk3RQsR17C/aWZIF/CnaI45rIH4JEQhGry3rYu7
+RwLVlTIcETL0x0TK2N2kT+GGqJvg2rULab4+m/f8PgP2AXQgIH+xita+N/uGHoOy
+nECbceuXdV/bNfTQPsEeau7wdbZqUzY46fS4Xt382LUpvXgzuExIbLTBFFMGWF3y
+zRCngr9sF1MWf7Ie6+hcmFBRMzKg1cdhR+1rVrdPKP/8hPC45b3nuoScX/jmdH1v
+ey8Kouks+wHSFm9vVP4bMj0RGBDJ+rAuftkDjz5m02gXtN+opyo=
+=JJc+
+-----END PGP SIGNATURE-----
+
+--nextPart4070998.WN2MUrjTul--
+
 
