@@ -1,61 +1,67 @@
-Return-Path: <xiyuyang19@fudan.edu.cn>
-From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Subject: [PATCH] batman-adv: Fix orig node refcnt leak when creating neigh node
-Date: Fri, 18 Sep 2020 11:03:19 +0800
-Message-Id: <1600398200-8198-1-git-send-email-xiyuyang19@fudan.edu.cn>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH maint v5 0/3] batman-adv: mcast: BLA fixes
+Date: Mon, 14 Sep 2020 21:53:44 +0200
+Message-Id: <20200914195347.10505-1-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: yuanxzhang@fudan.edu.cn, kjlu@umn.edu, Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-batadv_neigh_node_create() is used to create a neigh node object, whose
-fields will be initialized with the specific object. When a new
-reference of the specific object is created during the initialization,
-its refcount should be increased.
+These are three fixes for issues which occur when using the batman-adv
+multicast-to-unicast feature.
 
-However, when "neigh_node" object initializes its orig_node field with
-the "orig_node" object, the function forgets to hold the refcount of the
-"orig_node", causing a potential refcount leak and use-after-free issue
-for the reason that the object can be freed in other places.
+They fix issues when using the multicast-to-unicast conversion
+while BLA is enabled and some nodes are sharing the same LAN side. Here
+it either causes "just" duplicates in the "good" scenario (Patch 3/3).
+But can also cause multiple BLA backbones to send a frame from the mesh
+into the same, shared LAN segment (Patch 2/3). Or in the worst case, even
+reflect packets back to the host in the shared LAN, which completely
+confuses switches/bridges and ICMPv6 Neighbor Discovery (Patch 1/3).
 
-Fix this issue by increasing the refcount of orig_node object during the
-initialization and adding corresponding batadv_orig_node_put() in
-batadv_neigh_node_release().
+Regards, Linus
 
-Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
 ---
- net/batman-adv/originator.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 805d8969bdfb..d6c2296f8e35 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -306,6 +306,8 @@ static void batadv_neigh_node_release(struct kref *ref)
- 
- 	batadv_hardif_put(neigh_node->if_incoming);
- 
-+	batadv_orig_node_put(neigh_node->orig_node);
-+
- 	kfree_rcu(neigh_node, rcu);
- }
- 
-@@ -685,6 +687,7 @@ batadv_neigh_node_create(struct batadv_orig_node *orig_node,
- 	kref_get(&hard_iface->refcount);
- 	ether_addr_copy(neigh_node->addr, neigh_addr);
- 	neigh_node->if_incoming = hard_iface;
-+	kref_get(&orig_node->refcount);
- 	neigh_node->orig_node = orig_node;
- 	neigh_node->last_seen = jiffies;
- 
--- 
-2.7.4
+Changelog v5:
+* Patch 3/3:
+  - added missing "*" in kernel doc for batadv_bla_check_duplist()
 
+Changelog v4:
+* Patch 1/3:
+  - fixed build with CONFIG_BATMAN_ADV_MCAST=3Dn
+    -> dummy for batadv_mcast_forw_send_orig()
+* Patch 2/3:
+  - fixed parameters for batadv_bla_rx() with CONFIG_BATMAN_ADV_BLA=3Dn
+    (bool is_bcast -> int packet_type)
+
+Changelog v3:
+* removed 1/4, as it was already applied
+* renamed title (excluded TT, as already applied)
+
+* Patch 1/3:
+  - moved bla-backbone check into multicast code:
+    -> to stay on the safe side for net, to touch less other code
+       paths - the issue was observed specifically for multicast
+       and the fix was tested for that
+  - added a note regarding implications for mcast-fanout
+* Patch 2/3:
+  - previous approach was broken, it would break the DHCPv6 gateway
+    code; instead distinguish by batadv 3 vs. 4 addr unicast header
+  - added some more code comments
+  - updated commit message with new approach
+* Patch 3/3:
+  - made code a bit more verbose and explicit
+  - added some more code comments
+  - added missing kernel doc for "orig" parameter to
+    new batadv_bla_check_duplist()
+
+Changelog v2:
+* Adding "Fixes:" lines
