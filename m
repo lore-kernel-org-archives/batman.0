@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 2/2] batman-adv: mcast: rename br_ip's u member to dst
-Date: Sat, 26 Sep 2020 10:12:20 +0200
-Message-Id: <20200926081220.40779-2-sven@narfation.org>
-In-Reply-To: <20200926081220.40779-1-sven@narfation.org>
-References: <20200926081220.40779-1-sven@narfation.org>
+Subject: Re: [PATCH maint v3 1/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from LAN
+Date: Mon, 14 Sep 2020 20:12:01 +0200
+Message-ID: <2021746.X5qYlJs30q@sven-edge>
+In-Reply-To: <20200914012136.5278-2-linus.luessing@c0d3.blue>
+References: <20200914012136.5278-1-linus.luessing@c0d3.blue> <20200914012136.5278-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart2073953.michYkKeb4"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,129 +15,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Nikolay Aleksandrov <nikolay@nvidia.com>
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
+ 
+--nextPart2073953.michYkKeb4
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-Since now we have src in br_ip, u no longer makes sense so rename
-it to dst. No functional changes.
+On Monday, 14 September 2020 03:21:34 CEST Linus L=C3=BCssing wrote:
+> Scenario:
+> * Multicast frame send from a BLA backbone (multiple nodes with
+>   their bat0 bridged together, with BLA enabled)
+>=20
+> Issue:
+> * BLA backbone nodes receive the frame multiple times on bat0
+>=20
+> For multicast frames received via batman-adv broadcast packets the
+> originator of the broadcast packet is checked before decapsulating and
+> forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
+> batadv_recv_bcast_packet()). If it came from a node which shares the
+> same BLA backbone with us then it is not forwarded to bat0 to avoid a
+> loop.
+>=20
+> When sending a multicast frame in a non-4-address batman-adv unicast
+> packet we are currently missing this check - and cannot do so because
+> the batman-adv unicast packet has no originator address field.
+>=20
+> However, we can simply fix this on the sender side by only sending the
+> multicast frame via unicasts to interested nodes which do not share the
+> same BLA backbone with us. This also nicely avoids some unnecessary
+> transmissions on mesh side.
+>=20
+> Note that no infinite loop was observed, probably because of dropping
+> via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
+> utterly confuse switches/bridges, ICMPv6 duplicate address detection and
+> neighbor discovery and therefore leads to long delays before being able
+> to establish TCP connections, for instance. And it also leads to the Linux
+> bridge printing messages like:
+> "br-lan: received packet on eth1 with own address as source address ..."
+>=20
+> Fixes: 405cc1e5a81e ("batman-adv: Modified forwarding behaviour for multi=
+cast packets")
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> ---
 
-Signed-off-by: Nikolay Aleksandrov <nikolay@nvidia.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven@narfation.org: Add compat code]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- compat-include/linux/if_bridge.h | 26 ++++++++++++++++++++++++++
- compat-patches/replacements.sh   |  5 +++++
- net/batman-adv/multicast.c       | 14 +++++++-------
- 3 files changed, 38 insertions(+), 7 deletions(-)
- create mode 100644 compat-include/linux/if_bridge.h
 
-diff --git a/compat-include/linux/if_bridge.h b/compat-include/linux/if_b=
-ridge.h
-new file mode 100644
-index 00000000..7b6d5876
---- /dev/null
-+++ b/compat-include/linux/if_bridge.h
-@@ -0,0 +1,26 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This file contains macros for maintaining compatibility with older ve=
-rsions
-+ * of the Linux kernel.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/if_bridge.h>
-+
-+#if LINUX_VERSION_IS_LESS(5, 10, 0)
-+
-+#define BATADV_BR_IP_UNION u
-+
-+#else
-+
-+#define BATADV_BR_IP_UNION dst
-+
-+#endif /* LINUX_VERSION_IS_LESS(5, 10, 0) */
-+
-+#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_ */
-diff --git a/compat-patches/replacements.sh b/compat-patches/replacements=
-.sh
-index 1b64e5c2..e72ec5ec 100755
---- a/compat-patches/replacements.sh
-+++ b/compat-patches/replacements.sh
-@@ -3,3 +3,8 @@
- # Copyright (C) 2007-2018  B.A.T.M.A.N. contributors
-=20
- set -e
-+
-+# for kernel < 5.10 to enable br_ip compat code
-+sed -i \
-+	-e 's/\(->\|\.\)dst\.ip/\1BATADV_BR_IP_UNION.ip/' \
-+	build/net/batman-adv/multicast.c
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 0746fe2c..9af99c39 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -221,7 +221,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struc=
-t batadv_priv *bat_priv,
- 		 * address here, only IPv6 ones
- 		 */
- 		if (br_ip_entry->addr.proto =3D=3D htons(ETH_P_IPV6) &&
--		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.u.ip6))
-+		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
- 			flags &=3D ~BATADV_MCAST_WANT_NO_RTR6;
-=20
- 		list_del(&br_ip_entry->list);
-@@ -562,10 +562,10 @@ batadv_mcast_mla_softif_get(struct net_device *dev,
- static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *=
-src)
- {
- 	if (src->proto =3D=3D htons(ETH_P_IP))
--		ip_eth_mc_map(src->u.ip4, dst);
-+		ip_eth_mc_map(src->dst.ip4, dst);
- #if IS_ENABLED(CONFIG_IPV6)
- 	else if (src->proto =3D=3D htons(ETH_P_IPV6))
--		ipv6_eth_mc_map(&src->u.ip6, dst);
-+		ipv6_eth_mc_map(&src->dst.ip6, dst);
- #endif
- 	else
- 		eth_zero_addr(dst);
-@@ -609,11 +609,11 @@ static int batadv_mcast_mla_bridge_get(struct net_d=
-evice *dev,
- 				continue;
-=20
- 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
--			    ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
-+			    ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
- 				continue;
-=20
- 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR4) &&
--			    !ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
-+			    !ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
- 				continue;
- 		}
-=20
-@@ -623,11 +623,11 @@ static int batadv_mcast_mla_bridge_get(struct net_d=
-evice *dev,
- 				continue;
-=20
- 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
--			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.u.ip6))
-+			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.dst.ip6))
- 				continue;
-=20
- 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR6) &&
--			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.u.ip6) >
-+			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.dst.ip6) >
- 			    IPV6_ADDR_SCOPE_LINKLOCAL)
- 				continue;
- 		}
---=20
-2.28.0
+Sorry, but doesn't build cleanly:
+
+    make[1]: Leaving directory '/home/build_test/build_env/linux-build/linu=
+x-5.6'
+    /home/build_test/build_env/tmp.3Iw5SQ84oz/net/batman-adv/soft-interface=
+=2Ec:367:31: error: undefined identifier 'batadv_mcast_forw_send_orig'
+    /home/build_test/build_env/tmp.3Iw5SQ84oz/net/batman-adv/soft-interface=
+=2Ec: In function =E2=80=98batadv_interface_tx=E2=80=99:
+    /home/build_test/build_env/tmp.3Iw5SQ84oz/net/batman-adv/soft-interface=
+=2Ec:367:10: error: implicit declaration of function =E2=80=98batadv_mcast_=
+forw_send_orig=E2=80=99; did you mean =E2=80=98batadv_mcast_forw_send=E2=80=
+=99?
+     [-Werror=3Dimplicit-function-declaration]
+        ret =3D batadv_mcast_forw_send_orig(bat_priv, skb, vid,
+              ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+              batadv_mcast_forw_send
+    cc1: some warnings being treated as errors
+    make[3]: *** [scripts/Makefile.build:268: /home/build_test/build_env/tm=
+p.3Iw5SQ84oz/net/batman-adv/soft-interface.o] Error 1
+    make[2]: *** [scripts/Makefile.build:505: /home/build_test/build_env/tm=
+p.3Iw5SQ84oz/net/batman-adv] Error 2
+    make[1]: *** [Makefile:1683: /home/build_test/build_env/tmp.3Iw5SQ84oz]=
+ Error 2
+    make: *** [Makefile:74: all] Error 2
+
+It was tried to build with:
+
+    /usr/bin/make -C /home/build_test/build_env/linux-build/linux-5.6 M=3D/=
+home/build_test/build_env/tmp.3Iw5SQ84oz PWD=3D/home/build_test/build_env/t=
+mp.3Iw5SQ84oz REVISION=3D CONFIG_BATMAN_ADV=3Dm CONFIG_BATMAN_ADV_DEBUG=3Dy=
+ CONFIG_BATMAN_ADV_DEBUGFS=3Dn CONFIG_BATMAN_ADV_BLA=3Dn CONFIG_BATMAN_ADV_=
+DAT=3Dy CONFIG_BATMAN_ADV_NC=3Dy CONFIG_BATMAN_ADV_MCAST=3Dn CONFIG_BATMAN_=
+ADV_SYSFS=3Dn CONFIG_BATMAN_ADV_TRACING=3Dn CONFIG_BATMAN_ADV_BATMAN_V=3Dn =
+INSTALL_MOD_DIR=3Dupdates/    modules
+
+Kind regards,
+	Sven
+--nextPart2073953.michYkKeb4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9fsnEACgkQXYcKB8Em
+e0b5gA/+L04wl7zgaT2tXLSVg+KdTmRmEN/8r3sMVRmbiWJUiyjfNdfA07JOaQlp
+tV5ktKS3+DV3MN2YEcpph30MlJewVFg5ovbBAZi9d703nFLiTtgwq152mc2zy03Q
+8kcOw+p21Vw+CAm3ZY1Hf+rFDJc75p15uN82A3Bs69af4UD9eUOnpChCCyWB5EcD
+1GvACXoCiCGVUjkyCPqr4bSxmEBQn+4QijbCSiO4sqeRq26in5TAOjJSdPowkhh3
+YylVODexa8F87cdfZgz4o/bPAJeDNlESmYVEm03V7INn4oEfCbb3SdMc3qaye0IF
+wyPY0KWOmlsXv8Um/+Eela/FrSN9M140BO1lV3WFZa5kLcNmT+OB5ttnwLTDEC2l
+lksbcdptkaJlpVZLsX/Wqu5eSnmnR/D8d17eCRw9TSVp1PT2skfVfUsmCjbIS5zU
+aebI5L/zw7HY45mcW4ZC2hI4SLc+ACpRZG7IqxmwaJuZDvoIBE2xWhzRu65IgcYE
+Qs5nnj10CsDSLL5f7XQ0IvWWm2+WmlrFpbGE/vtWciaFO7jrzcuqoA1z7djmAnnl
+Xb7lmFzCmaTIp6Uyx3KwZh6+TZj0NOsu4GezQJ8mqlseJHion7rd6C97edz4YKzt
+hzDWHq8ZsIyumHc2RfJR569aZiErKv8RbOU4A/19QeSoxpJKjMo=
+=5Ra/
+-----END PGP SIGNATURE-----
+
+--nextPart2073953.michYkKeb4--
+
+
