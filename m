@@ -1,10 +1,10 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH maint v3 2/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
-Date: Mon, 14 Sep 2020 03:21:35 +0200
-Message-Id: <20200914012136.5278-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20200914012136.5278-1-linus.luessing@c0d3.blue>
-References: <20200914012136.5278-1-linus.luessing@c0d3.blue>
+Subject: [PATCH maint v4 2/3] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
+Date: Mon, 14 Sep 2020 21:48:36 +0200
+Message-Id: <20200914194837.10425-3-linus.luessing@c0d3.blue>
+In-Reply-To: <20200914194837.10425-1-linus.luessing@c0d3.blue>
+References: <20200914194837.10425-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -50,9 +50,9 @@ Fixes: e32470167379 ("batman-adv: check incoming packet type for bla")
 Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
  net/batman-adv/bridge_loop_avoidance.c | 34 +++++++++++++++++++-------
- net/batman-adv/bridge_loop_avoidance.h |  2 +-
+ net/batman-adv/bridge_loop_avoidance.h |  4 +--
  net/batman-adv/soft-interface.c        |  6 ++---
- 3 files changed, 29 insertions(+), 13 deletions(-)
+ 3 files changed, 30 insertions(+), 14 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/brid=
 ge_loop_avoidance.c
@@ -131,7 +131,7 @@ ST)) {
  	} else {
 diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/brid=
 ge_loop_avoidance.h
-index 41edb2c4..7872c6fd 100644
+index 41edb2c4..a81c41b6 100644
 --- a/net/batman-adv/bridge_loop_avoidance.h
 +++ b/net/batman-adv/bridge_loop_avoidance.h
 @@ -35,7 +35,7 @@ static inline bool batadv_bla_is_loopdetect_mac(const u=
@@ -144,6 +144,16 @@ int8_t *mac)
  bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
  		   unsigned short vid);
  bool batadv_bla_is_backbone_gw(struct sk_buff *skb,
+@@ -66,7 +66,7 @@ bool batadv_bla_check_claim(struct batadv_priv *bat_pri=
+v, u8 *addr,
+=20
+ static inline bool batadv_bla_rx(struct batadv_priv *bat_priv,
+ 				 struct sk_buff *skb, unsigned short vid,
+-				 bool is_bcast)
++				 int packet_type)
+ {
+ 	return false;
+ }
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
 ace.c
 index 3d037b17..cdde943c 100644
