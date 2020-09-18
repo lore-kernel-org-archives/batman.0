@@ -1,79 +1,182 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: Fix orig node refcnt leak when creating neigh node
-Date: Fri, 18 Sep 2020 08:22:43 +0200
-Message-ID: <3173635.NQHa8YD4nL@ripper>
-In-Reply-To: <1600398200-8198-1-git-send-email-xiyuyang19@fudan.edu.cn>
-References: <1600398200-8198-1-git-send-email-xiyuyang19@fudan.edu.cn>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 5/6] batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
+Date: Fri, 18 Sep 2020 15:19:55 +0200
+Message-Id: <20200918131956.21598-6-sw@simonwunderlich.de>
+In-Reply-To: <20200918131956.21598-1-sw@simonwunderlich.de>
+References: <20200918131956.21598-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3372165.47aDjYEo1S"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Cc: yuanxzhang@fudan.edu.cn, kjlu@umn.edu, Xiyu Yang <xiyuyang19@fudan.edu.cn>, Xin Tan <tanxin.ctf@gmail.com>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Linus Lüssing <linus.luessing@c0d3.blue>
+
+Scenario:
+* Multicast frame send from mesh to a BLA backbone (multiple nodes
+  with their bat0 bridged together, with BLA enabled)
+
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0,
+  once from mesh->bat0 and once from each backbone_gw from LAN
+
+For unicast, a node will send only to the best backbone gateway
+according to the TQ. However for multicast we currently cannot determine
+if multiple destination nodes share the same backbone if they don't share
+the same backbone with us. So we need to keep sending the unicasts to
+all backbone gateways and let the backbone gateways decide which one
+will forward the frame. We can use the CLAIM mechanism to make this
+decision.
+
+One catch: The batman-adv gateway feature for DHCP packets potentially
+sends multicast packets in the same batman-adv unicast header as the
+multicast optimizations code. And we are not allowed to drop those even
+if we did not claim the source address of the sender, as for such
+packets there is only this one multicast-in-unicast packet.
+
+How can we distinguish the two cases?
+
+The gateway feature uses a batman-adv unicast 4 address header. While
+the multicast-to-unicasts feature uses a simple, 3 address batman-adv
+unicast header. So let's use this to distinguish.
+
+Fixes: fe2da6ff27c7 ("batman-adv: check incoming packet type for bla")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 34 +++++++++++++++++++-------
+ net/batman-adv/bridge_loop_avoidance.h |  4 +--
+ net/batman-adv/soft-interface.c        |  6 ++---
+ 3 files changed, 30 insertions(+), 14 deletions(-)
+
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 08419a2e6b95..68715783a742 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1814,7 +1814,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the frame to be checked
+  * @vid: the VLAN ID of the frame
+- * @is_bcast: the packet came in a broadcast packet type.
++ * @packet_type: the batman packet type this frame came in
+  *
+  * batadv_bla_rx avoidance checks if:
+  *  * we have to race for a claim
+@@ -1826,7 +1826,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+  * further process the skb.
+  */
+ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-		   unsigned short vid, bool is_bcast)
++		   unsigned short vid, int packet_type)
+ {
+ 	struct batadv_bla_backbone_gw *backbone_gw;
+ 	struct ethhdr *ethhdr;
+@@ -1848,9 +1848,24 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		goto handled;
  
---nextPart3372165.47aDjYEo1S
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Friday, 18 September 2020 05:03:19 CEST Xiyu Yang wrote:
-> batadv_neigh_node_create() is used to create a neigh node object, whose
-> fields will be initialized with the specific object. When a new
-> reference of the specific object is created during the initialization,
-> its refcount should be increased.
-> 
-> However, when "neigh_node" object initializes its orig_node field with
-> the "orig_node" object, the function forgets to hold the refcount of the
-> "orig_node", causing a potential refcount leak and use-after-free issue
-> for the reason that the object can be freed in other places.
-> 
-> Fix this issue by increasing the refcount of orig_node object during the
-> initialization and adding corresponding batadv_orig_node_put() in
-> batadv_neigh_node_release().
-
-
-I will most likely not add this patch because I have concerns that this would 
-need an active garbage collector to fix the reference counter loop.
-
-Please check batadv_neigh_node::orig_node (whose reference counter you've just 
-incremented) and batadv_orig_node::neigh_list (with batadv_neigh_node). And at 
-the same time the batadv_neigh_node_release and batadv_orig_node_release. So 
-the originator will only free the reference (and thus potentially call 
-batadv_neigh_node_release) when its own reference counter is zero. But it 
-cannot become zero because the neigh_node is holding a reference to this 
-originator.
-
-Kind regards,
-	Sven
-
---nextPart3372165.47aDjYEo1S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9kUjMACgkQXYcKB8Em
-e0Z1hw/9Hhq8F/9JHS0zWSv7J58oJSa2gi0ONWuLkTN6XX2g0qY/w9Kn1vbPTIK1
-VCI2bDDDTbZxk51mxJO0kpE6Q5r8wrFrV+ESoQE/ccFDy6OxtUxCveL6jsfwXIWw
-zgQY44iumPlxrjnc0uOCR+7vbAFXjz2u9EekF/gv4etbDTvp0ZNt0QM4hAvDXsBH
-q3RHY6ywuwUu7nRlXPNcmGWNrCpUrindQiRUB4vZXoLckjRgD3MerFjSnd1kp32B
-Wd3WPqb+nggqNX8eCX4GGsLXk+wsstIDhtG/aLwNpJWd2kAkfq2zeWQ0GltzdUQk
-Z17hIPOGEqKCgGmC7akHunAo9M3TFkglnO1NgYL36j6RcRgQV6VLClovP6Qk8Iin
-kPyrUWXOH9slZnIH+enp1vggkepKmI8kMG+5OVVNXfMoRMbVSyboiKuyI5+Tig3A
-8U+9Z6H29fhNv7E7BSCRg+VfEZXInjBcKuwSD6bZ4IE8RA3HFh0ZcOIjBiWUekUm
-tP890PFNb2mTJzOHZ8cFbyxuJ64o2R8pEQvVNdw8y2oth01QEzVVsaAL0QFQG8g/
-rtBKpZqog0kC+PIysIaFhGupjrZzb/+hvHpamo1JDcdGzZ5Ve8U0bmJPOc4CfeRA
-r8RZz31EgGebqlbdGPvWPhZAY3NcMVq0LBS78WCDUNOiPc589Co=
-=5J+s
------END PGP SIGNATURE-----
-
---nextPart3372165.47aDjYEo1S--
-
+ 	if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
+-		/* don't allow broadcasts while requests are in flight */
+-		if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast)
+-			goto handled;
++		/* don't allow multicast packets while requests are in flight */
++		if (is_multicast_ether_addr(ethhdr->h_dest))
++			/* Both broadcast flooding or multicast-via-unicasts
++			 * delivery might send to multiple backbone gateways
++			 * sharing the same LAN and therefore need to coordinate
++			 * which backbone gateway forwards into the LAN,
++			 * by claiming the payload source address.
++			 *
++			 * Broadcast flooding and multicast-via-unicasts
++			 * delivery use the following two batman packet types.
++			 * Note: explicitly exclude BATADV_UNICAST_4ADDR,
++			 * as the DHCP gateway feature will send explicitly
++			 * to only one BLA gateway, so the claiming process
++			 * should be avoided there.
++			 */
++			if (packet_type == BATADV_BCAST ||
++			    packet_type == BATADV_UNICAST)
++				goto handled;
+ 
+ 	ether_addr_copy(search_claim.addr, ethhdr->h_source);
+ 	search_claim.vid = vid;
+@@ -1885,13 +1900,14 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		goto allow;
+ 	}
+ 
+-	/* if it is a broadcast ... */
+-	if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast) {
++	/* if it is a multicast ... */
++	if (is_multicast_ether_addr(ethhdr->h_dest) &&
++	    (packet_type == BATADV_BCAST || packet_type == BATADV_UNICAST)) {
+ 		/* ... drop it. the responsible gateway is in charge.
+ 		 *
+-		 * We need to check is_bcast because with the gateway
++		 * We need to check packet type because with the gateway
+ 		 * feature, broadcasts (like DHCP requests) may be sent
+-		 * using a unicast packet type.
++		 * using a unicast 4 address packet type. See comment above.
+ 		 */
+ 		goto handled;
+ 	} else {
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index 41edb2c4a327..a81c41b636f9 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -35,7 +35,7 @@ static inline bool batadv_bla_is_loopdetect_mac(const uint8_t *mac)
+ 
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-		   unsigned short vid, bool is_bcast);
++		   unsigned short vid, int packet_type);
+ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		   unsigned short vid);
+ bool batadv_bla_is_backbone_gw(struct sk_buff *skb,
+@@ -66,7 +66,7 @@ bool batadv_bla_check_claim(struct batadv_priv *bat_priv, u8 *addr,
+ 
+ static inline bool batadv_bla_rx(struct batadv_priv *bat_priv,
+ 				 struct sk_buff *skb, unsigned short vid,
+-				 bool is_bcast)
++				 int packet_type)
+ {
+ 	return false;
+ }
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 3d037b17f3a7..cdde943c1b83 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -424,10 +424,10 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	struct vlan_ethhdr *vhdr;
+ 	struct ethhdr *ethhdr;
+ 	unsigned short vid;
+-	bool is_bcast;
++	int packet_type;
+ 
+ 	batadv_bcast_packet = (struct batadv_bcast_packet *)skb->data;
+-	is_bcast = (batadv_bcast_packet->packet_type == BATADV_BCAST);
++	packet_type = batadv_bcast_packet->packet_type;
+ 
+ 	skb_pull_rcsum(skb, hdr_size);
+ 	skb_reset_mac_header(skb);
+@@ -470,7 +470,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	/* Let the bridge loop avoidance check the packet. If will
+ 	 * not handle it, we can safely push it up.
+ 	 */
+-	if (batadv_bla_rx(bat_priv, skb, vid, is_bcast))
++	if (batadv_bla_rx(bat_priv, skb, vid, packet_type))
+ 		goto out;
+ 
+ 	if (orig_node)
+-- 
+2.20.1
 
