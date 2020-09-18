@@ -1,65 +1,78 @@
-Return-Path: <sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/6] batman-adv: bla: fix type misuse for backbone_gw hash indexing
-Date: Fri, 18 Sep 2020 15:19:51 +0200
-Message-Id: <20200918131956.21598-2-sw@simonwunderlich.de>
-In-Reply-To: <20200918131956.21598-1-sw@simonwunderlich.de>
-References: <20200918131956.21598-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/6] pull request for net: batman-adv 2020-09-18
+Date: Fri, 18 Sep 2020 15:19:50 +0200
+Message-Id: <20200918131956.21598-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <ll@simonwunderlich.de>
+Hi David,
 
-It seems that due to a copy & paste error the void pointer
-in batadv_choose_backbone_gw() is cast to the wrong type.
+here are some late bugfixes which we would like to have integrated into n=
+et.
 
-Fixing this by using "struct batadv_bla_backbone_gw" instead of "struct
-batadv_bla_claim" which better matches the caller's side.
+Please pull or let me know of any problem!
 
-For now it seems that we were lucky because the two structs both have
-their orig/vid and addr/vid in the beginning. However I stumbled over
-this issue when I was trying to add some debug variables in front of
-"orig" in batadv_backbone_gw, which caused hash lookups to fail.
+Thank you,
+      Simon
 
-Fixes: 07568d0369f9 ("batman-adv: don't rely on positions in struct for hashing")
-Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bridge_loop_avoidance.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+The following changes since commit 279e89b2281af3b1a9f04906e157992c19c9f1=
+63:
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 8500f56cbd10..d8c5d3170676 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -83,11 +83,12 @@ static inline u32 batadv_choose_claim(const void *data, u32 size)
-  */
- static inline u32 batadv_choose_backbone_gw(const void *data, u32 size)
- {
--	const struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
-+	const struct batadv_bla_backbone_gw *gw;
- 	u32 hash = 0;
- 
--	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
--	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
-+	gw = (struct batadv_bla_backbone_gw *)data;
-+	hash = jhash(&gw->orig, sizeof(gw->orig), hash);
-+	hash = jhash(&gw->vid, sizeof(gw->vid), hash);
- 
- 	return hash % size;
- }
--- 
-2.20.1
+  batman-adv: bla: use netif_rx_ni when not in interrupt context (2020-08=
+-18 19:40:03 +0200)
 
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20200=
+918
+
+for you to fetch changes up to 2369e827046920ef0599e6a36b975ac5c0a359c2:
+
+  batman-adv: mcast: fix duplicate mcast packets from BLA backbone to mes=
+h (2020-09-15 10:05:24 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - fix wrong type use in backbone_gw hash, by Linus Luessing
+
+ - disable TT re-routing for multicast packets, by Linus Luessing
+
+ - Add missing include for in_interrupt(), by Sven Eckelmann
+
+ - fix BLA/multicast issues for packets sent via unicast,
+   by Linus Luessing (3 patches)
+
+----------------------------------------------------------------
+Linus L=C3=BCssing (5):
+      batman-adv: bla: fix type misuse for backbone_gw hash indexing
+      batman-adv: mcast/TT: fix wrongly dropped or rerouted packets
+      batman-adv: mcast: fix duplicate mcast packets in BLA backbone from=
+ LAN
+      batman-adv: mcast: fix duplicate mcast packets in BLA backbone from=
+ mesh
+      batman-adv: mcast: fix duplicate mcast packets from BLA backbone to=
+ mesh
+
+Sven Eckelmann (1):
+      batman-adv: Add missing include for in_interrupt()
+
+ net/batman-adv/bridge_loop_avoidance.c | 145 ++++++++++++++++++++++++++-=
+------
+ net/batman-adv/bridge_loop_avoidance.h |   4 +-
+ net/batman-adv/multicast.c             |  46 ++++++++---
+ net/batman-adv/multicast.h             |  15 ++++
+ net/batman-adv/routing.c               |   4 +
+ net/batman-adv/soft-interface.c        |  11 ++-
+ 6 files changed, 179 insertions(+), 46 deletions(-)
