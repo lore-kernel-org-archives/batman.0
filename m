@@ -1,49 +1,65 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Fri, 4 Sep 2020 20:44:03 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: Is it possible to send all batman-adv traffic through http proxy
- cache?
-Message-ID: <20200904184403.GA2391@otheros>
-References: <CA+RexfHNV+HY28OiuHKNy4Rn=MM4gxOU0xCiVG0z56dfnv_z6g@mail.gmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/6] batman-adv: bla: fix type misuse for backbone_gw hash indexing
+Date: Fri, 18 Sep 2020 15:19:51 +0200
+Message-Id: <20200918131956.21598-2-sw@simonwunderlich.de>
+In-Reply-To: <20200918131956.21598-1-sw@simonwunderlich.de>
+References: <20200918131956.21598-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CA+RexfHNV+HY28OiuHKNy4Rn=MM4gxOU0xCiVG0z56dfnv_z6g@mail.gmail.com>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <ll@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
 
-Hi, 
+From: Linus Lüssing <ll@simonwunderlich.de>
 
-On Fri, Aug 28, 2020 at 06:00:59PM -0400, Chuck Ritola wrote:
-> Is it possible to send all batman-adv ethernet traffic through an HTTP
-> proxy cache such as Squid?
+It seems that due to a copy & paste error the void pointer
+in batadv_choose_backbone_gw() is cast to the wrong type.
 
-Not really, there are a bunch of headers too many for an HTTP
-caching proxy to work with batman-adv.
+Fixing this by using "struct batadv_bla_backbone_gw" instead of "struct
+batadv_bla_claim" which better matches the caller's side.
 
-I'm wondering, are HTTP caching proxies actually still useful these
-days where all major sides have switched to HTTPS?
+For now it seems that we were lucky because the two structs both have
+their orig/vid and addr/vid in the beginning. However I stumbled over
+this issue when I was trying to add some debug variables in front of
+"orig" in batadv_backbone_gw, which caused hash lookups to fail.
 
-> Another consideration was ALFRED but it doesn't appear to be easily
-> integratable with existing software.
+Fixes: 07568d0369f9 ("batman-adv: don't rely on positions in struct for hashing")
+Signed-off-by: Linus Lüssing <ll@simonwunderlich.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Alfred is more useful for little bits of information, not really
-for complete packet streams.
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 8500f56cbd10..d8c5d3170676 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -83,11 +83,12 @@ static inline u32 batadv_choose_claim(const void *data, u32 size)
+  */
+ static inline u32 batadv_choose_backbone_gw(const void *data, u32 size)
+ {
+-	const struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
++	const struct batadv_bla_backbone_gw *gw;
+ 	u32 hash = 0;
+ 
+-	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
+-	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
++	gw = (struct batadv_bla_backbone_gw *)data;
++	hash = jhash(&gw->orig, sizeof(gw->orig), hash);
++	hash = jhash(&gw->vid, sizeof(gw->vid), hash);
+ 
+ 	return hash % size;
+ }
+-- 
+2.20.1
 
-
-The "best" solution I could think of right now for limited uplink
-bandwidths is hosting content within your mesh network instead.
-Like setting up a Seafile or MediaGoblin, for instance.
-
-Or using P2P technologies, like Bittorrent. Although you might
-need to be careful with this particular one that it won't greedly
-occupy the rest of the bandwidth your uplink has left, if content is
-still mainly shared over the uplink and not within the mesh.
-
-Regards, Linus
