@@ -1,10 +1,10 @@
 Return-Path: <razor@blackwall.org>
 From: Nikolay Aleksandrov <razor@blackwall.org>
-Subject: [PATCH net-next v2 06/16] net: bridge: mcast: rename br_ip's u member to dst
-Date: Tue, 22 Sep 2020 10:30:17 +0300
-Message-Id: <20200922073027.1196992-7-razor@blackwall.org>
-In-Reply-To: <20200922073027.1196992-1-razor@blackwall.org>
-References: <20200922073027.1196992-1-razor@blackwall.org>
+Subject: [PATCH net-next 06/16] net: bridge: mcast: rename br_ip's u member to dst
+Date: Mon, 21 Sep 2020 13:55:16 +0300
+Message-Id: <20200921105526.1056983-7-razor@blackwall.org>
+In-Reply-To: <20200921105526.1056983-1-razor@blackwall.org>
+References: <20200921105526.1056983-1-razor@blackwall.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,27 +17,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: netdev@vger.kernel.org
-Cc: roopa@nvidia.com, davem@davemloft.net, bridge@lists.linux-foundation.org, Nikolay Aleksandrov <nikolay@nvidia.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: roopa@nvidia.com, davem@davemloft.net, bridge@lists.linux-foundation.org, Nikolay Aleksandrov <nikolay@nvidia.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Nikolay Aleksandrov <nikolay@nvidia.com>
 
 Since now we have src in br_ip, u no longer makes sense so rename
 it to dst. No functional changes.
 
-v2: fix build with CONFIG_BATMAN_ADV_MCAST
-
 CC: Marek Lindner <mareklindner@neomailbox.ch>
 CC: Simon Wunderlich <sw@simonwunderlich.de>
-CC: Antonio Quartulli <a@unstable.cc>
+CC: Antonio Quartulli <a@unstable.cc
 CC: Sven Eckelmann <sven@narfation.org>
 CC: b.a.t.m.a.n@lists.open-mesh.org
 Signed-off-by: Nikolay Aleksandrov <nikolay@nvidia.com>
 ---
  include/linux/if_bridge.h  |  2 +-
- net/batman-adv/multicast.c | 14 +++++++-------
+ net/batman-adv/multicast.c | 10 +++++-----
  net/bridge/br_mdb.c        | 16 ++++++++--------
  net/bridge/br_multicast.c  | 26 +++++++++++++-------------
- 4 files changed, 29 insertions(+), 29 deletions(-)
+ 4 files changed, 27 insertions(+), 27 deletions(-)
 
 diff --git a/include/linux/if_bridge.h b/include/linux/if_bridge.h
 index 4fb9c4954f3a..556caed00258 100644
@@ -53,7 +51,7 @@ index 4fb9c4954f3a..556caed00258 100644
  	__u16           vid;
  };
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 1622c3f5898f..7dda0f7b3d96 100644
+index 1622c3f5898f..2317c0d69b58 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
 @@ -220,7 +220,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
@@ -65,19 +63,6 @@ index 1622c3f5898f..7dda0f7b3d96 100644
  			flags &= ~BATADV_MCAST_WANT_NO_RTR6;
  
  		list_del(&br_ip_entry->list);
-@@ -561,10 +561,10 @@ batadv_mcast_mla_softif_get(struct net_device *dev,
- static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
- {
- 	if (src->proto == htons(ETH_P_IP))
--		ip_eth_mc_map(src->u.ip4, dst);
-+		ip_eth_mc_map(src->dst.ip4, dst);
- #if IS_ENABLED(CONFIG_IPV6)
- 	else if (src->proto == htons(ETH_P_IPV6))
--		ipv6_eth_mc_map(&src->u.ip6, dst);
-+		ipv6_eth_mc_map(&src->dst.ip6, dst);
- #endif
- 	else
- 		eth_zero_addr(dst);
 @@ -608,11 +608,11 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
  				continue;
  
