@@ -1,52 +1,276 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <razor@blackwall.org>
+From: Nikolay Aleksandrov <razor@blackwall.org>
+Subject: [PATCH net-next v2 06/16] net: bridge: mcast: rename br_ip's u member to dst
+Date: Tue, 22 Sep 2020 10:30:17 +0300
+Message-Id: <20200922073027.1196992-7-razor@blackwall.org>
+In-Reply-To: <20200922073027.1196992-1-razor@blackwall.org>
+References: <20200922073027.1196992-1-razor@blackwall.org>
 MIME-Version: 1.0
-References: <CADJ1cURtCsWdy6rovfgb_XPhbsTc5epCv3yLgRCLcOVjfNSFdw@mail.gmail.com>
- <CADJ1cUSum9bHHBZB3gKdXukoqqDxk_f2nO38YKEDjvyHs0=qXA@mail.gmail.com>
- <38142483.hY40ij8To5@ripper> <2590739.vkdJLyYtQh@ripper>
-In-Reply-To: <2590739.vkdJLyYtQh@ripper>
-From: dan <dandenson@gmail.com>
-Date: Fri, 11 Sep 2020 07:25:17 -0600
-Message-ID: <CAA_JP8URSGzzCRqG4wrOB585PqXyMud2AA8w0W1SAstxeHtYhg@mail.gmail.com>
-Subject: Re: Passing VID-aware ethernet frames on plain batX interfaces
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: netdev@vger.kernel.org
+Cc: roopa@nvidia.com, davem@davemloft.net, bridge@lists.linux-foundation.org, Nikolay Aleksandrov <nikolay@nvidia.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-I see value in both methods, but for my use case I'm most interested
-in bat0 as the 'fabric' so the batman-adv nodes don't need any
-additional configuration to carry the VLANs.
+From: Nikolay Aleksandrov <nikolay@nvidia.com>
 
-so, based on the previous statement, is the way to make bat0 agnostic
-about VLANs to create a bridge br0 and put bat0 in br0 and then make a
-br0.10 vlan interface?
+Since now we have src in br_ip, u no longer makes sense so rename
+it to dst. No functional changes.
 
+v2: fix build with CONFIG_BATMAN_ADV_MCAST
 
-On Fri, Sep 11, 2020 at 6:50 AM Sven Eckelmann <sven@narfation.org> wrote:
->
-> On Friday, 11 September 2020 14:48:19 CEST Sven Eckelmann wrote:
-> > On Friday, 11 September 2020 14:19:59 CEST Alessandro Bolletta wrote:
-> > > So you mean that it is not feasible to create a (single) linux network
-> > > interface that let me send traffic on the batman-adv network in an
-> > > untagged or tagged way, though the same interface I mean?
-> >
-> > batman-adv is depending on the Linux code telling it what VLAN it should
-> > handle (through ndo_vlan_rx_add_vid and ndo_vlan_rx_kill_vid). So something
-> > like the 8021q driver or the bridge code for vlans. Only when this was done,
-> > it will also handle the addresses in TT. So no, bat0 is not enough to
-> > transport something like an ethernet frame tagged as vlan1. You also need
-> > bat0.1 (assuming this is the vlan interface for VID 1). But it is then not
-> > really relevant for it whether the data was send through bat0.1 or was somehow
-> > else tagged and then put into bat0.
->
-> Btw. why are you now using VLANs on top of bat0 - weren't you trying before to
-> have multiple mesh clouds by using VLAN (or VLAN-like) technologies below
-> bat0?
->
-> Kind regards,
->         Sven
+CC: Marek Lindner <mareklindner@neomailbox.ch>
+CC: Simon Wunderlich <sw@simonwunderlich.de>
+CC: Antonio Quartulli <a@unstable.cc>
+CC: Sven Eckelmann <sven@narfation.org>
+CC: b.a.t.m.a.n@lists.open-mesh.org
+Signed-off-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+---
+ include/linux/if_bridge.h  |  2 +-
+ net/batman-adv/multicast.c | 14 +++++++-------
+ net/bridge/br_mdb.c        | 16 ++++++++--------
+ net/bridge/br_multicast.c  | 26 +++++++++++++-------------
+ 4 files changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/include/linux/if_bridge.h b/include/linux/if_bridge.h
+index 4fb9c4954f3a..556caed00258 100644
+--- a/include/linux/if_bridge.h
++++ b/include/linux/if_bridge.h
+@@ -25,7 +25,7 @@ struct br_ip {
+ #if IS_ENABLED(CONFIG_IPV6)
+ 		struct in6_addr ip6;
+ #endif
+-	} u;
++	} dst;
+ 	__be16		proto;
+ 	__u16           vid;
+ };
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 1622c3f5898f..7dda0f7b3d96 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -220,7 +220,7 @@ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
+ 		 * address here, only IPv6 ones
+ 		 */
+ 		if (br_ip_entry->addr.proto == htons(ETH_P_IPV6) &&
+-		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.u.ip6))
++		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
+ 			flags &= ~BATADV_MCAST_WANT_NO_RTR6;
+ 
+ 		list_del(&br_ip_entry->list);
+@@ -561,10 +561,10 @@ batadv_mcast_mla_softif_get(struct net_device *dev,
+ static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
+ {
+ 	if (src->proto == htons(ETH_P_IP))
+-		ip_eth_mc_map(src->u.ip4, dst);
++		ip_eth_mc_map(src->dst.ip4, dst);
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	else if (src->proto == htons(ETH_P_IPV6))
+-		ipv6_eth_mc_map(&src->u.ip6, dst);
++		ipv6_eth_mc_map(&src->dst.ip6, dst);
+ #endif
+ 	else
+ 		eth_zero_addr(dst);
+@@ -608,11 +608,11 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
+ 				continue;
+ 
+ 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
+-			    ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
++			    ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
+ 				continue;
+ 
+ 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR4) &&
+-			    !ipv4_is_local_multicast(br_ip_entry->addr.u.ip4))
++			    !ipv4_is_local_multicast(br_ip_entry->addr.dst.ip4))
+ 				continue;
+ 		}
+ 
+@@ -622,11 +622,11 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
+ 				continue;
+ 
+ 			if (tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
+-			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.u.ip6))
++			    ipv6_addr_is_ll_all_nodes(&br_ip_entry->addr.dst.ip6))
+ 				continue;
+ 
+ 			if (!(tvlv_flags & BATADV_MCAST_WANT_NO_RTR6) &&
+-			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.u.ip6) >
++			    IPV6_ADDR_MC_SCOPE(&br_ip_entry->addr.dst.ip6) >
+ 			    IPV6_ADDR_SCOPE_LINKLOCAL)
+ 				continue;
+ 		}
+diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
+index 269ffd2e549b..a1ff0a372185 100644
+--- a/net/bridge/br_mdb.c
++++ b/net/bridge/br_mdb.c
+@@ -70,10 +70,10 @@ static void __mdb_entry_to_br_ip(struct br_mdb_entry *entry, struct br_ip *ip)
+ 	ip->vid = entry->vid;
+ 	ip->proto = entry->addr.proto;
+ 	if (ip->proto == htons(ETH_P_IP))
+-		ip->u.ip4 = entry->addr.u.ip4;
++		ip->dst.ip4 = entry->addr.u.ip4;
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	else
+-		ip->u.ip6 = entry->addr.u.ip6;
++		ip->dst.ip6 = entry->addr.u.ip6;
+ #endif
+ }
+ 
+@@ -158,10 +158,10 @@ static int __mdb_fill_info(struct sk_buff *skb,
+ 	e.ifindex = ifindex;
+ 	e.vid = mp->addr.vid;
+ 	if (mp->addr.proto == htons(ETH_P_IP))
+-		e.addr.u.ip4 = mp->addr.u.ip4;
++		e.addr.u.ip4 = mp->addr.dst.ip4;
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	if (mp->addr.proto == htons(ETH_P_IPV6))
+-		e.addr.u.ip6 = mp->addr.u.ip6;
++		e.addr.u.ip6 = mp->addr.dst.ip6;
+ #endif
+ 	e.addr.proto = mp->addr.proto;
+ 	nest_ent = nla_nest_start_noflag(skb,
+@@ -474,10 +474,10 @@ static void br_mdb_switchdev_host_port(struct net_device *dev,
+ 	};
+ 
+ 	if (mp->addr.proto == htons(ETH_P_IP))
+-		ip_eth_mc_map(mp->addr.u.ip4, mdb.addr);
++		ip_eth_mc_map(mp->addr.dst.ip4, mdb.addr);
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	else
+-		ipv6_eth_mc_map(&mp->addr.u.ip6, mdb.addr);
++		ipv6_eth_mc_map(&mp->addr.dst.ip6, mdb.addr);
+ #endif
+ 
+ 	mdb.obj.orig_dev = dev;
+@@ -520,10 +520,10 @@ void br_mdb_notify(struct net_device *dev,
+ 
+ 	if (pg) {
+ 		if (mp->addr.proto == htons(ETH_P_IP))
+-			ip_eth_mc_map(mp->addr.u.ip4, mdb.addr);
++			ip_eth_mc_map(mp->addr.dst.ip4, mdb.addr);
+ #if IS_ENABLED(CONFIG_IPV6)
+ 		else
+-			ipv6_eth_mc_map(&mp->addr.u.ip6, mdb.addr);
++			ipv6_eth_mc_map(&mp->addr.dst.ip6, mdb.addr);
+ #endif
+ 		mdb.obj.orig_dev = pg->port->dev;
+ 		switch (type) {
+diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
+index a899c22c8f57..e1fb822b9ddb 100644
+--- a/net/bridge/br_multicast.c
++++ b/net/bridge/br_multicast.c
+@@ -86,7 +86,7 @@ static struct net_bridge_mdb_entry *br_mdb_ip4_get(struct net_bridge *br,
+ 	struct br_ip br_dst;
+ 
+ 	memset(&br_dst, 0, sizeof(br_dst));
+-	br_dst.u.ip4 = dst;
++	br_dst.dst.ip4 = dst;
+ 	br_dst.proto = htons(ETH_P_IP);
+ 	br_dst.vid = vid;
+ 
+@@ -101,7 +101,7 @@ static struct net_bridge_mdb_entry *br_mdb_ip6_get(struct net_bridge *br,
+ 	struct br_ip br_dst;
+ 
+ 	memset(&br_dst, 0, sizeof(br_dst));
+-	br_dst.u.ip6 = *dst;
++	br_dst.dst.ip6 = *dst;
+ 	br_dst.proto = htons(ETH_P_IPV6);
+ 	br_dst.vid = vid;
+ 
+@@ -126,11 +126,11 @@ struct net_bridge_mdb_entry *br_mdb_get(struct net_bridge *br,
+ 
+ 	switch (skb->protocol) {
+ 	case htons(ETH_P_IP):
+-		ip.u.ip4 = ip_hdr(skb)->daddr;
++		ip.dst.ip4 = ip_hdr(skb)->daddr;
+ 		break;
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	case htons(ETH_P_IPV6):
+-		ip.u.ip6 = ipv6_hdr(skb)->daddr;
++		ip.dst.ip6 = ipv6_hdr(skb)->daddr;
+ 		break;
+ #endif
+ 	default:
+@@ -625,9 +625,9 @@ static struct sk_buff *br_multicast_alloc_query(struct net_bridge *br,
+ 
+ 	switch (group->proto) {
+ 	case htons(ETH_P_IP):
+-		ip4_dst = ip_dst ? ip_dst->u.ip4 : htonl(INADDR_ALLHOSTS_GROUP);
++		ip4_dst = ip_dst ? ip_dst->dst.ip4 : htonl(INADDR_ALLHOSTS_GROUP);
+ 		return br_ip4_multicast_alloc_query(br, pg,
+-						    ip4_dst, group->u.ip4,
++						    ip4_dst, group->dst.ip4,
+ 						    with_srcs, over_lmqt,
+ 						    sflag, igmp_type,
+ 						    need_rexmit);
+@@ -636,13 +636,13 @@ static struct sk_buff *br_multicast_alloc_query(struct net_bridge *br,
+ 		struct in6_addr ip6_dst;
+ 
+ 		if (ip_dst)
+-			ip6_dst = ip_dst->u.ip6;
++			ip6_dst = ip_dst->dst.ip6;
+ 		else
+ 			ipv6_addr_set(&ip6_dst, htonl(0xff020000), 0, 0,
+ 				      htonl(1));
+ 
+ 		return br_ip6_multicast_alloc_query(br, pg,
+-						    &ip6_dst, &group->u.ip6,
++						    &ip6_dst, &group->dst.ip6,
+ 						    with_srcs, over_lmqt,
+ 						    sflag, igmp_type,
+ 						    need_rexmit);
+@@ -906,7 +906,7 @@ static int br_ip4_multicast_add_group(struct net_bridge *br,
+ 		return 0;
+ 
+ 	memset(&br_group, 0, sizeof(br_group));
+-	br_group.u.ip4 = group;
++	br_group.dst.ip4 = group;
+ 	br_group.proto = htons(ETH_P_IP);
+ 	br_group.vid = vid;
+ 	filter_mode = igmpv2 ? MCAST_EXCLUDE : MCAST_INCLUDE;
+@@ -930,7 +930,7 @@ static int br_ip6_multicast_add_group(struct net_bridge *br,
+ 		return 0;
+ 
+ 	memset(&br_group, 0, sizeof(br_group));
+-	br_group.u.ip6 = *group;
++	br_group.dst.ip6 = *group;
+ 	br_group.proto = htons(ETH_P_IPV6);
+ 	br_group.vid = vid;
+ 	filter_mode = mldv1 ? MCAST_EXCLUDE : MCAST_INCLUDE;
+@@ -1079,7 +1079,7 @@ static void br_multicast_send_query(struct net_bridge *br,
+ 	    !br_opt_get(br, BROPT_MULTICAST_QUERIER))
+ 		return;
+ 
+-	memset(&br_group.u, 0, sizeof(br_group.u));
++	memset(&br_group.dst, 0, sizeof(br_group.dst));
+ 
+ 	if (port ? (own_query == &port->ip4_own_query) :
+ 		   (own_query == &br->ip4_own_query)) {
+@@ -2506,7 +2506,7 @@ static void br_ip4_multicast_leave_group(struct net_bridge *br,
+ 	own_query = port ? &port->ip4_own_query : &br->ip4_own_query;
+ 
+ 	memset(&br_group, 0, sizeof(br_group));
+-	br_group.u.ip4 = group;
++	br_group.dst.ip4 = group;
+ 	br_group.proto = htons(ETH_P_IP);
+ 	br_group.vid = vid;
+ 
+@@ -2530,7 +2530,7 @@ static void br_ip6_multicast_leave_group(struct net_bridge *br,
+ 	own_query = port ? &port->ip6_own_query : &br->ip6_own_query;
+ 
+ 	memset(&br_group, 0, sizeof(br_group));
+-	br_group.u.ip6 = *group;
++	br_group.dst.ip6 = *group;
+ 	br_group.proto = htons(ETH_P_IPV6);
+ 	br_group.vid = vid;
+ 
+-- 
+2.25.4
+
