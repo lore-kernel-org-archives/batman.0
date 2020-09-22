@@ -1,12 +1,17 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Passing VID-aware ethernet frames on plain batX interfaces
-Date: Fri, 11 Sep 2020 16:12:44 +0200
-Message-ID: <6532047.u29W2yvW7A@sven-edge>
-In-Reply-To: <CAA_JP8URSGzzCRqG4wrOB585PqXyMud2AA8w0W1SAstxeHtYhg@mail.gmail.com>
-References: <CADJ1cURtCsWdy6rovfgb_XPhbsTc5epCv3yLgRCLcOVjfNSFdw@mail.gmail.com> <2590739.vkdJLyYtQh@ripper> <CAA_JP8URSGzzCRqG4wrOB585PqXyMud2AA8w0W1SAstxeHtYhg@mail.gmail.com>
+Date: Tue, 22 Sep 2020 19:55:20 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [PATCH net-next v2 06/16] net: bridge: mcast: rename br_ip's u
+ member to dst
+Message-ID: <20200922175519.GB10212@otheros>
+References: <20200922073027.1196992-1-razor@blackwall.org>
+ <20200922073027.1196992-7-razor@blackwall.org>
+ <20200922175119.GA10212@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2104393.CiIkOxTNtG"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20200922175119.GA10212@otheros>
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,44 +20,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: dan <dandenson@gmail.com>
+Cc: netdev@vger.kernel.org, roopa@nvidia.com, davem@davemloft.net, bridge@lists.linux-foundation.org, Nikolay Aleksandrov <nikolay@nvidia.com>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
 
- 
---nextPart2104393.CiIkOxTNtG
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Tue, Sep 22, 2020 at 07:51:19PM +0200, Linus L=C3=BCssing wrote:
+> I don't see a "src" in br_ip in net-next/master at the moment. Or
+> is that supposed to be added with your IGMPv3 implementation in
+> the future?
 
-On Friday, 11 September 2020 15:25:17 CEST dan wrote:
-> so, based on the previous statement, is the way to make bat0 agnostic
-> about VLANs to create a bridge br0 and put bat0 in br0 and then make a
-> br0.10 vlan interface?
+Ah, sorry, found the according patch (*) it in my other inbox.
+Nevermind.
 
-Not at the moment.
-
-Kind regards,
-	Sven
---nextPart2104393.CiIkOxTNtG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9bhdwACgkQXYcKB8Em
-e0YrYBAA0hko9sps61lJad+ouyZPwhxqmXfDa9FlYem49AONWYSuP3/FDjjm4JaQ
-jUXAjlm1+QQd0dPAZ2FDQvaZ2ogUTEzGpNrI8LWPbUEsKhVntpnoy8dddwLE/oOh
-sPnWkch3SNjlcxsSgnt8W5ZWEC/CpnRzfgg1RNe8Vc/ZLltV5R5p22rYnOXT7y5G
-21zvUYuLtMNRML28nh+5PSz051m8maF/NkPktCrTetBP9Me8OeUfSyBhQ7H8BJgQ
-VIhBDxpNN3gK6FLrU1HBBidDQqPnGGAmxu3G1arN7ThejQceQHBfj5G4iyKGFZDa
-byQ6uy/0CFRVE6iCPGWolN/LN/fZACGrbqZtdHoO/2vgHlzYoFchPr/ZIiBuliNK
-RinBsfXVSxQM2217L/aiuhIgPdEoauvhlnr8ud7gOo4b3OSDiPSC47twZ/siPFg9
-FicLI/Azgb7sZFliwC8FZeIJf/c6U8qNRFlzC/i2pxuuFtqqlUCeP3+MUPywlfH6
-s2WEzvMAH5A540+UC4hA1L5y225sFEcGtu0OL6mUuYY4h+dKuu5vsRGAu+uiWb0R
-qgbaKluy6fjWWUkqYXlT56K7nywZrJ8wX0g/gIPKBRrLIDSlVhC2rC9F5c0luWNt
-OIqXYYkzSGu0F6J6SZJyQW9FYisuIqWGarcQ8ahYDp37RHUHjtA=
-=WvlR
------END PGP SIGNATURE-----
-
---nextPart2104393.CiIkOxTNtG--
-
-
+(*): [PATCH net-next v2 04/16] net: bridge: add src field to br_ip=20
+https://patchwork.ozlabs.org/project/netdev/patch/20200922073027.1196992-=
+5-razor@blackwall.org/
