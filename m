@@ -1,12 +1,10 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Passing VID-aware ethernet frames on plain batX interfaces
-Date: Fri, 11 Sep 2020 16:02:27 +0200
-Message-ID: <4337705.76P5Ur0oAU@sven-edge>
-In-Reply-To: <CADJ1cUQZ2YqFSVj=SNhPcC_sOjy+AkrEr=dQ=8T_0HegFou=Hw@mail.gmail.com>
-References: <CADJ1cURtCsWdy6rovfgb_XPhbsTc5epCv3yLgRCLcOVjfNSFdw@mail.gmail.com> <38142483.hY40ij8To5@ripper> <CADJ1cUQZ2YqFSVj=SNhPcC_sOjy+AkrEr=dQ=8T_0HegFou=Hw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2823689.4OuIXJuOzZ"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Date: Wed, 30 Sep 2020 05:49:15 -0700
+Message-ID: <000000000000bd1edd05b087535a@google.com>
+Subject: INFO: rcu detected stall in security_file_open (3)
+From: syzbot <syzbot+d2b6e8cc299748fecf25@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,65 +12,131 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Alessandro Bolletta <abolletta@netter.io>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, fweisbec@gmail.com, ktkhai@virtuozzo.com, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, miklos@szeredi.hu, mingo@kernel.org, mszeredi@redhat.com, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tglx@linutronix.de
 
- 
---nextPart2823689.4OuIXJuOzZ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-On Friday, 11 September 2020 15:03:13 CEST Alessandro Bolletta wrote:
-> I see. Ok for transmission purposes, but what if I have to receive a tagged
-> frame?
+syzbot found the following issue on:
 
-It should not have been send to the other node when there is no TT entry for 
-this mac + VID from the receiver.
+HEAD commit:    fb0155a0 Merge tag 'nfs-for-5.9-3' of git://git.linux-nfs...
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=10b007cf900000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=41b736b7ce1b3ea4
+dashboard link: https://syzkaller.appspot.com/bug?extid=d2b6e8cc299748fecf25
+compiler:       gcc (GCC) 10.1.0-syz 20200507
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1249c717900000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1048d9e3900000
 
-> Should I only rely to the 8021q interface (eg. bat0.1) or receive the whole
-> traffic (untagged and tagged) from the plain bat0 interface?
+The issue was bisected to:
 
-Hm?
+commit c9d8f5f0692d5960ed50970ffe63756fb8f96cdb
+Author: Kirill Tkhai <ktkhai@virtuozzo.com>
+Date:   Fri Nov 9 10:33:27 2018 +0000
 
-> If this is not feasible, is it possible to handle in someway this?
+    fuse: Protect fi->nlookup with fi->lock
 
-Hm?
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=11af769d900000
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=13af769d900000
+console output: https://syzkaller.appspot.com/x/log.txt?x=15af769d900000
 
-> A linux
-> bridge on the top of bat0 interface could make it possible?
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+d2b6e8cc299748fecf25@syzkaller.appspotmail.com
+Fixes: c9d8f5f0692d ("fuse: Protect fi->nlookup with fi->lock")
 
-No, the bridge must also enable the vlan for this bat0 interface.
+rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+rcu: 	Tasks blocked on level-0 rcu_node (CPUs 0-1):
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 3922 at kernel/sched/core.c:3013 rq_unlock kernel/sched/sched.h:1326 [inline]
+WARNING: CPU: 0 PID: 3922 at kernel/sched/core.c:3013 try_invoke_on_locked_down_task+0x21d/0x2f0 kernel/sched/core.c:3019
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 0 PID: 3922 Comm: systemd-udevd Not tainted 5.9.0-rc7-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Call Trace:
+ <IRQ>
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x198/0x1fd lib/dump_stack.c:118
+ panic+0x382/0x7fb kernel/panic.c:231
+ __warn.cold+0x20/0x4b kernel/panic.c:600
+ report_bug+0x1bd/0x210 lib/bug.c:198
+ handle_bug+0x38/0x90 arch/x86/kernel/traps.c:234
+ exc_invalid_op+0x14/0x40 arch/x86/kernel/traps.c:254
+ asm_exc_invalid_op+0x12/0x20 arch/x86/include/asm/idtentry.h:536
+RIP: 0010:try_invoke_on_locked_down_task+0x21d/0x2f0 kernel/sched/core.c:3013
+Code: 45 31 f6 49 39 c0 74 3a 8b 74 24 38 49 8d 78 18 4c 89 04 24 e8 a4 e7 08 00 4c 8b 04 24 4c 89 c7 e8 28 ab d6 06 e9 20 ff ff ff <0f> 0b e9 7d fe ff ff 4c 89 ee 48 89 ef 41 ff d4 41 89 c6 e9 08 ff
+RSP: 0018:ffffc90000007be0 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: 1ffff92000000f7e RCX: 0000000000000001
+RDX: 0000000000000000 RSI: ffffffff8162da10 RDI: ffff8880a61a2440
+RBP: ffff8880a61a2440 R08: 0000000000000033 R09: ffffffff8a05ae03
+R10: 000000000000062e R11: 0000000000000001 R12: ffffffff8162da10
+R13: ffffc90000007d08 R14: ffff8880a61a2440 R15: 0000000000000000
+ rcu_print_task_stall kernel/rcu/tree_stall.h:267 [inline]
+ print_other_cpu_stall kernel/rcu/tree_stall.h:475 [inline]
+ check_cpu_stall kernel/rcu/tree_stall.h:634 [inline]
+ rcu_pending kernel/rcu/tree.c:3639 [inline]
+ rcu_sched_clock_irq.cold+0x97e/0xdfd kernel/rcu/tree.c:2521
+ update_process_times+0x25/0xa0 kernel/time/timer.c:1710
+ tick_sched_handle+0x9b/0x180 kernel/time/tick-sched.c:176
+ tick_sched_timer+0x1d1/0x2a0 kernel/time/tick-sched.c:1328
+ __run_hrtimer kernel/time/hrtimer.c:1524 [inline]
+ __hrtimer_run_queues+0x1d5/0xfc0 kernel/time/hrtimer.c:1588
+ hrtimer_interrupt+0x334/0x940 kernel/time/hrtimer.c:1650
+ local_apic_timer_interrupt arch/x86/kernel/apic/apic.c:1080 [inline]
+ __sysvec_apic_timer_interrupt+0x147/0x5f0 arch/x86/kernel/apic/apic.c:1097
+ asm_call_irq_on_stack+0xf/0x20
+ </IRQ>
+ __run_sysvec_on_irqstack arch/x86/include/asm/irq_stack.h:37 [inline]
+ run_sysvec_on_irqstack_cond arch/x86/include/asm/irq_stack.h:89 [inline]
+ sysvec_apic_timer_interrupt+0xb2/0xf0 arch/x86/kernel/apic/apic.c:1091
+ asm_sysvec_apic_timer_interrupt+0x12/0x20 arch/x86/include/asm/idtentry.h:581
+RIP: 0010:preempt_count arch/x86/include/asm/preempt.h:26 [inline]
+RIP: 0010:check_kcov_mode kernel/kcov.c:163 [inline]
+RIP: 0010:__sanitizer_cov_trace_pc+0x9/0x60 kernel/kcov.c:197
+Code: 5d be 03 00 00 00 e9 76 af 49 02 66 0f 1f 44 00 00 48 8b be b0 01 00 00 e8 b4 ff ff ff 31 c0 c3 90 65 48 8b 14 25 c0 fe 01 00 <65> 8b 05 e0 bf 8b 7e a9 00 01 ff 00 48 8b 34 24 74 0f f6 c4 01 74
+RSP: 0018:ffffc90000f075a8 EFLAGS: 00000246
+RAX: 0000000000000000 RBX: 0000000000000004 RCX: ffffffff838a0be7
+RDX: ffff88809c62c4c0 RSI: ffff88809c62c4c0 RDI: 0000000000000005
+RBP: ffff8880a601de80 R08: 0000000000000001 R09: ffffffff8d5f79c7
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000001
+R13: 0000000000000183 R14: dffffc0000000000 R15: 0000000000000000
+ tomoyo_domain_quota_is_ok+0x31a/0x550 security/tomoyo/util.c:1070
+ tomoyo_supervisor+0x2f2/0xef0 security/tomoyo/common.c:2089
+ tomoyo_audit_path_log security/tomoyo/file.c:168 [inline]
+ tomoyo_path_permission security/tomoyo/file.c:587 [inline]
+ tomoyo_path_permission+0x270/0x3a0 security/tomoyo/file.c:573
+ tomoyo_check_open_permission+0x33e/0x380 security/tomoyo/file.c:777
+ tomoyo_file_open security/tomoyo/tomoyo.c:313 [inline]
+ tomoyo_file_open+0xa3/0xd0 security/tomoyo/tomoyo.c:308
+ security_file_open+0x52/0x4f0 security/security.c:1574
+ do_dentry_open+0x358/0x11b0 fs/open.c:804
+ do_open fs/namei.c:3251 [inline]
+ path_openat+0x1b9a/0x2730 fs/namei.c:3368
+ do_filp_open+0x17e/0x3c0 fs/namei.c:3395
+ do_sys_openat2+0x16d/0x420 fs/open.c:1168
+ do_sys_open fs/open.c:1184 [inline]
+ __do_sys_open fs/open.c:1192 [inline]
+ __se_sys_open fs/open.c:1188 [inline]
+ __x64_sys_open+0x119/0x1c0 fs/open.c:1188
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+RIP: 0033:0x7fb405960840
+Code: 73 01 c3 48 8b 0d 68 77 20 00 f7 d8 64 89 01 48 83 c8 ff c3 66 0f 1f 44 00 00 83 3d 89 bb 20 00 00 75 10 b8 02 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 1e f6 ff ff 48 89 04 24
+RSP: 002b:00007fff26dc0bd8 EFLAGS: 00000246 ORIG_RAX: 0000000000000002
+RAX: ffffffffffffffda RBX: 00007fff26dc0c70 RCX: 00007fb405960840
+RDX: 0000560daddc7fe3 RSI: 00000000000a0800 RDI: 0000560daede0670
+RBP: 00007fff26dc1100 R08: 0000560daddc7670 R09: 0000000000000010
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007fff26dc0d80
+R13: 0000560daed2da60 R14: 0000560daedeeef0 R15: 00007fff26dc0c50
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
 
-See also
-https://www.open-mesh.org/projects/batman-adv/wiki/Faq#BATMAN-Advanced-VLAN-questions
 
-Maybe Antonio wants to add more things to this discussion.
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Kind regards,
-	Sven
-
---nextPart2823689.4OuIXJuOzZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl9bg3QACgkQXYcKB8Em
-e0bddhAAzGSla8K4Z2fabst3X+L7RgPImxl6sJg49bFbGkbqYxoNZE0QO3kYufTP
-AfMMt3SKUYzGSV4xeQujPTclIr9Bn3LSfNP9z6PfwVDjgdfiuKzbkL92VIVCjG8X
-fdfLmdF0cLYtxG2JCsqM/cWxR55JHOS4cWJgTKDa5nr0ZxLyrFuKowAbKKVC1ZxC
-jv9aw3qOO1aIW8mrBJcCgjlzLunYyaeisJ+oMhlSS1np7bqZAeFWa/32LMficNWh
-Jy01he+VThTYPi4yCvkgUoxC1aYSZPxD4g6w6Ta68MFSVYpYi+YmcwCCp3t9bsE4
-7SQU6ypL6dc4aUtXmHWXbtxCTYt8ZwDFHulWHhv3D09fEK5L1lRC66psh4kkMuAU
-wFH7XKMKOoh1nT2MoM1LusaqCJ0cIc+DBhm8SIiDbgkN4smO8A0ccOHm2ELuoww8
-PlyVZ0Pi5OPV1ZGfEkehc/MHqaOu7PGGq1BRhy7tQ2dVMNFP+BNIeewudwzMiCYP
-dhyf4iVT33uEpTfLz1X0guTOIYAwxhj6TQTqBWpgkbgmS00lrROBEFZ0d6GDQmPK
-VB107caPei9qDCJXufL1fUzYjeqMoQaAlBBq/8gxjszF+yOn6yV8o+mv3nb/L0IE
-a1bg4FHtHviDAgx8ceNSPFpSBNNViykTK9210AhcDQ0HjZaZeco=
-=4gCe
------END PGP SIGNATURE-----
-
---nextPart2823689.4OuIXJuOzZ--
-
-
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches
