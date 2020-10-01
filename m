@@ -1,67 +1,115 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH 1/2] batman-adv: Prepare infrastructure for newlink settings
-Date: Sun, 11 Oct 2020 11:48:41 +0200
-Message-ID: <5766158.W2Ztyaally@sven-edge>
-In-Reply-To: <20201011093909.297580-1-sven@narfation.org>
-References: <20201011093909.297580-1-sven@narfation.org>
+Return-Path: <dvyukov@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart178047619.hTMiTNJcI3"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+References: <000000000000fb885a05b0997c54@google.com>
+In-Reply-To: <000000000000fb885a05b0997c54@google.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Thu, 1 Oct 2020 12:48:52 +0200
+Message-ID: <CACT4Y+Z5pdgzT1-Oead4Gnn-SpPinm1_MuRYD-35sDZ5TwzkZA@mail.gmail.com>
+Subject: Re: KMSAN: uninit-value in batadv_nc_worker
+Content-Type: text/plain; charset="UTF-8"
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Annika Wickert <annika.wickert@exaring.de>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: syzbot <syzbot+da9194708de785081f11@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>, Alexander Potapenko <glider@google.com>, Jakub Kicinski <kuba@kernel.org>, LKML <linux-kernel@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, Sven Eckelmann <sven@narfation.org>, sw@simonwunderlich.de, syzkaller-bugs <syzkaller-bugs@googlegroups.com>
 
- 
---nextPart178047619.hTMiTNJcI3
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Thu, Oct 1, 2020 at 12:29 PM syzbot
+<syzbot+da9194708de785081f11@syzkaller.appspotmail.com> wrote:
+>
+> Hello,
+>
+> syzbot found the following issue on:
+>
+> HEAD commit:    5edb1df2 kmsan: drop the _nosanitize string functions
+> git tree:       https://github.com/google/kmsan.git master
+> console output: https://syzkaller.appspot.com/x/log.txt?x=10cc55a7900000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=4991d22eb136035c
+> dashboard link: https://syzkaller.appspot.com/bug?extid=da9194708de785081f11
+> compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
+>
+> Unfortunately, I don't have any reproducer for this issue yet.
+>
+> IMPORTANT: if you fix the issue, please add the following tag to the commit:
+> Reported-by: syzbot+da9194708de785081f11@syzkaller.appspotmail.com
 
-Hi,
+It's somewhat unobvious how this can happen (or not?).
 
-just noticed a build problem with some older kernels.
+But may be related to:
+INFO: rcu detected stall in batadv_nc_worker (3)
+https://syzkaller.appspot.com/bug?id=6dba9b6476dd536c17afa799a72f265e448ff820
 
-On Sunday, 11 October 2020 11:39:08 CEST Sven Eckelmann wrote:
-> +#define batadv_softif_validate(__tb, __data, __extack) \
-> +       batadv_softif_validate(__tb, __data)
-> +
-> +#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
-> +       batadv_softif_newlink(__src_net, __dev, __tb, __data)
-> +
+which happens with low frequency for the past 300 days, 21 stalls in total.
 
-Seems like the compat code has to be changed slightly because the __extack was 
-not introduced at the same time for all callbacks. These both must not be 
-handled in the compat code for 4.13 and newer.
-
-Kind regards,
-	Sven
---nextPart178047619.hTMiTNJcI3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+C1PkACgkQXYcKB8Em
-e0bSxg/+MaEP8MskCrOfKxldRxl16u2tKvjY+E+1kICzVNDuLd4HvcFZowpBwAj9
-MyMkABp1B9PBJyATw0Sskv53mYepwgXQgHLP/7I0YAEyQ4LnQ1YeWU4sjzYGuSKG
-ieDgaPbJvYBdCWuNShN4cfHRytXYbBPjlGuz/0vbH9Rvgof3wDrygbBeBl3120v9
-UncUfWQb2NsE/unS7Q8deu42+WWwSLE8+2VL+GAXLYvLwWCAypegolqQV6x8GSPn
-BH6oA7Ek/YG0SThX5uS+TAJ3AmQUjPV0UQg5NmpRH0fDxc7za6c4aqO11UFGOR73
-bBUSivd+0iLFvNIP/HxPJI9y7+p3yhBasJiHcSrFz8oOEMdp7oNxD0vrBju9ADkG
-dMOVUyF7RE+lB9PpojABp5f6KKEpfWwbj4XMiQsZe1kX8Ln5/OWi6GjOnnR3MXB1
-Jw2wZlmNIrRD8TH8+1twaOjAzSprjkZT3F9hB923XBV2j7UPhMzsdpYoltBpxoXw
-jrQSyZ4ZqmPp7VYV4UFIFhjV+/yPDyyLjuEMZmaOSXqPToSqOS5odmMUTcdiyy2N
-WB1Jbf840f4OlV7Yw7S8lrwm1SWTWzRxtMsn2Irfst5caikC8p8ArdczYL/tpwY+
-F1F8PuizRWBGBMqFfd8KU6ScuFUCUMsL4CMg0Y9N1WtyMZ0GQgg=
-=6y5k
------END PGP SIGNATURE-----
-
---nextPart178047619.hTMiTNJcI3--
+If we imagine the list somehow ends up uninitialized, occasional
+infinite loops make perfect sense.
 
 
+
+> =====================================================
+> BUG: KMSAN: uninit-value in batadv_nc_purge_orig_hash net/batman-adv/network-coding.c:408 [inline]
+> BUG: KMSAN: uninit-value in batadv_nc_worker+0x1c0/0x1d70 net/batman-adv/network-coding.c:718
+> CPU: 0 PID: 7 Comm: kworker/u4:0 Not tainted 5.9.0-rc4-syzkaller #0
+> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+> Workqueue: bat_events batadv_nc_worker
+> Call Trace:
+>  __dump_stack lib/dump_stack.c:77 [inline]
+>  dump_stack+0x21c/0x280 lib/dump_stack.c:118
+>  kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:122
+>  __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:201
+>  batadv_nc_purge_orig_hash net/batman-adv/network-coding.c:408 [inline]
+>  batadv_nc_worker+0x1c0/0x1d70 net/batman-adv/network-coding.c:718
+>  process_one_work+0x1688/0x2140 kernel/workqueue.c:2269
+>  worker_thread+0x10bc/0x2730 kernel/workqueue.c:2415
+>  kthread+0x551/0x590 kernel/kthread.c:293
+>  ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:294
+>
+> Uninit was created at:
+>  kmsan_save_stack_with_flags mm/kmsan/kmsan.c:143 [inline]
+>  kmsan_internal_poison_shadow+0x66/0xd0 mm/kmsan/kmsan.c:126
+>  kmsan_slab_alloc+0x8a/0xe0 mm/kmsan/kmsan_hooks.c:80
+>  slab_alloc_node mm/slub.c:2907 [inline]
+>  slab_alloc mm/slub.c:2916 [inline]
+>  __kmalloc+0x2bb/0x4b0 mm/slub.c:3982
+>  kmalloc_array+0x90/0x140 include/linux/slab.h:594
+>  batadv_hash_new+0x129/0x530 net/batman-adv/hash.c:52
+>  batadv_originator_init+0x9b/0x370 net/batman-adv/originator.c:211
+>  batadv_mesh_init+0x4dc/0x9d0 net/batman-adv/main.c:204
+>  batadv_softif_init_late+0x6d8/0xa30 net/batman-adv/soft-interface.c:857
+>  register_netdevice+0xbbc/0x37d0 net/core/dev.c:9760
+>  __rtnl_newlink net/core/rtnetlink.c:3454 [inline]
+>  rtnl_newlink+0x2e77/0x3ed0 net/core/rtnetlink.c:3500
+>  rtnetlink_rcv_msg+0x142b/0x18c0 net/core/rtnetlink.c:5563
+>  netlink_rcv_skb+0x6d7/0x7e0 net/netlink/af_netlink.c:2470
+>  rtnetlink_rcv+0x50/0x60 net/core/rtnetlink.c:5581
+>  netlink_unicast_kernel net/netlink/af_netlink.c:1304 [inline]
+>  netlink_unicast+0x11c8/0x1490 net/netlink/af_netlink.c:1330
+>  netlink_sendmsg+0x173a/0x1840 net/netlink/af_netlink.c:1919
+>  sock_sendmsg_nosec net/socket.c:651 [inline]
+>  sock_sendmsg net/socket.c:671 [inline]
+>  __sys_sendto+0x9dc/0xc80 net/socket.c:1992
+>  __do_sys_sendto net/socket.c:2004 [inline]
+>  __se_sys_sendto+0x107/0x130 net/socket.c:2000
+>  __x64_sys_sendto+0x6e/0x90 net/socket.c:2000
+>  do_syscall_64+0x9f/0x140 arch/x86/entry/common.c:48
+>  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> =====================================================
+>
+>
+> ---
+> This report is generated by a bot. It may contain errors.
+> See https://goo.gl/tpsmEJ for more information about syzbot.
+> syzbot engineers can be reached at syzkaller@googlegroups.com.
+>
+> syzbot will keep track of this issue. See:
+> https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+>
+> --
+> You received this message because you are subscribed to the Google Groups "syzkaller-bugs" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to syzkaller-bugs+unsubscribe@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/syzkaller-bugs/000000000000fb885a05b0997c54%40google.com.
