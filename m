@@ -1,82 +1,92 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Does batman choose DHCP server by random?
-Date: Fri, 02 Oct 2020 11:25:33 +0200
-Message-ID: <1713150.I2ok1Jj7fX@ripper>
-In-Reply-To: <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
-References: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de> <5095353.evS3lK4dNX@sven-edge> <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
+Return-Path: 
+  <3fK91XwkbALMlrsdTeeXkTiibW.ZhhZeXnlXkVhgmXgm.Vhf@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart25840226.yh7FNJUltT"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Date: Thu, 01 Oct 2020 03:29:16 -0700
+Message-ID: <000000000000fb885a05b0997c54@google.com>
+Subject: KMSAN: uninit-value in batadv_nc_worker
+From: syzbot <syzbot+da9194708de785081f11@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: MK <mailing.m1@kkk-web.de>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, glider@google.com, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
- 
---nextPart25840226.yh7FNJUltT
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-On Friday, 2 October 2020 10:29:16 CEST MK wrote:
-[...]
-> $ batctl gwl
-> [B.A.T.M.A.N. adv openwrt-2019.2-4, MainIF/MAC: fastd_mesh/ (bat0/
-> BATMAN_V)]
->   Router            ( throughput) Next Hop          [outgoingIf]  Bandwidth
->    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
->    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
->    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
->    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
->    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-> *  (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-> 
->  Star means choosen gateway?
+syzbot found the following issue on:
 
-Yes, this is the chosen gateway. And the "1.0" here means most likely that the 
-throughput to this gateway is for some reason always the same - so it has no 
-good way to figure out the best gateway.
+HEAD commit:    5edb1df2 kmsan: drop the _nosanitize string functions
+git tree:       https://github.com/google/kmsan.git master
+console output: https://syzkaller.appspot.com/x/log.txt?x=10cc55a7900000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=4991d22eb136035c
+dashboard link: https://syzkaller.appspot.com/bug?extid=da9194708de785081f11
+compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
 
-Please make sure that you either only use links that provide an expected 
-throughput for its peers - OR use the throughput_override [1] on interfaces
-which cannot provide an automated expected throughput for its peers. Also
-make sure that you don't forget this setting on one side of the connection.
+Unfortunately, I don't have any reproducer for this issue yet.
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+da9194708de785081f11@syzkaller.appspotmail.com
+
+=====================================================
+BUG: KMSAN: uninit-value in batadv_nc_purge_orig_hash net/batman-adv/network-coding.c:408 [inline]
+BUG: KMSAN: uninit-value in batadv_nc_worker+0x1c0/0x1d70 net/batman-adv/network-coding.c:718
+CPU: 0 PID: 7 Comm: kworker/u4:0 Not tainted 5.9.0-rc4-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: bat_events batadv_nc_worker
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x21c/0x280 lib/dump_stack.c:118
+ kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:122
+ __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:201
+ batadv_nc_purge_orig_hash net/batman-adv/network-coding.c:408 [inline]
+ batadv_nc_worker+0x1c0/0x1d70 net/batman-adv/network-coding.c:718
+ process_one_work+0x1688/0x2140 kernel/workqueue.c:2269
+ worker_thread+0x10bc/0x2730 kernel/workqueue.c:2415
+ kthread+0x551/0x590 kernel/kthread.c:293
+ ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:294
+
+Uninit was created at:
+ kmsan_save_stack_with_flags mm/kmsan/kmsan.c:143 [inline]
+ kmsan_internal_poison_shadow+0x66/0xd0 mm/kmsan/kmsan.c:126
+ kmsan_slab_alloc+0x8a/0xe0 mm/kmsan/kmsan_hooks.c:80
+ slab_alloc_node mm/slub.c:2907 [inline]
+ slab_alloc mm/slub.c:2916 [inline]
+ __kmalloc+0x2bb/0x4b0 mm/slub.c:3982
+ kmalloc_array+0x90/0x140 include/linux/slab.h:594
+ batadv_hash_new+0x129/0x530 net/batman-adv/hash.c:52
+ batadv_originator_init+0x9b/0x370 net/batman-adv/originator.c:211
+ batadv_mesh_init+0x4dc/0x9d0 net/batman-adv/main.c:204
+ batadv_softif_init_late+0x6d8/0xa30 net/batman-adv/soft-interface.c:857
+ register_netdevice+0xbbc/0x37d0 net/core/dev.c:9760
+ __rtnl_newlink net/core/rtnetlink.c:3454 [inline]
+ rtnl_newlink+0x2e77/0x3ed0 net/core/rtnetlink.c:3500
+ rtnetlink_rcv_msg+0x142b/0x18c0 net/core/rtnetlink.c:5563
+ netlink_rcv_skb+0x6d7/0x7e0 net/netlink/af_netlink.c:2470
+ rtnetlink_rcv+0x50/0x60 net/core/rtnetlink.c:5581
+ netlink_unicast_kernel net/netlink/af_netlink.c:1304 [inline]
+ netlink_unicast+0x11c8/0x1490 net/netlink/af_netlink.c:1330
+ netlink_sendmsg+0x173a/0x1840 net/netlink/af_netlink.c:1919
+ sock_sendmsg_nosec net/socket.c:651 [inline]
+ sock_sendmsg net/socket.c:671 [inline]
+ __sys_sendto+0x9dc/0xc80 net/socket.c:1992
+ __do_sys_sendto net/socket.c:2004 [inline]
+ __se_sys_sendto+0x107/0x130 net/socket.c:2000
+ __x64_sys_sendto+0x6e/0x90 net/socket.c:2000
+ do_syscall_64+0x9f/0x140 arch/x86/entry/common.c:48
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+=====================================================
 
 
-And can you please explain how you were able to get this output without the 
-router mac address? Because this is a bug and I cannot reproduce it at the 
-moment.
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/Tweaking#throughput_override
---nextPart25840226.yh7FNJUltT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl928g0ACgkQXYcKB8Em
-e0bMGxAAwtjHSIQwPfuk+nPtQk1EqdzwrsHpU7+yBLVCUH3/FQ3dpZH53Nby83qM
-HYSnbg0PWAJ6uf0YLkPmkH9S18mL6GGXAt20DojXKeykXBd3Ql2O2ZP55g8gPlC2
-T4fMk4F7O9vHcT0j2mI/OSYC5EnrRDAagI+NoyUiUFufXR6m0LPAIV1vzzzJRIGr
-gkJTqKLxoWRhwemdn+INUPn0nscXB4KkOgRijSSWKP6yz2qXL2Y1Dy1auqsxUm4g
-FXZDEvjSjFJyHpZC0ONLwaN4hJ/GqVZB+im0AnV+6K2U5nKzSY3LtILIBBwF95Xn
-mIXeJwmgHB/WH2wy4ce3aRYHyZybxaUbcSMlJ0WYts6ElJ+doZARxxSv1xyYU+ut
-rTwuwi09KEtWEgm7RyL+8Tuyhkp1S/ByR7axkiaWGpNb5HZTHtTpBSTRQSTmdgUK
-Shi2lWKjfVeUttAipcXkKT6WACKjuA6Mw6WwzokYsHAPe4QOgZM6O9VFs37rVInL
-RATlsBszqTdC4qe+bSr8KztYTJ+i6l7xtr9xg/vPywcWm0U5DDinz1vanHvqlkqn
-F19N2KYZMQXbj1Q8MUis3GpKfbpv7tMhL7o189MQOz6HV6Tx9Zsi5H5j8f0QqNkV
-penggSMKN7bREyTamFclsW+H6r6CeED3ld6IKDE5fl9YHHNXPZY=
-=hIxN
------END PGP SIGNATURE-----
-
---nextPart25840226.yh7FNJUltT--
-
-
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
