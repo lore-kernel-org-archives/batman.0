@@ -1,11 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: compat: Fix prandom.h include for older LTS kernels
-Date: Thu, 15 Oct 2020 21:10:09 +0200
-Message-Id: <20201015191009.34021-1-sven@narfation.org>
+Return-Path: <sd@queasysnail.net>
+From: Sabrina Dubroca <sd@queasysnail.net>
+Subject: [PATCH net 12/12] batman-adv: fix detection of lower link in batadv_get_real_netdevice
+Date: Thu,  1 Oct 2020 09:59:36 +0200
+Message-Id: <9599bc5738a16580aa5b87a6586110953918d622.1600770261.git.sd@queasysnail.net>
+In-Reply-To: <cover.1600770261.git.sd@queasysnail.net>
+References: <cover.1600770261.git.sd@queasysnail.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=WINDOWS-1252
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,39 +17,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+To: netdev@vger.kernel.org
+Cc: Sabrina Dubroca <sd@queasysnail.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-The longterm stable kernels 4.4.x and 4.9.x were missing the
-linux/prandom.h for a long time but the commit c0842fbc1b18 ("random32:
-move the pseudo-random 32-bit definitions to prandom.h") was recently
-backported. Due to this change, it was no longer possible for batman-adv to
-find the prandom_u32_max definition. This resulted in a build error:
+Currently, batadv_get_real_netdevice can return different results in
+this situation:
 
-  net/batman-adv/bat_iv_ogm.c:284:18: error: undefined identifier 'prandom_u32_max'
-  net/batman-adv/bat_iv_ogm.c:292:43: error: undefined identifier 'prandom_u32_max'
-  net/batman-adv/bat_iv_ogm.c: In function ‘batadv_iv_ogm_emit_send_time’:
-  net/batman-adv/bat_iv_ogm.c:284:11: error: implicit declaration of function ‘prandom_u32_max’ [-Werror=implicit-function-declaration]
-    msecs += prandom_u32_max(2 * BATADV_JITTER);
+    ip netns add main
+    ip netns add peer
+    ip -net main link add dummy1 type dummy
+    ip -net main link add link dummy1 netns peer type macsec # same ifindex=
+ as dummy1
+    ip -net main link add link dummy1 netns peer type macsec port 2
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Let's use the presence of a ndo_get_iflink operation, rather than the
+value it returns, to detect a device without a link.
+
+Fixes: 5ed4a460a1d3 ("batman-adv: additional checks for virtual interfaces =
+on top of WiFi")
+Signed-off-by: Sabrina Dubroca <sd@queasysnail.net>
 ---
- compat-include/linux/prandom.h | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/hard-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/compat-include/linux/prandom.h b/compat-include/linux/prandom.h
-index 2863a57d..9d30d2d9 100644
---- a/compat-include/linux/prandom.h
-+++ b/compat-include/linux/prandom.h
-@@ -12,6 +12,8 @@
- 
- #include <linux/version.h>
- #if LINUX_VERSION_IS_GEQ(5, 8, 1) || \
-+    (LINUX_VERSION_IS_GEQ(4, 4, 233) && LINUX_VERSION_IS_LESS(4, 5, 0)) || \
-+    (LINUX_VERSION_IS_GEQ(4, 9, 233) && LINUX_VERSION_IS_LESS(4, 10, 0)) || \
-     (LINUX_VERSION_IS_GEQ(4, 14, 193) && LINUX_VERSION_IS_LESS(4, 15, 0)) || \
-     (LINUX_VERSION_IS_GEQ(4, 19, 138) && LINUX_VERSION_IS_LESS(4, 20, 0)) || \
-     (LINUX_VERSION_IS_GEQ(5, 4, 57) && LINUX_VERSION_IS_LESS(5, 5, 0)) || \
--- 
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interfac=
+e.c
+index 0d87c5d56844..8f7d2dd37321 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -223,7 +223,7 @@ static struct net_device *batadv_get_real_netdevice(str=
+uct net_device *netdev)
+ =09if (!netdev)
+ =09=09return NULL;
+=20
+-=09if (netdev->ifindex =3D=3D dev_get_iflink(netdev)) {
++=09if (!(netdev->netdev_ops && netdev->netdev_ops->ndo_get_iflink)) {
+ =09=09dev_hold(netdev);
+ =09=09return netdev;
+ =09}
+--=20
 2.28.0
 
