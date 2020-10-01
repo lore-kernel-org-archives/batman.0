@@ -1,38 +1,45 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <stephen@networkplumber.org>
+Date: Thu, 1 Oct 2020 14:25:38 -0700
+From: Stephen Hemminger <stephen@networkplumber.org>
+Subject: Re: [PATCH net 00/12] net: iflink and link-netnsid fixes
+Message-ID: <20201001142538.03f28397@hermes.local>
+In-Reply-To: <cover.1600770261.git.sd@queasysnail.net>
+References: <cover.1600770261.git.sd@queasysnail.net>
 MIME-Version: 1.0
-Date: Thu, 01 Oct 2020 11:46:04 -0700
-In-Reply-To: <0000000000008fddd805adc8c56f@google.com>
-Message-ID: <000000000000abcd5505b0a06d96@google.com>
-Subject: Re: general protection fault in rt6_fill_node
-From: syzbot <syzbot+81af6e9b3c4b8bc874f8@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: John.Linn@xilinx.com, a@unstable.cc, anant.thazhemadam@gmail.com, andriin@fb.com, anirudh@xilinx.com, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, daniel@iogearbox.net, davem@davemloft.net, dsahern@gmail.com, hancock@sedsystems.ca, john.fastabend@gmail.com, kafai@fb.com, kpsingh@chromium.org, kuba@kernel.org, kuznet@ms2.inr.ac.ru, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, michal.simek@xilinx.com, netdev@vger.kernel.org, nikolay@cumulusnetworks.com, songliubraving@fb.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, yhs@fb.com, yoshfuji@linux-ipv6.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sabrina Dubroca <sd@queasysnail.net>
+Cc: netdev@vger.kernel.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>
 
-syzbot suspects this issue was fixed by commit:
+On Thu,  1 Oct 2020 09:59:24 +0200
+Sabrina Dubroca <sd@queasysnail.net> wrote:
 
-commit eeaac3634ee0e3f35548be35275efeca888e9b23
-Author: Nikolay Aleksandrov <nikolay@cumulusnetworks.com>
-Date:   Sat Aug 22 12:06:36 2020 +0000
+> In a lot of places, we use this kind of comparison to detect if a
+> device has a lower link:
+> 
+>   dev->ifindex != dev_get_iflink(dev)
 
-    net: nexthop: don't allow empty NHA_GROUP
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=12beed5b900000
-start commit:   c3d8f220 Merge tag 'kbuild-fixes-v5.9' of git://git.kernel..
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=a0437fdd630bee11
-dashboard link: https://syzkaller.appspot.com/bug?extid=81af6e9b3c4b8bc874f8
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=13ff8539900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=143f3a96900000
+Since this is a common operation, it would be good to add a new
+helper function in netdevice.h
 
-If the result looks correct, please mark the issue as fixed by replying with:
+In your patch set, you are copying the same code snippet which
+seems to indicate that it should be a helper.
 
-#syz fix: net: nexthop: don't allow empty NHA_GROUP
+Something like:
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+static inline bool netdev_has_link(const struct net_device *dev)
+{
+	const struct net_device_ops *ops = dev->netdev_ops;
+
+	return ops && ops->ndo_get_iflink;
+}
