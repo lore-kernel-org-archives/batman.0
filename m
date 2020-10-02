@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: implicit declaration of function =?UTF-8?B?4oCYbmZfcmVzZXTigJk7IGRpZCB5b3UgbWVhbiDigJhkcWxfcmVzZXTigJk/?=
-Date: Thu, 15 Oct 2020 08:39:52 +0200
-Message-ID: <11702807.QMlqpEfm7u@ripper>
-In-Reply-To: <CAG2Q2vWC7H5j6uVRFyKCmjyjG3zoH9L0JwnhmRFxiji=puhrfA@mail.gmail.com>
-References: <CAG2Q2vWC7H5j6uVRFyKCmjyjG3zoH9L0JwnhmRFxiji=puhrfA@mail.gmail.com>
+Subject: Re: Does batman choose DHCP server by random?
+Date: Fri, 02 Oct 2020 11:25:33 +0200
+Message-ID: <1713150.I2ok1Jj7fX@ripper>
+In-Reply-To: <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
+References: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de> <5095353.evS3lK4dNX@sven-edge> <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3116070.Ll0KHb2eqd"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart25840226.yh7FNJUltT"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,71 +15,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Rick Winscot <Rwinscot@kcftech.com>, Cale Collins <ccollins@gateworks.com>
+Cc: MK <mailing.m1@kkk-web.de>
 
  
---nextPart3116070.Ll0KHb2eqd
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+--nextPart25840226.yh7FNJUltT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, 14 October 2020 21:54:29 CEST Cale Collins wrote:
-> I'm building Buildroot using a 5.45 kernel kernel, when I add the
-> "batman-adv" package and compile I receive this error:
+On Friday, 2 October 2020 10:29:16 CEST MK wrote:
+[...]
+> $ batctl gwl
+> [B.A.T.M.A.N. adv openwrt-2019.2-4, MainIF/MAC: fastd_mesh/ (bat0/
+> BATMAN_V)]
+>   Router            ( throughput) Next Hop          [outgoingIf]  Bandwidth
+>    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+>    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+>    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+>    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+>    (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+> *  (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
+> 
+>  Star means choosen gateway?
 
-I think you meant 5.4.5, right? You should really upgrade to the
-newest version of the LTS kernel - 5.4.71.
+Yes, this is the chosen gateway. And the "1.0" here means most likely that the 
+throughput to this gateway is for some reason always the same - so it has no 
+good way to figure out the best gateway.
 
-> /buildroot/output/build/batman-adv-2019.3/net/batman-adv/soft-interface.c=
-:439:2:
-> error: implicit declaration of function =E2=80=98nf_reset=E2=80=99; did y=
-ou mean
-> =E2=80=98dql_reset=E2=80=99? [-Werror=3Dimplicit-function-declaration]
->   439 |  nf_reset(skb);
->       |  ^~~~~~~~
->       |  dql_reset
+Please make sure that you either only use links that provide an expected 
+throughput for its peers - OR use the throughput_override [1] on interfaces
+which cannot provide an automated expected throughput for its peers. Also
+make sure that you don't forget this setting on one side of the connection.
 
-The support for Linux 5.4 was only added with v2019.4. Please check the=20
-release notes [1]. Not sure why you even try to build the batman-adv from=20
-kernel 5.3 against the Linux kernel 5.4.
 
-I would recommend not to use such old version due to various bugfixes which=
-=20
-you most likely didn't manually backport to v2019.3/v2019.4.
-
-> Is there a patch to correct this?  Any insight would be greatly appreciat=
-ed.
-
-There was an upstream change which dropped nf_reset in favor of=20
-nf_reset_ct [2]
+And can you please explain how you were able to get this output without the 
+router mac address? Because this is a bug and I cannot reproduce it at the 
+moment.
 
 Kind regards,
 	Sven
 
-[1] https://www.open-mesh.org/news/93
-[2] https://git.open-mesh.org/batman-adv.git/commit/ab636a2bec851b103c638ec=
-4cde059be0432528a
---nextPart3116070.Ll0KHb2eqd
+[1] https://www.open-mesh.org/projects/batman-adv/wiki/Tweaking#throughput_override
+--nextPart25840226.yh7FNJUltT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+H7rgACgkQXYcKB8Em
-e0a5+RAA2ZNP+6dfIHPTDvk9eiWgQEqdv5Eu6anke+Exk4dzh2HKWjyODoSrIRux
-V1RQy0h49goA5JbtQsKLZq+FJabWTqYWJn4S7t+TjZ6VivKedPO+6HO24BtX6TQx
-uQCATn9v3XcliOM9OlJDZC7/H/cwjQ+U93+PotTNqz5vNwEOGYBmIbDrK8Uz0A3y
-cexuvsTlVQyMjTs6ZN7ZwzHVBqqlGLyqALU9H1skUjFXVc3qxN66Ad/lHTxM39Je
-slvA+r6MAQpJ7k6JicX41NvvxP42ThdBVVj1yc801GrJgVvDtARN/TwBg9bvMh6D
-lQ7YdR3cULbzNkV9jh8uwWbLKMCi9ovPlMpy8KmZNPxES4yGBSX8DrJufNnNs2Rj
-Iy0QHA0lhgcSwrFcGb1HaYrJYvlYGFpEphgucoN0HVyo53tiXg1ZGBBVW12yqAr4
-/kZdaEyqpxhwtd4ZSLOGNEmmmYUmM25DnGalD5bp+StdaY+WP8xobyMzQEoZLCAQ
-aF/ZeafqpNIQ+hzDiiVaL75Zt1PNi2pp2rqLX/FFYVfvISuy8He+eO/gYuW01kg6
-CjjspyUw+dmVQDUEi5nc77NNBJLIjXGywmRQRfu5cwagqY/D5wY6kVDZM2JZDOOf
-fvMfmjz78LimsgJcsRkyrPjFpI9Mx8RuJvCBHYehtEmixMA3ICU=
-=kG7B
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl928g0ACgkQXYcKB8Em
+e0bMGxAAwtjHSIQwPfuk+nPtQk1EqdzwrsHpU7+yBLVCUH3/FQ3dpZH53Nby83qM
+HYSnbg0PWAJ6uf0YLkPmkH9S18mL6GGXAt20DojXKeykXBd3Ql2O2ZP55g8gPlC2
+T4fMk4F7O9vHcT0j2mI/OSYC5EnrRDAagI+NoyUiUFufXR6m0LPAIV1vzzzJRIGr
+gkJTqKLxoWRhwemdn+INUPn0nscXB4KkOgRijSSWKP6yz2qXL2Y1Dy1auqsxUm4g
+FXZDEvjSjFJyHpZC0ONLwaN4hJ/GqVZB+im0AnV+6K2U5nKzSY3LtILIBBwF95Xn
+mIXeJwmgHB/WH2wy4ce3aRYHyZybxaUbcSMlJ0WYts6ElJ+doZARxxSv1xyYU+ut
+rTwuwi09KEtWEgm7RyL+8Tuyhkp1S/ByR7axkiaWGpNb5HZTHtTpBSTRQSTmdgUK
+Shi2lWKjfVeUttAipcXkKT6WACKjuA6Mw6WwzokYsHAPe4QOgZM6O9VFs37rVInL
+RATlsBszqTdC4qe+bSr8KztYTJ+i6l7xtr9xg/vPywcWm0U5DDinz1vanHvqlkqn
+F19N2KYZMQXbj1Q8MUis3GpKfbpv7tMhL7o189MQOz6HV6Tx9Zsi5H5j8f0QqNkV
+penggSMKN7bREyTamFclsW+H6r6CeED3ld6IKDE5fl9YHHNXPZY=
+=hIxN
 -----END PGP SIGNATURE-----
 
---nextPart3116070.Ll0KHb2eqd--
+--nextPart25840226.yh7FNJUltT--
 
 
