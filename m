@@ -1,13 +1,13 @@
-Return-Path: <sd@queasysnail.net>
-From: Sabrina Dubroca <sd@queasysnail.net>
-Subject: [PATCH net 12/12] batman-adv: fix detection of lower link in batadv_get_real_netdevice
-Date: Thu,  1 Oct 2020 09:59:36 +0200
-Message-Id: <9599bc5738a16580aa5b87a6586110953918d622.1600770261.git.sd@queasysnail.net>
-In-Reply-To: <cover.1600770261.git.sd@queasysnail.net>
-References: <cover.1600770261.git.sd@queasysnail.net>
+Return-Path: <mailing.m1@kkk-web.de>
+Date: Fri, 2 Oct 2020 09:40:07 +0000 (UTC)
+From: MK <mailing.m1@kkk-web.de>
+Message-ID: <958cd34d-3e84-4e7e-8349-15513a1eba0b@kkk-web.de>
+In-Reply-To: <1713150.I2ok1Jj7fX@ripper>
+References: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de> <5095353.evS3lK4dNX@sven-edge> <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de> <1713150.I2ok1Jj7fX@ripper>
+Subject: Re: Does batman choose DHCP server by random?
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=WINDOWS-1252
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,44 +17,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Sabrina Dubroca <sd@queasysnail.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-Currently, batadv_get_real_netdevice can return different results in
-this situation:
+Hi Sven.
 
-    ip netns add main
-    ip netns add peer
-    ip -net main link add dummy1 type dummy
-    ip -net main link add link dummy1 netns peer type macsec # same ifindex=
- as dummy1
-    ip -net main link add link dummy1 netns peer type macsec port 2
+Thanks for the hints!
+I deleted MACs manually. So this is not a bug ;)
 
-Let's use the presence of a ndo_get_iflink operation, rather than the
-value it returns, to detect a device without a link.
+Regards
+Martin
 
-Fixes: 5ed4a460a1d3 ("batman-adv: additional checks for virtual interfaces =
-on top of WiFi")
-Signed-off-by: Sabrina Dubroca <sd@queasysnail.net>
----
- net/batman-adv/hard-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+02.10.2020 11:25:43 Sven Eckelmann <sven@narfation.org>:
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interfac=
-e.c
-index 0d87c5d56844..8f7d2dd37321 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -223,7 +223,7 @@ static struct net_device *batadv_get_real_netdevice(str=
-uct net_device *netdev)
- =09if (!netdev)
- =09=09return NULL;
-=20
--=09if (netdev->ifindex =3D=3D dev_get_iflink(netdev)) {
-+=09if (!(netdev->netdev_ops && netdev->netdev_ops->ndo_get_iflink)) {
- =09=09dev_hold(netdev);
- =09=09return netdev;
- =09}
---=20
-2.28.0
-
+> On Friday, 2 October 2020 10:29:16 CEST MK wrote:
+> [...]
+>> $ batctl gwl
+>> [B.A.T.M.A.N. adv openwrt-2019.2-4, MainIF/MAC: fastd_mesh/ (bat0/
+>> BATMAN_V)]
+>> Router=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+ ( throughput) Next Hop=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0 [outgoingIf]=C2=A0 Bandwidth
+>> (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_mesh]: 10.=
+0/10.0 MBit
+>> (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_mesh]: 10.=
+0/10.0 MBit
+>> (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_mesh]: 10.=
+0/10.0 MBit
+>> (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_mesh]: 10.=
+0/10.0 MBit
+>> (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_mesh]: 10.=
+0/10.0 MBit
+>> *=C2=A0 (=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 1.0)=C2=A0 [fastd_me=
+sh]: 10.0/10.0 MBit
+>>=20
+>> Star means choosen gateway?
+>=20
+> Yes, this is the chosen gateway. And the "1.0" here means most likely tha=
+t the
+> throughput to this gateway is for some reason always the same - so it has=
+ no
+> good way to figure out the best gateway.
+>=20
+> Please make sure that you either only use links that provide an expected
+> throughput for its peers - OR use the throughput_override [1] on interfac=
+es
+> which cannot provide an automated expected throughput for its peers. Also
+> make sure that you don't forget this setting on one side of the connectio=
+n.
+>=20
+> And can you please explain how you were able to get this output without t=
+he
+> router mac address? Because this is a bug and I cannot reproduce it at th=
+e
+> moment.
+>=20
+> Kind regards,
+> Sven
+>=20
+> [1] https://www.open-mesh.org/projects/batman-adv/wiki/Tweaking#throughpu=
+t_override
+>=20
