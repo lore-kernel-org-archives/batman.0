@@ -1,10 +1,10 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Date: Thu, 01 Oct 2020 08:34:05 -0700
-In-Reply-To: <0000000000009383f505adc8c5a0@google.com>
-Message-ID: <0000000000000b380805b09dbf40@google.com>
-Subject: Re: general protection fault in nexthop_is_blackhole
-From: syzbot <syzbot+b2c08a2f5cfef635cc3a@syzkaller.appspotmail.com>
+References: <0000000000000a954d05b0a89a86@google.com> <7bf217ced62816b1bd3404bcfe279082347fb265.camel@sipsolutions.net>
+In-Reply-To: <7bf217ced62816b1bd3404bcfe279082347fb265.camel@sipsolutions.net>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Fri, 2 Oct 2020 09:48:42 +0200
+Message-ID: <CACT4Y+aRSVEJqZ_aCN6avc4Z66-Kt0C-QNS1vyNg4wnbUrWW9w@mail.gmail.com>
+Subject: Re: WARNING in cfg80211_connect
 Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
@@ -13,26 +13,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, anant.thazhemadam@gmail.com, andriin@fb.com, anmol.karan123@gmail.com, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, daniel@iogearbox.net, davem@davemloft.net, dsahern@gmail.com, hariprasad.kelam@gmail.com, herbert@gondor.apana.org.au, john.fastabend@gmail.com, kafai@fb.com, kpsingh@chromium.org, kuba@kernel.org, kuznet@ms2.inr.ac.ru, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, nikolay@cumulusnetworks.com, songliubraving@fb.com, steffen.klassert@secunet.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, yhs@fb.com, yoshfuji@linux-ipv6.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: syzbot <syzbot+5f9392825de654244975@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>, Dave Chinner <david@fromorbit.com>, dchinner@redhat.com, Christoph Hellwig <hch@lst.de>, Jakub Kicinski <kuba@kernel.org>, LKML <linux-kernel@vger.kernel.org>, linux-wireless <linux-wireless@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, syzkaller <syzkaller@googlegroups.com>
 
-syzbot suspects this issue was fixed by commit:
+On Fri, Oct 2, 2020 at 8:27 AM Johannes Berg <johannes@sipsolutions.net> wrote:
+>
+> On Thu, 2020-10-01 at 21:31 -0700, syzbot wrote:
+> > syzbot has bisected this issue to:
+> >
+> > commit 16d4d43595b4780daac8fcea6d042689124cb094
+> > Author: Christoph Hellwig <hch@lst.de>
+> > Date:   Wed Jul 20 01:38:55 2016 +0000
+> >
+> >     xfs: split direct I/O and DAX path
+> >
+>
+> LOL!
+>
+> Unlike in many other cases, here I don't even see why it went down that
+> path. You'd think that Christoph's commit should have no effect
+> whatsoever, but here we are with syzbot claiming a difference?
+>
+> I mean, often enough it says something is "caused" by a patch because
+> that caused e.g. generic netlink family renumbering, or because it
+> emitted some other ioctl() calls or whatnot that are invalid before and
+> valid after some other (feature) patch (or vice versa sometimes), but
+> you'd think that this patch would have _zero_ userspace observable
+> effect?
+>
+> Which I guess means that the reproduction of this bug is random, perhaps
+> timing related.
 
-commit eeaac3634ee0e3f35548be35275efeca888e9b23
-Author: Nikolay Aleksandrov <nikolay@cumulusnetworks.com>
-Date:   Sat Aug 22 12:06:36 2020 +0000
+Hi Johannes,
 
-    net: nexthop: don't allow empty NHA_GROUP
+syzbot provides bisection log which usually answers the why question.
+In this case bisection was diverged by an unrelated kernel bug. That's
+the most common reason for wrong bisection results. If you are
+interested in more reasons for wrong bisection results, some time ago
+I did a large analysis of bisection results:
+https://groups.google.com/g/syzkaller/c/sR8aAXaWEF4/m/tTWYRgvmAwAJ
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=116177a7900000
-start commit:   c3d8f220 Merge tag 'kbuild-fixes-v5.9' of git://git.kernel..
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=bb68b9e8a8cc842f
-dashboard link: https://syzkaller.appspot.com/bug?extid=b2c08a2f5cfef635cc3a
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14d75e39900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12aea519900000
-
-If the result looks correct, please mark the issue as fixed by replying with:
-
-#syz fix: net: nexthop: don't allow empty NHA_GROUP
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
