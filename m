@@ -1,54 +1,67 @@
-Return-Path: <sd@queasysnail.net>
-Date: Fri, 2 Oct 2020 11:07:03 +0200
-From: Sabrina Dubroca <sd@queasysnail.net>
-Subject: Re: [PATCH net 00/12] net: iflink and link-netnsid fixes
-Message-ID: <20201002090703.GD3565727@bistromath.localdomain>
-References: <cover.1600770261.git.sd@queasysnail.net>
- <20201001142538.03f28397@hermes.local>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH 1/2] batman-adv: Prepare infrastructure for newlink settings
+Date: Sun, 11 Oct 2020 11:48:41 +0200
+Message-ID: <5766158.W2Ztyaally@sven-edge>
+In-Reply-To: <20201011093909.297580-1-sven@narfation.org>
+References: <20201011093909.297580-1-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <20201001142538.03f28397@hermes.local>
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart178047619.hTMiTNJcI3"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Stephen Hemminger <stephen@networkplumber.org>
-Cc: netdev@vger.kernel.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Annika Wickert <annika.wickert@exaring.de>
 
-2020-10-01, 14:25:38 -0700, Stephen Hemminger wrote:
-> On Thu,  1 Oct 2020 09:59:24 +0200
-> Sabrina Dubroca <sd@queasysnail.net> wrote:
->=20
-> > In a lot of places, we use this kind of comparison to detect if a
-> > device has a lower link:
-> >=20
-> >   dev->ifindex !=3D dev_get_iflink(dev)
->=20
->=20
-> Since this is a common operation, it would be good to add a new
-> helper function in netdevice.h
->=20
-> In your patch set, you are copying the same code snippet which
-> seems to indicate that it should be a helper.
->=20
-> Something like:
->=20
-> static inline bool netdev_has_link(const struct net_device *dev)
-> {
-> =09const struct net_device_ops *ops =3D dev->netdev_ops;
->=20
-> =09return ops && ops->ndo_get_iflink;
-> }
+ 
+--nextPart178047619.hTMiTNJcI3
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Good idea, I'll add that in v2.
+Hi,
 
---=20
-Sabrina
+just noticed a build problem with some older kernels.
+
+On Sunday, 11 October 2020 11:39:08 CEST Sven Eckelmann wrote:
+> +#define batadv_softif_validate(__tb, __data, __extack) \
+> +       batadv_softif_validate(__tb, __data)
+> +
+> +#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
+> +       batadv_softif_newlink(__src_net, __dev, __tb, __data)
+> +
+
+Seems like the compat code has to be changed slightly because the __extack was 
+not introduced at the same time for all callbacks. These both must not be 
+handled in the compat code for 4.13 and newer.
+
+Kind regards,
+	Sven
+--nextPart178047619.hTMiTNJcI3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+C1PkACgkQXYcKB8Em
+e0bSxg/+MaEP8MskCrOfKxldRxl16u2tKvjY+E+1kICzVNDuLd4HvcFZowpBwAj9
+MyMkABp1B9PBJyATw0Sskv53mYepwgXQgHLP/7I0YAEyQ4LnQ1YeWU4sjzYGuSKG
+ieDgaPbJvYBdCWuNShN4cfHRytXYbBPjlGuz/0vbH9Rvgof3wDrygbBeBl3120v9
+UncUfWQb2NsE/unS7Q8deu42+WWwSLE8+2VL+GAXLYvLwWCAypegolqQV6x8GSPn
+BH6oA7Ek/YG0SThX5uS+TAJ3AmQUjPV0UQg5NmpRH0fDxc7za6c4aqO11UFGOR73
+bBUSivd+0iLFvNIP/HxPJI9y7+p3yhBasJiHcSrFz8oOEMdp7oNxD0vrBju9ADkG
+dMOVUyF7RE+lB9PpojABp5f6KKEpfWwbj4XMiQsZe1kX8Ln5/OWi6GjOnnR3MXB1
+Jw2wZlmNIrRD8TH8+1twaOjAzSprjkZT3F9hB923XBV2j7UPhMzsdpYoltBpxoXw
+jrQSyZ4ZqmPp7VYV4UFIFhjV+/yPDyyLjuEMZmaOSXqPToSqOS5odmMUTcdiyy2N
+WB1Jbf840f4OlV7Yw7S8lrwm1SWTWzRxtMsn2Irfst5caikC8p8ArdczYL/tpwY+
+F1F8PuizRWBGBMqFfd8KU6ScuFUCUMsL4CMg0Y9N1WtyMZ0GQgg=
+=6y5k
+-----END PGP SIGNATURE-----
+
+--nextPart178047619.hTMiTNJcI3--
+
 
