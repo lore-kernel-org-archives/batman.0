@@ -1,96 +1,161 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-References: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de>
- <88928628.8v8VXxemU5@ripper>
- <998e8a9b-e0c6-babb-0b45-5fb3fb657a32@kkk-web.de>
- <5095353.evS3lK4dNX@sven-edge>
-From: MK <mailing.m1@kkk-web.de>
-Subject: Re: Does batman choose DHCP server by random?
-Message-ID: <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
-Date: Fri, 2 Oct 2020 10:29:16 +0200
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH v2 1/2] batman-adv: Prepare infrastructure for newlink settings
+Date: Sun, 11 Oct 2020 12:09:40 +0200
+Message-Id: <20201011100941.299742-1-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <5095353.evS3lK4dNX@sven-edge>
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="FFStS5iMlo6naDDlVAdbiYGnLrDype3H8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Annika Wickert <annika.wickert@exaring.de>
 
- This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---FFStS5iMlo6naDDlVAdbiYGnLrDype3H8
-Content-Type: multipart/mixed; boundary="vSr6jqvnit99Adj2lgEx06gCpuxWSLwsm";
- protected-headers="v1"
-From: MK <mailing.m1@kkk-web.de>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <4fc7de29-7692-58b1-994b-4a3d623c075a@kkk-web.de>
-Subject: Re: Does batman choose DHCP server by random?
-References: <5e4c619d-bdb1-2fa7-57cc-e5d71ea13f08@kkk-web.de>
- <88928628.8v8VXxemU5@ripper>
- <998e8a9b-e0c6-babb-0b45-5fb3fb657a32@kkk-web.de>
- <5095353.evS3lK4dNX@sven-edge>
-In-Reply-To: <5095353.evS3lK4dNX@sven-edge>
+The batadv generic netlink family can be used to retrieve the current state
+and set various configuration settings. But there are also settings which
+must be set before the actual interface is created.
 
---vSr6jqvnit99Adj2lgEx06gCpuxWSLwsm
-Content-Type: text/plain; charset=utf-8
-Content-Language: de-DE
-Content-Transfer-Encoding: quoted-printable
+The rtnetlink already uses IFLA_INFO_DATA to allow net_device families to
+transfer such configurations. The minimal required functionality for this
+is now available for the batadv rtnl_link_ops. Also a new IFLA class of
+attributes will be attached to it because rtnetlink only allows 51
+different attributes but batadv_nl_attrs already contains 62 attributes.
 
-Hi Sven & Marek!
+Cc: Annika Wickert <annika.wickert@exaring.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+* don't use compat code for kernel 4.13 and 4.14
 
-Thanks for your help. Find the client side config down below:
+ compat.h                        | 11 ++++++++++
+ include/uapi/linux/batman_adv.h | 20 +++++++++++++++++
+ net/batman-adv/soft-interface.c | 39 +++++++++++++++++++++++++++++++++
+ 3 files changed, 70 insertions(+)
 
-$ batctl -v
-batctl openwrt-2019.2-3 [batman-adv: openwrt-2019.2-4]
+diff --git a/compat.h b/compat.h
+index e3220e39..9da9feb7 100644
+--- a/compat.h
++++ b/compat.h
+@@ -15,6 +15,17 @@
+ 
+ #include "compat-autoconf.h"
+ 
++#if LINUX_VERSION_IS_LESS(4, 13, 0)
++
++#define batadv_softif_validate(__tb, __data, __extack) \
++	batadv_softif_validate(__tb, __data)
++
++#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
++	batadv_softif_newlink(__src_net, __dev, __tb, __data)
++
++#endif /* LINUX_VERSION_IS_LESS(4, 13, 0) */
++
++
+ #if LINUX_VERSION_IS_LESS(4, 15, 0)
+ 
+ #define batadv_softif_slave_add(__dev, __slave_dev, __extack) \
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index bb0ae945..b05399d8 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -675,4 +675,24 @@ enum batadv_tp_meter_reason {
+ 	BATADV_TP_REASON_TOO_MANY		= 133,
+ };
+ 
++/**
++ * enum batadv_ifla_attrs - batman-adv ifla nested attributes
++ */
++enum batadv_ifla_attrs {
++	/**
++	 * @IFLA_BATADV_UNSPEC: unspecified attribute which is not parsed by
++	 *  rtnetlink
++	 */
++	IFLA_BATADV_UNSPEC,
++
++	/* add attributes above here, update the policy in soft-interface.c */
++
++	/**
++	 * @__IFLA_BATADV_MAX: internal use
++	 */
++	__IFLA_BATADV_MAX,
++};
++
++#define IFLA_BATADV_MAX (__IFLA_BATADV_MAX - 1)
++
+ #endif /* _UAPI_LINUX_BATMAN_ADV_H_ */
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 82e7ca88..9c7b8968 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -38,6 +38,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <net/netlink.h>
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+@@ -1073,6 +1074,37 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 	dev->ethtool_ops = &batadv_ethtool_ops;
+ }
+ 
++/**
++ * batadv_softif_validate() - validate configuration of new batadv link
++ * @tb: IFLA_INFO_DATA netlink attributes
++ * @data: enum batadv_ifla_attrs attributes
++ * @extack: extended ACK report struct
++ *
++ * Return: 0 if successful or error otherwise.
++ */
++static int batadv_softif_validate(struct nlattr *tb[], struct nlattr *data[],
++				  struct netlink_ext_ack *extack)
++{
++	return 0;
++}
++
++/**
++ * batadv_softif_newlink() - pre-initialize and register new batadv link
++ * @src_net: the applicable net namespace
++ * @dev: network device to register
++ * @tb: IFLA_INFO_DATA netlink attributes
++ * @data: enum batadv_ifla_attrs attributes
++ * @extack: extended ACK report struct
++ *
++ * Return: 0 if successful or error otherwise.
++ */
++static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
++				 struct nlattr *tb[], struct nlattr *data[],
++				 struct netlink_ext_ack *extack)
++{
++	return register_netdevice(dev);
++}
++
+ /**
+  * batadv_softif_create() - Create and register soft interface
+  * @net: the applicable net namespace
+@@ -1171,9 +1203,16 @@ bool batadv_softif_is_valid(const struct net_device *net_dev)
+ 	return false;
+ }
+ 
++static const struct nla_policy batadv_ifla_policy[IFLA_BATADV_MAX + 1] = {
++};
++
+ struct rtnl_link_ops batadv_link_ops __read_mostly = {
+ 	.kind		= "batadv",
+ 	.priv_size	= sizeof(struct batadv_priv),
+ 	.setup		= batadv_softif_init_early,
++	.maxtype	= IFLA_BATADV_MAX,
++	.policy		= batadv_ifla_policy,
++	.validate	= batadv_softif_validate,
++	.newlink	= batadv_softif_newlink,
+ 	.dellink	= batadv_softif_destroy_netlink,
+ };
+-- 
+2.28.0
 
-$ batctl gwl
-[B.A.T.M.A.N. adv openwrt-2019.2-4, MainIF/MAC: fastd_mesh/ (bat0/
-BATMAN_V)]
-  Router            ( throughput) Next Hop          [outgoingIf]  Bandwid=
-th
-   (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-   (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-   (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-   (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-   (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-*  (        1.0)  [fastd_mesh]: 10.0/10.0 MBit
-
- Star means choosen gateway?
-
-$ batctl gw_mode
-client (selection class: 5.0 MBit)
-
-
-Regards,
-Martin
-
-
---vSr6jqvnit99Adj2lgEx06gCpuxWSLwsm--
-
---FFStS5iMlo6naDDlVAdbiYGnLrDype3H8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE9IPOuVyPsFfx2iJ9cNiJ0EN5ao8FAl925OgACgkQcNiJ0EN5
-ao8flxAAluJshwQY5pMOjoytIClyh5rlk+rwf8ge230OyaR+Kg6qmkHZEL69sNiR
-4QWe7rPCPR06OrDHDKYLJ+/kulrqsElc7zmEUAmIwF9bqk+oO2hU5dRfI+897AG+
-/9f3YhPf/9Pgz283OUDD01CR/Dqn8nLh6KPQtStbsXf4c72omOAZmoLPwlcZQb0Z
-at91uCMnZLeXI8Cz4kZ6NGxDVO/OFSc5HoAtFjok8fjscD+AJhiCQYjFlfC3K7RI
-Fv5MzizSBrCjBDrDwLy2xOi3LUm97OcIUtqlz1KYLHoO7DhPBhREvAjhbIQhYaoS
-/stcmpN+zqh7cZWYmvmwuJjJq0HCiwD/4ET5uoASplkBIAPQDyuqrYTVF/e64STD
-ZPzUNQDH4W/3tYKzghUZBrzHV3nk1cUKEbYJFKDUA/pqzKeDnjZYmgPT+B/mhKfP
-fZAn4+yXh/n0gkNblZaN28/5jNyXmo2LvUupSQUljV5MWnmvFkpmwOuKhUhA1EIb
-SSDt4efPyWGp5jIrn+t8GmRvX6eSFt8lz1Y7mJyhitfbkcF5+o56f9phDGH4egPt
-axq7N/66rHwX6/hp2P3VYNcRVpW6wuinr3OAeDVCDXar4ifwT4518wX7UvQkq/yR
-ZXe/2jhIFcIbA/qerTe6GmTVrIpOG29Rr4bI0CEzxCb8/Q+F1RU=
-=ApXj
------END PGP SIGNATURE-----
-
---FFStS5iMlo6naDDlVAdbiYGnLrDype3H8--
