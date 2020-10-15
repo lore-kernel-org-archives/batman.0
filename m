@@ -1,9 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/2] batman-adv: Prepare infrastructure for newlink settings
-Date: Sun, 11 Oct 2020 11:39:08 +0200
-Message-Id: <20201011093909.297580-1-sven@narfation.org>
+Subject: [PATCH] batman-adv: compat: Fix prandom.h include for older LTS kernels
+Date: Thu, 15 Oct 2020 21:10:09 +0200
+Message-Id: <20201015191009.34021-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,139 +16,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Annika Wickert <annika.wickert@exaring.de>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-The batadv generic netlink family can be used to retrieve the current state
-and set various configuration settings. But there are also settings which
-must be set before the actual interface is created.
+The longterm stable kernels 4.4.x and 4.9.x were missing the
+linux/prandom.h for a long time but the commit c0842fbc1b18 ("random32:
+move the pseudo-random 32-bit definitions to prandom.h") was recently
+backported. Due to this change, it was no longer possible for batman-adv to
+find the prandom_u32_max definition. This resulted in a build error:
 
-The rtnetlink already uses IFLA_INFO_DATA to allow net_device families to
-transfer such configurations. The minimal required functionality for this
-is now available for the batadv rtnl_link_ops. Also a new IFLA class of
-attributes will be attached to it because rtnetlink only allows 51
-different attributes but batadv_nl_attrs already contains 62 attributes.
+  net/batman-adv/bat_iv_ogm.c:284:18: error: undefined identifier 'prandom_u32_max'
+  net/batman-adv/bat_iv_ogm.c:292:43: error: undefined identifier 'prandom_u32_max'
+  net/batman-adv/bat_iv_ogm.c: In function ‘batadv_iv_ogm_emit_send_time’:
+  net/batman-adv/bat_iv_ogm.c:284:11: error: implicit declaration of function ‘prandom_u32_max’ [-Werror=implicit-function-declaration]
+    msecs += prandom_u32_max(2 * BATADV_JITTER);
 
-Cc: Annika Wickert <annika.wickert@exaring.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- compat.h                        |  6 +++++
- include/uapi/linux/batman_adv.h | 20 +++++++++++++++++
- net/batman-adv/soft-interface.c | 39 +++++++++++++++++++++++++++++++++
- 3 files changed, 65 insertions(+)
+ compat-include/linux/prandom.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/compat.h b/compat.h
-index e3220e39..3f772754 100644
---- a/compat.h
-+++ b/compat.h
-@@ -20,6 +20,12 @@
- #define batadv_softif_slave_add(__dev, __slave_dev, __extack) \
- 	batadv_softif_slave_add(__dev, __slave_dev)
+diff --git a/compat-include/linux/prandom.h b/compat-include/linux/prandom.h
+index 2863a57d..9d30d2d9 100644
+--- a/compat-include/linux/prandom.h
++++ b/compat-include/linux/prandom.h
+@@ -12,6 +12,8 @@
  
-+#define batadv_softif_validate(__tb, __data, __extack) \
-+	batadv_softif_validate(__tb, __data)
-+
-+#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
-+	batadv_softif_newlink(__src_net, __dev, __tb, __data)
-+
- #endif /* LINUX_VERSION_IS_LESS(4, 15, 0) */
- 
- #endif /* __KERNEL__ */
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index bb0ae945..b05399d8 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -675,4 +675,24 @@ enum batadv_tp_meter_reason {
- 	BATADV_TP_REASON_TOO_MANY		= 133,
- };
- 
-+/**
-+ * enum batadv_ifla_attrs - batman-adv ifla nested attributes
-+ */
-+enum batadv_ifla_attrs {
-+	/**
-+	 * @IFLA_BATADV_UNSPEC: unspecified attribute which is not parsed by
-+	 *  rtnetlink
-+	 */
-+	IFLA_BATADV_UNSPEC,
-+
-+	/* add attributes above here, update the policy in soft-interface.c */
-+
-+	/**
-+	 * @__IFLA_BATADV_MAX: internal use
-+	 */
-+	__IFLA_BATADV_MAX,
-+};
-+
-+#define IFLA_BATADV_MAX (__IFLA_BATADV_MAX - 1)
-+
- #endif /* _UAPI_LINUX_BATMAN_ADV_H_ */
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 82e7ca88..9c7b8968 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -38,6 +38,7 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <net/netlink.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
-@@ -1073,6 +1074,37 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	dev->ethtool_ops = &batadv_ethtool_ops;
- }
- 
-+/**
-+ * batadv_softif_validate() - validate configuration of new batadv link
-+ * @tb: IFLA_INFO_DATA netlink attributes
-+ * @data: enum batadv_ifla_attrs attributes
-+ * @extack: extended ACK report struct
-+ *
-+ * Return: 0 if successful or error otherwise.
-+ */
-+static int batadv_softif_validate(struct nlattr *tb[], struct nlattr *data[],
-+				  struct netlink_ext_ack *extack)
-+{
-+	return 0;
-+}
-+
-+/**
-+ * batadv_softif_newlink() - pre-initialize and register new batadv link
-+ * @src_net: the applicable net namespace
-+ * @dev: network device to register
-+ * @tb: IFLA_INFO_DATA netlink attributes
-+ * @data: enum batadv_ifla_attrs attributes
-+ * @extack: extended ACK report struct
-+ *
-+ * Return: 0 if successful or error otherwise.
-+ */
-+static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
-+				 struct nlattr *tb[], struct nlattr *data[],
-+				 struct netlink_ext_ack *extack)
-+{
-+	return register_netdevice(dev);
-+}
-+
- /**
-  * batadv_softif_create() - Create and register soft interface
-  * @net: the applicable net namespace
-@@ -1171,9 +1203,16 @@ bool batadv_softif_is_valid(const struct net_device *net_dev)
- 	return false;
- }
- 
-+static const struct nla_policy batadv_ifla_policy[IFLA_BATADV_MAX + 1] = {
-+};
-+
- struct rtnl_link_ops batadv_link_ops __read_mostly = {
- 	.kind		= "batadv",
- 	.priv_size	= sizeof(struct batadv_priv),
- 	.setup		= batadv_softif_init_early,
-+	.maxtype	= IFLA_BATADV_MAX,
-+	.policy		= batadv_ifla_policy,
-+	.validate	= batadv_softif_validate,
-+	.newlink	= batadv_softif_newlink,
- 	.dellink	= batadv_softif_destroy_netlink,
- };
+ #include <linux/version.h>
+ #if LINUX_VERSION_IS_GEQ(5, 8, 1) || \
++    (LINUX_VERSION_IS_GEQ(4, 4, 233) && LINUX_VERSION_IS_LESS(4, 5, 0)) || \
++    (LINUX_VERSION_IS_GEQ(4, 9, 233) && LINUX_VERSION_IS_LESS(4, 10, 0)) || \
+     (LINUX_VERSION_IS_GEQ(4, 14, 193) && LINUX_VERSION_IS_LESS(4, 15, 0)) || \
+     (LINUX_VERSION_IS_GEQ(4, 19, 138) && LINUX_VERSION_IS_LESS(4, 20, 0)) || \
+     (LINUX_VERSION_IS_GEQ(5, 4, 57) && LINUX_VERSION_IS_LESS(5, 5, 0)) || \
 -- 
 2.28.0
 
