@@ -1,11 +1,10 @@
-Return-Path: <sd@queasysnail.net>
-From: Sabrina Dubroca <sd@queasysnail.net>
-Subject: [PATCH net 00/12] net: iflink and link-netnsid fixes
-Date: Thu,  1 Oct 2020 09:59:24 +0200
-Message-Id: <cover.1600770261.git.sd@queasysnail.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Add new include for min/max helpers
+Date: Mon, 26 Oct 2020 22:01:41 +0100
+Message-Id: <20201026210141.23146-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,72 +14,164 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Sabrina Dubroca <sd@queasysnail.net>, Nicolas Dichtel <nicolas.dichtel@6wind.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-In a lot of places, we use this kind of comparison to detect if a
-device has a lower link:
+The commit b296a6d53339 ("kernel.h: split out min()/max() et al. helpers")
+moved the min/max helper functionality from kernel.h to minmax.h. Adjust
+the kernel code accordingly to avoid fragile indirect includes.
 
-  dev->ifindex !=3D dev_get_iflink(dev)
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/minmax.h   | 20 ++++++++++++++++++++
+ net/batman-adv/bat_v.c          |  1 +
+ net/batman-adv/bat_v_elp.c      |  1 +
+ net/batman-adv/bat_v_ogm.c      |  1 +
+ net/batman-adv/fragmentation.c  |  2 +-
+ net/batman-adv/hard-interface.c |  1 +
+ net/batman-adv/icmp_socket.c    |  1 +
+ net/batman-adv/main.c           |  1 +
+ net/batman-adv/netlink.c        |  1 +
+ net/batman-adv/tp_meter.c       |  1 +
+ 10 files changed, 29 insertions(+), 1 deletion(-)
+ create mode 100644 compat-include/linux/minmax.h
 
-This seems to be a leftover of the pre-netns days, when the ifindex
-was unique over the whole system. Nowadays, with network namespaces,
-it's very easy to create a device with the same ifindex as its lower
-link:
-
-    ip netns add main
-    ip netns add peer
-    ip -net main link add dummy0 type dummy
-    ip -net main link add link dummy0 macvlan0 netns peer type macvlan
-    ip -net main link show type dummy
-        9: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop ...
-    ip -net peer link show type macvlan
-        9: macvlan0@if9: <BROADCAST,MULTICAST> mtu 1500 qdisc noop ...
-
-To detect if a device has a lower link, we can simply check the
-existence of the dev->netdev_ops->ndo_get_iflink operation, instead of
-checking its return value. In particular, I attempted to fix one of
-these checks in commit feadc4b6cf42 ("rtnetlink: always put IFLA_LINK
-for links with a link-netnsid"), but this patch isn't correct, since
-tunnel devices can export IFLA_LINK_NETNSID without IFLA_LINK. That
-patch needs to be reverted.
-
-This series will fix all those bogus comparisons, and export missing
-IFLA_LINK_NETNSID attributes in bridge and ipv6 dumps.
-
-ipvlan and geneve are also missing the get_link_net operation, so
-userspace can't know when those device are cross-netns. There are a
-couple of other device types that have an ndo_get_iflink op but no
-get_link_net (virt_wifi, ipoib), and should probably also have a
-get_link_net.
-
-Sabrina Dubroca (12):
-  ipvlan: add get_link_net
-  geneve: add get_link_net
-  Revert "rtnetlink: always put IFLA_LINK for links with a link-netnsid"
-  rtnetlink: always put IFLA_LINK for links with ndo_get_iflink
-  bridge: always put IFLA_LINK for ports with ndo_get_iflink
-  bridge: advertise IFLA_LINK_NETNSID when dumping bridge ports
-  ipv6: always put IFLA_LINK for devices with ndo_get_iflink
-  ipv6: advertise IFLA_LINK_NETNSID when dumping ipv6 addresses
-  net: link_watch: fix operstate when the link has the same index as the
-    device
-  net: link_watch: fix detection of urgent events
-  batman-adv: fix iflink detection in batadv_is_on_batman_iface
-  batman-adv: fix detection of lower link in batadv_get_real_netdevice
-
- drivers/net/can/vxcan.c          |  2 +-
- drivers/net/geneve.c             |  8 ++++++++
- drivers/net/ipvlan/ipvlan_main.c |  9 +++++++++
- drivers/net/veth.c               |  2 +-
- include/net/rtnetlink.h          |  4 ++++
- net/batman-adv/hard-interface.c  |  4 ++--
- net/bridge/br_netlink.c          |  4 +++-
- net/core/link_watch.c            |  4 ++--
- net/core/rtnetlink.c             | 25 ++++++++++++-------------
- net/ipv6/addrconf.c              | 11 ++++++++++-
- 10 files changed, 52 insertions(+), 21 deletions(-)
-
---=20
+diff --git a/compat-include/linux/minmax.h b/compat-include/linux/minmax.h
+new file mode 100644
+index 00000000..4b19479b
+--- /dev/null
++++ b/compat-include/linux/minmax.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_MINMAX_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_MINMAX_H_
++
++#include <linux/version.h>
++#if LINUX_VERSION_IS_GEQ(5, 10, 0)
++#include_next <linux/minmax.h>
++#else
++#include <linux/kernel.h>
++#endif
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_MINMAX_H_ */
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 0ecaf1bb..e91d2c07 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -16,6 +16,7 @@
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/rculist.h>
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 79a7dfc3..0512ea6c 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -18,6 +18,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
++#include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/nl80211.h>
+ #include <linux/prandom.h>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 8c1148fc..798d6598 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -18,6 +18,7 @@
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
++#include <linux/minmax.h>
+ #include <linux/mutex.h>
+ #include <linux/netdevice.h>
+ #include <linux/prandom.h>
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 9a47ef8b..97220e19 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -14,8 +14,8 @@
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/lockdep.h>
++#include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/skbuff.h>
+ #include <linux/slab.h>
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index dad99641..a28fb9ab 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -18,6 +18,7 @@
+ #include <linux/kref.h>
+ #include <linux/limits.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/mutex.h>
+ #include <linux/netdevice.h>
+ #include <linux/printk.h>
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 8bdabc03..56de4bf2 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -20,6 +20,7 @@
+ #include <linux/if_ether.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+ #include <linux/pkt_sched.h>
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 70fee9b4..293c62ed 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -23,6 +23,7 @@
+ #include <linux/kobject.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+ #include <linux/printk.h>
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index c7a55647..97bcf149 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -23,6 +23,7 @@
+ #include <linux/kernel.h>
+ #include <linux/limits.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/printk.h>
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index db7e3774..d4e10005 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -23,6 +23,7 @@
+ #include <linux/kthread.h>
+ #include <linux/limits.h>
+ #include <linux/list.h>
++#include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/param.h>
+ #include <linux/printk.h>
+-- 
 2.28.0
 
