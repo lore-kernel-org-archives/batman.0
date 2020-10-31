@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/3] batman-adv: Drop deprecated sysfs support
-Date: Sat, 31 Oct 2020 18:38:14 +0100
-Message-Id: <20201031173816.108427-1-sven@narfation.org>
+Subject: [PATCH 3/3] batctl: Drop deprecated sysfs support
+Date: Sat, 31 Oct 2020 19:40:50 +0100
+Message-Id: <20201031184051.118630-3-sven@narfation.org>
+In-Reply-To: <20201031184051.118630-1-sven@narfation.org>
+References: <20201031184051.118630-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,1977 +19,1068 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The sysfs in batman-adv support was marked as deprecated by the commit
-ec3d75284c09 ("batman-adv: ABI: Mark sysfs files as deprecated") and
-scheduled for removal in 2021.
+The sysfs support is disabled by default in batman-adv since a while and
+will be removed in 2021. The generic netlink interface should be used
+instead.
+
+The batctl support for it should be removed with the same release as the
+removal in batman-adv.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- .../ABI/obsolete/sysfs-class-net-batman-adv   |   32 -
- .../ABI/obsolete/sysfs-class-net-mesh         |  110 --
- MAINTAINERS                                   |    2 -
- Makefile                                      |    3 -
- README.external.rst                           |    1 -
- gen-compat-autoconf.sh                        |    1 -
- net/batman-adv/Kconfig                        |   11 -
- net/batman-adv/Makefile                       |    1 -
- net/batman-adv/bat_v.c                        |    9 -
- net/batman-adv/hard-interface.c               |   16 +-
- net/batman-adv/hard-interface.h               |    6 -
- net/batman-adv/soft-interface.c               |   52 -
- net/batman-adv/soft-interface.h               |    1 -
- net/batman-adv/sysfs.c                        | 1272 -----------------
- net/batman-adv/sysfs.h                        |   93 --
- net/batman-adv/types.h                        |   30 -
- 16 files changed, 1 insertion(+), 1639 deletions(-)
- delete mode 100644 Documentation/ABI/obsolete/sysfs-class-net-batman-adv
- delete mode 100644 Documentation/ABI/obsolete/sysfs-class-net-mesh
- delete mode 100644 net/batman-adv/sysfs.c
- delete mode 100644 net/batman-adv/sysfs.h
+ aggregation.c           |   1 -
+ ap_isolation.c          |   1 -
+ bonding.c               |   1 -
+ bridge_loop_avoidance.c |   1 -
+ distributed_arp_table.c |   1 -
+ elp_interval.c          |   1 -
+ fragmentation.c         |   1 -
+ functions.c             | 183 ++--------------------------------------
+ functions.h             |   5 +-
+ gw_mode.c               | 111 +++---------------------
+ hop_penalty.c           |   2 -
+ interface.c             |  15 +---
+ isolation_mark.c        |   1 -
+ loglevel.c              |  44 +++-------
+ main.c                  |   7 +-
+ multicast_fanout.c      |   1 -
+ multicast_forceflood.c  |   1 -
+ multicast_mode.c        |   1 -
+ network_coding.c        |   1 -
+ orig_interval.c         |   1 -
+ routing_algo.c          |  38 ++++++---
+ sys.c                   |  90 +++-----------------
+ sys.h                   |   9 --
+ throughput_override.c   |   1 -
+ 24 files changed, 71 insertions(+), 447 deletions(-)
 
-diff --git a/Documentation/ABI/obsolete/sysfs-class-net-batman-adv b/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-deleted file mode 100644
-index 5bdbc8d4..00000000
---- a/Documentation/ABI/obsolete/sysfs-class-net-batman-adv
-+++ /dev/null
-@@ -1,32 +0,0 @@
--This ABI is deprecated and will be removed after 2021. It is
--replaced with the batadv generic netlink family.
--
--What:           /sys/class/net/<iface>/batman-adv/elp_interval
--Date:           Feb 2014
--Contact:        Linus Lüssing <linus.luessing@web.de>
--Description:
--                Defines the interval in milliseconds in which batman
--                emits probing packets for neighbor sensing (ELP).
--
--What:           /sys/class/net/<iface>/batman-adv/iface_status
--Date:           May 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Indicates the status of <iface> as it is seen by batman.
--
--What:           /sys/class/net/<iface>/batman-adv/mesh_iface
--Date:           May 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                The /sys/class/net/<iface>/batman-adv/mesh_iface file
--                displays the batman mesh interface this <iface>
--                currently is associated with.
--
--What:           /sys/class/net/<iface>/batman-adv/throughput_override
--Date:           Feb 2014
--Contact:        Antonio Quartulli <a@unstable.cc>
--description:
--                Defines the throughput value to be used by B.A.T.M.A.N. V
--                when estimating the link throughput using this interface.
--                If the value is set to 0 then batman-adv will try to
--                estimate the throughput by itself.
-diff --git a/Documentation/ABI/obsolete/sysfs-class-net-mesh b/Documentation/ABI/obsolete/sysfs-class-net-mesh
-deleted file mode 100644
-index 04c1a293..00000000
---- a/Documentation/ABI/obsolete/sysfs-class-net-mesh
-+++ /dev/null
-@@ -1,110 +0,0 @@
--This ABI is deprecated and will be removed after 2021. It is
--replaced with the batadv generic netlink family.
--
--What:           /sys/class/net/<mesh_iface>/mesh/aggregated_ogms
--Date:           May 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Indicates whether the batman protocol messages of the
--                mesh <mesh_iface> shall be aggregated or not.
--
--What:           /sys/class/net/<mesh_iface>/mesh/<vlan_subdir>/ap_isolation
--Date:           May 2011
--Contact:        Antonio Quartulli <a@unstable.cc>
--Description:
--                Indicates whether the data traffic going from a
--                wireless client to another wireless client will be
--                silently dropped. <vlan_subdir> is empty when referring
--		to the untagged lan.
--
--What:           /sys/class/net/<mesh_iface>/mesh/bonding
--Date:           June 2010
--Contact:        Simon Wunderlich <sw@simonwunderlich.de>
--Description:
--                Indicates whether the data traffic going through the
--                mesh will be sent using multiple interfaces at the
--                same time (if available).
--
--What:           /sys/class/net/<mesh_iface>/mesh/bridge_loop_avoidance
--Date:           November 2011
--Contact:        Simon Wunderlich <sw@simonwunderlich.de>
--Description:
--                Indicates whether the bridge loop avoidance feature
--                is enabled. This feature detects and avoids loops
--                between the mesh and devices bridged with the soft
--                interface <mesh_iface>.
--
--What:           /sys/class/net/<mesh_iface>/mesh/fragmentation
--Date:           October 2010
--Contact:        Andreas Langer <an.langer@gmx.de>
--Description:
--                Indicates whether the data traffic going through the
--                mesh will be fragmented or silently discarded if the
--                packet size exceeds the outgoing interface MTU.
--
--What:           /sys/class/net/<mesh_iface>/mesh/gw_bandwidth
--Date:           October 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Defines the bandwidth which is propagated by this
--                node if gw_mode was set to 'server'.
--
--What:           /sys/class/net/<mesh_iface>/mesh/gw_mode
--Date:           October 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Defines the state of the gateway features. Can be
--                either 'off', 'client' or 'server'.
--
--What:           /sys/class/net/<mesh_iface>/mesh/gw_sel_class
--Date:           October 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Defines the selection criteria this node will use
--                to choose a gateway if gw_mode was set to 'client'.
--
--What:           /sys/class/net/<mesh_iface>/mesh/hop_penalty
--Date:           Oct 2010
--Contact:        Linus Lüssing <linus.luessing@web.de>
--Description:
--                Defines the penalty which will be applied to an
--                originator message's tq-field on every hop.
--
--What:		/sys/class/net/<mesh_iface>/mesh/isolation_mark
--Date:		Nov 2013
--Contact:	Antonio Quartulli <a@unstable.cc>
--Description:
--		Defines the isolation mark (and its bitmask) which
--		is used to classify clients as "isolated" by the
--		Extended Isolation feature.
--
--What:           /sys/class/net/<mesh_iface>/mesh/multicast_mode
--Date:           Feb 2014
--Contact:        Linus Lüssing <linus.luessing@web.de>
--Description:
--                Indicates whether multicast optimizations are enabled
--                or disabled. If set to zero then all nodes in the
--                mesh are going to use classic flooding for any
--                multicast packet with no optimizations.
--
--What:           /sys/class/net/<mesh_iface>/mesh/network_coding
--Date:           Nov 2012
--Contact:        Martin Hundeboll <martin@hundeboll.net>
--Description:
--                Controls whether Network Coding (using some magic
--                to send fewer wifi packets but still the same
--                content) is enabled or not.
--
--What:           /sys/class/net/<mesh_iface>/mesh/orig_interval
--Date:           May 2010
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Defines the interval in milliseconds in which batman
--                sends its protocol messages.
--
--What:           /sys/class/net/<mesh_iface>/mesh/routing_algo
--Date:           Dec 2011
--Contact:        Marek Lindner <mareklindner@neomailbox.ch>
--Description:
--                Defines the routing procotol this mesh instance
--                uses to find the optimal paths through the mesh.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3748b727..967f575f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10,8 +10,6 @@ Q:	https://patchwork.open-mesh.org/project/batman/list/
- B:	https://www.open-mesh.org/projects/batman-adv/issues
- C:	irc://chat.freenode.net/batman
- T:	git https://git.open-mesh.org/linux-merge.git
--F:	Documentation/ABI/obsolete/sysfs-class-net-batman-adv
--F:	Documentation/ABI/obsolete/sysfs-class-net-mesh
- F:	Documentation/networking/batman-adv.rst
- F:	include/uapi/linux/batadv_packet.h
- F:	include/uapi/linux/batman_adv.h
-diff --git a/Makefile b/Makefile
-index afdbc03c..5dfed62a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -18,8 +18,6 @@ export CONFIG_BATMAN_ADV_DEBUGFS=n
- export CONFIG_BATMAN_ADV_MCAST=y
- # B.A.T.M.A.N network coding (catwoman):
- export CONFIG_BATMAN_ADV_NC=n
--# B.A.T.M.A.N. sysfs support:
--export CONFIG_BATMAN_ADV_SYSFS=n
- # B.A.T.M.A.N. tracing support:
- export CONFIG_BATMAN_ADV_TRACING=n
- 
-@@ -65,7 +63,6 @@ BUILD_FLAGS := \
- 	CONFIG_BATMAN_ADV_DAT=$(CONFIG_BATMAN_ADV_DAT) \
- 	CONFIG_BATMAN_ADV_NC=$(CONFIG_BATMAN_ADV_NC) \
- 	CONFIG_BATMAN_ADV_MCAST=$(CONFIG_BATMAN_ADV_MCAST) \
--	CONFIG_BATMAN_ADV_SYSFS=$(CONFIG_BATMAN_ADV_SYSFS) \
- 	CONFIG_BATMAN_ADV_TRACING=$(CONFIG_BATMAN_ADV_TRACING) \
- 	CONFIG_BATMAN_ADV_BATMAN_V=$(CONFIG_BATMAN_ADV_BATMAN_V) \
- 	INSTALL_MOD_DIR=updates/
-diff --git a/README.external.rst b/README.external.rst
-index 328cdcfa..bb067c1b 100644
---- a/README.external.rst
-+++ b/README.external.rst
-@@ -50,7 +50,6 @@ module).  Available  options  and  their    possible   values are
-  * ``CONFIG_BATMAN_ADV_DEBUGFS=[y|n*]`` (B.A.T.M.A.N. debugfs entries)
-  * ``CONFIG_BATMAN_ADV_MCAST=[y*|n]`` (B.A.T.M.A.N. multicast optimizations)
-  * ``CONFIG_BATMAN_ADV_NC=[y|n*]`` (B.A.T.M.A.N. Network Coding)
-- * ``CONFIG_BATMAN_ADV_SYSFS=[y|n*]`` (B.A.T.M.A.N. sysfs support)
-  * ``CONFIG_BATMAN_ADV_TRACING=[y|n*]`` (B.A.T.M.A.N. tracing support)
- 
- e.g., debugging can be enabled by::
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 0f95d140..126de947 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -47,7 +47,6 @@ gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_MCAST' ${CONFIG_BATMAN_ADV_MCAST:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_NC' ${CONFIG_BATMAN_ADV_NC:="n"} >> "${TMP}"
--gen_config 'CONFIG_BATMAN_ADV_SYSFS' ${CONFIG_BATMAN_ADV_SYSFS:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_TRACING' ${CONFIG_BATMAN_ADV_TRACING:="n"} >> "${TMP}"
- 
- # only regenerate compat-autoconf.h when config was changed
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index c762758a..84bbf72b 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -97,17 +97,6 @@ config BATMAN_ADV_DEBUG
- 	  buffer. The output is controlled via the batadv netdev specific
- 	  log_level setting.
- 
--config BATMAN_ADV_SYSFS
--	bool "batman-adv sysfs entries"
--	depends on BATMAN_ADV
--	help
--	  Say Y here if you want to enable batman-adv device configuration and
--	  status interface through sysfs attributes. It is replaced by the
--	  batadv generic netlink family but still used by various userspace
--	  tools and scripts.
--
--	  If unsure, say Y.
--
- config BATMAN_ADV_TRACING
- 	bool "B.A.T.M.A.N. tracing support"
- 	depends on BATMAN_ADV
-diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
-index daa49af7..306615ca 100644
---- a/net/batman-adv/Makefile
-+++ b/net/batman-adv/Makefile
-@@ -28,7 +28,6 @@ batman-adv-y += originator.o
- batman-adv-y += routing.o
- batman-adv-y += send.o
- batman-adv-y += soft-interface.o
--batman-adv-$(CONFIG_BATMAN_ADV_SYSFS) += sysfs.o
- batman-adv-$(CONFIG_BATMAN_ADV_TRACING) += trace.o
- batman-adv-y += tp_meter.o
- batman-adv-y += translation-table.o
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index e91d2c07..ee7a95aa 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -13,7 +13,6 @@
- #include <linux/if_ether.h>
- #include <linux/init.h>
- #include <linux/jiffies.h>
--#include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/minmax.h>
-@@ -686,13 +685,6 @@ static ssize_t batadv_v_store_sel_class(struct batadv_priv *bat_priv,
- 	return count;
+diff --git a/aggregation.c b/aggregation.c
+index 11327d3..5d06471 100644
+--- a/aggregation.c
++++ b/aggregation.c
+@@ -48,7 +48,6 @@ static int set_aggregated_ogms(struct state *state)
  }
  
--static ssize_t batadv_v_show_sel_class(struct batadv_priv *bat_priv, char *buff)
--{
--	u32 class = atomic_read(&bat_priv->gw.sel_class);
--
--	return sprintf(buff, "%u.%u MBit\n", class / 10, class % 10);
--}
--
- /**
-  * batadv_v_gw_throughput_get() - retrieve the GW-bandwidth for a given GW
-  * @gw_node: the GW to retrieve the metric for
-@@ -1061,7 +1053,6 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.gw = {
- 		.init_sel_class = batadv_v_init_sel_class,
- 		.store_sel_class = batadv_v_store_sel_class,
--		.show_sel_class = batadv_v_show_sel_class,
- 		.get_best_gw_node = batadv_v_gw_get_best_gw_node,
- 		.is_eligible = batadv_v_gw_is_eligible,
- #ifdef CONFIG_BATMAN_ADV_DEBUGFS
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a28fb9ab..d3546790 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -39,7 +39,6 @@
- #include "originator.h"
- #include "send.h"
- #include "soft-interface.h"
--#include "sysfs.h"
- #include "translation-table.h"
- 
- /**
-@@ -886,13 +885,9 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	batadv_hardif_recalc_extra_skbroom(hard_iface->soft_iface);
- 
- 	/* nobody uses this interface anymore */
--	if (batadv_hardif_cnt(hard_iface->soft_iface) <= 1) {
-+	if (batadv_hardif_cnt(hard_iface->soft_iface) <= 1)
- 		batadv_gw_check_client_stop(bat_priv);
- 
--		if (autodel == BATADV_IF_CLEANUP_AUTO)
--			batadv_softif_destroy_sysfs(hard_iface->soft_iface);
--	}
--
- 	hard_iface->soft_iface = NULL;
- 	batadv_hardif_put(hard_iface);
- 
-@@ -905,7 +900,6 @@ static struct batadv_hard_iface *
- batadv_hardif_add_interface(struct net_device *net_dev)
- {
- 	struct batadv_hard_iface *hard_iface;
--	int ret;
- 
- 	ASSERT_RTNL();
- 
-@@ -918,10 +912,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	if (!hard_iface)
- 		goto release_dev;
- 
--	ret = batadv_sysfs_add_hardif(&hard_iface->hardif_obj, net_dev);
--	if (ret)
--		goto free_if;
--
- 	hard_iface->net_dev = net_dev;
- 	hard_iface->soft_iface = NULL;
- 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
-@@ -951,8 +941,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 
- 	return hard_iface;
- 
--free_if:
--	kfree(hard_iface);
- release_dev:
- 	dev_put(net_dev);
- out:
-@@ -973,7 +961,6 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
- 
- 	hard_iface->if_status = BATADV_IF_TO_BE_REMOVED;
- 	batadv_debugfs_del_hardif(hard_iface);
--	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- 	batadv_hardif_put(hard_iface);
+ static struct settings_data batctl_settings_aggregation = {
+-	.sysfs_name = "aggregated_ogms",
+ 	.data = &aggregated_ogms,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_aggregated_ogms,
+diff --git a/ap_isolation.c b/ap_isolation.c
+index df19072..80627e6 100644
+--- a/ap_isolation.c
++++ b/ap_isolation.c
+@@ -70,7 +70,6 @@ static int set_ap_isolation(struct state *state)
  }
  
-@@ -991,7 +978,6 @@ static int batadv_hard_if_event_softif(unsigned long event,
- 
- 	switch (event) {
- 	case NETDEV_REGISTER:
--		batadv_sysfs_add_meshif(net_dev);
- 		bat_priv = netdev_priv(net_dev);
- 		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
- 		break;
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index b1855d9d..1ee45b61 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -42,12 +42,6 @@ enum batadv_hard_if_state {
- 
- 	/** @BATADV_IF_TO_BE_ACTIVATED: interface is getting activated */
- 	BATADV_IF_TO_BE_ACTIVATED,
--
--	/**
--	 * @BATADV_IF_I_WANT_YOU: interface is queued up (using sysfs) for being
--	 * added as slave interface of a batman-adv soft interface
--	 */
--	BATADV_IF_I_WANT_YOU,
- };
- 
- /**
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 82e7ca88..33448a73 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -30,7 +30,6 @@
- #include <linux/random.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
--#include <linux/rtnetlink.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
- #include <linux/socket.h>
-@@ -51,7 +50,6 @@
- #include "network-coding.h"
- #include "originator.h"
- #include "send.h"
--#include "sysfs.h"
- #include "translation-table.h"
- 
- /**
-@@ -574,7 +572,6 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
- int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- {
- 	struct batadv_softif_vlan *vlan;
--	int err;
- 
- 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
- 
-@@ -601,19 +598,6 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
- 	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 
--	/* batadv_sysfs_add_vlan cannot be in the spinlock section due to the
--	 * sleeping behavior of the sysfs functions and the fs_reclaim lock
--	 */
--	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
--	if (err) {
--		/* ref for the function */
--		batadv_softif_vlan_put(vlan);
--
--		/* ref for the list */
--		batadv_softif_vlan_put(vlan);
--		return err;
--	}
--
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag
- 	 */
-@@ -641,7 +625,6 @@ static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
- 	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
- 			       vlan->vid, "vlan interface destroyed", false);
- 
--	batadv_sysfs_del_vlan(bat_priv, vlan);
- 	batadv_softif_vlan_put(vlan);
+ static struct settings_data batctl_settings_ap_isolation = {
+-	.sysfs_name = "ap_isolation",
+ 	.data = &ap_isolation,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_ap_isolation,
+diff --git a/bonding.c b/bonding.c
+index db0782c..ee4d314 100644
+--- a/bonding.c
++++ b/bonding.c
+@@ -47,7 +47,6 @@ static int set_bonding(struct state *state)
  }
  
-@@ -661,7 +644,6 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ static struct settings_data batctl_settings_bonding = {
+-	.sysfs_name = "bonding",
+ 	.data = &bonding,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_bonding,
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 6572f6a..3525a3e 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -48,7 +48,6 @@ static int set_bridge_loop_avoidance(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_bridge_loop_avoidance = {
+-	.sysfs_name = "bridge_loop_avoidance",
+ 	.data = &bridge_loop_avoidance,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_bridge_loop_avoidance,
+diff --git a/distributed_arp_table.c b/distributed_arp_table.c
+index 4e244ef..1bccba1 100644
+--- a/distributed_arp_table.c
++++ b/distributed_arp_table.c
+@@ -48,7 +48,6 @@ static int set_distributed_arp_table(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_distributed_arp_table = {
+-	.sysfs_name = "distributed_arp_table",
+ 	.data = &distributed_arp_table,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_distributed_arp_table,
+diff --git a/elp_interval.c b/elp_interval.c
+index f551b1f..f4312e7 100644
+--- a/elp_interval.c
++++ b/elp_interval.c
+@@ -98,7 +98,6 @@ static int set_elp_interval(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_elp_interval = {
+-	.sysfs_name = "elp_interval",
+ 	.data = &elp_interval,
+ 	.parse = parse_elp_interval,
+ 	.netlink_get = get_elp_interval,
+diff --git a/fragmentation.c b/fragmentation.c
+index a8cb1e6..65e4356 100644
+--- a/fragmentation.c
++++ b/fragmentation.c
+@@ -48,7 +48,6 @@ static int set_fragmentation(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_fragmentation = {
+-	.sysfs_name = "fragmentation",
+ 	.data = &fragmentation,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_fragmentation,
+diff --git a/functions.c b/functions.c
+index 651fb1d..4df1815 100644
+--- a/functions.c
++++ b/functions.c
+@@ -117,18 +117,8 @@ int file_exists(const char *fpath)
+ 	return stat(fpath, &st) == 0;
+ }
+ 
+-static void file_open_problem_dbg(const char *dir, const char *full_path)
++static void file_open_problem_dbg(const char *full_path)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
- 	struct batadv_softif_vlan *vlan;
--	int ret;
- 
- 	/* only 802.1Q vlans are supported.
- 	 * batman-adv does not know how to handle other types
-@@ -681,17 +663,6 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 	if (!vlan)
- 		return batadv_softif_create_vlan(bat_priv, vid);
- 
--	/* recreate the sysfs object if it was already destroyed (and it should
--	 * be since we received a kill_vid() for this vlan
--	 */
--	if (!vlan->kobj) {
--		ret = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
--		if (ret) {
--			batadv_softif_vlan_put(vlan);
--			return ret;
+-	struct stat st;
+-
+-	if (strstr(dir, "/sys/")) {
+-		if (stat("/sys/", &st) != 0) {
+-			fprintf(stderr, "Error - the folder '/sys/' was not found on the system\n");
+-			fprintf(stderr, "Please make sure that the sys filesystem is properly mounted\n");
+-			return;
 -		}
 -	}
 -
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag. This must be added again, even if the vlan object already
- 	 * exists, because the entry was deleted by kill_vid()
-@@ -1105,28 +1076,6 @@ struct net_device *batadv_softif_create(struct net *net, const char *name)
- 	return soft_iface;
+ 	if (!file_exists(module_ver_path)) {
+ 		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
+ 		return;
+@@ -152,29 +142,16 @@ static bool ether_addr_valid(const uint8_t *addr)
+ 	return true;
  }
  
--/**
-- * batadv_softif_destroy_sysfs() - deletion of batadv_soft_interface via sysfs
-- * @soft_iface: the to-be-removed batman-adv interface
-- */
--void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
+-static void print_inv_bool(char *line)
 -{
--	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
--	struct batadv_softif_vlan *vlan;
--
--	ASSERT_RTNL();
--
--	/* destroy the "untagged" VLAN */
--	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
--	if (vlan) {
--		batadv_softif_destroy_vlan(bat_priv, vlan);
--		batadv_softif_vlan_put(vlan);
--	}
--
--	batadv_sysfs_del_meshif(soft_iface);
--	unregister_netdevice(soft_iface);
+-	if (!strncmp("enabled", line, strlen("enabled")))
+-		printf("disabled\n");
+-	else if (!strncmp("disabled", line, strlen("disabled")))
+-		printf("enabled\n");
+-	else
+-		printf("%s", line);
 -}
 -
- /**
-  * batadv_softif_destroy_netlink() - deletion of batadv_soft_interface via
-  *  netlink
-@@ -1153,7 +1102,6 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
- 		batadv_softif_vlan_put(vlan);
+-int read_file(const char *dir, const char *fname, int read_opt)
++int read_file(const char *full_path, int read_opt)
+ {
+ 	int res = EXIT_FAILURE;
+-	char full_path[500];
+ 	size_t len = 0;
+ 	FILE *fp = NULL;
+ 
+-	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
+-
+ 	fp = fopen(full_path, "r");
+ 	if (!fp) {
+ 		if (!(read_opt & SILENCE_ERRORS))
+-			file_open_problem_dbg(dir, full_path);
++			file_open_problem_dbg(full_path);
+ 
+ 		return res;
+ 	}
+@@ -184,15 +161,6 @@ int read_file(const char *dir, const char *fname, int read_opt)
+ 		if (read_opt & USE_READ_BUFF)
+ 			break;
+ 
+-		if (!(read_opt & USE_BAT_HOSTS)) {
+-			if (read_opt & INVERSE_BOOL)
+-				print_inv_bool(line_ptr);
+-			else
+-				printf("%s", line_ptr);
+-
+-			continue;
+-		}
+-
+ 		printf("%s", line_ptr);
  	}
  
--	batadv_sysfs_del_meshif(soft_iface);
- 	unregister_netdevice_queue(soft_iface, head);
+@@ -203,40 +171,6 @@ int read_file(const char *dir, const char *fname, int read_opt)
+ 	return res;
  }
  
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index 534e08d6..74716d9c 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -20,7 +20,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, int hdr_size,
- 			 struct batadv_orig_node *orig_node);
- struct net_device *batadv_softif_create(struct net *net, const char *name);
--void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
- bool batadv_softif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
- int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-deleted file mode 100644
-index 0f962dcd..00000000
---- a/net/batman-adv/sysfs.c
-+++ /dev/null
-@@ -1,1272 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/* Copyright (C) 2010-2020  B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- */
--
--#include "sysfs.h"
--#include "main.h"
--
--#include <asm/current.h>
--#include <linux/atomic.h>
--#include <linux/compiler.h>
--#include <linux/device.h>
--#include <linux/errno.h>
--#include <linux/gfp.h>
--#include <linux/if.h>
--#include <linux/if_vlan.h>
--#include <linux/kernel.h>
--#include <linux/kobject.h>
--#include <linux/kref.h>
--#include <linux/limits.h>
--#include <linux/netdevice.h>
--#include <linux/printk.h>
--#include <linux/rculist.h>
--#include <linux/rcupdate.h>
--#include <linux/rtnetlink.h>
--#include <linux/sched.h>
--#include <linux/slab.h>
--#include <linux/stddef.h>
--#include <linux/string.h>
--#include <linux/stringify.h>
--#include <linux/workqueue.h>
--#include <uapi/linux/batadv_packet.h>
--#include <uapi/linux/batman_adv.h>
--
--#include "bridge_loop_avoidance.h"
--#include "distributed-arp-table.h"
--#include "gateway_client.h"
--#include "gateway_common.h"
--#include "hard-interface.h"
--#include "log.h"
--#include "netlink.h"
--#include "network-coding.h"
--#include "soft-interface.h"
--
--/**
-- * batadv_sysfs_deprecated() - Log use of deprecated batadv sysfs access
-- * @attr: attribute which was accessed
-- */
--static void batadv_sysfs_deprecated(struct attribute *attr)
+-int write_file(const char *dir, const char *fname, const char *arg1,
+-	       const char *arg2)
 -{
--	pr_warn_ratelimited(DEPRECATED "%s (pid %d) Use of sysfs file \"%s\".\nUse batadv genl family instead",
--			    current->comm, task_pid_nr(current), attr->name);
--}
+-	int fd = -1, res = EXIT_FAILURE;
+-	char full_path[500];
+-	ssize_t write_len;
 -
--static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
--{
--	struct device *dev = container_of(obj->parent, struct device, kobj);
+-	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
 -
--	return to_net_dev(dev);
--}
+-	fd = open(full_path, O_WRONLY);
 -
--static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(obj);
--
--	return netdev_priv(net_dev);
--}
--
--/**
-- * batadv_vlan_kobj_to_batpriv() - convert a vlan kobj in the associated batpriv
-- * @obj: kobject to covert
-- *
-- * Return: the associated batadv_priv struct.
-- */
--static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
--{
--	/* VLAN specific attributes are located in the root sysfs folder if they
--	 * refer to the untagged VLAN..
--	 */
--	if (!strcmp(BATADV_SYSFS_IF_MESH_SUBDIR, obj->name))
--		return batadv_kobj_to_batpriv(obj);
--
--	/* ..while the attributes for the tagged vlans are located in
--	 * the in the corresponding "vlan%VID" subfolder
--	 */
--	return batadv_kobj_to_batpriv(obj->parent);
--}
--
--/**
-- * batadv_kobj_to_vlan() - convert a kobj in the associated softif_vlan struct
-- * @bat_priv: the bat priv with all the soft interface information
-- * @obj: kobject to covert
-- *
-- * Return: the associated softif_vlan struct if found, NULL otherwise.
-- */
--static struct batadv_softif_vlan *
--batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
--{
--	struct batadv_softif_vlan *vlan_tmp, *vlan = NULL;
--
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(vlan_tmp, &bat_priv->softif_vlan_list, list) {
--		if (vlan_tmp->kobj != obj)
--			continue;
--
--		if (!kref_get_unless_zero(&vlan_tmp->refcount))
--			continue;
--
--		vlan = vlan_tmp;
--		break;
--	}
--	rcu_read_unlock();
--
--	return vlan;
--}
--
--/* Use this, if you have customized show and store functions for vlan attrs */
--#define BATADV_ATTR_VLAN(_name, _mode, _show, _store)	\
--struct batadv_attribute batadv_attr_vlan_##_name = {	\
--	.attr = {.name = __stringify(_name),		\
--		 .mode = _mode },			\
--	.show   = _show,				\
--	.store  = _store,				\
--}
--
--/* Use this, if you have customized show and store functions */
--#define BATADV_ATTR(_name, _mode, _show, _store)	\
--struct batadv_attribute batadv_attr_##_name = {		\
--	.attr = {.name = __stringify(_name),		\
--		 .mode = _mode },			\
--	.show   = _show,				\
--	.store  = _store,				\
--}
--
--#define BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
--ssize_t batadv_store_##_name(struct kobject *kobj,			\
--			     struct attribute *attr, char *buff,	\
--			     size_t count)				\
--{									\
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
--	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
--	ssize_t length;							\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	length = __batadv_store_bool_attr(buff, count, _post_func, attr,\
--					  &bat_priv->_name, net_dev);	\
--									\
--	batadv_netlink_notify_mesh(bat_priv);				\
--									\
--	return length;							\
--}
--
--#define BATADV_ATTR_SIF_SHOW_BOOL(_name)				\
--ssize_t batadv_show_##_name(struct kobject *kobj,			\
--			    struct attribute *attr, char *buff)		\
--{									\
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	return sprintf(buff, "%s\n",					\
--		       atomic_read(&bat_priv->_name) == 0 ?		\
--		       "disabled" : "enabled");				\
--}									\
--
--/* Use this, if you are going to turn a [name] in the soft-interface
-- * (bat_priv) on or off
-- */
--#define BATADV_ATTR_SIF_BOOL(_name, _mode, _post_func)			\
--	static BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)		\
--	static BATADV_ATTR_SIF_SHOW_BOOL(_name)				\
--	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
--			   batadv_store_##_name)
--
--#define BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
--ssize_t batadv_store_##_name(struct kobject *kobj,			\
--			     struct attribute *attr, char *buff,	\
--			     size_t count)				\
--{									\
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
--	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
--	ssize_t length;							\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
--					  _post_func, attr,		\
--					  &bat_priv->_var, net_dev,	\
--					  NULL);			\
--									\
--	batadv_netlink_notify_mesh(bat_priv);				\
--									\
--	return length;							\
--}
--
--#define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
--ssize_t batadv_show_##_name(struct kobject *kobj,			\
--			    struct attribute *attr, char *buff)		\
--{									\
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
--}									\
--
--/* Use this, if you are going to set [name] in the soft-interface
-- * (bat_priv) to an unsigned integer value
-- */
--#define BATADV_ATTR_SIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
--	static BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)\
--	static BATADV_ATTR_SIF_SHOW_UINT(_name, _var)			\
--	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
--			   batadv_store_##_name)
--
--#define BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)			\
--ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
--				  struct attribute *attr, char *buff,	\
--				  size_t count)				\
--{									\
--	struct batadv_priv *bat_priv = batadv_vlan_kobj_to_batpriv(kobj);\
--	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(bat_priv,	\
--							      kobj);	\
--	size_t res = __batadv_store_bool_attr(buff, count, _post_func,	\
--					      attr, &vlan->_name,	\
--					      bat_priv->soft_iface);	\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	if (vlan->vid)							\
--		batadv_netlink_notify_vlan(bat_priv, vlan);		\
--	else								\
--		batadv_netlink_notify_mesh(bat_priv);			\
--									\
--	batadv_softif_vlan_put(vlan);					\
--	return res;							\
--}
--
--#define BATADV_ATTR_VLAN_SHOW_BOOL(_name)				\
--ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
--				 struct attribute *attr, char *buff)	\
--{									\
--	struct batadv_priv *bat_priv = batadv_vlan_kobj_to_batpriv(kobj);\
--	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(bat_priv,	\
--							      kobj);	\
--	size_t res = sprintf(buff, "%s\n",				\
--			     atomic_read(&vlan->_name) == 0 ?		\
--			     "disabled" : "enabled");			\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	batadv_softif_vlan_put(vlan);					\
--	return res;							\
--}
--
--/* Use this, if you are going to turn a [name] in the vlan struct on or off */
--#define BATADV_ATTR_VLAN_BOOL(_name, _mode, _post_func)			\
--	static BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)		\
--	static BATADV_ATTR_VLAN_SHOW_BOOL(_name)			\
--	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
--				batadv_store_vlan_##_name)
--
--#define BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
--ssize_t batadv_store_##_name(struct kobject *kobj,			\
--			     struct attribute *attr, char *buff,	\
--			     size_t count)				\
--{									\
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
--	struct batadv_hard_iface *hard_iface;				\
--	struct batadv_priv *bat_priv;					\
--	ssize_t length;							\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
--	if (!hard_iface)						\
--		return 0;						\
--									\
--	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
--					  _post_func, attr,		\
--					  &hard_iface->_var,		\
--					  hard_iface->soft_iface,	\
--					  net_dev);			\
--									\
--	if (hard_iface->soft_iface) {					\
--		bat_priv = netdev_priv(hard_iface->soft_iface);		\
--		batadv_netlink_notify_hardif(bat_priv, hard_iface);	\
--	}								\
--									\
--	batadv_hardif_put(hard_iface);				\
--	return length;							\
--}
--
--#define BATADV_ATTR_HIF_SHOW_UINT(_name, _var)				\
--ssize_t batadv_show_##_name(struct kobject *kobj,			\
--			    struct attribute *attr, char *buff)		\
--{									\
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
--	struct batadv_hard_iface *hard_iface;				\
--	ssize_t length;							\
--									\
--	batadv_sysfs_deprecated(attr);					\
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
--	if (!hard_iface)						\
--		return 0;						\
--									\
--	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_var));	\
--									\
--	batadv_hardif_put(hard_iface);				\
--	return length;							\
--}
--
--/* Use this, if you are going to set [name] in hard_iface to an
-- * unsigned integer value
-- */
--#define BATADV_ATTR_HIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
--	static BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min,		\
--					  _max, _post_func)		\
--	static BATADV_ATTR_HIF_SHOW_UINT(_name, _var)			\
--	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
--			   batadv_store_##_name)
--
--static int batadv_store_bool_attr(char *buff, size_t count,
--				  struct net_device *net_dev,
--				  const char *attr_name, atomic_t *attr,
--				  bool *changed)
--{
--	int enabled = -1;
--
--	*changed = false;
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	if ((strncmp(buff, "1", 2) == 0) ||
--	    (strncmp(buff, "enable", 7) == 0) ||
--	    (strncmp(buff, "enabled", 8) == 0))
--		enabled = 1;
--
--	if ((strncmp(buff, "0", 2) == 0) ||
--	    (strncmp(buff, "disable", 8) == 0) ||
--	    (strncmp(buff, "disabled", 9) == 0))
--		enabled = 0;
--
--	if (enabled < 0) {
--		batadv_info(net_dev, "%s: Invalid parameter received: %s\n",
--			    attr_name, buff);
--		return -EINVAL;
--	}
--
--	if (atomic_read(attr) == enabled)
--		return count;
--
--	batadv_info(net_dev, "%s: Changing from: %s to: %s\n", attr_name,
--		    atomic_read(attr) == 1 ? "enabled" : "disabled",
--		    enabled == 1 ? "enabled" : "disabled");
--
--	*changed = true;
--
--	atomic_set(attr, (unsigned int)enabled);
--	return count;
--}
--
--static inline ssize_t
--__batadv_store_bool_attr(char *buff, size_t count,
--			 void (*post_func)(struct net_device *),
--			 struct attribute *attr,
--			 atomic_t *attr_store, struct net_device *net_dev)
--{
--	bool changed;
--	int ret;
--
--	ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
--				     attr_store, &changed);
--	if (post_func && changed)
--		post_func(net_dev);
--
--	return ret;
--}
--
--static int batadv_store_uint_attr(const char *buff, size_t count,
--				  struct net_device *net_dev,
--				  struct net_device *slave_dev,
--				  const char *attr_name,
--				  unsigned int min, unsigned int max,
--				  atomic_t *attr)
--{
--	char ifname[IFNAMSIZ + 3] = "";
--	unsigned long uint_val;
--	int ret;
--
--	ret = kstrtoul(buff, 10, &uint_val);
--	if (ret) {
--		batadv_info(net_dev, "%s: Invalid parameter received: %s\n",
--			    attr_name, buff);
--		return -EINVAL;
--	}
--
--	if (uint_val < min) {
--		batadv_info(net_dev, "%s: Value is too small: %lu min: %u\n",
--			    attr_name, uint_val, min);
--		return -EINVAL;
--	}
--
--	if (uint_val > max) {
--		batadv_info(net_dev, "%s: Value is too big: %lu max: %u\n",
--			    attr_name, uint_val, max);
--		return -EINVAL;
--	}
--
--	if (atomic_read(attr) == uint_val)
--		return count;
--
--	if (slave_dev)
--		snprintf(ifname, sizeof(ifname), "%s: ", slave_dev->name);
--
--	batadv_info(net_dev, "%s: %sChanging from: %i to: %lu\n",
--		    attr_name, ifname, atomic_read(attr), uint_val);
--
--	atomic_set(attr, uint_val);
--	return count;
--}
--
--static ssize_t __batadv_store_uint_attr(const char *buff, size_t count,
--					int min, int max,
--					void (*post_func)(struct net_device *),
--					const struct attribute *attr,
--					atomic_t *attr_store,
--					struct net_device *net_dev,
--					struct net_device *slave_dev)
--{
--	int ret;
--
--	ret = batadv_store_uint_attr(buff, count, net_dev, slave_dev,
--				     attr->name, min, max, attr_store);
--	if (post_func && ret)
--		post_func(net_dev);
--
--	return ret;
--}
--
--static ssize_t batadv_show_bat_algo(struct kobject *kobj,
--				    struct attribute *attr, char *buff)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--
--	batadv_sysfs_deprecated(attr);
--	return sprintf(buff, "%s\n", bat_priv->algo_ops->name);
--}
--
--static void batadv_post_gw_reselect(struct net_device *net_dev)
--{
--	struct batadv_priv *bat_priv = netdev_priv(net_dev);
--
--	batadv_gw_reselect(bat_priv);
--}
--
--static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
--				   char *buff)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--	int bytes_written;
--
--	batadv_sysfs_deprecated(attr);
--
--	/* GW mode is not available if the routing algorithm in use does not
--	 * implement the GW API
--	 */
--	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
--	    !bat_priv->algo_ops->gw.is_eligible)
--		return -ENOENT;
--
--	switch (atomic_read(&bat_priv->gw.mode)) {
--	case BATADV_GW_MODE_CLIENT:
--		bytes_written = sprintf(buff, "%s\n",
--					BATADV_GW_MODE_CLIENT_NAME);
--		break;
--	case BATADV_GW_MODE_SERVER:
--		bytes_written = sprintf(buff, "%s\n",
--					BATADV_GW_MODE_SERVER_NAME);
--		break;
--	default:
--		bytes_written = sprintf(buff, "%s\n",
--					BATADV_GW_MODE_OFF_NAME);
--		break;
--	}
--
--	return bytes_written;
--}
--
--static ssize_t batadv_store_gw_mode(struct kobject *kobj,
--				    struct attribute *attr, char *buff,
--				    size_t count)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_priv *bat_priv = netdev_priv(net_dev);
--	char *curr_gw_mode_str;
--	int gw_mode_tmp = -1;
--
--	batadv_sysfs_deprecated(attr);
--
--	/* toggling GW mode is allowed only if the routing algorithm in use
--	 * provides the GW API
--	 */
--	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
--	    !bat_priv->algo_ops->gw.is_eligible)
--		return -EINVAL;
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	if (strncmp(buff, BATADV_GW_MODE_OFF_NAME,
--		    strlen(BATADV_GW_MODE_OFF_NAME)) == 0)
--		gw_mode_tmp = BATADV_GW_MODE_OFF;
--
--	if (strncmp(buff, BATADV_GW_MODE_CLIENT_NAME,
--		    strlen(BATADV_GW_MODE_CLIENT_NAME)) == 0)
--		gw_mode_tmp = BATADV_GW_MODE_CLIENT;
--
--	if (strncmp(buff, BATADV_GW_MODE_SERVER_NAME,
--		    strlen(BATADV_GW_MODE_SERVER_NAME)) == 0)
--		gw_mode_tmp = BATADV_GW_MODE_SERVER;
--
--	if (gw_mode_tmp < 0) {
--		batadv_info(net_dev,
--			    "Invalid parameter for 'gw mode' setting received: %s\n",
--			    buff);
--		return -EINVAL;
--	}
--
--	if (atomic_read(&bat_priv->gw.mode) == gw_mode_tmp)
--		return count;
--
--	switch (atomic_read(&bat_priv->gw.mode)) {
--	case BATADV_GW_MODE_CLIENT:
--		curr_gw_mode_str = BATADV_GW_MODE_CLIENT_NAME;
--		break;
--	case BATADV_GW_MODE_SERVER:
--		curr_gw_mode_str = BATADV_GW_MODE_SERVER_NAME;
--		break;
--	default:
--		curr_gw_mode_str = BATADV_GW_MODE_OFF_NAME;
--		break;
--	}
--
--	batadv_info(net_dev, "Changing gw mode from: %s to: %s\n",
--		    curr_gw_mode_str, buff);
--
--	/* Invoking batadv_gw_reselect() is not enough to really de-select the
--	 * current GW. It will only instruct the gateway client code to perform
--	 * a re-election the next time that this is needed.
--	 *
--	 * When gw client mode is being switched off the current GW must be
--	 * de-selected explicitly otherwise no GW_ADD uevent is thrown on
--	 * client mode re-activation. This is operation is performed in
--	 * batadv_gw_check_client_stop().
--	 */
--	batadv_gw_reselect(bat_priv);
--	/* always call batadv_gw_check_client_stop() before changing the gateway
--	 * state
--	 */
--	batadv_gw_check_client_stop(bat_priv);
--	atomic_set(&bat_priv->gw.mode, (unsigned int)gw_mode_tmp);
--	batadv_gw_tvlv_container_update(bat_priv);
--
--	batadv_netlink_notify_mesh(bat_priv);
--
--	return count;
--}
--
--static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
--					struct attribute *attr, char *buff)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--
--	batadv_sysfs_deprecated(attr);
--
--	/* GW selection class is not available if the routing algorithm in use
--	 * does not implement the GW API
--	 */
--	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
--	    !bat_priv->algo_ops->gw.is_eligible)
--		return -ENOENT;
--
--	if (bat_priv->algo_ops->gw.show_sel_class)
--		return bat_priv->algo_ops->gw.show_sel_class(bat_priv, buff);
--
--	return sprintf(buff, "%i\n", atomic_read(&bat_priv->gw.sel_class));
--}
--
--static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
--					 struct attribute *attr, char *buff,
--					 size_t count)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--	ssize_t length;
--
--	batadv_sysfs_deprecated(attr);
--
--	/* setting the GW selection class is allowed only if the routing
--	 * algorithm in use implements the GW API
--	 */
--	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
--	    !bat_priv->algo_ops->gw.is_eligible)
--		return -EINVAL;
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	if (bat_priv->algo_ops->gw.store_sel_class)
--		return bat_priv->algo_ops->gw.store_sel_class(bat_priv, buff,
--							      count);
--
--	length = __batadv_store_uint_attr(buff, count, 1, BATADV_TQ_MAX_VALUE,
--					  batadv_post_gw_reselect, attr,
--					  &bat_priv->gw.sel_class,
--					  bat_priv->soft_iface, NULL);
--
--	batadv_netlink_notify_mesh(bat_priv);
--
--	return length;
--}
--
--static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
--				     struct attribute *attr, char *buff)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--	u32 down, up;
--
--	batadv_sysfs_deprecated(attr);
--
--	down = atomic_read(&bat_priv->gw.bandwidth_down);
--	up = atomic_read(&bat_priv->gw.bandwidth_up);
--
--	return sprintf(buff, "%u.%u/%u.%u MBit\n", down / 10,
--		       down % 10, up / 10, up % 10);
--}
--
--static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
--				      struct attribute *attr, char *buff,
--				      size_t count)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	ssize_t length;
--
--	batadv_sysfs_deprecated(attr);
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	length = batadv_gw_bandwidth_set(net_dev, buff, count);
--
--	batadv_netlink_notify_mesh(bat_priv);
--
--	return length;
--}
--
--/**
-- * batadv_show_isolation_mark() - print the current isolation mark/mask
-- * @kobj: kobject representing the private mesh sysfs directory
-- * @attr: the batman-adv attribute the user is interacting with
-- * @buff: the buffer that will contain the data to send back to the user
-- *
-- * Return: the number of bytes written into 'buff' on success or a negative
-- * error code in case of failure
-- */
--static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
--					  struct attribute *attr, char *buff)
--{
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
--
--	batadv_sysfs_deprecated(attr);
--	return sprintf(buff, "%#.8x/%#.8x\n", bat_priv->isolation_mark,
--		       bat_priv->isolation_mark_mask);
--}
--
--/**
-- * batadv_store_isolation_mark() - parse and store the isolation mark/mask
-- *  entered by the user
-- * @kobj: kobject representing the private mesh sysfs directory
-- * @attr: the batman-adv attribute the user is interacting with
-- * @buff: the buffer containing the user data
-- * @count: number of bytes in the buffer
-- *
-- * Return: 'count' on success or a negative error code in case of failure
-- */
--static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
--					   struct attribute *attr, char *buff,
--					   size_t count)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_priv *bat_priv = netdev_priv(net_dev);
--	u32 mark, mask;
--	char *mask_ptr;
--
--	batadv_sysfs_deprecated(attr);
--
--	/* parse the mask if it has been specified, otherwise assume the mask is
--	 * the biggest possible
--	 */
--	mask = 0xFFFFFFFF;
--	mask_ptr = strchr(buff, '/');
--	if (mask_ptr) {
--		*mask_ptr = '\0';
--		mask_ptr++;
--
--		/* the mask must be entered in hex base as it is going to be a
--		 * bitmask and not a prefix length
--		 */
--		if (kstrtou32(mask_ptr, 16, &mask) < 0)
--			return -EINVAL;
--	}
--
--	/* the mark can be entered in any base */
--	if (kstrtou32(buff, 0, &mark) < 0)
--		return -EINVAL;
--
--	bat_priv->isolation_mark_mask = mask;
--	/* erase bits not covered by the mask */
--	bat_priv->isolation_mark = mark & bat_priv->isolation_mark_mask;
--
--	batadv_info(net_dev,
--		    "New skb mark for extended isolation: %#.8x/%#.8x\n",
--		    bat_priv->isolation_mark, bat_priv->isolation_mark_mask);
--
--	batadv_netlink_notify_mesh(bat_priv);
--
--	return count;
--}
--
--BATADV_ATTR_SIF_BOOL(aggregated_ogms, 0644, NULL);
--BATADV_ATTR_SIF_BOOL(bonding, 0644, NULL);
--#ifdef CONFIG_BATMAN_ADV_BLA
--BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, 0644, batadv_bla_status_update);
--#endif
--#ifdef CONFIG_BATMAN_ADV_DAT
--BATADV_ATTR_SIF_BOOL(distributed_arp_table, 0644, batadv_dat_status_update);
--#endif
--BATADV_ATTR_SIF_BOOL(fragmentation, 0644, batadv_update_min_mtu);
--static BATADV_ATTR(routing_algo, 0444, batadv_show_bat_algo, NULL);
--static BATADV_ATTR(gw_mode, 0644, batadv_show_gw_mode, batadv_store_gw_mode);
--BATADV_ATTR_SIF_UINT(orig_interval, orig_interval, 0644, 2 * BATADV_JITTER,
--		     INT_MAX, NULL);
--BATADV_ATTR_SIF_UINT(hop_penalty, hop_penalty, 0644, 0, BATADV_TQ_MAX_VALUE,
--		     NULL);
--static BATADV_ATTR(gw_sel_class, 0644, batadv_show_gw_sel_class,
--		   batadv_store_gw_sel_class);
--static BATADV_ATTR(gw_bandwidth, 0644, batadv_show_gw_bwidth,
--		   batadv_store_gw_bwidth);
--#ifdef CONFIG_BATMAN_ADV_MCAST
--BATADV_ATTR_SIF_BOOL(multicast_mode, 0644, NULL);
--#endif
--#ifdef CONFIG_BATMAN_ADV_DEBUG
--BATADV_ATTR_SIF_UINT(log_level, log_level, 0644, 0, BATADV_DBG_ALL, NULL);
--#endif
--#ifdef CONFIG_BATMAN_ADV_NC
--BATADV_ATTR_SIF_BOOL(network_coding, 0644, batadv_nc_status_update);
--#endif
--static BATADV_ATTR(isolation_mark, 0644, batadv_show_isolation_mark,
--		   batadv_store_isolation_mark);
--
--static struct batadv_attribute *batadv_mesh_attrs[] = {
--	&batadv_attr_aggregated_ogms,
--	&batadv_attr_bonding,
--#ifdef CONFIG_BATMAN_ADV_BLA
--	&batadv_attr_bridge_loop_avoidance,
--#endif
--#ifdef CONFIG_BATMAN_ADV_DAT
--	&batadv_attr_distributed_arp_table,
--#endif
--#ifdef CONFIG_BATMAN_ADV_MCAST
--	&batadv_attr_multicast_mode,
--#endif
--	&batadv_attr_fragmentation,
--	&batadv_attr_routing_algo,
--	&batadv_attr_gw_mode,
--	&batadv_attr_orig_interval,
--	&batadv_attr_hop_penalty,
--	&batadv_attr_gw_sel_class,
--	&batadv_attr_gw_bandwidth,
--#ifdef CONFIG_BATMAN_ADV_DEBUG
--	&batadv_attr_log_level,
--#endif
--#ifdef CONFIG_BATMAN_ADV_NC
--	&batadv_attr_network_coding,
--#endif
--	&batadv_attr_isolation_mark,
--	NULL,
--};
--
--BATADV_ATTR_VLAN_BOOL(ap_isolation, 0644, NULL);
--
--/* array of vlan specific sysfs attributes */
--static struct batadv_attribute *batadv_vlan_attrs[] = {
--	&batadv_attr_vlan_ap_isolation,
--	NULL,
--};
--
--/**
-- * batadv_sysfs_add_meshif() - Add soft interface specific sysfs entries
-- * @dev: netdev struct of the soft interface
-- *
-- * Return: 0 on success or negative error number in case of failure
-- */
--int batadv_sysfs_add_meshif(struct net_device *dev)
--{
--	struct kobject *batif_kobject = &dev->dev.kobj;
--	struct batadv_priv *bat_priv = netdev_priv(dev);
--	struct batadv_attribute **bat_attr;
--	int err;
--
--	bat_priv->mesh_obj = kobject_create_and_add(BATADV_SYSFS_IF_MESH_SUBDIR,
--						    batif_kobject);
--	if (!bat_priv->mesh_obj) {
--		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			   BATADV_SYSFS_IF_MESH_SUBDIR);
+-	if (fd < 0) {
+-		file_open_problem_dbg(dir, full_path);
 -		goto out;
 -	}
 -
--	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr) {
--		err = sysfs_create_file(bat_priv->mesh_obj,
--					&((*bat_attr)->attr));
--		if (err) {
--			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				   dev->name, BATADV_SYSFS_IF_MESH_SUBDIR,
--				   ((*bat_attr)->attr).name);
--			goto rem_attr;
--		}
--	}
--
--	return 0;
--
--rem_attr:
--	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
--		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
--
--	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
--	kobject_del(bat_priv->mesh_obj);
--	kobject_put(bat_priv->mesh_obj);
--	bat_priv->mesh_obj = NULL;
--out:
--	return -ENOMEM;
--}
--
--/**
-- * batadv_sysfs_del_meshif() - Remove soft interface specific sysfs entries
-- * @dev: netdev struct of the soft interface
-- */
--void batadv_sysfs_del_meshif(struct net_device *dev)
--{
--	struct batadv_priv *bat_priv = netdev_priv(dev);
--	struct batadv_attribute **bat_attr;
--
--	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
--		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
--
--	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
--	kobject_del(bat_priv->mesh_obj);
--	kobject_put(bat_priv->mesh_obj);
--	bat_priv->mesh_obj = NULL;
--}
--
--/**
-- * batadv_sysfs_add_vlan() - add all the needed sysfs objects for the new vlan
-- * @dev: netdev of the mesh interface
-- * @vlan: private data of the newly added VLAN interface
-- *
-- * Return: 0 on success and -ENOMEM if any of the structure allocations fails.
-- */
--int batadv_sysfs_add_vlan(struct net_device *dev,
--			  struct batadv_softif_vlan *vlan)
--{
--	char vlan_subdir[sizeof(BATADV_SYSFS_VLAN_SUBDIR_PREFIX) + 5];
--	struct batadv_priv *bat_priv = netdev_priv(dev);
--	struct batadv_attribute **bat_attr;
--	int err;
--
--	if (vlan->vid & BATADV_VLAN_HAS_TAG) {
--		sprintf(vlan_subdir, BATADV_SYSFS_VLAN_SUBDIR_PREFIX "%hu",
--			vlan->vid & VLAN_VID_MASK);
--
--		vlan->kobj = kobject_create_and_add(vlan_subdir,
--						    bat_priv->mesh_obj);
--		if (!vlan->kobj) {
--			batadv_err(dev, "Can't add sysfs directory: %s/%s\n",
--				   dev->name, vlan_subdir);
--			goto out;
--		}
--	} else {
--		/* the untagged LAN uses the root folder to store its "VLAN
--		 * specific attributes"
--		 */
--		vlan->kobj = bat_priv->mesh_obj;
--		kobject_get(bat_priv->mesh_obj);
--	}
--
--	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr) {
--		err = sysfs_create_file(vlan->kobj,
--					&((*bat_attr)->attr));
--		if (err) {
--			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				   dev->name, vlan_subdir,
--				   ((*bat_attr)->attr).name);
--			goto rem_attr;
--		}
--	}
--
--	return 0;
--
--rem_attr:
--	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
--		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
--
--	if (vlan->kobj != bat_priv->mesh_obj) {
--		kobject_uevent(vlan->kobj, KOBJ_REMOVE);
--		kobject_del(vlan->kobj);
--	}
--	kobject_put(vlan->kobj);
--	vlan->kobj = NULL;
--out:
--	return -ENOMEM;
--}
--
--/**
-- * batadv_sysfs_del_vlan() - remove all the sysfs objects for a given VLAN
-- * @bat_priv: the bat priv with all the soft interface information
-- * @vlan: the private data of the VLAN to destroy
-- */
--void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
--			   struct batadv_softif_vlan *vlan)
--{
--	struct batadv_attribute **bat_attr;
--
--	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
--		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
--
--	if (vlan->kobj != bat_priv->mesh_obj) {
--		kobject_uevent(vlan->kobj, KOBJ_REMOVE);
--		kobject_del(vlan->kobj);
--	}
--	kobject_put(vlan->kobj);
--	vlan->kobj = NULL;
--}
--
--static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
--				      struct attribute *attr, char *buff)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_hard_iface *hard_iface;
--	ssize_t length;
--	const char *ifname;
--
--	batadv_sysfs_deprecated(attr);
--
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);
--	if (!hard_iface)
--		return 0;
--
--	if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
--		ifname =  "none";
+-	if (arg2)
+-		write_len = dprintf(fd, "%s %s", arg1, arg2);
 -	else
--		ifname = hard_iface->soft_iface->name;
+-		write_len = write(fd, arg1, strlen(arg1) + 1);
 -
--	length = sprintf(buff, "%s\n", ifname);
--
--	batadv_hardif_put(hard_iface);
--
--	return length;
--}
--
--/**
-- * batadv_store_mesh_iface_finish() - store new hardif mesh_iface state
-- * @net_dev: netdevice to add/remove to/from batman-adv soft-interface
-- * @ifname: name of soft-interface to modify
-- *
-- * Changes the parts of the hard+soft interface which can not be modified under
-- * sysfs lock (to prevent deadlock situations).
-- *
-- * Return: 0 on success, 0 < on failure
-- */
--static int batadv_store_mesh_iface_finish(struct net_device *net_dev,
--					  char ifname[IFNAMSIZ])
--{
--	struct net *net = dev_net(net_dev);
--	struct batadv_hard_iface *hard_iface;
--	int status_tmp;
--	int ret = 0;
--
--	ASSERT_RTNL();
--
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);
--	if (!hard_iface)
--		return 0;
--
--	if (strncmp(ifname, "none", 4) == 0)
--		status_tmp = BATADV_IF_NOT_IN_USE;
--	else
--		status_tmp = BATADV_IF_I_WANT_YOU;
--
--	if (hard_iface->if_status == status_tmp)
--		goto out;
--
--	if (hard_iface->soft_iface &&
--	    strncmp(hard_iface->soft_iface->name, ifname, IFNAMSIZ) == 0)
--		goto out;
--
--	if (status_tmp == BATADV_IF_NOT_IN_USE) {
--		batadv_hardif_disable_interface(hard_iface,
--						BATADV_IF_CLEANUP_AUTO);
+-	if (write_len < 0) {
+-		fprintf(stderr, "Error - can't write to file '%s': %s\n", full_path, strerror(errno));
 -		goto out;
 -	}
 -
--	/* if the interface already is in use */
--	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
--		batadv_hardif_disable_interface(hard_iface,
--						BATADV_IF_CLEANUP_AUTO);
+-	res = EXIT_SUCCESS;
 -
--	ret = batadv_hardif_enable_interface(hard_iface, net, ifname);
 -out:
--	batadv_hardif_put(hard_iface);
--	return ret;
+-	if (fd >= 0)
+-		close(fd);
+-	return res;
 -}
 -
--/**
-- * batadv_store_mesh_iface_work() - store new hardif mesh_iface state
-- * @work: work queue item
-- *
-- * Changes the parts of the hard+soft interface which can not be modified under
-- * sysfs lock (to prevent deadlock situations).
-- */
--static void batadv_store_mesh_iface_work(struct work_struct *work)
--{
--	struct batadv_store_mesh_work *store_work;
+ struct ether_addr *translate_mac(const char *mesh_iface,
+ 				 const struct ether_addr *mac)
+ {
+@@ -261,40 +195,7 @@ struct ether_addr *translate_mac(const char *mesh_iface,
+ 
+ int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len)
+ {
+-	char *path_buff;
 -	int ret;
 -
--	store_work = container_of(work, struct batadv_store_mesh_work, work);
+-	ret = get_algoname_netlink(mesh_iface, algoname, algoname_len);
+-	if (ret != -EOPNOTSUPP)
+-		return ret;
 -
--	rtnl_lock();
--	ret = batadv_store_mesh_iface_finish(store_work->net_dev,
--					     store_work->soft_iface_name);
--	rtnl_unlock();
--
--	if (ret < 0)
--		pr_err("Failed to store new mesh_iface state %s for %s: %d\n",
--		       store_work->soft_iface_name, store_work->net_dev->name,
--		       ret);
--
--	dev_put(store_work->net_dev);
--	kfree(store_work);
--}
--
--static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
--				       struct attribute *attr, char *buff,
--				       size_t count)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_store_mesh_work *store_work;
--
--	batadv_sysfs_deprecated(attr);
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	if (strlen(buff) >= IFNAMSIZ) {
--		pr_err("Invalid parameter for 'mesh_iface' setting received: interface name too long '%s'\n",
--		       buff);
--		return -EINVAL;
--	}
--
--	store_work = kmalloc(sizeof(*store_work), GFP_KERNEL);
--	if (!store_work)
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
 -		return -ENOMEM;
--
--	dev_hold(net_dev);
--	INIT_WORK(&store_work->work, batadv_store_mesh_iface_work);
--	store_work->net_dev = net_dev;
--	strscpy(store_work->soft_iface_name, buff,
--		sizeof(store_work->soft_iface_name));
--
--	queue_work(batadv_event_workqueue, &store_work->work);
--
--	return count;
--}
--
--static ssize_t batadv_show_iface_status(struct kobject *kobj,
--					struct attribute *attr, char *buff)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_hard_iface *hard_iface;
--	ssize_t length;
--
--	batadv_sysfs_deprecated(attr);
--
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);
--	if (!hard_iface)
--		return 0;
--
--	switch (hard_iface->if_status) {
--	case BATADV_IF_TO_BE_REMOVED:
--		length = sprintf(buff, "disabling\n");
--		break;
--	case BATADV_IF_INACTIVE:
--		length = sprintf(buff, "inactive\n");
--		break;
--	case BATADV_IF_ACTIVE:
--		length = sprintf(buff, "active\n");
--		break;
--	case BATADV_IF_TO_BE_ACTIVATED:
--		length = sprintf(buff, "enabling\n");
--		break;
--	case BATADV_IF_NOT_IN_USE:
--	default:
--		length = sprintf(buff, "not in use\n");
--		break;
 -	}
 -
--	batadv_hardif_put(hard_iface);
--
--	return length;
--}
--
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--
--/**
-- * batadv_store_throughput_override() - parse and store throughput override
-- *  entered by the user
-- * @kobj: kobject representing the private mesh sysfs directory
-- * @attr: the batman-adv attribute the user is interacting with
-- * @buff: the buffer containing the user data
-- * @count: number of bytes in the buffer
-- *
-- * Return: 'count' on success or a negative error code in case of failure
-- */
--static ssize_t batadv_store_throughput_override(struct kobject *kobj,
--						struct attribute *attr,
--						char *buff, size_t count)
--{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_hard_iface *hard_iface;
--	struct batadv_priv *bat_priv;
--	u32 tp_override;
--	u32 old_tp_override;
--	bool ret;
--
--	batadv_sysfs_deprecated(attr);
--
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);
--	if (!hard_iface)
--		return -EINVAL;
--
--	if (buff[count - 1] == '\n')
--		buff[count - 1] = '\0';
--
--	ret = batadv_parse_throughput(net_dev, buff, "throughput_override",
--				      &tp_override);
--	if (!ret)
--		goto out;
--
--	old_tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
--	if (old_tp_override == tp_override)
--		goto out;
--
--	batadv_info(hard_iface->soft_iface,
--		    "%s: %s: Changing from: %u.%u MBit to: %u.%u MBit\n",
--		    "throughput_override", net_dev->name,
--		    old_tp_override / 10, old_tp_override % 10,
--		    tp_override / 10, tp_override % 10);
--
--	atomic_set(&hard_iface->bat_v.throughput_override, tp_override);
--
--	if (hard_iface->soft_iface) {
--		bat_priv = netdev_priv(hard_iface->soft_iface);
--		batadv_netlink_notify_hardif(bat_priv, hard_iface);
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, mesh_iface);
+-	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
+-	if (ret != EXIT_SUCCESS) {
+-		ret = -ENOENT;
+-		goto free_path_buf;
 -	}
 -
--out:
--	batadv_hardif_put(hard_iface);
--	return count;
--}
+-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
 -
--static ssize_t batadv_show_throughput_override(struct kobject *kobj,
--					       struct attribute *attr,
--					       char *buff)
+-	strncpy(algoname, line_ptr, algoname_len);
+-	if (algoname_len > 0)
+-		algoname[algoname_len - 1] = '\0';
+-
+-free_path_buf:
+-	free(path_buff);
+-
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+-	return ret;
++	return get_algoname_netlink(mesh_iface, algoname, algoname_len);
+ }
+ 
+ static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
+@@ -948,45 +849,16 @@ int guess_netdev_type(const char *netdev, enum selector_prefix *type)
+ 	return -EINVAL;
+ }
+ 
+-static int check_mesh_iface_sysfs(struct state *state)
 -{
--	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
--	struct batadv_hard_iface *hard_iface;
--	u32 tp_override;
+-	char path_buff[PATH_BUFF_LEN];
+-	DIR *dir;
 -
--	batadv_sysfs_deprecated(attr);
+-	/* try to open the mesh sys directory */
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
+-		 state->mesh_iface);
 -
--	hard_iface = batadv_hardif_get_by_netdev(net_dev);
--	if (!hard_iface)
--		return -EINVAL;
+-	dir = opendir(path_buff);
+-	if (!dir)
+-		return -1;
 -
--	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
+-	closedir(dir);
 -
--	batadv_hardif_put(hard_iface);
--	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
--		       tp_override % 10);
--}
--
--#endif
--
--static BATADV_ATTR(mesh_iface, 0644, batadv_show_mesh_iface,
--		   batadv_store_mesh_iface);
--static BATADV_ATTR(iface_status, 0444, batadv_show_iface_status, NULL);
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, 0644,
--		     2 * BATADV_JITTER, INT_MAX, NULL);
--static BATADV_ATTR(throughput_override, 0644, batadv_show_throughput_override,
--		   batadv_store_throughput_override);
--#endif
--
--static struct batadv_attribute *batadv_batman_attrs[] = {
--	&batadv_attr_mesh_iface,
--	&batadv_attr_iface_status,
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--	&batadv_attr_elp_interval,
--	&batadv_attr_throughput_override,
--#endif
--	NULL,
--};
--
--/**
-- * batadv_sysfs_add_hardif() - Add hard interface specific sysfs entries
-- * @hardif_obj: address where to store the pointer to new sysfs folder
-- * @dev: netdev struct of the hard interface
-- *
-- * Return: 0 on success or negative error number in case of failure
-- */
--int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
--{
--	struct kobject *hardif_kobject = &dev->dev.kobj;
--	struct batadv_attribute **bat_attr;
--	int err;
--
--	*hardif_obj = kobject_create_and_add(BATADV_SYSFS_IF_BAT_SUBDIR,
--					     hardif_kobject);
--
--	if (!*hardif_obj) {
--		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
--			   BATADV_SYSFS_IF_BAT_SUBDIR);
--		goto out;
--	}
--
--	for (bat_attr = batadv_batman_attrs; *bat_attr; ++bat_attr) {
--		err = sysfs_create_file(*hardif_obj, &((*bat_attr)->attr));
--		if (err) {
--			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
--				   dev->name, BATADV_SYSFS_IF_BAT_SUBDIR,
--				   ((*bat_attr)->attr).name);
--			goto rem_attr;
--		}
--	}
--
--	return 0;
--
--rem_attr:
--	for (bat_attr = batadv_batman_attrs; *bat_attr; ++bat_attr)
--		sysfs_remove_file(*hardif_obj, &((*bat_attr)->attr));
--out:
--	return -ENOMEM;
--}
--
--/**
-- * batadv_sysfs_del_hardif() - Remove hard interface specific sysfs entries
-- * @hardif_obj: address to the pointer to which stores batman-adv sysfs folder
-- *  of the hard interface
-- */
--void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
--{
--	kobject_uevent(*hardif_obj, KOBJ_REMOVE);
--	kobject_del(*hardif_obj);
--	kobject_put(*hardif_obj);
--	*hardif_obj = NULL;
--}
-diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
-deleted file mode 100644
-index d987f8b3..00000000
---- a/net/batman-adv/sysfs.h
-+++ /dev/null
-@@ -1,93 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) 2010-2020  B.A.T.M.A.N. contributors:
-- *
-- * Marek Lindner
-- */
--
--#ifndef _NET_BATMAN_ADV_SYSFS_H_
--#define _NET_BATMAN_ADV_SYSFS_H_
--
--#include "main.h"
--
--#include <linux/kobject.h>
--#include <linux/netdevice.h>
--#include <linux/sysfs.h>
--#include <linux/types.h>
--
--#define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
--#define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
--/**
-- * BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
-- *  created in the sysfs hierarchy for each VLAN interface. The subfolder will
-- *  be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid".
-- */
--#define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
--
--/**
-- * struct batadv_attribute - sysfs export helper for batman-adv attributes
-- */
--struct batadv_attribute {
--	/** @attr: sysfs attribute file */
--	struct attribute attr;
--
--	/**
--	 * @show: function to export the current attribute's content to sysfs
--	 */
--	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
--			char *buf);
--
--	/**
--	 * @store: function to load new value from character buffer and save it
--	 * in batman-adv attribute
--	 */
--	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
--			 char *buf, size_t count);
--};
--
--#ifdef CONFIG_BATMAN_ADV_SYSFS
--
--int batadv_sysfs_add_meshif(struct net_device *dev);
--void batadv_sysfs_del_meshif(struct net_device *dev);
--int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
--			    struct net_device *dev);
--void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
--int batadv_sysfs_add_vlan(struct net_device *dev,
--			  struct batadv_softif_vlan *vlan);
--void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
--			   struct batadv_softif_vlan *vlan);
--
--#else
--
--static inline int batadv_sysfs_add_meshif(struct net_device *dev)
--{
 -	return 0;
 -}
 -
--static inline void batadv_sysfs_del_meshif(struct net_device *dev)
+ int check_mesh_iface(struct state *state)
+ {
+-	int ret;
+-
+ 	state->mesh_ifindex = if_nametoindex(state->mesh_iface);
+ 	if (state->mesh_ifindex == 0)
+ 		return -1;
+ 
+-	ret = check_mesh_iface_netlink(state->mesh_ifindex);
+-	if (ret == 0)
+-		return ret;
+-
+-	ret = check_mesh_iface_sysfs(state);
+-	if (ret == 0)
+-		return ret;
+-
+-	return -1;
++	return check_mesh_iface_netlink(state->mesh_ifindex);
+ }
+ 
+-static int check_mesh_iface_ownership_netlink(struct state *state,
+-					      char *hard_iface)
++int check_mesh_iface_ownership(struct state *state, char *hard_iface)
+ {
+ 	struct rtnl_link_iface_data link_data;
+ 	unsigned int hardif_index;
+@@ -1005,49 +877,6 @@ static int check_mesh_iface_ownership_netlink(struct state *state,
+ 	return EXIT_SUCCESS;
+ }
+ 
+-static int check_mesh_iface_ownership_sysfs(struct state *state,
+-					    char *hard_iface)
 -{
+-	char path_buff[PATH_BUFF_LEN];
+-	int res;
+-
+-	/* check if this device actually belongs to the mesh interface */
+-	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
+-	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
+-	if (res != EXIT_SUCCESS) {
+-		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
+-			path_buff, strerror(errno));
+-		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-	if (strcmp(line_ptr, state->mesh_iface) != 0) {
+-		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
+-			hard_iface, line_ptr, state->mesh_iface);
+-		return EXIT_FAILURE;
+-	}
+-
+-	return EXIT_SUCCESS;
 -}
 -
--static inline int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
--					  struct net_device *dev)
+-int check_mesh_iface_ownership(struct state *state, char *hard_iface)
 -{
--	return 0;
+-	int ret;
+-
+-	ret = check_mesh_iface_ownership_netlink(state, hard_iface);
+-	if (ret == EXIT_SUCCESS)
+-		return EXIT_SUCCESS;
+-
+-	ret = check_mesh_iface_ownership_sysfs(state, hard_iface);
+-	if (ret == EXIT_SUCCESS)
+-		return ret;
+-
+-	return EXIT_FAILURE;
 -}
 -
--static inline void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
--{
--}
--
--static inline int batadv_sysfs_add_vlan(struct net_device *dev,
--					struct batadv_softif_vlan *vlan)
--{
--	return 0;
--}
--
--static inline void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
--					 struct batadv_softif_vlan *vlan)
--{
--}
--
--#endif
--
--#endif /* _NET_BATMAN_ADV_SYSFS_H_ */
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 965336a3..7cfe3081 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -187,9 +187,6 @@ struct batadv_hard_iface {
- 	/** @net_dev: pointer to the net_device */
- 	struct net_device *net_dev;
- 
--	/** @hardif_obj: kobject of the per interface sysfs "mesh" directory */
--	struct kobject *hardif_obj;
--
- 	/** @refcount: number of contexts the object is used */
- 	struct kref refcount;
- 
-@@ -1512,9 +1509,6 @@ struct batadv_softif_vlan {
- 	/** @vid: VLAN identifier */
- 	unsigned short vid;
- 
--	/** @kobj: kobject for sysfs vlan subdirectory */
--	struct kobject *kobj;
--
- 	/** @ap_isolation: AP isolation state */
- 	atomic_t ap_isolation;		/* boolean */
- 
-@@ -1667,9 +1661,6 @@ struct batadv_priv {
- 	/** @batman_queue_left: number of remaining OGM packet slots */
- 	atomic_t batman_queue_left;
- 
--	/** @mesh_obj: kobject for sysfs mesh subdirectory */
--	struct kobject *mesh_obj;
--
- #ifdef CONFIG_BATMAN_ADV_DEBUGFS
- 	/** @debug_dir: dentry for debugfs batman-adv subdirectory */
- 	struct dentry *debug_dir;
-@@ -2274,10 +2265,6 @@ struct batadv_algo_gw_ops {
- 	 */
- 	ssize_t (*store_sel_class)(struct batadv_priv *bat_priv, char *buff,
- 				   size_t count);
--
--	/** @show_sel_class: prints the current GW selection class (optional) */
--	ssize_t (*show_sel_class)(struct batadv_priv *bat_priv, char *buff);
--
- 	/**
- 	 * @get_best_gw_node: select the best GW from the list of available
- 	 *  nodes (optional)
-@@ -2456,21 +2443,4 @@ enum batadv_tvlv_handler_flags {
- 	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
+ static int get_random_bytes_syscall(void *buf __maybe_unused,
+ 				    size_t buflen __maybe_unused)
+ {
+diff --git a/functions.h b/functions.h
+index f63c438..923e593 100644
+--- a/functions.h
++++ b/functions.h
+@@ -43,9 +43,7 @@ char *ether_ntoa_long(const struct ether_addr *addr);
+ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
+ char *get_name_by_macstr(char *mac_str, int read_opt);
+ int file_exists(const char *fpath);
+-int read_file(const char *dir, const char *path, int read_opt);
+-int write_file(const char *dir, const char *fname, const char *arg1,
+-	       const char *arg2);
++int read_file(const char *full_path, int read_opt);
+ struct ether_addr *translate_mac(const char *mesh_iface,
+ 				 const struct ether_addr *mac);
+ struct ether_addr *resolve_mac(const char *asc);
+@@ -81,7 +79,6 @@ enum {
+ 	SKIP_HEADER = 0x100,
+ 	UNICAST_ONLY = 0x200,
+ 	MULTICAST_ONLY = 0x400,
+-	INVERSE_BOOL = 0x800,
  };
  
--/**
-- * struct batadv_store_mesh_work - Work queue item to detach add/del interface
-- *  from sysfs locks
-- */
--struct batadv_store_mesh_work {
--	/**
--	 * @net_dev: netdevice to add/remove to/from batman-adv soft-interface
--	 */
--	struct net_device *net_dev;
+ #endif
+diff --git a/gw_mode.c b/gw_mode.c
+index 72b5fbf..e48b78d 100644
+--- a/gw_mode.c
++++ b/gw_mode.c
+@@ -254,105 +254,31 @@ static int set_gw(struct state *state)
+ 				  NULL);
+ }
+ 
+-static int gw_read_setting(struct state *state, const char *path_buff)
++static int gw_read_setting(struct state *state)
+ {
+-	enum batadv_gw_modes gw_mode;
+ 	int res;
+ 
+ 	res = get_gw(state);
+-	if (res < 0 && res != -EOPNOTSUPP)
++	if (res < 0)
+ 		return EXIT_FAILURE;
+-	if (res >= 0)
+-		return EXIT_SUCCESS;
 -
--	/** @soft_iface_name: name of soft-interface to modify */
--	char soft_iface_name[IFNAMSIZ];
+-	/* fallback to sysfs */
+-	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF);
+-	if (res != EXIT_SUCCESS)
+-		goto out;
 -
--	/** @work: work queue item */
--	struct work_struct work;
--};
+-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
 -
- #endif /* _NET_BATMAN_ADV_TYPES_H_ */
+-	if (strcmp(line_ptr, "client") == 0)
+-		gw_mode = BATADV_GW_MODE_CLIENT;
+-	else if (strcmp(line_ptr, "server") == 0)
+-		gw_mode = BATADV_GW_MODE_SERVER;
+ 	else
+-		gw_mode = BATADV_GW_MODE_OFF;
+-
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+-	switch (gw_mode) {
+-	case BATADV_GW_MODE_CLIENT:
+-		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF);
+-		break;
+-	case BATADV_GW_MODE_SERVER:
+-		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF);
+-		break;
+-	default:
+-		printf("off\n");
+-		goto out;
+-	}
+-
+-	if (res != EXIT_SUCCESS)
+-		goto out;
+-
+-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-		line_ptr[strlen(line_ptr) - 1] = '\0';
+-
+-	switch (gw_mode) {
+-	case BATADV_GW_MODE_CLIENT:
+-		printf("client (selection class: %s)\n", line_ptr);
+-		break;
+-	case BATADV_GW_MODE_SERVER:
+-		printf("server (announced bw: %s)\n", line_ptr);
+-		break;
+-	default:
+-		goto out;
+-	}
+-
+-out:
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+-	return res;
++		return EXIT_SUCCESS;
+ }
+ 
+-static int gw_write_setting(struct state *state, const char *path_buff,
+-			    int argc, char *argv[])
++static int gw_write_setting(struct state *state)
+ {
+ 	int res = EXIT_FAILURE;
+ 
+ 	res = set_gw(state);
+-	if (res < 0 && res != -EOPNOTSUPP)
++	if (res < 0)
+ 		return EXIT_FAILURE;
+-	if (res >= 0)
++	else
+ 		return EXIT_SUCCESS;
+-
+-	/* sysfs fallback */
+-	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
+-	if (res != EXIT_SUCCESS)
+-		return res;
+-
+-	if (argc > 2) {
+-		switch (gw_globals.mode) {
+-		case BATADV_GW_MODE_CLIENT:
+-			res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+-			break;
+-		case BATADV_GW_MODE_SERVER:
+-			res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+-			break;
+-		}
+-	}
+-
+-	return res;
+ }
+ 
+ static int gw_mode(struct state *state, int argc, char **argv)
+ {
+ 	int optchar, res = EXIT_FAILURE;
+-	char *path_buff;
+ 
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+ 		switch (optchar) {
+@@ -365,31 +291,16 @@ static int gw_mode(struct state *state, int argc, char **argv)
+ 		}
+ 	}
+ 
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
+-
+-	if (argc == 1) {
+-		res = gw_read_setting(state, path_buff);
+-		goto out;
+-	}
++	if (argc == 1)
++		return gw_read_setting(state);
+ 
+ 	check_root_or_die("batctl gw_mode");
+ 
+ 	res = parse_gw(state, argc, argv);
+-	if (res < 0) {
+-		res = EXIT_FAILURE;
+-		goto out;
+-	}
++	if (res < 0)
++		return EXIT_FAILURE;
+ 
+-	res = gw_write_setting(state, path_buff, argc, argv);
+-out:
+-	free(path_buff);
+-	return res;
++	return gw_write_setting(state);
+ }
+ 
+ COMMAND(SUBCOMMAND_MIF, gw_mode, "gw",
+diff --git a/hop_penalty.c b/hop_penalty.c
+index 5f1aabc..7430381 100644
+--- a/hop_penalty.c
++++ b/hop_penalty.c
+@@ -122,7 +122,6 @@ static int set_hop_penalty_if(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_hop_penalty = {
+-	.sysfs_name = "hop_penalty",
+ 	.data = &hop_penalty,
+ 	.parse = parse_hop_penalty,
+ 	.netlink_get = get_hop_penalty,
+@@ -130,7 +129,6 @@ static struct settings_data batctl_settings_hop_penalty = {
+ };
+ 
+ static struct settings_data batctl_settings_hop_penalty_if = {
+-	.sysfs_name = NULL,
+ 	.data = &hop_penalty,
+ 	.parse = parse_hop_penalty,
+ 	.netlink_get = get_hop_penalty_if,
+diff --git a/interface.c b/interface.c
+index 34381de..8775c59 100644
+--- a/interface.c
++++ b/interface.c
+@@ -138,7 +138,6 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
+ 	struct print_interfaces_rtnl_arg *print_arg = arg;
+ 	char iface_status[IFACE_STATUS_LEN];
+ 	struct nlattr *attrs[IFLA_MAX + 1];
+-	char path_buff[PATH_BUFF_LEN];
+ 	struct ifinfomsg *ifm;
+ 	char *ifname;
+ 	int ret;
+@@ -165,21 +164,11 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
+ 		goto err;
+ 
+ 	status = get_iface_status_netlink(master, ifm->ifi_index, iface_status);
+-	if (!status) {
+-		snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT,
+-			 ifname);
+-		ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
+-		if (ret != EXIT_SUCCESS)
+-			status = "<error reading status>\n";
+-		else
+-			status = line_ptr;
+-	}
++	if (!status)
++		status = "<error reading status>\n";
+ 
+ 	printf("%s: %s", ifname, status);
+ 
+-	free(line_ptr);
+-	line_ptr = NULL;
+-
+ err:
+ 	return NL_OK;
+ }
+diff --git a/isolation_mark.c b/isolation_mark.c
+index 0865de3..b0048f3 100644
+--- a/isolation_mark.c
++++ b/isolation_mark.c
+@@ -127,7 +127,6 @@ static int set_isolation_mark(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_isolation_mark = {
+-	.sysfs_name = "isolation_mark",
+ 	.data = &isolation_mark,
+ 	.parse = parse_isolation_mark,
+ 	.netlink_get = get_isolation_mark,
+diff --git a/loglevel.c b/loglevel.c
+index 1e4b690..af7349d 100644
+--- a/loglevel.c
++++ b/loglevel.c
+@@ -86,44 +86,31 @@ static int set_log_level(struct state *state)
+ 				  set_attrs_log_level, NULL);
+ }
+ 
+-static int log_level_read_setting(struct state *state, const char *path_buff)
++static int log_level_read_setting(struct state *state)
+ {
+ 	int res;
+ 
+ 	res = get_log_level(state);
+-	if (res < 0 && res != -EOPNOTSUPP)
++	if (res < 0)
+ 		return EXIT_FAILURE;
+-	if (res >= 0)
++	else
+ 		return EXIT_SUCCESS;
+-
+-	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF);
+-	if (res != EXIT_SUCCESS)
+-		return res;
+-
+-	log_level_globals.log_level = strtol(line_ptr, (char **) NULL, 10);
+-
+-	return res;
+ }
+ 
+-static int log_level_write_setting(struct state *state, const char *path_buff)
++static int log_level_write_setting(struct state *state)
+ {
+ 	int res;
+-	char str[4];
+ 
+ 	res = set_log_level(state);
+-	if (res < 0 && res != -EOPNOTSUPP)
++	if (res < 0)
+ 		return EXIT_FAILURE;
+-	if (res >= 0)
++	else
+ 		return EXIT_SUCCESS;
+-
+-	snprintf(str, sizeof(str), "%i", log_level_globals.log_level);
+-	return write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
+ }
+ 
+ static int loglevel(struct state *state, int argc, char **argv)
+ {
+ 	int optchar, res = EXIT_FAILURE;
+-	char *path_buff;
+ 	int i;
+ 
+ 	log_level_globals.log_level = 0;
+@@ -139,14 +126,6 @@ static int loglevel(struct state *state, int argc, char **argv)
+ 		}
+ 	}
+ 
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
+-
+ 	if (argc != 1) {
+ 		check_root_or_die("batctl loglevel");
+ 
+@@ -175,17 +154,16 @@ static int loglevel(struct state *state, int argc, char **argv)
+ 				log_level_globals.log_level |= BIT(7);
+ 			else {
+ 				log_level_usage();
+-				goto out;
++				return EXIT_FAILURE;
+ 			}
+ 		}
+ 
+-		log_level_write_setting(state, path_buff);
+-		goto out;
++		return log_level_write_setting(state);
+ 	}
+ 
+-	res = log_level_read_setting(state, path_buff);
++	res = log_level_read_setting(state);
+ 	if (res != EXIT_SUCCESS)
+-		goto out;
++		return res;
+ 
+ 	printf("[%c] %s (%s)\n", (!log_level_globals.log_level) ? 'x' : ' ',
+ 	       "all debug output disabled", "none");
+@@ -207,8 +185,6 @@ static int loglevel(struct state *state, int argc, char **argv)
+ 	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(7)) ? 'x' : ' ',
+ 	       "messages related to throughput meter", "tp");
+ 
+-out:
+-	free(path_buff);
+ 	return res;
+ }
+ 
+diff --git a/main.c b/main.c
+index 6ea589a..54be6fb 100644
+--- a/main.c
++++ b/main.c
+@@ -123,7 +123,7 @@ static void version(void)
+ 
+ 	printf("batctl %s [batman-adv: ", SOURCE_VERSION);
+ 
+-	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
++	ret = read_file(module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
+ 	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+ 		line_ptr[strlen(line_ptr) - 1] = '\0';
+ 
+@@ -397,10 +397,7 @@ int main(int argc, char **argv)
+ 
+ 	if (cmd->flags & COMMAND_FLAG_NETLINK) {
+ 		ret = netlink_create(&state);
+-		if (ret < 0 && ret != -EOPNOTSUPP) {
+-			/* TODO handle -EOPNOTSUPP as error when fallbacks were
+-			 * removed
+-			 */
++		if (ret < 0) {
+ 			fprintf(stderr,
+ 				"Error - failed to connect to batadv\n");
+ 			exit(EXIT_FAILURE);
+diff --git a/multicast_fanout.c b/multicast_fanout.c
+index dcc4fc6..b43ff10 100644
+--- a/multicast_fanout.c
++++ b/multicast_fanout.c
+@@ -88,7 +88,6 @@ static int set_multicast_fanout(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_multicast_fanout = {
+-	.sysfs_name = NULL,
+ 	.data = &multicast_fanout,
+ 	.parse = parse_multicast_fanout,
+ 	.netlink_get = get_multicast_fanout,
+diff --git a/multicast_forceflood.c b/multicast_forceflood.c
+index a33149f..e02ab9d 100644
+--- a/multicast_forceflood.c
++++ b/multicast_forceflood.c
+@@ -68,7 +68,6 @@ static int set_multicast_forceflood(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_multicast_forceflood = {
+-	.sysfs_name = "multicast_mode",
+ 	.data = &multicast_forceflood,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_multicast_forceflood,
+diff --git a/multicast_mode.c b/multicast_mode.c
+index a46cfc9..f837998 100644
+--- a/multicast_mode.c
++++ b/multicast_mode.c
+@@ -68,7 +68,6 @@ static int set_multicast_mode(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_multicast_mode = {
+-	.sysfs_name = "multicast_mode",
+ 	.data = &multicast_mode,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_multicast_mode,
+diff --git a/network_coding.c b/network_coding.c
+index a733c6b..9868e54 100644
+--- a/network_coding.c
++++ b/network_coding.c
+@@ -48,7 +48,6 @@ static int set_network_coding(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_network_coding = {
+-	.sysfs_name = "network_coding",
+ 	.data = &network_coding,
+ 	.parse = parse_simple_boolean,
+ 	.netlink_get = get_network_coding,
+diff --git a/orig_interval.c b/orig_interval.c
+index 25e67e5..2cdad1a 100644
+--- a/orig_interval.c
++++ b/orig_interval.c
+@@ -88,7 +88,6 @@ static int set_orig_interval(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_orig_interval = {
+-	.sysfs_name = "orig_interval",
+ 	.data = &orig_interval,
+ 	.parse = parse_orig_interval,
+ 	.netlink_get = get_orig_interval,
+diff --git a/routing_algo.c b/routing_algo.c
+index 0f2e1bb..27458ff 100644
+--- a/routing_algo.c
++++ b/routing_algo.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <errno.h>
++#include <fcntl.h>
+ #include <getopt.h>
+ #include <netinet/if_ether.h>
+ #include <netlink/netlink.h>
+@@ -15,6 +16,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
+ 
+ #include "batadv_packet.h"
+ #include "batman_adv.h"
+@@ -73,7 +77,7 @@ static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
+ 	return NL_OK;
+ }
+ 
+-static int netlink_print_routing_algos(void)
++static int print_routing_algos(void)
+ {
+ 	struct nl_sock *sock;
+ 	struct nl_msg *msg;
+@@ -132,12 +136,28 @@ static int netlink_print_routing_algos(void)
+ 	return last_err;
+ }
+ 
+-static int print_routing_algos(void)
++static int write_default_ra(const char *full_path, const char *arg1)
+ {
+-	int err;
++	ssize_t write_len;
++	int fd = -1;
+ 
+-	err = netlink_print_routing_algos();
+-	return err;
++	fd = open(full_path, O_WRONLY);
++	if (fd < 0) {
++		fprintf(stderr, "Error - can't open file '%s': %s\n", full_path,
++			strerror(errno));
++
++		return EXIT_FAILURE;
++	}
++
++	write_len = write(fd, arg1, strlen(arg1) + 1);
++	close(fd);
++	if (write_len < 0) {
++		fprintf(stderr, "Error - can't write to file '%s': %s\n",
++			full_path, strerror(errno));
++		return EXIT_FAILURE;
++	}
++
++	return EXIT_SUCCESS;
+ }
+ 
+ static struct nla_policy link_policy[IFLA_MAX + 1] = {
+@@ -278,14 +298,12 @@ static int routing_algo(struct state *state __maybe_unused, int argc, char **arg
+ 
+ 	check_root_or_die("batctl routing_algo");
+ 
+-	if (argc == 2) {
+-		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
+-		return EXIT_FAILURE;
+-	}
++	if (argc == 2)
++		return write_default_ra(SYS_SELECTED_RA_PATH, argv[1]);
+ 
+ 	print_ra_interfaces();
+ 
+-	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF);
++	res = read_file(SYS_SELECTED_RA_PATH, USE_READ_BUFF);
+ 	if (res != EXIT_SUCCESS)
+ 		return EXIT_FAILURE;
+ 
+diff --git a/sys.c b/sys.c
+index 7668a72..cde5002 100644
+--- a/sys.c
++++ b/sys.c
+@@ -189,63 +189,35 @@ static void settings_usage(struct state *state)
+ 	fprintf(stderr, " \t -h print this help\n");
+ }
+ 
+-static int sys_read_setting(struct state *state, const char *path_buff,
+-			    const char *sysfs_name)
++static int sys_read_setting(struct state *state)
+ {
+ 	struct settings_data *settings = state->cmd->arg;
+ 	int res = EXIT_FAILURE;
+-	int read_opt = NO_FLAGS;
+ 
+ 	if (settings->netlink_get) {
+ 		res = settings->netlink_get(state);
+-		if (res < 0 && res != -EOPNOTSUPP)
++		if (res < 0)
+ 			return EXIT_FAILURE;
+-		if (res >= 0)
++		else
+ 			return EXIT_SUCCESS;
+ 	}
+ 
+-	if (sysfs_name) {
+-		if (state->cmd->flags & COMMAND_FLAG_INVERSE)
+-			read_opt |= INVERSE_BOOL;
+-
+-		res = read_file(path_buff, sysfs_name, read_opt);
+-	}
+-
+ 	return res;
+ }
+ 
+-static int sys_write_setting(struct state *state, const char *path_buff,
+-			    const char *sysfs_name, int argc, char **argv)
++static int sys_write_setting(struct state *state)
+ {
+ 	struct settings_data *settings = state->cmd->arg;
+ 	int res = EXIT_FAILURE;
+-	char *argv1 = argv[1];
+ 
+ 	if (settings->netlink_set) {
+ 		res = settings->netlink_set(state);
+-		if (res < 0 && res != -EOPNOTSUPP)
++		if (res < 0)
+ 			return EXIT_FAILURE;
+-		if (res >= 0)
++		else
+ 			return EXIT_SUCCESS;
+ 	}
+ 
+-	if (sysfs_name) {
+-		if (state->cmd->flags & COMMAND_FLAG_INVERSE) {
+-			if (!strncmp("0", argv[1], strlen("0")) ||
+-			    !strncmp("disable", argv[1], strlen("disable")) ||
+-			    !strncmp("disabled", argv[1], strlen("disabled"))) {
+-				argv1 = "enabled";
+-			} else if (!strncmp("1", argv[1], strlen("1")) ||
+-				   !strncmp("enable", argv[1], strlen("enable")) ||
+-				   !strncmp("enabled", argv[1], strlen("enabled"))) {
+-				argv1 = "disabled";
+-			}
+-		}
+-
+-		res = write_file(path_buff, sysfs_name,
+-				 argv1, argc > 2 ? argv[2] : NULL);
+-	}
+-
+ 	return res;
+ }
+ 
+@@ -253,7 +225,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ {
+ 	struct settings_data *settings = state->cmd->arg;
+ 	int optchar, res = EXIT_FAILURE;
+-	char *path_buff;
+ 
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+ 		switch (optchar) {
+@@ -266,55 +237,16 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
+ 		}
+ 	}
+ 
+-	/* prepare the classic path */
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	switch (state->selector) {
+-	case SP_NONE_OR_MESHIF:
+-	case SP_MESHIF:
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
+-			 state->mesh_iface);
+-		break;
+-	case SP_VLAN:
+-		/* if the specified interface is a VLAN then change the path to
+-		 * point to the proper "vlan%{vid}" subfolder in the sysfs tree.
+-		 */
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+-			 state->mesh_iface, state->vid);
+-		break;
+-	case SP_HARDIF:
+-		/* if a hard interface was specified then change the path to
+-		 * point to the proper ${hardif}/batman-adv path in the sysfs
+-		 * tree.
+-		 */
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_HARDIF_PATH,
+-			 state->hard_iface);
+-		break;
+-	}
+-
+-	if (argc == 1) {
+-		res = sys_read_setting(state, path_buff, settings->sysfs_name);
+-		goto out;
+-	}
++	if (argc == 1)
++		return sys_read_setting(state);
+ 
+ 	check_root_or_die("batctl");
+ 
+ 	if (settings->parse) {
+ 		res = settings->parse(state, argc, argv);
+-		if (res < 0) {
+-			res = EXIT_FAILURE;
+-			goto out;
+-		}
++		if (res < 0)
++			return EXIT_FAILURE;
+ 	}
+ 
+-	res = sys_write_setting(state, path_buff, settings->sysfs_name, argc,
+-				argv);
+-
+-out:
+-	free(path_buff);
+-	return res;
++	return sys_write_setting(state);
+ }
+diff --git a/sys.h b/sys.h
+index b4e4bca..ac7781f 100644
+--- a/sys.h
++++ b/sys.h
+@@ -18,18 +18,9 @@
+ #include "batman_adv.h"
+ #include "netlink.h"
+ 
+-#define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+-#define SYS_IFACE_PATH		"/sys/class/net"
+-#define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
+-#define SYS_HARDIF_PATH		SYS_IFACE_DIR "batman_adv/"
+-#define SYS_MESH_IFACE_FMT	SYS_HARDIF_PATH "mesh_iface"
+-#define SYS_IFACE_STATUS_FMT	SYS_HARDIF_PATH "iface_status"
+-#define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+-#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
+ #define VLAN_ID_MAX_LEN		4
+ 
+ struct settings_data {
+-	const char *sysfs_name;
+ 	void *data;
+ 	int (*parse)(struct state *state, int argc, char *argv[]);
+ 	int (*netlink_get)(struct state *state);
+diff --git a/throughput_override.c b/throughput_override.c
+index 13b5dce..f42d9de 100644
+--- a/throughput_override.c
++++ b/throughput_override.c
+@@ -101,7 +101,6 @@ static int set_throughput_override(struct state *state)
+ }
+ 
+ static struct settings_data batctl_settings_throughput_override = {
+-	.sysfs_name = "throughput_override",
+ 	.data = &throughput_override,
+ 	.parse = parse_throughput_override,
+ 	.netlink_get = get_throughput_override,
 -- 
 2.28.0
 
