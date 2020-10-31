@@ -1,72 +1,134 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH maint v5 0/3] batman-adv: mcast: BLA fixes
-Date: Tue, 15 Sep 2020 09:54:07 +0200
-Message-Id: <20200915075410.13932-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 2/2] alfred: Drop deprecated sysfs support
+Date: Sat, 31 Oct 2020 18:39:12 +0100
+Message-Id: <20201031173912.108591-2-sven@narfation.org>
+In-Reply-To: <20201031173912.108591-1-sven@narfation.org>
+References: <20201031173912.108591-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-These are three fixes for issues which occur when using the batman-adv
-multicast-to-unicast feature.
+The sysfs support is disabled by default in batman-adv since a while and
+will be removed in 2021. The generic netlink interface should be used
+instead.
 
-They fix issues when using the multicast-to-unicast conversion
-while BLA is enabled and some nodes are sharing the same LAN side. Here
-it either causes "just" duplicates in the "good" scenario (Patch 3/3).
-But can also cause multiple BLA backbones to send a frame from the mesh
-into the same, shared LAN segment (Patch 2/3). Or in the worst case, even
-reflect packets back to the host in the shared LAN, which completely
-confuses switches/bridges and ICMPv6 Neighbor Discovery (Patch 1/3).
+The alfred support for it should be removed with the same release as the
+removal in batman-adv.
 
-Regards, Linus
-
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+ vis/vis.c | 50 ++++----------------------------------------------
+ vis/vis.h |  3 ---
+ 2 files changed, 4 insertions(+), 49 deletions(-)
 
-Changelog v6:
-* Patch 3/3:
-  - removed "is_for_same_orig" variable again and call "continue" directl=
-y
+diff --git a/vis/vis.c b/vis/vis.c
+index b62359c..1bb82ab 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -36,39 +36,6 @@ struct vis_netlink_opts {
+ 	struct nlquery_opts query_opts;
+ };
+ 
+-static char *read_file(char *fname)
+-{
+-	FILE *fp;
+-	char *buf = NULL, *buf_tmp;
+-	size_t size, ret;
+-
+-	fp = fopen(fname, "r");
+-
+-	if (!fp)
+-		return NULL;
+-
+-	size = 0;
+-	while (!feof(fp)) {
+-
+-		buf_tmp = realloc(buf, size + 4097);
+-		if (!buf_tmp) {
+-			free(buf);
+-			fclose(fp);
+-			return NULL;
+-		}
+-
+-		buf = buf_tmp;
+-		ret = fread(buf + size, 1, 4096, fp);
+-		size += ret;
+-	}
+-	fclose(fp);
+-
+-	if (buf)
+-		buf[size] = 0;
+-
+-	return buf;
+-}
+-
+ static char *mac_to_str(uint8_t *mac)
+ {
+ 	static char macstr[20];
+@@ -443,26 +410,17 @@ err_free_sock:
+ 	return ret_status;
+ }
+ 
+-static bool interface_active(unsigned int meshif, unsigned int hardif,
+-			     const char *ifname)
++static bool interface_active(unsigned int meshif, unsigned int hardif)
+ {
+ 	char iface_status[IFACE_STATUS_LEN];
+-	char path_buff[PATH_BUFF_LEN];
+ 	char *file_content = NULL;
+ 	char *content_newline;
+ 	bool active = false;
+ 	char *status;
+ 
+ 	status = get_iface_status_netlink(meshif, hardif, iface_status);
+-	if (!status) {
+-		snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT,
+-			 ifname);
+-		file_content = read_file(path_buff);
+-		if (!file_content)
+-			return false;
+-
+-		status = file_content;
+-	}
++	if (!status)
++		return false;
+ 
+ 	content_newline = strstr(status, "\n");
+ 	if (content_newline)
+@@ -518,7 +476,7 @@ static int register_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
+ 	if (master != register_arg->ifindex)
+ 		goto err;
+ 
+-	if (!interface_active(master, ifm->ifi_index, ifname))
++	if (!interface_active(master, ifm->ifi_index))
+ 		goto err;
+ 
+ 	get_if_index_byname(register_arg->globals, ifname);
+diff --git a/vis/vis.h b/vis/vis.h
+index bed6615..6f5b839 100644
+--- a/vis/vis.h
++++ b/vis/vis.h
+@@ -23,9 +23,6 @@
+ #define	VIS_PACKETVERSION			1
+ #define UPDATE_INTERVAL				10
+ 
+-#define SYS_IFACE_PATH				"/sys/class/net"
+-#define SYS_IFACE_STATUS_FMT			SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+-
+ 
+ enum opmode {
+ 	OPMODE_SERVER,
+-- 
+2.28.0
 
-Changelog v5:
-* Patch 3/3:
-  - added missing "*" in kernel doc for batadv_bla_check_duplist()
-
-Changelog v4:
-* Patch 1/3:
-  - fixed build with CONFIG_BATMAN_ADV_MCAST=3Dn
-    -> dummy for batadv_mcast_forw_send_orig()
-* Patch 2/3:
-  - fixed parameters for batadv_bla_rx() with CONFIG_BATMAN_ADV_BLA=3Dn
-    (bool is_bcast -> int packet_type)
-
-Changelog v3:
-* removed 1/4, as it was already applied
-* renamed title (excluded TT, as already applied)
-
-* Patch 1/3:
-  - moved bla-backbone check into multicast code:
-    -> to stay on the safe side for net, to touch less other code
-       paths - the issue was observed specifically for multicast
-       and the fix was tested for that
-  - added a note regarding implications for mcast-fanout
-* Patch 2/3:
-  - previous approach was broken, it would break the DHCPv6 gateway
-    code; instead distinguish by batadv 3 vs. 4 addr unicast header
-  - added some more code comments
-  - updated commit message with new approach
-* Patch 3/3:
-  - made code a bit more verbose and explicit
-  - added some more code comments
-  - added missing kernel doc for "orig" parameter to
-    new batadv_bla_check_duplist()
-
-Changelog v2:
-* Adding "Fixes:" lines
