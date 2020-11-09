@@ -1,67 +1,39 @@
-Return-Path: <ap420073@gmail.com>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-References: <20201115103004.30618-1-ap420073@gmail.com> <4602363.31r3eYUQgx@sven-edge>
-In-Reply-To: <4602363.31r3eYUQgx@sven-edge>
-From: Taehee Yoo <ap420073@gmail.com>
-Date: Sun, 15 Nov 2020 20:48:19 +0900
-Message-ID: <CAMArcTWH0Lk1nFOcva2+_Yhdgt9q8XA=QAVjShCFeGFoK04bdQ@mail.gmail.com>
-Subject: Re: [PATCH v3 net] batman-adv: set .owner to THIS_MODULE
+Date: Mon, 09 Nov 2020 03:03:05 -0800
+In-Reply-To: <000000000000a48f9e05aef6cce1@google.com>
+Message-ID: <000000000000b4227e05b3aa8101@google.com>
+Subject: Re: INFO: rcu detected stall in exit_group
+From: syzbot <syzbot+1a14a0f8ce1a06d4415f@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, dhowells@redhat.com, fweisbec@gmail.com, linux-afs@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mareklindner@neomailbox.ch, mike.kravetz@oracle.com, mingo@kernel.org, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tglx@linutronix.de, viro@zeniv.linux.org.uk
 
-On Sun, 15 Nov 2020 at 19:40, Sven Eckelmann <sven@narfation.org> wrote:
->
+syzbot suspects this issue was fixed by commit:
 
-Hi Sven
+commit 1d0e850a49a5b56f8f3cb51e74a11e2fedb96be6
+Author: David Howells <dhowells@redhat.com>
+Date:   Fri Oct 16 12:21:14 2020 +0000
 
-> On Sunday, 15 November 2020 11:30:04 CET Taehee Yoo wrote:
-> > If THIS_MODULE is not set, the module would be removed while debugfs is
-> > being used.
-> > It eventually makes kernel panic.
-> >
-> > Fixes: 9e466250ede3 ("batman-adv: Prefix bat_debugfs local static functions with batadv_")
->
-> This Fixes: is bogus. The code was already present with the first commit
-> c6c8fea29769 ("net: Add batman-adv meshing protocol"). I have now changed it
-> before it was applied to the net branch.
->
-> >  net/batman-adv/log.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-> > index a67b2b091447..c0ca5fbe5b08 100644
-> > --- a/net/batman-adv/log.c
-> > +++ b/net/batman-adv/log.c
-> > @@ -180,6 +180,7 @@ static const struct file_operations batadv_log_fops = {
-> >       .read           = batadv_log_read,
-> >       .poll           = batadv_log_poll,
-> >       .llseek         = no_llseek,
-> > +     .owner          = THIS_MODULE,
-> >  };
-> >
-> >  /**
-> >
->
-> General info: This causes a merge problem with the net-next branch [1] because
-> the debugfs files were dropped in preparation of the Linux 5.11 release in
-> 2021. I might rebase the currently pending patches for net-next to avoid this
-> weird merge conflict.
->
-> Kind regards,
->         Sven
->
-> [1] https://git.open-mesh.org/linux-merge.git/shortlog/refs/heads/batadv/net-next
+    afs: Fix cell removal
 
-Thank you so much for fixing the Fixes tag and providing information.
-Thanks again,
-Taehee Yoo
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=14b65c3a500000
+start commit:   34d4ddd3 Merge tag 'linux-kselftest-5.9-rc5' of git://git...
+git tree:       upstream
+kernel config:  https://syzkaller.appspot.com/x/.config?x=a9075b36a6ae26c9
+dashboard link: https://syzkaller.appspot.com/bug?extid=1a14a0f8ce1a06d4415f
+userspace arch: i386
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10c6642d900000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=132d00fd900000
+
+If the result looks correct, please mark the issue as fixed by replying with:
+
+#syz fix: afs: Fix cell removal
+
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
