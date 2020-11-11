@@ -1,12 +1,11 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
-Date: Thu, 26 Nov 2020 09:21:58 +0100
-Message-ID: <5658440.UjTJXf6HLC@sven-edge>
-In-Reply-To: <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
-References: <20201125122438.955972-1-sven@narfation.org> <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9679158.0AQdONaE2F"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+References: <0000000000009383f505adc8c5a0@google.com> <0000000000000b380805b09dbf40@google.com>
+In-Reply-To: <0000000000000b380805b09dbf40@google.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Wed, 11 Nov 2020 12:19:09 +0100
+Message-ID: <CACT4Y+ZM6kjJjaiocArfb2EEhJKqqA3=S2Y_7GeTx2SXz-xVAQ@mail.gmail.com>
+Subject: Re: general protection fault in nexthop_is_blackhole
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,128 +13,34 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Annika Wickert <annika.wickert@exaring.de>, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, dev@openvswitch.org
+To: syzbot <syzbot+b2c08a2f5cfef635cc3a@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, Anant Thazhemadam <anant.thazhemadam@gmail.com>, Andrii Nakryiko <andriin@fb.com>, anmol.karan123@gmail.com, Alexei Starovoitov <ast@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, bpf <bpf@vger.kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, David Miller <davem@davemloft.net>, David Ahern <dsahern@gmail.com>, hariprasad.kelam@gmail.com, Herbert Xu <herbert@gondor.apana.org.au>, John Fastabend <john.fastabend@gmail.com>, Martin KaFai Lau <kafai@fb.com>, KP Singh <kpsingh@chromium.org>, Jakub Kicinski <kuba@kernel.org>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, LKML <linux-kernel@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, Nikolay Aleksandrov <nikolay@cumulusnetworks.com>, Song Liu <songliubraving@fb.com>, Steffen Klassert <steffen.klassert@secunet.com>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, Yonghong Song <yhs@fb.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
 
- 
---nextPart9679158.0AQdONaE2F
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Annika Wickert <annika.wickert@exaring.de>, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, dev@openvswitch.org
-Subject: Re: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
-Date: Thu, 26 Nov 2020 09:21:58 +0100
-Message-ID: <5658440.UjTJXf6HLC@sven-edge>
-In-Reply-To: <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
-References: <20201125122438.955972-1-sven@narfation.org> <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
-
-Hi,
-
-I find your output slightly confusing. Maybe you can change your printk stuff 
-to something more like:
-
-  printk("%s %s:%u max_headroom %u\n", __FILE__, __func__, __LINE__, max_headroom);
-
-On Thursday, 26 November 2020 00:14:35 CET Annika Wickert wrote:
-> This is what I get from the bridge when bat0 is enslaved with the vxlan interface as member of batman ( https://elixir.bootlin.com/linux/latest/source/net/bridge/br_if.c#L311 )
-> [   36.959547] Bridge firewalling registered
-> [  522.221767] SKB Bridge br_if.c: max_headroom 0
-> [  522.221781] SKB Bridge br_if.c: new_hr 0
-> [  627.186129] SKB Bridge br_if.c: max_headroom 0
-> [  627.186139] SKB Bridge br_if.c: new_hr 0
-> [  627.616650] SKB Bridge br_if.c: new_hr 102
-
-When is this shown? Does the batadv interface already have its hardif (slave) 
-interfaces attached at that point? And did the vxlan report the correct 
-needed_headroom to batadv before you've tried to attach the batadv interface 
-to the bridge?
-
-Because the bridge can also only change its needed_headroom on interface add 
-or delete.
-
-> Also BATMAN reports itself when initialized and seems not to propagate stuff up the stack on change?: (https://github.com/open-mesh-mirror/batman-adv/blob/master/net/batman-adv/hard-interface.c#L555  )
-> [ 3350.212094] SKB hard-interface.h: soft_iface->needed_tailroom) 0
-> [3350.212105] SKB hard-interface.h: soft_iface->needed_headroom) 358
-> [ 3350.212116] SKB hard-interface.h: lower_headroom 70
-> [ 3350.212126] SKB hard-interface.h: needed_headroom 102
-
-Afaik, it is "propagating" its stuff by adjusting its own needed_headroom/
-tailroom at this point. But there is no way to notify that the headroom/
-tailroom was changed and the upper layers should recalculate it.
-
-If you need something like this then we might to have a new 
-NETDEV_RESERVED_SPACE_CHANGE (or a better name OR maybe use a netdev_cmd with 
-a similar meaning). And then call this whenever the needed_headroom/
-tailroom/... of an interface changes during its lifetime. And bridge/batman-
-adv/ovs/... have to check the headroom in their notifier_call again when they 
-receive this event.
-
-> Also added some debugging to Fragmentation.c in BATMAN after the patch: 
-> Nov 25 17:48:26 raspi-1gb.awlnx.space kernel: SKB Fragmentation.c: ll_reserved 96
-> Nov 25 17:48:26 raspi-1gb.awlnx.space kernel: SKB Fragmentation.c: skb->len 762
-> Nov 25 17:48:26 raspi-1gb.awlnx.space kernel: SKB Fragmentation.c: header_size 20
-> Nov 25 17:48:26 raspi-1gb.awlnx.space kernel: SKB Fragmentation.c: fragment_size 762
-> Nov 25 17:48:26 raspi-1gb.awlnx.space kernel: SKB Fragmentation.c: ll_reserved 96
-> 
-> At the same time the VXLAN interface which is transported over Wireguard reports this (https://elixir.bootlin.com/linux/latest/source/drivers/net/vxlan.c#L2352 )
-> [  567.515778] SKB VXLAN vxlan.c: min_headroom 200
-> [  567.515792] SKB VXLAN vxlan.c: dst->header_len 0
-> [  567.515805] SKB VXLAN vxlan.c: VXLAN_HLEN 16
-> [  567.515819] SKB VXLAN vxlan.c: LL_RESERVED_SPACE(dst->dev) 144
-> [  567.515831] SKB VXLAN vxlan.c: iphdr_len 40
-> 
-> So in my opinion the needed headroom reported by batman is wrong by maybe 200 ? As the min_headroom of vxlan seems to be 200 but BATMAN reports 102 up the stack to the bridge.
-
-Could it be that the vxlan didn't had the correct needed_headroom when you've 
-added it to you batadv interface? Or that the vxlan interface didn't set the 
-correct needed_headroom for its lower_dev (see vxlan_config_apply)?
+On Thu, Oct 1, 2020 at 5:34 PM syzbot
+<syzbot+b2c08a2f5cfef635cc3a@syzkaller.appspotmail.com> wrote:
+>
+> syzbot suspects this issue was fixed by commit:
+>
+> commit eeaac3634ee0e3f35548be35275efeca888e9b23
+> Author: Nikolay Aleksandrov <nikolay@cumulusnetworks.com>
+> Date:   Sat Aug 22 12:06:36 2020 +0000
+>
+>     net: nexthop: don't allow empty NHA_GROUP
+>
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=116177a7900000
+> start commit:   c3d8f220 Merge tag 'kbuild-fixes-v5.9' of git://git.kernel..
+> git tree:       upstream
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=bb68b9e8a8cc842f
+> dashboard link: https://syzkaller.appspot.com/bug?extid=b2c08a2f5cfef635cc3a
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14d75e39900000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12aea519900000
+>
+> If the result looks correct, please mark the issue as fixed by replying with:
+>
+> #syz fix: net: nexthop: don't allow empty NHA_GROUP
+>
+> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
 
 
-
-If you have the "slow" setup, can you please do following steps:
-
-* keep vxlan as is (I hope you specify a fixed lowerdev)
-
-  - but try to print the needed headroom in vxlan_config_apply and compare it 
-    to the ones from vxlan_build_skb
-
-* remove the vxlan from your batadv interface
-* add your vxlan again from the batadv interface
-
-  - check if the headroom numbers are now looking better in 
-    batadv_hardif_recalc_extra_skbroom
-
-* remove batadv interface from the bridge
-* add your batadv interface again to the bridge
-
-  - is update_headroom() now using the correct headroom information?
-
-> If you need any more input we are happy to help. Because the actual performance with running batman over vxlan is really bad. 
-> We have some figures here: https://gist.github.com/fadenb/9705059cf17eddf60e744e95bf926f05
-
-Kind regards,
-	Sven
---nextPart9679158.0AQdONaE2F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+/ZaYACgkQXYcKB8Em
-e0ZCnA//XWJA3QCdgwqhSzUZdyV5m8ZeVBLCGbjhPkJNV7DaPPvmDl7umBDE59jy
-aLFw3Di++IckRXDm+u5BQ7JIcaka1P4F7DuE5kt2TAXlP257uknaIkIAvjcCXQ0t
-9so5u2MHfMuGFB3bsT7mwFe+ZICNTvfKT59XbsHuGKK+tQULZtHa1w7xiAn7rF+l
-7BkO4ONm9ebtQeWlj7tBnMdGFyKVHqH6sSOQJ4ZAMQx1Si8XZWL2C37ZeCLvMaGW
-tb/ll78bELi2x1FJuhiju6taWrJbp51VBYoMZlaCrADm0ut4+tFz1oy8Oiy8WZGj
-NfJMp1U6HmyfJeb9Tg0ccdiNch/v0pS9LIW4h3YOhek6ncAuJq81EzSUjZYj2Hnr
-vx7RMl6vkqHZjiYH8XKs872Y7hl70kSSDP5zVDdv0Onb55OxQElRu5SnKtSESRQG
-cp5zehHgyReGbOLTvZMJKR0opu9HGbioT9VazLMTHYX6ppfdgel/eJ7+vDRwTHEU
-uqC3tWIaHRMsJC9giZFNW81WlQVzObf1+oe18xWyTSjhAQJr2u2zuwgtQfSbbozz
-h4hzPigHnCEPptNaiHlbTqlk5bpDFoZKQnalnWPzcERyPEUWJ0nXADpY42Gkb4eE
-Qa+CUPlae2lh9Qw7s68g4HcrNLDGucg7dI9gTnFLTZ4zyepCoSQ=
-=mBS8
------END PGP SIGNATURE-----
-
---nextPart9679158.0AQdONaE2F--
-
+#syz fix: net: nexthop: don't allow empty NHA_GROUP
 
