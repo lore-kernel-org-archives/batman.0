@@ -1,10 +1,9 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/3] pull request for net: batman-adv 2020-11-27
-Date: Fri, 27 Nov 2020 18:38:46 +0100
-Message-Id: <20201127173849.19208-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/1] pull request for net: batman-adv 2020-11-24
+Date: Tue, 24 Nov 2020 14:44:16 +0100
+Message-Id: <20201124134417.17269-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,40 +17,36 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 Hi David, hi Jakub,
 
-here are some more bugfixes for batman-adv which we would like to have in=
-tegrated into net.
+here is a bugfix for batman-adv which we would like to have integrated in=
+to net.
 
 Please pull or let me know of any problem!
 
 Thank you,
       Simon
 
-The following changes since commit 14a2e551faea53d45bc11629a9dac88f88950c=
-a7:
+The following changes since commit f8394f232b1eab649ce2df5c5f15b0e528c920=
+91:
 
-  batman-adv: set .owner to THIS_MODULE (2020-11-15 11:43:56 +0100)
+  Linux 5.10-rc3 (2020-11-08 16:10:16 -0800)
 
 are available in the Git repository at:
 
   git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-202=
-01127
+01124
 
-for you to fetch changes up to 992b03b88e36254e26e9a4977ab948683e21bd9f:
+for you to fetch changes up to 14a2e551faea53d45bc11629a9dac88f88950ca7:
 
-  batman-adv: Don't always reallocate the fragmentation skb head (2020-11=
--27 08:02:55 +0100)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - Fix head/tailroom issues for fragments, by Sven Eckelmann (3 patches)
+  batman-adv: set .owner to THIS_MODULE (2020-11-15 11:43:56 +0100)
 
 ----------------------------------------------------------------
-Sven Eckelmann (3):
-      batman-adv: Consider fragmentation for needed_headroom
-      batman-adv: Reserve needed_*room for fragments
-      batman-adv: Don't always reallocate the fragmentation skb head
+Here is a batman-adv bugfix:
 
- net/batman-adv/fragmentation.c  | 26 ++++++++++++++++----------
- net/batman-adv/hard-interface.c |  3 +++
- 2 files changed, 19 insertions(+), 10 deletions(-)
+ - set module owner to THIS_MODULE, by Taehee Yoo
+
+----------------------------------------------------------------
+Taehee Yoo (1):
+      batman-adv: set .owner to THIS_MODULE
+
+ net/batman-adv/log.c | 1 +
+ 1 file changed, 1 insertion(+)
