@@ -1,128 +1,125 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <annika.wickert@exaring.de>
+From: Annika Wickert <annika.wickert@exaring.de>
+Subject: Re: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
+Date: Wed, 25 Nov 2020 23:14:35 +0000
+Message-ID: <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
+References: <20201125122438.955972-1-sven@narfation.org>
+In-Reply-To: <20201125122438.955972-1-sven@narfation.org>
+Content-Language: en-GB
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <D13721718BE94C4F82CC29BC1301A031@EURP190.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Date: Fri, 20 Nov 2020 20:55:15 -0800
-Message-ID: <00000000000056928205b496c43b@google.com>
-Subject: INFO: task hung in sync_inodes_sb (4)
-From: syzbot <syzbot+7d50f1e54a12ba3aeae2@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, emmanuel.grumbach@intel.com, johannes.berg@intel.com, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, luciano.coelho@intel.com, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, viro@zeniv.linux.org.uk
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sven Eckelmann <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
-
-syzbot found the following issue on:
-
-HEAD commit:    03430750 Add linux-next specific files for 20201116
-git tree:       linux-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=17027fdc500000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=a1c4c3f27041fdb8
-dashboard link: https://syzkaller.appspot.com/bug?extid=7d50f1e54a12ba3aeae2
-compiler:       gcc (GCC) 10.1.0-syz 20200507
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=124a8841500000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15a4fce2500000
-
-The issue was bisected to:
-
-commit c68df2e7be0c1238ea3c281fd744a204ef3b15a0
-Author: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-Date:   Thu Sep 15 13:30:02 2016 +0000
-
-    mac80211: allow using AP_LINK_PS with mac80211-generated TIM IE
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1445e981500000
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=1645e981500000
-console output: https://syzkaller.appspot.com/x/log.txt?x=1245e981500000
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+7d50f1e54a12ba3aeae2@syzkaller.appspotmail.com
-Fixes: c68df2e7be0c ("mac80211: allow using AP_LINK_PS with mac80211-generated TIM IE")
-
-INFO: task syz-executor017:8513 blocked for more than 143 seconds.
-      Not tainted 5.10.0-rc3-next-20201116-syzkaller #0
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:syz-executor017 state:D stack:27448 pid: 8513 ppid:  8507 flags:0x00004000
-Call Trace:
- context_switch kernel/sched/core.c:4269 [inline]
- __schedule+0x890/0x2030 kernel/sched/core.c:5019
- schedule+0xcf/0x270 kernel/sched/core.c:5098
- wb_wait_for_completion+0x17b/0x230 fs/fs-writeback.c:209
- sync_inodes_sb+0x1a6/0x9d0 fs/fs-writeback.c:2559
- __sync_filesystem fs/sync.c:34 [inline]
- sync_filesystem fs/sync.c:67 [inline]
- sync_filesystem+0x15c/0x260 fs/sync.c:48
- generic_shutdown_super+0x70/0x370 fs/super.c:448
- kill_block_super+0x97/0xf0 fs/super.c:1446
- deactivate_locked_super+0x94/0x160 fs/super.c:335
- deactivate_super+0xad/0xd0 fs/super.c:366
- cleanup_mnt+0x3a3/0x530 fs/namespace.c:1123
- task_work_run+0xdd/0x190 kernel/task_work.c:140
- tracehook_notify_resume include/linux/tracehook.h:188 [inline]
- exit_to_user_mode_loop kernel/entry/common.c:172 [inline]
- exit_to_user_mode_prepare+0x1f0/0x200 kernel/entry/common.c:199
- syscall_exit_to_user_mode+0x38/0x260 kernel/entry/common.c:274
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-RIP: 0033:0x44e0e7
-Code: Unable to access opcode bytes at RIP 0x44e0bd.
-RSP: 002b:00007fff42061288 EFLAGS: 00000206 ORIG_RAX: 00000000000000a6
-RAX: 0000000000000000 RBX: 00000000000cee4c RCX: 000000000044e0e7
-RDX: 0000000000400be0 RSI: 0000000000000002 RDI: 00007fff42061330
-RBP: 0000000000002142 R08: 0000000000000000 R09: 0000000000000009
-R10: 0000000000000005 R11: 0000000000000206 R12: 00007fff420623e0
-R13: 0000000001f67880 R14: 0000000000000000 R15: 0000000000000000
-
-Showing all locks held in the system:
-2 locks held by kworker/u4:5/225:
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: arch_atomic64_set arch/x86/include/asm/atomic64_64.h:34 [inline]
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: atomic64_set include/asm-generic/atomic-instrumented.h:856 [inline]
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: atomic_long_set include/asm-generic/atomic-long.h:41 [inline]
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: set_work_data kernel/workqueue.c:616 [inline]
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: set_work_pool_and_clear_pending kernel/workqueue.c:643 [inline]
- #0: ffff8881413a4138 ((wq_completion)writeback){+.+.}-{0:0}, at: process_one_work+0x821/0x15a0 kernel/workqueue.c:2243
- #1: ffffc9000191fda8 ((work_completion)(&(&wb->dwork)->work)){+.+.}-{0:0}, at: process_one_work+0x854/0x15a0 kernel/workqueue.c:2247
-1 lock held by khungtaskd/1655:
- #0: ffffffff8b339ce0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x53/0x260 kernel/locking/lockdep.c:6252
-1 lock held by in:imklog/8188:
- #0: ffff888017c8f4f0 (&f->f_pos_lock){+.+.}-{3:3}, at: __fdget_pos+0xe9/0x100 fs/file.c:932
-2 locks held by syz-executor017/8513:
- #0: ffff88801a8500e0 (&type->s_umount_key#49){+.+.}-{3:3}, at: deactivate_super+0xa5/0xd0 fs/super.c:365
- #1: ffff888143f5e708 (&bdi->wb_switch_rwsem){+.+.}-{3:3}, at: bdi_down_write_wb_switch_rwsem fs/fs-writeback.c:344 [inline]
- #1: ffff888143f5e708 (&bdi->wb_switch_rwsem){+.+.}-{3:3}, at: sync_inodes_sb+0x18c/0x9d0 fs/fs-writeback.c:2557
-
-=============================================
-
-NMI backtrace for cpu 0
-CPU: 0 PID: 1655 Comm: khungtaskd Not tainted 5.10.0-rc3-next-20201116-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Call Trace:
- __dump_stack lib/dump_stack.c:79 [inline]
- dump_stack+0x107/0x163 lib/dump_stack.c:120
- nmi_cpu_backtrace.cold+0x44/0xd7 lib/nmi_backtrace.c:105
- nmi_trigger_cpumask_backtrace+0x1b3/0x230 lib/nmi_backtrace.c:62
- trigger_all_cpu_backtrace include/linux/nmi.h:147 [inline]
- check_hung_uninterruptible_tasks kernel/hung_task.c:253 [inline]
- watchdog+0xd89/0xf30 kernel/hung_task.c:338
- kthread+0x3af/0x4a0 kernel/kthread.c:292
- ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:296
-Sending NMI from CPU 0 to CPUs 1:
-NMI backtrace for cpu 1 skipped: idling at native_safe_halt arch/x86/include/asm/irqflags.h:60 [inline]
-NMI backtrace for cpu 1 skipped: idling at arch_safe_halt arch/x86/include/asm/irqflags.h:103 [inline]
-NMI backtrace for cpu 1 skipped: idling at acpi_safe_halt drivers/acpi/processor_idle.c:111 [inline]
-NMI backtrace for cpu 1 skipped: idling at acpi_idle_do_entry+0x1c9/0x250 drivers/acpi/processor_idle.c:517
-
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
-syzbot can test patches for this issue, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+SGksDQoNCkkgdHJpZWQgdGhlIHBhdGNoIGluIHByb2R1Y3Rpb24gb24gb3VyIGdhdGV3YXkgYXMg
+b3VyIHByb2JsZW0gaXMgcmF0aGVyIHNpZ25pZmljYW50LiBJIGRvbid0IHNlZSBhbiBpbXByb3Zl
+bWVudCBpbiB0aGUgcHNrYl9leHBhbmRfaGVhZCgpIGJlaGF2aW91ci4gKEZsYW1lZ3JhcGgg77u/
+aHR0cHM6Ly9jbG91ZC5hd2xueC5zcGFjZS9vd25jbG91ZC9zLzN3dG9ha2M0bXpGUVNHcykNCg0K
+SSB0cmllZCB0byBkZWJ1ZyBldmVuIGZ1cnRoZXIgYW5kIGFkZGVkIHNvbWUgZGVidWdnaW5nIHBv
+aW50cyBpbiBicl9pZi5jIGFuZCB2eGxhbi5jDQoNClRoaXMgaXMgd2hhdCBJIGdldCBmcm9tIHRo
+ZSBicmlkZ2Ugd2hlbiBiYXQwIGlzIGVuc2xhdmVkIHdpdGggdGhlIHZ4bGFuIGludGVyZmFjZSBh
+cyBtZW1iZXIgb2YgYmF0bWFuICggaHR0cHM6Ly9lbGl4aXIuYm9vdGxpbi5jb20vbGludXgvbGF0
+ZXN0L3NvdXJjZS9uZXQvYnJpZGdlL2JyX2lmLmMjTDMxMSApDQpbICAgMzYuOTU5NTQ3XSBCcmlk
+Z2UgZmlyZXdhbGxpbmcgcmVnaXN0ZXJlZA0KWyAgNTIyLjIyMTc2N10gU0tCIEJyaWRnZSBicl9p
+Zi5jOiBtYXhfaGVhZHJvb20gMA0KWyAgNTIyLjIyMTc4MV0gU0tCIEJyaWRnZSBicl9pZi5jOiBu
+ZXdfaHIgMA0KWyAgNjI3LjE4NjEyOV0gU0tCIEJyaWRnZSBicl9pZi5jOiBtYXhfaGVhZHJvb20g
+MA0KWyAgNjI3LjE4NjEzOV0gU0tCIEJyaWRnZSBicl9pZi5jOiBuZXdfaHIgMA0KWyAgNjI3LjYx
+NjY1MF0gU0tCIEJyaWRnZSBicl9pZi5jOiBuZXdfaHIgMTAyDQoNCkFsc28gQkFUTUFOIHJlcG9y
+dHMgaXRzZWxmIHdoZW4gaW5pdGlhbGl6ZWQgYW5kIHNlZW1zIG5vdCB0byBwcm9wYWdhdGUgc3R1
+ZmYgdXAgdGhlIHN0YWNrIG9uIGNoYW5nZT86IChodHRwczovL2dpdGh1Yi5jb20vb3Blbi1tZXNo
+LW1pcnJvci9iYXRtYW4tYWR2L2Jsb2IvbWFzdGVyL25ldC9iYXRtYW4tYWR2L2hhcmQtaW50ZXJm
+YWNlLmMjTDU1NSAgKQ0KWyAzMzUwLjIxMjA5NF0gU0tCIGhhcmQtaW50ZXJmYWNlLmg6IHNvZnRf
+aWZhY2UtPm5lZWRlZF90YWlscm9vbSkgMA0KWzMzNTAuMjEyMTA1XSBTS0IgaGFyZC1pbnRlcmZh
+Y2UuaDogc29mdF9pZmFjZS0+bmVlZGVkX2hlYWRyb29tKSAzNTgNClsgMzM1MC4yMTIxMTZdIFNL
+QiBoYXJkLWludGVyZmFjZS5oOiBsb3dlcl9oZWFkcm9vbSA3MA0KWyAzMzUwLjIxMjEyNl0gU0tC
+IGhhcmQtaW50ZXJmYWNlLmg6IG5lZWRlZF9oZWFkcm9vbSAxMDINCg0KQWxzbyBhZGRlZCBzb21l
+IGRlYnVnZ2luZyB0byBGcmFnbWVudGF0aW9uLmMgaW4gQkFUTUFOIGFmdGVyIHRoZSBwYXRjaDog
+DQpOb3YgMjUgMTc6NDg6MjYgcmFzcGktMWdiLmF3bG54LnNwYWNlIGtlcm5lbDogU0tCIEZyYWdt
+ZW50YXRpb24uYzogbGxfcmVzZXJ2ZWQgOTYNCk5vdiAyNSAxNzo0ODoyNiByYXNwaS0xZ2IuYXds
+bnguc3BhY2Uga2VybmVsOiBTS0IgRnJhZ21lbnRhdGlvbi5jOiBza2ItPmxlbiA3NjINCk5vdiAy
+NSAxNzo0ODoyNiByYXNwaS0xZ2IuYXdsbnguc3BhY2Uga2VybmVsOiBTS0IgRnJhZ21lbnRhdGlv
+bi5jOiBoZWFkZXJfc2l6ZSAyMA0KTm92IDI1IDE3OjQ4OjI2IHJhc3BpLTFnYi5hd2xueC5zcGFj
+ZSBrZXJuZWw6IFNLQiBGcmFnbWVudGF0aW9uLmM6IGZyYWdtZW50X3NpemUgNzYyDQpOb3YgMjUg
+MTc6NDg6MjYgcmFzcGktMWdiLmF3bG54LnNwYWNlIGtlcm5lbDogU0tCIEZyYWdtZW50YXRpb24u
+YzogbGxfcmVzZXJ2ZWQgOTYNCg0KQXQgdGhlIHNhbWUgdGltZSB0aGUgVlhMQU4gaW50ZXJmYWNl
+IHdoaWNoIGlzIHRyYW5zcG9ydGVkIG92ZXIgV2lyZWd1YXJkIHJlcG9ydHMgdGhpcyAoaHR0cHM6
+Ly9lbGl4aXIuYm9vdGxpbi5jb20vbGludXgvbGF0ZXN0L3NvdXJjZS9kcml2ZXJzL25ldC92eGxh
+bi5jI0wyMzUyICkNClsgIDU2Ny41MTU3NzhdIFNLQiBWWExBTiB2eGxhbi5jOiBtaW5faGVhZHJv
+b20gMjAwDQpbICA1NjcuNTE1NzkyXSBTS0IgVlhMQU4gdnhsYW4uYzogZHN0LT5oZWFkZXJfbGVu
+IDANClsgIDU2Ny41MTU4MDVdIFNLQiBWWExBTiB2eGxhbi5jOiBWWExBTl9ITEVOIDE2DQpbICA1
+NjcuNTE1ODE5XSBTS0IgVlhMQU4gdnhsYW4uYzogTExfUkVTRVJWRURfU1BBQ0UoZHN0LT5kZXYp
+IDE0NA0KWyAgNTY3LjUxNTgzMV0gU0tCIFZYTEFOIHZ4bGFuLmM6IGlwaGRyX2xlbiA0MA0KDQpT
+byBpbiBteSBvcGluaW9uIHRoZSBuZWVkZWQgaGVhZHJvb20gcmVwb3J0ZWQgYnkgYmF0bWFuIGlz
+IHdyb25nIGJ5IG1heWJlIDIwMCA/IEFzIHRoZSBtaW5faGVhZHJvb20gb2YgdnhsYW4gc2VlbXMg
+dG8gYmUgMjAwIGJ1dCBCQVRNQU4gcmVwb3J0cyAxMDIgdXAgdGhlIHN0YWNrIHRvIHRoZSBicmlk
+Z2UuDQoNCklmIHlvdSBuZWVkIGFueSBtb3JlIGlucHV0IHdlIGFyZSBoYXBweSB0byBoZWxwLiBC
+ZWNhdXNlIHRoZSBhY3R1YWwgcGVyZm9ybWFuY2Ugd2l0aCBydW5uaW5nIGJhdG1hbiBvdmVyIHZ4
+bGFuIGlzIHJlYWxseSBiYWQuIA0KV2UgaGF2ZSBzb21lIGZpZ3VyZXMgaGVyZTogaHR0cHM6Ly9n
+aXN0LmdpdGh1Yi5jb20vZmFkZW5iLzk3MDUwNTljZjE3ZWRkZjYwZTc0NGU5NWJmOTI2ZjA1DQoN
+ClRoYW5rIHlvdSBmb3IgeW91ciBoZWxwIQ0KQW5uaWthDQoNCi0tDQpBbm5pa2EgV2lja2VydCAN
+CiANCkVYQVJJTkcgQUcNCg0KIA0KIA0KDQrvu79PbiAyNS4xMS4yMCwgMTM6MjUsICJTdmVuIEVj
+a2VsbWFubiIgPHN2ZW5AbmFyZmF0aW9uLm9yZz4gd3JvdGU6DQoNCiAgICBUT0RPOiB3cml0ZSBz
+b21ldGhpbmcgYWJvdXQgdGhlIGV4dHJhIGhlYWRyb29tIHZ4bGFuIG5lZWRzIGFuZCB3aHkgaXQN
+CiAgICByZWR1Y2VkIHRoZSBwZXJmb3JtYW5jZSBzaWduaWZpY2FudGx5IHdoZW4gb25seSB1c2lu
+ZyB0aGUgbWluaW11bSByZXNlcnZlZA0KICAgIHNwYWNlLg0KDQogICAgQ2M6IEFubmlrYSBXaWNr
+ZXJ0IDxhbm5pa2Eud2lja2VydEBleGFyaW5nLmRlPg0KICAgIFNpZ25lZC1vZmYtYnk6IFN2ZW4g
+RWNrZWxtYW5uIDxzdmVuQG5hcmZhdGlvbi5vcmc+DQogICAgLS0tDQogICAgIG5ldC9iYXRtYW4t
+YWR2L2ZyYWdtZW50YXRpb24uYyB8IDE0ICsrKysrKysrKy0tLS0tDQogICAgIDEgZmlsZSBjaGFu
+Z2VkLCA5IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQoNCiAgICBkaWZmIC0tZ2l0IGEv
+bmV0L2JhdG1hbi1hZHYvZnJhZ21lbnRhdGlvbi5jIGIvbmV0L2JhdG1hbi1hZHYvZnJhZ21lbnRh
+dGlvbi5jDQogICAgaW5kZXggOTcyMjBlMTkuLjUwMzliMjAxIDEwMDY0NA0KICAgIC0tLSBhL25l
+dC9iYXRtYW4tYWR2L2ZyYWdtZW50YXRpb24uYw0KICAgICsrKyBiL25ldC9iYXRtYW4tYWR2L2Zy
+YWdtZW50YXRpb24uYw0KICAgIEBAIC0zOTEsNiArMzkxLDcgQEAgYm9vbCBiYXRhZHZfZnJhZ19z
+a2JfZndkKHN0cnVjdCBza19idWZmICpza2IsDQoNCiAgICAgLyoqDQogICAgICAqIGJhdGFkdl9m
+cmFnX2NyZWF0ZSgpIC0gY3JlYXRlIGEgZnJhZ21lbnQgZnJvbSBza2INCiAgICArICogQG5ldF9k
+ZXY6IG91dGdvaW5nIGRldmljZSBmb3IgZnJhZ21lbnQNCiAgICAgICogQHNrYjogc2tiIHRvIGNy
+ZWF0ZSBmcmFnbWVudCBmcm9tDQogICAgICAqIEBmcmFnX2hlYWQ6IGhlYWRlciB0byB1c2UgaW4g
+bmV3IGZyYWdtZW50DQogICAgICAqIEBmcmFnbWVudF9zaXplOiBzaXplIG9mIG5ldyBmcmFnbWVu
+dA0KICAgIEBAIC00MDEsMjIgKzQwMiwyNCBAQCBib29sIGJhdGFkdl9mcmFnX3NrYl9md2Qoc3Ry
+dWN0IHNrX2J1ZmYgKnNrYiwNCiAgICAgICoNCiAgICAgICogUmV0dXJuOiB0aGUgbmV3IGZyYWdt
+ZW50LCBOVUxMIG9uIGVycm9yLg0KICAgICAgKi8NCiAgICAtc3RhdGljIHN0cnVjdCBza19idWZm
+ICpiYXRhZHZfZnJhZ19jcmVhdGUoc3RydWN0IHNrX2J1ZmYgKnNrYiwNCiAgICArc3RhdGljIHN0
+cnVjdCBza19idWZmICpiYXRhZHZfZnJhZ19jcmVhdGUoc3RydWN0IG5ldF9kZXZpY2UgKm5ldF9k
+ZXYsDQogICAgKwkJCQkJICBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KICAgICAJCQkJCSAgc3RydWN0
+IGJhdGFkdl9mcmFnX3BhY2tldCAqZnJhZ19oZWFkLA0KICAgICAJCQkJCSAgdW5zaWduZWQgaW50
+IGZyYWdtZW50X3NpemUpDQogICAgIHsNCiAgICAgCXN0cnVjdCBza19idWZmICpza2JfZnJhZ21l
+bnQ7DQogICAgIAl1bnNpZ25lZCBpbnQgaGVhZGVyX3NpemUgPSBzaXplb2YoKmZyYWdfaGVhZCk7
+DQogICAgIAl1bnNpZ25lZCBpbnQgbXR1ID0gZnJhZ21lbnRfc2l6ZSArIGhlYWRlcl9zaXplOw0K
+ICAgICsJaW50IGxsX3Jlc2VydmVkID0gTExfUkVTRVJWRURfU1BBQ0UobmV0X2Rldik7DQoNCiAg
+ICAtCXNrYl9mcmFnbWVudCA9IG5ldGRldl9hbGxvY19za2IoTlVMTCwgbXR1ICsgRVRIX0hMRU4p
+Ow0KICAgICsJc2tiX2ZyYWdtZW50ID0gZGV2X2FsbG9jX3NrYihsbF9yZXNlcnZlZCArIG10dSk7
+DQogICAgIAlpZiAoIXNrYl9mcmFnbWVudCkNCiAgICAgCQlnb3RvIGVycjsNCg0KICAgICAJc2ti
+X2ZyYWdtZW50LT5wcmlvcml0eSA9IHNrYi0+cHJpb3JpdHk7DQoNCiAgICAgCS8qIEVhdCB0aGUg
+bGFzdCBtdHUtYnl0ZXMgb2YgdGhlIHNrYiAqLw0KICAgIC0Jc2tiX3Jlc2VydmUoc2tiX2ZyYWdt
+ZW50LCBoZWFkZXJfc2l6ZSArIEVUSF9ITEVOKTsNCiAgICArCXNrYl9yZXNlcnZlKHNrYl9mcmFn
+bWVudCwgbGxfcmVzZXJ2ZWQgKyBoZWFkZXJfc2l6ZSk7DQogICAgIAlza2Jfc3BsaXQoc2tiLCBz
+a2JfZnJhZ21lbnQsIHNrYi0+bGVuIC0gZnJhZ21lbnRfc2l6ZSk7DQoNCiAgICAgCS8qIEFkZCB0
+aGUgaGVhZGVyICovDQogICAgQEAgLTQzOSwxMSArNDQyLDEyIEBAIGludCBiYXRhZHZfZnJhZ19z
+ZW5kX3BhY2tldChzdHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KICAgICAJCQkgICAgc3RydWN0IGJhdGFk
+dl9vcmlnX25vZGUgKm9yaWdfbm9kZSwNCiAgICAgCQkJICAgIHN0cnVjdCBiYXRhZHZfbmVpZ2hf
+bm9kZSAqbmVpZ2hfbm9kZSkNCiAgICAgew0KICAgICsJc3RydWN0IG5ldF9kZXZpY2UgKm5ldF9k
+ZXYgPSBuZWlnaF9ub2RlLT5pZl9pbmNvbWluZy0+bmV0X2RldjsNCiAgICAgCXN0cnVjdCBiYXRh
+ZHZfcHJpdiAqYmF0X3ByaXY7DQogICAgIAlzdHJ1Y3QgYmF0YWR2X2hhcmRfaWZhY2UgKnByaW1h
+cnlfaWYgPSBOVUxMOw0KICAgICAJc3RydWN0IGJhdGFkdl9mcmFnX3BhY2tldCBmcmFnX2hlYWRl
+cjsNCiAgICAgCXN0cnVjdCBza19idWZmICpza2JfZnJhZ21lbnQ7DQogICAgLQl1bnNpZ25lZCBp
+bnQgbXR1ID0gbmVpZ2hfbm9kZS0+aWZfaW5jb21pbmctPm5ldF9kZXYtPm10dTsNCiAgICArCXVu
+c2lnbmVkIGludCBtdHUgPSBuZXRfZGV2LT5tdHU7DQogICAgIAl1bnNpZ25lZCBpbnQgaGVhZGVy
+X3NpemUgPSBzaXplb2YoZnJhZ19oZWFkZXIpOw0KICAgICAJdW5zaWduZWQgaW50IG1heF9mcmFn
+bWVudF9zaXplLCBudW1fZnJhZ21lbnRzOw0KICAgICAJaW50IHJldDsNCiAgICBAQCAtNTAzLDcg
+KzUwNyw3IEBAIGludCBiYXRhZHZfZnJhZ19zZW5kX3BhY2tldChzdHJ1Y3Qgc2tfYnVmZiAqc2ti
+LA0KICAgICAJCQlnb3RvIHB1dF9wcmltYXJ5X2lmOw0KICAgICAJCX0NCg0KICAgIC0JCXNrYl9m
+cmFnbWVudCA9IGJhdGFkdl9mcmFnX2NyZWF0ZShza2IsICZmcmFnX2hlYWRlciwNCiAgICArCQlz
+a2JfZnJhZ21lbnQgPSBiYXRhZHZfZnJhZ19jcmVhdGUobmV0X2Rldiwgc2tiLCAmZnJhZ19oZWFk
+ZXIsDQogICAgIAkJCQkJCSAgbWF4X2ZyYWdtZW50X3NpemUpOw0KICAgICAJCWlmICghc2tiX2Zy
+YWdtZW50KSB7DQogICAgIAkJCXJldCA9IC1FTk9NRU07DQogICAgLS0gDQogICAgMi4yOS4yDQoN
+Cg0K
