@@ -1,17 +1,10 @@
-Return-Path: <annika.wickert@exaring.de>
-From: Annika Wickert <annika.wickert@exaring.de>
-Subject: Re: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
-Date: Thu, 26 Nov 2020 08:58:45 +0000
-Message-ID: <73D4D29E-C26E-471B-91CC-442B046F08AE@exaring.de>
-References: <20201125122438.955972-1-sven@narfation.org>
- <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
- <5658440.UjTJXf6HLC@sven-edge>
-In-Reply-To: <5658440.UjTJXf6HLC@sven-edge>
-Content-Language: en-GB
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <ECCDDA0856F4B44F9CC49815289ED32C@EURP190.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
+Date: Wed, 25 Nov 2020 13:24:38 +0100
+Message-Id: <20201125122438.955972-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,73 +14,82 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "bridge@lists.linux-foundation.org" <bridge@lists.linux-foundation.org>, "dev@openvswitch.org" <dev@openvswitch.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Annika Wickert <annika.wickert@exaring.de>
 
-SGksDQoNCiAgICBIaSwNCg0KICAgPkkgZmluZCB5b3VyIG91dHB1dCBzbGlnaHRseSBjb25mdXNp
-bmcuIE1heWJlIHlvdSBjYW4gY2hhbmdlIHlvdXIgcHJpbnRrIHN0dWZmIA0KICAgPiB0byBzb21l
-dGhpbmcgbW9yZSBsaWtlOg0KDQogICA+cHJpbnRrKCIlcyAlczoldSBtYXhfaGVhZHJvb20gJXVc
-biIsIF9fRklMRV9fLCBfX2Z1bmNfXywgX19MSU5FX18sIG1heF9oZWFkcm9vbSk7DQoNCldpbGwg
-YWRkIHRoaXMgdGh4Lg0KDQogICAgPk9uIFRodXJzZGF5LCAyNiBOb3ZlbWJlciAyMDIwIDAwOjE0
-OjM1IENFVCBBbm5pa2EgV2lja2VydCB3cm90ZToNCiAgICA+PiBUaGlzIGlzIHdoYXQgSSBnZXQg
-ZnJvbSB0aGUgYnJpZGdlIHdoZW4gYmF0MCBpcyBlbnNsYXZlZCB3aXRoIHRoZSB2eGxhbiBpbnRl
-cmZhY2UgYXMgbWVtYmVyIG9mIGJhdG1hbiAoIGh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL2xp
-bnV4L2xhdGVzdC9zb3VyY2UvbmV0L2JyaWRnZS9icl9pZi5jI0wzMTEgKQ0KICAgID4+IFsgICAz
-Ni45NTk1NDddIEJyaWRnZSBmaXJld2FsbGluZyByZWdpc3RlcmVkDQogICAgPj4gWyAgNTIyLjIy
-MTc2N10gU0tCIEJyaWRnZSBicl9pZi5jOiBtYXhfaGVhZHJvb20gMA0KICAgID4+IFsgIDUyMi4y
-MjE3ODFdIFNLQiBCcmlkZ2UgYnJfaWYuYzogbmV3X2hyIDANCiAgICA+PiBbICA2MjcuMTg2MTI5
-XSBTS0IgQnJpZGdlIGJyX2lmLmM6IG1heF9oZWFkcm9vbSAwDQogICAgPj4gWyAgNjI3LjE4NjEz
-OV0gU0tCIEJyaWRnZSBicl9pZi5jOiBuZXdfaHIgMA0KICAgID4+IFsgIDYyNy42MTY2NTBdIFNL
-QiBCcmlkZ2UgYnJfaWYuYzogbmV3X2hyIDEwMg0KDQogICAgPldoZW4gaXMgdGhpcyBzaG93bj8g
-RG9lcyB0aGUgYmF0YWR2IGludGVyZmFjZSBhbHJlYWR5IGhhdmUgaXRzIGhhcmRpZiAoc2xhdmUp
-IA0KICAgID5pbnRlcmZhY2VzIGF0dGFjaGVkIGF0IHRoYXQgcG9pbnQ/IEFuZCBkaWQgdGhlIHZ4
-bGFuIHJlcG9ydCB0aGUgY29ycmVjdCANCiAgICA+bmVlZGVkX2hlYWRyb29tIHRvIGJhdGFkdiBi
-ZWZvcmUgeW91J3ZlIHRyaWVkIHRvIGF0dGFjaCB0aGUgYmF0YWR2IGludGVyZmFjZSANCiAgICA+
-dG8gdGhlIGJyaWRnZT8NCg0KQkFUTUFOIGFscmVhZHkgaGFzIHRoZSB2eGxhbiBpbnRlcmZhY2Ug
-YXMgaGFyZGlmIGhlcmUgaXMgdGhlIHNjcmlwdCBJIHVzZSB0byBnZW5lcmF0ZSB0aGUgY29uZmln
-Og0KDQppcCBsaW5rIGFkZCBtZXNoLXZwbiB0eXBlIHZ4bGFuIGlkIDQ4MzE1ODMgbG9jYWwgZmU4
-MDo6MmUwOjJmZmY6ZmUxODpkYzJmIHJlbW90ZSBmZTgwOjoyODE6OGVmZjpmZWYwOjczYWEgIGRz
-dHBvcnQgODQ3MiBkZXYgd2ctdXBsaW5rDQppcCBsaW5rIGRlbCBiYXQtd2VsdCANCnJtbW9kIGJh
-dG1hbi1hZHYNCm1vZHByb2JlIGJhdG1hbi1hZHYNCiBiYXRjdGwgcmEgQkFUTUFOX1YNCiBiYXRj
-dGwgbWVzaGlmIGJhdC13ZWx0IGludGVyZmFjZSBhZGQgbWVzaC12cG4NCiBpcCBsaW5rIHNldCB1
-cCBiYXQtd2VsdA0KIGlwIGxpbmsgc2V0IGRldiBiYXQtd2VsdCBtYXN0ZXIgYnItd2VsdA0KDQog
-ICA+IEJlY2F1c2UgdGhlIGJyaWRnZSBjYW4gYWxzbyBvbmx5IGNoYW5nZSBpdHMgbmVlZGVkX2hl
-YWRyb29tIG9uIGludGVyZmFjZSBhZGQgDQogICA+b3IgZGVsZXRlLg0KDQogICAgPj4gQWxzbyBC
-QVRNQU4gcmVwb3J0cyBpdHNlbGYgd2hlbiBpbml0aWFsaXplZCBhbmQgc2VlbXMgbm90IHRvIHBy
-b3BhZ2F0ZSBzdHVmZiB1cCB0aGUgc3RhY2sgb24gY2hhbmdlPzogKGh0dHBzOi8vZ2l0aHViLmNv
-bS9vcGVuLW1lc2gtbWlycm9yL2JhdG1hbi1hZHYvYmxvYi9tYXN0ZXIvbmV0L2JhdG1hbi1hZHYv
-aGFyZC1pbnRlcmZhY2UuYyNMNTU1ICApDQogICAgPj4gWyAzMzUwLjIxMjExNl0gU0tCIGhhcmQt
-aW50ZXJmYWNlLmg6IGxvd2VyX2hlYWRyb29tIDcwDQogICAgPj4gWyAzMzUwLjIxMjEyNl0gU0tC
-IGhhcmQtaW50ZXJmYWNlLmg6IG5lZWRlZF9oZWFkcm9vbSAxMDINCg0KICAgID5BZmFpaywgaXQg
-aXMgInByb3BhZ2F0aW5nIiBpdHMgc3R1ZmYgYnkgYWRqdXN0aW5nIGl0cyBvd24gbmVlZGVkX2hl
-YWRyb29tLw0KICAgID50YWlscm9vbSBhdCB0aGlzIHBvaW50LiBCdXQgdGhlcmUgaXMgbm8gd2F5
-IHRvIG5vdGlmeSB0aGF0IHRoZSBoZWFkcm9vbS8NCiAgICA+dGFpbHJvb20gd2FzIGNoYW5nZWQg
-YW5kIHRoZSB1cHBlciBsYXllcnMgc2hvdWxkIHJlY2FsY3VsYXRlIGl0Lg0KDQpXaGljaCBzaG91
-bGQgYWxyZWFkeSBpbmNsdWRlIHRoZSBoZWFkcm9vbSBuZWVkZWQgYnkgdnhsYW4gYXMgaXQncyBh
-bHJlYWR5IHByZXNlbnQgYXMgaGFyZGlmLiANCg0KICAgID5JZiB5b3UgbmVlZCBzb21ldGhpbmcg
-bGlrZSB0aGlzIHRoZW4gd2UgbWlnaHQgdG8gaGF2ZSBhIG5ldyANCiAgICA+TkVUREVWX1JFU0VS
-VkVEX1NQQUNFX0NIQU5HRSAob3IgYSBiZXR0ZXIgbmFtZSBPUiBtYXliZSB1c2UgYSBuZXRkZXZf
-Y21kIHdpdGggDQogICAgPmEgc2ltaWxhciBtZWFuaW5nKS4gQW5kIHRoZW4gY2FsbCB0aGlzIHdo
-ZW5ldmVyIHRoZSBuZWVkZWRfaGVhZHJvb20vDQogICAgPnRhaWxyb29tLy4uLiBvZiBhbiBpbnRl
-cmZhY2UgY2hhbmdlcyBkdXJpbmcgaXRzIGxpZmV0aW1lLiBBbmQgYnJpZGdlL2JhdG1hbi0NCiAg
-ICA+YWR2L292cy8uLi4gaGF2ZSB0byBjaGVjayB0aGUgaGVhZHJvb20gaW4gdGhlaXIgbm90aWZp
-ZXJfY2FsbCBhZ2FpbiB3aGVuIHRoZXkgDQogICAgPnJlY2VpdmUgdGhpcyBldmVudC4NCg0KICAg
-ID5Db3VsZCBpdCBiZSB0aGF0IHRoZSB2eGxhbiBkaWRuJ3QgaGFkIHRoZSBjb3JyZWN0IG5lZWRl
-ZF9oZWFkcm9vbSB3aGVuIHlvdSd2ZSANCiAgICA+YWRkZWQgaXQgdG8geW91IGJhdGFkdiBpbnRl
-cmZhY2U/IE9yIHRoYXQgdGhlIHZ4bGFuIGludGVyZmFjZSBkaWRuJ3Qgc2V0IHRoZSANCiAgICA+
-Y29ycmVjdCBuZWVkZWRfaGVhZHJvb20gZm9yIGl0cyBsb3dlcl9kZXYgKHNlZSB2eGxhbl9jb25m
-aWdfYXBwbHkpPw0KDQogIFRoZSB2eGxhbiBpbnRlcmZhY2Ugd2FzIGFkZGVkIGZpcnN0LiBTbyBp
-dCBzaG91bGQgcHJvcGFnYXRlIGl0Pw0KDQogICAgPklmIHlvdSBoYXZlIHRoZSAic2xvdyIgc2V0
-dXAsIGNhbiB5b3UgcGxlYXNlIGRvIGZvbGxvd2luZyBzdGVwczoNCg0KICAgID4qIGtlZXAgdnhs
-YW4gYXMgaXMgKEkgaG9wZSB5b3Ugc3BlY2lmeSBhIGZpeGVkIGxvd2VyZGV2KQ0KDQogICAgPi0g
-YnV0IHRyeSB0byBwcmludCB0aGUgbmVlZGVkIGhlYWRyb29tIGluIHZ4bGFuX2NvbmZpZ19hcHBs
-eSBhbmQgY29tcGFyZSBpdCANCiAgICA+ICB0byB0aGUgb25lcyBmcm9tIHZ4bGFuX2J1aWxkX3Nr
-Yg0KDQogICAgPiogcmVtb3ZlIHRoZSB2eGxhbiBmcm9tIHlvdXIgYmF0YWR2IGludGVyZmFjZQ0K
-ICAgID4qIGFkZCB5b3VyIHZ4bGFuIGFnYWluIGZyb20gdGhlIGJhdGFkdiBpbnRlcmZhY2UNCg0K
-ICAgID4gLSBjaGVjayBpZiB0aGUgaGVhZHJvb20gbnVtYmVycyBhcmUgbm93IGxvb2tpbmcgYmV0
-dGVyIGluIA0KICAgID4gICAgYmF0YWR2X2hhcmRpZl9yZWNhbGNfZXh0cmFfc2ticm9vbQ0KDQog
-ICAgPiAqIHJlbW92ZSBiYXRhZHYgaW50ZXJmYWNlIGZyb20gdGhlIGJyaWRnZQ0KICAgID4gKiBh
-ZGQgeW91ciBiYXRhZHYgaW50ZXJmYWNlIGFnYWluIHRvIHRoZSBicmlkZ2UNCg0KICAgICA+IC0g
-aXMgdXBkYXRlX2hlYWRyb29tKCkgbm93IHVzaW5nIHRoZSBjb3JyZWN0IGhlYWRyb29tIGluZm9y
-bWF0aW9uPw0KDQoNCkFzIHRoZSBzZXR1cCBpcyBhbHdheXMgZG9pbmcgdGhlIHBza2JfZXhwYW5k
-X2hlYWQoKSBpdCBzaG91bGQgYmUgcG9zc2libGUgdG8gdGVzdCB0aGlzLg0KDQpCZXN0IEFubmlr
-YQ0KDQo=
+TODO: write something about the extra headroom vxlan needs and why it
+reduced the performance significantly when only using the minimum reserved
+space.
+
+Cc: Annika Wickert <annika.wickert@exaring.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/fragmentation.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 97220e19..5039b201 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -391,6 +391,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 
+ /**
+  * batadv_frag_create() - create a fragment from skb
++ * @net_dev: outgoing device for fragment
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+  * @fragment_size: size of new fragment
+@@ -401,22 +402,24 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  *
+  * Return: the new fragment, NULL on error.
+  */
+-static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
++static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
++					  struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+ 					  unsigned int fragment_size)
+ {
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+ 	unsigned int mtu = fragment_size + header_size;
++	int ll_reserved = LL_RESERVED_SPACE(net_dev);
+ 
+-	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
++	skb_fragment = dev_alloc_skb(ll_reserved + mtu);
+ 	if (!skb_fragment)
+ 		goto err;
+ 
+ 	skb_fragment->priority = skb->priority;
+ 
+ 	/* Eat the last mtu-bytes of the skb */
+-	skb_reserve(skb_fragment, header_size + ETH_HLEN);
++	skb_reserve(skb_fragment, ll_reserved + header_size);
+ 	skb_split(skb, skb_fragment, skb->len - fragment_size);
+ 
+ 	/* Add the header */
+@@ -439,11 +442,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_neigh_node *neigh_node)
+ {
++	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+-	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
++	unsigned int mtu = net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+ 	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+@@ -503,7 +507,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header,
++		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
+ 						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+-- 
+2.29.2
+
