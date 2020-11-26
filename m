@@ -1,13 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Content-Type: text/plain; charset="utf-8"
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: Reserve needed_*room for fragments
+Date: Thu, 26 Nov 2020 19:11:09 +0100
+Message-ID: <3755481.ZaRXLXkqSa@sven-edge>
+In-Reply-To: <20201126153120.1053700-1-sven@narfation.org>
+References: <20201126153120.1053700-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [RFC PATCH] batman-adv: Reserve needed_headroom for fragments
-From: mephisto@mephis.to
-Date: Thu, 26 Nov 2020 10:01:46 -0000
-Message-ID: <20201126100146.1051.90640@diktynna.open-mesh.org>
-In-Reply-To: <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
-References: <16FAA2FE-92FA-421E-9134-27AECE426F55@exaring.de>
+Content-Type: multipart/signed; boundary="nextPart26336837.gRfpFWEtPU"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -17,10 +16,41 @@ List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We currently observe that issue on our experimental VX-over-Wireguard Gateway, too. 
+ 
+--nextPart26336837.gRfpFWEtPU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH] batman-adv: Reserve needed_*room for fragments
+Date: Thu, 26 Nov 2020 19:11:09 +0100
+Message-ID: <3755481.ZaRXLXkqSa@sven-edge>
+In-Reply-To: <20201126153120.1053700-1-sven@narfation.org>
+References: <20201126153120.1053700-1-sven@narfation.org>
 
-However, we had observed a similar performance hit about 2y ago  when introducing vxlan as layer below batman for wired mesh which might be related. We ignored it since debugging sessions were not conclusive for me as I'm no Kernelhacker and because it only applied to specific scenarios and vlan still outperformed the VPN connection.. still one similarity is that our debugging sessions also pointed to batman fragmentation that occured in conjunction with VXLan. Running pure batman over wire ran magnitudes faster.. Might be the same thing.
+Fixes: db56e4ecf5c2 ("batman-adv: Fragment and send skbs larger than mtu")
+--nextPart26336837.gRfpFWEtPU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-https://github.com/freifunk-gluon/gluon/issues/1315
+-----BEGIN PGP SIGNATURE-----
 
-In our current experimental setup when running vxlan over wireguard that performance hit hurts everyone..
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+/770ACgkQXYcKB8Em
+e0YOWBAA2e0RFpakVaO/vKMUs1GUWl6l2Gt7mPwPYlkXdyImYRNSk5jPwA5xJSaC
+lPBIe5Px2b7SZoxanC94JTJHX+VPthsS/j/z9reW19yB7FG+sfN2bMLlHyMI2NuR
+rmUq3Pu10MTJRB2y1W/cdYRX84lJKDpplynJSXNY6JhVCfKtfMLnLkfIJHzp1Z2F
+xqj70hTOmCxM4juc8z5bDJqnfZgJO5Nui72chL4/WgKEGR3rzRRFuBkQX5F/8/2h
+qhRJNKGVn6hP9HD9fUiQ/VOfH3EtUZOW+gYralOC79W1pUW1WOE5tC+k31oJ9mMg
+h86zsEVPxk/bqnctoS++rqPZkyaNZYKm9ah3iDUIMMC2shdDyycN7PmdIzbQslEd
+GpambsjA6pIkzp9fGooCX8v0FHDGyYFPE98PK7g7Z+EZ5Jvf+ZARQaOH6NygMjxj
+KHGBMWb8RoE+lkj0Se5Cb0PzQwnDdWpI+fTZJHoN9rJwBPMqD5vsNQSe58/X5vS8
+7CNAPAlztL4Lrr/0wzvlNUjlk8O44P4TskEoaT8oRbTr4g3xXK/p+dzDTzrKezjY
+9vLQu3Nl9HFWGVfbfXiwgq99F8gx2x6FT4WFzxTS6F8x2N0EXsSQi2heb+2m0Tf6
+1YTP4O6HZpZcOA+uv6RH8WQkFuTjYIcos3R+yx/6U7UVa3YdaQ4=
+=cL05
+-----END PGP SIGNATURE-----
+
+--nextPart26336837.gRfpFWEtPU--
+
+
