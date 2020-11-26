@@ -1,11 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 2/2] vxlan: Copy needed_tailroom from lowerdev
-Date: Thu, 26 Nov 2020 13:52:47 +0100
-Message-Id: <20201126125247.1047977-2-sven@narfation.org>
-In-Reply-To: <20201126125247.1047977-1-sven@narfation.org>
-References: <20201126125247.1047977-1-sven@narfation.org>
+Subject: [PATCH] batman-adv: Consider fragmentation for needed_headroom
+Date: Thu, 26 Nov 2020 18:18:32 +0100
+Message-Id: <20201126171832.1064799-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,31 +15,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
-While vxlan doesn't need any extra tailroom, the lowerdev might need it. In
-that case, copy it over to reduce the chance for additional (re)allocations
-in the transmit path.
+If a batman-adv packets has to be fragmented, then the original batman-adv
+packet header is not stripped away. Instead, only a new header is added in
+front of the packet after it was splitted.
 
+This size must be considered to avoid cost intensive reallocations during
+the transmission through the various device layers.
+
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- drivers/net/vxlan.c | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/hard-interface.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
-index 25b5b5a2dfea..44bb02122526 100644
---- a/drivers/net/vxlan.c
-+++ b/drivers/net/vxlan.c
-@@ -3801,6 +3801,8 @@ static void vxlan_config_apply(struct net_device *dev,
- 		needed_headroom = lowerdev->hard_header_len;
- 		needed_headroom += lowerdev->needed_headroom;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index f122e448..bbedb9a4 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -553,6 +553,9 @@ static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
+ 	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
+ 	needed_headroom += batadv_max_header_len();
  
-+		dev->needed_tailroom = lowerdev->needed_tailroom;
++	/* fragmentation headers don't strip the unicast/... header */
++	needed_headroom += sizeof(struct batadv_frag_packet);
 +
- 		max_mtu = lowerdev->mtu - (use_ipv6 ? VXLAN6_HEADROOM :
- 					   VXLAN_HEADROOM);
- 		if (max_mtu < ETH_MIN_MTU)
+ 	soft_iface->needed_headroom = needed_headroom;
+ 	soft_iface->needed_tailroom = lower_tailroom;
+ }
 -- 
 2.29.2
 
