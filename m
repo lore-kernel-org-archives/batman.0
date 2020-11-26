@@ -1,106 +1,56 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/3] batman-adv: Reserve needed_*room for fragments
-Date: Fri, 27 Nov 2020 18:38:48 +0100
-Message-Id: <20201127173849.19208-3-sw@simonwunderlich.de>
-In-Reply-To: <20201127173849.19208-1-sw@simonwunderlich.de>
-References: <20201127173849.19208-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net, kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: Don't always reallocate the fragmentation skb head
+Date: Thu, 26 Nov 2020 19:11:11 +0100
+Message-ID: <2771856.2VHbPRQshP@sven-edge>
+In-Reply-To: <20201126174404.1068235-1-sven@narfation.org>
+References: <20201126174404.1068235-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2469787.9Mp67QZiUf"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batadv net_device is trying to propagate the needed_headroom and
-needed_tailroom from the lower devices. This is needed to avoid cost
-intensive reallocations using pskb_expand_head during the transmission.
+ 
+--nextPart2469787.9Mp67QZiUf
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH] batman-adv: Don't always reallocate the fragmentation skb head
+Date: Thu, 26 Nov 2020 19:11:11 +0100
+Message-ID: <2771856.2VHbPRQshP@sven-edge>
+In-Reply-To: <20201126174404.1068235-1-sven@narfation.org>
+References: <20201126174404.1068235-1-sven@narfation.org>
 
-But the fragmentation code split the skb's without adding extra room at the
-end/beginning of the various fragments. This reduced the performance of
-transmissions over complex scenarios (batadv on vxlan on wireguard) because
-the lower devices had to perform the reallocations at least once.
+Fixes: db56e4ecf5c2 ("batman-adv: Fragment and send skbs larger than mtu")
+--nextPart2469787.9Mp67QZiUf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/fragmentation.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 9a47ef8b95c4..8de1fb567fd7 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -391,6 +391,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
- 
- /**
-  * batadv_frag_create() - create a fragment from skb
-+ * @net_dev: outgoing device for fragment
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-  * @fragment_size: size of new fragment
-@@ -401,22 +402,25 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  *
-  * Return: the new fragment, NULL on error.
-  */
--static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
-+static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
-+					  struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
- 					  unsigned int fragment_size)
- {
-+	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
-+	unsigned int tailroom = net_dev->needed_tailroom;
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
- 	unsigned int mtu = fragment_size + header_size;
- 
--	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
-+	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
- 	if (!skb_fragment)
- 		goto err;
- 
- 	skb_fragment->priority = skb->priority;
- 
- 	/* Eat the last mtu-bytes of the skb */
--	skb_reserve(skb_fragment, header_size + ETH_HLEN);
-+	skb_reserve(skb_fragment, ll_reserved + header_size);
- 	skb_split(skb, skb_fragment, skb->len - fragment_size);
- 
- 	/* Add the header */
-@@ -439,11 +443,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			    struct batadv_orig_node *orig_node,
- 			    struct batadv_neigh_node *neigh_node)
- {
-+	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_frag_packet frag_header;
- 	struct sk_buff *skb_fragment;
--	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
-+	unsigned int mtu = net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
- 	unsigned int max_fragment_size, num_fragments;
- 	int ret;
-@@ -503,7 +508,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			goto put_primary_if;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header,
-+		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
- 						  max_fragment_size);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
--- 
-2.20.1
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAl+/778ACgkQXYcKB8Em
+e0bcYg/+PD+t5/jq4mR/mKKrR88RuVxAzAbkAplFKLMVOQj/Bm3Nx+B1xDFpCpFY
+BNr91it75PG/YeMXvVV2f/FHxjLAmMmsJIrLaDKpiEmi9f4mfDmmYokE5n+s0KhO
+tdTRIA02XiPHbD1kiJ9bti6LrHkg6BgTR6IWpobQ5tRVNKeGE+suVvMzLwYNaESY
+k2Chtrv1BJcukBDEeoHm/QosBLKnzjqtGVZ6Be8qhkkhwPh+Da56f06YR2P2o6L7
+AkHBSED8op//Xm8Z7A3jS2ZwKM1nJPbrrL49ZiyQGm68X8kNCh9uDRQJsC+1subE
+3z6oUheAsHodOa7PIBJbyyz/wZ4bQQAKOrxodJNLrIAef8Brn9gDbDfcDSwWroYU
+GrSh8mJycISTJCTFG8YDcDJF1eaCXpASVp4Rx5+nMbY4W2uNLLHT2XGFbnDC+3+R
+lnzzcTyg4/KcWG682iZYTq2z0KUJtaTF49i30XAN7Hi7H0/AuUmERB84CCyIUQlh
+h0sGMDGDM95OH8wD1b8nnossv+CrSrjffjGbEEhOeEluPfno3N7rzu+xVhQqzgrt
+EEHAQa9X57mRjiNl996vjV8jx3wLg3s1Gj9IpEHLkwZ0vd+O2jkgD8OWJ5aIFecn
+zUthmlsVCB3vgl2ABzRvCr9a/640iqv9z5en/5CKitBIeIAyPCc=
+=YHwi
+-----END PGP SIGNATURE-----
+
+--nextPart2469787.9Mp67QZiUf--
+
 
