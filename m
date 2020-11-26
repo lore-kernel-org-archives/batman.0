@@ -1,55 +1,104 @@
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Reserve needed_*room for fragments
+Date: Thu, 26 Nov 2020 16:31:20 +0100
+Message-Id: <20201126153120.1053700-1-sven@narfation.org>
 MIME-Version: 1.0
-References: <0000000000000a954d05b0a89a86@google.com> <7bf217ced62816b1bd3404bcfe279082347fb265.camel@sipsolutions.net>
-In-Reply-To: <7bf217ced62816b1bd3404bcfe279082347fb265.camel@sipsolutions.net>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Fri, 2 Oct 2020 09:48:42 +0200
-Message-ID: <CACT4Y+aRSVEJqZ_aCN6avc4Z66-Kt0C-QNS1vyNg4wnbUrWW9w@mail.gmail.com>
-Subject: Re: WARNING in cfg80211_connect
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: syzbot <syzbot+5f9392825de654244975@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>, Dave Chinner <david@fromorbit.com>, dchinner@redhat.com, Christoph Hellwig <hch@lst.de>, Jakub Kicinski <kuba@kernel.org>, LKML <linux-kernel@vger.kernel.org>, linux-wireless <linux-wireless@vger.kernel.org>, mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, syzkaller <syzkaller@googlegroups.com>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On Fri, Oct 2, 2020 at 8:27 AM Johannes Berg <johannes@sipsolutions.net> wrote:
->
-> On Thu, 2020-10-01 at 21:31 -0700, syzbot wrote:
-> > syzbot has bisected this issue to:
-> >
-> > commit 16d4d43595b4780daac8fcea6d042689124cb094
-> > Author: Christoph Hellwig <hch@lst.de>
-> > Date:   Wed Jul 20 01:38:55 2016 +0000
-> >
-> >     xfs: split direct I/O and DAX path
-> >
->
-> LOL!
->
-> Unlike in many other cases, here I don't even see why it went down that
-> path. You'd think that Christoph's commit should have no effect
-> whatsoever, but here we are with syzbot claiming a difference?
->
-> I mean, often enough it says something is "caused" by a patch because
-> that caused e.g. generic netlink family renumbering, or because it
-> emitted some other ioctl() calls or whatnot that are invalid before and
-> valid after some other (feature) patch (or vice versa sometimes), but
-> you'd think that this patch would have _zero_ userspace observable
-> effect?
->
-> Which I guess means that the reproduction of this bug is random, perhaps
-> timing related.
+The batadv net_device is trying to propagate the needed_headroom and
+needed_tailroom from the lower devices. This is needed to avoid cost
+intensive reallocations using pskb_expand_head during the transmission.
 
-Hi Johannes,
+But the fragmentation code splitted the skb's without adding extra room at
+the end/beginning of the various fragments. This reduced the performance of
+transmissions over complex scenarios (batadv on vxlan on wireguard) because
+the lower devices had to perform the reallocations at least once.
 
-syzbot provides bisection log which usually answers the why question.
-In this case bisection was diverged by an unrelated kernel bug. That's
-the most common reason for wrong bisection results. If you are
-interested in more reasons for wrong bisection results, some time ago
-I did a large analysis of bisection results:
-https://groups.google.com/g/syzkaller/c/sR8aAXaWEF4/m/tTWYRgvmAwAJ
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v1:
+- added commit message
+- added tailroom
+
+ net/batman-adv/fragmentation.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 97220e19..8a73804d 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -391,6 +391,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 
+ /**
+  * batadv_frag_create() - create a fragment from skb
++ * @net_dev: outgoing device for fragment
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+  * @fragment_size: size of new fragment
+@@ -401,22 +402,25 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  *
+  * Return: the new fragment, NULL on error.
+  */
+-static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
++static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
++					  struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+ 					  unsigned int fragment_size)
+ {
++	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
++	unsigned int tailroom = net_dev->needed_tailroom;
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+ 	unsigned int mtu = fragment_size + header_size;
+ 
+-	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
++	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
+ 	if (!skb_fragment)
+ 		goto err;
+ 
+ 	skb_fragment->priority = skb->priority;
+ 
+ 	/* Eat the last mtu-bytes of the skb */
+-	skb_reserve(skb_fragment, header_size + ETH_HLEN);
++	skb_reserve(skb_fragment, ll_reserved + header_size);
+ 	skb_split(skb, skb_fragment, skb->len - fragment_size);
+ 
+ 	/* Add the header */
+@@ -439,11 +443,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_neigh_node *neigh_node)
+ {
++	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+-	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
++	unsigned int mtu = net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+ 	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+@@ -503,7 +508,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header,
++		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
+ 						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+-- 
+2.29.2
 
