@@ -1,26 +1,60 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Tue, 24 Nov 2020 16:50:57 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH 0/1] pull request for net: batman-adv 2020-11-24
-Message-ID: <20201124165057.0fa59de4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <20201124134417.17269-1-sw@simonwunderlich.de>
-References: <20201124134417.17269-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Don't always reallocate the fragmentation skb head
+Date: Thu, 26 Nov 2020 18:44:04 +0100
+Message-Id: <20201126174404.1068235-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On Tue, 24 Nov 2020 14:44:16 +0100 Simon Wunderlich wrote:
-> Hi David, hi Jakub,
-> 
-> here is a bugfix for batman-adv which we would like to have integrated into net.
+When a packet is fragmented by batman-adv, the original batman-adv header
+is not modified. Only a new fragmentation is inserted between the original
+one and the ethernet header. The code must therefore make sure that it has
+a writable region of this size in the skbuff head.
 
-Pulled, thanks!
+But it is not useful to always reallocate the skbuff by this size even when
+there would be more than enough headroom still in the skb. The reallocation
+is just to costly during in this codepath.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/fragmentation.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 8a73804d..59ebd731 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -527,13 +527,14 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 		frag_header.no++;
+ 	}
+ 
+-	/* Make room for the fragment header. */
+-	if (batadv_skb_head_push(skb, header_size) < 0 ||
+-	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
+-		ret = -ENOMEM;
++	/* make sure that there is at least enough head for the fragmentation
++	 * and ethernet headers
++	 */
++	ret = skb_cow_head(skb, ETH_HLEN + header_size);
++	if (ret < 0)
+ 		goto put_primary_if;
+-	}
+ 
++	skb_push(skb, header_size);
+ 	memcpy(skb->data, &frag_header, header_size);
+ 
+ 	/* Send the last fragment */
+-- 
+2.29.2
+
