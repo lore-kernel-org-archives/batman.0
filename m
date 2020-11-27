@@ -1,39 +1,56 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/3] batman-adv: Consider fragmentation for needed_headroom
+Date: Fri, 27 Nov 2020 18:38:47 +0100
+Message-Id: <20201127173849.19208-2-sw@simonwunderlich.de>
+In-Reply-To: <20201127173849.19208-1-sw@simonwunderlich.de>
+References: <20201127173849.19208-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Mon, 09 Nov 2020 03:03:05 -0800
-In-Reply-To: <000000000000a48f9e05aef6cce1@google.com>
-Message-ID: <000000000000b4227e05b3aa8101@google.com>
-Subject: Re: INFO: rcu detected stall in exit_group
-From: syzbot <syzbot+1a14a0f8ce1a06d4415f@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, dhowells@redhat.com, fweisbec@gmail.com, linux-afs@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mareklindner@neomailbox.ch, mike.kravetz@oracle.com, mingo@kernel.org, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tglx@linutronix.de, viro@zeniv.linux.org.uk
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>
 
-syzbot suspects this issue was fixed by commit:
+From: Sven Eckelmann <sven@narfation.org>
 
-commit 1d0e850a49a5b56f8f3cb51e74a11e2fedb96be6
-Author: David Howells <dhowells@redhat.com>
-Date:   Fri Oct 16 12:21:14 2020 +0000
+If a batman-adv packets has to be fragmented, then the original batman-adv
+packet header is not stripped away. Instead, only a new header is added in
+front of the packet after it was split.
 
-    afs: Fix cell removal
+This size must be considered to avoid cost intensive reallocations during
+the transmission through the various device layers.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=14b65c3a500000
-start commit:   34d4ddd3 Merge tag 'linux-kselftest-5.9-rc5' of git://git...
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=a9075b36a6ae26c9
-dashboard link: https://syzkaller.appspot.com/bug?extid=1a14a0f8ce1a06d4415f
-userspace arch: i386
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10c6642d900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=132d00fd900000
+Fixes: 7bca68c7844b ("batman-adv: Add lower layer needed_(head|tail)room to own ones")
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-If the result looks correct, please mark the issue as fixed by replying with:
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index dad99641df2a..33904595fc56 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -554,6 +554,9 @@ static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
+ 	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
+ 	needed_headroom += batadv_max_header_len();
+ 
++	/* fragmentation headers don't strip the unicast/... header */
++	needed_headroom += sizeof(struct batadv_frag_packet);
++
+ 	soft_iface->needed_headroom = needed_headroom;
+ 	soft_iface->needed_tailroom = lower_tailroom;
+ }
+-- 
+2.20.1
 
-#syz fix: afs: Fix cell removal
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
