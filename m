@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 4/8] batman-adv: Allow selection of routing algorithm over rtnetlink
-Date: Fri,  4 Dec 2020 16:46:27 +0100
-Message-Id: <20201204154631.21063-5-sw@simonwunderlich.de>
+Subject: [PATCH 3/8] batman-adv: Prepare infrastructure for newlink settings
+Date: Fri,  4 Dec 2020 16:46:26 +0100
+Message-Id: <20201204154631.21063-4-sw@simonwunderlich.de>
 In-Reply-To: <20201204154631.21063-1-sw@simonwunderlich.de>
 References: <20201204154631.21063-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -21,161 +21,119 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-A batadv net_device is associated to a B.A.T.M.A.N. routing algorithm. This
-algorithm has to be selected before the interface is initialized and cannot
-be changed after that. The only way to select this algorithm was a module
-parameter which specifies the default algorithm used during the creation of
-the net_device.
+The batadv generic netlink family can be used to retrieve the current state
+and set various configuration settings. But there are also settings which
+must be set before the actual interface is created.
 
-This module parameter is writeable over
-/sys/module/batman_adv/parameters/routing_algo and thus allows switching of
-the routing algorithm:
-
-1. change routing_algo parameter
-2. create new batadv net_device
-
-But this is not race free because another process can be scheduled between
-1 + 2 and in that time frame change the routing_algo parameter again.
-
-It is much cleaner to directly provide this information inside the
-rtnetlink's RTM_NEWLINK message. The two processes would be (in regards of
-the creation parameter of their batadv interfaces) be isolated. This also
-eases the integration of batadv devices inside tools like network-manager
-or systemd-networkd which are not expecting to operate on /sys before a new
-net_device is created.
+The rtnetlink already uses IFLA_INFO_DATA to allow net_device families to
+transfer such configurations. The minimal required functionality for this
+is now available for the batadv rtnl_link_ops. Also a new IFLA class of
+attributes will be attached to it because rtnetlink only allows 51
+different attributes but batadv_nl_attrs already contains 62 attributes.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/uapi/linux/batman_adv.h |  6 ++++++
- net/batman-adv/bat_algo.c       | 10 ++++++++--
- net/batman-adv/bat_algo.h       |  3 ++-
- net/batman-adv/soft-interface.c | 31 ++++++++++++++++++++++++++++---
- 4 files changed, 44 insertions(+), 6 deletions(-)
+ include/uapi/linux/batman_adv.h | 20 +++++++++++++++++
+ net/batman-adv/soft-interface.c | 39 +++++++++++++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index b05399d8a127..bdb317faa1dc 100644
+index bb0ae945b36a..b05399d8a127 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -685,6 +685,12 @@ enum batadv_ifla_attrs {
- 	 */
- 	IFLA_BATADV_UNSPEC,
- 
-+	/**
-+	 * @IFLA_BATADV_ALGO_NAME: routing algorithm (name) which should be
-+	 *  used by the newly registered batadv net_device.
-+	 */
-+	IFLA_BATADV_ALGO_NAME,
-+
- 	/* add attributes above here, update the policy in soft-interface.c */
- 
- 	/**
-diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
-index 382fbe51fd34..500db94a6b50 100644
---- a/net/batman-adv/bat_algo.c
-+++ b/net/batman-adv/bat_algo.c
-@@ -34,7 +34,13 @@ void batadv_algo_init(void)
- 	INIT_HLIST_HEAD(&batadv_algo_list);
- }
- 
--static struct batadv_algo_ops *batadv_algo_get(char *name)
-+/**
-+ * batadv_algo_get() - Search for algorithm with specific name
-+ * @name: algorithm name to find
-+ *
-+ * Return: Pointer to batadv_algo_ops on success, NULL otherwise
-+ */
-+struct batadv_algo_ops *batadv_algo_get(const char *name)
- {
- 	struct batadv_algo_ops *bat_algo_ops = NULL, *bat_algo_ops_tmp;
- 
-@@ -97,7 +103,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
-  *
-  * Return: 0 on success or negative error number in case of failure
-  */
--int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
-+int batadv_algo_select(struct batadv_priv *bat_priv, const char *name)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
- 
-diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
-index 686a60bc9492..2ae140eac45d 100644
---- a/net/batman-adv/bat_algo.h
-+++ b/net/batman-adv/bat_algo.h
-@@ -18,8 +18,9 @@ extern char batadv_routing_algo[];
- extern struct list_head batadv_hardif_list;
- 
- void batadv_algo_init(void);
-+struct batadv_algo_ops *batadv_algo_get(const char *name);
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
--int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
-+int batadv_algo_select(struct batadv_priv *bat_priv, const char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
- int batadv_algo_dump(struct sk_buff *msg, struct netlink_callback *cb);
- 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 9c7b89689c97..8116631c11c5 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -846,9 +846,11 @@ static int batadv_softif_init_late(struct net_device *dev)
- 
- 	batadv_nc_init_bat_priv(bat_priv);
- 
--	ret = batadv_algo_select(bat_priv, batadv_routing_algo);
--	if (ret < 0)
--		goto free_bat_counters;
-+	if (!bat_priv->algo_ops) {
-+		ret = batadv_algo_select(bat_priv, batadv_routing_algo);
-+		if (ret < 0)
-+			goto free_bat_counters;
-+	}
- 
- 	ret = batadv_debugfs_add_meshif(dev);
- 	if (ret < 0)
-@@ -1085,6 +1087,17 @@ static void batadv_softif_init_early(struct net_device *dev)
- static int batadv_softif_validate(struct nlattr *tb[], struct nlattr *data[],
- 				  struct netlink_ext_ack *extack)
- {
-+	struct batadv_algo_ops *algo_ops;
-+
-+	if (!data)
-+		return 0;
-+
-+	if (data[IFLA_BATADV_ALGO_NAME]) {
-+		algo_ops = batadv_algo_get(nla_data(data[IFLA_BATADV_ALGO_NAME]));
-+		if (!algo_ops)
-+			return -EINVAL;
-+	}
-+
- 	return 0;
- }
- 
-@@ -1102,6 +1115,17 @@ static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
- 				 struct nlattr *tb[], struct nlattr *data[],
- 				 struct netlink_ext_ack *extack)
- {
-+	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	const char *algo_name;
-+	int err;
-+
-+	if (data && data[IFLA_BATADV_ALGO_NAME]) {
-+		algo_name = nla_data(data[IFLA_BATADV_ALGO_NAME]);
-+		err = batadv_algo_select(bat_priv, algo_name);
-+		if (err)
-+			return -EINVAL;
-+	}
-+
- 	return register_netdevice(dev);
- }
- 
-@@ -1204,6 +1228,7 @@ bool batadv_softif_is_valid(const struct net_device *net_dev)
- }
- 
- static const struct nla_policy batadv_ifla_policy[IFLA_BATADV_MAX + 1] = {
-+	[IFLA_BATADV_ALGO_NAME]	= { .type = NLA_NUL_STRING },
+@@ -675,4 +675,24 @@ enum batadv_tp_meter_reason {
+ 	BATADV_TP_REASON_TOO_MANY		= 133,
  };
  
++/**
++ * enum batadv_ifla_attrs - batman-adv ifla nested attributes
++ */
++enum batadv_ifla_attrs {
++	/**
++	 * @IFLA_BATADV_UNSPEC: unspecified attribute which is not parsed by
++	 *  rtnetlink
++	 */
++	IFLA_BATADV_UNSPEC,
++
++	/* add attributes above here, update the policy in soft-interface.c */
++
++	/**
++	 * @__IFLA_BATADV_MAX: internal use
++	 */
++	__IFLA_BATADV_MAX,
++};
++
++#define IFLA_BATADV_MAX (__IFLA_BATADV_MAX - 1)
++
+ #endif /* _UAPI_LINUX_BATMAN_ADV_H_ */
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 82e7ca886605..9c7b89689c97 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -38,6 +38,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <net/netlink.h>
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+@@ -1073,6 +1074,37 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 	dev->ethtool_ops = &batadv_ethtool_ops;
+ }
+ 
++/**
++ * batadv_softif_validate() - validate configuration of new batadv link
++ * @tb: IFLA_INFO_DATA netlink attributes
++ * @data: enum batadv_ifla_attrs attributes
++ * @extack: extended ACK report struct
++ *
++ * Return: 0 if successful or error otherwise.
++ */
++static int batadv_softif_validate(struct nlattr *tb[], struct nlattr *data[],
++				  struct netlink_ext_ack *extack)
++{
++	return 0;
++}
++
++/**
++ * batadv_softif_newlink() - pre-initialize and register new batadv link
++ * @src_net: the applicable net namespace
++ * @dev: network device to register
++ * @tb: IFLA_INFO_DATA netlink attributes
++ * @data: enum batadv_ifla_attrs attributes
++ * @extack: extended ACK report struct
++ *
++ * Return: 0 if successful or error otherwise.
++ */
++static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
++				 struct nlattr *tb[], struct nlattr *data[],
++				 struct netlink_ext_ack *extack)
++{
++	return register_netdevice(dev);
++}
++
+ /**
+  * batadv_softif_create() - Create and register soft interface
+  * @net: the applicable net namespace
+@@ -1171,9 +1203,16 @@ bool batadv_softif_is_valid(const struct net_device *net_dev)
+ 	return false;
+ }
+ 
++static const struct nla_policy batadv_ifla_policy[IFLA_BATADV_MAX + 1] = {
++};
++
  struct rtnl_link_ops batadv_link_ops __read_mostly = {
+ 	.kind		= "batadv",
+ 	.priv_size	= sizeof(struct batadv_priv),
+ 	.setup		= batadv_softif_init_early,
++	.maxtype	= IFLA_BATADV_MAX,
++	.policy		= batadv_ifla_policy,
++	.validate	= batadv_softif_validate,
++	.newlink	= batadv_softif_newlink,
+ 	.dellink	= batadv_softif_destroy_netlink,
+ };
 -- 
 2.20.1
 
