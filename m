@@ -1,10 +1,9 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Date: Sun, 10 Jan 2021 21:16:06 -0800
-In-Reply-To: <000000000000f5964705b7d47d8c@google.com>
-Message-ID: <000000000000cbca0705b89900b3@google.com>
-Subject: Re: INFO: trying to register non-static key in l2cap_sock_teardown_cb
-From: syzbot <syzbot+a41dfef1d2e04910eb2e@syzkaller.appspotmail.com>
+Date: Sat, 09 Jan 2021 12:57:19 -0800
+Message-ID: <00000000000030bc3305b87debd4@google.com>
+Subject: WARNING in rds_rdma_extra_size
+From: syzbot <syzbot+1bd2b07f93745fa38425@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
@@ -13,27 +12,87 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, hdanton@sina.com, johan.hedberg@gmail.com, kuba@kernel.org, linux-bluetooth@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, luiz.dentz@gmail.com, marcel@holtmann.org, mareklindner@neomailbox.ch, miklos@szeredi.hu, mszeredi@redhat.com, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: a@unstable.cc, akpm@linux-foundation.org, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, daniel@iogearbox.net, davem@davemloft.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mareklindner@neomailbox.ch, mdroth@linux.vnet.ibm.com, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-syzbot has bisected this issue to:
+Hello,
 
-commit 4680a7ee5db27772af40d83393fa0fb955b745b7
-Author: Miklos Szeredi <mszeredi@redhat.com>
-Date:   Sat Oct 1 05:32:33 2016 +0000
+syzbot found the following issue on:
 
-    fuse: remove duplicate cs->offset assignment
+HEAD commit:    6207214a Merge tag 'afs-fixes-04012021' of git://git.kerne..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=146967c0d00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=8aa30b9da402d224
+dashboard link: https://syzkaller.appspot.com/bug?extid=1bd2b07f93745fa38425
+compiler:       gcc (GCC) 10.1.0-syz 20200507
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1351c11f500000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1710cb50d00000
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=11fc80e7500000
-start commit:   73b7a604 net: dsa: bcm_sf2: support BCM4908's integrated s..
-git tree:       net-next
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=13fc80e7500000
-console output: https://syzkaller.appspot.com/x/log.txt?x=15fc80e7500000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=9ce34124da4c882b
-dashboard link: https://syzkaller.appspot.com/bug?extid=a41dfef1d2e04910eb2e
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=166ee4cf500000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1337172f500000
+The issue was bisected to:
 
-Reported-by: syzbot+a41dfef1d2e04910eb2e@syzkaller.appspotmail.com
-Fixes: 4680a7ee5db2 ("fuse: remove duplicate cs->offset assignment")
+commit fdadd04931c2d7cd294dc5b2b342863f94be53a3
+Author: Daniel Borkmann <daniel@iogearbox.net>
+Date:   Tue Dec 11 11:14:12 2018 +0000
 
+    bpf: fix bpf_jit_limit knob for PAGE_SIZE >= 64K
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=10056f70d00000
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=12056f70d00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=14056f70d00000
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+1bd2b07f93745fa38425@syzkaller.appspotmail.com
+Fixes: fdadd04931c2 ("bpf: fix bpf_jit_limit knob for PAGE_SIZE >= 64K")
+
+------------[ cut here ]------------
+WARNING: CPU: 1 PID: 8462 at mm/page_alloc.c:4976 __alloc_pages_nodemask+0x5f8/0x730 mm/page_alloc.c:5011
+Modules linked in:
+CPU: 1 PID: 8462 Comm: syz-executor292 Not tainted 5.11.0-rc2-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+RIP: 0010:__alloc_pages_nodemask+0x5f8/0x730 mm/page_alloc.c:4976
+Code: 00 00 0c 00 0f 85 a7 00 00 00 8b 3c 24 4c 89 f2 44 89 e6 c6 44 24 70 00 48 89 6c 24 58 e8 d0 d7 ff ff 49 89 c5 e9 ea fc ff ff <0f> 0b e9 b5 fd ff ff 89 74 24 14 4c 89 4c 24 08 4c 89 74 24 18 e8
+RSP: 0018:ffffc9000169f790 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 1ffff920002d3ef6 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: dffffc0000000000 RDI: 0000000000040dc0
+RBP: 0000000000040dc0 R08: 0000000000000000 R09: 0000000000000000
+R10: ffffffff81b1f7f1 R11: 0000000000000000 R12: 0000000000000018
+R13: 0000000000000018 R14: 0000000000000000 R15: 0000000ffffff1f0
+FS:  0000000000f3c880(0000) GS:ffff8880b9f00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f6b332916c0 CR3: 00000000133c3000 CR4: 0000000000350ee0
+Call Trace:
+ alloc_pages_current+0x18c/0x2a0 mm/mempolicy.c:2267
+ alloc_pages include/linux/gfp.h:547 [inline]
+ kmalloc_order+0x2e/0xb0 mm/slab_common.c:837
+ kmalloc_order_trace+0x14/0x120 mm/slab_common.c:853
+ kmalloc_array include/linux/slab.h:592 [inline]
+ kcalloc include/linux/slab.h:621 [inline]
+ rds_rdma_extra_size+0xb2/0x3b0 net/rds/rdma.c:568
+ rds_rm_size net/rds/send.c:928 [inline]
+ rds_sendmsg+0x20d7/0x3020 net/rds/send.c:1265
+ sock_sendmsg_nosec net/socket.c:652 [inline]
+ sock_sendmsg+0xcf/0x120 net/socket.c:672
+ ____sys_sendmsg+0x6e8/0x810 net/socket.c:2345
+ ___sys_sendmsg+0xf3/0x170 net/socket.c:2399
+ __sys_sendmsg+0xe5/0x1b0 net/socket.c:2432
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+RIP: 0033:0x440359
+Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 0f 83 7b 13 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007ffe89376b68 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
+RAX: ffffffffffffffda RBX: 00000000004002c8 RCX: 0000000000440359
+RDX: 0000000000000000 RSI: 0000000020001600 RDI: 0000000000000003
+RBP: 00000000006ca018 R08: 00000000004002c8 R09: 00000000004002c8
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000401b60
+R13: 0000000000401bf0 R14: 0000000000000000 R15: 0000000000000000
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches
