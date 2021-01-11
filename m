@@ -1,12 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: batman-adv: User defined nonce in packet header [was: batman-adv related query]
-Date: Sat, 30 Jan 2021 10:36:42 +0100
-Message-ID: <1708045.1bVLHfgjVF@sven-edge>
-In-Reply-To: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
-References: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9597460.aHTAh1YC2F"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Date: Sun, 10 Jan 2021 21:16:06 -0800
+In-Reply-To: <000000000000f5964705b7d47d8c@google.com>
+Message-ID: <000000000000cbca0705b89900b3@google.com>
+Subject: Re: INFO: trying to register non-static key in l2cap_sock_teardown_cb
+From: syzbot <syzbot+a41dfef1d2e04910eb2e@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,64 +13,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Moullick Mehra <dedamamoge@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, hdanton@sina.com, johan.hedberg@gmail.com, kuba@kernel.org, linux-bluetooth@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, luiz.dentz@gmail.com, marcel@holtmann.org, mareklindner@neomailbox.ch, miklos@szeredi.hu, mszeredi@redhat.com, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
- 
---nextPart9597460.aHTAh1YC2F
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Moullick Mehra <dedamamoge@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: batman-adv: User defined nonce in packet header [was: batman-adv related query]
-Date: Sat, 30 Jan 2021 10:36:42 +0100
-Message-ID: <1708045.1bVLHfgjVF@sven-edge>
-In-Reply-To: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
-References: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
+syzbot has bisected this issue to:
 
-[please use a relevant subject when writing to the mailing list]
+commit 4680a7ee5db27772af40d83393fa0fb955b745b7
+Author: Miklos Szeredi <mszeredi@redhat.com>
+Date:   Sat Oct 1 05:32:33 2016 +0000
 
-On Saturday, 30 January 2021 10:25:51 CET Moullick Mehra wrote:
-> Is there any way to add a nonce value to the
-> packet header? The reason being that I want to add an authentication
-> mechanism where the firewall permits only selected headers that have
-> this nonce. Hope this makes sense.
+    fuse: remove duplicate cs->offset assignment
 
-Not with the mainline batman-adv. But you can always add your own changes to 
-your code - making it incompatible with mainline batman-adv.
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=11fc80e7500000
+start commit:   73b7a604 net: dsa: bcm_sf2: support BCM4908's integrated s..
+git tree:       net-next
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=13fc80e7500000
+console output: https://syzkaller.appspot.com/x/log.txt?x=15fc80e7500000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=9ce34124da4c882b
+dashboard link: https://syzkaller.appspot.com/bug?extid=a41dfef1d2e04910eb2e
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=166ee4cf500000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1337172f500000
 
-But I would highly recommend to handle authentication on a layer outside of 
-batman-adv.
+Reported-by: syzbot+a41dfef1d2e04910eb2e@syzkaller.appspotmail.com
+Fixes: 4680a7ee5db2 ("fuse: remove duplicate cs->offset assignment")
 
-Btw. "nonce" is a "number only used once". And you wrote here that the 
-firewall only whitelist one specific nonce. Which would imply that your nonce 
-is not used only once...
-
-Kind regards,
-	Sven
---nextPart9597460.aHTAh1YC2F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAVKKoACgkQXYcKB8Em
-e0buSg//SKAmti2Z5h9tmTjHrgQHvfkqC6nf4IxugxNmlCq3Vt3goFEpm58PppNT
-6ONsIMLgGceLkH7YHMDRhXg6uUuJSlkFpcvoGtc1nlEemDVQEBJzrwtTIBjoy757
-9ym0bpi3dIMqzf5NET5/GocJTQNt1CNE2EFz0FlySNqRylBcwgIp5p8AurnEnLg7
-/hvZ3MRn10z0WH2+g3UbcBelgNyVGpK9ZLpcVmL2f2PCdx1dP09FZ7tuUFt3oChJ
-VTwwNZfRyvSh+aj/VpfHz9Eel23nLMHBkxDqBqOux609ML/tuhHR/2XU1IzEvV+b
-vpE/ZGKfvE/gQ71ezIT29P0AqSF7gY1HmjjH8fpZdsWwXqZuoSle6NrY0nmS8ILE
-7ayHPH/UdGW1JRqt4lbAlsVz2ip384qrPDRCau0TJVtWM5+nbtp1y30cJho/dEvl
-8emhnxBG4jHUeBjs1O+y8qWxj0rErDL4wK+iUt7LnDRgVxaOUhpPBRA3xGpy4kFr
-MjAuZPQBMwSuGUqL2ZBdX0q8ONBK3dt6cz6w48k88lmvi23eDIXj3oOUE5PkRAgu
-PxetbefMD/Xzhm7PaX9IvtAcA/fwfR/BhVGfY4hDgLCIlokUs546SdsIBNS4+1ED
-HOVpl8hWO+OrRKsPfAVi2QWPZZqCRzQcNcXoQ0/ezKccLVxz9B0=
-=wFrx
------END PGP SIGNATURE-----
-
---nextPart9597460.aHTAh1YC2F--
-
-
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
