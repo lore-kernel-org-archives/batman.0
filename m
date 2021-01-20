@@ -1,10 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 7/8] batman-adv: Drop legacy code for auto deleting mesh interfaces
-Date: Fri,  4 Dec 2020 16:46:30 +0100
-Message-Id: <20201204154631.21063-8-sw@simonwunderlich.de>
-In-Reply-To: <20201204154631.21063-1-sw@simonwunderlich.de>
-References: <20201204154631.21063-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: batman-adv: Fix names for kernel-doc blocks
+Date: Wed, 20 Jan 2021 21:00:14 +0100
+Message-Id: <20210120200014.8894-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,110 +14,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net, kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-From: Sven Eckelmann <sven@narfation.org>
-
-The only way to automatically drop batadv mesh interfaces when all soft
-interfaces were removed was dropped with the sysfs support. It is no longer
-needed to have them handled by kernel anymore.
+kernel-doc can only correctly identify the documented function or struct
+when the name in the first kernel-doc line references it. But some of the
+kernel-doc blocks referenced a different function/struct then it actually
+documented.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/hard-interface.c |  8 ++------
- net/batman-adv/hard-interface.h | 19 +------------------
- net/batman-adv/soft-interface.c |  5 ++---
- 3 files changed, 5 insertions(+), 27 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index bbedb9a422c0..0f186ddc15e3 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -845,11 +845,8 @@ static size_t batadv_hardif_cnt(const struct net_device *soft_iface)
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index fd7ba6bbdf85eb7d7240cfd50e44d522335bca13..0a367a92b5f62afd5a8635ad270353291cd36464 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -1564,7 +1564,7 @@ static int batadv_dat_get_dhcp_message_type(struct sk_buff *skb)
+ }
+ 
  /**
-  * batadv_hardif_disable_interface() - Remove hard interface from soft interface
-  * @hard_iface: hard interface to be removed
-- * @autodel: whether to delete soft interface when it doesn't contain any other
-- *  slave interfaces
-  */
--void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
--				     enum batadv_hard_if_cleanup autodel)
-+void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_hard_iface *primary_if = NULL;
-@@ -953,8 +950,7 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+- * batadv_dat_get_dhcp_yiaddr() - get yiaddr from a DHCP packet
++ * batadv_dat_dhcp_get_yiaddr() - get yiaddr from a DHCP packet
+  * @skb: the DHCP packet to parse
+  * @buf: a buffer to store the yiaddr in
+  *
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 854e5ff28a3fe5d2d57862142be45d56a403c448..4f250551a589ca5c7f495612e826e6fd5234dc79 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -828,7 +828,7 @@ batadv_mcast_bridge_log(struct batadv_priv *bat_priv,
+ }
  
- 	/* first deactivate interface */
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
--		batadv_hardif_disable_interface(hard_iface,
--						BATADV_IF_CLEANUP_KEEP);
-+		batadv_hardif_disable_interface(hard_iface);
+ /**
+- * batadv_mcast_flags_logs() - output debug information about mcast flag changes
++ * batadv_mcast_flags_log() - output debug information about mcast flag changes
+  * @bat_priv: the bat priv with all the soft interface information
+  * @flags: TVLV flags indicating the new multicast state
+  *
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 97bcf149633d850ff4fcece6d7dc0d799adb1444..1c002236e351b75f8888a35c7423e3ac6244df42 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -193,7 +193,7 @@ static int batadv_netlink_mesh_fill_ap_isolation(struct sk_buff *msg,
+ }
  
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		return;
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 1ee45b615399..f4b8e9efef19 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -67,22 +67,6 @@ enum batadv_hard_if_bcast {
- 	BATADV_HARDIF_BCAST_DUPORIG,
+ /**
+- * batadv_option_set_ap_isolation() - Set ap_isolation from genl msg
++ * batadv_netlink_set_mesh_ap_isolation() - Set ap_isolation from genl msg
+  * @attr: parsed BATADV_ATTR_AP_ISOLATION_ENABLED attribute
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+@@ -757,7 +757,7 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
+ }
+ 
+ /**
+- * batadv_netlink_tp_meter_start() - Cancel a running tp_meter session
++ * batadv_netlink_tp_meter_cancel() - Cancel a running tp_meter session
+  * @skb: received netlink message
+  * @info: receiver information
+  *
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index d4e10005df6cd2936a3132e1ad7bd8bf3c1d99b6..f9e35a2d2b1ac15aa851c3279a262827a01f9bff 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -131,7 +131,7 @@ static u32 batadv_tp_cwnd(u32 base, u32 increment, u32 min)
+ }
+ 
+ /**
+- * batadv_tp_updated_cwnd() - update the Congestion Windows
++ * batadv_tp_update_cwnd() - update the Congestion Windows
+  * @tp_vars: the private data of the current TP meter session
+  * @mss: maximum segment size of transmission
+  *
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 2f96e96a5ca4ddb800f9bac66a118a6f97d86d89..490503dc5581346af7d94e9fc18e6858e6ecfee1 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -228,7 +228,8 @@ struct batadv_hard_iface {
  };
  
--/**
-- * enum batadv_hard_if_cleanup - Cleanup modi for soft_iface after slave removal
-- */
--enum batadv_hard_if_cleanup {
--	/**
--	 * @BATADV_IF_CLEANUP_KEEP: Don't automatically delete soft-interface
--	 */
--	BATADV_IF_CLEANUP_KEEP,
--
--	/**
--	 * @BATADV_IF_CLEANUP_AUTO: Delete soft-interface after last slave was
--	 *  removed
--	 */
--	BATADV_IF_CLEANUP_AUTO,
--};
--
- extern struct notifier_block batadv_hard_if_notifier;
- 
- struct net_device *batadv_get_real_netdev(struct net_device *net_device);
-@@ -92,8 +76,7 @@ struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   struct net *net, const char *iface_name);
--void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
--				     enum batadv_hard_if_cleanup autodel);
-+void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface);
- int batadv_hardif_min_mtu(struct net_device *soft_iface);
- void batadv_update_min_mtu(struct net_device *soft_iface);
- void batadv_hardif_release(struct kref *ref);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 6c6a8c6bab17..97118efbe678 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -881,7 +881,7 @@ static int batadv_softif_slave_del(struct net_device *dev,
- 	if (!hard_iface || hard_iface->soft_iface != dev)
- 		goto out;
- 
--	batadv_hardif_disable_interface(hard_iface, BATADV_IF_CLEANUP_KEEP);
-+	batadv_hardif_disable_interface(hard_iface);
- 	ret = 0;
- 
- out:
-@@ -1139,8 +1139,7 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
- 
- 	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
- 		if (hard_iface->soft_iface == soft_iface)
--			batadv_hardif_disable_interface(hard_iface,
--							BATADV_IF_CLEANUP_KEEP);
-+			batadv_hardif_disable_interface(hard_iface);
- 	}
- 
- 	/* destroy the "untagged" VLAN */
--- 
-2.20.1
-
+ /**
+- * struct batadv_orig_ifinfo - B.A.T.M.A.N. IV private orig_ifinfo members
++ * struct batadv_orig_ifinfo_bat_iv - B.A.T.M.A.N. IV private orig_ifinfo
++ *  members
+  */
+ struct batadv_orig_ifinfo_bat_iv {
+ 	/**
