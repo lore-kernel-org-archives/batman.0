@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Mobile Vehicle Mesh Network
-Date: Sat, 30 Jan 2021 10:27:43 +0100
-Message-ID: <46059336.7T9GjFi5hl@sven-edge>
-In-Reply-To: <CAMjFWEOpvMmedQw7sB-G1f9pMMo6ymhZemVy07Y0UeUN+EPU1w@mail.gmail.com>
-References: <CAMjFWEOpvMmedQw7sB-G1f9pMMo6ymhZemVy07Y0UeUN+EPU1w@mail.gmail.com>
+Subject: batman-adv: User defined nonce in packet header [was: batman-adv related query]
+Date: Sat, 30 Jan 2021 10:36:42 +0100
+Message-ID: <1708045.1bVLHfgjVF@sven-edge>
+In-Reply-To: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
+References: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2040151.7kSeADS9zo"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart9597460.aHTAh1YC2F"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,188 +14,64 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Scooter Willis <willishf@gmail.com>
+To: Moullick Mehra <dedamamoge@gmail.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
  
---nextPart2040151.7kSeADS9zo
+--nextPart9597460.aHTAh1YC2F
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
-To: Scooter Willis <willishf@gmail.com>
+To: Moullick Mehra <dedamamoge@gmail.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: Mobile Vehicle Mesh Network
-Date: Sat, 30 Jan 2021 10:27:43 +0100
-Message-ID: <46059336.7T9GjFi5hl@sven-edge>
-In-Reply-To: <CAMjFWEOpvMmedQw7sB-G1f9pMMo6ymhZemVy07Y0UeUN+EPU1w@mail.gmail.com>
-References: <CAMjFWEOpvMmedQw7sB-G1f9pMMo6ymhZemVy07Y0UeUN+EPU1w@mail.gmail.com>
+Subject: batman-adv: User defined nonce in packet header [was: batman-adv related query]
+Date: Sat, 30 Jan 2021 10:36:42 +0100
+Message-ID: <1708045.1bVLHfgjVF@sven-edge>
+In-Reply-To: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
+References: <CAJZjC1surX81hwZLchC6jfETiFGE9F1tZbUJKhbbwE7Q5UOqXQ@mail.gmail.com>
 
-On Friday, 29 January 2021 02:43:25 CET Scooter Willis wrote:
-> Doing some research to see what options are available for a hybrid
-> mobile-mesh network.
+[please use a relevant subject when writing to the mailing list]
 
-Let me summarize your mail (because I had some problems with your writing 
-style):
+On Saturday, 30 January 2021 10:25:51 CET Moullick Mehra wrote:
+> Is there any way to add a nonce value to the
+> packet header? The reason being that I want to add an authentication
+> mechanism where the firewall permits only selected headers that have
+> this nonce. Hope this makes sense.
 
-* multiple ceiling mounted "AP"s
+Not with the mainline batman-adv. But you can always add your own changes to 
+your code - making it incompatible with mainline batman-adv.
 
-  - connected to the same network
-  - "relevant services" are behind the AP
+But I would highly recommend to handle authentication on a layer outside of 
+batman-adv.
 
-* multiple mobile clients on the floor
-
-  - roam from AP to AP
-  - client must be forwarding traffic from local devices (connected via 
-    ethernet)
-  - it is unknown what mobility can cause in quality changes
-
-    + usually the speed and therefore the gradual change in link quality is 
-      bound to a specific rate in an "open" environment"
-    + but unknown whether it is also possible that a link suddenly disappears/
-      degrades due to environment factors - which is somewhat likely in a 
-      warehouse scenario
-
-  - might be out of reach of an ceiling AP
-
-    + mesh technology should be used ensure connectivity to the relevant 
-      services
-
-
-In your original mail, you left out some information which might be relevant 
-for the discussion. So  we have to go through some of them:
-
-
-1. what technology is used for the AP to client connections?
-============================================================
-
-My first assumption would be standard wifi infrastructure mode. The APs allow 
-multiple client to connect and a client is only connected to one AP. It is 
-(from AP perspective) a star topology with the AP in the center and the client 
-as layer 2 endpoints. 
-
-But keep in mind that this mode is not meant to have multiple layer 2 devices 
-behind a single associated station. Or in other words: you cannot bridge your 
-ethernet interface with the wifi managed interface on your mobile clients.
-
-So you have some options to still get the multiple client devices connected to 
-the relevant services.
-
-* enable 4 address mode on both AP and client. And then pray that both are 
-  handling it in a compatible way. But usually works fine when both are 
-  running the same software stack (like OpenWrt with a similar set of drivers/
-  wifi firmware).
-* use a higher layer routing (like IP routing). But could be problematic when 
-  you need a layer 2 connectivity. Or can get more complex if you don't use a 
-  central place to terminate the layer 3 routes towards the network with the 
-  relevant services
-* use also a layer 2(.5) mesh technology over the links between clients and AP
-
-Another option would be to drop the standard wifi infrastructure mode setup 
-and just use the same technology between the ceiling nodes and the mobile 
-clients as you would use between the mobile clients. Of course, then you would 
-most likely need to be in "full" control of the APs and not only the clients. 
-And depending on the mesh technology, it can work a lot better or only create 
-more problems due to more links with dynamic quality characteristics.
-
-In batman-adv's case, you would have for example following differences:
-
-* ceiling node to mobile node link is NOT part of the mesh
-
-  - exchange of client information happens with TT [1] and roaming
-    features [2] - usually really fast
-  - allows APs to be bridged when the bridge loop avoidance is enabled [3]
-  - but quality information for the ceiling node to mobile node are completely 
-    missing
-
-    + so it is unknown the mobile node whether it is better to send it data 
-      first to a mobile neighbor or directly to the crappy link towards the AP
-
-* ceiling node to mobile node link IS part of the mesh
-
-  - the quality of the link between ceiling node and mobile link is measured 
-    like the other wifi links
-  - hopefully better routing decisions
-  - usually slower route switching time when comparing to the TT "roaming" 
-    times
-
-
-
-2. how important is the "wifi noise" factor?
-============================================
-
-Mesh technologies need to detect neighbors and somehow find routes between 
-nodes. This doesn't come for free - usually in form of additional data over 
-wifi, cpu and memory usage. But the details depend on the used technology.
-
-batman-adv is using OGMs to inform neighbors of their existence and let 
-receivers make informed decisions about their next hop towards a specific node 
-in the mesh. These OGMs have to be sent often to allow the nodes to converge 
-towards "good" routing decisions.
-
-This means that a lower originator interval (aka more OGM transmissions) can 
-be improve the convergence speed which is beneficial for mobile setups. This 
-should acceptable well for networks which don't have sudden loss of nodes. For 
-mesh networks were "intermediate hop" nodes suddenly disappear, it might still 
-need a significant time until the old route via this disappeared hop is 
-dropped. There were some ideas [4] how to improve this situation but they were 
-never implemented.
-
-
-3. how about new/experimental mesh technologies?
-================================================
-
-This is the B.A.T.M.A.N. mailing list and the mail explicitly asked about 
-batman-adv, but I could imagine that you could have fun playing around with 
-various technologies in a scenario with mobile node and drastic changing link 
-characteristics. While there is no magic bullet - marketing might disagree -
-at least interesting things might be out there.
-
-There are (more or less) recent research in technologies which are more focused on highly mobile setups. You'll find these kind of mesh
-technologies usually with features like
-
-* multi-path routing
-* redundancy
-* forward error correction
-* ...
-
-to achieve resilience to mobility. Often by taking advantage of the
-broadcast medium and dropping the standard paradigms of the 802.11
-medium access - which is a different concept than what batman-adv
-tries to do.
-
-(small disclaimer: At least one batman-adv [5] is doing research in related 
-technology and I could be considered slightly biased because of it).
+Btw. "nonce" is a "number only used once". And you wrote here that the 
+firewall only whitelist one specific nonce. Which would imply that your nonce 
+is not used only once...
 
 Kind regards,
 	Sven
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/Client-announcement
-[2] https://www.open-mesh.org/projects/batman-adv/wiki/Client-roaming
-[3] https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-II
-[4] https://www.open-mesh.org/projects/batman-adv/wiki/RIP
-[5] https://git.open-mesh.org/batman-adv.git/blob/HEAD:/MAINTAINERS
---nextPart2040151.7kSeADS9zo
+--nextPart9597460.aHTAh1YC2F
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAVJo8ACgkQXYcKB8Em
-e0Ypzg/+OsOBGNgIBw3kqgTa8JDTxf0i2pYCO3/J31RzMJRIaQ6AOzhFsFlhr2JE
-YQ1A/LG0XIVFQYxoPGM02Yr8OVwLBYypyabAAXpyXq001RqxZkcbYu8gDQ7O7J65
-oog6Km6KaDKB2+Qhcn1nXlLdgjZP3X4EHSgg5NKn8XKZ4nIF7SoLk0PQijfapR2/
-lzZN1R19UuS21ipyk2oEGpnVSPPKDNX6BzQFTWU4nCQOv9/lS+i8uQ2vBDyKOVTe
-GgrZLGj8wTBs48m9gaoDmX/BI0vmaEPGETr1h0pKQk8igEO19fXFm+881y8Jp3tk
-J4HQX0VXigSEAL5gqrW/ZWvcDBvaWEg5QCa30tYuMksUGGou3aZsbVC/iwlqZukT
-ZrdOvHD0Kc5mk9P1MasYH6Y+RxkFpjq4JCfU2TRq7t5w1yQVkGNVNoLReewFsbq3
-vwXstfqZSo6eAxtb7LeK8McONlBSC/B9Nu6IsYR8TFUM9XG3Btv0CnnGKpMG3W4+
-RZqImPblpH0lFUNWZD3sn4Zb4hTd3MINtuz5OqPfdt0ddN+JMR303i8ez+MjxwQv
-p6DPGKqu1ymVFgJAW04UGx7kHXw0f5C4bl0Djda8X/swF6+cCUFzqFhfMMr7nDKb
-KvNQrp3gXZ4sSSWDtRHFxvSbWRIxmm9UCixIFi1wf6AC/Zm3Vh8=
-=HJEo
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAVKKoACgkQXYcKB8Em
+e0buSg//SKAmti2Z5h9tmTjHrgQHvfkqC6nf4IxugxNmlCq3Vt3goFEpm58PppNT
+6ONsIMLgGceLkH7YHMDRhXg6uUuJSlkFpcvoGtc1nlEemDVQEBJzrwtTIBjoy757
+9ym0bpi3dIMqzf5NET5/GocJTQNt1CNE2EFz0FlySNqRylBcwgIp5p8AurnEnLg7
+/hvZ3MRn10z0WH2+g3UbcBelgNyVGpK9ZLpcVmL2f2PCdx1dP09FZ7tuUFt3oChJ
+VTwwNZfRyvSh+aj/VpfHz9Eel23nLMHBkxDqBqOux609ML/tuhHR/2XU1IzEvV+b
+vpE/ZGKfvE/gQ71ezIT29P0AqSF7gY1HmjjH8fpZdsWwXqZuoSle6NrY0nmS8ILE
+7ayHPH/UdGW1JRqt4lbAlsVz2ip384qrPDRCau0TJVtWM5+nbtp1y30cJho/dEvl
+8emhnxBG4jHUeBjs1O+y8qWxj0rErDL4wK+iUt7LnDRgVxaOUhpPBRA3xGpy4kFr
+MjAuZPQBMwSuGUqL2ZBdX0q8ONBK3dt6cz6w48k88lmvi23eDIXj3oOUE5PkRAgu
+PxetbefMD/Xzhm7PaX9IvtAcA/fwfR/BhVGfY4hDgLCIlokUs546SdsIBNS4+1ED
+HOVpl8hWO+OrRKsPfAVi2QWPZZqCRzQcNcXoQ0/ezKccLVxz9B0=
+=wFrx
 -----END PGP SIGNATURE-----
 
---nextPart2040151.7kSeADS9zo--
+--nextPart9597460.aHTAh1YC2F--
 
 
