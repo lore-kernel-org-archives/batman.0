@@ -1,8 +1,8 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/4] pull request for net-next: batman-adv 2021-02-08
-Date: Mon,  8 Feb 2021 17:59:34 +0100
-Message-Id: <20210208165938.13262-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/4] pull request for net-next: batman-adv 2021-02-02
+Date: Tue,  2 Feb 2021 18:40:32 +0100
+Message-Id: <20210202174037.7081-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,10 +17,7 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 Hi Jakub, hi David,
 
-here is the updated pull request of batman-adv to go into net-next. We
-have updated the first two patches as discussed (added justification
-for the first, replaced the second to remove copyright years). The other
-two patches are unchanged.
+here is a little cleanup pull request of batman-adv to go into net-next.
 
 Please pull or let me know of any problem!
 
@@ -35,33 +32,29 @@ The following changes since commit 5c8fe583cce542aa0b84adc939ce85293de36e=
 are available in the Git repository at:
 
   git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
-210208
+210202
 
-for you to fetch changes up to 25d81f9307ffc166427d93152498f45178f5936a:
+for you to fetch changes up to 5234e44068060ae45330a5ab972ff86c733ada2f:
 
-  batman-adv: Fix names for kernel-doc blocks (2021-02-06 09:22:45 +0100)
+  batman-adv: Fix names for kernel-doc blocks (2021-01-28 17:46:29 +0100)
 
 ----------------------------------------------------------------
-This feature/cleanup patchset is an updated version of the pull request
-of Feb 2nd (batadv-next-pullrequest-20210202) and includes the
-following patches:
+This feature/cleanup patchset includes the following patches:
 
- - Bump version strings, by Simon Wunderlich (added commit log)
+ - Bump version strings, by Simon Wunderlich
 
- - Drop publication years from copyright info, by Sven Eckelmann
-   (replaced the previous patch which updated copyright years, as per
-    our discussion)
+ - Update copyright years for 2021, by Sven Eckelmann
 
- - Avoid sizeof on flexible structure, by Sven Eckelmann (unchanged)
+ - Avoid sizeof on flexible structure, by Sven Eckelmann
 
- - Fix names for kernel-doc blocks, by Sven Eckelmann (unchanged)
+ - Fix names for kernel-doc blocks, by Sven Eckelmann
 
 ----------------------------------------------------------------
 Simon Wunderlich (1):
       batman-adv: Start new development cycle
 
 Sven Eckelmann (3):
-      batman-adv: Drop publication years from copyright info
+      batman-adv: Update copyright years for 2021
       batman-adv: Avoid sizeof on flexible structure
       batman-adv: Fix names for kernel-doc blocks
 
