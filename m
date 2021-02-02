@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/4] batman-adv: Avoid sizeof on flexible structure
-Date: Mon,  8 Feb 2021 17:59:37 +0100
-Message-Id: <20210208165938.13262-4-sw@simonwunderlich.de>
-In-Reply-To: <20210208165938.13262-1-sw@simonwunderlich.de>
-References: <20210208165938.13262-1-sw@simonwunderlich.de>
+Subject: [PATCH 4/4] batman-adv: Fix names for kernel-doc blocks
+Date: Tue,  2 Feb 2021 18:40:36 +0100
+Message-Id: <20210202174037.7081-5-sw@simonwunderlich.de>
+In-Reply-To: <20210202174037.7081-1-sw@simonwunderlich.de>
+References: <20210202174037.7081-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +21,96 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The batadv_dhcp_packet is used to read in parts of the DHCP packet and
-extract relevant information for the distributed arp table. But the
-structure contained the flexible member "options" which is no where used in
-the code.
-
-A sizeof on this kind of type would return the size of everything except
-the flexible member. But sparse will detect this kind of sizeof and warn
-with
-
-  warning: using sizeof on a flexible structure
-
-This can be avoided by dropping the unused flexible member.
+kernel-doc can only correctly identify the documented function or struct
+when the name in the first kernel-doc line references it. But some of the
+kernel-doc blocks referenced a different function/struct then it actually
+documented.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
  net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/multicast.c             | 2 +-
+ net/batman-adv/netlink.c               | 4 ++--
+ net/batman-adv/tp_meter.c              | 2 +-
+ net/batman-adv/types.h                 | 3 ++-
+ 5 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 01e0f84cb1ff..2542d85a59b4 100644
+index 61a6cfef2742..fcabd6b1e77f 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -87,7 +87,7 @@ struct batadv_dhcp_packet {
- 	__u8 sname[64];
- 	__u8 file[128];
- 	__be32 magic;
--	__u8 options[];
-+	/* __u8 options[]; */
+@@ -1564,7 +1564,7 @@ static int batadv_dat_get_dhcp_message_type(struct sk_buff *skb)
+ }
+ 
+ /**
+- * batadv_dat_get_dhcp_yiaddr() - get yiaddr from a DHCP packet
++ * batadv_dat_dhcp_get_yiaddr() - get yiaddr from a DHCP packet
+  * @skb: the DHCP packet to parse
+  * @buf: a buffer to store the yiaddr in
+  *
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8db5d285c433..ad216c42406f 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -828,7 +828,7 @@ batadv_mcast_bridge_log(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_mcast_flags_logs() - output debug information about mcast flag changes
++ * batadv_mcast_flags_log() - output debug information about mcast flag changes
+  * @bat_priv: the bat priv with all the soft interface information
+  * @flags: TVLV flags indicating the new multicast state
+  *
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 8eef71a62a5a..c80527b879a7 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -193,7 +193,7 @@ static int batadv_netlink_mesh_fill_ap_isolation(struct sk_buff *msg,
+ }
+ 
+ /**
+- * batadv_option_set_ap_isolation() - Set ap_isolation from genl msg
++ * batadv_netlink_set_mesh_ap_isolation() - Set ap_isolation from genl msg
+  * @attr: parsed BATADV_ATTR_AP_ISOLATION_ENABLED attribute
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+@@ -757,7 +757,7 @@ batadv_netlink_tp_meter_start(struct sk_buff *skb, struct genl_info *info)
+ }
+ 
+ /**
+- * batadv_netlink_tp_meter_start() - Cancel a running tp_meter session
++ * batadv_netlink_tp_meter_cancel() - Cancel a running tp_meter session
+  * @skb: received netlink message
+  * @info: receiver information
+  *
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index e61925f19f66..72ec4aab4813 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -131,7 +131,7 @@ static u32 batadv_tp_cwnd(u32 base, u32 increment, u32 min)
+ }
+ 
+ /**
+- * batadv_tp_updated_cwnd() - update the Congestion Windows
++ * batadv_tp_update_cwnd() - update the Congestion Windows
+  * @tp_vars: the private data of the current TP meter session
+  * @mss: maximum segment size of transmission
+  *
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 65985e262cde..aae7366bb679 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -228,7 +228,8 @@ struct batadv_hard_iface {
  };
  
- #define BATADV_DHCP_YIADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->yiaddr)
+ /**
+- * struct batadv_orig_ifinfo - B.A.T.M.A.N. IV private orig_ifinfo members
++ * struct batadv_orig_ifinfo_bat_iv - B.A.T.M.A.N. IV private orig_ifinfo
++ *  members
+  */
+ struct batadv_orig_ifinfo_bat_iv {
+ 	/**
 -- 
 2.20.1
 
