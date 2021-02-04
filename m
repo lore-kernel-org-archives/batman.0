@@ -1,118 +1,61 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/4] pull request for net-next: batman-adv 2021-02-02
-Date: Tue,  2 Feb 2021 18:40:32 +0100
-Message-Id: <20210202174037.7081-1-sw@simonwunderlich.de>
+Return-Path: <kuba@kernel.org>
+Date: Thu, 4 Feb 2021 11:58:36 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
+Message-ID: <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <3636307.aAJz7UTs6F@ripper>
+References: <20210202174037.7081-1-sw@simonwunderlich.de>
+	<20210202174037.7081-3-sw@simonwunderlich.de>
+	<20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+	<3636307.aAJz7UTs6F@ripper>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Jakub, hi David,
+On Thu, 04 Feb 2021 08:54:33 +0100 Sven Eckelmann wrote:
+> On Thursday, 4 February 2021 01:35:06 CET Jakub Kicinski wrote:
+> [...]
+> > Is this how copyright works? I'm not a layer, but I thought it was
+> > supposed to reflect changes done to given file in a given year.  
+> 
+> <irony>Because we all know that the first thing a person is doing when 
+> submitting a change is to update the copyright year.</irony>
+> 
+> So we have either the option to:
+> 
+> * not update it at all (as in many kernel sources)
+> * don't have it listed explicitly (as seen in other kernel sources)
+> * update it once a year
+> 
+> I personally like to have a simple solution so I don't have to deal with this 
+> kind of details while doing interesting things. The current "solution"
+> was to handle the copyright notices year for the whole project as one entity - 
+> once per year and then ignore it for the rest of the year.
 
-here is a little cleanup pull request of batman-adv to go into net-next.
+Back when I was working for a vendor I had a script which used git to
+find files touched in current year and then a bit of sed to update the
+dates. Instead of running your current script every Jan, you can run
+that one every Dec.
 
-Please pull or let me know of any problem!
+> And I would also prefer not to start a discussion about the differences 
+> between the inalienable German Urheberrecht, pre 1989 anglo-american 
+> copyright, post 1989 anglo american copyright and other copyright like laws.
 
-Thank you,
-      Simon
+No need, we can depend on common sense. I hope you understand that a
+pull request which updates 8 lines of code, mostly comments, and then
+contains a version bump + 57 lines of copyright bumps is very likely 
+to give people a pause, right?
 
-The following changes since commit 5c8fe583cce542aa0b84adc939ce85293de36e=
-5e:
-
-  Linux 5.11-rc1 (2020-12-27 15:30:22 -0800)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
-210202
-
-for you to fetch changes up to 5234e44068060ae45330a5ab972ff86c733ada2f:
-
-  batman-adv: Fix names for kernel-doc blocks (2021-01-28 17:46:29 +0100)
-
-----------------------------------------------------------------
-This feature/cleanup patchset includes the following patches:
-
- - Bump version strings, by Simon Wunderlich
-
- - Update copyright years for 2021, by Sven Eckelmann
-
- - Avoid sizeof on flexible structure, by Sven Eckelmann
-
- - Fix names for kernel-doc blocks, by Sven Eckelmann
-
-----------------------------------------------------------------
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (3):
-      batman-adv: Update copyright years for 2021
-      batman-adv: Avoid sizeof on flexible structure
-      batman-adv: Fix names for kernel-doc blocks
-
- include/uapi/linux/batadv_packet.h     | 2 +-
- include/uapi/linux/batman_adv.h        | 2 +-
- net/batman-adv/Kconfig                 | 2 +-
- net/batman-adv/Makefile                | 2 +-
- net/batman-adv/bat_algo.c              | 2 +-
- net/batman-adv/bat_algo.h              | 2 +-
- net/batman-adv/bat_iv_ogm.c            | 2 +-
- net/batman-adv/bat_iv_ogm.h            | 2 +-
- net/batman-adv/bat_v.c                 | 2 +-
- net/batman-adv/bat_v.h                 | 2 +-
- net/batman-adv/bat_v_elp.c             | 2 +-
- net/batman-adv/bat_v_elp.h             | 2 +-
- net/batman-adv/bat_v_ogm.c             | 2 +-
- net/batman-adv/bat_v_ogm.h             | 2 +-
- net/batman-adv/bitarray.c              | 2 +-
- net/batman-adv/bitarray.h              | 2 +-
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/bridge_loop_avoidance.h | 2 +-
- net/batman-adv/distributed-arp-table.c | 6 +++---
- net/batman-adv/distributed-arp-table.h | 2 +-
- net/batman-adv/fragmentation.c         | 2 +-
- net/batman-adv/fragmentation.h         | 2 +-
- net/batman-adv/gateway_client.c        | 2 +-
- net/batman-adv/gateway_client.h        | 2 +-
- net/batman-adv/gateway_common.c        | 2 +-
- net/batman-adv/gateway_common.h        | 2 +-
- net/batman-adv/hard-interface.c        | 2 +-
- net/batman-adv/hard-interface.h        | 2 +-
- net/batman-adv/hash.c                  | 2 +-
- net/batman-adv/hash.h                  | 2 +-
- net/batman-adv/log.c                   | 2 +-
- net/batman-adv/log.h                   | 2 +-
- net/batman-adv/main.c                  | 2 +-
- net/batman-adv/main.h                  | 4 ++--
- net/batman-adv/multicast.c             | 4 ++--
- net/batman-adv/multicast.h             | 2 +-
- net/batman-adv/netlink.c               | 6 +++---
- net/batman-adv/netlink.h               | 2 +-
- net/batman-adv/network-coding.c        | 2 +-
- net/batman-adv/network-coding.h        | 2 +-
- net/batman-adv/originator.c            | 2 +-
- net/batman-adv/originator.h            | 2 +-
- net/batman-adv/routing.c               | 2 +-
- net/batman-adv/routing.h               | 2 +-
- net/batman-adv/send.c                  | 2 +-
- net/batman-adv/send.h                  | 2 +-
- net/batman-adv/soft-interface.c        | 2 +-
- net/batman-adv/soft-interface.h        | 2 +-
- net/batman-adv/tp_meter.c              | 4 ++--
- net/batman-adv/tp_meter.h              | 2 +-
- net/batman-adv/trace.c                 | 2 +-
- net/batman-adv/trace.h                 | 2 +-
- net/batman-adv/translation-table.c     | 2 +-
- net/batman-adv/translation-table.h     | 2 +-
- net/batman-adv/tvlv.c                  | 2 +-
- net/batman-adv/tvlv.h                  | 2 +-
- net/batman-adv/types.h                 | 5 +++--
- 57 files changed, 66 insertions(+), 65 deletions(-)
+If you strongly prefer the current model please add appropriate commit
+messages justifying it and repost. Right now patch 1 and 2 have none.
