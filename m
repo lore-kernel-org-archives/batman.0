@@ -1,56 +1,72 @@
-Return-Path: <bigeasy@linutronix.de>
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH] batman-adv: Use netif_rx_any_context().
-Date: Sat, 13 Feb 2021 18:02:04 +0100
-Message-Id: <20210213170204.3092113-1-bigeasy@linutronix.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH 1/4] batman-adv: Start new development cycle
+Date: Thu, 04 Feb 2021 08:41:24 +0100
+Message-ID: <2833533.ujcMDckppk@ripper>
+In-Reply-To: <20210203163302.13e8a2a7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210202174037.7081-1-sw@simonwunderlich.de> <20210202174037.7081-2-sw@simonwunderlich.de> <20210203163302.13e8a2a7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart3413650.uM9juBY1BO"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: davem@davemloft.net, netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>
 
-The usage of in_interrupt() in non-core code is phased out. Ideally the
-information of the calling context should be passed by the callers or the
-functions be split as appropriate.
+ 
+--nextPart3413650.uM9juBY1BO
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 1/4] batman-adv: Start new development cycle
+Date: Thu, 04 Feb 2021 08:41:24 +0100
+Message-ID: <2833533.ujcMDckppk@ripper>
+In-Reply-To: <20210203163302.13e8a2a7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210202174037.7081-1-sw@simonwunderlich.de> <20210202174037.7081-2-sw@simonwunderlich.de> <20210203163302.13e8a2a7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 
-The attempt to consolidate the code by passing an arguemnt or by
-distangling it failed due lack of knowledge about this driver and because
-the call chains are hard to follow.
+On Thursday, 4 February 2021 01:33:02 CET Jakub Kicinski wrote:
+[...]
+> For just comment adjustments and the sizeof() change?
 
-As a stop gap use netif_rx_any_context() which invokes the correct code path
-depending on context and confines the in_interrupt() usage to core code.
+The process is basically:
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- net/batman-adv/bridge_loop_avoidance.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+1. update the version information for a development period
+2. queue up whatever comes in during that time
+3. send it to netdev for net-next when it seems to be ready
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
-_loop_avoidance.c
-index d2de12e527baa..b3411a034d87e 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -438,10 +438,7 @@ static void batadv_bla_send_claim(struct batadv_priv *=
-bat_priv, u8 *mac,
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
-=20
--	if (in_interrupt())
--		netif_rx(skb);
--	else
--		netif_rx_ni(skb);
-+	netif_rx_any_context(skb);
- out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
---=20
-2.30.0
+The first step is not influenced by the 2.+3. step. So the development 
+effort is not reflected in the version number.
+
+Kind regards,
+	Sven
+--nextPart3413650.uM9juBY1BO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAbpSQACgkQXYcKB8Em
+e0aJQA/6A1TAaQ5N2HfD9Y0+CLbPpq7IREDN0a7qQiX8AIbFkaC9MQa8szAY/BEt
+y0n4g7umhcBs+RT78lgqocXQc7HWDjeVwM5EFqR3FaAH6fWpDOtOTSsiNIP66QIe
+97JeoZaZrchTIC5we6gG2NTlQqzj2Al0AzWpFq9UR+UPKHhrT7CHr7lZ8Qx1tZPU
+fkVIPDr2cdK0Z5WoPf+cVo6EsBdPHNqBtU3pNnJ/BwWJgHGM2ABQMMfLWJMmVtvs
+koiulH8k3dfrcHDxbaIzma2pwyB3JqZ8OKqPq4cpQ8b1QIvzLndrXVICBKv2wXfK
+RVUZwfO4cLT1RuC1FnXUWJRpIcyrirmCxvUXz27SeMOD8SyMke2l3PhaU9Nz6G7P
+pSPcZmLTofjVDByZ2NzZrMzneKCEj4z5kW1TvSXqzTBwsVyiWnW96SayE2txGaVE
+pLwcCK4larojhyg6zAF1WoeOVPz8zZd9IRXrfQ/0tVD2UzZKJv5x//y5cVV0PvDM
+ydPwlq2hJo6rrXG7L0ES5l0oaGEumf0aOLnkguxCNki3p04wuifGWtGq35pTh30c
+Moe/4DslMD+H5s0y14UFDP+Kelda2TvMRB7attN2QhoOkPbi+q2Qh4scqOqlL3vr
+N3PCY67t5DccynMz9YevRYt6KsFpkksu0r9ONrRgRhCvPJGyv/8=
+=4QMF
+-----END PGP SIGNATURE-----
+
+--nextPart3413650.uM9juBY1BO--
+
 
