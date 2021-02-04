@@ -1,12 +1,14 @@
-Return-Path: 
-  <3SFg0YAkbANEFLM7x881ExCC50.3BB381HF1EzBAG1AG.zB9@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <kuba@kernel.org>
+Date: Wed, 3 Feb 2021 16:35:06 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
+Message-ID: <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20210202174037.7081-3-sw@simonwunderlich.de>
+References: <20210202174037.7081-1-sw@simonwunderlich.de>
+	<20210202174037.7081-3-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Mon, 22 Feb 2021 17:20:08 -0800
-In-Reply-To: <0000000000007f199405baa1ffc4@google.com>
-Message-ID: <00000000000013b2eb05bbf6b8ce@google.com>
-Subject: Re: WARNING in init_timer_key
-From: syzbot <syzbot+105896fac213f26056f9@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,27 +18,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, gerrit@erg.abdn.ac.uk, hkallweit1@gmail.com, johannes.berg@intel.com, johannes@sipsolutions.net, kuba@kernel.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-syzbot has bisected this issue to:
+On Tue,  2 Feb 2021 18:40:34 +0100 Simon Wunderlich wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+> ---
+>  include/uapi/linux/batadv_packet.h     | 2 +-
+>  include/uapi/linux/batman_adv.h        | 2 +-
+>  net/batman-adv/Kconfig                 | 2 +-
+>  net/batman-adv/Makefile                | 2 +-
+>  net/batman-adv/bat_algo.c              | 2 +-
+>  net/batman-adv/bat_algo.h              | 2 +-
+>  net/batman-adv/bat_iv_ogm.c            | 2 +-
+>  net/batman-adv/bat_iv_ogm.h            | 2 +-
+>  net/batman-adv/bat_v.c                 | 2 +-
+>  net/batman-adv/bat_v.h                 | 2 +-
+>  net/batman-adv/bat_v_elp.c             | 2 +-
+>  net/batman-adv/bat_v_elp.h             | 2 +-
+>  net/batman-adv/bat_v_ogm.c             | 2 +-
+>  net/batman-adv/bat_v_ogm.h             | 2 +-
+>  net/batman-adv/bitarray.c              | 2 +-
+>  net/batman-adv/bitarray.h              | 2 +-
+>  net/batman-adv/bridge_loop_avoidance.c | 2 +-
+>  net/batman-adv/bridge_loop_avoidance.h | 2 +-
+>  net/batman-adv/distributed-arp-table.c | 2 +-
+>  net/batman-adv/distributed-arp-table.h | 2 +-
+>  net/batman-adv/fragmentation.c         | 2 +-
+>  net/batman-adv/fragmentation.h         | 2 +-
+>  net/batman-adv/gateway_client.c        | 2 +-
+>  net/batman-adv/gateway_client.h        | 2 +-
+>  net/batman-adv/gateway_common.c        | 2 +-
+>  net/batman-adv/gateway_common.h        | 2 +-
+>  net/batman-adv/hard-interface.c        | 2 +-
+>  net/batman-adv/hard-interface.h        | 2 +-
+>  net/batman-adv/hash.c                  | 2 +-
+>  net/batman-adv/hash.h                  | 2 +-
+>  net/batman-adv/log.c                   | 2 +-
+>  net/batman-adv/log.h                   | 2 +-
+>  net/batman-adv/main.c                  | 2 +-
+>  net/batman-adv/main.h                  | 2 +-
+>  net/batman-adv/multicast.c             | 2 +-
+>  net/batman-adv/multicast.h             | 2 +-
+>  net/batman-adv/netlink.c               | 2 +-
+>  net/batman-adv/netlink.h               | 2 +-
+>  net/batman-adv/network-coding.c        | 2 +-
+>  net/batman-adv/network-coding.h        | 2 +-
+>  net/batman-adv/originator.c            | 2 +-
+>  net/batman-adv/originator.h            | 2 +-
+>  net/batman-adv/routing.c               | 2 +-
+>  net/batman-adv/routing.h               | 2 +-
+>  net/batman-adv/send.c                  | 2 +-
+>  net/batman-adv/send.h                  | 2 +-
+>  net/batman-adv/soft-interface.c        | 2 +-
+>  net/batman-adv/soft-interface.h        | 2 +-
+>  net/batman-adv/tp_meter.c              | 2 +-
+>  net/batman-adv/tp_meter.h              | 2 +-
+>  net/batman-adv/trace.c                 | 2 +-
+>  net/batman-adv/trace.h                 | 2 +-
+>  net/batman-adv/translation-table.c     | 2 +-
+>  net/batman-adv/translation-table.h     | 2 +-
+>  net/batman-adv/tvlv.c                  | 2 +-
+>  net/batman-adv/tvlv.h                  | 2 +-
+>  net/batman-adv/types.h                 | 2 +-
+>  57 files changed, 57 insertions(+), 57 deletions(-)
+> 
+> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+> index 9c8604c5b5f6..67b773ea0ec3 100644
+> --- a/include/uapi/linux/batadv_packet.h
+> +++ b/include/uapi/linux/batadv_packet.h
+> @@ -1,5 +1,5 @@
+>  /* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) */
+> -/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
+> +/* Copyright (C) 2007-2021  B.A.T.M.A.N. contributors:
+>   *
+>   * Marek Lindner, Simon Wunderlich
+>   */
 
-commit b9df4fd7e99cb8bfd80c4143f3045d63b1754ad0
-Author: Heiner Kallweit <hkallweit1@gmail.com>
-Date:   Sun Oct 6 16:19:54 2019 +0000
-
-    net: core: change return type of pskb_may_pull to bool
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=11b4545cd00000
-start commit:   1048ba83 Linux 5.11-rc6
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=13b4545cd00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=15b4545cd00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=3ae5569643a9955f
-dashboard link: https://syzkaller.appspot.com/bug?extid=105896fac213f26056f9
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16f0e564d00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=147075e8d00000
-
-Reported-by: syzbot+105896fac213f26056f9@syzkaller.appspotmail.com
-Fixes: b9df4fd7e99c ("net: core: change return type of pskb_may_pull to bool")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+Is this how copyright works? I'm not a layer, but I thought it was
+supposed to reflect changes done to given file in a given year.
