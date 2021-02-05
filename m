@@ -1,102 +1,77 @@
-Return-Path: <kuba@kernel.org>
-Date: Wed, 3 Feb 2021 16:35:06 -0800
-From: Jakub Kicinski <kuba@kernel.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
 Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
-Message-ID: <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <20210202174037.7081-3-sw@simonwunderlich.de>
-References: <20210202174037.7081-1-sw@simonwunderlich.de>
-	<20210202174037.7081-3-sw@simonwunderlich.de>
+Date: Fri, 05 Feb 2021 08:47:38 +0100
+Message-ID: <4678664.8dpOeDNDtA@ripper>
+In-Reply-To: <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210202174037.7081-1-sw@simonwunderlich.de> <3636307.aAJz7UTs6F@ripper> <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart4981605.MO7qgpoJSq"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue,  2 Feb 2021 18:40:34 +0100 Simon Wunderlich wrote:
-> From: Sven Eckelmann <sven@narfation.org>
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  include/uapi/linux/batadv_packet.h     | 2 +-
->  include/uapi/linux/batman_adv.h        | 2 +-
->  net/batman-adv/Kconfig                 | 2 +-
->  net/batman-adv/Makefile                | 2 +-
->  net/batman-adv/bat_algo.c              | 2 +-
->  net/batman-adv/bat_algo.h              | 2 +-
->  net/batman-adv/bat_iv_ogm.c            | 2 +-
->  net/batman-adv/bat_iv_ogm.h            | 2 +-
->  net/batman-adv/bat_v.c                 | 2 +-
->  net/batman-adv/bat_v.h                 | 2 +-
->  net/batman-adv/bat_v_elp.c             | 2 +-
->  net/batman-adv/bat_v_elp.h             | 2 +-
->  net/batman-adv/bat_v_ogm.c             | 2 +-
->  net/batman-adv/bat_v_ogm.h             | 2 +-
->  net/batman-adv/bitarray.c              | 2 +-
->  net/batman-adv/bitarray.h              | 2 +-
->  net/batman-adv/bridge_loop_avoidance.c | 2 +-
->  net/batman-adv/bridge_loop_avoidance.h | 2 +-
->  net/batman-adv/distributed-arp-table.c | 2 +-
->  net/batman-adv/distributed-arp-table.h | 2 +-
->  net/batman-adv/fragmentation.c         | 2 +-
->  net/batman-adv/fragmentation.h         | 2 +-
->  net/batman-adv/gateway_client.c        | 2 +-
->  net/batman-adv/gateway_client.h        | 2 +-
->  net/batman-adv/gateway_common.c        | 2 +-
->  net/batman-adv/gateway_common.h        | 2 +-
->  net/batman-adv/hard-interface.c        | 2 +-
->  net/batman-adv/hard-interface.h        | 2 +-
->  net/batman-adv/hash.c                  | 2 +-
->  net/batman-adv/hash.h                  | 2 +-
->  net/batman-adv/log.c                   | 2 +-
->  net/batman-adv/log.h                   | 2 +-
->  net/batman-adv/main.c                  | 2 +-
->  net/batman-adv/main.h                  | 2 +-
->  net/batman-adv/multicast.c             | 2 +-
->  net/batman-adv/multicast.h             | 2 +-
->  net/batman-adv/netlink.c               | 2 +-
->  net/batman-adv/netlink.h               | 2 +-
->  net/batman-adv/network-coding.c        | 2 +-
->  net/batman-adv/network-coding.h        | 2 +-
->  net/batman-adv/originator.c            | 2 +-
->  net/batman-adv/originator.h            | 2 +-
->  net/batman-adv/routing.c               | 2 +-
->  net/batman-adv/routing.h               | 2 +-
->  net/batman-adv/send.c                  | 2 +-
->  net/batman-adv/send.h                  | 2 +-
->  net/batman-adv/soft-interface.c        | 2 +-
->  net/batman-adv/soft-interface.h        | 2 +-
->  net/batman-adv/tp_meter.c              | 2 +-
->  net/batman-adv/tp_meter.h              | 2 +-
->  net/batman-adv/trace.c                 | 2 +-
->  net/batman-adv/trace.h                 | 2 +-
->  net/batman-adv/translation-table.c     | 2 +-
->  net/batman-adv/translation-table.h     | 2 +-
->  net/batman-adv/tvlv.c                  | 2 +-
->  net/batman-adv/tvlv.h                  | 2 +-
->  net/batman-adv/types.h                 | 2 +-
->  57 files changed, 57 insertions(+), 57 deletions(-)
-> 
-> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-> index 9c8604c5b5f6..67b773ea0ec3 100644
-> --- a/include/uapi/linux/batadv_packet.h
-> +++ b/include/uapi/linux/batadv_packet.h
-> @@ -1,5 +1,5 @@
->  /* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) */
-> -/* Copyright (C) 2007-2020  B.A.T.M.A.N. contributors:
-> +/* Copyright (C) 2007-2021  B.A.T.M.A.N. contributors:
->   *
->   * Marek Lindner, Simon Wunderlich
->   */
+ 
+--nextPart4981605.MO7qgpoJSq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
+Date: Fri, 05 Feb 2021 08:47:38 +0100
+Message-ID: <4678664.8dpOeDNDtA@ripper>
+In-Reply-To: <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210202174037.7081-1-sw@simonwunderlich.de> <3636307.aAJz7UTs6F@ripper> <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 
-Is this how copyright works? I'm not a layer, but I thought it was
-supposed to reflect changes done to given file in a given year.
+On Thursday, 4 February 2021 20:58:36 CET Jakub Kicinski wrote:
+> Back when I was working for a vendor I had a script which used git to
+> find files touched in current year and then a bit of sed to update the
+> dates. Instead of running your current script every Jan, you can run
+> that one every Dec.
+
+Just as an additional anecdote: Just had the situation that a vendor 
+complained that the user visible copyright notice was still 2020 for a project 
+published in 2021 but developed and tested 2020 (and thus tagged + packaged in 
+2020).
+
+Now to something more relevant: what do you think about dropping the copyright 
+year [1]?
+
+Kind regards,
+	Sven
+
+[1] https://reuse.software/faq/#years-copyright
+
+
+--nextPart4981605.MO7qgpoJSq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAc+BoACgkQXYcKB8Em
+e0YNDA/+Nw44yDv7M7vmOZufXsViF7g4fnHI7veE1xwU043DWUmEX3k/I8Yb4Fd8
+H/QQWCYpkh+RyRj9s0JQ6Ji1dZSnSr93sqE9Wy0yoBN69vLynwe0KNKg+t8NMGo9
+9WqvSz11XEZlfLRhzvu9B/rvmOfoDLyahnyzIGJK81hWYZVHUlo7JUs71+Lspe9y
+QV3FVc1AxTfevP0zm8t7Be5ltD1oHHxmvN9eAcg0myODXKF0DyMzkQ/ksaooIxNR
+m29OkGJ4BgWgHsVGzanW59aULt33vA4i8teuDEqNBOaI9AJLPsrO/SUEXqRTaXGH
+hu9Phmr4TZrS2EfjghbONnyDT65aJCfIpLg102FqzWKXEdpGKapJFTnbz2PY1wds
+GAQbozAHRW7WmBFLOe+617rjrpqVF+CBJNZ0LCTXOctpiD2GMeVlxPiczhthLDU8
+4SpoTIb2Hgjvta/QcSNJNaSsNCGxbdn7uVQJI48m83ne+RxMxPyakESJMFNvKWj6
+B0Dlis5W2y0V63DDkIL3NQU1V7Jf1gmNnhuSYk8DsXsWJ45hrhHkTO1vKlRMmV8t
+X9xrErO8V17zDovGNgtMdpNcMTiuKnkLcc2RnazR26gH3Ro/f3ldq+8XjYduzlQr
+74T6js8h/LNuZtvRFeKehwPaKOF4wlRq5I5El6JosOdwHHUVV9s=
+=Gonv
+-----END PGP SIGNATURE-----
+
+--nextPart4981605.MO7qgpoJSq--
+
+
