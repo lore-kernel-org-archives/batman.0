@@ -1,51 +1,47 @@
-Return-Path: <rdunlap@infradead.org>
-Subject: Re: [PATCH 4/4] batman-adv: Fix names for kernel-doc blocks
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/4] batman-adv: Start new development cycle
+Date: Mon,  8 Feb 2021 17:59:35 +0100
+Message-Id: <20210208165938.13262-2-sw@simonwunderlich.de>
+In-Reply-To: <20210208165938.13262-1-sw@simonwunderlich.de>
 References: <20210208165938.13262-1-sw@simonwunderlich.de>
- <20210208165938.13262-5-sw@simonwunderlich.de>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <44df86a7-e7a9-246a-e941-a7ec6f4c8774@infradead.org>
-Date: Mon, 8 Feb 2021 10:00:48 -0800
 MIME-Version: 1.0
-In-Reply-To: <20210208165938.13262-5-sw@simonwunderlich.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>, kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On 2/8/21 8:59 AM, Simon Wunderlich wrote:
-> From: Sven Eckelmann <sven@narfation.org>
-> 
-> kernel-doc can only correctly identify the documented function or struct
-> when the name in the first kernel-doc line references it. But some of the
-> kernel-doc blocks referenced a different function/struct then it actually
-> documented.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+This version will contain all the (major or even only minor) changes for
+Linux 5.12.
 
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+The version number isn't a semantic version number with major and minor
+information. It is just encoding the year of the expected publishing as
+Linux -rc1 and the number of published versions this year (starting at 0)=
+.
 
-Thanks.
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> ---
->  net/batman-adv/distributed-arp-table.c | 2 +-
->  net/batman-adv/multicast.c             | 2 +-
->  net/batman-adv/netlink.c               | 4 ++--
->  net/batman-adv/tp_meter.c              | 2 +-
->  net/batman-adv/types.h                 | 3 ++-
->  5 files changed, 7 insertions(+), 6 deletions(-)
-
-
--- 
-~Randy
-
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 288201630ceb..2486efe4ffa6 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -13,7 +13,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+=20
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2021.0"
++#define BATADV_SOURCE_VERSION "2021.1"
+ #endif
+=20
+ /* B.A.T.M.A.N. parameters */
+--=20
+2.20.1
