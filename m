@@ -1,15 +1,14 @@
-Return-Path: <kuba@kernel.org>
-Date: Thu, 4 Feb 2021 11:58:36 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
-Message-ID: <20210204115836.4f66e1c8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <3636307.aAJz7UTs6F@ripper>
-References: <20210202174037.7081-1-sw@simonwunderlich.de>
-	<20210202174037.7081-3-sw@simonwunderlich.de>
-	<20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-	<3636307.aAJz7UTs6F@ripper>
+Return-Path: <rdunlap@infradead.org>
+Subject: Re: [PATCH 4/4] batman-adv: Fix names for kernel-doc blocks
+References: <20210208165938.13262-1-sw@simonwunderlich.de>
+ <20210208165938.13262-5-sw@simonwunderlich.de>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <44df86a7-e7a9-246a-e941-a7ec6f4c8774@infradead.org>
+Date: Mon, 8 Feb 2021 10:00:48 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20210208165938.13262-5-sw@simonwunderlich.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,42 +19,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>, kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-On Thu, 04 Feb 2021 08:54:33 +0100 Sven Eckelmann wrote:
-> On Thursday, 4 February 2021 01:35:06 CET Jakub Kicinski wrote:
-> [...]
-> > Is this how copyright works? I'm not a layer, but I thought it was
-> > supposed to reflect changes done to given file in a given year.  
+On 2/8/21 8:59 AM, Simon Wunderlich wrote:
+> From: Sven Eckelmann <sven@narfation.org>
 > 
-> <irony>Because we all know that the first thing a person is doing when 
-> submitting a change is to update the copyright year.</irony>
+> kernel-doc can only correctly identify the documented function or struct
+> when the name in the first kernel-doc line references it. But some of the
+> kernel-doc blocks referenced a different function/struct then it actually
+> documented.
 > 
-> So we have either the option to:
-> 
-> * not update it at all (as in many kernel sources)
-> * don't have it listed explicitly (as seen in other kernel sources)
-> * update it once a year
-> 
-> I personally like to have a simple solution so I don't have to deal with this 
-> kind of details while doing interesting things. The current "solution"
-> was to handle the copyright notices year for the whole project as one entity - 
-> once per year and then ignore it for the rest of the year.
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Back when I was working for a vendor I had a script which used git to
-find files touched in current year and then a bit of sed to update the
-dates. Instead of running your current script every Jan, you can run
-that one every Dec.
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
 
-> And I would also prefer not to start a discussion about the differences 
-> between the inalienable German Urheberrecht, pre 1989 anglo-american 
-> copyright, post 1989 anglo american copyright and other copyright like laws.
+Thanks.
 
-No need, we can depend on common sense. I hope you understand that a
-pull request which updates 8 lines of code, mostly comments, and then
-contains a version bump + 57 lines of copyright bumps is very likely 
-to give people a pause, right?
+> ---
+>  net/batman-adv/distributed-arp-table.c | 2 +-
+>  net/batman-adv/multicast.c             | 2 +-
+>  net/batman-adv/netlink.c               | 4 ++--
+>  net/batman-adv/tp_meter.c              | 2 +-
+>  net/batman-adv/types.h                 | 3 ++-
+>  5 files changed, 7 insertions(+), 6 deletions(-)
 
-If you strongly prefer the current model please add appropriate commit
-messages justifying it and repost. Right now patch 1 and 2 have none.
+
+-- 
+~Randy
+
