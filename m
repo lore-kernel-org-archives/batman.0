@@ -1,10 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/4] alfred: Show error message for invalid batadv interface
-Date: Mon, 15 Feb 2021 21:01:23 +0100
-Message-Id: <20210215200126.140253-1-sven@narfation.org>
+Return-Path: <kuba@kernel.org>
+Date: Mon, 8 Feb 2021 11:35:34 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 4/4] batman-adv: Fix names for kernel-doc blocks
+Message-ID: <20210208113534.5a1a11ae@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <44df86a7-e7a9-246a-e941-a7ec6f4c8774@infradead.org>
+References: <20210208165938.13262-1-sw@simonwunderlich.de>
+	<20210208165938.13262-5-sw@simonwunderlich.de>
+	<44df86a7-e7a9-246a-e941-a7ec6f4c8774@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,36 +19,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-The alfred server process always stopped without any informational message
-when the provided batman-adv was not "none" and was not accessible. This
-made it extremely hard to debug the reason why alfred directly stopped
-after launching it.
+On Mon, 8 Feb 2021 10:00:48 -0800 Randy Dunlap wrote:
+> On 2/8/21 8:59 AM, Simon Wunderlich wrote:
+> > From: Sven Eckelmann <sven@narfation.org>
+> > 
+> > kernel-doc can only correctly identify the documented function or struct
+> > when the name in the first kernel-doc line references it. But some of the
+> > kernel-doc blocks referenced a different function/struct then it actually
+> > documented.
+> > 
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>  
+> 
+> Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- server.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Thanks!
 
-diff --git a/server.c b/server.c
-index fc27246..efac5ad 100644
---- a/server.c
-+++ b/server.c
-@@ -385,8 +385,11 @@ int alfred_server(struct globals *globals)
- 	}
- 
- 	if (strcmp(globals->mesh_iface, "none") != 0 &&
--	    batadv_interface_check(globals->mesh_iface) < 0)
-+	    batadv_interface_check(globals->mesh_iface) < 0) {
-+		fprintf(stderr, "Can't start server: batman-adv interface %s not found\n",
-+			globals->mesh_iface);
- 		return -1;
-+	}
- 
- 	num_socks = netsock_open_all(globals);
- 	if (num_socks <= 0) {
--- 
-2.30.0
-
+Just FWIW since this is a pull request I can't add tags on individual
+patches in git, but it will be recorded on the list, I guess..
