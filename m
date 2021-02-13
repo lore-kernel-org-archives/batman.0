@@ -1,69 +1,56 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: battle for yocto
-Date: Sun, 28 Feb 2021 16:02:48 +0100
-Message-ID: <5849548.csWtZluKKt@sven-edge>
-In-Reply-To: <CAK=yUG+9mOttJULTHVbGptFJc12ACO_V-ih15xXpNfWw7N0iuA@mail.gmail.com>
-References: <CAK=yUG+9mOttJULTHVbGptFJc12ACO_V-ih15xXpNfWw7N0iuA@mail.gmail.com>
+Return-Path: <bigeasy@linutronix.de>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: [PATCH] batman-adv: Use netif_rx_any_context().
+Date: Sat, 13 Feb 2021 18:02:04 +0100
+Message-Id: <20210213170204.3092113-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2325533.5jg2AtdYid"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: quoted-printable
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: kamalp@acm.org, jhaws@sdl.usu.edu
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
- 
---nextPart2325533.5jg2AtdYid
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: kamalp@acm.org, jhaws@sdl.usu.edu
-Subject: Re: battle for yocto
-Date: Sun, 28 Feb 2021 16:02:48 +0100
-Message-ID: <5849548.csWtZluKKt@sven-edge>
-In-Reply-To: <CAK=yUG+9mOttJULTHVbGptFJc12ACO_V-ih15xXpNfWw7N0iuA@mail.gmail.com>
-References: <CAK=yUG+9mOttJULTHVbGptFJc12ACO_V-ih15xXpNfWw7N0iuA@mail.gmail.com>
+The usage of in_interrupt() in non-core code is phased out. Ideally the
+information of the calling context should be passed by the callers or the
+functions be split as appropriate.
 
-On Sunday, 28 February 2021 14:16:20 CET Kamal R. Prasad wrote:
->  can someone point me to some info on  how to plug in batctl into a
-> yocto build? the kernel provided by raspberry pi os already contains
-> batman-adv kernel module but not batctl.
+The attempt to consolidate the code by passing an arguemnt or by
+distangling it failed due lack of knowledge about this driver and because
+the call chains are hard to follow.
 
-You have to write an recipe. Something like 
-https://github.com/jhaws1982/meta-batman - just with a more recent version. 
-But I am guessing that Jonathan Haws will accept pull requests in case you 
-spend the time integrating the newest version.
+As a stop gap use netif_rx_any_context() which invokes the correct code path
+depending on context and confines the in_interrupt() usage to core code.
 
-Kind regards,
-	Sven
---nextPart2325533.5jg2AtdYid
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmA7sJgACgkQXYcKB8Em
-e0YpaA/9EyqYcXwGRVC1CJ05+gVQ8w0nToakneoP5JHw+A0XQfVVgNgysf6B7k4+
-oqik3DtLIPjUyl/nJQ5RGSYBajVnnY4c079ZFcTJCItL79RRZaMFT4iYoj58Q23/
-ri3mKlXgVxDZ0qtuO1xspSBcqtcYyIK0DmnriDYMympMpJTzPlRS1dET+18rtWKh
-xxRacfWOvji4yua1AnmUJqwOvH0WMmUWYknhP9JJbV7YAC33m3+9Q/Sooh0jLer7
-NOAzoaTsCC370plTAHekpPY7azVNI2UHf1wxR30LCQmgzL7mL1QgWBjEA8zZS6pw
-Vcqp+MfiHqQyVWegVy6BXY34J/6XeHzbBWClW3+Ay/qGnTDU5LOway+csiGV1pR/
-HiS0/ATGwTinrit2p2xjZArn3YlOxl/XDDon9VG4bm+7zFUCq6bEqec88mHCQ2Cz
-ohCs7kUbliSyfoMhdVx3A/58EZYFLg/ZwnK5ngB9o5oTXVyK12O4D3ZkaCgK4son
-VlNoS24WomOM9khTrEwNjflViMoFU9P4MfoDOmbi4wo8gPDTy0YSOXPo6+MjcO7m
-IYoVd+FH2Q20SS0M+uL19yPSToDhuEYXilwc6cXQwTmTjGyZ4iENVk0NiCsXb8Mh
-cwfN/2Nf9rogeaTgXEId6loady3t1UbiGFoJ3P8ZWDsO1rb7+9U=
-=a+QY
------END PGP SIGNATURE-----
-
---nextPart2325533.5jg2AtdYid--
-
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
+_loop_avoidance.c
+index d2de12e527baa..b3411a034d87e 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -438,10 +438,7 @@ static void batadv_bla_send_claim(struct batadv_priv *=
+bat_priv, u8 *mac,
+ 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+ 			   skb->len + ETH_HLEN);
+=20
+-	if (in_interrupt())
+-		netif_rx(skb);
+-	else
+-		netif_rx_ni(skb);
++	netif_rx_any_context(skb);
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+--=20
+2.30.0
 
