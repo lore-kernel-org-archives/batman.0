@@ -1,84 +1,96 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
-Date: Thu, 04 Feb 2021 08:54:33 +0100
-Message-ID: <3636307.aAJz7UTs6F@ripper>
-In-Reply-To: <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20210202174037.7081-1-sw@simonwunderlich.de> <20210202174037.7081-3-sw@simonwunderlich.de> <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Subject: [PATCH 2/4] alfred: Allow exactly one interface for secondary mode
+Date: Mon, 15 Feb 2021 21:01:24 +0100
+Message-Id: <20210215200126.140253-2-sven@narfation.org>
+In-Reply-To: <20210215200126.140253-1-sven@narfation.org>
+References: <20210215200126.140253-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2733018.9YGKfJurXy"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>, Jakub Kicinski <kuba@kernel.org>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
+A primary alfred daemon allows syncing over more than one interface. But
+the secondary alfred daemon needs exactly one interface. But the check for
+this property was insufficient because it allowed paramters like
+"-i wlan0,asd" when wlan0 is valid and asd is not valid.
+
+The better solution is to really use the number of interfaces given to
+alfred instead of the number of interfaces evaluated as "valid".
+
+Fixes: 67ae5f57eedd ("alfred: Add support for multiple interfaces per master")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ alfred.h  |  1 +
+ netsock.c | 11 +++++++++++
+ server.c  |  4 +++-
+ 3 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/alfred.h b/alfred.h
+index 1e2c058..7d6b0b3 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -182,6 +182,7 @@ int unix_sock_req_data_finish(struct globals *globals,
+ int vis_update_data(struct globals *globals);
+ /* netsock.c */
+ int netsock_open_all(struct globals *globals);
++size_t netsocket_count_interfaces(struct globals *globals);
+ void netsock_close_all(struct globals *globals);
+ int netsock_set_interfaces(struct globals *globals, char *interfaces);
+ struct interface *netsock_first_interface(struct globals *globals);
+diff --git a/netsock.c b/netsock.c
+index 367b207..84b0ec3 100644
+--- a/netsock.c
++++ b/netsock.c
+@@ -471,6 +471,17 @@ int netsock_open_all(struct globals *globals)
+ 	return num_socks;
+ }
  
---nextPart2733018.9YGKfJurXy
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>, Jakub Kicinski <kuba@kernel.org>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH 2/4] batman-adv: Update copyright years for 2021
-Date: Thu, 04 Feb 2021 08:54:33 +0100
-Message-ID: <3636307.aAJz7UTs6F@ripper>
-In-Reply-To: <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20210202174037.7081-1-sw@simonwunderlich.de> <20210202174037.7081-3-sw@simonwunderlich.de> <20210203163506.4b4dbff0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-
-On Thursday, 4 February 2021 01:35:06 CET Jakub Kicinski wrote:
-[...]
-> Is this how copyright works? I'm not a layer, but I thought it was
-> supposed to reflect changes done to given file in a given year.
-
-<irony>Because we all know that the first thing a person is doing when 
-submitting a change is to update the copyright year.</irony>
-
-So we have either the option to:
-
-* not update it at all (as in many kernel sources)
-* don't have it listed explicitly (as seen in other kernel sources)
-* update it once a year
-
-I personally like to have a simple solution so I don't have to deal with this 
-kind of details while doing interesting things. The current "solution"
-was to handle the copyright notices year for the whole project as one entity - 
-once per year and then ignore it for the rest of the year.
-
-And I would also prefer not to start a discussion about the differences 
-between the inalienable German Urheberrecht, pre 1989 anglo-american 
-copyright, post 1989 anglo american copyright and other copyright like laws.
-
-Kind regards,
-	Sven
-
-
---nextPart2733018.9YGKfJurXy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmAbqDkACgkQXYcKB8Em
-e0Yzhg/8C3UCwdVrki9UaPjFtfuSZz3l3/9o473xkvDgc0BvE+bHsPz+St2Zwdb9
-pCSrGYfk+3iGJMxUXruIQikS+khBDfDk14r+vgLzDfCSZbIsFlPU0B84VbVdmkVL
-KpIf8fmBKzQ7JXNnzT3xYt99Tp0lTHAK/yMvNI7uLWTzzcOkA6uM7i1Ci4d/i4dB
-z1zzcfkmMYHS4/Oq2RGCrTT0tchZgaL7mHUBUaxUnXQOJLseqvgwr+x8woPZvnN/
-EAXMJlmpmNmHVIGroQWkxmqSsTOsXSol7IhjA6n1yl5XrPnM8jLl5IAV32nBtkzb
-5DmcBvfbycwnCNFGJN5Me07B+n86K1XO3lud9xDEj/5JHByhs+fmkxjGR/b0yhzL
-yHdvJtecth3PoKvYcIOtp0TGQmsuh3R1N6rqUdKra0TP9DF+xS8N9sRZvKWmc6CI
-HcdSrd9p7NQ0DNb/uq520w8lyhIsKN+iNbT5IWnUWecrGKSFcj/LIqRj9gYSISmI
-5cNTIBzNKfyzGWbDsk0RUwHUGePxhMqslcsLmhN2seWzaG8au/y7DMI7qEkI+Kxd
-Zrdj53Ko7w42AQ+8BoyfVbtnyKoOksyZAQKjomgqCwHdUlFJgxfmbgf1xlQNoEkl
-Fr8Mn6qHDUlhUS1ZffrDWJ5w8fNBcG7dBvAoMl9qv7i2X9TJXro=
-=Xh1S
------END PGP SIGNATURE-----
-
---nextPart2733018.9YGKfJurXy--
-
++size_t netsocket_count_interfaces(struct globals *globals)
++{
++	struct interface *interface;
++	size_t count = 0;
++
++	list_for_each_entry(interface, &globals->interfaces, list)
++		count++;
++
++	return count;
++}
++
+ void netsock_reopen(struct globals *globals)
+ {
+ 	struct interface *interface;
+diff --git a/server.c b/server.c
+index efac5ad..eb2bc8a 100644
+--- a/server.c
++++ b/server.c
+@@ -371,6 +371,7 @@ int alfred_server(struct globals *globals)
+ 	int maxsock, ret, recvs;
+ 	struct timespec last_check, now, tv;
+ 	fd_set fds, errfds;
++	size_t num_interfaces;
+ 	int num_socks;
+ 
+ 	if (create_hashes(globals))
+@@ -397,7 +398,8 @@ int alfred_server(struct globals *globals)
+ 		return -1;
+ 	}
+ 
+-	if (num_socks > 1 && globals->opmode == OPMODE_SECONDARY) {
++	num_interfaces = netsocket_count_interfaces(globals);
++	if (num_interfaces > 1 && globals->opmode == OPMODE_SECONDARY) {
+ 		fprintf(stderr, "More than one interface specified in secondary mode\n");
+ 		return -1;
+ 	}
+-- 
+2.30.0
 
