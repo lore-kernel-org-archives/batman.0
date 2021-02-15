@@ -1,47 +1,127 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/4] batman-adv: Start new development cycle
-Date: Mon,  8 Feb 2021 17:59:35 +0100
-Message-Id: <20210208165938.13262-2-sw@simonwunderlich.de>
-In-Reply-To: <20210208165938.13262-1-sw@simonwunderlich.de>
-References: <20210208165938.13262-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4/4] alfred: Allow start of server without valid interface
+Date: Mon, 15 Feb 2021 21:01:26 +0100
+Message-Id: <20210215200126.140253-4-sven@narfation.org>
+In-Reply-To: <20210215200126.140253-1-sven@narfation.org>
+References: <20210215200126.140253-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-This version will contain all the (major or even only minor) changes for
-Linux 5.12.
+The alfred server always needs interfaces to operate on. But these
+interfaces might not exist at the moment when the daemon process is
+started. This caused an error and stopped the process.
 
-The version number isn't a semantic version number with major and minor
-information. It is just encoding the year of the expected publishing as
-Linux -rc1 and the number of published versions this year (starting at 0)=
-.
+But alfred is able to deal with interfaces which disappeared at runtime but
+existed at startup. To force a similar behavior for the alfred startup, the
+parameter "--force" or "-f" is introduced.
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ alfred.h     | 1 +
+ main.c       | 7 ++++++-
+ man/alfred.8 | 3 +++
+ server.c     | 5 +++--
+ 4 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 288201630ceb..2486efe4ffa6 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -13,7 +13,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
-=20
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2021.0"
-+#define BATADV_SOURCE_VERSION "2021.1"
- #endif
-=20
- /* B.A.T.M.A.N. parameters */
---=20
-2.20.1
+diff --git a/alfred.h b/alfred.h
+index c64ff17..ac08253 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -117,6 +117,7 @@ struct globals {
+ 	int clientmode_version;
+ 	uint8_t verbose:1;
+ 	uint8_t ipv4mode:1;
++	uint8_t force:1;
+ 
+ 	int unix_sock;
+ 	const char *unix_path;
+diff --git a/main.c b/main.c
+index f25b6cc..e190d42 100644
+--- a/main.c
++++ b/main.c
+@@ -164,6 +164,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"version",		no_argument,		NULL,	'v'},
+ 		{"verbose",		no_argument,		NULL,	'd'},
+ 		{"sync-period",		required_argument,	NULL,	'p'},
++		{"force",		no_argument,		NULL,	'f'},
+ 		{NULL,			0,			NULL,	0},
+ 	};
+ 
+@@ -184,6 +185,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
+ 	globals->verbose = false;
+ 	globals->ipv4mode = false;
++	globals->force = false;
+ 	globals->update_command = NULL;
+ 	globals->sync_period.tv_sec = ALFRED_INTERVAL;
+ 	globals->sync_period.tv_nsec = 0;
+@@ -191,7 +193,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:4:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:4:f", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -273,6 +275,9 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
+ 			printf(" ** IPv4 Multicast Mode: %x\n", alfred_mcast.ipv4.s_addr);
+ 			break;
++		case 'f':
++			globals->force = true;
++			break;
+ 		case 'h':
+ 		default:
+ 			alfred_usage();
+diff --git a/man/alfred.8 b/man/alfred.8
+index 25591be..e965db8 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -72,6 +72,9 @@ Collect data from the network and prints it on the network
+ \fB\-d\fP, \fB\-\-verbose\fP
+ Show extra information in the data output
+ .TP
++\fB\-d\fP, \fB\-\-force\fP
++Start server even when batman-adv or interface(s) are not yet available.
++.TP
+ \fB\-V\fP, \fB\-\-req\-version\fP \fIversion\fP
+ Specify the data version set for \fB\-s\fP
+ 
+diff --git a/server.c b/server.c
+index eb2bc8a..b4925e7 100644
+--- a/server.c
++++ b/server.c
+@@ -386,14 +386,15 @@ int alfred_server(struct globals *globals)
+ 	}
+ 
+ 	if (strcmp(globals->mesh_iface, "none") != 0 &&
+-	    batadv_interface_check(globals->mesh_iface) < 0) {
++	    batadv_interface_check(globals->mesh_iface) < 0 &&
++	    !globals->force) {
+ 		fprintf(stderr, "Can't start server: batman-adv interface %s not found\n",
+ 			globals->mesh_iface);
+ 		return -1;
+ 	}
+ 
+ 	num_socks = netsock_open_all(globals);
+-	if (num_socks <= 0) {
++	if (num_socks <= 0 && !globals->force) {
+ 		fprintf(stderr, "Failed to open interfaces\n");
+ 		return -1;
+ 	}
+-- 
+2.30.0
+
