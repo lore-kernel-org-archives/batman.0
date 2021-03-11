@@ -1,82 +1,69 @@
-Return-Path: <ap420073@gmail.com>
-Subject: Re: [PATCH net-next v3 5/7] mld: convert ifmcaddr6 to RCU
-References: <20210325161657.10517-1-ap420073@gmail.com>
- <20210325161657.10517-6-ap420073@gmail.com>
- <6262890a-7789-e3dd-aa04-58e5e06499dc@gmail.com>
-From: Taehee Yoo <ap420073@gmail.com>
-Message-ID: <f054971d-8be0-92ba-009b-9681e08f841c@gmail.com>
-Date: Tue, 30 Mar 2021 12:41:40 +0900
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: Use netif_rx_any_context().
+Date: Thu, 11 Mar 2021 07:56:33 +0100
+Message-ID: <2086855.pniE3fA9pN@ripper>
+In-Reply-To: <20210310174919.5iwcumc2gozapw5c@linutronix.de>
+References: <20210213170204.3092113-1-bigeasy@linutronix.de> <10903423.uF0vj5h9zV@sven-edge> <20210310174919.5iwcumc2gozapw5c@linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <6262890a-7789-e3dd-aa04-58e5e06499dc@gmail.com>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Language: ko
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart3305807.9h0JGQIaLG"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org
-Cc: jwi@linux.ibm.com, kgraul@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, borntraeger@de.ibm.com, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, yoshfuji@linux-ipv6.org, dsahern@kernel.org, linux-s390@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, xiyou.wangcong@gmail.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, Thomas Gleixner <tglx@linutronix.de>
 
-On 2021. 3. 30. 오전 4:56, Eric Dumazet wrote:
- >
- >
+ 
+--nextPart3305807.9h0JGQIaLG
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] batman-adv: Use netif_rx_any_context().
+Date: Thu, 11 Mar 2021 07:56:33 +0100
+Message-ID: <2086855.pniE3fA9pN@ripper>
+In-Reply-To: <20210310174919.5iwcumc2gozapw5c@linutronix.de>
+References: <20210213170204.3092113-1-bigeasy@linutronix.de> <10903423.uF0vj5h9zV@sven-edge> <20210310174919.5iwcumc2gozapw5c@linutronix.de>
 
-Hi Eric,
-Thank you for the review!
+On Wednesday, 10 March 2021 18:49:19 CET Sebastian Andrzej Siewior wrote:
+> On 2021-02-13 18:10:29 [+0100], Sven Eckelmann wrote:
+> > Thanks, queued up
+> 
+> Thank you for that but I don't see it in -next as of today. Did
+> something go wrong?
 
- > On 3/25/21 5:16 PM, Taehee Yoo wrote:
- >> The ifmcaddr6 has been protected by inet6_dev->lock(rwlock) so that
- >> the critical section is atomic context. In order to switch this context,
- >> changing locking is needed. The ifmcaddr6 actually already protected by
- >> RTNL So if it's converted to use RCU, its control path context can be
- >> switched to sleepable.
- >>
- >
- > I do not really understand the changelog.
- >
- > You wanted to convert from RCU to RTNL, right ?
+It is still queued up but not yet forwarded to net-next because it is the only 
+patch at the moment.
 
-The purpose of this is to use both RCU and RTNL.
-In the control path, ifmcaddr6 is protected by RTNL
-(setsockopt_needs_rtnl() in the do_ipv6_setsockopt())
-And in the data path, ifmcaddr6 will be protected by RCU.
+Kind regards,
+	Sven
+--nextPart3305807.9h0JGQIaLG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-But ifmcaddr6 is already protected by RTNL in the control path.
-So, this patch is to convert ifmcaddr6 to RCU only for datapath.
-Therefore, by this patch, ifmcaddr6 will be protected by both RTNL and RCU.
+-----BEGIN PGP SIGNATURE-----
 
-I'm so sorry for this strange changelog.
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmBJvyEACgkQXYcKB8Em
+e0b20w/+MAx9wWcvQTI0fWP21mE5+W0p5rI9cKw0ugCf+h9mA41HU8duLwQQ6O5G
+lgWUQh7b84446YDIlIPCppNv5rSQVQETRazyJIHQIPyYmkq4BTUFB5a7u2ykCeXK
+npfJ6ElmG0B7e2pjbhfI+d/n+cUF43BzlDXXNqXZsnEyYm2AoAonUvzPO2F3HHab
+Zir0DtD09PkZLppckaIDDFsUoPTbpc9ItXR+Bxg6enRq4Y8l0uiPAP4BBVvi2k21
+9owrfVdQXUKky1KDDic7Yp62B/9MK+aYStvoMdp4dF93ZN0oPCebBfJVs3wCzKfQ
+Zi1I/XTAcr1C8s3hBj6HtWdeWtL+2SH2qaizbrOieKs+YJtcHtYnh+T4XepuHmRa
+YSpSgaYFOwXYVhbiAsLWVRLCl/ifpfUOORgvIEIxuokP7UNSAxRsSM3m2vQG8Qzg
+XdURZAWw1hivDFC7MC40Y0htjp6qUEP/e90J92Dmw/oAXY6BFABXDd1cESpfSStP
+VWrx7SlRoFvW48eAmZRLRPyST9lXM9Nj3oshWsChXA0/3Z7eHXEyxpWmrLS7SR3g
+tJfYioGljxldMXBNV9hjsZ/axe6954FpNZTR7NkT3X/JhBCTy8u5DiJ1MZlknkB6
+qR/2MxBCEHpcgxhTFzJnTzLC1ULh32E9P2qK3xUcT4gRwdeZDvQ=
+=lbVm
+-----END PGP SIGNATURE-----
 
- >
- > Also :
- >
- >> @@ -571,13 +573,9 @@ int ip6_mc_msfget(struct sock *sk, struct 
-group_filter *gsf,
- >>   	if (!ipv6_addr_is_multicast(group))
- >>   		return -EINVAL;
- >>
- >> -	rcu_read_lock();
- >> -	idev = ip6_mc_find_dev_rcu(net, group, gsf->gf_interface);
- >> -
- >> -	if (!idev) {
- >> -		rcu_read_unlock();
- >> +	idev = ip6_mc_find_dev_rtnl(net, group, gsf->gf_interface);
- >> +	if (!idev)
- >>   		return -ENODEV;
- >> -	}
- >>
- >
- > I do not see RTNL being acquired before entering ip6_mc_msfget()
- >
+--nextPart3305807.9h0JGQIaLG--
 
-Thank you so much for catching this.
-I will send a patch to fix this problem!
 
-Thanks a lot!
-Taehee Yoo
