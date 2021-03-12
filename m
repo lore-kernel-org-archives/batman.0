@@ -1,58 +1,52 @@
-Return-Path: <eric.dumazet@gmail.com>
-Subject: Re: [PATCH net-next v3 5/7] mld: convert ifmcaddr6 to RCU
-References: <20210325161657.10517-1-ap420073@gmail.com>
- <20210325161657.10517-6-ap420073@gmail.com>
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Message-ID: <6262890a-7789-e3dd-aa04-58e5e06499dc@gmail.com>
-Date: Mon, 29 Mar 2021 21:56:32 +0200
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/1] pull request for net-next: batman-adv 2021-03-12
+Date: Fri, 12 Mar 2021 16:47:23 +0100
+Message-Id: <20210312154724.14980-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-In-Reply-To: <20210325161657.10517-6-ap420073@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Taehee Yoo <ap420073@gmail.com>, netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org
-Cc: jwi@linux.ibm.com, kgraul@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, borntraeger@de.ibm.com, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, yoshfuji@linux-ipv6.org, dsahern@kernel.org, linux-s390@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+Hi Jakub, hi David,
 
+this time we only have one patch in the pull request of batman-adv to
+go into net-next.
 
-On 3/25/21 5:16 PM, Taehee Yoo wrote:
-> The ifmcaddr6 has been protected by inet6_dev->lock(rwlock) so that
-> the critical section is atomic context. In order to switch this context,
-> changing locking is needed. The ifmcaddr6 actually already protected by
-> RTNL So if it's converted to use RCU, its control path context can be
-> switched to sleepable.
->
+Please pull or let me know of any problem!
 
-I do not really understand the changelog.
+Thank you,
+      Simon
 
-You wanted to convert from RCU to RTNL, right ?
+The following changes since commit 25d81f9307ffc166427d93152498f45178f593=
+6a:
 
-Also :
+  batman-adv: Fix names for kernel-doc blocks (2021-02-06 09:22:45 +0100)
 
-> @@ -571,13 +573,9 @@ int ip6_mc_msfget(struct sock *sk, struct group_filter *gsf,
->  	if (!ipv6_addr_is_multicast(group))
->  		return -EINVAL;
->  
-> -	rcu_read_lock();
-> -	idev = ip6_mc_find_dev_rcu(net, group, gsf->gf_interface);
-> -
-> -	if (!idev) {
-> -		rcu_read_unlock();
-> +	idev = ip6_mc_find_dev_rtnl(net, group, gsf->gf_interface);
-> +	if (!idev)
->  		return -ENODEV;
-> -	}
->  
+are available in the Git repository at:
 
-I do not see RTNL being acquired before entering ip6_mc_msfget()
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
+210312
 
+for you to fetch changes up to b1de0f01b0115575982cf24c88b35106449e9aa7:
 
+  batman-adv: Use netif_rx_any_context(). (2021-02-13 18:08:40 +0100)
+
+----------------------------------------------------------------
+There is only a single patch this time:
+
+ - Use netif_rx_any_context(), by Sebastian Andrzej Siewior
+
+----------------------------------------------------------------
+Sebastian Andrzej Siewior (1):
+      batman-adv: Use netif_rx_any_context().
+
+ net/batman-adv/bridge_loop_avoidance.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
