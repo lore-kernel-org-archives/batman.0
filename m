@@ -1,20 +1,43 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Drop unused header preempt.h
+Date: Tue, 23 Mar 2021 21:57:14 +0100
+Message-Id: <20210323205714.14769-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: batman-adv for kbit level speeds, external neighbor info
-From: oytunyapar@hotmail.com
-Date: Tue, 16 Mar 2021 16:10:25 -0000
-Message-ID: <20210316161025.1198.49899@diktynna.open-mesh.org>
-In-Reply-To: <1686262.MoqjggJXJV@ripper>
-References: <1686262.MoqjggJXJV@ripper>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Thank you for the answers Sven
+The commit 05456871ea96 ("batman-adv: Use netif_rx_any_context().") removed
+the last user for a function declaration from linux/preempt.h. The include
+should therefore be cleaned up.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index bcd543ce..7dc133cf 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -25,7 +25,6 @@
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+-#include <linux/preempt.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/skbuff.h>
+-- 
+2.30.2
+
