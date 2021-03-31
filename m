@@ -1,10 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/1] pull request for net-next: batman-adv 2021-03-12
-Date: Fri, 12 Mar 2021 16:47:23 +0100
-Message-Id: <20210312154724.14980-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Date: Wed, 31 Mar 2021 14:03:08 -0700
+In-Reply-To: <00000000000073afff05bbe9a54d@google.com>
+Message-ID: <00000000000020564605bedb716e@google.com>
+Subject: Re: [syzbot] WARNING in ieee802154_del_seclevel
+From: syzbot <syzbot+fbf4fc11a819824e027b@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -12,41 +13,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc, alex.aring@gmail.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, info@sophiescuban.com, jkosina@suse.cz, kuba@kernel.org, linux-kernel@vger.kernel.org, linux-wpan@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, stefan@datenfreihafen.org, stern@rowland.harvard.edu, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Hi Jakub, hi David,
+syzbot has bisected this issue to:
 
-this time we only have one patch in the pull request of batman-adv to
-go into net-next.
+commit 416dacb819f59180e4d86a5550052033ebb6d72c
+Author: Alan Stern <stern@rowland.harvard.edu>
+Date:   Wed Aug 21 17:27:12 2019 +0000
 
-Please pull or let me know of any problem!
+    HID: hidraw: Fix invalid read in hidraw_ioctl
 
-Thank you,
-      Simon
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=127430fcd00000
+start commit:   6e5a03bc ethernet/netronome/nfp: Fix a use after free in n..
+git tree:       net
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=117430fcd00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=167430fcd00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=daeff30c2474a60f
+dashboard link: https://syzkaller.appspot.com/bug?extid=fbf4fc11a819824e027b
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=13bfe45ed00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1188e31ad00000
 
-The following changes since commit 25d81f9307ffc166427d93152498f45178f593=
-6a:
+Reported-by: syzbot+fbf4fc11a819824e027b@syzkaller.appspotmail.com
+Fixes: 416dacb819f5 ("HID: hidraw: Fix invalid read in hidraw_ioctl")
 
-  batman-adv: Fix names for kernel-doc blocks (2021-02-06 09:22:45 +0100)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
-210312
-
-for you to fetch changes up to b1de0f01b0115575982cf24c88b35106449e9aa7:
-
-  batman-adv: Use netif_rx_any_context(). (2021-02-13 18:08:40 +0100)
-
-----------------------------------------------------------------
-There is only a single patch this time:
-
- - Use netif_rx_any_context(), by Sebastian Andrzej Siewior
-
-----------------------------------------------------------------
-Sebastian Andrzej Siewior (1):
-      batman-adv: Use netif_rx_any_context().
-
- net/batman-adv/bridge_loop_avoidance.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
