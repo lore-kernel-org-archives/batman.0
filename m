@@ -1,13 +1,13 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH net-next 2/2] net: bridge: mcast: export multicast router presence adjacent to a port
-Date: Sun, 25 Apr 2021 18:00:50 +0200
-Message-Id: <20210425160050.8732-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20210425160050.8732-1-linus.luessing@c0d3.blue>
-References: <20210425160050.8732-1-linus.luessing@c0d3.blue>
+Date: Tue, 6 Apr 2021 21:51:22 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: How to mesh over ethernet VLAN?
+Message-ID: <20210406195122.GG2742@otheros>
+References: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,128 +15,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-To properly support routable multicast addresses in batman-adv in a
-group-aware way, a batman-adv node needs to know if it serves multicast
-routers.
+On Sun, Apr 04, 2021 at 07:52:35PM +0200, Andi Depressivum wrote:
+> Hello everybody,
+> 
+> What's the correct setup to mesh also over an existing ethernet VLAN link?
+> 
+> My core network with all routers & servers is running on VLAN 3
+> (eth0.3 in the routers). How do I have to setup batman-adv to a) mesh
+> also over this existing link and b) propagate this VLAN also over
+> wireless links. Bridging eth0.3 with bat0.3 and adding eth0.3 also as
+> a hardif doesn't work, as it will remove eth0.3 from the bridge.
 
-This adds a function to the bridge to export this so that batman-adv
-can then make full use of the Multicast Router Discovery capability of
-the bridge.
+Right, that is not supported. That goes in the direction of
+creating an encapsulating loop. It's best to avoid sharing a link for both
+the payload frames and the mesh layer.
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
- include/linux/if_bridge.h |  8 ++++++
- net/bridge/br_multicast.c | 58 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
+One option could be to add an extra VLAN, like VLAN 4, dedicated
+for the mesh layer with the batman-adv frames, parallel to the
+VLAN 3.
 
-diff --git a/include/linux/if_bridge.h b/include/linux/if_bridge.h
-index 2cc35038a8ca..12e9a32dbca0 100644
---- a/include/linux/if_bridge.h
-+++ b/include/linux/if_bridge.h
-@@ -67,6 +67,7 @@ int br_multicast_list_adjacent(struct net_device *dev,
- 			       struct list_head *br_ip_list);
- bool br_multicast_has_querier_anywhere(struct net_device *dev, int proto=
-);
- bool br_multicast_has_querier_adjacent(struct net_device *dev, int proto=
-);
-+bool br_multicast_has_router_adjacent(struct net_device *dev, int proto)=
-;
- bool br_multicast_enabled(const struct net_device *dev);
- bool br_multicast_router(const struct net_device *dev);
- int br_mdb_replay(struct net_device *br_dev, struct net_device *dev,
-@@ -87,6 +88,13 @@ static inline bool br_multicast_has_querier_adjacent(s=
-truct net_device *dev,
- {
- 	return false;
- }
-+
-+static inline bool br_multicast_has_router_adjacent(struct net_device *d=
-ev,
-+						    int proto)
-+{
-+	return true;
-+}
-+
- static inline bool br_multicast_enabled(const struct net_device *dev)
- {
- 	return false;
-diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-index 0ebdbf09f44c..4afaf011f171 100644
---- a/net/bridge/br_multicast.c
-+++ b/net/bridge/br_multicast.c
-@@ -4013,6 +4013,64 @@ bool br_multicast_has_querier_adjacent(struct net_=
-device *dev, int proto)
- }
- EXPORT_SYMBOL_GPL(br_multicast_has_querier_adjacent);
-=20
-+/**
-+ * br_multicast_has_router_adjacent - Checks for a router behind a bridg=
-e port
-+ * @dev: The bridge port adjacent to which to check for a multicast rout=
-er
-+ * @proto: The protocol family to check for: IGMP -> ETH_P_IP, MLD -> ET=
-H_P_IPV6
-+ *
-+ * Checks whether the given interface has a bridge on top and if so retu=
-rns
-+ * true if a multicast router is behind one of the other ports of this
-+ * bridge. Otherwise returns false.
-+ */
-+bool br_multicast_has_router_adjacent(struct net_device *dev, int proto)
-+{
-+	struct net_bridge_port *port, *p;
-+	bool ret =3D false;
-+
-+	rcu_read_lock();
-+	if (!netif_is_bridge_port(dev))
-+		goto unlock;
-+
-+	port =3D br_port_get_rcu(dev);
-+	if (!port || !port->br)
-+		goto unlock;
-+
-+	switch (proto) {
-+	case ETH_P_IP:
-+		hlist_for_each_entry_rcu(p, &port->br->ip4_mc_router_list,
-+					 ip4_rlist) {
-+			if (p =3D=3D port)
-+				continue;
-+
-+			ret =3D true;
-+			goto unlock;
-+		}
-+		break;
-+#if IS_ENABLED(CONFIG_IPV6)
-+	case ETH_P_IPV6:
-+		hlist_for_each_entry_rcu(p, &port->br->ip6_mc_router_list,
-+					 ip6_rlist) {
-+			if (p =3D=3D port)
-+				continue;
-+
-+			ret =3D true;
-+			goto unlock;
-+		}
-+		break;
-+#endif
-+	default:
-+		/* when compiled without IPv6 support, be conservative and
-+		 * always assume presence of an IPv6 multicast router
-+		 */
-+		ret =3D true;
-+	}
-+
-+unlock:
-+	rcu_read_unlock();
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(br_multicast_has_router_adjacent);
-+
- static void br_mcast_stats_add(struct bridge_mcast_stats __percpu *stats=
-,
- 			       const struct sk_buff *skb, u8 type, u8 dir)
- {
---=20
-2.31.0
+Or if most/all hosts are running batman-adv, so if architecturally
+batman-adv is forming the backbone of your network, you could
+run batman-adv over this VLAN 3 only. And then either run
+batman-adv on the servers themselves or bridge the servers into the
+batman-adv mesh on their adjacent mesh router(s).
+
+Regards, Linus
