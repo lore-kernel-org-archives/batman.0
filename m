@@ -2,12 +2,10 @@ Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH] batctl: Add JSON debug support
-From: asarmanow@gmail.com
-Date: Wed, 28 Apr 2021 11:40:31 -0000
-Message-ID: <20210428114031.12523.14028@diktynna.open-mesh.org>
-In-Reply-To: <2557512.EezVJnfClc@sven-l14>
-References: <2557512.EezVJnfClc@sven-l14>
+Subject: Problems with Multiple Interfaces
+From: joe@careyhome.org
+Date: Thu, 08 Apr 2021 05:56:29 -0000
+Message-ID: <20210408055629.1234.95039@diktynna.open-mesh.org>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -17,60 +15,18 @@ List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Sven Eckelmann wrote:
-> On Wednesday, 28 April 2021 12:16:08 CEST Alexander Sarmanow wrote:
-> >  Same parameters of the debug tables can be used for
-> >  the JSON, except the "-w [interval]" (not useful). The table header is
-> >  implemented as a JSON equivalent and can be also optionally omitted.
-> >   
-> I would like to disagree. Why is it a problem to continuously emit json 
-> objects? 
-Simon agreed with me to leave that out, but I can add it and the user can decide whether to use it or not. It does not disturb.
+Hi Everybody,
 
-> >  --- a/netlink.c
-> >  +++ b/netlink.c
-> >  @@ -318,15 +318,29 @@ static int info_callback(struct nl_msg *msg, void *arg)
-> >                  else
-> >                          extra_header = "";
-> >   
-> >  -               ret = asprintf(&opts->remaining_header,
-> >  -                              "[B.A.T.M.A.N. adv %s, MainIF/MAC:
-> > %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n%s",
-> >  -                              version, primary_if,
-> >  -                              primary_mac[0], primary_mac[1], primary_mac[2],
-> >  -                              primary_mac[3], primary_mac[4], primary_mac[5],
-> >  -                              mesh_name,
-> >  -                              mesh_mac[0], mesh_mac[1], mesh_mac[2],
-> >  -                              mesh_mac[3], mesh_mac[4], mesh_mac[5],
-> >  -                              algo_name, extra_info, extra_header);
-> >  +               if (opts->is_json) {
-> >  +                       ret = asprintf(&opts->remaining_header,
-> >  +                                     
-> > "{\"version\":\"%s\",\"main_if\":\"%s\",\"main_mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"mesh_if\":\"%s\",\"mesh_mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"algo_name\":\"%s\",\"extra_info\":\"%s\",\"data\":[",
-> >  +                                      version, primary_if,
-> >  +                                      primary_mac[0], primary_mac[1],
-> >  +                                      primary_mac[2], primary_mac[3],
-> >  +                                      primary_mac[4], primary_mac[5],
-> >  +                                      mesh_name,
-> >  +                                      mesh_mac[0], mesh_mac[1], mesh_mac[2],
-> >  +                                      mesh_mac[3], mesh_mac[4], mesh_mac[5],
-> >  +                                      algo_name, extra_info);
-> >  +               } else {
-> >  +                       ret = asprintf(&opts->remaining_header,
-> >  +                                      "[B.A.T.M.A.N. adv %s, MainIF/MAC:
-> > %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n%s",
-> >  +                                      version, primary_if,
-> >  +                                      primary_mac[0], primary_mac[1],
-> >  +                                      primary_mac[2], primary_mac[3],
-> >  +                                      primary_mac[4], primary_mac[5],
-> >  +                                      mesh_name,
-> >  +                                      mesh_mac[0], mesh_mac[1], mesh_mac[2],
-> >  +                                      mesh_mac[3], mesh_mac[4], mesh_mac[5],
-> >  +                                      algo_name, extra_info, extra_header);
-> >  +               } 
-> Do we really have to add such kind of output to each table? Can't we just have 
-> another command to get the meshif info and print it?
-You are right. I just followed the existing debug tables where the header is also always printed out each time and there is no separate command for that. But I can create a separate command to fetch the "header".
+I'm running BATMAN v 2019.2 with ath10k on OpenWRT.  The particular router I'm using has two interfaces, 2.4 GHz and 5GHz.  With each router using single interface (e.g. 2.4 GHz), it works fine.  When I add a second interface (e.g. 5GHz), it sometimes hangs.  
 
-Best,
-Alex
+I know that BATMAN is expected to alternate between the two interfaces, but that doesn't seem to be working.  As you probably know, using two interfaces should dramatically improve throughput if you need to make a hop through another mesh node.
+
+To verify this is the problem, I did a test where I ran three routers,  2.4G <> Dual (2.4G & 5G) <> 5G.  I would try to ping between the two routers that were using just a single interface.  Obviously, that must hop through the dual radio router.  The dual radio router has both interfaces on the bat0 master, and batctl reports they're both active.  
+
+The system would sometimes lose link, although batctl would report getting neighbor messages.  Even using the batctl ping function doesn't get through.  I can see traffic flowing on both the 2.4 GHz and 5GHz interfaces. 
+
+I'm happy to provide lots of configuration detail, but I thought I'd start with a high level description in case this is a known problem.
+
+Any assistance is appreciated.  Thank you,
+
+--Joe
