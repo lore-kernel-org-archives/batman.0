@@ -1,52 +1,51 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Sun, 18 Apr 2021 22:16:07 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [RFC PATCH] batman-adv: convert ifmcaddr6 to RCU
-Message-ID: <20210418201607.GA8165@otheros>
-References: <20210418201422.8415-1-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 3/3] batman-adv: Fix misspelled "wont"
+Date: Thu,  8 Apr 2021 13:54:01 +0200
+Message-Id: <20210408115401.16988-4-sw@simonwunderlich.de>
+In-Reply-To: <20210408115401.16988-1-sw@simonwunderlich.de>
+References: <20210408115401.16988-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20210418201422.8415-1-linus.luessing@c0d3.blue>
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-On Sun, Apr 18, 2021 at 10:14:22PM +0200, Linus L=C3=BCssing wrote:
-> [...]
-> diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-> index 28166402..1d63c8cb 100644
-> --- a/net/batman-adv/multicast.c
-> +++ b/net/batman-adv/multicast.c
-> @@ -454,8 +454,9 @@ batadv_mcast_mla_softif_get_ipv6(struct net_device =
-*dev,
->  		return 0;
->  	}
-> =20
-> -	read_lock_bh(&in6_dev->lock);
-> -	for (pmc6 =3D in6_dev->mc_list; pmc6; pmc6 =3D pmc6->next) {
-> +	for (pmc6 =3D rcu_dereference(in6_dev->mc_list);
-> +	     pmc6;
-> +	     pmc6 =3D rcu_dereference(pmc6->next)) {
->  		if (IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) <
->  		    IPV6_ADDR_SCOPE_LINKLOCAL)
->  			continue;
-> @@ -484,7 +485,6 @@ batadv_mcast_mla_softif_get_ipv6(struct net_device =
-*dev,
->  		hlist_add_head(&new->list, mcast_list);
->  		ret++;
->  	}
-> -	read_unlock_bh(&in6_dev->lock);
->  	rcu_read_unlock();
-> =20
->  	return ret;
-> --=20
+From: Sven Eckelmann <sven@narfation.org>
 
-Ups, accidentally added this. Will remove that in the next
-version.
+checkpatch started to complain about the mispelling of:
+
+  CHECK: 'wont' may be misspelled - perhaps 'won't'?
+  #459: FILE: ./net/batman-adv/bat_iv_ogm.c:459:
+  +    * - the resulting packet wont be bigger than
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index a5e313cd6f44..789f257be24f 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -456,7 +456,7 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
+ 	 * if:
+ 	 *
+ 	 * - the send time is within our MAX_AGGREGATION_MS time
+-	 * - the resulting packet wont be bigger than
++	 * - the resulting packet won't be bigger than
+ 	 *   MAX_AGGREGATION_BYTES
+ 	 * otherwise aggregation is not possible
+ 	 */
+-- 
+2.20.1
+
