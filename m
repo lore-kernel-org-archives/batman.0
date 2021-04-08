@@ -1,32 +1,67 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/3] batman-adv: Fix order of kernel doc in batadv_priv
+Date: Thu,  8 Apr 2021 13:53:59 +0200
+Message-Id: <20210408115401.16988-2-sw@simonwunderlich.de>
+In-Reply-To: <20210408115401.16988-1-sw@simonwunderlich.de>
+References: <20210408115401.16988-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: Problems with Multiple Interfaces
-From: joe@careyhome.org
-Date: Sat, 10 Apr 2021 00:39:53 -0000
-Message-ID: <20210410003953.1234.9147@diktynna.open-mesh.org>
-In-Reply-To: <3542676.qYy7ulQ77K@prime>
-References: <3542676.qYy7ulQ77K@prime>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Linus and Simon,
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Thank you for your responses.
+During the inlining process of kerneldoc in commit 8b84cc4fb556
+("batman-adv: Use inline kernel-doc for enum/struct"), some comments were
+placed at the wrong struct members. Fixing this by reordering the comments.
 
-I did try "batctl ping" and the adjacent device was unreachable.  I could see it with "batctl n". I did not try a simple IPv6 link local ping.  However, I could see it using "iw dev mesh_5g station dump"
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/types.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-I agree that it feels like a problem with ath10k reporting the data rate incorrectly (or not at all).
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 7c0b475cc22a..2be5d4a712c5 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1659,19 +1659,19 @@ struct batadv_priv {
+ 	/** @tp_list: list of tp sessions */
+ 	struct hlist_head tp_list;
+ 
+-	/** @tp_num: number of currently active tp sessions */
++	/** @orig_hash: hash table containing mesh participants (orig nodes) */
+ 	struct batadv_hashtable *orig_hash;
+ 
+-	/** @orig_hash: hash table containing mesh participants (orig nodes) */
++	/** @forw_bat_list_lock: lock protecting forw_bat_list */
+ 	spinlock_t forw_bat_list_lock;
+ 
+-	/** @forw_bat_list_lock: lock protecting forw_bat_list */
++	/** @forw_bcast_list_lock: lock protecting forw_bcast_list */
+ 	spinlock_t forw_bcast_list_lock;
+ 
+-	/** @forw_bcast_list_lock: lock protecting forw_bcast_list */
++	/** @tp_list_lock: spinlock protecting @tp_list */
+ 	spinlock_t tp_list_lock;
+ 
+-	/** @tp_list_lock: spinlock protecting @tp_list */
++	/** @tp_num: number of currently active tp sessions */
+ 	atomic_t tp_num;
+ 
+ 	/** @orig_work: work queue callback item for orig node purging */
+-- 
+2.20.1
 
-I am going to try upgrading to the latest release, but it will be a few days.  I'll let you know how it goes.
-
-Thanks again,
-
---Joe
