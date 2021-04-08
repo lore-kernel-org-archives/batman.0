@@ -1,10 +1,11 @@
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/3] pull request for net-next: batman-adv 2021-04-08
+Date: Thu,  8 Apr 2021 13:53:58 +0200
+Message-Id: <20210408115401.16988-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Problem with batman-adv and wifi adhoc in OpenWrt 19.07
-From: spiccinini@altermundi.net
-Date: Sat, 27 Mar 2021 00:36:54 -0000
-Message-ID: <20210327003654.1205.8819@diktynna.open-mesh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -12,17 +13,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all! I need some help debugging a non working setup of batman-adv with wifi in adhoc mode in OpenWrt 19.07 (a LibreMesh setup).
+Hi Jakub, hi David,
 
-Libremesh based on OpenWrt 19.07 + ad-hoc: not working
-Libremesh based on OpenWrt 19.07 + 802.11s: working
-Libremesh based on OpenWrt 18.06 + ad-hoc: working
-Libremesh based on OpenWrt 18.06 + 802.11s: working
+here is a little cleanup pull request of batman-adv to go into net-next.
 
-An issue with more info is here https://github.com/libremesh/lime-packages/issues/855
+Please pull or let me know of any problem!
 
-Thanks!
-SAn
+Thank you,
+      Simon
 
+The following changes since commit b1de0f01b0115575982cf24c88b35106449e9a=
+a7:
+
+  batman-adv: Use netif_rx_any_context(). (2021-02-13 18:08:40 +0100)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
+210408
+
+for you to fetch changes up to 35796c1d343871fa75a6e6b0f4584182cbeae6ac:
+
+  batman-adv: Fix misspelled "wont" (2021-03-30 21:19:50 +0200)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - for kerneldoc in batadv_priv, by Linus Luessing
+
+ - drop unused header preempt.h, by Sven Eckelmann
+
+ - Fix misspelled "wont", by Sven Eckelmann
+
+----------------------------------------------------------------
+Linus L=C3=BCssing (1):
+      batman-adv: Fix order of kernel doc in batadv_priv
+
+Sven Eckelmann (2):
+      batman-adv: Drop unused header preempt.h
+      batman-adv: Fix misspelled "wont"
+
+ net/batman-adv/bat_iv_ogm.c            |  2 +-
+ net/batman-adv/bridge_loop_avoidance.c |  1 -
+ net/batman-adv/types.h                 | 10 +++++-----
+ 3 files changed, 6 insertions(+), 7 deletions(-)
