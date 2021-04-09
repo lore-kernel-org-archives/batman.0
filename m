@@ -1,11 +1,14 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH net-next 0/2] net: bridge: split IPv4/v6 mc router state and export for batman-adv
-Date: Sun, 25 Apr 2021 17:57:31 +0200
-Message-Id: <20210425155732.8561-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+References: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
+ <20210406195122.GG2742@otheros> <CAEX-Y1YfhoLgcwMJAg11H7f785kum6LUrYq=YrKg0C-9vXZ-ZQ@mail.gmail.com>
+ <20210409112432.GJ2742@otheros>
+In-Reply-To: <20210409112432.GJ2742@otheros>
+From: Andi Depressivum <andidepressivum@gmail.com>
+Date: Fri, 9 Apr 2021 15:38:15 +0200
+Message-ID: <CAEX-Y1ZnouWOpjrT4n8q4BVaRWSP30GLMbT_78Kn3_KoFELp9g@mail.gmail.com>
+Subject: Re: How to mesh over ethernet VLAN?
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -13,36 +16,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
+> The MTU of eth0.2 or bat0?
 
-The following are two patches for the Linux bridge regarding multicast
-routers. They are rebased on top of the following fix:
-"net: bridge: mcast: fix broken length + header check for MRDv6 Adv." [0]
-And should be applied afterwards.
+It doesn't matter, I cannot set the MTU of eth0.2, eth0 or eth1 to
+something higher than 1500
 
-The first one splits the so far combined multicast router state into two
-ones, one for IPv4 and one for IPv6, for a more fine-grained detection of
-multicast routers. This avoids sending IPv4 multicast packets to an
-IPv6-only multicast router and avoids sending IPv6 multicast packets to
-an IPv4-only multicast router. This is also in preparation for the
-second patch:
+> One of the performance penalties might occur when batman-adv needs
+> to use fragmentation. batman-adv is going to add its own header
+> on top of the 1500 byte frames received on bat0.
 
-The second patch exports this now per protocol family multicast router
-state so that batman-adv can then later make full use of the
-Multicast Router Discovery (MRD) support in the Linux bridge. The
-batman-adv protocol format currently expects separate multicast router
-states for IPv4 and IPv6, therefore it depends on the first patch.
-batman-adv will then make use of this newly exported functions like
-this[1].
+That's why I'm trying to increase the MTU
 
-Regards, Linus
+> 1536 on eth0.2 looks good though. Then 1500 bytes should fit
+> without fragmentation on bat0. You can check with "batctl
+> td" or Wireshark if you see batman-adv fragments on eth0.2.
 
-[0]: https://patchwork.kernel.org/project/netdevbpf/patch/20210425152736.=
-8421-1-linus.luessing@c0d3.blue/
-[1]: https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/m=
-ulticast-routeable-mrd
-     -> https://git.open-mesh.org/batman-adv.git/commit/d4bed3a9242744570=
-8baeb1f2d1841c5fb816fd4
+That's only the config. IP LINK still showing 1500.
+
+> If 1536 is somehow not applied to eth0.2, might be a driver issue
+> then. You can check wether you can manually alter an interface MTU
+> with "ip link dev eth0.2 set mtu 1536", for instance.
+
+Actual OpenWRT trunk on TP-Link C7 / C2600 devices. Can decrease to
+anything lower than 1500 but cannot raise above 1500.
+
+Thanks,
+Andi
