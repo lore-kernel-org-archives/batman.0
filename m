@@ -1,13 +1,13 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Tue, 6 Apr 2021 21:51:22 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: How to mesh over ethernet VLAN?
-Message-ID: <20210406195122.GG2742@otheros>
-References: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
+References: <3542676.qYy7ulQ77K@prime> <20210410003953.1234.9147@diktynna.open-mesh.org>
+ <6830943.IaFvOplyQc@prime> <7463417.qeE93hC4D1@ripper>
+In-Reply-To: <7463417.qeE93hC4D1@ripper>
+From: Andi Depressivum <andidepressivum@gmail.com>
+Date: Tue, 13 Apr 2021 16:37:42 +0200
+Message-ID: <CAEX-Y1YnNo7OsEhmRiBSpJ-1sEw9ZiNSNu95HNn67217+ocP9Q@mail.gmail.com>
+Subject: Re: Problems with Multiple Interfaces
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -17,29 +17,22 @@ List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sun, Apr 04, 2021 at 07:52:35PM +0200, Andi Depressivum wrote:
-> Hello everybody,
-> 
-> What's the correct setup to mesh also over an existing ethernet VLAN link?
-> 
-> My core network with all routers & servers is running on VLAN 3
-> (eth0.3 in the routers). How do I have to setup batman-adv to a) mesh
-> also over this existing link and b) propagate this VLAN also over
-> wireless links. Bridging eth0.3 with bat0.3 and adding eth0.3 also as
-> a hardif doesn't work, as it will remove eth0.3 from the bridge.
+Am Di., 13. Apr. 2021 um 14:03 Uhr schrieb Sven Eckelmann <sven@narfation.org>:
 
-Right, that is not supported. That goes in the direction of
-creating an encapsulating loop. It's best to avoid sharing a link for both
-the payload frames and the mesh layer.
+> Please avoid the ath10k-ct firmware. And for ath10k, please make sure to set
+> mesh_fwding=0 on the mesh(point) interface.
 
-One option could be to add an extra VLAN, like VLAN 4, dedicated
-for the mesh layer with the batman-adv frames, parallel to the
-VLAN 3.
+This is true for Wave-1 chipsets (QCA98xx) but Wave-2 Chipsets
+(QCA99xx) needs the ath10-ct firmware to get 802.11s running.
 
-Or if most/all hosts are running batman-adv, so if architecturally
-batman-adv is forming the backbone of your network, you could
-run batman-adv over this VLAN 3 only. And then either run
-batman-adv on the servers themselves or bridge the servers into the
-batman-adv mesh on their adjacent mesh router(s).
+Haven't got stable results with BATMAN V in a home mesh environment.
+Nodes could ping each other via batctl ping but IP ping often failed.
+Maybe some issues of mesh routing when many routes to the same target
+had nearly the same link speeds? I'm using a dense setup of many
+routers, so every router is seeing at least 2-3 neighbours. The
+preferred routes (marked with a [*] in batctl o ?) switched quite
+often. How is the BATMAN V metric affected by link quality & hop
+count?
 
-Regards, Linus
+Regards,
+Andi
