@@ -1,12 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: Problems with Multiple Interfaces
-Date: Tue, 13 Apr 2021 13:53:16 +0200
-Message-ID: <6830943.IaFvOplyQc@prime>
-In-Reply-To: <20210410003953.1234.9147@diktynna.open-mesh.org>
-References: <3542676.qYy7ulQ77K@prime> <20210410003953.1234.9147@diktynna.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [RFC PATCH] batman-adv: convert ifmcaddr6 to RCU
+Date: Sun, 18 Apr 2021 22:14:22 +0200
+Message-Id: <20210418201422.8415-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart44955799.Kctvcl01Cc"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,63 +14,159 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: joe@careyhome.org
 
- 
---nextPart44955799.Kctvcl01Cc
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Taehee Yoo <ap420073@gmail.com>
 
-On Saturday, April 10, 2021 2:39:53 AM CEST joe@careyhome.org wrote:
-> Linus and Simon,
-> 
-> Thank you for your responses.
-> 
-> I did try "batctl ping" and the adjacent device was unreachable.  I could
-> see it with "batctl n". I did not try a simple IPv6 link local ping. 
-> However, I could see it using "iw dev mesh_5g station dump"
-> 
-> I agree that it feels like a problem with ath10k reporting the data rate
-> incorrectly (or not at all).
-> 
-> I am going to try upgrading to the latest release, but it will be a few
-> days.  I'll let you know how it goes.
-> 
-> Thanks again,
-> 
-> --Joe
+The ifmcaddr6 has been protected by inet6_dev->lock(rwlock) so that
+the critical section is atomic context. In order to switch this context,
+changing locking is needed. The ifmcaddr6 actually already protected by
+RTNL So if it's converted to use RCU, its control path context can be
+switched to sleepable.
 
-Sounds great! You may want to take some more measures to find out if the 
-packets are actually getting transferred, e.g. doing tcpdump on both the 
-sending and receiving side. If you see packets sent but not received on the 
-other side, you know that it's a driver issue. Also "tcpdump" helps. For 
-ath10k, you may want to try 11s/mesh mode with TTL=1, while with ath10k-ct you 
-may prefer IBSS mode (I think that wasn't mentioned in your first mail).
+Suggested-by: Cong Wang <xiyou.wangcong@gmail.com>
+Signed-off-by: Taehee Yoo <ap420073@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[linus.luessing@c0d3.blue: Add compat code]
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+---
+@Sven: maybe something like this?
 
-Cheers,
-      Simon
---nextPart44955799.Kctvcl01Cc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Seems to compile fine for me, without warnings and seems to run fine and
+use the compat code for me.
 
------BEGIN PGP SIGNATURE-----
+I tried to create and add it to compat-include/net/if_inet6.h, as that
+would fit better for the "struct ifmcaddr6", but couldn't get that
+to work, lots of errors. And when adding it to compat.h the compat code
+does not seem to be used at all.
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAmB1hiwACgkQoSvjmEKS
-nqH7CQ//Sx9u/hnvcXuJu8P0Ga4KqXrVqk9ZpFGQVkJAmyWRopMYlisWsdQAA7On
-PzxUnwvzMnyeOdddJNnBy9reVUooGL45/Blegbu3koH2CvYM/zMSNsarN1C7k1uE
-N17Hta/068iu1kdxMnR++s+CwMEQH6QUyk94Y626xycwLWLzGAMlLQcAFKaOty6f
-qjkNT7wc33p6m53TnZc+AkNM37VAjZR2f31KP4UpJr6ikFK7sU4Y51TYSbkcSkCx
-W1NcsacnpaguPk1INOmc9z+3oFxnZhVobfNSmoiO5VT2Tf0yUxT+K8QoalnZOEll
-gjgrKZsJOOtG4JaXhgzxNb6pqSkgmWs/6zn1N+dmlwGhKpbexbOfuoZgE/XIL+Nl
-oirEO2VZwDrZGBnlz4RVUCDKBXFc8jbGgO4hstFUI9kZfi3RMIwD/oAg3r2+lXCA
-Fi8Fza5t3UWE8+N89r6cUgHYLFQxBzjbGCwMpQr8hqvFhtBsUNjEHYycx5tFHrLG
-+DFT2bDGGaG332ijPs4HZ9QxAWvlVnblWxRwZDVSGDQpaicOfqqp8+skFeiob+1T
-KcrrDrkRemFbd2GLZfdlbRl2AzW9QlPOwrYRH+kOtP5YfFgQQ8Sa80cJ1U+vq/Lt
-c4Htav9MYvcZ2mY0zSavle1nnzx9ltEyNCt/xsj7rti6kAdpyRA=
-=4mOQ
------END PGP SIGNATURE-----
+Also let me know if the kernel version is correct or if it should be
+5.14 instead?
 
---nextPart44955799.Kctvcl01Cc--
+ compat-include/net/addrconf.h | 85 +++++++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.c    |  6 +--
+ 2 files changed, 88 insertions(+), 3 deletions(-)
 
-
+diff --git a/compat-include/net/addrconf.h b/compat-include/net/addrconf.=
+h
+index 30124124..080e1dda 100644
+--- a/compat-include/net/addrconf.h
++++ b/compat-include/net/addrconf.h
+@@ -25,4 +25,89 @@ static inline int batadv_ipv6_mc_check_mld(struct sk_b=
+uff *skb)
+=20
+ #endif /* LINUX_VERSION_IS_LESS(5, 1, 0) */
+=20
++#if LINUX_VERSION_IS_LESS(5, 13, 0)
++
++static bool batadv_mcast_mla_is_duplicate(u8 *mcast_addr,
++					  struct hlist_head *mcast_list);
++
++static inline int
++compat_batadv_mcast_mla_softif_get_ipv6(struct net_device *dev,
++				 struct hlist_head *mcast_list,
++				 struct batadv_mcast_mla_flags *flags,
++				 u8 *mcast_addr,
++				struct batadv_hw_addr *new,
++				struct inet6_dev *in6_dev)
++
++{
++	struct ifmcaddr6 *pmc6;
++	int ret =3D 0;
++
++	if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6)
++		return 0;
++
++	rcu_read_lock();
++
++	in6_dev =3D __in6_dev_get(dev);
++	if (!in6_dev) {
++		rcu_read_unlock();
++		return 0;
++	}
++
++	read_lock_bh(&in6_dev->lock);
++	for (pmc6 =3D in6_dev->mc_list; pmc6; pmc6 =3D pmc6->next) {
++		if (IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) <
++		    IPV6_ADDR_SCOPE_LINKLOCAL)
++			continue;
++
++		if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
++		    ipv6_addr_is_ll_all_nodes(&pmc6->mca_addr))
++			continue;
++
++		if (!(flags->tvlv_flags & BATADV_MCAST_WANT_NO_RTR6) &&
++		    IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) >
++		    IPV6_ADDR_SCOPE_LINKLOCAL)
++			continue;
++
++		ipv6_eth_mc_map(&pmc6->mca_addr, mcast_addr);
++
++		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
++			continue;
++
++		new =3D kmalloc(sizeof(*new), GFP_ATOMIC);
++		if (!new) {
++			ret =3D -ENOMEM;
++			break;
++		}
++
++		ether_addr_copy(new->addr, mcast_addr);
++		hlist_add_head(&new->list, mcast_list);
++		ret++;
++	}
++	read_unlock_bh(&in6_dev->lock);
++	rcu_read_unlock();
++
++	return ret;
++}
++
++#define ifmcaddr6 \
++		net_device *orig_dev =3D dev; \
++		return compat_batadv_mcast_mla_softif_get_ipv6(orig_dev, \
++							       mcast_list, \
++							       flags, \
++							       mcast_addr, \
++							       new =3D NULL, \
++							       in6_dev =3D NULL); \
++	} \
++	static inline int \
++	__unused_batadv_mcast_mla_softif_get_ipv6(struct net_device *dev, \
++					     struct hlist_head *mcast_list, \
++					     struct batadv_mcast_mla_flags *flags) \
++	{ \
++		struct batadv_hw_addr *new; \
++		struct inet6_dev *in6_dev; \
++		u8 mcast_addr[ETH_ALEN]; \
++		struct ifmcaddr6
++
++#endif /* LINUX_VERSION_IS_LESS(5, 13, 0) */
++
+ #endif	/* _NET_BATMAN_ADV_COMPAT_NET_ADDRCONF_H_ */
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 28166402..1d63c8cb 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -454,8 +454,9 @@ batadv_mcast_mla_softif_get_ipv6(struct net_device *d=
+ev,
+ 		return 0;
+ 	}
+=20
+-	read_lock_bh(&in6_dev->lock);
+-	for (pmc6 =3D in6_dev->mc_list; pmc6; pmc6 =3D pmc6->next) {
++	for (pmc6 =3D rcu_dereference(in6_dev->mc_list);
++	     pmc6;
++	     pmc6 =3D rcu_dereference(pmc6->next)) {
+ 		if (IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) <
+ 		    IPV6_ADDR_SCOPE_LINKLOCAL)
+ 			continue;
+@@ -484,7 +485,6 @@ batadv_mcast_mla_softif_get_ipv6(struct net_device *d=
+ev,
+ 		hlist_add_head(&new->list, mcast_list);
+ 		ret++;
+ 	}
+-	read_unlock_bh(&in6_dev->lock);
+ 	rcu_read_unlock();
+=20
+ 	return ret;
+--=20
+2.31.0
