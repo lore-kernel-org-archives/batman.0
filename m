@@ -1,13 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH net-next 0/2] net: bridge: split IPv4/v6 mc router state and export for batman-adv
+Date: Sun, 25 Apr 2021 17:57:31 +0200
+Message-Id: <20210425155732.8561-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-References: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
- <20210406195122.GG2742@otheros>
-In-Reply-To: <20210406195122.GG2742@otheros>
-From: Andi Depressivum <andidepressivum@gmail.com>
-Date: Tue, 6 Apr 2021 23:33:26 +0200
-Message-ID: <CAEX-Y1YfhoLgcwMJAg11H7f785kum6LUrYq=YrKg0C-9vXZ-ZQ@mail.gmail.com>
-Subject: Re: How to mesh over ethernet VLAN?
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,39 +13,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: netdev@vger.kernel.org
+Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
-> Right, that is not supported. That goes in the direction of
-> creating an encapsulating loop. It's best to avoid sharing a link for both
-> the payload frames and the mesh layer.
+Hi,
 
-You're right, I've missed the encapsulation loop when thinking about it
+The following are two patches for the Linux bridge regarding multicast
+routers. They are rebased on top of the following fix:
+"net: bridge: mcast: fix broken length + header check for MRDv6 Adv." [0]
+And should be applied afterwards.
 
-> One option could be to add an extra VLAN, like VLAN 4, dedicated
-> for the mesh layer with the batman-adv frames, parallel to the
-> VLAN 3.
+The first one splits the so far combined multicast router state into two
+ones, one for IPv4 and one for IPv6, for a more fine-grained detection of
+multicast routers. This avoids sending IPv4 multicast packets to an
+IPv6-only multicast router and avoids sending IPv6 multicast packets to
+an IPv4-only multicast router. This is also in preparation for the
+second patch:
 
-That's the way I've configured it before thinking about VLAN-sharing.
-Works as expected except the virtual interface for the mesh link needs
-a different MAC address to the payload interfaces.
+The second patch exports this now per protocol family multicast router
+state so that batman-adv can then later make full use of the
+Multicast Router Discovery (MRD) support in the Linux bridge. The
+batman-adv protocol format currently expects separate multicast router
+states for IPv4 and IPv6, therefore it depends on the first patch.
+batman-adv will then make use of this newly exported functions like
+this[1].
 
-> Or if most/all hosts are running batman-adv, so if architecturally
-> batman-adv is forming the backbone of your network, you could
-> run batman-adv over this VLAN 3 only. And then either run
-> batman-adv on the servers themselves or bridge the servers into the
-> batman-adv mesh on their adjacent mesh router(s).
+Regards, Linus
 
-That was my very first configuration approach but it's rather slow
-(about 200mbit/s over a gigabit link) compared to native VLANs. I've
-tried to set the MTU size to 1536 for the mesh interface but for some
-reason the MTU of the interface stays at 1500?!
-
-config interface 'mesh_lan'
-        option mtu '1536'
-        option proto 'batadv_hardif'
-        option master 'bat0'
-        option ifname 'eth0.2'
-        option macaddr 'f4:f1:6d:37:b6:85'
-        option hop_penalty '5'
-
-Kind regards, Andi
+[0]: https://patchwork.kernel.org/project/netdevbpf/patch/20210425152736.=
+8421-1-linus.luessing@c0d3.blue/
+[1]: https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/m=
+ulticast-routeable-mrd
+     -> https://git.open-mesh.org/batman-adv.git/commit/d4bed3a9242744570=
+8baeb1f2d1841c5fb816fd4
