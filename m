@@ -1,53 +1,66 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/6] batctl: Consume genl ACKs after setting reads
-Date: Mon, 10 May 2021 21:49:40 +0200
-Message-Id: <20210510194945.103735-2-sven@narfation.org>
-In-Reply-To: <20210510194945.103735-1-sven@narfation.org>
-References: <20210510194945.103735-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [net-next v2 10/11] net: bridge: mcast: add ip4+ip6 mcast router timers to mdb netlink
+Date: Sun,  9 May 2021 21:45:08 +0200
+Message-Id: <20210509194509.10849-11-linus.luessing@c0d3.blue>
+In-Reply-To: <20210509194509.10849-1-linus.luessing@c0d3.blue>
+References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: netdev@vger.kernel.org
+Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
-The kernel is sending an ACK after an successful read request via the
-batadv genl socket. This ack must be consumed manually after the actual
-message was processed. Otherwise, the next user of the socket can get
-confused by the unexpected ACK in the socket queue.
+Now that we have split the multicast router state into two, one for IPv4
+and one for IPv6, also add individual timers to the mdb netlink router
+port dump. Leaving the old timer attribute for backwards compatibility.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
- sys.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ include/uapi/linux/if_bridge.h | 2 ++
+ net/bridge/br_mdb.c            | 8 +++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/sys.c b/sys.c
-index 6dd8c10..f1dc275 100644
---- a/sys.c
-+++ b/sys.c
-@@ -107,7 +107,13 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
- 	nl_send_auto_complete(state->sock, msg);
- 	nlmsg_free(msg);
- 
--	nl_recvmsgs(state->sock, state->cb);
-+	if (callback) {
-+		ret = nl_recvmsgs(state->sock, state->cb);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	nl_wait_for_ack(state->sock);
- 
- 	return result;
- }
--- 
-2.30.2
-
+diff --git a/include/uapi/linux/if_bridge.h b/include/uapi/linux/if_bridg=
+e.h
+index 13d59c5..6b56a75 100644
+--- a/include/uapi/linux/if_bridge.h
++++ b/include/uapi/linux/if_bridge.h
+@@ -627,6 +627,8 @@ enum {
+ 	MDBA_ROUTER_PATTR_UNSPEC,
+ 	MDBA_ROUTER_PATTR_TIMER,
+ 	MDBA_ROUTER_PATTR_TYPE,
++	MDBA_ROUTER_PATTR_INET_TIMER,
++	MDBA_ROUTER_PATTR_INET6_TIMER,
+ 	__MDBA_ROUTER_PATTR_MAX
+ };
+ #define MDBA_ROUTER_PATTR_MAX (__MDBA_ROUTER_PATTR_MAX - 1)
+diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
+index 3c608da..2cdd9b6 100644
+--- a/net/bridge/br_mdb.c
++++ b/net/bridge/br_mdb.c
+@@ -79,7 +79,13 @@ static int br_rports_fill_info(struct sk_buff *skb, st=
+ruct netlink_callback *cb,
+ 		    nla_put_u32(skb, MDBA_ROUTER_PATTR_TIMER,
+ 				max(ip4_timer, ip6_timer)) ||
+ 		    nla_put_u8(skb, MDBA_ROUTER_PATTR_TYPE,
+-			       p->multicast_router)) {
++			       p->multicast_router) ||
++		    (have_ip4_mc_rtr &&
++		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET_TIMER,
++				 ip4_timer)) ||
++		    (have_ip6_mc_rtr &&
++		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET6_TIMER,
++				 ip6_timer))) {
+ 			nla_nest_cancel(skb, port_nest);
+ 			goto fail;
+ 		}
+--=20
+2.31.0
