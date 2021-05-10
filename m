@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/4] batctl: originators: Get outgoing ifname from netlink
-Date: Mon, 10 May 2021 15:07:31 +0200
-Message-Id: <20210510130734.41080-1-sven@narfation.org>
+Subject: [PATCH] batctl: Avoid boolean in structures
+Date: Mon, 10 May 2021 15:39:06 +0200
+Message-Id: <20210510133906.45697-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,57 +17,81 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-There is no need to gather the interface name for an outgoing interface
-via a different syscall(s) when the kernel directly provides this
-information in the netlink message for this originator table entry.
-
-batman-adv provides this functionality with Linux 5.14/batman-adv 2021.2.
+Booleans inside structures to really only store a single bit of information
+is often a waste of space because a boolean is stored using multiple bytes.
+While this is not too relevant for batctl, just use the same way of storing
+such values as in the rest of batman-adv to avoid different paradigms in
+related code.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- originators.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ netlink.c         | 8 ++++----
+ throughputmeter.c | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/originators.c b/originators.c
-index 8a29dd7..11ca4b9 100644
---- a/originators.c
-+++ b/originators.c
-@@ -40,12 +40,14 @@ static int originators_callback(struct nl_msg *msg, void *arg)
- 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
- 	int last_seen_msecs, last_seen_secs;
- 	struct print_opts *opts = arg;
-+	char ifname_buf[IF_NAMESIZE];
- 	struct bat_host *bat_host;
- 	struct genlmsghdr *ghdr;
--	char ifname[IF_NAMESIZE];
-+	uint32_t ifindex;
- 	float last_seen;
- 	uint8_t *neigh;
- 	uint8_t *orig;
-+	char *ifname;
- 	char c = ' ';
- 	uint8_t tq;
+diff --git a/netlink.c b/netlink.c
+index 31c9b01..31f4419 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -592,7 +592,7 @@ static const int translate_mac_netlink_mandatory[] = {
  
-@@ -74,9 +76,16 @@ static int originators_callback(struct nl_msg *msg, void *arg)
- 	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
- 	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+ struct translate_mac_netlink_opts {
+ 	struct ether_addr mac;
+-	bool found;
++	uint8_t found:1;
+ 	struct nlquery_opts query_opts;
+ };
  
--	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
--			    ifname))
--		ifname[0] = '\0';
-+	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
-+		ifname = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
-+	} else {
-+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
-+		ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
-+		if (!if_indextoname(ifindex, ifname_buf))
-+			ifname_buf[0] = '\0';
-+
-+		ifname = ifname_buf;
-+	}
+@@ -680,7 +680,7 @@ struct get_nexthop_netlink_opts {
+ 	struct ether_addr mac;
+ 	uint8_t *nexthop;
+ 	char *ifname;
+-	bool found;
++	uint8_t found:1;
+ 	struct nlquery_opts query_opts;
+ };
  
- 	if (attrs[BATADV_ATTR_FLAG_BEST])
- 		c = '*';
+@@ -772,7 +772,7 @@ static const int get_primarymac_netlink_mandatory[] = {
+ 
+ struct get_primarymac_netlink_opts {
+ 	uint8_t *primarymac;
+-	bool found;
++	uint8_t found:1;
+ 	struct nlquery_opts query_opts;
+ };
+ 
+@@ -844,7 +844,7 @@ int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
+ struct get_algoname_netlink_opts {
+ 	char *algoname;
+ 	size_t algoname_len;
+-	bool found;
++	uint8_t found:1;
+ 	struct nlquery_opts query_opts;
+ };
+ 
+diff --git a/throughputmeter.c b/throughputmeter.c
+index f50f521..4c7ccca 100644
+--- a/throughputmeter.c
++++ b/throughputmeter.c
+@@ -38,16 +38,16 @@ static char *tp_mesh_iface;
+ 
+ struct tp_result {
+ 	int error;
+-	bool found;
+ 	uint32_t cookie;
+ 	uint8_t return_value;
++	uint8_t found:1;
+ 	uint32_t test_time;
+ 	uint64_t total_bytes;
+ };
+ 
+ struct tp_cookie {
+ 	int error;
+-	bool found;
++	uint8_t found:1;
+ 	uint32_t cookie;
+ };
+ 
 -- 
 2.30.2
 
