@@ -1,73 +1,178 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: [net-next v2 10/11] net: bridge: mcast: add ip4+ip6 mcast router
- timers to mdb netlink
-References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
- <20210509194509.10849-11-linus.luessing@c0d3.blue>
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
-Message-ID: <04761487-8abe-830e-7cf1-84a270d58ff5@nvidia.com>
-Date: Tue, 11 May 2021 12:30:26 +0300
-In-Reply-To: <20210509194509.10849-11-linus.luessing@c0d3.blue>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4/6] batctl: Get meshif info using shared genl socket
+Date: Mon, 10 May 2021 21:49:43 +0200
+Message-Id: <20210510194945.103735-5-sven@narfation.org>
+In-Reply-To: <20210510194945.103735-1-sven@narfation.org>
+References: <20210510194945.103735-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 09/05/2021 22:45, Linus L=C3=BCssing wrote:
-> Now that we have split the multicast router state into two, one for IPv=
-4
-> and one for IPv6, also add individual timers to the mdb netlink router
-> port dump. Leaving the old timer attribute for backwards compatibility.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
-> ---
->  include/uapi/linux/if_bridge.h | 2 ++
->  net/bridge/br_mdb.c            | 8 +++++++-
->  2 files changed, 9 insertions(+), 1 deletion(-)
->=20
+All subcommands which are using the netlink_get_info helper are already
+creating state object with batadv genl socket. It is not necessary to
+create a new one just to request data from the kernel.
 
-Acked-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ gateways.c    |  3 +--
+ mcast_flags.c |  3 +--
+ netlink.c     | 40 +++++++++++++---------------------------
+ netlink.h     |  2 +-
+ originators.c |  3 +--
+ 5 files changed, 17 insertions(+), 34 deletions(-)
 
-> diff --git a/include/uapi/linux/if_bridge.h b/include/uapi/linux/if_bri=
-dge.h
-> index 13d59c5..6b56a75 100644
-> --- a/include/uapi/linux/if_bridge.h
-> +++ b/include/uapi/linux/if_bridge.h
-> @@ -627,6 +627,8 @@ enum {
->  	MDBA_ROUTER_PATTR_UNSPEC,
->  	MDBA_ROUTER_PATTR_TIMER,
->  	MDBA_ROUTER_PATTR_TYPE,
-> +	MDBA_ROUTER_PATTR_INET_TIMER,
-> +	MDBA_ROUTER_PATTR_INET6_TIMER,
->  	__MDBA_ROUTER_PATTR_MAX
->  };
->  #define MDBA_ROUTER_PATTR_MAX (__MDBA_ROUTER_PATTR_MAX - 1)
-> diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
-> index 3c608da..2cdd9b6 100644
-> --- a/net/bridge/br_mdb.c
-> +++ b/net/bridge/br_mdb.c
-> @@ -79,7 +79,13 @@ static int br_rports_fill_info(struct sk_buff *skb, =
-struct netlink_callback *cb,
->  		    nla_put_u32(skb, MDBA_ROUTER_PATTR_TIMER,
->  				max(ip4_timer, ip6_timer)) ||
->  		    nla_put_u8(skb, MDBA_ROUTER_PATTR_TYPE,
-> -			       p->multicast_router)) {
-> +			       p->multicast_router) ||
-> +		    (have_ip4_mc_rtr &&
-> +		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET_TIMER,
-> +				 ip4_timer)) ||
-> +		    (have_ip6_mc_rtr &&
-> +		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET6_TIMER,
-> +				 ip6_timer))) {
->  			nla_nest_cancel(skb, port_nest);
->  			goto fail;
->  		}
->=20
+diff --git a/gateways.c b/gateways.c
+index 7625bd8..bdd6795 100644
+--- a/gateways.c
++++ b/gateways.c
+@@ -122,8 +122,7 @@ static int netlink_print_gateways(struct state *state, char *orig_iface,
+ 
+ 	/* only parse routing algorithm name */
+ 	last_err = -EINVAL;
+-	info_header = netlink_get_info(state->mesh_ifindex,
+-				       BATADV_CMD_GET_ORIGINATORS, NULL);
++	info_header = netlink_get_info(state, BATADV_CMD_GET_ORIGINATORS, NULL);
+ 	free(info_header);
+ 
+ 	if (strlen(algo_name_buf) == 0)
+diff --git a/mcast_flags.c b/mcast_flags.c
+index 721f549..44344e0 100644
+--- a/mcast_flags.c
++++ b/mcast_flags.c
+@@ -104,8 +104,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
+ 	int ret;
+ 
+ 	/* only parse own multicast flags */
+-	info_header = netlink_get_info(state->mesh_ifindex,
+-				       BATADV_CMD_GET_MCAST_FLAGS, NULL);
++	info_header = netlink_get_info(state, BATADV_CMD_GET_MCAST_FLAGS, NULL);
+ 	free(info_header);
+ 
+ 	if (mcast_flags == -EOPNOTSUPP || mcast_flags_priv == -EOPNOTSUPP)
+diff --git a/netlink.c b/netlink.c
+index 31c9b01..e3a7b7c 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -339,60 +339,46 @@ static int info_callback(struct nl_msg *msg, void *arg)
+ 			opts->remaining_header = NULL;
+ 	}
+ 
+-	return NL_STOP;
++	return NL_OK;
+ }
+ 
+-char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
++char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
+ {
+-	struct nl_sock *sock;
+ 	struct nl_msg *msg;
+ 	struct nl_cb *cb;
+-	int family;
+ 	struct print_opts opts = {
+ 		.read_opt = 0,
+ 		.nl_cmd = nl_cmd,
+ 		.remaining_header = NULL,
+ 		.static_header = header,
+ 	};
+-
+-	sock = nl_socket_alloc();
+-	if (!sock)
+-		return NULL;
+-
+-	genl_connect(sock);
+-
+-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+-	if (family < 0) {
+-		nl_socket_free(sock);
+-		return NULL;
+-	}
++	int ret;
+ 
+ 	msg = nlmsg_alloc();
+-	if (!msg) {
+-		nl_socket_free(sock);
++	if (!msg)
+ 		return NULL;
+-	}
+ 
+-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
++	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0, 0,
+ 		    BATADV_CMD_GET_MESH_INFO, 1);
+ 
+-	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
++	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
+ 
+-	nl_send_auto_complete(sock, msg);
++	nl_send_auto_complete(state->sock, msg);
+ 
+ 	nlmsg_free(msg);
+ 
+ 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+ 	if (!cb)
+-		goto err_free_sock;
++		return NULL;
+ 
+ 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, &opts);
+ 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
+ 
+-	nl_recvmsgs(sock, cb);
++	ret = nl_recvmsgs(state->sock, cb);
++	if (ret < 0)
++		return opts.remaining_header;
+ 
+-err_free_sock:
+-	nl_socket_free(sock);
++	nl_wait_for_ack(state->sock);
+ 
+ 	return opts.remaining_header;
+ }
+@@ -458,7 +444,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
+ 			printf("\033[2J\033[0;0f");
+ 
+ 		if (!(read_opt & SKIP_HEADER))
+-			opts.remaining_header = netlink_get_info(state->mesh_ifindex,
++			opts.remaining_header = netlink_get_info(state,
+ 								 nl_cmd,
+ 								 header);
+ 
+diff --git a/netlink.h b/netlink.h
+index 4ee2f39..48a2a23 100644
+--- a/netlink.h
++++ b/netlink.h
+@@ -30,7 +30,7 @@ struct ether_addr;
+ int netlink_create(struct state *state);
+ void netlink_destroy(struct state *state);
+ 
+-char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
++char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header);
+ int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
+ 			  struct ether_addr *mac_out);
+ int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
+diff --git a/originators.c b/originators.c
+index 8a29dd7..a8b313e 100644
+--- a/originators.c
++++ b/originators.c
+@@ -174,8 +174,7 @@ static int netlink_print_originators(struct state *state, char *orig_iface,
+ 
+ 	/* only parse routing algorithm name */
+ 	last_err = -EINVAL;
+-	info_header = netlink_get_info(state->mesh_ifindex,
+-				       BATADV_CMD_GET_ORIGINATORS, NULL);
++	info_header = netlink_get_info(state, BATADV_CMD_GET_ORIGINATORS, NULL);
+ 	free(info_header);
+ 
+ 	if (strlen(algo_name_buf) == 0)
+-- 
+2.30.2
+
