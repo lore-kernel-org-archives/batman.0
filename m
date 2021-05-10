@@ -1,328 +1,135 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: [net-next v2 01/11] net: bridge: mcast: rename multicast router
- lists and timers
-References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
- <20210509194509.10849-2-linus.luessing@c0d3.blue>
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
-Message-ID: <5c126c23-9ef2-7d7e-7574-538287f604ef@nvidia.com>
-Date: Tue, 11 May 2021 12:12:39 +0300
-In-Reply-To: <20210509194509.10849-2-linus.luessing@c0d3.blue>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 6/6] batctl: routing_algo: List using shared genl socket
+Date: Mon, 10 May 2021 21:49:45 +0200
+Message-Id: <20210510194945.103735-7-sven@narfation.org>
+In-Reply-To: <20210510194945.103735-1-sven@narfation.org>
+References: <20210510194945.103735-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 09/05/2021 22:44, Linus L=C3=BCssing wrote:
-> In preparation for the upcoming split of multicast router state into
-> their IPv4 and IPv6 variants, rename the affected variable to the IPv4
-> version first to avoid some renames in later commits.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
-> ---
->  net/bridge/br_forward.c   |  2 +-
->  net/bridge/br_mdb.c       |  6 ++---
->  net/bridge/br_multicast.c | 48 +++++++++++++++++++--------------------
->  net/bridge/br_private.h   | 10 ++++----
->  4 files changed, 33 insertions(+), 33 deletions(-)
->=20
+The interface subcommand doesn't need to allocate a new netlink socket to
+get the list of interfaces. There is already a netlink socket available
+which was used to query the routing algorithm of each interface.
+Just use this batadv genl socket to also dump the list of all available
+routing algorithms.
 
-Acked-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ routing_algo.c | 53 ++++++++++++++++----------------------------------
+ 1 file changed, 17 insertions(+), 36 deletions(-)
 
-> diff --git a/net/bridge/br_forward.c b/net/bridge/br_forward.c
-> index 6e9b049..3b67184 100644
-> --- a/net/bridge/br_forward.c
-> +++ b/net/bridge/br_forward.c
-> @@ -290,7 +290,7 @@ void br_multicast_flood(struct net_bridge_mdb_entry=
- *mdst,
->  		struct net_bridge_port *port, *lport, *rport;
-> =20
->  		lport =3D p ? p->key.port : NULL;
-> -		rport =3D hlist_entry_safe(rp, struct net_bridge_port, rlist);
-> +		rport =3D hlist_entry_safe(rp, struct net_bridge_port, ip4_rlist);
-> =20
->  		if ((unsigned long)lport > (unsigned long)rport) {
->  			port =3D lport;
-> diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
-> index 95fa4af..d61def8 100644
-> --- a/net/bridge/br_mdb.c
-> +++ b/net/bridge/br_mdb.c
-> @@ -23,14 +23,14 @@ static int br_rports_fill_info(struct sk_buff *skb,=
- struct netlink_callback *cb,
->  	struct net_bridge_port *p;
->  	struct nlattr *nest, *port_nest;
-> =20
-> -	if (!br->multicast_router || hlist_empty(&br->router_list))
-> +	if (!br->multicast_router || hlist_empty(&br->ip4_mc_router_list))
->  		return 0;
-> =20
->  	nest =3D nla_nest_start_noflag(skb, MDBA_ROUTER);
->  	if (nest =3D=3D NULL)
->  		return -EMSGSIZE;
-> =20
-> -	hlist_for_each_entry_rcu(p, &br->router_list, rlist) {
-> +	hlist_for_each_entry_rcu(p, &br->ip4_mc_router_list, ip4_rlist) {
->  		if (!p)
->  			continue;
->  		port_nest =3D nla_nest_start_noflag(skb, MDBA_ROUTER_PORT);
-> @@ -38,7 +38,7 @@ static int br_rports_fill_info(struct sk_buff *skb, s=
-truct netlink_callback *cb,
->  			goto fail;
->  		if (nla_put_nohdr(skb, sizeof(u32), &p->dev->ifindex) ||
->  		    nla_put_u32(skb, MDBA_ROUTER_PATTR_TIMER,
-> -				br_timer_value(&p->multicast_router_timer)) ||
-> +				br_timer_value(&p->ip4_mc_router_timer)) ||
->  		    nla_put_u8(skb, MDBA_ROUTER_PATTR_TYPE,
->  			       p->multicast_router)) {
->  			nla_nest_cancel(skb, port_nest);
-> diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-> index 226bb05..6fe93a3 100644
-> --- a/net/bridge/br_multicast.c
-> +++ b/net/bridge/br_multicast.c
-> @@ -1357,13 +1357,13 @@ static int br_ip6_multicast_add_group(struct ne=
-t_bridge *br,
->  static void br_multicast_router_expired(struct timer_list *t)
->  {
->  	struct net_bridge_port *port =3D
-> -			from_timer(port, t, multicast_router_timer);
-> +			from_timer(port, t, ip4_mc_router_timer);
->  	struct net_bridge *br =3D port->br;
-> =20
->  	spin_lock(&br->multicast_lock);
->  	if (port->multicast_router =3D=3D MDB_RTR_TYPE_DISABLED ||
->  	    port->multicast_router =3D=3D MDB_RTR_TYPE_PERM ||
-> -	    timer_pending(&port->multicast_router_timer))
-> +	    timer_pending(&port->ip4_mc_router_timer))
->  		goto out;
-> =20
->  	__del_port_router(port);
-> @@ -1386,12 +1386,12 @@ static void br_mc_router_state_change(struct ne=
-t_bridge *p,
-> =20
->  static void br_multicast_local_router_expired(struct timer_list *t)
->  {
-> -	struct net_bridge *br =3D from_timer(br, t, multicast_router_timer);
-> +	struct net_bridge *br =3D from_timer(br, t, ip4_mc_router_timer);
-> =20
->  	spin_lock(&br->multicast_lock);
->  	if (br->multicast_router =3D=3D MDB_RTR_TYPE_DISABLED ||
->  	    br->multicast_router =3D=3D MDB_RTR_TYPE_PERM ||
-> -	    timer_pending(&br->multicast_router_timer))
-> +	    timer_pending(&br->ip4_mc_router_timer))
->  		goto out;
-> =20
->  	br_mc_router_state_change(br, false);
-> @@ -1613,7 +1613,7 @@ int br_multicast_add_port(struct net_bridge_port =
-*port)
->  	port->multicast_router =3D MDB_RTR_TYPE_TEMP_QUERY;
->  	port->multicast_eht_hosts_limit =3D BR_MCAST_DEFAULT_EHT_HOSTS_LIMIT;
-> =20
-> -	timer_setup(&port->multicast_router_timer,
-> +	timer_setup(&port->ip4_mc_router_timer,
->  		    br_multicast_router_expired, 0);
->  	timer_setup(&port->ip4_own_query.timer,
->  		    br_ip4_multicast_port_query_expired, 0);
-> @@ -1649,7 +1649,7 @@ void br_multicast_del_port(struct net_bridge_port=
- *port)
->  	hlist_move_list(&br->mcast_gc_list, &deleted_head);
->  	spin_unlock_bh(&br->multicast_lock);
->  	br_multicast_gc(&deleted_head);
-> -	del_timer_sync(&port->multicast_router_timer);
-> +	del_timer_sync(&port->ip4_mc_router_timer);
->  	free_percpu(port->mcast_stats);
->  }
-> =20
-> @@ -1674,7 +1674,7 @@ static void __br_multicast_enable_port(struct net=
-_bridge_port *port)
->  	br_multicast_enable(&port->ip6_own_query);
->  #endif
->  	if (port->multicast_router =3D=3D MDB_RTR_TYPE_PERM &&
-> -	    hlist_unhashed(&port->rlist))
-> +	    hlist_unhashed(&port->ip4_rlist))
->  		br_multicast_add_router(br, port);
->  }
-> =20
-> @@ -1700,7 +1700,7 @@ void br_multicast_disable_port(struct net_bridge_=
-port *port)
-> =20
->  	__del_port_router(port);
-> =20
-> -	del_timer(&port->multicast_router_timer);
-> +	del_timer(&port->ip4_mc_router_timer);
->  	del_timer(&port->ip4_own_query.timer);
->  #if IS_ENABLED(CONFIG_IPV6)
->  	del_timer(&port->ip6_own_query.timer);
-> @@ -2666,19 +2666,19 @@ static void br_multicast_add_router(struct net_=
-bridge *br,
->  	struct net_bridge_port *p;
->  	struct hlist_node *slot =3D NULL;
-> =20
-> -	if (!hlist_unhashed(&port->rlist))
-> +	if (!hlist_unhashed(&port->ip4_rlist))
->  		return;
-> =20
-> -	hlist_for_each_entry(p, &br->router_list, rlist) {
-> +	hlist_for_each_entry(p, &br->ip4_mc_router_list, ip4_rlist) {
->  		if ((unsigned long) port >=3D (unsigned long) p)
->  			break;
-> -		slot =3D &p->rlist;
-> +		slot =3D &p->ip4_rlist;
->  	}
-> =20
->  	if (slot)
-> -		hlist_add_behind_rcu(&port->rlist, slot);
-> +		hlist_add_behind_rcu(&port->ip4_rlist, slot);
->  	else
-> -		hlist_add_head_rcu(&port->rlist, &br->router_list);
-> +		hlist_add_head_rcu(&port->ip4_rlist, &br->ip4_mc_router_list);
->  	br_rtr_notify(br->dev, port, RTM_NEWMDB);
->  	br_port_mc_router_state_change(port, true);
->  }
-> @@ -2690,9 +2690,9 @@ static void br_multicast_mark_router(struct net_b=
-ridge *br,
-> =20
->  	if (!port) {
->  		if (br->multicast_router =3D=3D MDB_RTR_TYPE_TEMP_QUERY) {
-> -			if (!timer_pending(&br->multicast_router_timer))
-> +			if (!timer_pending(&br->ip4_mc_router_timer))
->  				br_mc_router_state_change(br, true);
-> -			mod_timer(&br->multicast_router_timer,
-> +			mod_timer(&br->ip4_mc_router_timer,
->  				  now + br->multicast_querier_interval);
->  		}
->  		return;
-> @@ -2704,7 +2704,7 @@ static void br_multicast_mark_router(struct net_b=
-ridge *br,
-> =20
->  	br_multicast_add_router(br, port);
-> =20
-> -	mod_timer(&port->multicast_router_timer,
-> +	mod_timer(&port->ip4_mc_router_timer,
->  		  now + br->multicast_querier_interval);
->  }
-> =20
-> @@ -3316,7 +3316,7 @@ void br_multicast_init(struct net_bridge *br)
->  	br_opt_toggle(br, BROPT_HAS_IPV6_ADDR, true);
-> =20
->  	spin_lock_init(&br->multicast_lock);
-> -	timer_setup(&br->multicast_router_timer,
-> +	timer_setup(&br->ip4_mc_router_timer,
->  		    br_multicast_local_router_expired, 0);
->  	timer_setup(&br->ip4_other_query.timer,
->  		    br_ip4_multicast_querier_expired, 0);
-> @@ -3416,7 +3416,7 @@ void br_multicast_open(struct net_bridge *br)
-> =20
->  void br_multicast_stop(struct net_bridge *br)
->  {
-> -	del_timer_sync(&br->multicast_router_timer);
-> +	del_timer_sync(&br->ip4_mc_router_timer);
->  	del_timer_sync(&br->ip4_other_query.timer);
->  	del_timer_sync(&br->ip4_own_query.timer);
->  #if IS_ENABLED(CONFIG_IPV6)
-> @@ -3453,7 +3453,7 @@ int br_multicast_set_router(struct net_bridge *br=
-, unsigned long val)
->  	case MDB_RTR_TYPE_DISABLED:
->  	case MDB_RTR_TYPE_PERM:
->  		br_mc_router_state_change(br, val =3D=3D MDB_RTR_TYPE_PERM);
-> -		del_timer(&br->multicast_router_timer);
-> +		del_timer(&br->ip4_mc_router_timer);
->  		br->multicast_router =3D val;
->  		err =3D 0;
->  		break;
-> @@ -3472,9 +3472,9 @@ int br_multicast_set_router(struct net_bridge *br=
-, unsigned long val)
-> =20
->  static void __del_port_router(struct net_bridge_port *p)
->  {
-> -	if (hlist_unhashed(&p->rlist))
-> +	if (hlist_unhashed(&p->ip4_rlist))
->  		return;
-> -	hlist_del_init_rcu(&p->rlist);
-> +	hlist_del_init_rcu(&p->ip4_rlist);
->  	br_rtr_notify(p->br->dev, p, RTM_DELMDB);
->  	br_port_mc_router_state_change(p, false);
-> =20
-> @@ -3493,7 +3493,7 @@ int br_multicast_set_port_router(struct net_bridg=
-e_port *p, unsigned long val)
->  	if (p->multicast_router =3D=3D val) {
->  		/* Refresh the temp router port timer */
->  		if (p->multicast_router =3D=3D MDB_RTR_TYPE_TEMP)
-> -			mod_timer(&p->multicast_router_timer,
-> +			mod_timer(&p->ip4_mc_router_timer,
->  				  now + br->multicast_querier_interval);
->  		err =3D 0;
->  		goto unlock;
-> @@ -3502,7 +3502,7 @@ int br_multicast_set_port_router(struct net_bridg=
-e_port *p, unsigned long val)
->  	case MDB_RTR_TYPE_DISABLED:
->  		p->multicast_router =3D MDB_RTR_TYPE_DISABLED;
->  		__del_port_router(p);
-> -		del_timer(&p->multicast_router_timer);
-> +		del_timer(&p->ip4_mc_router_timer);
->  		break;
->  	case MDB_RTR_TYPE_TEMP_QUERY:
->  		p->multicast_router =3D MDB_RTR_TYPE_TEMP_QUERY;
-> @@ -3510,7 +3510,7 @@ int br_multicast_set_port_router(struct net_bridg=
-e_port *p, unsigned long val)
->  		break;
->  	case MDB_RTR_TYPE_PERM:
->  		p->multicast_router =3D MDB_RTR_TYPE_PERM;
-> -		del_timer(&p->multicast_router_timer);
-> +		del_timer(&p->ip4_mc_router_timer);
->  		br_multicast_add_router(br, p);
->  		break;
->  	case MDB_RTR_TYPE_TEMP:
-> diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
-> index 7ce8a77..26e91d2 100644
-> --- a/net/bridge/br_private.h
-> +++ b/net/bridge/br_private.h
-> @@ -307,6 +307,8 @@ struct net_bridge_port {
-> =20
->  #ifdef CONFIG_BRIDGE_IGMP_SNOOPING
->  	struct bridge_mcast_own_query	ip4_own_query;
-> +	struct timer_list		ip4_mc_router_timer;
-> +	struct hlist_node		ip4_rlist;
->  #if IS_ENABLED(CONFIG_IPV6)
->  	struct bridge_mcast_own_query	ip6_own_query;
->  #endif /* IS_ENABLED(CONFIG_IPV6) */
-> @@ -314,9 +316,7 @@ struct net_bridge_port {
->  	u32				multicast_eht_hosts_cnt;
->  	unsigned char			multicast_router;
->  	struct bridge_mcast_stats	__percpu *mcast_stats;
-> -	struct timer_list		multicast_router_timer;
->  	struct hlist_head		mglist;
-> -	struct hlist_node		rlist;
->  #endif
-> =20
->  #ifdef CONFIG_SYSFS
-> @@ -449,9 +449,9 @@ struct net_bridge {
-> =20
->  	struct hlist_head		mcast_gc_list;
->  	struct hlist_head		mdb_list;
-> -	struct hlist_head		router_list;
-> =20
-> -	struct timer_list		multicast_router_timer;
-> +	struct hlist_head		ip4_mc_router_list;
-> +	struct timer_list		ip4_mc_router_timer;
->  	struct bridge_mcast_other_query	ip4_other_query;
->  	struct bridge_mcast_own_query	ip4_own_query;
->  	struct bridge_mcast_querier	ip4_querier;
-> @@ -868,7 +868,7 @@ static inline bool br_multicast_is_router(struct ne=
-t_bridge *br)
->  {
->  	return br->multicast_router =3D=3D 2 ||
->  	       (br->multicast_router =3D=3D 1 &&
-> -		timer_pending(&br->multicast_router_timer));
-> +		timer_pending(&br->ip4_mc_router_timer));
->  }
-> =20
->  static inline bool
->=20
+diff --git a/routing_algo.c b/routing_algo.c
+index 8fb4fab..0adf32f 100644
+--- a/routing_algo.c
++++ b/routing_algo.c
+@@ -79,58 +79,35 @@ static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
+ 	return NL_OK;
+ }
+ 
+-static int print_routing_algos(void)
++static int print_routing_algos(struct state *state)
+ {
+-	struct nl_sock *sock;
+ 	struct nl_msg *msg;
+ 	struct nl_cb *cb;
+-	int family;
+ 	struct print_opts opts = {
+ 		.callback = routing_algos_callback,
+ 	};
+ 
+-	sock = nl_socket_alloc();
+-	if (!sock)
+-		return -ENOMEM;
+-
+-	genl_connect(sock);
+-
+-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+-	if (family < 0) {
+-		last_err = -EOPNOTSUPP;
+-		goto err_free_sock;
+-	}
+-
+ 	msg = nlmsg_alloc();
+-	if (!msg) {
+-		last_err = -ENOMEM;
+-		goto err_free_sock;
+-	}
+-
+-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
+-		    BATADV_CMD_GET_ROUTING_ALGOS, 1);
+-
+-	nl_send_auto_complete(sock, msg);
++	if (!msg)
++		return -ENOMEM;
+ 
++	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0,
++		    NLM_F_DUMP, BATADV_CMD_GET_ROUTING_ALGOS, 1);
++	nl_send_auto_complete(state->sock, msg);
+ 	nlmsg_free(msg);
+ 
+ 	opts.remaining_header = strdup("Available routing algorithms:\n");
+ 
+ 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+-	if (!cb) {
+-		last_err = -ENOMEM;
+-		goto err_free_sock;
+-	}
++	if (!cb)
++		return -ENOMEM;
+ 
+ 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
+ 		  &opts);
+ 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, netlink_stop_callback, NULL);
+ 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
+ 
+-	nl_recvmsgs(sock, cb);
+-
+-err_free_sock:
+-	nl_socket_free(sock);
++	nl_recvmsgs(state->sock, cb);
+ 
+ 	if (!last_err)
+ 		netlink_print_remaining_header(&opts);
+@@ -316,19 +293,23 @@ static int routing_algo(struct state *state, int argc, char **argv)
+ 		return EXIT_FAILURE;
+ 
+ 	print_ra_interfaces(state);
+-	netlink_destroy(state);
+ 
+ 	res = read_file(SYS_SELECTED_RA_PATH, USE_READ_BUFF);
+ 	if (res != EXIT_SUCCESS)
+-		return EXIT_FAILURE;
++		goto err_free_netlink;
+ 
+ 	printf("Selected routing algorithm (used when next batX interface is created):\n");
+ 	printf(" => %s\n", line_ptr);
+ 	free(line_ptr);
+ 	line_ptr = NULL;
+ 
+-	print_routing_algos();
+-	return EXIT_SUCCESS;
++	print_routing_algos(state);
++	res = EXIT_SUCCESS;
++
++err_free_netlink:
++	netlink_destroy(state);
++
++	return res;
+ }
+ 
+ COMMAND(SUBCOMMAND, routing_algo, "ra", 0, NULL,
+-- 
+2.30.2
+
