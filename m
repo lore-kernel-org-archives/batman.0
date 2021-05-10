@@ -1,137 +1,53 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3 3/3] batman-adv: bcast: remove remaining skb-copy calls for broadcasts
-Date: Mon, 17 May 2021 00:33:09 +0200
-Message-Id: <20210516223309.12596-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20210516223309.12596-1-linus.luessing@c0d3.blue>
-References: <20210516223309.12596-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 1/6] batctl: Consume genl ACKs after setting reads
+Date: Mon, 10 May 2021 21:49:40 +0200
+Message-Id: <20210510194945.103735-2-sven@narfation.org>
+In-Reply-To: <20210510194945.103735-1-sven@narfation.org>
+References: <20210510194945.103735-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-We currently have two code paths for broadcast packets: A)
-self-generated, via batadv_interface_tx()->batadv_send_bcast_packet().
-Or B) received/forwarded, via batadv_recv_bcast_packet()->
-batadv_forw_bcast_packet().
+The kernel is sending an ACK after an successful read request via the
+batadv genl socket. This ack must be consumed manually after the actual
+message was processed. Otherwise, the next user of the socket can get
+confused by the unexpected ACK in the socket queue.
 
-For A), self-generated broadcast packets the only modifications to the
-skb data is the ethernet header which is added/pushed to the skb in
-batadv_send_broadcast_skb()->batadv_send_skb_packet(). However before
-doing so batadv_skb_head_push() is called which calls skb_cow_head() to
-unshare the space for the to be pushed ethernet header. So for this
-case, it is safe to use skb clones.
-
-For B), received/forwarded packets the same applies as in A) for the
-to be forwarded packets. Only the ethernet header is added. However
-after (queueing for) forwarding the packet in
-batadv_recv_bcast_packet()->batadv_forw_bcast_packet() a packet is
-additionally decapsulated and is sent up the stack through
-batadv_recv_bcast_packet()->batadv_interface_rx(). Which needs an
-unshared skb data for potential modifications from other protocols.
-To be able to use skb clones for (re)broadcasted batman-adv broadcast
-packets while still ensuring that interface_rx() has a freely writeable
-skb we use skb_cow() to avoid sharing skb data with the skb clones in
-the forwarding calls.
-
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+ sys.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Changelog v3:
-
-* newly added this patch, to move skb_copy()->skb_clone() changes from
-  PATCH 01/03 to a separate patch with its own explanation
-
- net/batman-adv/send.c | 24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 0b9dd29d..1db6b217 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -748,6 +748,10 @@ void batadv_forw_packet_ogmv1_queue(struct batadv_pr=
-iv *bat_priv,
-  * Adds a broadcast packet to the queue and sets up timers. Broadcast pa=
-ckets
-  * are sent multiple times to increase probability for being received.
-  *
-+ * This call clones the given skb, hence the caller needs to take into
-+ * account that the data segment of the original skb might not be
-+ * modifiable anymore.
-+ *
-  * Return: NETDEV_TX_OK on success and NETDEV_TX_BUSY on errors.
-  */
- static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv=
-,
-@@ -761,7 +765,7 @@ static int batadv_forw_bcast_packet_to_list(struct ba=
-tadv_priv *bat_priv,
- 	unsigned long send_time =3D jiffies;
- 	struct sk_buff *newskb;
-=20
--	newskb =3D skb_copy(skb, GFP_ATOMIC);
-+	newskb =3D skb_clone(skb, GFP_ATOMIC);
- 	if (!newskb)
- 		goto err;
-=20
-@@ -800,6 +804,10 @@ static int batadv_forw_bcast_packet_to_list(struct b=
-atadv_priv *bat_priv,
-  * or if a delay is given after that. Furthermore, queues additional
-  * retransmissions if this interface is a wireless one.
-  *
-+ * This call clones the given skb, hence the caller needs to take into
-+ * account that the data segment of the original skb might not be
-+ * modifiable anymore.
-+ *
-  * Return: NETDEV_TX_OK on success and NETDEV_TX_BUSY on errors.
-  */
- static int batadv_forw_bcast_packet_if(struct batadv_priv *bat_priv,
-@@ -814,7 +822,7 @@ static int batadv_forw_bcast_packet_if(struct batadv_=
-priv *bat_priv,
- 	int ret =3D NETDEV_TX_OK;
-=20
- 	if (!delay) {
--		newskb =3D skb_copy(skb, GFP_ATOMIC);
-+		newskb =3D skb_clone(skb, GFP_ATOMIC);
- 		if (!newskb)
- 			return NETDEV_TX_BUSY;
-=20
-@@ -966,6 +974,8 @@ static int __batadv_forw_bcast_packet(struct batadv_p=
-riv *bat_priv,
-  * after that. Furthermore, queues additional retransmissions on wireles=
-s
-  * interfaces.
-  *
-+ * This call might reallocate skb data.
-+ *
-  * Return: NETDEV_TX_OK on success and NETDEV_TX_BUSY on errors.
-  */
- int batadv_forw_bcast_packet(struct batadv_priv *bat_priv,
-@@ -973,7 +983,15 @@ int batadv_forw_bcast_packet(struct batadv_priv *bat=
-_priv,
- 			     unsigned long delay,
- 			     bool own_packet)
- {
--	return __batadv_forw_bcast_packet(bat_priv, skb, delay, own_packet);
-+	int ret =3D __batadv_forw_bcast_packet(bat_priv, skb, delay, own_packet=
-);
+diff --git a/sys.c b/sys.c
+index 6dd8c10..f1dc275 100644
+--- a/sys.c
++++ b/sys.c
+@@ -107,7 +107,13 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
+ 	nl_send_auto_complete(state->sock, msg);
+ 	nlmsg_free(msg);
+ 
+-	nl_recvmsgs(state->sock, state->cb);
++	if (callback) {
++		ret = nl_recvmsgs(state->sock, state->cb);
++		if (ret < 0)
++			return ret;
++	}
 +
-+	if (ret =3D=3D NETDEV_TX_BUSY)
-+		return ret;
-+
-+	/* __batadv_forw_bcast_packet clones, make sure original
-+	 * skb stays writeable
-+	 */
-+	return (skb_cow(skb, 0) < 0) ? NETDEV_TX_BUSY : NETDEV_TX_OK;
++	nl_wait_for_ack(state->sock);
+ 
+ 	return result;
  }
-=20
- /**
---=20
-2.31.0
+-- 
+2.30.2
+
