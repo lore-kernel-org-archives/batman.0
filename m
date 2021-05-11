@@ -1,97 +1,111 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batctl: Avoid boolean in structures
-Date: Mon, 10 May 2021 15:39:06 +0200
-Message-Id: <20210510133906.45697-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Re: [net-next v2 03/11] net: bridge: mcast: prepare mdb netlink for
+ mcast router split
+References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
+ <20210509194509.10849-4-linus.luessing@c0d3.blue>
+From: Nikolay Aleksandrov <nikolay@nvidia.com>
+Message-ID: <5804d062-4b3d-9fab-50ba-e9dfa085f4f0@nvidia.com>
+Date: Tue, 11 May 2021 12:13:17 +0300
+In-Reply-To: <20210509194509.10849-4-linus.luessing@c0d3.blue>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org
+Cc: Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
-Booleans inside structures to really only store a single bit of information
-is often a waste of space because a boolean is stored using multiple bytes.
-While this is not too relevant for batctl, just use the same way of storing
-such values as in the rest of batman-adv to avoid different paradigms in
-related code.
+On 09/05/2021 22:45, Linus L=C3=BCssing wrote:
+> In preparation for the upcoming split of multicast router state into
+> their IPv4 and IPv6 variants and to avoid IPv6 #ifdef clutter later add
+> some inline functions for the protocol specific parts in the mdb router
+> netlink code. Also the we need iterate over the port instead of router
+> list to be able put one router port entry with both the IPv4 and IPv6
+> multicast router info later.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> ---
+>  net/bridge/br_mdb.c | 39 ++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 34 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
+> index d61def8..6937d3b 100644
+> --- a/net/bridge/br_mdb.c
+> +++ b/net/bridge/br_mdb.c
+> @@ -16,29 +16,58 @@
+> =20
+>  #include "br_private.h"
+> =20
+> +static inline bool br_rports_have_mc_router(struct net_bridge *br)
+> +{
+> +	return !hlist_empty(&br->ip4_mc_router_list);
+> +}
+> +
+> +static inline bool
+> +br_ip4_rports_get_timer(struct net_bridge_port *port, unsigned long *t=
+imer)
+> +{
+> +	*timer =3D br_timer_value(&port->ip4_mc_router_timer);
+> +	return !hlist_unhashed(&port->ip4_rlist);
+> +}
+> +
+> +static inline bool
+> +br_ip6_rports_get_timer(struct net_bridge_port *port, unsigned long *t=
+imer)
+> +{
+> +	*timer =3D 0;
+> +	return false;
+> +}
+> +
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- netlink.c         | 8 ++++----
- throughputmeter.c | 4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+Same comment about inlines in .c files, please move them to br_private.h
 
-diff --git a/netlink.c b/netlink.c
-index 31c9b01..31f4419 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -592,7 +592,7 @@ static const int translate_mac_netlink_mandatory[] = {
- 
- struct translate_mac_netlink_opts {
- 	struct ether_addr mac;
--	bool found;
-+	uint8_t found:1;
- 	struct nlquery_opts query_opts;
- };
- 
-@@ -680,7 +680,7 @@ struct get_nexthop_netlink_opts {
- 	struct ether_addr mac;
- 	uint8_t *nexthop;
- 	char *ifname;
--	bool found;
-+	uint8_t found:1;
- 	struct nlquery_opts query_opts;
- };
- 
-@@ -772,7 +772,7 @@ static const int get_primarymac_netlink_mandatory[] = {
- 
- struct get_primarymac_netlink_opts {
- 	uint8_t *primarymac;
--	bool found;
-+	uint8_t found:1;
- 	struct nlquery_opts query_opts;
- };
- 
-@@ -844,7 +844,7 @@ int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
- struct get_algoname_netlink_opts {
- 	char *algoname;
- 	size_t algoname_len;
--	bool found;
-+	uint8_t found:1;
- 	struct nlquery_opts query_opts;
- };
- 
-diff --git a/throughputmeter.c b/throughputmeter.c
-index f50f521..4c7ccca 100644
---- a/throughputmeter.c
-+++ b/throughputmeter.c
-@@ -38,16 +38,16 @@ static char *tp_mesh_iface;
- 
- struct tp_result {
- 	int error;
--	bool found;
- 	uint32_t cookie;
- 	uint8_t return_value;
-+	uint8_t found:1;
- 	uint32_t test_time;
- 	uint64_t total_bytes;
- };
- 
- struct tp_cookie {
- 	int error;
--	bool found;
-+	uint8_t found:1;
- 	uint32_t cookie;
- };
- 
--- 
-2.30.2
-
+>  static int br_rports_fill_info(struct sk_buff *skb, struct netlink_cal=
+lback *cb,
+>  			       struct net_device *dev)
+>  {
+>  	struct net_bridge *br =3D netdev_priv(dev);
+> -	struct net_bridge_port *p;
+> +	bool have_ip4_mc_rtr, have_ip6_mc_rtr;
+> +	unsigned long ip4_timer, ip6_timer;
+>  	struct nlattr *nest, *port_nest;
+> +	struct net_bridge_port *p;
+> =20
+> -	if (!br->multicast_router || hlist_empty(&br->ip4_mc_router_list))
+> +	if (!br->multicast_router)
+> +		return 0;
+> +
+> +	if (!br_rports_have_mc_router(br))
+>  		return 0;
+> =20
+>  	nest =3D nla_nest_start_noflag(skb, MDBA_ROUTER);
+>  	if (nest =3D=3D NULL)
+>  		return -EMSGSIZE;
+> =20
+> -	hlist_for_each_entry_rcu(p, &br->ip4_mc_router_list, ip4_rlist) {
+> -		if (!p)
+> +	list_for_each_entry_rcu(p, &br->port_list, list) {
+> +		have_ip4_mc_rtr =3D br_ip4_rports_get_timer(p, &ip4_timer);
+> +		have_ip6_mc_rtr =3D br_ip6_rports_get_timer(p, &ip6_timer);
+> +
+> +		if (!have_ip4_mc_rtr && !have_ip6_mc_rtr)
+>  			continue;
+> +
+>  		port_nest =3D nla_nest_start_noflag(skb, MDBA_ROUTER_PORT);
+>  		if (!port_nest)
+>  			goto fail;
+> +
+>  		if (nla_put_nohdr(skb, sizeof(u32), &p->dev->ifindex) ||
+>  		    nla_put_u32(skb, MDBA_ROUTER_PATTR_TIMER,
+> -				br_timer_value(&p->ip4_mc_router_timer)) ||
+> +				max(ip4_timer, ip6_timer)) ||
+>  		    nla_put_u8(skb, MDBA_ROUTER_PATTR_TYPE,
+>  			       p->multicast_router)) {
+>  			nla_nest_cancel(skb, port_nest);
+>=20
