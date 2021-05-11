@@ -1,15 +1,16 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Subject: Re: [net-next v2 10/11] net: bridge: mcast: add ip4+ip6 mcast router
+ timers to mdb netlink
+References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
+ <20210509194509.10849-11-linus.luessing@c0d3.blue>
+From: Nikolay Aleksandrov <nikolay@nvidia.com>
+Message-ID: <04761487-8abe-830e-7cf1-84a270d58ff5@nvidia.com>
+Date: Tue, 11 May 2021 12:30:26 +0300
+In-Reply-To: <20210509194509.10849-11-linus.luessing@c0d3.blue>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 MIME-Version: 1.0
-References: <CAEX-Y1Z8vHvj_TD-EL-Y9AiSeKV9WHb=BxJMwJx0h5z0xfk5OA@mail.gmail.com>
- <20210406195122.GG2742@otheros> <CAEX-Y1YfhoLgcwMJAg11H7f785kum6LUrYq=YrKg0C-9vXZ-ZQ@mail.gmail.com>
- <20210409112432.GJ2742@otheros> <CAEX-Y1ZnouWOpjrT4n8q4BVaRWSP30GLMbT_78Kn3_KoFELp9g@mail.gmail.com>
- <20210414113553.GA4886@otheros>
-In-Reply-To: <20210414113553.GA4886@otheros>
-From: Andi Depressivum <andidepressivum@gmail.com>
-Date: Tue, 4 May 2021 20:04:22 +0200
-Message-ID: <CAEX-Y1aFntqW7DTZJJrTsK4nxdwdkXK7MNkH2Z-LF50ynf_Dyg@mail.gmail.com>
-Subject: Re: How to mesh over ethernet VLAN?
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -17,12 +18,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org
+Cc: Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
-What's the advantage in running BATMAN also on a separate VLAN when
-the ethernet nodes are already connected to all switched VLANs? In
-case of using BATMAN V it seems to brake rerouting when the cable is
-removed as the link is already shown with 1000MBit/s.
+On 09/05/2021 22:45, Linus L=C3=BCssing wrote:
+> Now that we have split the multicast router state into two, one for IPv=
+4
+> and one for IPv6, also add individual timers to the mdb netlink router
+> port dump. Leaving the old timer attribute for backwards compatibility.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> ---
+>  include/uapi/linux/if_bridge.h | 2 ++
+>  net/bridge/br_mdb.c            | 8 +++++++-
+>  2 files changed, 9 insertions(+), 1 deletion(-)
+>=20
 
-Regards,
-Andi
+Acked-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+
+> diff --git a/include/uapi/linux/if_bridge.h b/include/uapi/linux/if_bri=
+dge.h
+> index 13d59c5..6b56a75 100644
+> --- a/include/uapi/linux/if_bridge.h
+> +++ b/include/uapi/linux/if_bridge.h
+> @@ -627,6 +627,8 @@ enum {
+>  	MDBA_ROUTER_PATTR_UNSPEC,
+>  	MDBA_ROUTER_PATTR_TIMER,
+>  	MDBA_ROUTER_PATTR_TYPE,
+> +	MDBA_ROUTER_PATTR_INET_TIMER,
+> +	MDBA_ROUTER_PATTR_INET6_TIMER,
+>  	__MDBA_ROUTER_PATTR_MAX
+>  };
+>  #define MDBA_ROUTER_PATTR_MAX (__MDBA_ROUTER_PATTR_MAX - 1)
+> diff --git a/net/bridge/br_mdb.c b/net/bridge/br_mdb.c
+> index 3c608da..2cdd9b6 100644
+> --- a/net/bridge/br_mdb.c
+> +++ b/net/bridge/br_mdb.c
+> @@ -79,7 +79,13 @@ static int br_rports_fill_info(struct sk_buff *skb, =
+struct netlink_callback *cb,
+>  		    nla_put_u32(skb, MDBA_ROUTER_PATTR_TIMER,
+>  				max(ip4_timer, ip6_timer)) ||
+>  		    nla_put_u8(skb, MDBA_ROUTER_PATTR_TYPE,
+> -			       p->multicast_router)) {
+> +			       p->multicast_router) ||
+> +		    (have_ip4_mc_rtr &&
+> +		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET_TIMER,
+> +				 ip4_timer)) ||
+> +		    (have_ip6_mc_rtr &&
+> +		     nla_put_u32(skb, MDBA_ROUTER_PATTR_INET6_TIMER,
+> +				 ip6_timer))) {
+>  			nla_nest_cancel(skb, port_nest);
+>  			goto fail;
+>  		}
+>=20
