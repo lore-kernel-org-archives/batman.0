@@ -1,68 +1,90 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Subject: Re: [net-next v2 09/11] net: bridge: mcast: split multicast router
- state for IPv4 and IPv6
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
-References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
- <20210509194509.10849-10-linus.luessing@c0d3.blue>
- <f2f1c811-0502-bde4-8ece-e47b3e30dc66@nvidia.com>
-Message-ID: <e784e0e6-8b30-0862-e417-a6ff94790b8e@nvidia.com>
-Date: Tue, 11 May 2021 12:33:08 +0300
-In-Reply-To: <f2f1c811-0502-bde4-8ece-e47b3e30dc66@nvidia.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Return-Path: <asarmanow@gmail.com>
+From: Alexander Sarmanow <asarmanow@gmail.com>
+Subject: [PATCH v3 1/2] batctl: netlink: Make netlink_query_common non-static
+Date: Thu, 13 May 2021 16:02:33 +0200
+Message-Id: <20210513140234.1624460-2-asarmanow@gmail.com>
+In-Reply-To: <20210513140234.1624460-1-asarmanow@gmail.com>
+References: <20210513140234.1624460-1-asarmanow@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: =?UTF-8?Q?Linus_L=c3=bcssing?= <linus.luessing@c0d3.blue>, netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, sw@simonwunderlich.de, Alexander Sarmanow <asarmanow@gmail.com>
 
-On 11/05/2021 12:29, Nikolay Aleksandrov wrote:
-> On 09/05/2021 22:45, Linus L=C3=BCssing wrote:
->> A multicast router for IPv4 does not imply that the same host also is =
-a
->> multicast router for IPv6 and vice versa.
->>
->> To reduce multicast traffic when a host is only a multicast router for
->> one of these two protocol families, keep router state for IPv4 and IPv=
-6
->> separately. Similar to how querier state is kept separately.
->>
->> For backwards compatibility for netlink and switchdev notifications
->> these two will still only notify if a port switched from either no
->> IPv4/IPv6 multicast router to any IPv4/IPv6 multicast router or the
->> other way round. However a full netlink MDB router dump will now also
->> include a multicast router timeout for both IPv4 and IPv6.
->>
->> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
->> ---
->>  net/bridge/br_forward.c   |   8 ++
->>  net/bridge/br_mdb.c       |  10 ++
->>  net/bridge/br_multicast.c | 197 ++++++++++++++++++++++++++++++++++---=
+With a view to the introduction of a JSON debug support the
+netlink_query_common can be used for simple query of batman-adv
+atttirubtes without any filters.
+
+Signed-off-by: Alexander Sarmanow <asarmanow@gmail.com>
+---
+ netlink.c | 12 ++++--------
+ netlink.h |  8 ++++++++
+ 2 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/netlink.c b/netlink.c
+index eb5888b..2c45645 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -29,10 +29,6 @@
+ #include "functions.h"
+ #include "main.h"
+ 
+-struct nlquery_opts {
+-	int err;
+-};
 -
->>  net/bridge/br_private.h   |   6 +-
->>  4 files changed, 201 insertions(+), 20 deletions(-)
-[snip]
->> +#else
->> +static inline void br_ip6_multicast_add_router(struct net_bridge *br,
->> +					       struct net_bridge_port *port)
->> +{
->> +}
->=20
-> Actually that goes for multicast_add_router, too.
->=20
+ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_VERSION] = {
+ 		.type = NLA_STRING,
+@@ -623,10 +619,10 @@ static int nlquery_stop_cb(struct nl_msg *msg, void *arg)
+ 	return NL_STOP;
+ }
+ 
+-static int netlink_query_common(struct state *state,
+-				unsigned int mesh_ifindex, uint8_t nl_cmd,
+-				nl_recvmsg_msg_cb_t callback, int flags,
+-				struct nlquery_opts *query_opts)
++int netlink_query_common(struct state *state,
++			 unsigned int mesh_ifindex, uint8_t nl_cmd,
++			 nl_recvmsg_msg_cb_t callback, int flags,
++			 struct nlquery_opts *query_opts)
+ {
+ 	struct nl_msg *msg;
+ 	struct nl_cb *cb;
+diff --git a/netlink.h b/netlink.h
+index 2cc5862..c93f500 100644
+--- a/netlink.h
++++ b/netlink.h
+@@ -25,6 +25,10 @@ struct print_opts {
+ 	uint8_t nl_cmd;
+ };
+ 
++struct nlquery_opts {
++	int err;
++};
++
+ struct ether_addr;
+ 
+ int netlink_create(struct state *state);
+@@ -54,6 +58,10 @@ int netlink_print_error(struct sockaddr_nl *nla, struct nlmsgerr *nlerr,
+ 			void *arg);
+ void netlink_print_remaining_header(struct print_opts *opts);
+ 
++int netlink_query_common(struct state *state, unsigned int mesh_ifindex,
++			 uint8_t nl_cmd, nl_recvmsg_msg_cb_t callback, int flags,
++			 struct nlquery_opts *query_opts);
++
+ extern char algo_name_buf[256];
+ extern int last_err;
+ extern int64_t mcast_flags;
+-- 
+2.25.1
 
-err, my bad - multicast_add_router is fine as is, sorry about that
-
-> I'm saying all this because soon I'll be adding per-vlan multicast rout=
-er support
-> and these will be reusable there without any modification if they can t=
-ake any list.
-> Also it'll be easier to maintain one set of functions instead of multip=
-le identical ones.
->=20
