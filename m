@@ -1,127 +1,175 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [net-next v2 04/11] net: bridge: mcast: prepare query reception for mcast router split
-Date: Sun,  9 May 2021 21:45:02 +0200
-Message-Id: <20210509194509.10849-5-linus.luessing@c0d3.blue>
-In-Reply-To: <20210509194509.10849-1-linus.luessing@c0d3.blue>
-References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
+Return-Path: <asarmanow@gmail.com>
+From: Alexander Sarmanow <asarmanow@gmail.com>
+Subject: [PATCH v3 3/4] batctl: transglobal_json: Add transglobal_json command
+Date: Thu, 13 May 2021 16:28:11 +0200
+Message-Id: <20210513142812.1707215-4-asarmanow@gmail.com>
+In-Reply-To: <20210513142812.1707215-1-asarmanow@gmail.com>
+References: <20210513142812.1707215-1-asarmanow@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, sw@simonwunderlich.de, Alexander Sarmanow <asarmanow@gmail.com>
 
-In preparation for the upcoming split of multicast router state into
-their IPv4 and IPv6 variants and as the br_multicast_mark_router() will
-be split for that remove the select querier wrapper and instead add
-ip4 and ip6 variants for br_multicast_query_received().
+This is the JSON analogue of the transglobal table. By using the
+netlink_query_common function to query the available netlink attributes.
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+Signed-off-by: Alexander Sarmanow <asarmanow@gmail.com>
 ---
- net/bridge/br_multicast.c | 53 ++++++++++++++++++++-------------------
- 1 file changed, 27 insertions(+), 26 deletions(-)
+ Makefile           |  1 +
+ README.rst         | 15 +++++++++
+ man/batctl.8       |  3 ++
+ transglobal_json.c | 81 ++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 100 insertions(+)
+ create mode 100644 transglobal_json.c
 
-diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-index 6fe93a3..7edbbc9 100644
---- a/net/bridge/br_multicast.c
-+++ b/net/bridge/br_multicast.c
-@@ -2615,22 +2615,6 @@ update:
- }
- #endif
-=20
--static bool br_multicast_select_querier(struct net_bridge *br,
--					struct net_bridge_port *port,
--					struct br_ip *saddr)
--{
--	switch (saddr->proto) {
--	case htons(ETH_P_IP):
--		return br_ip4_multicast_select_querier(br, port, saddr->src.ip4);
--#if IS_ENABLED(CONFIG_IPV6)
--	case htons(ETH_P_IPV6):
--		return br_ip6_multicast_select_querier(br, port, &saddr->src.ip6);
--#endif
--	}
--
--	return false;
--}
--
- static void
- br_multicast_update_query_timer(struct net_bridge *br,
- 				struct bridge_mcast_other_query *query,
-@@ -2708,19 +2692,36 @@ static void br_multicast_mark_router(struct net_b=
-ridge *br,
- 		  now + br->multicast_querier_interval);
- }
-=20
--static void br_multicast_query_received(struct net_bridge *br,
--					struct net_bridge_port *port,
--					struct bridge_mcast_other_query *query,
--					struct br_ip *saddr,
--					unsigned long max_delay)
-+static void
-+br_ip4_multicast_query_received(struct net_bridge *br,
-+				struct net_bridge_port *port,
-+				struct bridge_mcast_other_query *query,
-+				struct br_ip *saddr,
-+				unsigned long max_delay)
- {
--	if (!br_multicast_select_querier(br, port, saddr))
-+	if (!br_ip4_multicast_select_querier(br, port, saddr->src.ip4))
- 		return;
-=20
- 	br_multicast_update_query_timer(br, query, max_delay);
- 	br_multicast_mark_router(br, port);
- }
-=20
-+#if IS_ENABLED(CONFIG_IPV6)
-+static void
-+br_ip6_multicast_query_received(struct net_bridge *br,
-+				struct net_bridge_port *port,
-+				struct bridge_mcast_other_query *query,
-+				struct br_ip *saddr,
-+				unsigned long max_delay)
+diff --git a/Makefile b/Makefile
+index 874dc2f..cea3271 100755
+--- a/Makefile
++++ b/Makefile
+@@ -72,6 +72,7 @@ $(eval $(call add_command,throughput_override,y))
+ $(eval $(call add_command,throughputmeter,y))
+ $(eval $(call add_command,traceroute,y))
+ $(eval $(call add_command,transglobal,y))
++$(eval $(call add_command,transglobal_json,y))
+ $(eval $(call add_command,translate,y))
+ $(eval $(call add_command,translocal,y))
+ 
+diff --git a/README.rst b/README.rst
+index f0ce43a..905e313 100644
+--- a/README.rst
++++ b/README.rst
+@@ -687,6 +687,21 @@ Flags that mean:
+ If any of the flags is not enabled, a '.' will substitute its symbol.
+ 
+ 
++batctl transglobal_json
++=======================
++
++display the global translation JSON (analogue of the transglobal table)
++
++Usage::
++
++  batctl transglobal_json|tgj
++
++Example::
++
++  $ batctl translglobal_json
++  [{"orig_address":"fe:fe:00:00:01:01","tt_address":"33:33:00:00:00:01","tt_ttvn":3,"last_ttvn":3,"crc32":1916279217,"tt_vid":0,"tt_flags":0,"best":true},{"orig_address":"fe:fe:00:00:01:02","tt_address":"33:33:00:00:00:02","tt_ttvn":3,"last_ttvn":3,"crc32":1916279217,"tt_vid":0,"tt_flags":0}]
++
++
+ batctl dat_cache
+ =================
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index 1130a81..97d5738 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -309,6 +309,9 @@ List of debug JSONs:
+ .RS 10
+ \- originators_json|oj
+ .RE
++.RS 10
++\- transglobal_json|tgj
++.RE
+ .RE
+ .br
+ .IP "[\fBmeshif <netdev>\fP] \fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+diff --git a/transglobal_json.c b/transglobal_json.c
+new file mode 100644
+index 0000000..612ffb8
+--- /dev/null
++++ b/transglobal_json.c
+@@ -0,0 +1,81 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Alexander Sarmanow <asarmanow@gmail.com>
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ */
++
++#include <netinet/if_ether.h>
++#include <netlink/netlink.h>
++#include <netlink/genl/genl.h>
++#include <netlink/genl/ctrl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <stdint.h>
++
++#include "batman_adv.h"
++#include "debug.h"
++#include "main.h"
++#include "netlink.h"
++#include "genl_json.h"
++
++static int transglobal_json_callback(struct nl_msg *msg, void *arg)
 +{
-+	if (!br_ip6_multicast_select_querier(br, port, &saddr->src.ip6))
-+		return;
++	struct nlquery_opts *query_opts = arg;
++	struct json_opts *json_opts;
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
 +
-+	br_multicast_update_query_timer(br, query, max_delay);
-+	br_multicast_mark_router(br, port);
++	json_opts = container_of(query_opts, struct json_opts, query_opts);
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.\n", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), batadv_netlink_policy)) {
++		fputs("Received invalid data from kernel.\n", stderr);
++		exit(1);
++	}
++
++	netlink_print_json_entries(attrs, json_opts);
++	json_opts->is_first = 0;
++
++	return NL_OK;
 +}
-+#endif
 +
- static void br_ip4_multicast_query(struct net_bridge *br,
- 				   struct net_bridge_port *port,
- 				   struct sk_buff *skb,
-@@ -2768,8 +2769,8 @@ static void br_ip4_multicast_query(struct net_bridg=
-e *br,
- 		saddr.proto =3D htons(ETH_P_IP);
- 		saddr.src.ip4 =3D iph->saddr;
-=20
--		br_multicast_query_received(br, port, &br->ip4_other_query,
--					    &saddr, max_delay);
-+		br_ip4_multicast_query_received(br, port, &br->ip4_other_query,
-+						&saddr, max_delay);
- 		goto out;
- 	}
-=20
-@@ -2856,8 +2857,8 @@ static int br_ip6_multicast_query(struct net_bridge=
- *br,
- 		saddr.proto =3D htons(ETH_P_IPV6);
- 		saddr.src.ip6 =3D ipv6_hdr(skb)->saddr;
-=20
--		br_multicast_query_received(br, port, &br->ip6_other_query,
--					    &saddr, max_delay);
-+		br_ip6_multicast_query_received(br, port, &br->ip6_other_query,
-+						&saddr, max_delay);
- 		goto out;
- 	} else if (!group) {
- 		goto out;
---=20
-2.31.0
++static int netlink_print_transglobal_json(struct state *state)
++{
++	int ret;
++	struct json_opts json_opts = {
++		.is_first = 1,
++		.query_opts = {
++			.err = 0,
++		},
++	};
++
++	putc('[', stdout);
++	ret = netlink_query_common(state, state->mesh_ifindex,
++				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
++				   transglobal_json_callback,
++				   NLM_F_DUMP, &json_opts.query_opts);
++	puts("]\n");
++
++	return ret;
++}
++
++static struct debug_json_data batctl_debug_json_transglobal = {
++	.netlink_fn = netlink_print_transglobal_json,
++};
++
++COMMAND_NAMED(DEBUGJSON, transglobal_json, "tgj", handle_debug_json,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_debug_json_transglobal, "");
+-- 
+2.25.1
+
