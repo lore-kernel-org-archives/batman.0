@@ -1,8 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: batctl: translocal: Simplify evaluation of last_seen
-Date: Mon, 10 May 2021 15:29:53 +0200
-Message-Id: <20210510132953.44348-1-sven@narfation.org>
+Return-Path: <asarmanow@gmail.com>
+From: Alexander Sarmanow <asarmanow@gmail.com>
+Subject: [PATCH v3 0/2] batctl: Prepare JSON commands
+Date: Thu, 13 May 2021 16:10:32 +0200
+Message-Id: <20210513141034.1649576-1-asarmanow@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,35 +14,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+To: sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, sw@simonwunderlich.de, Alexander Sarmanow <asarmanow@gmail.com>
 
-The BATADV_ATTR_LAST_SEEN_MSECS is send from the kernel whenever it is
-relevant for the current local translation table entry. It is therefore not
-necessary to only read this value when a specific flag is or is not present
-in BATADV_ATTR_TT_FLAGS.
+This patches reffering to following patches:
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+[1] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/SAQYUZQ7I7H7VWHFPVLBUDYCFX7HNWLO/
+[2] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/IV2OFJ2KJX52K4ARZ5MIWZ2A42WOKJRO/
+[3] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/EYQBFU5O7E3KKRG2YVPLRGHHN3OFIPYP/
+[4] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/WKIBP64G27O23MBAPHECSKNJMUESWFAG/
+[5] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/Y3XXIYCJWME4CQNWRBIRYJ6ZOL4MI2FT/
+[6] https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/thread/LYMU5ZA3I6YVHHRZVY3RJJR4KDHF76QI/
 
-diff --git a/translocal.c b/translocal.c
-index a3ad3da57252b336399bdea8bf2ea21442c9cafe..bac6be9e9bd59c20550068495197d0d3c74564d5 100644
---- a/translocal.c
-+++ b/translocal.c
-@@ -89,15 +89,10 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
- 		w = 'W';
- 	if (flags & BATADV_TT_CLIENT_ISOLA)
- 		i = 'I';
--
--	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
-+	if (flags & BATADV_TT_CLIENT_NOPURGE)
- 		p = 'P';
--	} else {
--		if (!attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
--			fputs("Received invalid data from kernel.\n", stderr);
--			exit(1);
--		}
- 
-+	if (attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
- 		last_seen_msecs = nla_get_u32(
- 			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
- 		last_seen_secs = last_seen_msecs / 1000;
+Alexander Sarmanow (2):
+  batctl: main: Prepare DEBUGJSON command type
+  batctl: debug: Introduce handler for DEBUGJSON
+
+ debug.c      | 29 +++++++++++++++++++++++++++++
+ debug.h      |  5 +++++
+ main.c       | 14 ++++++++++----
+ main.h       |  1 +
+ man/batctl.8 | 15 +++++++++++++--
+ 5 files changed, 58 insertions(+), 6 deletions(-)
+
+-- 
+2.25.1
+
