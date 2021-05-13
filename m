@@ -1,74 +1,175 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: Remove the repeated declaration
-Date: Fri, 28 May 2021 12:00:44 +0200
-Message-ID: <56516093.ber78CngbM@ripper>
-In-Reply-To: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
-References: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
+Return-Path: <asarmanow@gmail.com>
+From: Alexander Sarmanow <asarmanow@gmail.com>
+Subject: [PATCH v3 4/4] batctl: translocal_json: Add translocal_json command
+Date: Thu, 13 May 2021 16:28:12 +0200
+Message-Id: <20210513142812.1707215-5-asarmanow@gmail.com>
+In-Reply-To: <20210513142812.1707215-1-asarmanow@gmail.com>
+References: <20210513142812.1707215-1-asarmanow@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13351496.OZpsN2k5gf"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Shaokun Zhang <zhangshaokun@hisilicon.com>
-Cc: Shaokun Zhang <zhangshaokun@hisilicon.com>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, sw@simonwunderlich.de, Alexander Sarmanow <asarmanow@gmail.com>
 
+This is the JSON analogue of the translocal table. By using the
+netlink_query_common function to query the available netlink attributes.
+
+Signed-off-by: Alexander Sarmanow <asarmanow@gmail.com>
+---
+ Makefile          |  1 +
+ README.rst        | 15 +++++++++
+ man/batctl.8      |  3 ++
+ translocal_json.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 100 insertions(+)
+ create mode 100644 translocal_json.c
+
+diff --git a/Makefile b/Makefile
+index cea3271..8afbdbe 100755
+--- a/Makefile
++++ b/Makefile
+@@ -75,6 +75,7 @@ $(eval $(call add_command,transglobal,y))
+ $(eval $(call add_command,transglobal_json,y))
+ $(eval $(call add_command,translate,y))
+ $(eval $(call add_command,translocal,y))
++$(eval $(call add_command,translocal_json,y))
  
---nextPart13351496.OZpsN2k5gf
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Shaokun Zhang <zhangshaokun@hisilicon.com>
-Cc: Shaokun Zhang <zhangshaokun@hisilicon.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
-Subject: Re: [PATCH] batman-adv: Remove the repeated declaration
-Date: Fri, 28 May 2021 12:00:44 +0200
-Message-ID: <56516093.ber78CngbM@ripper>
-In-Reply-To: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
-References: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
-
-On Friday, 28 May 2021 11:56:25 CEST Shaokun Zhang wrote:
-> Function 'batadv_bla_claim_dump' is declared twice, so remove the
-> repeated declaration.
-> 
-> Cc: Marek Lindner <mareklindner@neomailbox.ch>
-> Cc: Simon Wunderlich <sw@simonwunderlich.de>
-> Cc: Antonio Quartulli <a@unstable.cc>
-> Cc: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Shaokun Zhang <zhangshaokun@hisilicon.com>
-> ---
->  net/batman-adv/bridge_loop_avoidance.h | 1 -
->  1 file changed, 1 deletion(-)
-
-Applied
-
-Thanks,
-	Sven
---nextPart13351496.OZpsN2k5gf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmCwv00ACgkQXYcKB8Em
-e0bgmQ/7Bfub8mMSSR8Q3Rp9lJk0s7uHkLHB+M5TxDZTCKTpxCPvWANddLrD4cPy
-FmrjUMXKIyIE9KSGiX+C/XLB7cMNpH5gyuiZ1xuVOtw5zqyNqliTqOvx8ODOUQ27
-NvsFKDvBl3TwhqCfDHwp7xWssLDCx5Yisc0SSlGC/Ev+0g55PMHL7IiMaALFrjnZ
-2WWatv2D7GoSeDSNgRi9rHQUeUXpo6nKDSy99DDQHPt2iHsAErZvN65lSt0wzkGC
-M1TcsZmE9+QTwnHKdbwwsoEZ1IFU59ovxfoQ8KCBw+0t/UAoTvMN7hSB8Ph7Ar8a
-UrsMBL4T/NpOmNFYiaLjHfIjd6AKHUhv4kFTWtY7e9MkhF2LMyi9oNqjiX1LwlIO
-RxI7jyyiUW5z4Jz+ioxOG60UD5Q9GEgJ1/5Ecb4U43HYBBUy3DaCLHXIxXhjoQgG
-z9uARVB0xfGuvegJElr59eNRGoAN9EbL6AlJQRb4kuF78fHRP8gYD1u3OswTkSHt
-om6WIlsFqXTRuz5W1dT72TQ4LLTpHziCV0B9ZWiYrL7mrjwi03RcnwbAIe7bS/us
-wGqIbdpny63hiOD+wpjqr7lt653p9KOlDn/10JIip2W4tkRjBzRriKU+qLxFjMf5
-7M6+0uKaRa6vfRZ4N9jW0dAO+EEzFBsOOs5OMbssO/Ij6d1+UEI=
-=36As
------END PGP SIGNATURE-----
-
---nextPart13351496.OZpsN2k5gf--
-
+ MANPAGE = man/batctl.8
+ 
+diff --git a/README.rst b/README.rst
+index 905e313..065c0ab 100644
+--- a/README.rst
++++ b/README.rst
+@@ -651,6 +651,21 @@ W/Wireless:
+ If any of the flags is not enabled, a '.' will substitute its symbol.
+ 
+ 
++batctl translocal_json
++======================
++
++display the local translation JSON (analogue of the translocal table)
++
++Usage::
++
++  batctl translocal_json|tlj
++
++Example::
++
++  $ batctl translocal_json
++  [{"tt_address":"33:33:00:00:00:01","crc32":2147984693,"tt_vid":0,"tt_flags":256},{"tt_address":"33:33:00:00:00:01","crc32":2147984693,"tt_vid":0,"tt_flags":256},{"tt_address":"11:11:00:00:00:03","crc32":2147984693,"tt_vid":0,"tt_flags":256}]
++
++
+ batctl transglobal
+ ==================
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index 97d5738..2b8a975 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -310,6 +310,9 @@ List of debug JSONs:
+ \- originators_json|oj
+ .RE
+ .RS 10
++\- translocal_json|tlj
++.RE
++.RS 10
+ \- transglobal_json|tgj
+ .RE
+ .RE
+diff --git a/translocal_json.c b/translocal_json.c
+new file mode 100644
+index 0000000..38b64a0
+--- /dev/null
++++ b/translocal_json.c
+@@ -0,0 +1,81 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Alexander Sarmanow <asarmanow@gmail.com>
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ */
++
++#include <netinet/if_ether.h>
++#include <netlink/netlink.h>
++#include <netlink/genl/genl.h>
++#include <netlink/genl/ctrl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <stdint.h>
++
++#include "batman_adv.h"
++#include "debug.h"
++#include "main.h"
++#include "netlink.h"
++#include "genl_json.h"
++
++static int translocal_json_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlquery_opts *query_opts = arg;
++	struct json_opts *json_opts;
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
++
++	json_opts = container_of(query_opts, struct json_opts, query_opts);
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.\n", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_LOCAL)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), batadv_netlink_policy)) {
++		fputs("Received invalid data from kernel.\n", stderr);
++		exit(1);
++	}
++
++	netlink_print_json_entries(attrs, json_opts);
++	json_opts->is_first = 0;
++
++	return NL_OK;
++}
++
++static int netlink_print_translocal_json(struct state *state)
++{
++	int ret;
++	struct json_opts json_opts = {
++		.is_first = 1,
++		.query_opts = {
++			.err = 0,
++		},
++	};
++
++	putc('[', stdout);
++	ret = netlink_query_common(state, state->mesh_ifindex,
++				   BATADV_CMD_GET_TRANSTABLE_LOCAL,
++				   translocal_json_callback,
++				   NLM_F_DUMP, &json_opts.query_opts);
++	puts("]\n");
++
++	return ret;
++}
++
++static struct debug_json_data batctl_debug_json_translocal = {
++	.netlink_fn = netlink_print_translocal_json,
++};
++
++COMMAND_NAMED(DEBUGJSON, translocal_json, "tlj", handle_debug_json,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_debug_json_translocal, "");
+-- 
+2.25.1
 
