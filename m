@@ -1,13 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v3 2/3] batman-adv: bcast: avoid skb-copy for (re)queued broadcasts
-Date: Mon, 17 May 2021 00:33:08 +0200
-Message-Id: <20210516223309.12596-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20210516223309.12596-1-linus.luessing@c0d3.blue>
-References: <20210516223309.12596-1-linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH v2] batman-adv: bcast: queue per interface, if needed
+Date: Fri, 14 May 2021 13:52:17 +0200
+Message-ID: <5459898.nmiLi0PJat@sven-desktop>
+In-Reply-To: <20210514113532.GF2222@otheros>
+References: <20210427184527.9889-1-linus.luessing@c0d3.blue> <3148825.KiqjeL1upR@sven-desktop> <20210514113532.GF2222@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart9607628.pxMfDq879Z"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,39 +14,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 
-Broadcast packets send via batadv_send_outstanding_bcast_packet() were
-originally copied in batadv_forw_bcast_packet_to_list() before being
-queued. And after that only the ethernet header will be pushed through
-batadv_send_broadcast_skb()->batadv_send_skb_packet() which works safely
-on skb clones as it uses batadv_skb_head_push()->skb_cow_head().
+ 
+--nextPart9607628.pxMfDq879Z
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [PATCH v2] batman-adv: bcast: queue per interface, if needed
+Date: Fri, 14 May 2021 13:52:17 +0200
+Message-ID: <5459898.nmiLi0PJat@sven-desktop>
+In-Reply-To: <20210514113532.GF2222@otheros>
+References: <20210427184527.9889-1-linus.luessing@c0d3.blue> <3148825.KiqjeL1upR@sven-desktop> <20210514113532.GF2222@otheros>
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
-
-Changelog v3:
-
-* newly added this patch, to move skb_copy()->skb_clone() change from
-  PATCH 01/03 to a separate patch with its own explanation
-
- net/batman-adv/send.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 07b0ba26..0b9dd29d 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -1072,7 +1072,7 @@ static void batadv_send_outstanding_bcast_packet(st=
-ruct work_struct *work)
- 	}
+On Friday, 14 May 2021 13:35:32 CEST Linus L=FCssing wrote:
+> On Fri, May 14, 2021 at 10:28:53AM +0200, Sven Eckelmann wrote:
+> > On Tuesday, 27 April 2021 20:45:27 CEST Linus L=FCssing wrote:
+> > > - * The skb is not consumed, so the caller should make sure that the
+> > > - * skb is freed.
+> > > + * This call clones the given skb, hence the caller needs to take in=
+to
+> > > + * account that the data segment of the original skb might not be
+> > > + * modifiable anymore.
+> >=20
+> > But none of your callers is now taking care of it because you've remove=
+d all=20
+> > skb_copy's. All you do is to clone the control data and give it to the=
 =20
- 	/* send a copy of the saved skb */
--	skb1 =3D skb_copy(forw_packet->skb, GFP_ATOMIC);
-+	skb1 =3D skb_clone(forw_packet->skb, GFP_ATOMIC);
- 	if (!skb1)
- 		goto out;
+> > underlying layers. And they may write freely to the data. Thus breaking=
 =20
---=20
-2.31.0
+> > parallel (and under some circumstances sequential) running code which o=
+perates=20
+> > on the skbs.
+>=20
+> Hi Sven,
+>=20
+> Thanks for looking at it so far. I'm not quite sure if the
+> skb_copy() is needed though. Because there is a new skb_cow(). Let
+> me explain my thoughts:
+[...]
+
+Haven't checked this in detail. But please split this part in a separate pa=
+tch=20
+with the corresponding explanation. Should make it easier to understand why=
+=20
+the skb_copy is no longer needed.
+
+Kind regards,
+	Sven
+
+--nextPart9607628.pxMfDq879Z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmCeZHEACgkQXYcKB8Em
+e0Y+FQ/9GBKQq5suuUlTjN2HXPF+KZGrdIxKICCgVepdTuPcx83CXVMda+gjebWM
+EGUB9wa/ed0IwGZJfu0CmVA4/FtBabKdJFpbe4o/3Fusoe5fTMnIg8dXK0idO95K
+kmqsXf74MGf3HbSCi4f3aDgyGgszcohHGCjh7q78OYps9yA/0aRWCraA8BL4FpHV
+/ga3lAwWQahb2kKTdLM4d8GY7JiGekBLcDE1k1jDdKLVqHzEesBdtkKH7j4/7In7
+i2vCUykM3YodqPRWoMDS9nfzAKLHZMyht/uAPo+TFQNd/z5F5vjGYCdXV/VI8QBU
+4jBcUleu7Cc5cnYg4gW7afMkP54dh9m68+JaWITx2DcrEzQwLi1s/Syt8yX28Oa8
+aWsFUW1y6xQpuXDSHGzEYVqHzstjjl8NzCE5ViM4ytk3CA8PapWv1oCHP/BBHggj
+2x4uOrJchyzhI+bBCCVtci+YyXaTwRJu0vWhgC6kayKvyGmO0teWPCe0lrYIsSE/
+Mo+60QQvKHh3ud6RMMdJDiQMiiVMTs7lBq7z5mwx35qxYCIniV8A32iHoi8XnGDV
+vLnvT3tp2oKANDu6RlrKBrm1/GXHispZ5bK7IeCZ9GSpkYxNvEW1a8jIQYKG5N6r
+bC4BLJ4B3GQ3N1xd9pYXF1VhKkUImyC0s2IZ97GXxMEHMwEnPTE=
+=ZBUG
+-----END PGP SIGNATURE-----
+
+--nextPart9607628.pxMfDq879Z--
+
+
