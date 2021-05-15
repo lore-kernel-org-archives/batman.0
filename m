@@ -1,12 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v2 1/2] batctl: Add generic JSON interface
-Date: Fri, 07 May 2021 21:11:37 +0200
-Message-ID: <2690156.YyWG0Q00rh@sven-l14>
-In-Reply-To: <20210507171414.369399-1-asarmanow@gmail.com>
-References: <20210507171414.369399-1-asarmanow@gmail.com>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH] batman-adv: mcast: add MRD + routable IPv4 multicast with bridges support
+Date: Sat, 15 May 2021 17:22:08 +0200
+Message-Id: <20210515152208.3969-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2726288.2ZRZGpqrMM"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,71 +13,164 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Alexander Sarmanow <asarmanow@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Alexander Sarmanow <asarmanow@gmail.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
- 
---nextPart2726288.2ZRZGpqrMM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Alexander Sarmanow <asarmanow@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, sw@simonwunderlich.de, Alexander Sarmanow <asarmanow@gmail.com>
-Subject: Re: [PATCH v2 1/2] batctl: Add generic JSON interface
-Date: Fri, 07 May 2021 21:11:37 +0200
-Message-ID: <2690156.YyWG0Q00rh@sven-l14>
-In-Reply-To: <20210507171414.369399-1-asarmanow@gmail.com>
-References: <20210507171414.369399-1-asarmanow@gmail.com>
+This adds support for routable IPv4 multicast addresses
+(224.0.0.0/4, excluding 224.0.0.0/24) in bridged setups.
 
-On Friday, 7 May 2021 19:14:14 CEST Alexander Sarmanow wrote:
-> +void netlink_print_json_entries(struct nlattr *attrs[], int selected_attrs[],
-> +                               int arr_len, struct print_opts *opts);
-> +void netlink_print_json_entry(struct nlattr *attrs[], int idx);
-> +void nljson_print_str(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_ifname_by_ifindex(struct json_opts *json_opts, struct print_opts *opts,
-> +                                   struct nlattr *attrs[], int idx);
-> +void nljson_print_int(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_unsigned(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[],
-> +                          int idx);
-> +void nljson_print_uint8_t(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[],
-> +                         int idx);
-> +void nljson_print_vid(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_crc32(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_mac(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_bool(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[], int idx);
-> +void nljson_print_ttflags(struct json_opts *json_opts, struct print_opts *opts, struct nlattr *attrs[],
-> +                         int idx);
-> +void create_json_print_string(const char *str, const char **str_ret);
-> +void sanitize_string(const char *str, int str_len);
+This utilizes the Multicast Router Discovery (MRD, RFC4286) support
+in the Linux bridge. batman-adv will now query the Linux bridge for
+IPv4 multicast routers, which the bridge has previously learned about
+via MRD.
 
-Why are you exporting all of these functions? Most should be static inside the 
-c file. I would recommend a new genl_json.c file.
+This allows us to then safely send routable IPv4 multicast packets in
+bridged setups to multicast listeners and multicast routers only. Before
+we had to flood such packets to avoid potential multicast packet loss to
+IPv4 multicast routers, which we were not able to detect before.
 
-Kind regards,
-	Sven
+With the bridge MRD integration, we are now also able to perform more
+fine-grained detection of IPv6 multicast routers in bridged setups:
+Before we were "guessing" IPv6 multicast routers by looking up multicast
+listeners for the link-local All Routers multicast address (ff02::2),
+which every IPv6 multicast router is listening to. However this would
+also include more nodes than necessary: For instance nodes which are
+just a router for unicast, but not multicast would be included, too.
 
---nextPart2726288.2ZRZGpqrMM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+---
 
------BEGIN PGP SIGNATURE-----
+Please double check the Linux version in
+compat-include/linux/if_bridge.h.
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmCVkOkACgkQXYcKB8Em
-e0Y5Gw//bm2aLlo1Mdp0pe8qTMXOTLR8yw4oieKgKXob23h4/4nQIXr2yPfodxx3
-0y98i3YyOHLSFjiarzJ370BUSizk8Mqr/p/yNykNyHNHkkTsTfIVx2RRRjQmsbqj
-brKTr6iHC9PNG7tfnfvz2iBewbPGekSlgNcsfIF2dWkS9CUkcLAqG6EzFBv8+kT0
-8KL2Jas0G4bH+pjoSojvPvL+g31v9cNMG+bgh4+8CCoz6C3tTjYwPS8JXrWP6xWV
-IOH9ZwjZw3VfZOFxOvvm1hg5UY8kTdEXr4I8Xc1iWejP5fP7wTEaISRez+rVdrhK
-G00oIq2CbpMTyN7AFBp2mYEbd922P+baeY1Nh+aD7gkf6AZ2ceqkWNlYe+C3ghP7
-UPIoKlNNXyFM3OUsJ58Gmg77VmCS1k+GCjUMYHJHYtcN55gK89G7mkxRw26CjdXk
-Rvsa0M+QZzo5THEm15NFDaYp/m1Di7hAoi5QEZaEHoxNFEMqbQCOMx8gipWcbUbw
-eYzaR5fgK5jjXpZ3xSzXOiASd6cusOe4xBaS4OoM747xYbcPFe61ztfV1Ba0/6R+
-3tpLHnnlMfK/oFq4kIZ01ZmREO71utkF8y4IOtheczLOgE6/Ol53LcyWqlcr5QQo
-OX8lFA1+0/bE/maash9D6NN1LKRjRrUEAOpBZUDJ3Ie239wURPI=
-=Swoz
------END PGP SIGNATURE-----
+Commit 3b85f9ba3480c1 ("net: bridge: mcast: export multicast router prese=
+nce adjacent to a port")
+was added to net-next just recently
+(CommitDate: Thu May 13 14:04:31 2021 -0700).
+So br_multicast_has_router_adjacent() should be part of >=3D 5.14?
 
---nextPart2726288.2ZRZGpqrMM--
+ compat-include/linux/if_bridge.h | 42 ++++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.c       | 41 ++++---------------------------
+ 2 files changed, 47 insertions(+), 36 deletions(-)
 
-
+diff --git a/compat-include/linux/if_bridge.h b/compat-include/linux/if_b=
+ridge.h
+index da00c8b0..dfc4a092 100644
+--- a/compat-include/linux/if_bridge.h
++++ b/compat-include/linux/if_bridge.h
+@@ -53,4 +53,46 @@ inline void __batadv_br_ip_list_check(void)
+=20
+ #endif /* LINUX_VERSION_IS_LESS(5, 10, 0) */
+=20
++#if LINUX_VERSION_IS_LESS(5, 14, 0)
++
++#include <net/addrconf.h>
++
++#if IS_ENABLED(CONFIG_IPV6)
++static inline bool
++br_multicast_has_router_adjacent(struct net_device *dev, int proto)
++{
++	struct list_head bridge_mcast_list =3D LIST_HEAD_INIT(bridge_mcast_list=
+);
++	struct br_ip_list *br_ip_entry, *tmp;
++	int ret;
++
++	if (proto !=3D ETH_P_IPV6)
++		return true;
++
++	ret =3D br_multicast_list_adjacent(dev, &bridge_mcast_list);
++	if (ret < 0)
++		return true;
++
++	ret =3D false;
++
++	list_for_each_entry_safe(br_ip_entry, tmp, &bridge_mcast_list, list) {
++		if (br_ip_entry->addr.proto =3D=3D htons(ETH_P_IPV6) &&
++		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
++			ret =3D true;
++
++		list_del(&br_ip_entry->list);
++		kfree(br_ip_entry);
++	}
++
++	return ret;
++}
++#else
++static inline bool
++br_multicast_has_router_adjacent(struct net_device *dev, int proto)
++{
++	return true;
++}
++#endif
++
++#endif /* LINUX_VERSION_IS_LESS(5, 14, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_ */
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 1d63c8cb..923e2197 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -193,53 +193,22 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get(str=
+uct batadv_priv *bat_priv,
+  *	BATADV_MCAST_WANT_NO_RTR6: No IPv6 multicast router is present
+  *	The former two OR'd: no multicast router is present
+  */
+-#if IS_ENABLED(CONFIG_IPV6)
+ static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_=
+priv,
+ 						struct net_device *bridge)
+ {
+-	struct list_head bridge_mcast_list =3D LIST_HEAD_INIT(bridge_mcast_list=
+);
+ 	struct net_device *dev =3D bat_priv->soft_iface;
+-	struct br_ip_list *br_ip_entry, *tmp;
+-	u8 flags =3D BATADV_MCAST_WANT_NO_RTR6;
+-	int ret;
++	u8 flags =3D BATADV_NO_FLAGS;
+=20
+ 	if (!bridge)
+ 		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
+=20
+-	/* TODO: ask the bridge if a multicast router is present (the bridge
+-	 * is capable of performing proper RFC4286 multicast router
+-	 * discovery) instead of searching for a ff02::2 listener here
+-	 */
+-	ret =3D br_multicast_list_adjacent(dev, &bridge_mcast_list);
+-	if (ret < 0)
+-		return BATADV_NO_FLAGS;
+-
+-	list_for_each_entry_safe(br_ip_entry, tmp, &bridge_mcast_list, list) {
+-		/* the bridge snooping does not maintain IPv4 link-local
+-		 * addresses - therefore we won't find any IPv4 multicast router
+-		 * address here, only IPv6 ones
+-		 */
+-		if (br_ip_entry->addr.proto =3D=3D htons(ETH_P_IPV6) &&
+-		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
+-			flags &=3D ~BATADV_MCAST_WANT_NO_RTR6;
+-
+-		list_del(&br_ip_entry->list);
+-		kfree(br_ip_entry);
+-	}
++	if (!br_multicast_has_router_adjacent(dev, ETH_P_IP))
++		flags |=3D BATADV_MCAST_WANT_NO_RTR4;
++	if (!br_multicast_has_router_adjacent(dev, ETH_P_IPV6))
++		flags |=3D BATADV_MCAST_WANT_NO_RTR6;
+=20
+ 	return flags;
+ }
+-#else
+-static inline u8
+-batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
+-				      struct net_device *bridge)
+-{
+-	if (bridge)
+-		return BATADV_NO_FLAGS;
+-	else
+-		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
+-}
+-#endif
+=20
+ /**
+  * batadv_mcast_mla_rtr_flags_get() - get multicast router flags
+--=20
+2.31.0
