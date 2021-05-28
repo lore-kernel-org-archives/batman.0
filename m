@@ -1,13 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [net-next v2 06/11] net: bridge: mcast: prepare expiry functions for mcast router split
-Date: Sun,  9 May 2021 21:45:04 +0200
-Message-Id: <20210509194509.10849-7-linus.luessing@c0d3.blue>
-In-Reply-To: <20210509194509.10849-1-linus.luessing@c0d3.blue>
-References: <20210509194509.10849-1-linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: Remove the repeated declaration
+Date: Fri, 28 May 2021 12:00:44 +0200
+Message-ID: <56516093.ber78CngbM@ripper>
+In-Reply-To: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
+References: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart13351496.OZpsN2k5gf"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,106 +14,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: netdev@vger.kernel.org
-Cc: Roopa Prabhu <roopa@nvidia.com>, Nikolay Aleksandrov <nikolay@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, "David S . Miller" <davem@davemloft.net>, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Shaokun Zhang <zhangshaokun@hisilicon.com>
+Cc: Shaokun Zhang <zhangshaokun@hisilicon.com>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>
 
-In preparation for the upcoming split of multicast router state into
-their IPv4 and IPv6 variants move the protocol specific timer access to
-an ip4 wrapper function.
+ 
+--nextPart13351496.OZpsN2k5gf
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Shaokun Zhang <zhangshaokun@hisilicon.com>
+Cc: Shaokun Zhang <zhangshaokun@hisilicon.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
+Subject: Re: [PATCH] batman-adv: Remove the repeated declaration
+Date: Fri, 28 May 2021 12:00:44 +0200
+Message-ID: <56516093.ber78CngbM@ripper>
+In-Reply-To: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
+References: <1622195785-55920-1-git-send-email-zhangshaokun@hisilicon.com>
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
- net/bridge/br_multicast.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+On Friday, 28 May 2021 11:56:25 CEST Shaokun Zhang wrote:
+> Function 'batadv_bla_claim_dump' is declared twice, so remove the
+> repeated declaration.
+> 
+> Cc: Marek Lindner <mareklindner@neomailbox.ch>
+> Cc: Simon Wunderlich <sw@simonwunderlich.de>
+> Cc: Antonio Quartulli <a@unstable.cc>
+> Cc: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Shaokun Zhang <zhangshaokun@hisilicon.com>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.h | 1 -
+>  1 file changed, 1 deletion(-)
 
-diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-index 048b5b9..6c844b2 100644
---- a/net/bridge/br_multicast.c
-+++ b/net/bridge/br_multicast.c
-@@ -1354,16 +1354,16 @@ static int br_ip6_multicast_add_group(struct net_=
-bridge *br,
- }
- #endif
-=20
--static void br_multicast_router_expired(struct timer_list *t)
-+static void br_multicast_router_expired(struct net_bridge_port *port,
-+					struct timer_list *t,
-+					struct hlist_node *rlist)
- {
--	struct net_bridge_port *port =3D
--			from_timer(port, t, ip4_mc_router_timer);
- 	struct net_bridge *br =3D port->br;
-=20
- 	spin_lock(&br->multicast_lock);
- 	if (port->multicast_router =3D=3D MDB_RTR_TYPE_DISABLED ||
- 	    port->multicast_router =3D=3D MDB_RTR_TYPE_PERM ||
--	    timer_pending(&port->ip4_mc_router_timer))
-+	    timer_pending(t))
- 		goto out;
-=20
- 	__del_port_router(port);
-@@ -1371,6 +1371,13 @@ out:
- 	spin_unlock(&br->multicast_lock);
- }
-=20
-+static void br_ip4_multicast_router_expired(struct timer_list *t)
-+{
-+	struct net_bridge_port *port =3D from_timer(port, t, ip4_mc_router_time=
-r);
-+
-+	br_multicast_router_expired(port, t, &port->ip4_rlist);
-+}
-+
- static void br_mc_router_state_change(struct net_bridge *p,
- 				      bool is_mc_router)
- {
-@@ -1384,10 +1391,9 @@ static void br_mc_router_state_change(struct net_b=
-ridge *p,
- 	switchdev_port_attr_set(p->dev, &attr, NULL);
- }
-=20
--static void br_multicast_local_router_expired(struct timer_list *t)
-+static void br_multicast_local_router_expired(struct net_bridge *br,
-+					      struct timer_list *timer)
- {
--	struct net_bridge *br =3D from_timer(br, t, ip4_mc_router_timer);
--
- 	spin_lock(&br->multicast_lock);
- 	if (br->multicast_router =3D=3D MDB_RTR_TYPE_DISABLED ||
- 	    br->multicast_router =3D=3D MDB_RTR_TYPE_PERM ||
-@@ -1400,6 +1406,13 @@ out:
- 	spin_unlock(&br->multicast_lock);
- }
-=20
-+static inline void br_ip4_multicast_local_router_expired(struct timer_li=
-st *t)
-+{
-+	struct net_bridge *br =3D from_timer(br, t, ip4_mc_router_timer);
-+
-+	br_multicast_local_router_expired(br, t);
-+}
-+
- static void br_multicast_querier_expired(struct net_bridge *br,
- 					 struct bridge_mcast_own_query *query)
- {
-@@ -1615,7 +1628,7 @@ int br_multicast_add_port(struct net_bridge_port *p=
-ort)
- 	port->multicast_eht_hosts_limit =3D BR_MCAST_DEFAULT_EHT_HOSTS_LIMIT;
-=20
- 	timer_setup(&port->ip4_mc_router_timer,
--		    br_multicast_router_expired, 0);
-+		    br_ip4_multicast_router_expired, 0);
- 	timer_setup(&port->ip4_own_query.timer,
- 		    br_ip4_multicast_port_query_expired, 0);
- #if IS_ENABLED(CONFIG_IPV6)
-@@ -3319,7 +3332,7 @@ void br_multicast_init(struct net_bridge *br)
-=20
- 	spin_lock_init(&br->multicast_lock);
- 	timer_setup(&br->ip4_mc_router_timer,
--		    br_multicast_local_router_expired, 0);
-+		    br_ip4_multicast_local_router_expired, 0);
- 	timer_setup(&br->ip4_other_query.timer,
- 		    br_ip4_multicast_querier_expired, 0);
- 	timer_setup(&br->ip4_own_query.timer,
---=20
-2.31.0
+Applied
+
+Thanks,
+	Sven
+--nextPart13351496.OZpsN2k5gf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmCwv00ACgkQXYcKB8Em
+e0bgmQ/7Bfub8mMSSR8Q3Rp9lJk0s7uHkLHB+M5TxDZTCKTpxCPvWANddLrD4cPy
+FmrjUMXKIyIE9KSGiX+C/XLB7cMNpH5gyuiZ1xuVOtw5zqyNqliTqOvx8ODOUQ27
+NvsFKDvBl3TwhqCfDHwp7xWssLDCx5Yisc0SSlGC/Ev+0g55PMHL7IiMaALFrjnZ
+2WWatv2D7GoSeDSNgRi9rHQUeUXpo6nKDSy99DDQHPt2iHsAErZvN65lSt0wzkGC
+M1TcsZmE9+QTwnHKdbwwsoEZ1IFU59ovxfoQ8KCBw+0t/UAoTvMN7hSB8Ph7Ar8a
+UrsMBL4T/NpOmNFYiaLjHfIjd6AKHUhv4kFTWtY7e9MkhF2LMyi9oNqjiX1LwlIO
+RxI7jyyiUW5z4Jz+ioxOG60UD5Q9GEgJ1/5Ecb4U43HYBBUy3DaCLHXIxXhjoQgG
+z9uARVB0xfGuvegJElr59eNRGoAN9EbL6AlJQRb4kuF78fHRP8gYD1u3OswTkSHt
+om6WIlsFqXTRuz5W1dT72TQ4LLTpHziCV0B9ZWiYrL7mrjwi03RcnwbAIe7bS/us
+wGqIbdpny63hiOD+wpjqr7lt653p9KOlDn/10JIip2W4tkRjBzRriKU+qLxFjMf5
+7M6+0uKaRa6vfRZ4N9jW0dAO+EEzFBsOOs5OMbssO/Ij6d1+UEI=
+=36As
+-----END PGP SIGNATURE-----
+
+--nextPart13351496.OZpsN2k5gf--
+
+
