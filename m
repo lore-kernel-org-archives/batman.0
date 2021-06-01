@@ -1,130 +1,38 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 2/4] batman-adv: Avoid name based attaching of hard interfaces
-Date: Wed,  2 Jun 2021 22:32:33 +0200
-Message-Id: <20210602203235.10659-2-sven@narfation.org>
-In-Reply-To: <20210602203235.10659-1-sven@narfation.org>
-References: <20210602203235.10659-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Date: Mon, 31 May 2021 22:00:10 -0700
+In-Reply-To: <000000000000f32b3c05958ed0eb@google.com>
+Message-ID: <0000000000006bd5ff05c3ad37da@google.com>
+Subject: Re: [syzbot] INFO: task hung in register_netdevice_notifier (2)
+From: syzbot <syzbot+355f8edb2ff45d5f95fa@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: a@unstable.cc, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, brouer@redhat.com, daniel@iogearbox.net, davem@davemloft.net, hawk@kernel.org, jakub.kicinski@netronome.com, john.fastabend@gmail.com, kafai@fb.com, kuba@kernel.org, linux-can@vger.kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, mkl@pengutronix.de, netdev@vger.kernel.org, socketcan@hartkopp.net, songliubraving@fb.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, xdp-newbies@vger.kernel.org, yhs@fb.com
 
-The sysfs code for the batman-adv/mesh_iface file was receiving a string of
-the batadv interface. This interface name was then provided to the code
-which shared sysfs+rtnetlink code for attaching an hard-interface to an
-batadv interface. The rtnetlink code was also using the (extracted)
-interface name from the ndo_add_slave callback to increase the shared code
-- even when it would have been more efficient to use the provided
-net_device object directly instead of searching it again (based on its
-name) in batadv_hardif_enable_interface.
+syzbot has bisected this issue to:
 
-But this indirect handling is no longer necessary because the sysfs code
-was dropped. There is now only a single code path which is using
-batadv_hardif_enable_interface.
+commit 6bf071bf09d4b2ff3ee8783531e2ce814f0870cb
+Author: Jesper Dangaard Brouer <brouer@redhat.com>
+Date:   Tue Jun 18 13:05:27 2019 +0000
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 14 ++++----------
- net/batman-adv/hard-interface.h |  3 +--
- net/batman-adv/soft-interface.c |  3 +--
- 3 files changed, 6 insertions(+), 14 deletions(-)
+    xdp: page_pool related fix to cpumap
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 9a78789b..44b65fa4 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -705,16 +705,15 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- /**
-  * batadv_hardif_enable_interface() - Enslave hard interface to soft interface
-  * @hard_iface: hard interface to add to soft interface
-- * @net: the applicable net namespace
-- * @iface_name: name of the soft interface
-+ * @soft_iface: netdev struct of the mesh interface
-  *
-  * Return: 0 on success or negative error number in case of failure
-  */
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   struct net *net, const char *iface_name)
-+				   struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv;
--	struct net_device *soft_iface, *master;
-+	struct net_device *master;
- 	__be16 ethertype = htons(ETH_P_BATMAN);
- 	int max_header_len = batadv_max_header_len();
- 	int ret;
-@@ -724,11 +723,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 
- 	kref_get(&hard_iface->refcount);
- 
--	soft_iface = dev_get_by_name(net, iface_name);
--	if (!soft_iface) {
--		ret = -EINVAL;
--		goto err;
--	}
-+	dev_hold(soft_iface);
- 
- 	if (!batadv_softif_is_valid(soft_iface)) {
- 		pr_err("Can't create batman mesh interface %s: already exists as regular interface\n",
-@@ -802,7 +797,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- err_dev:
- 	hard_iface->soft_iface = NULL;
- 	dev_put(soft_iface);
--err:
- 	batadv_hardif_put(hard_iface);
- 	return ret;
- }
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 83d11b46..8cb2a1f1 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -16,7 +16,6 @@
- #include <linux/rcupdate.h>
- #include <linux/stddef.h>
- #include <linux/types.h>
--#include <net/net_namespace.h>
- 
- /**
-  * enum batadv_hard_if_state - State of a hard interface
-@@ -75,7 +74,7 @@ bool batadv_is_wifi_hardif(struct batadv_hard_iface *hard_iface);
- struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   struct net *net, const char *iface_name);
-+				   struct net_device *soft_iface);
- void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface);
- int batadv_hardif_min_mtu(struct net_device *soft_iface);
- void batadv_update_min_mtu(struct net_device *soft_iface);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 0c5b3425..ae368a42 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -842,14 +842,13 @@ static int batadv_softif_slave_add(struct net_device *dev,
- 				   struct netlink_ext_ack *extack)
- {
- 	struct batadv_hard_iface *hard_iface;
--	struct net *net = dev_net(dev);
- 	int ret = -EINVAL;
- 
- 	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
- 	if (!hard_iface || hard_iface->soft_iface)
- 		goto out;
- 
--	ret = batadv_hardif_enable_interface(hard_iface, net, dev->name);
-+	ret = batadv_hardif_enable_interface(hard_iface, dev);
- 
- out:
- 	if (hard_iface)
--- 
-2.30.2
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1397c4a7d00000
+start commit:   7ac3a1c1 Merge tag 'mtd/fixes-for-5.13-rc4' of git://git.k..
+git tree:       upstream
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=1057c4a7d00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=1797c4a7d00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=266cda122a0b56c
+dashboard link: https://syzkaller.appspot.com/bug?extid=355f8edb2ff45d5f95fa
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16cc630fd00000
 
+Reported-by: syzbot+355f8edb2ff45d5f95fa@syzkaller.appspotmail.com
+Fixes: 6bf071bf09d4 ("xdp: page_pool related fix to cpumap")
+
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
