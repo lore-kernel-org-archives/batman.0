@@ -1,12 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 05/11] batman-adv: mcast: add MRD + routable IPv4 multicast with bridges support
-Date: Tue,  8 Jun 2021 17:26:54 +0200
-Message-Id: <20210608152700.30315-6-sw@simonwunderlich.de>
-In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
-References: <20210608152700.30315-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 1/4] batman-adv: Drop implicit creation of batadv net_devices
+Date: Wed,  2 Jun 2021 22:32:32 +0200
+Message-Id: <20210602203235.10659-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,102 +14,124 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+The sysfs code in batman-adv was could create a new batadv interfaces on
+demand when a string (interface name) was written to the
+batman-adv/mesh_iface file. But the code no longer exists in the current
+batman-adv codebase. The helper code to implement this behavior must be
+considered as unused and can be dropped.
 
-This adds support for routable IPv4 multicast addresses
-(224.0.0.0/4, excluding 224.0.0.0/24) in bridged setups.
-
-This utilizes the Multicast Router Discovery (MRD, RFC4286) support
-in the Linux bridge. batman-adv will now query the Linux bridge for
-IPv4 multicast routers, which the bridge has previously learned about
-via MRD.
-
-This allows us to then safely send routable IPv4 multicast packets in
-bridged setups to multicast listeners and multicast routers only. Before
-we had to flood such packets to avoid potential multicast packet loss to
-IPv4 multicast routers, which we were not able to detect before.
-
-With the bridge MRD integration, we are now also able to perform more
-fine-grained detection of IPv6 multicast routers in bridged setups:
-Before we were "guessing" IPv6 multicast routers by looking up multicast
-listeners for the link-local All Routers multicast address (ff02::2),
-which every IPv6 multicast router is listening to. However this would
-also include more nodes than necessary: For instance nodes which are
-just a router for unicast, but not multicast would be included, too.
-
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/multicast.c | 41 +++++---------------------------------
- 1 file changed, 5 insertions(+), 36 deletions(-)
+ net/batman-adv/hard-interface.c | 12 ++----------
+ net/batman-adv/soft-interface.c | 34 +--------------------------------
+ net/batman-adv/soft-interface.h |  2 --
+ 3 files changed, 3 insertions(+), 45 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 1d63c8cbbfe7..923e2197c2db 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -193,53 +193,22 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get(struct batadv_priv *bat_priv,
-  *	BATADV_MCAST_WANT_NO_RTR6: No IPv6 multicast router is present
-  *	The former two OR'd: no multicast router is present
-  */
--#if IS_ENABLED(CONFIG_IPV6)
- static u8 batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
- 						struct net_device *bridge)
- {
--	struct list_head bridge_mcast_list = LIST_HEAD_INIT(bridge_mcast_list);
- 	struct net_device *dev = bat_priv->soft_iface;
--	struct br_ip_list *br_ip_entry, *tmp;
--	u8 flags = BATADV_MCAST_WANT_NO_RTR6;
--	int ret;
-+	u8 flags = BATADV_NO_FLAGS;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 4a6a25d5..9a78789b 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -725,17 +725,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	kref_get(&hard_iface->refcount);
  
- 	if (!bridge)
- 		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
- 
--	/* TODO: ask the bridge if a multicast router is present (the bridge
--	 * is capable of performing proper RFC4286 multicast router
--	 * discovery) instead of searching for a ff02::2 listener here
--	 */
--	ret = br_multicast_list_adjacent(dev, &bridge_mcast_list);
--	if (ret < 0)
--		return BATADV_NO_FLAGS;
+ 	soft_iface = dev_get_by_name(net, iface_name);
 -
--	list_for_each_entry_safe(br_ip_entry, tmp, &bridge_mcast_list, list) {
--		/* the bridge snooping does not maintain IPv4 link-local
--		 * addresses - therefore we won't find any IPv4 multicast router
--		 * address here, only IPv6 ones
--		 */
--		if (br_ip_entry->addr.proto == htons(ETH_P_IPV6) &&
--		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
--			flags &= ~BATADV_MCAST_WANT_NO_RTR6;
+ 	if (!soft_iface) {
+-		soft_iface = batadv_softif_create(net, iface_name);
 -
--		list_del(&br_ip_entry->list);
--		kfree(br_ip_entry);
--	}
-+	if (!br_multicast_has_router_adjacent(dev, ETH_P_IP))
-+		flags |= BATADV_MCAST_WANT_NO_RTR4;
-+	if (!br_multicast_has_router_adjacent(dev, ETH_P_IPV6))
-+		flags |= BATADV_MCAST_WANT_NO_RTR6;
+-		if (!soft_iface) {
+-			ret = -ENOMEM;
+-			goto err;
+-		}
+-
+-		/* dev_get_by_name() increases the reference counter for us */
+-		dev_hold(soft_iface);
++		ret = -EINVAL;
++		goto err;
+ 	}
  
- 	return flags;
+ 	if (!batadv_softif_is_valid(soft_iface)) {
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index a21884c0..0c5b3425 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -26,7 +26,6 @@
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/percpu.h>
+-#include <linux/printk.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -37,6 +36,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <net/net_namespace.h>
+ #include <net/netlink.h>
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+@@ -1086,38 +1086,6 @@ static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
+ 	return register_netdevice(dev);
  }
--#else
--static inline u8
--batadv_mcast_mla_rtr_flags_bridge_get(struct batadv_priv *bat_priv,
--				      struct net_device *bridge)
--{
--	if (bridge)
--		return BATADV_NO_FLAGS;
--	else
--		return BATADV_MCAST_WANT_NO_RTR4 | BATADV_MCAST_WANT_NO_RTR6;
--}
--#endif
  
+-/**
+- * batadv_softif_create() - Create and register soft interface
+- * @net: the applicable net namespace
+- * @name: name of the new soft interface
+- *
+- * Return: newly allocated soft_interface, NULL on errors
+- */
+-struct net_device *batadv_softif_create(struct net *net, const char *name)
+-{
+-	struct net_device *soft_iface;
+-	int ret;
+-
+-	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
+-				  NET_NAME_UNKNOWN, batadv_softif_init_early);
+-	if (!soft_iface)
+-		return NULL;
+-
+-	dev_net_set(soft_iface, net);
+-
+-	soft_iface->rtnl_link_ops = &batadv_link_ops;
+-
+-	ret = register_netdevice(soft_iface);
+-	if (ret < 0) {
+-		pr_err("Unable to register the batman interface '%s': %i\n",
+-		       name, ret);
+-		free_netdev(soft_iface);
+-		return NULL;
+-	}
+-
+-	return soft_iface;
+-}
+-
  /**
-  * batadv_mcast_mla_rtr_flags_get() - get multicast router flags
+  * batadv_softif_destroy_netlink() - deletion of batadv_soft_interface via
+  *  netlink
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 38b0ad18..67a2ddd6 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -12,14 +12,12 @@
+ #include <linux/netdevice.h>
+ #include <linux/skbuff.h>
+ #include <linux/types.h>
+-#include <net/net_namespace.h>
+ #include <net/rtnetlink.h>
+ 
+ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
+ void batadv_interface_rx(struct net_device *soft_iface,
+ 			 struct sk_buff *skb, int hdr_size,
+ 			 struct batadv_orig_node *orig_node);
+-struct net_device *batadv_softif_create(struct net *net, const char *name);
+ bool batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
 -- 
-2.20.1
+2.30.2
 
