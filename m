@@ -1,63 +1,79 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 11/11] batman-adv: Drop reduntant batadv interface check
-Date: Tue,  8 Jun 2021 17:27:00 +0200
-Message-Id: <20210608152700.30315-12-sw@simonwunderlich.de>
-In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
-References: <20210608152700.30315-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH net-next] batman-adv: Fix spelling mistakes
+Date: Wed, 02 Jun 2021 08:47:18 +0200
+Message-ID: <48077100.4opSpZgCWW@ripper>
+In-Reply-To: <20210602065603.106030-1-zhengyongjun3@huawei.com>
+References: <20210602065603.106030-1-zhengyongjun3@huawei.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart35456750.oCVJAORbYE"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Zheng Yongjun <zhengyongjun3@huawei.com>, b.a.t.m.a.n@lists.open-mesh.org
 
-If batadv_hardif_enable_interface is called then its called from its
-callback ndo_add_slave. It is therefore not necessary to check if it is a
-batadv interface.
+ 
+--nextPart35456750.oCVJAORbYE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Zheng Yongjun <zhengyongjun3@huawei.com>, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH net-next] batman-adv: Fix spelling mistakes
+Date: Wed, 02 Jun 2021 08:47:18 +0200
+Message-ID: <48077100.4opSpZgCWW@ripper>
+In-Reply-To: <20210602065603.106030-1-zhengyongjun3@huawei.com>
+References: <20210602065603.106030-1-zhengyongjun3@huawei.com>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/hard-interface.c | 9 ---------
- 1 file changed, 9 deletions(-)
+On Wednesday, 2 June 2021 08:56:03 CEST Zheng Yongjun wrote:
+> Fix some spelling mistakes in comments:
+> containg  ==> containing
+> dont  ==> don't
+> datas  ==> data
+> brodcast  ==> broadcast
+> 
+> Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.c | 4 ++--
+>  net/batman-adv/hard-interface.c        | 2 +-
+>  net/batman-adv/hash.h                  | 2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 44b0aa30c30a..55d97e18aa4a 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -9,7 +9,6 @@
- 
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
--#include <linux/errno.h>
- #include <linux/gfp.h>
- #include <linux/if.h>
- #include <linux/if_arp.h>
-@@ -698,14 +697,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	kref_get(&hard_iface->refcount);
- 
- 	dev_hold(soft_iface);
--
--	if (!batadv_softif_is_valid(soft_iface)) {
--		pr_err("Can't create batman mesh interface %s: already exists as regular interface\n",
--		       soft_iface->name);
--		ret = -EINVAL;
--		goto err_dev;
--	}
--
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
--- 
-2.20.1
+
+You forgot to send it to the B.A.T.M.A.N. mailing list. And it therefore 
+didn't appear in our patchwork. And you send stuff from the future - which is 
+rather odd.
+
+Applied anyway.
+
+Thanks,
+	Sven
+
+--nextPart35456750.oCVJAORbYE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmC3KXYACgkQXYcKB8Em
+e0YXng//aLzrW36XvD5wdUTS/jlzrlxggP0i3YehwpVFOiSon6nDcxoAjjMij3qa
+8kJKrY1cjoVgQe93P6fc0nYb+UWwwbKEE9fOHw/FYIa6qU9XwfWN3MjbVAy0HEfr
+0OyBtx4o5MFA34uTCtxaE4TFXIn6am5P2U4u7rGLn9LejE1e0lfpWRUf3Wam/8Hg
+Mm681yStajB159NrEjVa6YnagZhqNI47U7mId+ZfAGjeHaGQX16p6NUD654+CtPW
+1P56KmH9p5JmKu1bbeUxXTaEq199I2GTsZUGZli6M6dcWaqcr2ILj6RV2G1y9vEK
+vltKRHnRo3vUlbONLgiCc6TwX+CZwf0D9fn4y5Fbhpwg+SKlMeTYoIsH36Q/VkQk
+kX+/iYT6WU+uQAnVcnYz9rAU6VIpkY2Gfnv9oDv5M1I653ySRY7x+5BnQBnUMCp4
+TYfojqC3Yd5U/RbT5giP+qh2yB88cBq26oxUDVEPs6VMQegcju3RBnh85rT/Iqav
+7pdWoLJicoB9ycbf8QFiwj8UcvEdXQKXdblkmCExuqG2BN2ln5G8GBK5PqOUenuJ
+3aozntk641U3swH54hjFP+c4ZyxVASGILANTHJk+HoM0x4aGQKABPGacO39V9oK9
+SkgMX8p285zxHwXICiCZGCt664FYBz9bUk1+Q9uc8bxj9mlSU/0=
+=+Ayg
+-----END PGP SIGNATURE-----
+
+--nextPart35456750.oCVJAORbYE--
+
 
