@@ -1,10 +1,10 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 02/11] batman-adv: Always send iface index+name in genlmsg
-Date: Tue,  8 Jun 2021 17:26:51 +0200
-Message-Id: <20210608152700.30315-3-sw@simonwunderlich.de>
-In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
-References: <20210608152700.30315-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [RFC PATCH 2/2] batctl: Fix build with lld-13 or ld 2.37 start-stop-gc
+Date: Sat,  5 Jun 2021 14:45:49 +0200
+Message-Id: <20210605124549.94021-1-sven@narfation.org>
+In-Reply-To: <20210605124511.92537-1-sven@narfation.org>
+References: <20210605124511.92537-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,129 +16,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+If ld 2.37 with -Wl,-z,start-stop-gc -Wl,--gc-sections or lld-13 with
+-Wl,--gc-sections, the build with either fail with
 
-The batman-adv netlink messages often contain the interface index and
-interface name in the same message. This makes it easy for the receiver to
-operate on the incoming data when it either needs to print something or
-needs to operate on the interface index.
+  ld.lld: error: undefined symbol: __start___command
+  >>> referenced by main.c
+  >>>               main.o:(main)
+  >>> referenced by main.c
+  >>>               main.o:(main)
+  >>> referenced by main.c
+  >>>               main.o:(print_usage)
+  >>> referenced 1 more time
 
-But one of the attributes was missing for:
-
-* neighbor table dumps
-* originator table dumps
-* gateway list dumps
-* query of hardif information
-* query of vid information
-
-The userspace therefore had to implement special workarounds using
-SIOCGIFNAME or SIOCGIFINDEX depending on what was actually provided.
-Providing both information simplifies the userspace code massively without
-adding a lot of extra overhead in the kernel portion.
+Or in case of ld 2.37 just show a single command (aggregation). A new
+attribute retain was introduced which is then emitting the ELF flag
+SHF_GNU_RETAIN. This will cause the garbage collector to retain this
+section.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c |  6 ++++++
- net/batman-adv/bat_v.c      | 10 ++++++++++
- net/batman-adv/netlink.c    |  8 ++++++++
- 3 files changed, 24 insertions(+)
+ main.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 789f257be24f..680def809838 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1849,6 +1849,8 @@ batadv_iv_ogm_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
- 		    orig_node->orig) ||
- 	    nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
- 		    neigh_node->addr) ||
-+	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-+			   neigh_node->if_incoming->net_dev->name) ||
- 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			neigh_node->if_incoming->net_dev->ifindex) ||
- 	    nla_put_u8(msg, BATADV_ATTR_TQ, tq_avg) ||
-@@ -2078,6 +2080,8 @@ batadv_iv_ogm_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
+diff --git a/main.h b/main.h
+index 00b2ab3..6b11acc 100644
+--- a/main.h
++++ b/main.h
+@@ -101,6 +101,12 @@ struct command {
+ 	const char *usage;
+ };
  
- 	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
- 		    hardif_neigh->addr) ||
-+	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-+			   hardif_neigh->if_incoming->net_dev->name) ||
- 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			hardif_neigh->if_incoming->net_dev->ifindex) ||
- 	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
-@@ -2459,6 +2463,8 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid,
- 		    router->addr) ||
- 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
- 			   router->if_incoming->net_dev->name) ||
-+	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
-+			router->if_incoming->net_dev->ifindex) ||
- 	    nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_DOWN,
- 			gw_node->bandwidth_down) ||
- 	    nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_UP,
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index e1ca2b8c3152..b98aea958e3d 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -146,6 +146,8 @@ batadv_v_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
- 
- 	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
- 		    hardif_neigh->addr) ||
-+	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-+			   hardif_neigh->if_incoming->net_dev->name) ||
- 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			hardif_neigh->if_incoming->net_dev->ifindex) ||
- 	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
-@@ -298,6 +300,8 @@ batadv_v_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
- 	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN, orig_node->orig) ||
- 	    nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
- 		    neigh_node->addr) ||
-+	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-+			   neigh_node->if_incoming->net_dev->name) ||
- 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			neigh_node->if_incoming->net_dev->ifindex) ||
- 	    nla_put_u32(msg, BATADV_ATTR_THROUGHPUT, throughput) ||
-@@ -739,6 +743,12 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid,
- 		goto out;
- 	}
- 
-+	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
-+			router->if_incoming->net_dev->ifindex)) {
-+		genlmsg_cancel(msg, hdr);
-+		goto out;
-+	}
++#if defined(__has_attribute) && __has_attribute(retain)
++#define start_stop_retain __attribute__((retain))
++#else
++#define start_stop_retain
++#endif
 +
- 	if (nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_DOWN,
- 			gw_node->bandwidth_down)) {
- 		genlmsg_cancel(msg, hdr);
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index f317d206b411..b6cc746e01a6 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -814,6 +814,10 @@ static int batadv_netlink_hardif_fill(struct sk_buff *msg,
- 			bat_priv->soft_iface->ifindex))
- 		goto nla_put_failure;
+ #define COMMAND_NAMED(_type, _name, _abbr, _handler, _flags, _arg, _usage) \
+ 	static const struct command command_ ## _name ## _ ## _type = { \
+ 		.type = (_type), \
+@@ -112,7 +118,7 @@ struct command {
+ 		.usage = (_usage), \
+ 	}; \
+ 	static const struct command *__command_ ## _name ## _ ## _type \
+-	__attribute__((__used__,__section__ ("__command"))) = &command_ ## _name ## _ ## _type
++	__attribute__((__used__,__section__ ("__command"))) start_stop_retain = &command_ ## _name ## _ ## _type
  
-+	if (nla_put_string(msg, BATADV_ATTR_MESH_IFNAME,
-+			   bat_priv->soft_iface->name))
-+		goto nla_put_failure;
-+
- 	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
- 			net_dev->ifindex) ||
- 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-@@ -1045,6 +1049,10 @@ static int batadv_netlink_vlan_fill(struct sk_buff *msg,
- 			bat_priv->soft_iface->ifindex))
- 		goto nla_put_failure;
- 
-+	if (nla_put_string(msg, BATADV_ATTR_MESH_IFNAME,
-+			   bat_priv->soft_iface->name))
-+		goto nla_put_failure;
-+
- 	if (nla_put_u32(msg, BATADV_ATTR_VLANID, vlan->vid & VLAN_VID_MASK))
- 		goto nla_put_failure;
- 
+ #define COMMAND(_type, _handler, _abbr, _flags, _arg, _usage) \
+ 	COMMAND_NAMED(_type, _handler, _abbr, _handler, _flags, _arg, _usage)
 -- 
-2.20.1
+2.30.2
 
