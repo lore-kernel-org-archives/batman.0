@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 09/11] batman-adv: Avoid name based attaching of hard interfaces
-Date: Tue,  8 Jun 2021 17:26:58 +0200
-Message-Id: <20210608152700.30315-10-sw@simonwunderlich.de>
+Subject: [PATCH 02/11] batman-adv: Always send iface index+name in genlmsg
+Date: Tue,  8 Jun 2021 17:26:51 +0200
+Message-Id: <20210608152700.30315-3-sw@simonwunderlich.de>
 In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
 References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
@@ -21,113 +21,124 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The sysfs code for the batman-adv/mesh_iface file was receiving a string of
-the batadv interface. This interface name was then provided to the code
-which shared sysfs+rtnetlink code for attaching an hard-interface to an
-batadv interface. The rtnetlink code was also using the (extracted)
-interface name from the ndo_add_slave callback to increase the shared code
-- even when it would have been more efficient to use the provided
-net_device object directly instead of searching it again (based on its
-name) in batadv_hardif_enable_interface.
+The batman-adv netlink messages often contain the interface index and
+interface name in the same message. This makes it easy for the receiver to
+operate on the incoming data when it either needs to print something or
+needs to operate on the interface index.
 
-But this indirect handling is no longer necessary because the sysfs code
-was dropped. There is now only a single code path which is using
-batadv_hardif_enable_interface.
+But one of the attributes was missing for:
+
+* neighbor table dumps
+* originator table dumps
+* gateway list dumps
+* query of hardif information
+* query of vid information
+
+The userspace therefore had to implement special workarounds using
+SIOCGIFNAME or SIOCGIFINDEX depending on what was actually provided.
+Providing both information simplifies the userspace code massively without
+adding a lot of extra overhead in the kernel portion.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/hard-interface.c | 14 ++++----------
- net/batman-adv/hard-interface.h |  3 +--
- net/batman-adv/soft-interface.c |  3 +--
- 3 files changed, 6 insertions(+), 14 deletions(-)
+ net/batman-adv/bat_iv_ogm.c |  6 ++++++
+ net/batman-adv/bat_v.c      | 10 ++++++++++
+ net/batman-adv/netlink.c    |  8 ++++++++
+ 3 files changed, 24 insertions(+)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a638f35598f0..81d201cc343d 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -705,16 +705,15 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- /**
-  * batadv_hardif_enable_interface() - Enslave hard interface to soft interface
-  * @hard_iface: hard interface to add to soft interface
-- * @net: the applicable net namespace
-- * @iface_name: name of the soft interface
-+ * @soft_iface: netdev struct of the mesh interface
-  *
-  * Return: 0 on success or negative error number in case of failure
-  */
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   struct net *net, const char *iface_name)
-+				   struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv;
--	struct net_device *soft_iface, *master;
-+	struct net_device *master;
- 	__be16 ethertype = htons(ETH_P_BATMAN);
- 	int max_header_len = batadv_max_header_len();
- 	int ret;
-@@ -724,11 +723,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 789f257be24f..680def809838 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1849,6 +1849,8 @@ batadv_iv_ogm_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ 		    orig_node->orig) ||
+ 	    nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
+ 		    neigh_node->addr) ||
++	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
++			   neigh_node->if_incoming->net_dev->name) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			neigh_node->if_incoming->net_dev->ifindex) ||
+ 	    nla_put_u8(msg, BATADV_ATTR_TQ, tq_avg) ||
+@@ -2078,6 +2080,8 @@ batadv_iv_ogm_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
  
- 	kref_get(&hard_iface->refcount);
+ 	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
+ 		    hardif_neigh->addr) ||
++	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
++			   hardif_neigh->if_incoming->net_dev->name) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			hardif_neigh->if_incoming->net_dev->ifindex) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
+@@ -2459,6 +2463,8 @@ static int batadv_iv_gw_dump_entry(struct sk_buff *msg, u32 portid,
+ 		    router->addr) ||
+ 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
+ 			   router->if_incoming->net_dev->name) ||
++	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++			router->if_incoming->net_dev->ifindex) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_DOWN,
+ 			gw_node->bandwidth_down) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_UP,
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index e1ca2b8c3152..b98aea958e3d 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -146,6 +146,8 @@ batadv_v_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
  
--	soft_iface = dev_get_by_name(net, iface_name);
--	if (!soft_iface) {
--		ret = -EINVAL;
--		goto err;
--	}
-+	dev_hold(soft_iface);
- 
- 	if (!batadv_softif_is_valid(soft_iface)) {
- 		pr_err("Can't create batman mesh interface %s: already exists as regular interface\n",
-@@ -802,7 +797,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- err_dev:
- 	hard_iface->soft_iface = NULL;
- 	dev_put(soft_iface);
--err:
- 	batadv_hardif_put(hard_iface);
- 	return ret;
- }
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 83d11b46a9d8..8cb2a1f10080 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -16,7 +16,6 @@
- #include <linux/rcupdate.h>
- #include <linux/stddef.h>
- #include <linux/types.h>
--#include <net/net_namespace.h>
- 
- /**
-  * enum batadv_hard_if_state - State of a hard interface
-@@ -75,7 +74,7 @@ bool batadv_is_wifi_hardif(struct batadv_hard_iface *hard_iface);
- struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   struct net *net, const char *iface_name);
-+				   struct net_device *soft_iface);
- void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface);
- int batadv_hardif_min_mtu(struct net_device *soft_iface);
- void batadv_update_min_mtu(struct net_device *soft_iface);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 0c5b34251a6d..ae368a42a4ad 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -842,14 +842,13 @@ static int batadv_softif_slave_add(struct net_device *dev,
- 				   struct netlink_ext_ack *extack)
- {
- 	struct batadv_hard_iface *hard_iface;
--	struct net *net = dev_net(dev);
- 	int ret = -EINVAL;
- 
- 	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
- 	if (!hard_iface || hard_iface->soft_iface)
+ 	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
+ 		    hardif_neigh->addr) ||
++	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
++			   hardif_neigh->if_incoming->net_dev->name) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			hardif_neigh->if_incoming->net_dev->ifindex) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
+@@ -298,6 +300,8 @@ batadv_v_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ 	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN, orig_node->orig) ||
+ 	    nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
+ 		    neigh_node->addr) ||
++	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
++			   neigh_node->if_incoming->net_dev->name) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			neigh_node->if_incoming->net_dev->ifindex) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_THROUGHPUT, throughput) ||
+@@ -739,6 +743,12 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid,
  		goto out;
+ 	}
  
--	ret = batadv_hardif_enable_interface(hard_iface, net, dev->name);
-+	ret = batadv_hardif_enable_interface(hard_iface, dev);
++	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++			router->if_incoming->net_dev->ifindex)) {
++		genlmsg_cancel(msg, hdr);
++		goto out;
++	}
++
+ 	if (nla_put_u32(msg, BATADV_ATTR_BANDWIDTH_DOWN,
+ 			gw_node->bandwidth_down)) {
+ 		genlmsg_cancel(msg, hdr);
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index f317d206b411..b6cc746e01a6 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -814,6 +814,10 @@ static int batadv_netlink_hardif_fill(struct sk_buff *msg,
+ 			bat_priv->soft_iface->ifindex))
+ 		goto nla_put_failure;
  
- out:
- 	if (hard_iface)
++	if (nla_put_string(msg, BATADV_ATTR_MESH_IFNAME,
++			   bat_priv->soft_iface->name))
++		goto nla_put_failure;
++
+ 	if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
+ 			net_dev->ifindex) ||
+ 	    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
+@@ -1045,6 +1049,10 @@ static int batadv_netlink_vlan_fill(struct sk_buff *msg,
+ 			bat_priv->soft_iface->ifindex))
+ 		goto nla_put_failure;
+ 
++	if (nla_put_string(msg, BATADV_ATTR_MESH_IFNAME,
++			   bat_priv->soft_iface->name))
++		goto nla_put_failure;
++
+ 	if (nla_put_u32(msg, BATADV_ATTR_VLANID, vlan->vid & VLAN_VID_MASK))
+ 		goto nla_put_failure;
+ 
 -- 
 2.20.1
 
