@@ -1,77 +1,89 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: IRC channel moved to irc.hackint.org #batadv
-Date: Tue, 15 Jun 2021 10:41:49 +0200
-Message-ID: <2226940.2AtTIDTzSa@ripper>
-In-Reply-To: <18456690.fnCDB5Feod@ripper>
-References: <18456690.fnCDB5Feod@ripper>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 07/11] batman-adv: Fix spelling mistakes
+Date: Tue,  8 Jun 2021 17:26:56 +0200
+Message-Id: <20210608152700.30315-8-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
+References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3075137.BaJf2WcGOb"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Zheng Yongjun <zhengyongjun3@huawei.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Zheng Yongjun <zhengyongjun3@huawei.com>
+
+Fix some spelling mistakes in comments:
+containg  ==> containing
+dont  ==> don't
+datas  ==> data
+brodcast  ==> broadcast
+
+Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 4 ++--
+ net/batman-adv/hard-interface.c        | 2 +-
+ net/batman-adv/hash.h                  | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 7dc133cfc363..63d42dcc9324 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -395,7 +395,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, u8 *mac,
+ 		break;
+ 	case BATADV_CLAIM_TYPE_ANNOUNCE:
+ 		/* announcement frame
+-		 * set HW SRC to the special mac containg the crc
++		 * set HW SRC to the special mac containing the crc
+ 		 */
+ 		ether_addr_copy(hw_src, mac);
+ 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
+@@ -1040,7 +1040,7 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ 	/* lets see if this originator is in our mesh */
+ 	orig_node = batadv_orig_hash_find(bat_priv, backbone_addr);
  
---nextPart3075137.BaJf2WcGOb
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: IRC channel moved to irc.hackint.org #batadv
-Date: Tue, 15 Jun 2021 10:41:49 +0200
-Message-ID: <2226940.2AtTIDTzSa@ripper>
-In-Reply-To: <18456690.fnCDB5Feod@ripper>
-References: <18456690.fnCDB5Feod@ripper>
-
-On Monday, 14 June 2021 18:51:52 CEST Sven Eckelmann wrote:
-> Due to recent developments around the Freenode.org IRC network, the opinions 
-> about the usage of this service shifted dramatically.
-
-Btw. what happened to the old #batman channel on freenode is unrelated to our 
-move (but happened interestingly at roughly the same time). I've never de-
-registered anything or blocked/deauthed anyone on freenode during the move. 
-Only the topic and entry message was changed to point to our website (with 
-more information).
-
-But the new freenode staff decided to perform some questionable actions [1] 
-which resulted in a fractured network and a loss of the previously registered 
-channels + nicks.
-
-If you need to recover some information from the old chanserv/nickserv then 
-you can try to connect to rinnegan.freenode.net or another server on the 
-"old" freenode and query the services.
-
-Kind regards,
-	Sven
-
-[1] https://www.devever.net/~hl/freenode_suicide
---nextPart3075137.BaJf2WcGOb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmDIZ80ACgkQXYcKB8Em
-e0ZXCg//cmZ2og0VC/L4K2lrgVB/w/9dDOY2gxraB8p5/D7taOUfP96YtZ6VMjOf
-eJDnteDJIYfqqw6MhBy/lLqKwlplBgCE/h4o5iGQZlSgAxqNW6roowfPUkqiutZa
-TLRU4SP3ahza0rQQBEcxXwYDXd4Hqm9fXi01Kg5TB/muZxzO3onKJqeMxUiJWksA
-YypSj0Q/s1wG398KINPVc8I8hG03XCnjFU15DBI5KOwUQ7/huBDnL3Ai4XmlAncr
-8pZpfB+KvMvnruryA1/MB1T7T81TT80WCuqD/m0bfM8v0ouBF0xCR+XAKuLe+CQn
-SPXxn9HD/VHqs3biwwOP2L1duCsWcwzydnAuzw/fBKr6m62FO6iFM1gqi2BtOz5p
-kH5i6fp/iAOvzHFTimrC35URlHfYDnwVgfdScWkMIBGSKASX7dSyzf0m2zr0v9h4
-aiv0YgYjnL3WNz9d5KPW/Uz9XxUzPhyZiOwkiGAkG34wZI6TXdB04IVYfKDNgQuO
-gkzi58yY9TAacnlmcSetmLqI0RS5LG+5x6WVU1SWRDxJbx3CFcP8jJlgue2Oqc2Z
-68JU3BLSW/f/nWz4PVcVjr9FTB1C2lumX0CAE8iJlSdvp5ml/p8MxoobpliBOHmc
-nJce5FbHejEhAWcuOl2Z0Gq8Yfx6eTRDOuZvBAgsQkC3ZoSUImk=
-=0Web
------END PGP SIGNATURE-----
-
---nextPart3075137.BaJf2WcGOb--
-
+-	/* dont accept claims from gateways which are not in
++	/* don't accept claims from gateways which are not in
+ 	 * the same mesh or group.
+ 	 */
+ 	if (!orig_node)
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 4a6a25d551a8..b99f64f483fc 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -403,7 +403,7 @@ int batadv_hardif_no_broadcast(struct batadv_hard_iface *if_outgoing,
+ 		goto out;
+ 	}
+ 
+-	/* >1 neighbors -> (re)brodcast */
++	/* >1 neighbors -> (re)broadcast */
+ 	if (rcu_dereference(hlist_next_rcu(first)))
+ 		goto out;
+ 
+diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
+index 46696759f194..fb251c385a1b 100644
+--- a/net/batman-adv/hash.h
++++ b/net/batman-adv/hash.h
+@@ -18,7 +18,7 @@
+ #include <linux/stddef.h>
+ #include <linux/types.h>
+ 
+-/* callback to a compare function.  should compare 2 element datas for their
++/* callback to a compare function.  should compare 2 element data for their
+  * keys
+  *
+  * Return: true if same and false if not same
+-- 
+2.20.1
 
