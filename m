@@ -1,38 +1,142 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 08/11] batman-adv: Drop implicit creation of batadv net_devices
+Date: Tue,  8 Jun 2021 17:26:57 +0200
+Message-Id: <20210608152700.30315-9-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
+References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Mon, 31 May 2021 22:00:10 -0700
-In-Reply-To: <000000000000f32b3c05958ed0eb@google.com>
-Message-ID: <0000000000006bd5ff05c3ad37da@google.com>
-Subject: Re: [syzbot] INFO: task hung in register_netdevice_notifier (2)
-From: syzbot <syzbot+355f8edb2ff45d5f95fa@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, ast@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, brouer@redhat.com, daniel@iogearbox.net, davem@davemloft.net, hawk@kernel.org, jakub.kicinski@netronome.com, john.fastabend@gmail.com, kafai@fb.com, kuba@kernel.org, linux-can@vger.kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, mkl@pengutronix.de, netdev@vger.kernel.org, socketcan@hartkopp.net, songliubraving@fb.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, xdp-newbies@vger.kernel.org, yhs@fb.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-syzbot has bisected this issue to:
+From: Sven Eckelmann <sven@narfation.org>
 
-commit 6bf071bf09d4b2ff3ee8783531e2ce814f0870cb
-Author: Jesper Dangaard Brouer <brouer@redhat.com>
-Date:   Tue Jun 18 13:05:27 2019 +0000
+The sysfs code in batman-adv was could create a new batadv interfaces on
+demand when a string (interface name) was written to the
+batman-adv/mesh_iface file. But the code no longer exists in the current
+batman-adv codebase. The helper code to implement this behavior must be
+considered as unused and can be dropped.
 
-    xdp: page_pool related fix to cpumap
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 12 ++----------
+ net/batman-adv/soft-interface.c | 34 +--------------------------------
+ net/batman-adv/soft-interface.h |  2 --
+ 3 files changed, 3 insertions(+), 45 deletions(-)
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1397c4a7d00000
-start commit:   7ac3a1c1 Merge tag 'mtd/fixes-for-5.13-rc4' of git://git.k..
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=1057c4a7d00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=1797c4a7d00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=266cda122a0b56c
-dashboard link: https://syzkaller.appspot.com/bug?extid=355f8edb2ff45d5f95fa
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16cc630fd00000
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index b99f64f483fc..a638f35598f0 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -725,17 +725,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	kref_get(&hard_iface->refcount);
+ 
+ 	soft_iface = dev_get_by_name(net, iface_name);
+-
+ 	if (!soft_iface) {
+-		soft_iface = batadv_softif_create(net, iface_name);
+-
+-		if (!soft_iface) {
+-			ret = -ENOMEM;
+-			goto err;
+-		}
+-
+-		/* dev_get_by_name() increases the reference counter for us */
+-		dev_hold(soft_iface);
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if (!batadv_softif_is_valid(soft_iface)) {
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index a21884c0d47f..0c5b34251a6d 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -26,7 +26,6 @@
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/percpu.h>
+-#include <linux/printk.h>
+ #include <linux/random.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -37,6 +36,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <net/net_namespace.h>
+ #include <net/netlink.h>
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+@@ -1086,38 +1086,6 @@ static int batadv_softif_newlink(struct net *src_net, struct net_device *dev,
+ 	return register_netdevice(dev);
+ }
+ 
+-/**
+- * batadv_softif_create() - Create and register soft interface
+- * @net: the applicable net namespace
+- * @name: name of the new soft interface
+- *
+- * Return: newly allocated soft_interface, NULL on errors
+- */
+-struct net_device *batadv_softif_create(struct net *net, const char *name)
+-{
+-	struct net_device *soft_iface;
+-	int ret;
+-
+-	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
+-				  NET_NAME_UNKNOWN, batadv_softif_init_early);
+-	if (!soft_iface)
+-		return NULL;
+-
+-	dev_net_set(soft_iface, net);
+-
+-	soft_iface->rtnl_link_ops = &batadv_link_ops;
+-
+-	ret = register_netdevice(soft_iface);
+-	if (ret < 0) {
+-		pr_err("Unable to register the batman interface '%s': %i\n",
+-		       name, ret);
+-		free_netdev(soft_iface);
+-		return NULL;
+-	}
+-
+-	return soft_iface;
+-}
+-
+ /**
+  * batadv_softif_destroy_netlink() - deletion of batadv_soft_interface via
+  *  netlink
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 38b0ad182584..67a2ddd6832f 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -12,14 +12,12 @@
+ #include <linux/netdevice.h>
+ #include <linux/skbuff.h>
+ #include <linux/types.h>
+-#include <net/net_namespace.h>
+ #include <net/rtnetlink.h>
+ 
+ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
+ void batadv_interface_rx(struct net_device *soft_iface,
+ 			 struct sk_buff *skb, int hdr_size,
+ 			 struct batadv_orig_node *orig_node);
+-struct net_device *batadv_softif_create(struct net *net, const char *name);
+ bool batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
+-- 
+2.20.1
 
-Reported-by: syzbot+355f8edb2ff45d5f95fa@syzkaller.appspotmail.com
-Fixes: 6bf071bf09d4 ("xdp: page_pool related fix to cpumap")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
