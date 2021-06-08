@@ -1,53 +1,66 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 04/11] batman-adv: bcast: avoid skb-copy for (re)queued broadcasts
-Date: Tue,  8 Jun 2021 17:26:53 +0200
-Message-Id: <20210608152700.30315-5-sw@simonwunderlich.de>
-In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
-References: <20210608152700.30315-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+MIME-Version: 1.0
+Subject: Re: [PATCH 01/11] batman-adv: Start new development cycle
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <162318000579.7737.13404086203664485668.git-patchwork-notify@kernel.org>
+Date: Tue, 08 Jun 2021 19:20:05 +0000
+References: <20210608152700.30315-2-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-2-sw@simonwunderlich.de>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+Hello:
 
-Broadcast packets send via batadv_send_outstanding_bcast_packet() were
-originally copied in batadv_forw_bcast_packet_to_list() before being
-queued. And after that only the ethernet header will be pushed through
-batadv_send_broadcast_skb()->batadv_send_skb_packet() which works safely
-on skb clones as it uses batadv_skb_head_push()->skb_cow_head().
+This series was applied to netdev/net-next.git (refs/heads/master):
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/send.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue,  8 Jun 2021 17:26:50 +0200 you wrote:
+> This version will contain all the (major or even only minor) changes fo=
+r
+> Linux 5.14.
+>=20
+> The version number isn't a semantic version number with major and minor
+> information. It is just encoding the year of the expected publishing as
+> Linux -rc1 and the number of published versions this year (starting at =
+0).
+>=20
+> [...]
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 07b0ba265472..0b9dd29d3b6a 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -1072,7 +1072,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	}
- 
- 	/* send a copy of the saved skb */
--	skb1 = skb_copy(forw_packet->skb, GFP_ATOMIC);
-+	skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
- 	if (!skb1)
- 		goto out;
- 
--- 
-2.20.1
+Here is the summary with links:
+  - [01/11] batman-adv: Start new development cycle
+    https://git.kernel.org/netdev/net-next/c/9a959cab2219
+  - [02/11] batman-adv: Always send iface index+name in genlmsg
+    https://git.kernel.org/netdev/net-next/c/d295345abb3e
+  - [03/11] batman-adv: bcast: queue per interface, if needed
+    https://git.kernel.org/netdev/net-next/c/3f69339068f9
+  - [04/11] batman-adv: bcast: avoid skb-copy for (re)queued broadcasts
+    https://git.kernel.org/netdev/net-next/c/4cbf055002c5
+  - [05/11] batman-adv: mcast: add MRD + routable IPv4 multicast with bri=
+dges support
+    https://git.kernel.org/netdev/net-next/c/7a68cc16b82c
+  - [06/11] batman-adv: Remove the repeated declaration
+    https://git.kernel.org/netdev/net-next/c/1cf1ef60a1a6
+  - [07/11] batman-adv: Fix spelling mistakes
+    https://git.kernel.org/netdev/net-next/c/791ad7f5c17e
+  - [08/11] batman-adv: Drop implicit creation of batadv net_devices
+    https://git.kernel.org/netdev/net-next/c/bf6b260b8a96
+  - [09/11] batman-adv: Avoid name based attaching of hard interfaces
+    https://git.kernel.org/netdev/net-next/c/fa205602d46e
+  - [10/11] batman-adv: Don't manually reattach hard-interface
+    https://git.kernel.org/netdev/net-next/c/170258ce1c71
+  - [11/11] batman-adv: Drop reduntant batadv interface check
+    https://git.kernel.org/netdev/net-next/c/020577f879be
+
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
