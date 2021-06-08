@@ -1,16 +1,12 @@
-Return-Path: <zhengyongjun3@huawei.com>
-From: zhengyongjun <zhengyongjun3@huawei.com>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIG5ldC1uZXh0XSBiYXRtYW4tYWR2OiBGaXggc3BlbGxp?=
- =?gb2312?Q?ng_mistakes?=
-Date: Wed, 2 Jun 2021 06:57:01 +0000
-Message-ID: <8b7a220a964f452c8c3ea0c5404c0632@huawei.com>
-References: <20210602065603.106030-1-zhengyongjun3@huawei.com>
- <48077100.4opSpZgCWW@ripper>
-In-Reply-To: <48077100.4opSpZgCWW@ripper>
-Content-Language: zh-CN
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/1] batman-adv: Avoid WARN_ON timing related checks
+Date: Tue,  8 Jun 2021 17:29:47 +0200
+Message-Id: <20210608152947.30833-2-sw@simonwunderlich.de>
+In-Reply-To: <20210608152947.30833-1-sw@simonwunderlich.de>
+References: <20210608152947.30833-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,44 +16,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, "mareklindner@neomailbox.ch" <mareklindner@neomailbox.ch>, "sw@simonwunderlich.de" <sw@simonwunderlich.de>, "a@unstable.cc" <a@unstable.cc>, "davem@davemloft.net" <davem@davemloft.net>, "kuba@kernel.org" <kuba@kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com, Simon Wunderlich <sw@simonwunderlich.de>
 
-VGhhbmtzIGZvciB5b3VyIHN1Z2dlc3QgOikNCkluIGZhY3QsIEkgc2VuZCBwYXRjaCB0aHJvdWdo
-IHRoZSBweXRob24gc2NyaXB0IG1hZGUgYnkgbXlzZWxmLg0KDQpXaGVuIEkgdXNlIGNvbW1hbmQi
-IC4vc2NyaXB0cy9nZXRfbWFpbnRhaW5lci5wbCAwMDAxLWJhdG1hbi1hZHYtRml4LXNwZWxsaW5n
-LW1pc3Rha2VzLnBhdGNoIiwgdGhlIGluZm9ybWF0aW9uIGlzOg0KYGBgDQpNYXJlayBMaW5kbmVy
-IDxtYXJla2xpbmRuZXJAbmVvbWFpbGJveC5jaD4gKG1haW50YWluZXI6QkFUTUFOIEFEVkFOQ0VE
-KQ0KU2ltb24gV3VuZGVybGljaCA8c3dAc2ltb253dW5kZXJsaWNoLmRlPiAobWFpbnRhaW5lcjpC
-QVRNQU4gQURWQU5DRUQpDQpBbnRvbmlvIFF1YXJ0dWxsaSA8YUB1bnN0YWJsZS5jYz4gKG1haW50
-YWluZXI6QkFUTUFOIEFEVkFOQ0VEKQ0KU3ZlbiBFY2tlbG1hbm4gPHN2ZW5AbmFyZmF0aW9uLm9y
-Zz4gKG1haW50YWluZXI6QkFUTUFOIEFEVkFOQ0VEKQ0KIkRhdmlkIFMuIE1pbGxlciIgPGRhdmVt
-QGRhdmVtbG9mdC5uZXQ+IChtYWludGFpbmVyOk5FVFdPUktJTkcgW0dFTkVSQUxdKQ0KSmFrdWIg
-S2ljaW5za2kgPGt1YmFAa2VybmVsLm9yZz4gKG1haW50YWluZXI6TkVUV09SS0lORyBbR0VORVJB
-TF0pDQpiLmEudC5tLmEubkBsaXN0cy5vcGVuLW1lc2gub3JnIChtb2RlcmF0ZWQgbGlzdDpCQVRN
-QU4gQURWQU5DRUQpDQpuZXRkZXZAdmdlci5rZXJuZWwub3JnIChvcGVuIGxpc3Q6TkVUV09SS0lO
-RyBbR0VORVJBTF0pDQpsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnIChvcGVuIGxpc3QpDQpg
-YGANCg0KTXkgc2VuZCBwYXRjaCBzY3JpcHQgZm9yZ290IHRvIGRlYWwgd2l0aCBsaW5lIGxpa2Ug
-dGhpcyhmb3Jnb3QgZGVhbCB3aXRoIGtleSB3b3JkIG1vZGVyYXRlZCBsaXN0KTogIiBiLmEudC5t
-LmEubkBsaXN0cy5vcGVuLW1lc2gub3JnIChtb2RlcmF0ZWQgbGlzdDpCQVRNQU4gQURWQU5DRUQp
-Ig0KVGhlcmVmb3JlIEkgZm9yZ290IHRvIHNlbmQgaXQgdG8gdGhlIEIuQS5ULk0uQS5OLiBtYWls
-aW5nIGxpc3QuDQoNCkkgd2lsbCBmaXggdGhpcywgdGhhbmsgeW91IGZvciB5b3VyIHN1Z2dlc3Qg
-OikNCg0KLS0tLS3Tyrz+1K28/i0tLS0tDQq3orz+yMs6IFN2ZW4gRWNrZWxtYW5uIFttYWlsdG86
-c3ZlbkBuYXJmYXRpb24ub3JnXSANCreiy83KsbzkOiAyMDIxxOo21MIyyNUgMTQ6NDcNCsrVvP7I
-yzogbWFyZWtsaW5kbmVyQG5lb21haWxib3guY2g7IHN3QHNpbW9ud3VuZGVybGljaC5kZTsgYUB1
-bnN0YWJsZS5jYzsgZGF2ZW1AZGF2ZW1sb2Z0Lm5ldDsga3ViYUBrZXJuZWwub3JnOyBuZXRkZXZA
-dmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyB6aGVuZ3lvbmdq
-dW4gPHpoZW5neW9uZ2p1bjNAaHVhd2VpLmNvbT47IGIuYS50Lm0uYS5uQGxpc3RzLm9wZW4tbWVz
-aC5vcmcNCtb3zOI6IFJlOiBbUEFUQ0ggbmV0LW5leHRdIGJhdG1hbi1hZHY6IEZpeCBzcGVsbGlu
-ZyBtaXN0YWtlcw0KDQpPbiBXZWRuZXNkYXksIDIgSnVuZSAyMDIxIDA4OjU2OjAzIENFU1QgWmhl
-bmcgWW9uZ2p1biB3cm90ZToNCj4gRml4IHNvbWUgc3BlbGxpbmcgbWlzdGFrZXMgaW4gY29tbWVu
-dHM6DQo+IGNvbnRhaW5nICA9PT4gY29udGFpbmluZw0KPiBkb250ICA9PT4gZG9uJ3QNCj4gZGF0
-YXMgID09PiBkYXRhDQo+IGJyb2RjYXN0ICA9PT4gYnJvYWRjYXN0DQo+IA0KPiBTaWduZWQtb2Zm
-LWJ5OiBaaGVuZyBZb25nanVuIDx6aGVuZ3lvbmdqdW4zQGh1YXdlaS5jb20+DQo+IC0tLQ0KPiAg
-bmV0L2JhdG1hbi1hZHYvYnJpZGdlX2xvb3BfYXZvaWRhbmNlLmMgfCA0ICsrLS0NCj4gIG5ldC9i
-YXRtYW4tYWR2L2hhcmQtaW50ZXJmYWNlLmMgICAgICAgIHwgMiArLQ0KPiAgbmV0L2JhdG1hbi1h
-ZHYvaGFzaC5oICAgICAgICAgICAgICAgICAgfCAyICstDQo+ICAzIGZpbGVzIGNoYW5nZWQsIDQg
-aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCg0KDQpZb3UgZm9yZ290IHRvIHNlbmQgaXQg
-dG8gdGhlIEIuQS5ULk0uQS5OLiBtYWlsaW5nIGxpc3QuIEFuZCBpdCB0aGVyZWZvcmUgZGlkbid0
-IGFwcGVhciBpbiBvdXIgcGF0Y2h3b3JrLiBBbmQgeW91IHNlbmQgc3R1ZmYgZnJvbSB0aGUgZnV0
-dXJlIC0gd2hpY2ggaXMgcmF0aGVyIG9kZC4NCg0KQXBwbGllZCBhbnl3YXkuDQoNClRoYW5rcywN
-CglTdmVuDQo=
+From: Sven Eckelmann <sven@narfation.org>
+
+The soft/batadv interface for a queued OGM can be changed during the time
+the OGM was queued for transmission and when the OGM is actually
+transmitted by the worker.
+
+But WARN_ON must be used to denote kernel bugs and not to print simple
+warnings. A warning can simply be printed using pr_warn.
+
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Reported-by: syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
+Fixes: ef0a937f7a14 ("batman-adv: consider outgoing interface in OGM sending")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_iv_ogm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 789f257be24f..fc8be49010b9 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -409,8 +409,10 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
+ 	if (WARN_ON(!forw_packet->if_outgoing))
+ 		return;
+ 
+-	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
++	if (forw_packet->if_outgoing->soft_iface != soft_iface) {
++		pr_warn("%s: soft interface switch for queued OGM\n", __func__);
+ 		return;
++	}
+ 
+ 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
+ 		return;
+-- 
+2.20.1
+
