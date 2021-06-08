@@ -1,70 +1,53 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: IRC channel moved to irc.hackint.org #batadv
-Date: Mon, 14 Jun 2021 18:51:52 +0200
-Message-ID: <18456690.fnCDB5Feod@ripper>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 04/11] batman-adv: bcast: avoid skb-copy for (re)queued broadcasts
+Date: Tue,  8 Jun 2021 17:26:53 +0200
+Message-Id: <20210608152700.30315-5-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
+References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5604602.LIzPRD5Pdi"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Linus Lüssing <linus.luessing@c0d3.blue>
+
+Broadcast packets send via batadv_send_outstanding_bcast_packet() were
+originally copied in batadv_forw_bcast_packet_to_list() before being
+queued. And after that only the ethernet header will be pushed through
+batadv_send_broadcast_skb()->batadv_send_skb_packet() which works safely
+on skb clones as it uses batadv_skb_head_push()->skb_cow_head().
+
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/send.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 07b0ba265472..0b9dd29d3b6a 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -1072,7 +1072,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 	}
  
---nextPart5604602.LIzPRD5Pdi
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: IRC channel moved to irc.hackint.org #batadv
-Date: Mon, 14 Jun 2021 18:51:52 +0200
-Message-ID: <18456690.fnCDB5Feod@ripper>
-
-Hi,
-
-Due to recent developments around the Freenode.org IRC network, the opinions 
-about the usage of this service shifted dramatically.
-
-A small poll in the IRC channel at the end of last week showed that most 
-(actively participating) users wanted to leave freenode and the network with 
-the most positive votes was hackint.org. The new home at 
-ircs://irc.hackint.org/batadv [1] was prepared on Sunday. You can find also 
-other interesting channels in the neighborhood. #freifunk (including many 
-communities), #gluon, #dn42, various CCC channels and many more.
-
-We hope to see you soon in the new channel at 
-ircs://irc.hackint.org/batadv
-
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/projects/open-mesh/wiki/IRC
---nextPart5604602.LIzPRD5Pdi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmDHiSgACgkQXYcKB8Em
-e0Z5gw/9GJ4LluQXDnHMoBDEFUG7g/72WrHHgm5zaanMNM/yAp65950N9wHFjynL
-VVPPD33DP9CEjF+Wb+3BoT8QjFa+aXjnqt2eomAjw4Q6bQrzVQ5xSK1rNrtrws26
-uy3bx70qENCdXPDW8I013tR6fKY2MTtdwf/BVuP/JZ3H8254BwJGLz2SMVF0Pg/Z
-7CCyIRsSKhwIb/6JiWj/8n76xLwlAlWaJKTeYUODmzU4tJr3PREOypcpZsXOxvRg
-zaj82fvFtAGpGYeeMveVQmjEoPl+A+gYM7uxc6sdShbkWe+8IO6xQOQuz+uR/z37
-nniCPq5QzpUgO33PSfEiL/bLxXk1BnUkkHyf/LnDdL7f8N6+IBA0fZUM9tKK+E0p
-qJfR5sqdKfkFnfTa5YAvyzianPRayEKfJ5dVEtCZrpWdZtf8fxOeWJJaV07zJKOq
-EIQ8Jdz0eM971bhsbgWT+QzqoIw1facvbSepq+XeqhIhOFudP43dZu2faiOQYmHP
-O0lQzURh8THplr875xeqcJdoN3kHAIbh/cE+1pMgO4a22+TJyN4jBmFyjUKZxXRH
-NRw/K8fFbbpYcMurU/e2Hi/65GICz7duoGVxsumy5UhCBCWMhfIisDErDncFcAXE
-OJwTh+IJRkhPqXyzhJFd4Ta4G8kWtiEuieTOkDZ6PjlldSPrfFU=
-=5kRT
------END PGP SIGNATURE-----
-
---nextPart5604602.LIzPRD5Pdi--
-
+ 	/* send a copy of the saved skb */
+-	skb1 = skb_copy(forw_packet->skb, GFP_ATOMIC);
++	skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
+ 	if (!skb1)
+ 		goto out;
+ 
+-- 
+2.20.1
 
