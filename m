@@ -1,48 +1,47 @@
-Return-Path: <patchwork-bot+netdevbpf@kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 01/11] batman-adv: Start new development cycle
+Date: Tue,  8 Jun 2021 17:26:50 +0200
+Message-Id: <20210608152700.30315-2-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
+References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 1/1] batman-adv: Avoid WARN_ON timing related checks
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: <162318000377.7737.11699354745969828257.git-patchwork-notify@kernel.org>
-Date: Tue, 08 Jun 2021 19:20:03 +0000
-References: <20210608152947.30833-2-sw@simonwunderlich.de>
-In-Reply-To: <20210608152947.30833-2-sw@simonwunderlich.de>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, penguin-kernel@i-love.sakura.ne.jp, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hello:
+This version will contain all the (major or even only minor) changes for
+Linux 5.14.
 
-This patch was applied to netdev/net.git (refs/heads/master):
+The version number isn't a semantic version number with major and minor
+information. It is just encoding the year of the expected publishing as
+Linux -rc1 and the number of published versions this year (starting at 0)=
+.
 
-On Tue,  8 Jun 2021 17:29:47 +0200 you wrote:
-> From: Sven Eckelmann <sven@narfation.org>
-> 
-> The soft/batadv interface for a queued OGM can be changed during the time
-> the OGM was queued for transmission and when the OGM is actually
-> transmitted by the worker.
-> 
-> But WARN_ON must be used to denote kernel bugs and not to print simple
-> warnings. A warning can simply be printed using pr_warn.
-> 
-> [...]
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Here is the summary with links:
-  - [1/1] batman-adv: Avoid WARN_ON timing related checks
-    https://git.kernel.org/netdev/net/c/9f460ae31c44
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 8f0102b71656..b8f819a53a86 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -13,7 +13,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+=20
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2021.1"
++#define BATADV_SOURCE_VERSION "2021.2"
+ #endif
+=20
+ /* B.A.T.M.A.N. parameters */
+--=20
+2.20.1
