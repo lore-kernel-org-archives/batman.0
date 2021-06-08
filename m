@@ -1,17 +1,12 @@
-Return-Path: <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [PATCH] batman-adv: don't warn when enslaving hard interface
- failed
-References: <04896d08-4bc0-019b-966e-41064effdef6@i-love.sakura.ne.jp>
- <99650324-734d-54ed-cd9a-e7b55b8f3630@i-love.sakura.ne.jp>
- <19096778.Bt7unJmvIX@sven-l14>
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Message-ID: <e43b78ae-7a4c-3dd2-d4a4-554f0280efa8@i-love.sakura.ne.jp>
-Date: Mon, 7 Jun 2021 00:48:25 +0900
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 10/11] batman-adv: Don't manually reattach hard-interface
+Date: Tue,  8 Jun 2021 17:26:59 +0200
+Message-Id: <20210608152700.30315-11-sw@simonwunderlich.de>
+In-Reply-To: <20210608152700.30315-1-sw@simonwunderlich.de>
+References: <20210608152700.30315-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-In-Reply-To: <19096778.Bt7unJmvIX@sven-l14>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,34 +16,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-On 2021/06/06 23:35, Sven Eckelmann wrote:
-> Please rebase your patch in case it is really needed.
+From: Sven Eckelmann <sven@narfation.org>
 
-Oh, I didn't know you already applied that change, for that commit is
-not yet visible from linux-next.git as of next-20210604.
+The batadv_hardif_enable_interface is now only called from the callback
+ndo_add_slave. This callback is only used by do_set_master in the rtnetlink
+code which only does two things:
 
-> 
-> And the explanation you give seems to be bogus. Or am I missing some error 
-> handling in batadv_hardif_enable_interface [1]?
+1. remove the net_device from its old master
+2. add the net_device to its new batadv master
 
-I told syzbot to try https://syzkaller.appspot.com/text?tag=Patch&x=100b083fd00000
-and the response ( https://syzkaller.appspot.com/text?tag=CrashLog&x=1456f0ffd00000 ) was
+The code to replicate the first step in batman-adv is therefore unused
+since the sysfs code was dropped.
 
-   batman_adv: forw_packet->if_outgoing->soft_iface=0000000000000000 forw_packet->if_incoming->soft_iface=0000000039fa85b7
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 34 ---------------------------------
+ 1 file changed, 34 deletions(-)
 
-indicating that if_outgoing->soft_iface was NULL, and there was a memory allocation
-fault injection immediately before this result.
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 81d201cc343d..44b0aa30c30a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -677,31 +677,6 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ }
+ 
+-/**
+- * batadv_master_del_slave() - remove hard_iface from the current master iface
+- * @slave: the interface enslaved in another master
+- * @master: the master from which slave has to be removed
+- *
+- * Invoke ndo_del_slave on master passing slave as argument. In this way the
+- * slave is free'd and the master can correctly change its internal state.
+- *
+- * Return: 0 on success, a negative value representing the error otherwise
+- */
+-static int batadv_master_del_slave(struct batadv_hard_iface *slave,
+-				   struct net_device *master)
+-{
+-	int ret;
+-
+-	if (!master)
+-		return 0;
+-
+-	ret = -EBUSY;
+-	if (master->netdev_ops->ndo_del_slave)
+-		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
+-
+-	return ret;
+-}
+-
+ /**
+  * batadv_hardif_enable_interface() - Enslave hard interface to soft interface
+  * @hard_iface: hard interface to add to soft interface
+@@ -713,7 +688,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 				   struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv;
+-	struct net_device *master;
+ 	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	int max_header_len = batadv_max_header_len();
+ 	int ret;
+@@ -732,14 +706,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 		goto err_dev;
+ 	}
+ 
+-	/* check if the interface is enslaved in another virtual one and
+-	 * in that case unlink it first
+-	 */
+-	master = netdev_master_upper_dev_get(hard_iface->net_dev);
+-	ret = batadv_master_del_slave(hard_iface, master);
+-	if (ret)
+-		goto err_dev;
+-
+ 	hard_iface->soft_iface = soft_iface;
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 
+-- 
+2.20.1
 
-Since if_outgoing->soft_iface becomes non-NULL if batadv_hardif_enable_interface()
-succeeds, this situation indicates that batadv_hardif_enable_interface() failure
-caused forw_packet->if_outgoing->soft_iface to remain NULL.
-
-> 
-> Kind regards,
-> 	Sven
-> 
-> [1] https://git.open-mesh.org/linux-merge.git/blob/refs/heads/batadv/net-next:/net/batman-adv/hard-interface.c
-> 
