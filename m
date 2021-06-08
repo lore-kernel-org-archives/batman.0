@@ -1,12 +1,9 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Content-Type: text/plain; charset="utf-8"
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/1] pull request for net: batman-adv 2021-06-08
+Date: Tue,  8 Jun 2021 17:29:46 +0200
+Message-Id: <20210608152947.30833-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Subject: Re: [PATCH 01/11] batman-adv: Start new development cycle
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: <162318000579.7737.13404086203664485668.git-patchwork-notify@kernel.org>
-Date: Tue, 08 Jun 2021 19:20:05 +0000
-References: <20210608152700.30315-2-sw@simonwunderlich.de>
-In-Reply-To: <20210608152700.30315-2-sw@simonwunderlich.de>
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,52 +12,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hello:
+Hi David, hi Jakub,
 
-This series was applied to netdev/net-next.git (refs/heads/master):
+here is a bugfix for batman-adv which we would like to have integrated in=
+to net.
 
-On Tue,  8 Jun 2021 17:26:50 +0200 you wrote:
-> This version will contain all the (major or even only minor) changes fo=
-r
-> Linux 5.14.
->=20
-> The version number isn't a semantic version number with major and minor
-> information. It is just encoding the year of the expected publishing as
-> Linux -rc1 and the number of published versions this year (starting at =
-0).
->=20
-> [...]
+Please pull or let me know of any problem!
 
-Here is the summary with links:
-  - [01/11] batman-adv: Start new development cycle
-    https://git.kernel.org/netdev/net-next/c/9a959cab2219
-  - [02/11] batman-adv: Always send iface index+name in genlmsg
-    https://git.kernel.org/netdev/net-next/c/d295345abb3e
-  - [03/11] batman-adv: bcast: queue per interface, if needed
-    https://git.kernel.org/netdev/net-next/c/3f69339068f9
-  - [04/11] batman-adv: bcast: avoid skb-copy for (re)queued broadcasts
-    https://git.kernel.org/netdev/net-next/c/4cbf055002c5
-  - [05/11] batman-adv: mcast: add MRD + routable IPv4 multicast with bri=
-dges support
-    https://git.kernel.org/netdev/net-next/c/7a68cc16b82c
-  - [06/11] batman-adv: Remove the repeated declaration
-    https://git.kernel.org/netdev/net-next/c/1cf1ef60a1a6
-  - [07/11] batman-adv: Fix spelling mistakes
-    https://git.kernel.org/netdev/net-next/c/791ad7f5c17e
-  - [08/11] batman-adv: Drop implicit creation of batadv net_devices
-    https://git.kernel.org/netdev/net-next/c/bf6b260b8a96
-  - [09/11] batman-adv: Avoid name based attaching of hard interfaces
-    https://git.kernel.org/netdev/net-next/c/fa205602d46e
-  - [10/11] batman-adv: Don't manually reattach hard-interface
-    https://git.kernel.org/netdev/net-next/c/170258ce1c71
-  - [11/11] batman-adv: Drop reduntant batadv interface check
-    https://git.kernel.org/netdev/net-next/c/020577f879be
+Thank you,
+      Simon
 
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+The following changes since commit b741596468b010af2846b75f5e75a842ce344a=
+6e:
 
+  Merge tag 'riscv-for-linus-5.13-mw1' of git://git.kernel.org/pub/scm/li=
+nux/kernel/git/riscv/linux (2021-05-08 11:52:37 -0700)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-202=
+10608
+
+for you to fetch changes up to 9f460ae31c4435fd022c443a6029352217a16ac1:
+
+  batman-adv: Avoid WARN_ON timing related checks (2021-05-18 21:10:01 +0=
+200)
+
+----------------------------------------------------------------
+Here is a batman-adv bugfix:
+
+ - Avoid WARN_ON timing related checks, by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (1):
+      batman-adv: Avoid WARN_ON timing related checks
+
+ net/batman-adv/bat_iv_ogm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
