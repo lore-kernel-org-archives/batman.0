@@ -1,12 +1,13 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: don't warn when enslaving hard interface failed
-Date: Sun, 06 Jun 2021 16:35:31 +0200
-Message-ID: <19096778.Bt7unJmvIX@sven-l14>
-In-Reply-To: <99650324-734d-54ed-cd9a-e7b55b8f3630@i-love.sakura.ne.jp>
-References: <04896d08-4bc0-019b-966e-41064effdef6@i-love.sakura.ne.jp> <99650324-734d-54ed-cd9a-e7b55b8f3630@i-love.sakura.ne.jp>
+From: Maurice Smulders <Maurice.Smulders@windtalker.com>
+Subject: MediaTek MT7612u and IBSS mode
+Date: Fri, 11 Jun 2021 01:55:29 +0000
+Message-ID: <4E744A61-BBA0-404E-B435-23C26ACF031B@windtalker.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <7A7B5663B291204896ECA2B5FA7AA060@namprd17.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart26609172.PVNqou5XFX"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -14,79 +15,21 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
- 
---nextPart26609172.PVNqou5XFX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH] batman-adv: don't warn when enslaving hard interface failed
-Date: Sun, 06 Jun 2021 16:35:31 +0200
-Message-ID: <19096778.Bt7unJmvIX@sven-l14>
-In-Reply-To: <99650324-734d-54ed-cd9a-e7b55b8f3630@i-love.sakura.ne.jp>
-References: <04896d08-4bc0-019b-966e-41064effdef6@i-love.sakura.ne.jp> <99650324-734d-54ed-cd9a-e7b55b8f3630@i-love.sakura.ne.jp>
-
-On Sunday, 6 June 2021 16:28:17 CEST Tetsuo Handa wrote:
-> syzbot is hitting
-> 
->   WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface)
-> 
-> at batadv_iv_ogm_emit() [1], for forw_packet->if_outgoing->soft_iface
-> can remain NULL if batadv_hardif_enable_interface() failed due to e.g.
-> memory allocation fault injection.
-
-Cannot apply this because following (conflicting) is already queued up in 
-batadv/net:  
-https://git.open-mesh.org/linux-merge.git/blobdiff/b741596468b010af2846b75f5e75a842ce344a6e..9f460ae31c4435fd022c443a6029352217a16ac1:/net/batman-adv/bat_iv_ogm.c
-
-    Applying patch #18340 using 'git am -s'
-    Description: batman-adv: don't warn when enslaving hard interface failed
-    Applying: batman-adv: don't warn when enslaving hard interface failed
-    error: patch failed: net/batman-adv/bat_iv_ogm.c:409
-    error: net/batman-adv/bat_iv_ogm.c: patch does not apply
-    Patch failed at 0001 batman-adv: don't warn when enslaving hard interface failed
-    hint: Use 'git am --show-current-patch=diff' to see the failed patch
-    When you have resolved this problem, run "git am --continue".
-    If you prefer to skip this patch, run "git am --skip" instead.
-    To restore the original branch and stop patching, run "git am --abort".
-    'git am' failed with exit status 128
-
-Please rebase your patch in case it is really needed.
-
-And the explanation you give seems to be bogus. Or am I missing some error 
-handling in batadv_hardif_enable_interface [1]?
-
-Kind regards,
-	Sven
-
-[1] https://git.open-mesh.org/linux-merge.git/blob/refs/heads/batadv/net-next:/net/batman-adv/hard-interface.c
-
---nextPart26609172.PVNqou5XFX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmC83TMACgkQXYcKB8Em
-e0bRKxAAlJaXKj4hhbXmgpdcT+gMvXAiXeVriPGD//KlPtxfQp3Q4pTM5Qgg2O4n
-beBgY9i8eyardY7HERAohZsc6z3CoivaTbnh68Vo+EeqSEAywLhoEdrhT/wPUsqn
-P3QaoXA+X5jRzsRRYuULAsyneco+gTXU1RvJXoGgs810RtOnyXh3XiDAgJEXCNUd
-DqQiI6rRSWnHAzF8/Dp/GY4j0zLxjXA/X0sqVYd7BRl5UGWSKUzFyAHt6DZq65Xu
-d/T/eJjKcQQr2rnqHwDsTV7hXK3WAsPB+fzChV5abjkzJU/e1ARxKo9R3lj7OJx0
-JmirGFbUqhTGWXKwh9eLp/Uwg0+lbKxWM5zdl1fVlpyL20MCEsC/Og9hLW30F/dz
-ssAPSKFZR/iLON3P+wdbSJINVP//ArZeX8heKr/uYECX7L7tk4D7gyJJ7ULJ9eIx
-JQwkTgype5Rl9zXob5De+evNnucXrVdSSS3SrmDBxkjhfuVIQt2IAvjmvM5JdLXX
-C/PUxWaLs7fB04UBEIon2vnUSgFa/Uhg6n2ChnMf2bg6UZD/hcWxEqwyXfuBbRQq
-dP7Pf3icXhtjXuW2iJksmJeiJtyJXkbBFSvFmyFqnvYNJCRkfFpK7frllW4hxcSY
-ZiwoFWZIyOmWypMcQ3Zl7lcAPoSM8xeW5l0J5H588mfqtPtewfo=
-=4Pk5
------END PGP SIGNATURE-----
-
---nextPart26609172.PVNqou5XFX--
-
-
+UGxhdGZvcm06IFJhc3BiZXJyeSBQaSA0QiAvIENNNCB3aXRoIENlbnRPUyA4IHN0cmVhbSA2NCBi
+aXQgLSA1LjEwLjQyIGtlcm5lbA0KDQpUcnlpbmcgdG8gdXNlIHRoaXMgTWVkaWF0ZWsgVVNCIGRl
+dmljZSBhbmQgSSBub3RpY2UgYSAtIHF1aXRlIG5hc3R5IC0gcHJvYmxlbSB1c2luZyBJQlNTIG1v
+ZGUuIE9uIHN0YXJ0dXAgb2YgdGhlIElCU1MgbmV0d29yaywgdGhlcmUgaXMgYSBjaGFuY2UgdGhl
+IFBpIGdvZXMgaW50byBhIHRpenp5IAlodHRwczovL2dpdGh1Yi5jb20vb3BlbndydC9tdDc2L2lz
+c3Vlcy81NDMgLSB3aGVuIGl0J3MgdGhlIGZpcnN0IChhbmQgb25seSkgbm9kZS4NCkkgd2FzIGFi
+bGUgdG8gZHVwZSBpdCBjb25zaXN0ZW50bHkgaW4gbXkgaG9tZSAtIGZhaXJseSBzdGF0aWMgbmV0
+d29yayAtIGJ1dCBub3QgYW55bW9yZSBpbiBhIGxhYiBlbnZpcm9ubWVudC4gSSBjYW5ub3QgZWFz
+aWx5IGdvIGJhY2sgaG9tZSAtIGl0J3MgfjMwMDBrbSBmcm9tIHdoZXJlIEkgYW0gYXQgdGVtcG9y
+YXJpbHkuDQoNCkRvZXMgYW55b25lIGhhdmUgZXhwZXJpZW5jZSB3aXRoIHRoZXNlIE1lZGlhVGVr
+IGRldmljZXMgYW5kIEIuQS5ULk0uQS5OLiBvbiBsb3dlciBwZXJmb3JtYW5jZSBub2RlcyBsaWtl
+IGEgUmFzcGJlcnJ5IFBpLi4uDQoNCkkgaGF2ZSBhc2NlcnRhaW5lZCB0aGF0IE5PTkUgb2YgdGhl
+IFVTQiBSZWFsdGVrIGRvbmdsZXMgd29yaywgYXMgdGhlIGtlcm5lbCBkcml2ZXIgaXMgbWlzc2lu
+ZyBJQlNTIHN1cHBvcnQgYXQgdGhpcyB0aW1lLi4uDQoNCkknbSBhZ2FpbnN0IGFuIHVyZ2VudCBk
+ZWFkbGluZSwgYW5kIHRyeWluZyB0byB1bmRlcnN0YW5kIHdoYXQgSSBjYW4gZG8gdG8gbWFrZSB0
+aGlzIHdvcmsNCg0KTWZHLA0KDQotIE1hdXJpY2UNCg0KDQo=
