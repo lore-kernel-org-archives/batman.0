@@ -1,98 +1,86 @@
-Return-Path: <sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 3/4] batman-adv: Don't manually reattach hard-interface
-Date: Wed,  2 Jun 2021 22:32:34 +0200
-Message-Id: <20210602203235.10659-3-sven@narfation.org>
-In-Reply-To: <20210602203235.10659-1-sven@narfation.org>
-References: <20210602203235.10659-1-sven@narfation.org>
+Subject: Re: MediaTek MT7612u and IBSS mode
+Date: Fri, 11 Jun 2021 08:48:10 +0200
+Message-ID: <4182303.XkkeXVZP1n@ripper>
+In-Reply-To: <4E744A61-BBA0-404E-B435-23C26ACF031B@windtalker.com>
+References: <4E744A61-BBA0-404E-B435-23C26ACF031B@windtalker.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: multipart/signed; boundary="nextPart3186444.dtHR1CuC4E"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Maurice Smulders <Maurice.Smulders@windtalker.com>, linux-wireless@vger.kernel.org
 
-The batadv_hardif_enable_interface is now only called from the callback
-ndo_add_slave. This callback is only used by do_set_master in the rtnetlink
-code which only does two things:
-
-1. remove the net_device from its old master
-2. add the net_device to its new batadv master
-
-The code to replicate the first step in batman-adv is therefore unused
-since the sysfs code was dropped.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 34 ---------------------------------
- 1 file changed, 34 deletions(-)
-
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 44b65fa4..6ce75ec6 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -677,31 +677,6 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- }
  
--/**
-- * batadv_master_del_slave() - remove hard_iface from the current master iface
-- * @slave: the interface enslaved in another master
-- * @master: the master from which slave has to be removed
-- *
-- * Invoke ndo_del_slave on master passing slave as argument. In this way the
-- * slave is free'd and the master can correctly change its internal state.
-- *
-- * Return: 0 on success, a negative value representing the error otherwise
-- */
--static int batadv_master_del_slave(struct batadv_hard_iface *slave,
--				   struct net_device *master)
--{
--	int ret;
--
--	if (!master)
--		return 0;
--
--	ret = -EBUSY;
--	if (master->netdev_ops->ndo_del_slave)
--		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
--
--	return ret;
--}
--
- /**
-  * batadv_hardif_enable_interface() - Enslave hard interface to soft interface
-  * @hard_iface: hard interface to add to soft interface
-@@ -713,7 +688,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv;
--	struct net_device *master;
- 	__be16 ethertype = htons(ETH_P_BATMAN);
- 	int max_header_len = batadv_max_header_len();
- 	int ret;
-@@ -732,14 +706,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 		goto err_dev;
- 	}
- 
--	/* check if the interface is enslaved in another virtual one and
--	 * in that case unlink it first
--	 */
--	master = netdev_master_upper_dev_get(hard_iface->net_dev);
--	ret = batadv_master_del_slave(hard_iface, master);
--	if (ret)
--		goto err_dev;
--
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
--- 
-2.30.2
+--nextPart3186444.dtHR1CuC4E
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Maurice Smulders <Maurice.Smulders@windtalker.com>, linux-wireless@vger.kernel.org
+Subject: Re: MediaTek MT7612u and IBSS mode
+Date: Fri, 11 Jun 2021 08:48:10 +0200
+Message-ID: <4182303.XkkeXVZP1n@ripper>
+In-Reply-To: <4E744A61-BBA0-404E-B435-23C26ACF031B@windtalker.com>
+References: <4E744A61-BBA0-404E-B435-23C26ACF031B@windtalker.com>
+
+On Friday, 11 June 2021 03:55:29 CEST Maurice Smulders wrote:
+> Platform: Raspberry Pi 4B / CM4 with CentOS 8 stream 64 bit - 5.10.42 kernel
+> 
+> Trying to use this Mediatek USB device and I notice a - quite nasty - problem using IBSS mode. On startup of the IBSS network, there is a chance the Pi goes into a tizzy 	https://github.com/openwrt/mt76/issues/543 - when it's the first (and only) node.
+> I was able to dupe it consistently in my home - fairly static network - but not anymore in a lab environment. I cannot easily go back home - it's ~3000km from where I am at temporarily.
+> 
+> Does anyone have experience with these MediaTek devices and B.A.T.M.A.N. on lower performance nodes like a Raspberry Pi...
+
+It doesn't seem to me like this is batman-adv or batmand related. So I would 
+most likely better to ask on linux-wireless@vger.kernel.org too
+
+And is IBSS mode really required or would meshpoint with mesh_fwding set 0 
+also work?
+
+    iw phy0 interface add mesh0 type mp
+    ip link set up dev mesh0
+    iw dev mesh0 mesh join 11s-bat freq 2412 HT20 mcast-rate 18 beacon-interval 1000
+
+    iw dev mesh0 set mesh_param mesh_fwding 0
+    # please make sure that it is actually 0 with: iw dev mesh0 get mesh_param mesh_fwding
+
+    ip link set master bat0 dev mesh0
+
+> I have ascertained that NONE of the USB Realtek dongles work, as the kernel driver is missing IBSS support at this time...
+> 
+> I'm against an urgent deadline, and trying to understand what I can do to make this work
+
+Kind regards,
+	Sven
+--nextPart3186444.dtHR1CuC4E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmDDByoACgkQXYcKB8Em
+e0ZEvRAArrEZQKItYRDBcWQkhHGIYMrm9SDMPNU942EUUeR20vTjFQAfxFo2mrNL
+0umJZ04+tK6DyifCWdobfsXq9pjKOXierYpET/4GVFEaD9T6RjzgoycKVom4Lh8/
+8cg+k3TdU6I0MtQAeMKhRDWZNrzA/Y6iqi45uGUGJmBPiB9Q7gQSgO6X1YeSTpuR
+s81X8AGL/8aWcpvMvmYGa2Ond9wDqA3pQLGtilQgKvOfMtG8X8jNu0eRqumLqeU8
+Ga3SHO7DfLVcU0USmJRx2YVPrPgDM6qjcOM7NcWVP19tIWv1VayEu/9ZufjI1ezr
+IjQ0JZSuPB0rCjec6YWRXLktNVPWz5GAElDDg72U0c7dlnR7fhymR1J66BV5LPl+
+Kwg487eXgrASPgXchxSEoPdxXifget0pyXpx/UcNXEpOfcsUpSXeTZxJ4T3ZJ+t6
+kXyr3/3cJgnuQ8qa8ELwKIiTYbHNIEubI4Oxmd9ACxbxqoH0G+htEgexuOMqfO6b
+G21P2J8S4sJumja8A3xjkZD4rFzQHHgBQ3YQqa2DLatEdWfnycIysLS7LouiBsEk
+iO45SQupbEaRU861l8+Zfh2yVilgjbBSnr1AeR3nCCA0alj++nFeDhbTw97HgiUP
+zL4Y+jkwLTHK2PFyjJI9BBPL9Dp9JAkiKTYe+PKqdRt+iMeAQU4=
+=PMMc
+-----END PGP SIGNATURE-----
+
+--nextPart3186444.dtHR1CuC4E--
+
 
