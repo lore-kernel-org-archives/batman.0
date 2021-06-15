@@ -1,12 +1,12 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: irc update
-Date: Tue, 01 Jun 2021 13:49:02 +0200
-Message-ID: <1780221.LRIVs05ek3@prime>
-In-Reply-To: <03d08eeb-a314-1fbb-aafd-1461826feaad@aiyionpri.me>
-References: <03d08eeb-a314-1fbb-aafd-1461826feaad@aiyionpri.me>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: IRC channel moved to irc.hackint.org #batadv
+Date: Tue, 15 Jun 2021 10:41:49 +0200
+Message-ID: <2226940.2AtTIDTzSa@ripper>
+In-Reply-To: <18456690.fnCDB5Feod@ripper>
+References: <18456690.fnCDB5Feod@ripper>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3515367.95OOGIM4RP"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart3075137.BaJf2WcGOb"; micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
@@ -15,53 +15,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "Aiyion.Prime" <batman@aiyionpri.me>
 
  
---nextPart3515367.95OOGIM4RP
+--nextPart3075137.BaJf2WcGOb
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: IRC channel moved to irc.hackint.org #batadv
+Date: Tue, 15 Jun 2021 10:41:49 +0200
+Message-ID: <2226940.2AtTIDTzSa@ripper>
+In-Reply-To: <18456690.fnCDB5Feod@ripper>
+References: <18456690.fnCDB5Feod@ripper>
 
-Hi Aiyion,
+On Monday, 14 June 2021 18:51:52 CEST Sven Eckelmann wrote:
+> Due to recent developments around the Freenode.org IRC network, the opinions 
+> about the usage of this service shifted dramatically.
 
-it's a good idea, if we migrate we will announce it here and on our website on 
-open-mesh.org as well. We have not made a decision yet.
+Btw. what happened to the old #batman channel on freenode is unrelated to our 
+move (but happened interestingly at roughly the same time). I've never de-
+registered anything or blocked/deauthed anyone on freenode during the move. 
+Only the topic and entry message was changed to point to our website (with 
+more information).
 
-Cheers,
-      Simon
+But the new freenode staff decided to perform some questionable actions [1] 
+which resulted in a fractured network and a loss of the previously registered 
+channels + nicks.
 
-On Tuesday, June 1, 2021 1:35:42 PM CEST Aiyion.Prime wrote:
-> Hey there;
-> I just dropped my freenode connection for good and wanted to ask,
-> whether it'd be possible to announce via mail, if and where #batman
-> migrates?
-> 
-> Thanks in advance,
-> Aiyion
+If you need to recover some information from the old chanserv/nickserv then 
+you can try to connect to rinnegan.freenode.net or another server on the 
+"old" freenode and query the services.
 
+Kind regards,
+	Sven
 
---nextPart3515367.95OOGIM4RP
+[1] https://www.devever.net/~hl/freenode_suicide
+--nextPart3075137.BaJf2WcGOb
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAmC2Hq4ACgkQoSvjmEKS
-nqGhRQ/+N7iDHKf9Yjg8Nvif0n5aB5IqZE7Q2BpYMVtHwxvm0lImd7m3VrBWKCeF
-mSQIWExPsyEzprfTeZfI66/UzGahDbyTqqyzqU/k4PdPd/er78cMVBXxoNvV7YYM
-nIxCfq/84KZW2HT7ZqwkrpkGaO6wansYT/ticdCs0dNH1sM6vbJ/JyQ2NikDhCZV
-0X2bzK5YDG6niYSm16ECLLL4IqNkY7zDEEyJBmlUofI8y5qlLc0hpKVsjDwrefxL
-8F0tlAHldZ9U7IGkJhsiHwxT3Lh5CJMDUrLpYKbTmmcGhLz3GULSspMvCnr6tO4R
-k+iGtiEqWCpaxfGtb9lNf8Xh27SXv5eOJKCeKzPXYiXKvkvY0QSlnMiVuBalDRtS
-HxnCHBHLFvKnfBoqbhigJdljbUo9znlO8PLh09iUv6v9IVZY4DamF3qCeo0X2GL7
-bXpboDaJrh2GXGte+OHH3n5OGD44MK4vp5foBXxkTlZE8AiqjPacgJpkeySMDHI3
-RgN/a9QjOmpO/CI1fiwebcqfrImAYqh8NzWlUSFaYaEQ0X061vM+5SucIb/vXfUE
-Vv5dutwK1xg9tl+V6/W5jq5AU020ijqvHH3LRr8Avn85EyJE2md2cCMG4MF4lXgj
-YhF37yBSRNexOKkjc7yQxEDNMkbyl+vByriCTR2YAy7GwwAEMH4=
-=86xw
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmDIZ80ACgkQXYcKB8Em
+e0ZXCg//cmZ2og0VC/L4K2lrgVB/w/9dDOY2gxraB8p5/D7taOUfP96YtZ6VMjOf
+eJDnteDJIYfqqw6MhBy/lLqKwlplBgCE/h4o5iGQZlSgAxqNW6roowfPUkqiutZa
+TLRU4SP3ahza0rQQBEcxXwYDXd4Hqm9fXi01Kg5TB/muZxzO3onKJqeMxUiJWksA
+YypSj0Q/s1wG398KINPVc8I8hG03XCnjFU15DBI5KOwUQ7/huBDnL3Ai4XmlAncr
+8pZpfB+KvMvnruryA1/MB1T7T81TT80WCuqD/m0bfM8v0ouBF0xCR+XAKuLe+CQn
+SPXxn9HD/VHqs3biwwOP2L1duCsWcwzydnAuzw/fBKr6m62FO6iFM1gqi2BtOz5p
+kH5i6fp/iAOvzHFTimrC35URlHfYDnwVgfdScWkMIBGSKASX7dSyzf0m2zr0v9h4
+aiv0YgYjnL3WNz9d5KPW/Uz9XxUzPhyZiOwkiGAkG34wZI6TXdB04IVYfKDNgQuO
+gkzi58yY9TAacnlmcSetmLqI0RS5LG+5x6WVU1SWRDxJbx3CFcP8jJlgue2Oqc2Z
+68JU3BLSW/f/nWz4PVcVjr9FTB1C2lumX0CAE8iJlSdvp5ml/p8MxoobpliBOHmc
+nJce5FbHejEhAWcuOl2Z0Gq8Yfx6eTRDOuZvBAgsQkC3ZoSUImk=
+=0Web
 -----END PGP SIGNATURE-----
 
---nextPart3515367.95OOGIM4RP--
+--nextPart3075137.BaJf2WcGOb--
 
 
