@@ -1,12 +1,12 @@
-Return-Path: <arnd@arndb.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 1/9] batctl: man: Fix alignment after json list
+Date: Sat, 17 Jul 2021 13:01:21 +0200
+Message-Id: <20210717110129.25539-2-sven@narfation.org>
+In-Reply-To: <20210717110129.25539-1-sven@narfation.org>
+References: <20210717110129.25539-1-sven@narfation.org>
 MIME-Version: 1.0
-References: <20210724162429.394792-1-sven@narfation.org> <YPxHYW/HPI/LLMXx@zeniv-ca.linux.org.uk>
-In-Reply-To: <YPxHYW/HPI/LLMXx@zeniv-ca.linux.org.uk>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 26 Jul 2021 14:57:31 +0200
-Message-ID: <CAK8P3a2MVQMFFBUzudy+yrcp4Md8mm=NcvX7YzGVz4C8W61sgQ@mail.gmail.com>
-Subject: Re: [PATCH] asm-generic: avoid sparse {get,put}_unaligned warning
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,28 +16,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Sven Eckelmann <sven@narfation.org>, Arnd Bergmann <arnd@arndb.de>, b.a.t.m.a.n@lists.open-mesh.org, linux-arch <linux-arch@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On Sat, Jul 24, 2021 at 7:01 PM Al Viro <viro@zeniv.linux.org.uk> wrote:
->
-> On Sat, Jul 24, 2021 at 06:24:29PM +0200, Sven Eckelmann wrote:
->
-> > The special attribute force must be used in such statements when the cast
-> > is known to be safe to avoid these warnings.
+The manpage uses RS macro to indent elements of a list and the resets the
+indentation again with RE. ut the usage of these macros were mixed up for
+the last entries. This caused a misalignment of the following entries.
 
-I can see why this would warn, but I'm having trouble reproducing the
-warning on linux-next.
+Fixes: 20086d207940 ("batctl: Add transtable_local_json command")
+Fixes: 35d8327f9d98 ("batctl: Add vlan_json command")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ man/batctl.8 | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
->         How about container_of(ptr, typeof(*__pptr), x) instead of a cast?
-> Would be easier to follow...
+diff --git a/man/batctl.8 b/man/batctl.8
+index 80077bb..a820e6e 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -338,13 +338,13 @@ List of available JSON queries:
+ .RS 10
+ \- transtable_global_json|tgj
+ .RE
+-.RE
++.RS 10
+ \- transtable_local_json|tlj
+ .RE
+-.RE
++.RS 10
+ \- vlan_json|vj
+ .RE
+-.RS 10
++.RE
+ .br
+ .IP "[\fBmeshif <netdev>\fP] \fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+ 
+-- 
+2.30.2
 
-If both work equally well, I'd prefer Sven's patch since that only
-expands 'type'
-once, while container_of() expands it three more times. This may not make
-much of a difference, but I've seen a number of cases where nested macros
-can explode the preprocessed code size enough to slow down kernel compilation
-over all, and it's quite possible to have get_unaligned()/put_unaligned in
-the middle of that, with a complex expression passed into that.
-
-      Arnd
