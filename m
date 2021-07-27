@@ -1,13 +1,14 @@
-Return-Path: <arnd@arndb.de>
+Return-Path: <david.laight@aculab.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Subject: RE: [PATCH] asm-generic: avoid sparse {get,put}_unaligned warning
+Date: Tue, 27 Jul 2021 08:44:21 +0000
+Message-ID: <bb831fbad4f74e11b868d936f7616d1a@AcuMS.aculab.com>
+References: <20210724162429.394792-1-sven@narfation.org>
+In-Reply-To: <20210724162429.394792-1-sven@narfation.org>
 MIME-Version: 1.0
-References: <20210724162429.394792-1-sven@narfation.org> <YPxHYW/HPI/LLMXx@zeniv-ca.linux.org.uk>
- <CAK8P3a2MVQMFFBUzudy+yrcp4Md8mm=NcvX7YzGVz4C8W61sgQ@mail.gmail.com> <3234493.RMHOAZ7QyG@ripper>
-In-Reply-To: <3234493.RMHOAZ7QyG@ripper>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 26 Jul 2021 18:22:02 +0200
-Message-ID: <CAK8P3a35PNhsMQNU11RCaKm-o3-oG8pOXG836aoubxQMpTyVNQ@mail.gmail.com>
-Subject: Re: [PATCH] asm-generic: avoid sparse {get,put}_unaligned warning
-Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,96 +18,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, b.a.t.m.a.n@lists.open-mesh.org, linux-arch <linux-arch@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: 'Sven Eckelmann' <sven@narfation.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jul 26, 2021 at 5:04 PM Sven Eckelmann <sven@narfation.org> wrote:
->
-> On Monday, 26 July 2021 14:57:31 CEST Arnd Bergmann wrote:
-> > >
-> > > > The special attribute force must be used in such statements when the cast
-> > > > is known to be safe to avoid these warnings.
-> >
-> > I can see why this would warn, but I'm having trouble reproducing the
-> > warning on linux-next.
->
-> I have sparse 0.6.3 on an Debian bullseye amd64 system. Sources are from
-> linux-next next-20210723
->
->     make allnoconfig
->     cat >> .config << "EOF"
->     CONFIG_NET=y
->     CONFIG_INET=y
->     CONFIG_BATMAN_ADV=y
->     CONFIG_BATMAN_ADV_DAT=y
->     EOF
->     make olddefconfig
->     make CHECK="sparse -Wbitwise-pointer" C=1
->
-> I should maybe have made this clearer in the last sentence of the first
-> paragraph: "This is also true for pointers to variables with this type when
-> -Wbitwise-pointer is activated."
+From: Sven Eckelmann
+> Sent: 24 July 2021 17:24
+>=20
+> Sparse will try to check casting of simple integer types which are marked
+> as __bitwise. This for example "disallows" simple casting of __be{16,32,6=
+4}
+> or __le{16,32,64} to other types. This is also true for pointers to
+> variables with this type.
+>=20
+> But the new generic {get,put}_unaligned is doing that by (reinterpret)
+> casting the original pointer to a new (anonymous) struct pointer. This wi=
+ll
+> then create warnings like:
+>=20
+>   net/batman-adv/distributed-arp-table.c:1461:19: warning: cast from rest=
+ricted __be32 *
+>   net/batman-adv/distributed-arp-table.c:1510:23: warning: cast from rest=
+ricted __be32 [usertype]
+> *[assigned] magic
+>   net/batman-adv/distributed-arp-table.c:1588:24: warning: cast from rest=
+ricted __be32 [usertype]
+> *[assigned] yiaddr
+>=20
+> The special attribute force must be used in such statements when the cast
+> is known to be safe to avoid these warnings.
 
-Ok, got it. I assumed this would be turned on by an 'allmodconfig' build.
+At least the __force is being added to an existing cast.
 
-> > If both work equally well, I'd prefer Sven's patch since that only
-> > expands 'type' once, while container_of() expands it three more times
+The real problems are when a (__force __le32)value cast is used
+to silence sparse.
+These should really be something like:
+=09__tell_sparce(__le32, value)
+so that the whole thing can be removed by the preprocessor when
+compiling the code.
 
-Not sure what I was thinking here, as it's not 'type' that gets expanded
-here but 'ptr'. We could do Al's suggestion to avoid the __force without
-multiple expansions, using
+=09David
 
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index 1c4242416c9f..d138dc5fd8e3 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -10,17 +10,25 @@
- #include <asm/byteorder.h>
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
- #define __get_unaligned_t(type, ptr) ({
-                 \
--       const struct { type x; } __packed *__pptr =
-(typeof(__pptr))(ptr);      \
-+       const struct { type x; } __packed *__pptr =
-         \
-+                               container_of(ptr, typeof(*__pptr), x);
-         \
-        __pptr->x;
-         \
- })
-
- #define __put_unaligned_t(type, val, ptr) do {
-         \
--       struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);
-         \
-+       struct { type x; } __packed *__pptr =
-         \
-+                               container_of(ptr, typeof(*__pptr), x);
-         \
-        __pptr->x = (val);
-         \
- } while (0)
-
--#define get_unaligned(ptr)     __get_unaligned_t(typeof(*(ptr)), (ptr))
--#define put_unaligned(val, ptr) __put_unaligned_t(typeof(*(ptr)), (val), (ptr))
-+#define get_unaligned(ptr)     ({
-         \
-+       __auto_type _ptr = (ptr);
-         \
-+       __get_unaligned_t(typeof(*(_ptr)), (_ptr));
-         \
-+})
-+#define put_unaligned(val, ptr)        ({
-                 \
-+       __auto_type _ptr = (ptr);
-         \
-+       __put_unaligned_t(typeof(*(_ptr)), (val), (_ptr));
-         \
-+})
-
- static inline u16 get_unaligned_le16(const void *p)
- {
-
-Not sure if this is any better.
-
-        Arnd
