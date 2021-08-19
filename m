@@ -1,14 +1,15 @@
-Return-Path: <david.laight@aculab.com>
-From: David Laight <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH] asm-generic: avoid sparse {get,put}_unaligned warning
-Date: Tue, 27 Jul 2021 08:44:21 +0000
-Message-ID: <bb831fbad4f74e11b868d936f7616d1a@AcuMS.aculab.com>
-References: <20210724162429.394792-1-sven@narfation.org>
-In-Reply-To: <20210724162429.394792-1-sven@narfation.org>
+Return-Path: <kuba@kernel.org>
+Date: Thu, 19 Aug 2021 13:52:38 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 2/6] batman-adv: Move IRC channel to hackint.org
+Message-ID: 
+ <20210819135238.354db062@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20210819153334.18850-3-sw@simonwunderlich.de>
+References: <20210819153334.18850-1-sw@simonwunderlich.de>
+	<20210819153334.18850-3-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,48 +19,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Sven Eckelmann' <sven@narfation.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-From: Sven Eckelmann
-> Sent: 24 July 2021 17:24
->=20
-> Sparse will try to check casting of simple integer types which are marked
-> as __bitwise. This for example "disallows" simple casting of __be{16,32,6=
-4}
-> or __le{16,32,64} to other types. This is also true for pointers to
-> variables with this type.
->=20
-> But the new generic {get,put}_unaligned is doing that by (reinterpret)
-> casting the original pointer to a new (anonymous) struct pointer. This wi=
-ll
-> then create warnings like:
->=20
->   net/batman-adv/distributed-arp-table.c:1461:19: warning: cast from rest=
-ricted __be32 *
->   net/batman-adv/distributed-arp-table.c:1510:23: warning: cast from rest=
-ricted __be32 [usertype]
-> *[assigned] magic
->   net/batman-adv/distributed-arp-table.c:1588:24: warning: cast from rest=
-ricted __be32 [usertype]
-> *[assigned] yiaddr
->=20
-> The special attribute force must be used in such statements when the cast
-> is known to be safe to avoid these warnings.
+On Thu, 19 Aug 2021 17:33:30 +0200 Simon Wunderlich wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> Due to recent developments around the Freenode.org IRC network, the
+> opinions about the usage of this service shifted dramatically. The majority
+> of the still active users of the #batman channel prefers a move to the
+> hackint.org network.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-At least the __force is being added to an existing cast.
+This one is missing your sign-off:
 
-The real problems are when a (__force __le32)value cast is used
-to silence sparse.
-These should really be something like:
-=09__tell_sparce(__le32, value)
-so that the whole thing can be removed by the preprocessor when
-compiling the code.
-
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
-
+Commit 71d41c09f1fa ("batman-adv: Move IRC channel to hackint.org")
+	committer Signed-off-by missing
+	author email:    sven@narfation.org
+	committer email: sw@simonwunderlich.de
+	Signed-off-by: Sven Eckelmann <sven@narfation.org>
