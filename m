@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
 Subject: [PATCH 3/6] batman-adv: Switch to kstrtox.h for kstrtou64
-Date: Fri, 20 Aug 2021 10:32:57 +0200
-Message-Id: <20210820083300.32289-4-sw@simonwunderlich.de>
-In-Reply-To: <20210820083300.32289-1-sw@simonwunderlich.de>
-References: <20210820083300.32289-1-sw@simonwunderlich.de>
+Date: Thu, 19 Aug 2021 17:33:31 +0200
+Message-Id: <20210819153334.18850-4-sw@simonwunderlich.de>
+In-Reply-To: <20210819153334.18850-1-sw@simonwunderlich.de>
+References: <20210819153334.18850-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
