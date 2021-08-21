@@ -1,65 +1,58 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/2] batman-adv: compat: add the case if dev is NULL
-Date: Sat,  7 Aug 2021 07:19:41 +0200
-Message-Id: <20210807051942.38538-1-sven@narfation.org>
+Date: Fri, 20 Aug 2021 23:43:50 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [syzbot] KASAN: slab-out-of-bounds Write in
+ ext4_write_inline_data_end
+Message-ID: <YSB2dsveNTr9G3Mq@mit.edu>
+References: <000000000000e5080305c9e51453@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000000000000e5080305c9e51453@google.com>
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: syzbot <syzbot+13146364637c7363a7de@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, adilger.kernel@dilger.ca, arnd@arndb.de, b.a.t.m.a.n@lists.open-mesh.org, christian@brauner.io, davem@davemloft.net, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, syzkaller-bugs@googlegroups.com
 
-From: Yajun Deng <yajun.deng@linux.dev>
+On Thu, Aug 19, 2021 at 01:10:18AM -0700, syzbot wrote:
+> Hello,
+> 
+> syzbot found the following issue on:
+> 
+> HEAD commit:    614cb2751d31 Merge tag 'trace-v5.14-rc6' of git://git.kern..
+> git tree:       upstream
+> console output: https://syzkaller.appspot.com/x/log.txt?x=130112c5300000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=f61012d0b1cd846f
+> dashboard link: https://syzkaller.appspot.com/bug?extid=13146364637c7363a7de
+> compiler:       Debian clang version 11.0.1-2, GNU ld (GNU Binutils for Debian) 2.35.1
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=104d7cc5300000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1333ce0e300000
+> 
+> The issue was bisected to:
+> 
+> commit a154d5d83d21af6b9ee32adc5dbcea5ac1fb534c
+> Author: Arnd Bergmann <arnd@arndb.de>
+> Date:   Mon Mar 4 20:38:03 2019 +0000
+> 
+>     net: ignore sysctl_devconf_inherit_init_net without SYSCTL
+> 
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=13f970b6300000
+> final oops:     https://syzkaller.appspot.com/x/report.txt?x=100570b6300000
+> console output: https://syzkaller.appspot.com/x/log.txt?x=17f970b6300000
 
-Add the case if dev is NULL in dev_{put, hold}, so the caller doesn't
-need to care whether dev is NULL or not.
+In case it wasn't obvious, this is a bogus bisection.  It's a bug
+ext4's inline_data support where there is a race between writing to an
+inline_data file against setting extended attributes on that same
+inline_data file.
 
-Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven@narfation.org: Convert to compat code]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- compat-include/linux/netdevice.h | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+Fix is coming up....
 
-diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netd=
-evice.h
-index 8f01b48f..9a62afcc 100644
---- a/compat-include/linux/netdevice.h
-+++ b/compat-include/linux/netdevice.h
-@@ -67,4 +67,27 @@ static inline int batadv_netif_rx_any_context(struct s=
-k_buff *skb)
-=20
- #endif /* LINUX_VERSION_IS_LESS(5, 10, 0) */
-=20
-+
-+#if LINUX_VERSION_IS_LESS(5, 15, 0)
-+
-+static inline void batadv_dev_put(struct net_device *dev)
-+{
-+	if (!dev)
-+		return;
-+
-+	dev_put(dev);
-+}
-+#define dev_put batadv_dev_put
-+
-+static inline void batadv_dev_hold(struct net_device *dev)
-+{
-+	if (!dev)
-+		return;
-+
-+	dev_hold(dev);
-+}
-+#define dev_hold batadv_dev_hold
-+
-+#endif /* LINUX_VERSION_IS_LESS(5, 15, 0) */
-+
- #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_NETDEVICE_H_ */
---=20
-2.30.2
+					- Ted
