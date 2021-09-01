@@ -1,16 +1,16 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: "Edmisten, Brian" <Brian.Edmisten@viasat.com>
-Subject: RE: Bonding Alternating
-Date: Wed, 15 Sep 2021 14:58:58 +0000
-Message-ID: <7e8fe0e7bf7b42baac350b20f2a0846a@viasat.com>
-References: <8679334.VDzE56WMh6@prime> <3340507.qp3XP9fiM0@prime>
- <711587381f3d46eeb01f77c95423a32b@viasat.com> <2528179.d2XtbQqvsD@prime>
-In-Reply-To: <2528179.d2XtbQqvsD@prime>
-Content-Language: en-US
-Content-Type: multipart/signed; micalg=SHA1;
-	protocol="application/x-pkcs7-signature";
-	boundary="----=_NextPart_000_00F3_01D7AA07.88A6E150"
+Date: Wed, 1 Sep 2021 22:12:53 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: Dynamic DHCP server assignment and spin-up on batman-adv mesh
+ network
+Message-ID: <YS/exTf/6NOMuH5N@sellars>
+References: <20210831172841.1195.74688@diktynna.open-mesh.org>
+ <YS/afIp1Lrc4JNvv@sellars>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <YS/afIp1Lrc4JNvv@sellars>
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,139 +21,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
- 
-------=_NextPart_000_00F3_01D7AA07.88A6E150
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+On Wed, Sep 01, 2021 at 09:54:36PM +0200, Linus L=C3=BCssing wrote:
+> On Tue, Aug 31, 2021 at 05:28:41PM -0000, tanner.perkins@cnftech.com wr=
+ote:
+> > If this is not the best place to ask questions regarding mesh network=
+s utilizing the batman-adv kernel module, I apologies and please point me=
+ to where I need to be.
+> >=20
+> > I'm looking to set up distributed mesh network using the batman-adv L=
+inux kernel module. However, I don't want to have to statically assign IP=
+ addresses to all my nodes therefore my first thought was to use DHCP. Th=
+e problem arises in my scenario that any node could come and go in the me=
+sh network as they move in and out range of the network. Therefore manual=
+ly allocating a single or even a few DHCP servers isn't realistic as that=
+ DHCP server may drop out of the network at anytime. Is there a dynamic w=
+ay to reassign the DHCP server based on the nodes still within the networ=
+k when the previous DHCP server drops from the network?
+>=20
+> Tricky question. DHCP was probably not designed with highly
+> dynamic networks in mind back then.
+>=20
+> Typically people run a few DHCP servers on hosts with a high
+> availability and not mesh nodes that might go offline at "random"
+> times. And then use the batman-adv gateway feature to stear DHCP
+> requests to the "best" one [0]. For some topologies people also
+> make use of the batman-adv "Bridge Loop Avoidance" [1] feature
+> and place the DHCP server(s) on a common LAN backbone to which
+> multiple nodes are connected via cable, which can add some
+> extra fault tolerance. And maybe set the lease interval to
+> something faster then the usual defaults.
+>=20
+> Someone had also been writing DDHCP, a "Distributed DHCP Daemon" here
+> [2] but I'm not sure if it is actually used by anyone at the moment.
+> The original idea was to integrate it into the OpenWrt based
+> mesh routing framework "Gluon" [3], so that every node would be a
+> DHCP server for all its locally connected client devices and the
+> DHCP requests from the client devices would be filtered from
+> entering the mesh directly. And the DDHCP servers would
+> organize leases among themselves. But there hasn't been a PR for
+> Gluon yet. But it was tested (and developed) at Freifunk Kiel
+> at some point. If you were to try it out, I'd be very interested to hea=
+r
+> what your experiences with it are.
+>=20
+> Next there is also AHCP [4] which was built for/with BABEL I
+> think. But don't know how it actually works and if it could be
+> useful on layer 2 at all or if it is only usable with a layer 3
+> mesh routing protocol.
+>=20
+> Regards, Linus
+>=20
+> [0]: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
+> [2]: https://github.com/sargon/ddhcpd
+> [3]: https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avo=
+idance-II#Situation
+> [4]: https://www.irif.fr/~jch/software/ahcp/
 
-Simon,
+Sorry, links and numberings are off, should have been:
 
-Thank you. I appreciate you looking at this.
-
-Regards,
-Brian Edmisten
-
------Original Message-----
-From: Simon Wunderlich [mailto:sw@simonwunderlich.de] 
-Sent: Wednesday, September 15, 2021 12:26 AM
-To: b.a.t.m.a.n@lists.open-mesh.org; Edmisten, Brian
-<Brian.Edmisten@viasat.com>
-Subject: Re: Bonding Alternating
-
-Hi Brian,
-
-hmm, I see. I will try to set up this scenario over the next few days and
-let you know. I haven't used bonding for quite a while now, but I also don't
-think that we had changes in the code which would break it.
-
-Anyway, will test and let you know.
-
-Cheers,
-      Simon
-
-On Tuesday, September 14, 2021 6:57:37 PM CEST Edmisten, Brian wrote:
-> Simon,
-> 
-> I did check again.  batctl bonding responds with enabled.
-> 
-> Cheers,
-> Brian Edmisten
-
-
-------=_NextPart_000_00F3_01D7AA07.88A6E150
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-
-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
-VR0OBBYEFBsH5+9JSPJWkcVvR29Ihy7Bwyu0MB8GA1UdIwQYMBaAFCi8Gj/qVzdVQhZMUychdZKi
-LYolMIIBHQYDVR0fBIIBFDCCARAwggEMoIIBCKCCAQSGNWh0dHA6Ly9jcmwudmlhc2F0LmNvbS9j
-cmwvVmlhc2F0JTIwU0hBJTIwMiUyMENBLTYuY3JshoHKbGRhcDovLy9DTj1WaWFzYXQlMjBTSEEl
-MjAyJTIwQ0EtNixDTj12Y2FzaGEyY2FwMDYsQ049Q0RQLENOPVB1YmxpYyUyMEtleSUyMFNlcnZp
-Y2VzLENOPVNlcnZpY2VzLENOPUNvbmZpZ3VyYXRpb24sREM9Y29ycCxEQz12aWFzYXQsREM9Y29t
-P2NlcnRpZmljYXRlUmV2b2NhdGlvbkxpc3Q/YmFzZT9vYmplY3RDbGFzcz1jUkxEaXN0cmlidXRp
-b25Qb2ludDCCAV0GCCsGAQUFBwEBBIIBTzCCAUswYQYIKwYBBQUHMAKGVWh0dHA6Ly9jcmwudmlh
-c2F0LmNvbS9jcmwvdmNhc2hhMmNhcDA2LmhxLmNvcnAudmlhc2F0LmNvbV9WaWFzYXQlMjBTSEEl
-MjAyJTIwQ0EtNi5jcnQwJgYIKwYBBQUHMAGGGmh0dHA6Ly9jcmwudmlhc2F0LmNvbS9vY3NwMIG9
-BggrBgEFBQcwAoaBsGxkYXA6Ly8vQ049Vmlhc2F0JTIwU0hBJTIwMiUyMENBLTYsQ049QUlBLENO
-PVB1YmxpYyUyMEtleSUyMFNlcnZpY2VzLENOPVNlcnZpY2VzLENOPUNvbmZpZ3VyYXRpb24sREM9
-Y29ycCxEQz12aWFzYXQsREM9Y29tP2NBQ2VydGlmaWNhdGU/YmFzZT9vYmplY3RDbGFzcz1jZXJ0
-aWZpY2F0aW9uQXV0aG9yaXR5MAsGA1UdDwQEAwIF4DA8BgkrBgEEAYI3FQcELzAtBiUrBgEEAYI3
-FQiFwrFU+p8hoYMphKH+SIKdo2+BfIfjhj2EyZRxAgFkAgF6MBMGA1UdJQQMMAoGCCsGAQUFBwME
-MBsGCSsGAQQBgjcVCgQOMAwwCgYIKwYBBQUHAwQwJAYDVR0RBB0wG4EZQnJpYW4uRWRtaXN0ZW5A
-dmlhc2F0LmNvbTBEBgkqhkiG9w0BCQ8ENzA1MA4GCCqGSIb3DQMCAgIAgDAOBggqhkiG9w0DBAIC
-AIAwBwYFKw4DAgcwCgYIKoZIhvcNAwcwDQYJKoZIhvcNAQELBQADggEBAIAIqjbR9cebVJvFw6H3
-Ey/MoQI3DLSf6jQyM4CtGuEfOlRJpVuNEj5gn+89zIQMk80nNDLApQh8CwwwUX9hCwnkHW61/hOn
-og9CbFT98Z9shlUQLUAYumU28Mxk+TJN5uB0L0qVNwhkzeT8AvoUILufrifKe5v0RynfP2kh30mm
-h7X6O0uARHXE0frQr2J3HHFXCjTOkX9R+T8Pk6WwnGNwXaeFHdxgpsW6BJAcfYZ1XZiZu/Ejgrx2
-bGs+UTC7/DrCWk+Lclka5fHFn3Y2DWp8BO5imd4MsIk1z66b8jv9rdNh0om6pfdEhCBTW0/vSmak
-BEGkKRMfEaI8GqXaXu0xggPnMIID4wIBATCBijBzMRMwEQYKCZImiZPyLGQBGRYDY29tMRYwFAYK
-CZImiZPyLGQBGRYGdmlhc2F0MRQwEgYKCZImiZPyLGQBGRYEY29ycDESMBAGCgmSJomT8ixkARkW
-AmhxMRowGAYDVQQDExFWaWFzYXQgU0hBIDIgQ0EtNgITbwAADtzJnoHDZwcIiQAAAAAO3DAJBgUr
-DgMCGgUAoIICMTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMTA5
-MTUxNDU4NTZaMCMGCSqGSIb3DQEJBDEWBBSuMnzEa7Gni05XH3cQJlqrR1/CWzCBkwYJKoZIhvcN
-AQkPMYGFMIGCMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYwCgYIKoZIhvcNAwcwCwYJYIZIAWUD
-BAECMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCGjALBglghkgBZQMEAgMw
-CwYJYIZIAWUDBAICMAsGCWCGSAFlAwQCATCBmwYJKwYBBAGCNxAEMYGNMIGKMHMxEzARBgoJkiaJ
-k/IsZAEZFgNjb20xFjAUBgoJkiaJk/IsZAEZFgZ2aWFzYXQxFDASBgoJkiaJk/IsZAEZFgRjb3Jw
-MRIwEAYKCZImiZPyLGQBGRYCaHExGjAYBgNVBAMTEVZpYXNhdCBTSEEgMiBDQS02AhNvAAAO3Mme
-gcNnBwiJAAAAAA7cMIGdBgsqhkiG9w0BCRACCzGBjaCBijBzMRMwEQYKCZImiZPyLGQBGRYDY29t
-MRYwFAYKCZImiZPyLGQBGRYGdmlhc2F0MRQwEgYKCZImiZPyLGQBGRYEY29ycDESMBAGCgmSJomT
-8ixkARkWAmhxMRowGAYDVQQDExFWaWFzYXQgU0hBIDIgQ0EtNgITbwAADtzJnoHDZwcIiQAAAAAO
-3DANBgkqhkiG9w0BAQEFAASCAQB5oOBz6CalK/kuujQfYkMMVRswua/eHxC6BL/6bzCO6Uffsjv0
-/bTNFlhgneYCAl5DQZcALaWd3JGaJLPgVRX8OeSc1Ezf9EzrOD4HJWCYmNj7rSfYzn2+lwEYt7us
-gw/un/ZT7fDQBzLahrbw/8vQNRNXsmfYV1bGYuH9OzOmcRDGYSdgoZpsscr0nlDPn/Q7LlAA23LW
-soX/u7EsP0F66DEYwuj9t8b20rxUECjTFo5MWXyTk0/HSKuUOYrnPfOqkt7F8Gc8xaeUTXddO538
-YHjOFijiOvTuD7R4BOm9JpvQua8PaS3LPnMlNZTK3+G7gei0lB2sV0fHS8qQ0nrwAAAAAAAA
-
-------=_NextPart_000_00F3_01D7AA07.88A6E150--
+[0]: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
+[1]: https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoid=
+ance-II#Situation
+[2]: https://github.com/sargon/ddhcpd
+[3]: https://github.com/freifunk-gluon/gluon/
+[4]: https://www.irif.fr/~jch/software/ahcp/
