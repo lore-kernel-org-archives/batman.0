@@ -1,16 +1,14 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Wed, 1 Sep 2021 22:12:53 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: Dynamic DHCP server assignment and spin-up on batman-adv mesh
- network
-Message-ID: <YS/exTf/6NOMuH5N@sellars>
-References: <20210831172841.1195.74688@diktynna.open-mesh.org>
- <YS/afIp1Lrc4JNvv@sellars>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: Bonding Alternating
+Date: Tue, 21 Sep 2021 16:16:27 +0200
+Message-ID: <4948508.lctyQggAPn@prime>
+In-Reply-To: <7e8fe0e7bf7b42baac350b20f2a0846a@viasat.com>
+References: <8679334.VDzE56WMh6@prime> <2528179.d2XtbQqvsD@prime>
+ <7e8fe0e7bf7b42baac350b20f2a0846a@viasat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <YS/afIp1Lrc4JNvv@sellars>
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart2521225.qI6e1uoXLY";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,69 +19,96 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "Edmisten, Brian" <Brian.Edmisten@viasat.com>
 
-On Wed, Sep 01, 2021 at 09:54:36PM +0200, Linus L=C3=BCssing wrote:
-> On Tue, Aug 31, 2021 at 05:28:41PM -0000, tanner.perkins@cnftech.com wr=
-ote:
-> > If this is not the best place to ask questions regarding mesh network=
-s utilizing the batman-adv kernel module, I apologies and please point me=
- to where I need to be.
-> >=20
-> > I'm looking to set up distributed mesh network using the batman-adv L=
-inux kernel module. However, I don't want to have to statically assign IP=
- addresses to all my nodes therefore my first thought was to use DHCP. Th=
-e problem arises in my scenario that any node could come and go in the me=
-sh network as they move in and out range of the network. Therefore manual=
-ly allocating a single or even a few DHCP servers isn't realistic as that=
- DHCP server may drop out of the network at anytime. Is there a dynamic w=
-ay to reassign the DHCP server based on the nodes still within the networ=
-k when the previous DHCP server drops from the network?
->=20
-> Tricky question. DHCP was probably not designed with highly
-> dynamic networks in mind back then.
->=20
-> Typically people run a few DHCP servers on hosts with a high
-> availability and not mesh nodes that might go offline at "random"
-> times. And then use the batman-adv gateway feature to stear DHCP
-> requests to the "best" one [0]. For some topologies people also
-> make use of the batman-adv "Bridge Loop Avoidance" [1] feature
-> and place the DHCP server(s) on a common LAN backbone to which
-> multiple nodes are connected via cable, which can add some
-> extra fault tolerance. And maybe set the lease interval to
-> something faster then the usual defaults.
->=20
-> Someone had also been writing DDHCP, a "Distributed DHCP Daemon" here
-> [2] but I'm not sure if it is actually used by anyone at the moment.
-> The original idea was to integrate it into the OpenWrt based
-> mesh routing framework "Gluon" [3], so that every node would be a
-> DHCP server for all its locally connected client devices and the
-> DHCP requests from the client devices would be filtered from
-> entering the mesh directly. And the DDHCP servers would
-> organize leases among themselves. But there hasn't been a PR for
-> Gluon yet. But it was tested (and developed) at Freifunk Kiel
-> at some point. If you were to try it out, I'd be very interested to hea=
-r
-> what your experiences with it are.
->=20
-> Next there is also AHCP [4] which was built for/with BABEL I
-> think. But don't know how it actually works and if it could be
-> useful on layer 2 at all or if it is only usable with a layer 3
-> mesh routing protocol.
->=20
-> Regards, Linus
->=20
-> [0]: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
-> [2]: https://github.com/sargon/ddhcpd
-> [3]: https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avo=
-idance-II#Situation
-> [4]: https://www.irif.fr/~jch/software/ahcp/
+ 
+--nextPart2521225.qI6e1uoXLY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, "Edmisten, Brian" <Brian.Edmisten@viasat.com>
+Subject: Re: Bonding Alternating
+Date: Tue, 21 Sep 2021 16:16:27 +0200
+Message-ID: <4948508.lctyQggAPn@prime>
+In-Reply-To: <7e8fe0e7bf7b42baac350b20f2a0846a@viasat.com>
+References: <8679334.VDzE56WMh6@prime> <2528179.d2XtbQqvsD@prime> <7e8fe0e7bf7b42baac350b20f2a0846a@viasat.com>
 
-Sorry, links and numberings are off, should have been:
+Hi Brian,
 
-[0]: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
-[1]: https://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoid=
-ance-II#Situation
-[2]: https://github.com/sargon/ddhcpd
-[3]: https://github.com/freifunk-gluon/gluon/
-[4]: https://www.irif.fr/~jch/software/ahcp/
+I've checked it out and can confirm your issues. The bonding code as currently 
+implemented is trying to use a different router from each routing table towards 
+the same originator[1]. However, with 1-hop Ethernet links those routers are 
+always the same in all the routing tables. With WiFi that would be a bit 
+different (I've commented out the WiFi penalty check), but even then it only 
+alternates between two of the three interfaces.
+
+At this point I don't have a straight forward fix for this. Will you use three 
+Ethernet devices in your later deployment, or will those be WiFi interfaces? 
+Also, would it be useful for you to consider bonding/teams interfaces of the 
+Linux kernel to bond the link, and give that to batman-adv?
+
+Cheers,
+       Simon
+
+[1] https://www.open-mesh.org/projects/batman-adv/wiki/Network-wide-multi-link-optimization
+
+On Wednesday, September 15, 2021 4:58:58 PM CEST Edmisten, Brian wrote:
+> Simon,
+> 
+> Thank you. I appreciate you looking at this.
+> 
+> Regards,
+> Brian Edmisten
+> 
+> -----Original Message-----
+> From: Simon Wunderlich [mailto:sw@simonwunderlich.de]
+> Sent: Wednesday, September 15, 2021 12:26 AM
+> To: b.a.t.m.a.n@lists.open-mesh.org; Edmisten, Brian
+> <Brian.Edmisten@viasat.com>
+> Subject: Re: Bonding Alternating
+> 
+> Hi Brian,
+> 
+> hmm, I see. I will try to set up this scenario over the next few days and
+> let you know. I haven't used bonding for quite a while now, but I also don't
+> think that we had changes in the code which would break it.
+> 
+> Anyway, will test and let you know.
+> 
+> Cheers,
+>       Simon
+> 
+> On Tuesday, September 14, 2021 6:57:37 PM CEST Edmisten, Brian wrote:
+> > Simon,
+> > 
+> > I did check again.  batctl bonding responds with enabled.
+> > 
+> > Cheers,
+> > Brian Edmisten
+
+
+--nextPart2521225.qI6e1uoXLY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAmFJ6TsACgkQoSvjmEKS
+nqExtw/8DvoXN+S5a4m2vpXkRItdbkmNlOCmkOVyrK4T8WaA/zbGZM9+HmObaNtu
+cR7QtBhJmXI9bTrKMQJ5jiq/ivh7NbIbP/hGbYT9UAvzIKHgbB1cqGHXaCxcJzG2
+rZe6GH4651QtEE5sMIgSVLzhNqb0q+V8IwuwIGcz2ns0L6lub8mGyKWQ8/od+Gfv
+HbFNspwo/hhYn1rvbSqfvg+w3PWEhDoIHbGrxJZZBXd5iA9RNHKq2idks8kVA9S3
+QXhp5WPllhMmko5sXLjHTEPHu81p2vdSpdkYzJQqK+whqjMwiLnqIEDxGh/UPvy8
+5OlvL+iFHxHCPlAxbpkPYPkTmE+MWhUhBMjkI7ah+5a9KnFmI7GnweHRY3pFM078
+mIZVLlYMpOxgW9z3PXtc01r/quH94Y/wIHZnWsrZHvqD8HAr/2N16rz/vdnhMqBr
+OonlMQ+5LTeRkRUUXe8/KARB+tO00e5jouYzpaB4A6Yr9UimoUahIXHHRNosCVPw
+AcQMfAiv73tIjDsvCzFJdbS8gh3UtfUSAoPz1rrJpeaSHziA/4lvizRPxuOEif+W
+eGN955jG9HCg36LjLUbn8qHv/wJ6YpFvznDee+2LN9x0KtK0g/vIyDBaDwdaGJTx
+TBei3621y4J3UdNg2jROSmq4isEwsTL3qVn/l6R/aTFBkWJLgJ0=
+=X8x0
+-----END PGP SIGNATURE-----
+
+--nextPart2521225.qI6e1uoXLY--
+
+
