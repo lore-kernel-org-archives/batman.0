@@ -1,13 +1,11 @@
-Return-Path: <paskripkin@gmail.com>
-Content-Type: multipart/mixed; boundary="------------XP0ezmYVfmtBDjzAIPdDrp9W"
-Message-ID: <1639fcba-e543-e071-f17c-941b8c7a948f@gmail.com>
-Date: Fri, 22 Oct 2021 23:57:14 +0300
+Return-Path: 
+  <366JfYQkbAMAy45qgrrkxgvvoj.muumrk0ykxiutzktz.ius@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Subject: Re: [syzbot] WARNING in batadv_nc_mesh_free
-Content-Language: en-US
-References: <000000000000c87fbd05cef6bcb0@google.com>
-From: Pavel Skripkin <paskripkin@gmail.com>
-In-Reply-To: <000000000000c87fbd05cef6bcb0@google.com>
+Date: Thu, 07 Oct 2021 18:46:19 -0700
+Message-ID: <000000000000ba80b905cdcd8b19@google.com>
+Subject: [syzbot] WARNING: ODEBUG bug in batadv_v_ogm_free
+From: syzbot <syzbot+0ef06384b5f39a16ebb9@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,112 +15,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: Jason@zx2c4.com, a@unstable.cc, amcohen@nvidia.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, dsahern@kernel.org, edumazet@google.com, fw@strlen.de, idosch@OSS.NVIDIA.COM, justin.iurman@uliege.be, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, praveen5582@gmail.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, willemb@google.com, yoshfuji@linux-ipv6.org, zxu@linkedin.com
 
- This is a multi-part message in MIME format.
---------------XP0ezmYVfmtBDjzAIPdDrp9W
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hello,
 
-On 10/22/21 23:20, syzbot wrote:
-> Hello,
-> 
-> syzbot has tested the proposed patch but the reproducer is still triggering an issue:
-> general protection fault in batadv_nc_purge_paths
+syzbot found the following issue on:
+
+HEAD commit:    44cc24b04bed Merge tag 'wireless-drivers-next-2021-10-07' ..
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=130661b8b00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=97f67871098c6901
+dashboard link: https://syzkaller.appspot.com/bug?extid=0ef06384b5f39a16ebb9
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1361e884b00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1472de98b00000
+
+The issue was bisected to:
+
+commit 9ee11f0fff205b4b3df9750bff5e94f97c71b6a0
+Author: Justin Iurman <justin.iurman@uliege.be>
+Date:   Tue Jul 20 19:42:57 2021 +0000
+
+    ipv6: ioam: Data plane support for Pre-allocated Trace
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=12c661b8b00000
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=11c661b8b00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=16c661b8b00000
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+0ef06384b5f39a16ebb9@syzkaller.appspotmail.com
+Fixes: 9ee11f0fff20 ("ipv6: ioam: Data plane support for Pre-allocated Trace")
+
+R13: 00007ffc310f3710 R14: 00007ffc310f3760 R15: 0000000000000001
+------------[ cut here ]------------
+ODEBUG: assert_init not available (active state 0) object type: timer_list hint: 0x0
+WARNING: CPU: 1 PID: 6548 at lib/debugobjects.c:505 debug_print_object+0x16e/0x250 lib/debugobjects.c:505
+Modules linked in:
+CPU: 1 PID: 6548 Comm: syz-executor580 Not tainted 5.15.0-rc3-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+RIP: 0010:debug_print_object+0x16e/0x250 lib/debugobjects.c:505
+Code: ff df 48 89 fa 48 c1 ea 03 80 3c 02 00 0f 85 af 00 00 00 48 8b 14 dd c0 3e e4 89 4c 89 ee 48 c7 c7 c0 32 e4 89 e8 29 8d 16 05 <0f> 0b 83 05 55 18 91 09 01 48 83 c4 18 5b 5d 41 5c 41 5d 41 5e c3
+RSP: 0018:ffffc90002bdee90 EFLAGS: 00010082
+RAX: 0000000000000000 RBX: 0000000000000005 RCX: 0000000000000000
+RDX: ffff88801c395580 RSI: ffffffff815dbbc8 RDI: fffff5200057bdc4
+RBP: 0000000000000001 R08: 0000000000000000 R09: 0000000000000000
+R10: ffffffff815d596e R11: 0000000000000000 R12: ffffffff898de200
+R13: ffffffff89e43940 R14: ffffffff8164b870 R15: 1ffff9200057bddd
+FS:  000055555617e300(0000) GS:ffff8880b9d00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f868a8856c0 CR3: 0000000024660000 CR4: 00000000003506e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ debug_object_assert_init lib/debugobjects.c:895 [inline]
+ debug_object_assert_init+0x1f4/0x2e0 lib/debugobjects.c:866
+ debug_timer_assert_init kernel/time/timer.c:739 [inline]
+ debug_assert_init kernel/time/timer.c:784 [inline]
+ del_timer+0x6d/0x110 kernel/time/timer.c:1204
+ try_to_grab_pending+0x6d/0xd0 kernel/workqueue.c:1270
+ __cancel_work_timer+0xa6/0x570 kernel/workqueue.c:3129
+ batadv_v_ogm_free+0x1f/0xd0 net/batman-adv/bat_v_ogm.c:1076
+ batadv_mesh_free+0x75/0x170 net/batman-adv/main.c:244
+ batadv_mesh_init+0x62f/0x710 net/batman-adv/main.c:226
+ batadv_softif_init_late+0xad4/0xdd0 net/batman-adv/soft-interface.c:804
+ register_netdevice+0x51e/0x1500 net/core/dev.c:10236
+ batadv_softif_newlink+0x6e/0x90 net/batman-adv/soft-interface.c:1068
+ __rtnl_newlink+0x106d/0x1750 net/core/rtnetlink.c:3458
+ rtnl_newlink+0x64/0xa0 net/core/rtnetlink.c:3506
+ rtnetlink_rcv_msg+0x413/0xb80 net/core/rtnetlink.c:5572
+ netlink_rcv_skb+0x153/0x420 net/netlink/af_netlink.c:2485
+ netlink_unicast_kernel net/netlink/af_netlink.c:1314 [inline]
+ netlink_unicast+0x533/0x7d0 net/netlink/af_netlink.c:1340
+ netlink_sendmsg+0x86d/0xda0 net/netlink/af_netlink.c:1910
+ sock_sendmsg_nosec net/socket.c:704 [inline]
+ sock_sendmsg+0xcf/0x120 net/socket.c:724
+ __sys_sendto+0x21c/0x320 net/socket.c:2036
+ __do_sys_sendto net/socket.c:2048 [inline]
+ __se_sys_sendto net/socket.c:2044 [inline]
+ __x64_sys_sendto+0xdd/0x1b0 net/socket.c:2044
+ do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+ do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
+RIP: 0033:0x7f4cb72c2829
+Code: b2 01 00 85 c0 b8 00 00 00 00 48 0f 44 c3 5b c3 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffc310f36a8 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f4cb72c2829
+RDX: 000000000000ad2a RSI: 0000000020000000 RDI: 0000000000000004
+RBP: 00007ffc310f3710 R08: 0000000000000000 R09: 4b6ae4f95a5de394
+R10: 0000000000007812 R11: 0000000000000246 R12: 0000000000000005
+R13: 00007ffc310f3710 R14: 00007ffc310f3760 R15: 0000000000000001
 
 
-Oh, ok. Next clean up call in batadv_nc_mesh_free() caused GPF, since 
-fields are not initialized. Let's try to clean up one by one and do not 
-break dependencies.
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Quite ugly one, but idea is correct, I guess
-
-Also, make each *_init() call clean up all allocated stuff to not call 
-corresponding *_free() on error handling path, since it introduces 
-problems, as syzbot reported
-
-
-
-
-With regards,
-Pavel Skripkin
-
-
---------------XP0ezmYVfmtBDjzAIPdDrp9W
-Content-Type: text/plain; charset=UTF-8; name="ph"
-Content-Disposition: attachment; filename="ph"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL25ldC9iYXRtYW4tYWR2L2JyaWRnZV9sb29wX2F2b2lkYW5jZS5jIGIv
-bmV0L2JhdG1hbi1hZHYvYnJpZGdlX2xvb3BfYXZvaWRhbmNlLmMKaW5kZXggMTY2OTc0NDMw
-NGM1Li4xNzY4Nzg0OGRhZWMgMTAwNjQ0Ci0tLSBhL25ldC9iYXRtYW4tYWR2L2JyaWRnZV9s
-b29wX2F2b2lkYW5jZS5jCisrKyBiL25ldC9iYXRtYW4tYWR2L2JyaWRnZV9sb29wX2F2b2lk
-YW5jZS5jCkBAIC0xNTYwLDEwICsxNTYwLDE0IEBAIGludCBiYXRhZHZfYmxhX2luaXQoc3Ry
-dWN0IGJhdGFkdl9wcml2ICpiYXRfcHJpdikKIAkJcmV0dXJuIDA7CiAKIAliYXRfcHJpdi0+
-YmxhLmNsYWltX2hhc2ggPSBiYXRhZHZfaGFzaF9uZXcoMTI4KTsKLQliYXRfcHJpdi0+Ymxh
-LmJhY2tib25lX2hhc2ggPSBiYXRhZHZfaGFzaF9uZXcoMzIpOworCWlmICghYmF0X3ByaXYt
-PmJsYS5jbGFpbV9oYXNoKQorCQlyZXR1cm4gLUVOT01FTTsKIAotCWlmICghYmF0X3ByaXYt
-PmJsYS5jbGFpbV9oYXNoIHx8ICFiYXRfcHJpdi0+YmxhLmJhY2tib25lX2hhc2gpCisJYmF0
-X3ByaXYtPmJsYS5iYWNrYm9uZV9oYXNoID0gYmF0YWR2X2hhc2hfbmV3KDMyKTsKKwlpZiAo
-IWJhdF9wcml2LT5ibGEuYmFja2JvbmVfaGFzaCkgeworCQliYXRhZHZfaGFzaF9kZXN0cm95
-KGJhdF9wcml2LT5ibGEuY2xhaW1faGFzaCk7CiAJCXJldHVybiAtRU5PTUVNOworCX0KIAog
-CWJhdGFkdl9oYXNoX3NldF9sb2NrX2NsYXNzKGJhdF9wcml2LT5ibGEuY2xhaW1faGFzaCwK
-IAkJCQkgICAmYmF0YWR2X2NsYWltX2hhc2hfbG9ja19jbGFzc19rZXkpOwpkaWZmIC0tZ2l0
-IGEvbmV0L2JhdG1hbi1hZHYvbWFpbi5jIGIvbmV0L2JhdG1hbi1hZHYvbWFpbi5jCmluZGV4
-IDNkZGQ2NmU0YzI5ZS4uOTA1MTJlZDMyMzQ4IDEwMDY0NAotLS0gYS9uZXQvYmF0bWFuLWFk
-di9tYWluLmMKKysrIGIvbmV0L2JhdG1hbi1hZHYvbWFpbi5jCkBAIC0xOTAsMjkgKzE5MCw0
-MSBAQCBpbnQgYmF0YWR2X21lc2hfaW5pdChzdHJ1Y3QgbmV0X2RldmljZSAqc29mdF9pZmFj
-ZSkKIAogCWJhdF9wcml2LT5ndy5nZW5lcmF0aW9uID0gMDsKIAotCXJldCA9IGJhdGFkdl92
-X21lc2hfaW5pdChiYXRfcHJpdik7Ci0JaWYgKHJldCA8IDApCi0JCWdvdG8gZXJyOwotCiAJ
-cmV0ID0gYmF0YWR2X29yaWdpbmF0b3JfaW5pdChiYXRfcHJpdik7Ci0JaWYgKHJldCA8IDAp
-Ci0JCWdvdG8gZXJyOworCWlmIChyZXQgPCAwKSB7CisJCWF0b21pY19zZXQoJmJhdF9wcml2
-LT5tZXNoX3N0YXRlLCBCQVRBRFZfTUVTSF9ERUFDVElWQVRJTkcpOworCQlnb3RvIGVycl9v
-cmlnOworCX0KIAogCXJldCA9IGJhdGFkdl90dF9pbml0KGJhdF9wcml2KTsKLQlpZiAocmV0
-IDwgMCkKLQkJZ290byBlcnI7CisJaWYgKHJldCA8IDApIHsKKwkJYXRvbWljX3NldCgmYmF0
-X3ByaXYtPm1lc2hfc3RhdGUsIEJBVEFEVl9NRVNIX0RFQUNUSVZBVElORyk7CisJCWdvdG8g
-ZXJyX3R0OworCX0KKworCXJldCA9IGJhdGFkdl92X21lc2hfaW5pdChiYXRfcHJpdik7CisJ
-aWYgKHJldCA8IDApIHsKKwkJYXRvbWljX3NldCgmYmF0X3ByaXYtPm1lc2hfc3RhdGUsIEJB
-VEFEVl9NRVNIX0RFQUNUSVZBVElORyk7CisJCWdvdG8gZXJyX3Y7CisJfQogCiAJcmV0ID0g
-YmF0YWR2X2JsYV9pbml0KGJhdF9wcml2KTsKLQlpZiAocmV0IDwgMCkKLQkJZ290byBlcnI7
-CisJaWYgKHJldCA8IDApIHsKKwkJYXRvbWljX3NldCgmYmF0X3ByaXYtPm1lc2hfc3RhdGUs
-IEJBVEFEVl9NRVNIX0RFQUNUSVZBVElORyk7CisJCWdvdG8gZXJyX2JsYTsKKwl9CiAKIAly
-ZXQgPSBiYXRhZHZfZGF0X2luaXQoYmF0X3ByaXYpOwotCWlmIChyZXQgPCAwKQotCQlnb3Rv
-IGVycjsKKwlpZiAocmV0IDwgMCkgeworCQlhdG9taWNfc2V0KCZiYXRfcHJpdi0+bWVzaF9z
-dGF0ZSwgQkFUQURWX01FU0hfREVBQ1RJVkFUSU5HKTsKKwkJZ290byBlcnJfZGF0OworCX0K
-IAogCXJldCA9IGJhdGFkdl9uY19tZXNoX2luaXQoYmF0X3ByaXYpOwotCWlmIChyZXQgPCAw
-KQotCQlnb3RvIGVycjsKKwlpZiAocmV0IDwgMCl7CisJCWF0b21pY19zZXQoJmJhdF9wcml2
-LT5tZXNoX3N0YXRlLCBCQVRBRFZfTUVTSF9ERUFDVElWQVRJTkcpOworCQlnb3RvIGVycl9u
-YzsKKwl9CiAKIAliYXRhZHZfZ3dfaW5pdChiYXRfcHJpdik7CiAJYmF0YWR2X21jYXN0X2lu
-aXQoYmF0X3ByaXYpOwpAQCAtMjIyLDggKzIzNCwyMCBAQCBpbnQgYmF0YWR2X21lc2hfaW5p
-dChzdHJ1Y3QgbmV0X2RldmljZSAqc29mdF9pZmFjZSkKIAogCXJldHVybiAwOwogCi1lcnI6
-Ci0JYmF0YWR2X21lc2hfZnJlZShzb2Z0X2lmYWNlKTsKK2Vycl9uYzoKKwliYXRhZHZfZGF0
-X2ZyZWUoYmF0X3ByaXYpOworZXJyX2RhdDoKKwliYXRhZHZfYmxhX2ZyZWUoYmF0X3ByaXYp
-OworZXJyX2JsYToKKwliYXRhZHZfdl9tZXNoX2ZyZWUoYmF0X3ByaXYpOworZXJyX3Y6CisJ
-YmF0YWR2X3R0X2ZyZWUoYmF0X3ByaXYpOworZXJyX3R0OgorCWJhdGFkdl9vcmlnaW5hdG9y
-X2ZyZWUoYmF0X3ByaXYpOworZXJyX29yaWc6CisJYmF0YWR2X3B1cmdlX291dHN0YW5kaW5n
-X3BhY2tldHMoYmF0X3ByaXYsIE5VTEwpOworCWF0b21pY19zZXQoJmJhdF9wcml2LT5tZXNo
-X3N0YXRlLCBCQVRBRFZfTUVTSF9JTkFDVElWRSk7CisKIAlyZXR1cm4gcmV0OwogfQogCmRp
-ZmYgLS1naXQgYS9uZXQvYmF0bWFuLWFkdi9uZXR3b3JrLWNvZGluZy5jIGIvbmV0L2JhdG1h
-bi1hZHYvbmV0d29yay1jb2RpbmcuYwppbmRleCA5ZjA2MTMyZTAwN2QuLjBhN2YxZDM2YTZh
-OCAxMDA2NDQKLS0tIGEvbmV0L2JhdG1hbi1hZHYvbmV0d29yay1jb2RpbmcuYworKysgYi9u
-ZXQvYmF0bWFuLWFkdi9uZXR3b3JrLWNvZGluZy5jCkBAIC0xNTIsOCArMTUyLDEwIEBAIGlu
-dCBiYXRhZHZfbmNfbWVzaF9pbml0KHN0cnVjdCBiYXRhZHZfcHJpdiAqYmF0X3ByaXYpCiAJ
-CQkJICAgJmJhdGFkdl9uY19jb2RpbmdfaGFzaF9sb2NrX2NsYXNzX2tleSk7CiAKIAliYXRf
-cHJpdi0+bmMuZGVjb2RpbmdfaGFzaCA9IGJhdGFkdl9oYXNoX25ldygxMjgpOwotCWlmICgh
-YmF0X3ByaXYtPm5jLmRlY29kaW5nX2hhc2gpCisJaWYgKCFiYXRfcHJpdi0+bmMuZGVjb2Rp
-bmdfaGFzaCkgeworCQliYXRhZHZfaGFzaF9kZXN0cm95KGJhdF9wcml2LT5uYy5jb2Rpbmdf
-aGFzaCk7CiAJCWdvdG8gZXJyOworCX0KIAogCWJhdGFkdl9oYXNoX3NldF9sb2NrX2NsYXNz
-KGJhdF9wcml2LT5uYy5kZWNvZGluZ19oYXNoLAogCQkJCSAgICZiYXRhZHZfbmNfZGVjb2Rp
-bmdfaGFzaF9sb2NrX2NsYXNzX2tleSk7CmRpZmYgLS1naXQgYS9uZXQvYmF0bWFuLWFkdi90
-cmFuc2xhdGlvbi10YWJsZS5jIGIvbmV0L2JhdG1hbi1hZHYvdHJhbnNsYXRpb24tdGFibGUu
-YwppbmRleCBlMGIzZGFjZTIwMjAuLjJjMzhkOWNiNGNjNCAxMDA2NDQKLS0tIGEvbmV0L2Jh
-dG1hbi1hZHYvdHJhbnNsYXRpb24tdGFibGUuYworKysgYi9uZXQvYmF0bWFuLWFkdi90cmFu
-c2xhdGlvbi10YWJsZS5jCkBAIC00MTYyLDggKzQxNjIsMTAgQEAgaW50IGJhdGFkdl90dF9p
-bml0KHN0cnVjdCBiYXRhZHZfcHJpdiAqYmF0X3ByaXYpCiAJCXJldHVybiByZXQ7CiAKIAly
-ZXQgPSBiYXRhZHZfdHRfZ2xvYmFsX2luaXQoYmF0X3ByaXYpOwotCWlmIChyZXQgPCAwKQor
-CWlmIChyZXQgPCAwKSB7CisJCWJhdGFkdl90dF9nbG9iYWxfdGFibGVfZnJlZShiYXRfcHJp
-dik7CiAJCXJldHVybiByZXQ7CisJfQogCiAJYmF0YWR2X3R2bHZfaGFuZGxlcl9yZWdpc3Rl
-cihiYXRfcHJpdiwgYmF0YWR2X3R0X3R2bHZfb2dtX2hhbmRsZXJfdjEsCiAJCQkJICAgICBi
-YXRhZHZfdHRfdHZsdl91bmljYXN0X2hhbmRsZXJfdjEsCg==
---------------XP0ezmYVfmtBDjzAIPdDrp9W--
-
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches
