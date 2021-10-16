@@ -1,8 +1,8 @@
 Return-Path: <acadx0@gmail.com>
 From: Kyungrok Chung <acadx0@gmail.com>
-Subject: [PATCH v2 net-next] net: make use of helper netif_is_bridge_master()
-Date: Sat, 16 Oct 2021 14:04:38 +0900
-Message-Id: <20211016050439.2592877-1-acadx0@gmail.com>
+Subject: [PATCH v3 net-next] net: make use of helper netif_is_bridge_master()
+Date: Sat, 16 Oct 2021 20:21:36 +0900
+Message-Id: <20211016112137.18858-1-acadx0@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,6 +25,9 @@ Signed-off-by: Kyungrok Chung <acadx0@gmail.com>
 
 v1->v2:
   - Apply fixes to batman-adv, core too.
+
+v2->v3:
+  - Fix wrong logic.
 
  net/batman-adv/multicast.c      | 2 +-
  net/bridge/br.c                 | 4 ++--
@@ -187,7 +190,7 @@ index 5c6c4305ed23..0c8b5f1a15bc 100644
  
  	err = br_afspec(br, p, afspec, RTM_DELLINK, &changed, NULL);
 diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index 2dc1b209ba91..d3676666a529 100644
+index 2dc1b209ba91..564d24c451af 100644
 --- a/net/core/rtnetlink.c
 +++ b/net/core/rtnetlink.c
 @@ -4384,7 +4384,7 @@ static int rtnl_fdb_dump(struct sk_buff *skb, struct netlink_callback *cb)
@@ -195,7 +198,7 @@ index 2dc1b209ba91..d3676666a529 100644
  
  				if (br_dev != netdev_master_upper_dev_get(dev) &&
 -				    !(dev->priv_flags & IFF_EBRIDGE))
-+				    netif_is_bridge_master(dev))
++				    !netif_is_bridge_master(dev))
  					continue;
  				cops = ops;
  			}
