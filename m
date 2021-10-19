@@ -1,50 +1,72 @@
-Return-Path: <paskripkin@gmail.com>
-Message-ID: <e4922538-1a57-1d21-9079-e954d742d844@gmail.com>
-Date: Wed, 27 Oct 2021 14:57:20 +0300
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: prepare for const netdev->dev_addr
+Date: Tue, 19 Oct 2021 20:02:52 +0200
+Message-ID: <33425786.lHEVMZF3NE@sven-desktop>
+In-Reply-To: <20211019163007.1384352-1-kuba@kernel.org>
+References: <20211019163007.1384352-1-kuba@kernel.org>
 MIME-Version: 1.0
-Subject: Re: [syzbot] WARNING in batadv_v_ogm_free
-Content-Language: en-US
-References: <00000000000010317a05cee52016@google.com>
-From: Pavel Skripkin <paskripkin@gmail.com>
-In-Reply-To: <00000000000010317a05cee52016@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="nextPart3738197.mCjuJMru3Q";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+b6a62d5cb9fe05a0e3a3@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, mareklindner@neomailbox.ch
+Cc: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org
 
-On 10/22/21 02:19, syzbot wrote:
-> Hello,
+ 
+--nextPart3738197.mCjuJMru3Q
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, mareklindner@neomailbox.ch
+Cc: sw@simonwunderlich.de, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH] batman-adv: prepare for const netdev->dev_addr
+Date: Tue, 19 Oct 2021 20:02:52 +0200
+Message-ID: <33425786.lHEVMZF3NE@sven-desktop>
+In-Reply-To: <20211019163007.1384352-1-kuba@kernel.org>
+References: <20211019163007.1384352-1-kuba@kernel.org>
+
+On Tuesday, 19 October 2021 18:30:07 CEST Jakub Kicinski wrote:
+> netdev->dev_addr will be constant soon, make sure
+> the qualifier is propagated thru batman-adv.
 > 
-> syzbot found the following issue on:
-> 
-> HEAD commit:    2f111a6fd5b5 Merge tag 'ceph-for-5.15-rc7' of git://github..
-> git tree:       upstream
-> console output: https://syzkaller.appspot.com/x/log.txt?x=121d909f300000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=d95853dad8472c91
-> dashboard link: https://syzkaller.appspot.com/bug?extid=b6a62d5cb9fe05a0e3a3
-> compiler:       Debian clang version 11.0.1-2, GNU ld (GNU Binutils for Debian) 2.35.2
-> 
-> Unfortunately, I don't have any reproducer for this issue yet.
-> 
-> IMPORTANT: if you fix the issue, please add the following tag to the commit:
-> Reported-by: syzbot+b6a62d5cb9fe05a0e3a3@syzkaller.appspotmail.com
-> 
+> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 
-Looks like bug on error handling path in batadv_mesh_init(). Must be 
-fixed by my batman-adv patch.
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-#syz fix: net: batman-adv: fix error handling
+Kind regards,
+	Sven
+
+--nextPart3738197.mCjuJMru3Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmFvCEwACgkQXYcKB8Em
+e0Y5ARAAzLudn8YgxZr1hwMPId7eiSbHQAAuDyqwyaB8ktJvIULjzmLUcD4PsqzR
+lrHIA2L1JGu5fmlKsCK+axL43zgYAnVYrFWAwdDgYEm3DLBR8B+Ntv7qcfb8NxuJ
+8OrlUwyD8MfkaHMbXR5XRv2OcLFIMplT1qsEYiZvnK8mo3eFvQ3C33kDIL93owT0
++eyPZ0lsClVqpNiREngLv8TQ5NrxMhOWcm/LAQycWtk/JH2fLU1oEZkg6eZnPG8B
+1hbqlz7TooVjJee99nL4EuFdg2KAfE6+0sgluTShLPf1qaq9AkK682qWK9o7JT65
+qBmCA4yW8dDtZizOYDUWwl2wUDhMDDupSkIwIy//DVt3L9SFOujD/DmoEnTE8uV3
+A3cNbtzF5Iv7GD0B4QfyY+hyTvvCgyodbNmL1bes70y8CdjnSDQSvpv9Ft31Ba8A
+rPnD3xTcJ02OK8tB37bE6vqVpAWMKceIYz6mUnEXlxZ1zZb4gJY+emZmGSOkxklt
+cmFcoJsz5gzqFkRbb23djPgrjp5675BsaiPNxNjXsTj1De5Pkn0bVDuckCrtZvGX
+2MkyzivLQ8vTpBn1iQOv8kgr+i+87QbKmXo6gee33rwgubTDCKlY2YxpBz+R42Mg
+WOLdSHNt/S7G+Ov7lPCsUEYdROfwLET0hf/g2oyWuneGq93onbg=
+=rpsb
+-----END PGP SIGNATURE-----
+
+--nextPart3738197.mCjuJMru3Q--
 
 
-
-
-With regards,
-Pavel Skripkin
