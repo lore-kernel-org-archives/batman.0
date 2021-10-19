@@ -1,84 +1,102 @@
-Return-Path: <paskripkin@gmail.com>
-Message-ID: <2108d58b-2aca-12f1-59f0-cca5f63098d6@gmail.com>
-Date: Fri, 22 Oct 2021 22:36:05 +0300
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] batman-adv: use eth_hw_addr_set() instead of
+ ether_addr_copy()
+Date: Tue, 19 Oct 2021 21:17:19 +0200
+Message-ID: <7316475.UB4K6AP8Nz@sven-desktop>
+In-Reply-To: 
+ <20211019120654.6dee21b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211019163927.1386289-1-kuba@kernel.org>
+ <20211019120654.6dee21b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
-Subject: Re: [syzbot] WARNING: ODEBUG bug in batadv_nc_mesh_free
-Content-Language: en-US
-References: <000000000000c0c8d505cef55b23@google.com>
-From: Pavel Skripkin <paskripkin@gmail.com>
-In-Reply-To: <000000000000c0c8d505cef55b23@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="nextPart5046241.tqPkAQLKZY";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: syzbot <syzbot+1dca817d274a3fb19f2b@syzkaller.appspotmail.com>, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, mareklindner@neomailbox.ch, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc
 
-On 10/22/21 21:41, syzbot wrote:
-> Hello,
-> 
-> syzbot found the following issue on:
-> 
-> HEAD commit:    e0bfcf9c77d9 Merge tag 'mlx5-fixes-2021-10-20' of git://gi..
-> git tree:       net
-> console output: https://syzkaller.appspot.com/x/log.txt?x=17900a0cb00000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=bab9d35f204746a7
-> dashboard link: https://syzkaller.appspot.com/bug?extid=1dca817d274a3fb19f2b
-> compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=144d76b4b00000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=14732b80b00000
-> 
-> Bisection is inconclusive: the issue happens on the oldest tested release.
-> 
-> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=14093652b00000
-> final oops:     https://syzkaller.appspot.com/x/report.txt?x=16093652b00000
-> console output: https://syzkaller.appspot.com/x/log.txt?x=12093652b00000
-> 
-> IMPORTANT: if you fix the issue, please add the following tag to the commit:
-> Reported-by: syzbot+1dca817d274a3fb19f2b@syzkaller.appspotmail.com
-> 
-> R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-> ------------[ cut here ]------------
-> ODEBUG: assert_init not available (active state 0) object type: timer_list hint: 0x0
-> WARNING: CPU: 0 PID: 6548 at lib/debugobjects.c:505 debug_print_object+0x16e/0x250 lib/debugobjects.c:505
-> Modules linked in:
-> CPU: 0 PID: 6548 Comm: syz-executor286 Not tainted 5.15.0-rc5-syzkaller #0
-> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-> RIP: 0010:debug_print_object+0x16e/0x250 lib/debugobjects.c:505
-> Code: ff df 48 89 fa 48 c1 ea 03 80 3c 02 00 0f 85 af 00 00 00 48 8b 14 dd 80 3e e4 89 4c 89 ee 48 c7 c7 80 32 e4 89 e8 5e 1d 15 05 <0f> 0b 83 05 d5 39 90 09 01 48 83 c4 18 5b 5d 41 5c 41 5d 41 5e c3
-> RSP: 0018:ffffc90002d7ecc0 EFLAGS: 00010086
-> RAX: 0000000000000000 RBX: 0000000000000005 RCX: 0000000000000000
-> RDX: ffff8880163c8000 RSI: ffffffff815e88a8 RDI: fffff520005afd8a
-> RBP: 0000000000000001 R08: 0000000000000000 R09: 0000000000000000
-> R10: ffffffff815e264e R11: 0000000000000000 R12: ffffffff898de560
-> R13: ffffffff89e43900 R14: ffffffff81658550 R15: 1ffff920005afda3
-> FS:  0000555555c03300(0000) GS:ffff8880b9c00000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: 00007fef3003e098 CR3: 0000000073ad0000 CR4: 00000000003506f0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-> Call Trace:
->   debug_object_assert_init lib/debugobjects.c:895 [inline]
->   debug_object_assert_init+0x1f4/0x2e0 lib/debugobjects.c:866
->   debug_timer_assert_init kernel/time/timer.c:739 [inline]
->   debug_assert_init kernel/time/timer.c:784 [inline]
->   del_timer+0x6d/0x110 kernel/time/timer.c:1204
->   try_to_grab_pending+0x6d/0xd0 kernel/workqueue.c:1270
->   __cancel_work_timer+0xa6/0x570 kernel/workqueue.c:3129
->   batadv_nc_mesh_free+0x41/0x120 net/batman-adv/network-coding.c:1869
->   batadv_mesh_free+0x7d/0x170 net/batman-adv/main.c:245
->   batadv_mesh_init+0x62f/0x710 net/batman-adv/main.c:226
+ 
+--nextPart5046241.tqPkAQLKZY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, mareklindner@neomailbox.ch, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, sw@simonwunderlich.de
+Subject: Re: [PATCH] batman-adv: use eth_hw_addr_set() instead of ether_addr_copy()
+Date: Tue, 19 Oct 2021 21:17:19 +0200
+Message-ID: <7316475.UB4K6AP8Nz@sven-desktop>
+In-Reply-To: <20211019120654.6dee21b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211019163927.1386289-1-kuba@kernel.org> <20211019120654.6dee21b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 
-Same fault injection, same backtrace, same warning... Looks like duplicate.
+On Tuesday, 19 October 2021 21:06:54 CEST Jakub Kicinski wrote:
+> On Tue, 19 Oct 2021 09:39:27 -0700 Jakub Kicinski wrote:
+> > Commit 406f42fa0d3c ("net-next: When a bond have a massive amount
+> > of VLANs...") introduced a rbtree for faster Ethernet address look
+> > up. To maintain netdev->dev_addr in this tree we need to make all
+> > the writes to it got through appropriate helpers.
+> > 
+> > Convert batman from ether_addr_copy() to eth_hw_addr_set():
+> > 
+> >   @@
+> >   expression dev, np;
+> >   @@
+> >   - ether_addr_copy(dev->dev_addr, np)
+> >   + eth_hw_addr_set(dev, np)
+> > 
+> > Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+> 
+> Extending CC list.
 
-#syz dup: WARNING in batadv_nc_mesh_free
+Acked-by: Sven Eckelmann <sven@narfation.org>
+
+> > diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+> > index 0604b0279573..7ee09337fc40 100644
+> > --- a/net/batman-adv/soft-interface.c
+> > +++ b/net/batman-adv/soft-interface.c
+> > @@ -134,7 +134,7 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+> >  		return -EADDRNOTAVAIL;
+> >  
+> >  	ether_addr_copy(old_addr, dev->dev_addr);
+> > -	ether_addr_copy(dev->dev_addr, addr->sa_data);
+> > +	eth_hw_addr_set(dev, addr->sa_data);
+> >  
+> >  	/* only modify transtable if it has been initialized before */
+> >  	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+> 
+> 
 
 
-With regards,
-Pavel Skripkin
+--nextPart5046241.tqPkAQLKZY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmFvGb8ACgkQXYcKB8Em
+e0aURg//aEp766WsED+6U/3B01ao9GxBHcxnYarz0tW5AcolUdJsuZ6iCu9K/9+a
+1EbupcqCZDnEO94R3RZUsW9g3Vo6yHpBGr7a30JmYgrhLDCZdIbFeKoTR1dnlUXd
+CxWlzRWgiJg5qcmlF6v7GU71hiXJ1DkgtatfL7mrmkUZm/1sMBmjZVnkeQlJMex+
+eVRAGiZHFKZzKY7GTc0F5TUWao5bLvbpX7naIR0h2pwn59z5bCUF25W7AvSsKIEL
+6RF/wEaawyzP62qjxr5WEOCT/WLxFDs/669as0K4C46W8CHZc042+ajtl6T5Cv/n
+qRv7CTX21iIDHf0qHsTXd0n9m9zNPl7rLE+0oVyAz7LOYXvJy43Sgi+Yfyz6S76D
+6iUDOVmEKrEuGH1Or5XYbg+Drvf0E3UFBwF+s9krMjw+0AWssvkx8Taa+l88ZkKm
+snmnrLuDhCJfTLVxjaPiLLhzTUe3wnztMZ2MInWemyJ5S2AeUluyUjUXv+DLzxKI
+E4rvstQZpmFNYd9BQ8dL7nJeA8gq07U0Lkdt/RTA35/ipBF+zCtRjTD7PTKA8X8A
+A6+5/79rHp2El/Mz2MBslHVn8g/m1TB8ORAJ374kw01ANCxgBH0nVPD25QRmGubQ
+r1H585SgiL8yYAmhpDcvfJTKRYI+d25yppF9LVzGR077xk3C054=
+=E0wZ
+-----END PGP SIGNATURE-----
+
+--nextPart5046241.tqPkAQLKZY--
+
+
