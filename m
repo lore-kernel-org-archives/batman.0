@@ -1,30 +1,56 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <kuba@kernel.org>
+Date: Tue, 19 Oct 2021 12:06:54 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH] batman-adv: use eth_hw_addr_set() instead of
+ ether_addr_copy()
+Message-ID: 
+ <20211019120654.6dee21b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20211019163927.1386289-1-kuba@kernel.org>
+References: <20211019163927.1386289-1-kuba@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Subject: can B.A.T.M.A.N. force a path through the network?
-From: giorgi.flavio.at@gmail.com
-Date: Tue, 12 Oct 2021 10:03:35 -0000
-Message-ID: <20211012100335.1201.63878@diktynna.open-mesh.org>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: sven@narfation.org
+Cc: netdev@vger.kernel.org, mareklindner@neomailbox.ch, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, sw@simonwunderlich.de
 
-Hi, I'm currently using B.A.T.M.A.N. to link 4 raspberry pi.
-I set up the network and it works correctly, the devices see each other and they can communicate.
-The problem is that I need to force the packets to follow a specified path through the network.
-For example, I need that a packet from device 1, goes through device 2 then 3, and finally 4.
-Since the protocol works at layer 2 it is not possible to change the IP routing tables. 
-So my question is, is it possible to do something like this using B.A.T.M.A.N.?
+On Tue, 19 Oct 2021 09:39:27 -0700 Jakub Kicinski wrote:
+> Commit 406f42fa0d3c ("net-next: When a bond have a massive amount
+> of VLANs...") introduced a rbtree for faster Ethernet address look
+> up. To maintain netdev->dev_addr in this tree we need to make all
+> the writes to it got through appropriate helpers.
+> 
+> Convert batman from ether_addr_copy() to eth_hw_addr_set():
+> 
+>   @@
+>   expression dev, np;
+>   @@
+>   - ether_addr_copy(dev->dev_addr, np)
+>   + eth_hw_addr_set(dev, np)
+> 
+> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 
-Thank you in advance.
-Best regards.
-Flavio
+Extending CC list.
+
+> diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+> index 0604b0279573..7ee09337fc40 100644
+> --- a/net/batman-adv/soft-interface.c
+> +++ b/net/batman-adv/soft-interface.c
+> @@ -134,7 +134,7 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+>  		return -EADDRNOTAVAIL;
+>  
+>  	ether_addr_copy(old_addr, dev->dev_addr);
+> -	ether_addr_copy(dev->dev_addr, addr->sa_data);
+> +	eth_hw_addr_set(dev, addr->sa_data);
+>  
+>  	/* only modify transtable if it has been initialized before */
+>  	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+
