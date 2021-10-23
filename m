@@ -1,16 +1,12 @@
-Return-Path: <kuba@kernel.org>
-Date: Mon, 25 Oct 2021 17:49:50 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH] net: batman-adv: fix error handling
-Message-ID: 
- <20211025174950.1bec22fb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <2526100.mKikVBQdmv@sven-l14>
-References: <2056331.oJahCzYEoq@sven-desktop>
-	<20211024131356.10699-1-paskripkin@gmail.com>
-	<2526100.mKikVBQdmv@sven-l14>
+Return-Path: 
+  <3gpRzYQkbAIs7DEzp00t6p44xs.v33v0t97t6r328t28.r31@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Fri, 22 Oct 2021 21:50:10 -0700
+In-Reply-To: <5e29e63c-d2b5-ae72-0e33-5a22e727be3c@gmail.com>
+Message-ID: <000000000000d2f5fa05cefddcf0@google.com>
+Subject: Re: [syzbot] WARNING in batadv_nc_mesh_free
+From: syzbot <syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,39 +16,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, mareklindner@neomailbox.ch
-Cc: sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, Pavel Skripkin <paskripkin@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, paskripkin@gmail.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-On Sun, 24 Oct 2021 16:58:30 +0200 Sven Eckelmann wrote:
-> On Sunday, 24 October 2021 15:13:56 CEST Pavel Skripkin wrote:
-> > Syzbot reported ODEBUG warning in batadv_nc_mesh_free(). The problem was
-> > in wrong error handling in batadv_mesh_init().
-> > 
-> > Before this patch batadv_mesh_init() was calling batadv_mesh_free() in case
-> > of any batadv_*_init() calls failure. This approach may work well, when
-> > there is some kind of indicator, which can tell which parts of batadv are
-> > initialized; but there isn't any.
-> > 
-> > All written above lead to cleaning up uninitialized fields. Even if we hide
-> > ODEBUG warning by initializing bat_priv->nc.work, syzbot was able to hit
-> > GPF in batadv_nc_purge_paths(), because hash pointer in still NULL. [1]
-> > 
-> > To fix these bugs we can unwind batadv_*_init() calls one by one.
-> > It is good approach for 2 reasons: 1) It fixes bugs on error handling
-> > path 2) It improves the performance, since we won't call unneeded
-> > batadv_*_free() functions.
-> > 
-> > So, this patch makes all batadv_*_init() clean up all allocated memory
-> > before returning with an error to no call correspoing batadv_*_free()
-> > and open-codes batadv_mesh_free() with proper order to avoid touching
-> > uninitialized fields.
-> > 
-> > Link: https://lore.kernel.org/netdev/000000000000c87fbd05cef6bcb0@google.com/ [1]
-> > Reported-and-tested-by: syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
-> > Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
-> > Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>  
-> 
-> Acked-by: Sven Eckelmann <sven@narfation.org>
+Hello,
 
-FWIW I'm marking this as "Awaiting upstream" in netdev patchwork,
-please LMK if you prefer for it to be applied directly.
+syzbot has tested the proposed patch and the reproducer did not trigger any issue:
+
+Reported-and-tested-by: syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
+
+Tested on:
+
+commit:         9c0c4d24 Merge tag 'block-5.15-2021-10-22' of git://gi..
+git tree:       upstream
+kernel config:  https://syzkaller.appspot.com/x/.config?x=d95853dad8472c91
+dashboard link: https://syzkaller.appspot.com/bug?extid=28b0702ada0bf7381f58
+compiler:       Debian clang version 11.0.1-2, GNU ld (GNU Binutils for Debian) 2.35.2
+patch:          https://syzkaller.appspot.com/x/patch.diff?x=1553d4c4b00000
+
+Note: testing is done by a robot and is best-effort only.
