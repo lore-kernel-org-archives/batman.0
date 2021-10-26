@@ -1,15 +1,14 @@
-Return-Path: <nikolay@nvidia.com>
-Message-ID: <75a38832-b638-a95a-7ba7-f144cd05d978@nvidia.com>
-Date: Sat, 16 Oct 2021 14:56:00 +0300
-Subject: Re: [PATCH v3 net-next] net: make use of helper
- netif_is_bridge_master()
-Content-Language: en-US
-References: <20211016112137.18858-1-acadx0@gmail.com>
-From: Nikolay Aleksandrov <nikolay@nvidia.com>
-In-Reply-To: <20211016112137.18858-1-acadx0@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Return-Path: <patchwork-bot+netdevbpf@kernel.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] net: batman-adv: fix error handling
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <163525620673.3700.4010737178045204457.git-patchwork-notify@kernel.org>
+Date: Tue, 26 Oct 2021 13:50:06 +0000
+References: <20211024131356.10699-1-paskripkin@gmail.com>
+In-Reply-To: <20211024131356.10699-1-paskripkin@gmail.com>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,34 +18,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Kyungrok Chung <acadx0@gmail.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Roopa Prabhu <roopa@nvidia.com>, Pablo Neira Ayuso <pablo@netfilter.org>, Jozsef Kadlecsik <kadlec@netfilter.org>, Florian Westphal <fw@strlen.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bridge@lists.linux-foundation.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+To: Pavel Skripkin <paskripkin@gmail.com>
+Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, davem@davemloft.net, kuba@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
 
-On 16/10/2021 14:21, Kyungrok Chung wrote:
-> Make use of netdev helper functions to improve code readability.
-> Replace 'dev->priv_flags & IFF_EBRIDGE' with netif_is_bridge_master(dev).
-> 
-> Signed-off-by: Kyungrok Chung <acadx0@gmail.com>
-> ---
-> 
-> v1->v2:
->   - Apply fixes to batman-adv, core too.
-> 
-> v2->v3:
->   - Fix wrong logic.
-> 
->  net/batman-adv/multicast.c      | 2 +-
->  net/bridge/br.c                 | 4 ++--
->  net/bridge/br_fdb.c             | 6 +++---
->  net/bridge/br_if.c              | 2 +-
->  net/bridge/br_ioctl.c           | 2 +-
->  net/bridge/br_mdb.c             | 4 ++--
->  net/bridge/br_netfilter_hooks.c | 2 +-
->  net/bridge/br_netlink.c         | 4 ++--
->  net/core/rtnetlink.c            | 2 +-
->  9 files changed, 14 insertions(+), 14 deletions(-)
-> 
+Hello:
 
-LGTM,
-Reviewed-by: Nikolay Aleksandrov <nikolay@nvidia.com>
+This patch was applied to netdev/net.git (master)
+by David S. Miller <davem@davemloft.net>:
+
+On Sun, 24 Oct 2021 16:13:56 +0300 you wrote:
+> Syzbot reported ODEBUG warning in batadv_nc_mesh_free(). The problem was
+> in wrong error handling in batadv_mesh_init().
+> 
+> Before this patch batadv_mesh_init() was calling batadv_mesh_free() in case
+> of any batadv_*_init() calls failure. This approach may work well, when
+> there is some kind of indicator, which can tell which parts of batadv are
+> initialized; but there isn't any.
+> 
+> [...]
+
+Here is the summary with links:
+  - net: batman-adv: fix error handling
+    https://git.kernel.org/netdev/net/c/6f68cd634856
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
