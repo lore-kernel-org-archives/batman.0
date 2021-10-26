@@ -1,11 +1,15 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCHv2] batman-adv: allow netlink usage in unprivileged containers
-Date: Sun, 31 Oct 2021 22:30:12 +0100
-Message-Id: <20211031213012.2446-1-linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] net: batman-adv: fix error handling
+Date: Tue, 26 Oct 2021 08:51:20 +0200
+Message-ID: <2283323.BJRDQVktmA@ripper>
+In-Reply-To: 
+ <20211025174950.1bec22fb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <2056331.oJahCzYEoq@sven-desktop> <2526100.mKikVBQdmv@sven-l14>
+ <20211025174950.1bec22fb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart1884404.dNYcoPC7rg";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,178 +20,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Tycho Andersen <tycho@tycho.pizza>
+To: mareklindner@neomailbox.ch, Jakub Kicinski <kuba@kernel.org>
+Cc: a@unstable.cc, davem@davemloft.net, Pavel Skripkin <paskripkin@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
 
-Currently, creating a batman-adv interface in an unprivileged LXD
-container and attaching secondary interfaces to it with "ip" or "batctl"
-works fine. However all batctl debug and configuration commands
-fail:
+ 
+--nextPart1884404.dNYcoPC7rg
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: mareklindner@neomailbox.ch, Jakub Kicinski <kuba@kernel.org>
+Cc: sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, Pavel Skripkin <paskripkin@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
+Subject: Re: [PATCH] net: batman-adv: fix error handling
+Date: Tue, 26 Oct 2021 08:51:20 +0200
+Message-ID: <2283323.BJRDQVktmA@ripper>
+In-Reply-To: <20211025174950.1bec22fb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <2056331.oJahCzYEoq@sven-desktop> <2526100.mKikVBQdmv@sven-l14> <20211025174950.1bec22fb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 
-  root@container:~# batctl originators
-  Error received: Operation not permitted
-  root@container:~# batctl orig_interval
-  1000
-  root@container:~# batctl orig_interval 2000
-  root@container:~# batctl orig_interval
-  1000
+On Tuesday, 26 October 2021 02:49:50 CEST Jakub Kicinski wrote:
+[...]
+> > Acked-by: Sven Eckelmann <sven@narfation.org>
+> 
+> FWIW I'm marking this as "Awaiting upstream" in netdev patchwork,
+> please LMK if you prefer for it to be applied directly.
 
-To fix this change the generic netlink permissions from GENL_ADMIN_PERM
-to GENL_UNS_ADMIN_PERM. This way a batman-adv interface is fully
-maintainable as root from within a user namespace, from an unprivileged
-container.
+Please apply this directly. Thanks
 
-All except one batman-adv netlink setting are per interface and do not
-leak information or change settings from the host system and are
-therefore save to retrieve or modify as root from within an unprivileged
-container.
+Kind regards,
+	Sven
+--nextPart1884404.dNYcoPC7rg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-"batctl routing_algo" / BATADV_CMD_GET_ROUTING_ALGOS is the only
-exception: It provides the batman-adv kernel module wide default routing
-algorithm. However it is read-only from netlink and an unprivileged
-container is still not allowed to modify
-/sys/module/batman_adv/parameters/routing_algo. Instead it is advised to
-use the newly introduced "batctl if create routing_algo RA_NAME" /
-IFLA_BATADV_ALGO_NAME to set the routing algorithm on interface
-creation, which already works fine in an unprivileged container.
+-----BEGIN PGP SIGNATURE-----
 
-Cc: Tycho Andersen <tycho@tycho.pizza>
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
----
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmF3pWgACgkQXYcKB8Em
+e0ZXrRAAz8YPPokOa159qdcM2v2sLSPMwVaTHKdKXPXvXPJa5pZuzHLvHw/JB/+M
+TjW4etUJiDDzrwG9Aqhc7jzAYSZYqLVJWU01NKtE7ZO5LcC/nutOFy6jjP/AhzAX
+O+NTKuCK6hIsLhwqdmXWsH/1erL4VB0yPhOeVS97ue0cK4gnF8dwABguDCZQwMhc
+cEYyDB3D9UO132lIHXagjTnVe5BSjFhDMragJOyhAScxRF+ky5F9P7Z0NuoKD7l8
+ExOb2hhWtSzPengt+Y5cGh3DygrhDLxisWFD+k05xj2KvhGWH6+oD8xsI8GppL9u
+H1AJrzKGNRt9w7qEAAU2hH957NzkMnTplGCPtjnaSGDb4UtqVDthYPcIsXF7qW/N
++QASHuogp8zoavb+5eRgRI0dEfPr0epwAwT8VeBpMD4Ia8+RZeoKv89koXM85O3m
+MxvQ2uhCUAASNvhkcSVK5dK51kg3WJ7YBCofIU+882wOeb8Ooz0qR0cyOLACV1MV
+zZx4DFRsBOSSrL2TL2f3ljG30hyH4m0jIZ+TWewfQYl5E4kXnT15rrDFL/yL7MXD
+j1BJuZ0mR3276a1MOh2rAJ0w//xOVLjIRe5ogTXPoB8K49tTjwxYasfZQPu7v6R5
+vQzWC6AHBvxMXu3S/+mX0YosasEQItbsGZq4TDGBqegGFaw5hr4=
+=o3a0
+-----END PGP SIGNATURE-----
 
-Changelog v2:
-* updating Tycho Andersen's email in Cc as @canonical.com returned an
-  "Undelivered Mail Returned to Sender"
+--nextPart1884404.dNYcoPC7rg--
 
-Cc'ing Tycho Andersen as he introduced the GENL_UNS_ADMIN_PERM in the=20
-following commit:
 
-4a92602aa1cd ("openvswitch: allow management from inside user namespaces"=
-)
-
- net/batman-adv/netlink.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
-
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 29276284..00875e1d 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -1368,21 +1368,21 @@ static const struct genl_small_ops batadv_netlink=
-_ops[] =3D {
- 	{
- 		.cmd =3D BATADV_CMD_TP_METER,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.doit =3D batadv_netlink_tp_meter_start,
- 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_TP_METER_CANCEL,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.doit =3D batadv_netlink_tp_meter_cancel,
- 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_ROUTING_ALGOS,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_algo_dump,
- 	},
- 	{
-@@ -1397,68 +1397,68 @@ static const struct genl_small_ops batadv_netlink=
-_ops[] =3D {
- 	{
- 		.cmd =3D BATADV_CMD_GET_TRANSTABLE_LOCAL,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_tt_local_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_TRANSTABLE_GLOBAL,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_tt_global_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_ORIGINATORS,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_orig_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_NEIGHBORS,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_hardif_neigh_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_GATEWAYS,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_gw_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_BLA_CLAIM,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_bla_claim_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_BLA_BACKBONE,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_bla_backbone_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_DAT_CACHE,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_dat_cache_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_GET_MCAST_FLAGS,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.dumpit =3D batadv_mcast_flags_dump,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_SET_MESH,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.doit =3D batadv_netlink_set_mesh,
- 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
- 	},
- 	{
- 		.cmd =3D BATADV_CMD_SET_HARDIF,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.doit =3D batadv_netlink_set_hardif,
- 		.internal_flags =3D BATADV_FLAG_NEED_MESH |
- 				  BATADV_FLAG_NEED_HARDIF,
-@@ -1474,7 +1474,7 @@ static const struct genl_small_ops batadv_netlink_o=
-ps[] =3D {
- 	{
- 		.cmd =3D BATADV_CMD_SET_VLAN,
- 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
--		.flags =3D GENL_ADMIN_PERM,
-+		.flags =3D GENL_UNS_ADMIN_PERM,
- 		.doit =3D batadv_netlink_set_vlan,
- 		.internal_flags =3D BATADV_FLAG_NEED_MESH |
- 				  BATADV_FLAG_NEED_VLAN,
---=20
-2.31.0
