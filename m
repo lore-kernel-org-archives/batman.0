@@ -1,49 +1,104 @@
-Return-Path: <patchwork-bot+netdevbpf@kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH net-next] batman-adv: Fix the wrong definition
+Date: Thu, 28 Oct 2021 09:34:22 +0200
+Message-ID: <3533360.G9yuKbSBSH@ripper>
+In-Reply-To: <20211028072306.1351-1-yajun.deng@linux.dev>
+References: <20211028072306.1351-1-yajun.deng@linux.dev>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH] net: batman-adv: fix error handling
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <163525620673.3700.4010737178045204457.git-patchwork-notify@kernel.org>
-Date: Tue, 26 Oct 2021 13:50:06 +0000
-References: <20211024131356.10699-1-paskripkin@gmail.com>
-In-Reply-To: <20211024131356.10699-1-paskripkin@gmail.com>
+Content-Type: multipart/signed; boundary="nextPart10544534.tba8fyArm4";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Pavel Skripkin <paskripkin@gmail.com>
-Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, davem@davemloft.net, kuba@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzbot+28b0702ada0bf7381f58@syzkaller.appspotmail.com
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, Yajun Deng <yajun.deng@linux.dev>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yajun Deng <yajun.deng@linux.dev>
 
-Hello:
+ 
+--nextPart10544534.tba8fyArm4
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, Yajun Deng <yajun.deng@linux.dev>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yajun Deng <yajun.deng@linux.dev>
+Subject: Re: [PATCH net-next] batman-adv: Fix the wrong definition
+Date: Thu, 28 Oct 2021 09:34:22 +0200
+Message-ID: <3533360.G9yuKbSBSH@ripper>
+In-Reply-To: <20211028072306.1351-1-yajun.deng@linux.dev>
+References: <20211028072306.1351-1-yajun.deng@linux.dev>
 
-This patch was applied to netdev/net.git (master)
-by David S. Miller <davem@davemloft.net>:
+On Thursday, 28 October 2021 09:23:06 CEST Yajun Deng wrote:
+> There are three variables that are required at most,
+> no need to define four variables.
 
-On Sun, 24 Oct 2021 16:13:56 +0300 you wrote:
-> Syzbot reported ODEBUG warning in batadv_nc_mesh_free(). The problem was
-> in wrong error handling in batadv_mesh_init().
+NAck. This is absolutely wrong - the last one is the "STOP" info. With your 
+patch, it would sometimes (action != BATADV_UEV_DEL) not have the stop NULL.
+See also the second parameter in this for loop on line
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/lib/kobject_uevent.c?id=1fc596a56b334f4d593a2b49e5ff55af6aaa0816#n548
+
+We can discuss that this can be written in a better way. See 
+https://patchwork.open-mesh.org/project/b.a.t.m.a.n./patch/1403982781.9064.33.camel@joe-AO725/ 
+(also the remark from Antonio).
+
 > 
-> Before this patch batadv_mesh_init() was calling batadv_mesh_free() in case
-> of any batadv_*_init() calls failure. This approach may work well, when
-> there is some kind of indicator, which can tell which parts of batadv are
-> initialized; but there isn't any.
+> Fixes: 0fa4c30d710d ("batman-adv: Make sysfs support optional")
+
+Even this Fixes would be wrong. The code is there since commit
+c6bda689c2c9 ("batman-adv: add wrapper function to throw uevent in 
+userspace").
+
+But even then, this would not fix anything but just be a cleanup.
+
+> Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
+> ---
+>  net/batman-adv/main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> [...]
+> diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+> index 3ddd66e4c29e..758035b3796d 100644
+> --- a/net/batman-adv/main.c
+> +++ b/net/batman-adv/main.c
+> @@ -656,7 +656,7 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+>  {
+>  	int ret = -ENOMEM;
+>  	struct kobject *bat_kobj;
+> -	char *uevent_env[4] = { NULL, NULL, NULL, NULL };
+> +	char *uevent_env[3] = {};
+>  
+>  	bat_kobj = &bat_priv->soft_iface->dev.kobj;
+>  
+> 
 
-Here is the summary with links:
-  - net: batman-adv: fix error handling
-    https://git.kernel.org/netdev/net/c/6f68cd634856
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+--nextPart10544534.tba8fyArm4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmF6Un4ACgkQXYcKB8Em
+e0ahbw//RXWo4gRnRdcHgfuizcVUg3BOZqncBdPYsv/yI9Hp0MltHcbTTNAfHKxE
+PCc0FYbAZbSVhlgdlmDAGcsCVZIemGJXYMIJASgjynxYgPUTPyFqJp2Bv9uoUypy
+32w1GgVomhs6c9PtP0IIa2c64MfdC8NAare2m8pUrfL2ejXIIADGo8VmM7uRZb9V
+SARnQXdJhSa70x6VUALXGeU9L1bcL8eJ3fNrsZfkqnfQrOQ01bxFdw3uyLyY8rdp
+kDd61bHs1aVhRNPehSg8sTn2+XadKwDSMXk0IKLwrNMuEizYZNW6Gn7cBkvrVqVa
++f4MsRzJEhTvztfaA9ipb9XQA+G6uP3n3czY4ZKI5UT9T3D3SN5UXrbu59lruHIV
+P+ddqxIytNo+w3dhRDIKo1neyyHiWUP3vyGWS9GyjuEOBqr10VPwyTrHUrZ9kz+Z
+qxsu1rT79oISAp3yf3Zdc+C8cZbkzVcET1esfdxYtP3GbOfxm4Rc69LydiTmiQ5u
+Vis6ugd49RuWMJgDPemMUfqdZLZFkjB0dOQFNGfr9NOyXcnVs+6Uqjg0KgzS49PJ
+yotiY9cCEgFv3HBNx5KHvsCpuUVWPvWSvuGS+qt6nZNRj/eBqn0SMCLnRSy2Jvkj
+tsX0OedkS9RKbklgbnU8NQNL3jZTrmPK5KJWumSou+XEhupJwgA=
+=UCNt
+-----END PGP SIGNATURE-----
+
+--nextPart10544534.tba8fyArm4--
 
 
