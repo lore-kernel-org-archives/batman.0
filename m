@@ -1,118 +1,228 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Fix own OGM check in aggregated OGMs" has been
- added to the 4.9-stable tree
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:43:01 +0100
-In-Reply-To: <20211120123958.260826-3-sven@narfation.org>
-Message-ID: <16376713811943@kroah.com>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCHv3] batman-adv: allow netlink usage in unprivileged containers
+Date: Mon,  1 Nov 2021 21:46:17 +0100
+Message-Id: <20211101204617.5511-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
-Cc: stable-commits@vger.kernel.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Tycho Andersen <tycho@tycho.pizza>
 
+Currently, creating a batman-adv interface in an unprivileged LXD
+container and attaching secondary interfaces to it with "ip" or "batctl"
+works fine. However all batctl debug and configuration commands
+fail:
 
-This is a note to let you know that I've just added the patch titled
+  root@container:~# batctl originators
+  Error received: Operation not permitted
+  root@container:~# batctl orig_interval
+  1000
+  root@container:~# batctl orig_interval 2000
+  root@container:~# batctl orig_interval
+  1000
 
-    batman-adv: Fix own OGM check in aggregated OGMs
+To fix this change the generic netlink permissions from GENL_ADMIN_PERM
+to GENL_UNS_ADMIN_PERM. This way a batman-adv interface is fully
+maintainable as root from within a user namespace, from an unprivileged
+container.
 
-to the 4.9-stable tree which can be found at:
-    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
-;a=3Dsummary
+All except one batman-adv netlink setting are per interface and do not
+leak information or change settings from the host system and are
+therefore save to retrieve or modify as root from within an unprivileged
+container.
 
-The filename of the patch is:
-     batman-adv-fix-own-ogm-check-in-aggregated-ogms.patch
-and it can be found in the queue-4.9 subdirectory.
+"batctl routing_algo" / BATADV_CMD_GET_ROUTING_ALGOS is the only
+exception: It provides the batman-adv kernel module wide default routing
+algorithm. However it is read-only from netlink and an unprivileged
+container is still not allowed to modify
+/sys/module/batman_adv/parameters/routing_algo. Instead it is advised to
+use the newly introduced "batctl if create routing_algo RA_NAME" /
+IFLA_BATADV_ALGO_NAME to set the routing algorithm on interface
+creation, which already works fine in an unprivileged container.
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From foo@baz Tue Nov 23 01:37:10 PM CET 2021
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:39:53 +0100
-Subject: batman-adv: Fix own OGM check in aggregated OGMs
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, "Linus L=FCssing" <linus.luessing@c0d3=
-.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>, "Sven Eckelmann" <sven@=
-narfation.org>
-Message-ID: <20211120123958.260826-3-sven@narfation.org>
-
-From: Linus L=FCssing <linus.luessing@c0d3.blue>
-
-commit d8bf0c01642275c7dca1e5d02c34e4199c200b1f upstream.
-
-The own OGM check is currently misplaced and can lead to the following
-issues:
-
-For one thing we might receive an aggregated OGM from a neighbor node
-which has our own OGM in the first place. We would then not only skip
-our own OGM but erroneously also any other, following OGM in the
-aggregate.
-
-For another, we might receive an OGM aggregate which has our own OGM in
-a place other then the first one. Then we would wrongly not skip this
-OGM, leading to populating the orginator and gateway table with ourself.
-
-Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
-Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: adjust context, correct fixes line ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Tycho Andersen <tycho@tycho.pizza>
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
- net/batman-adv/bat_v_ogm.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
 
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -690,6 +690,12 @@ static void batadv_v_ogm_process(const s
- 		   ntohl(ogm_packet->seqno), ogm_throughput, ogm_packet->ttl,
- 		   ogm_packet->version, ntohs(ogm_packet->tvlv_len));
-=20
-+	if (batadv_is_my_mac(bat_priv, ogm_packet->orig)) {
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "Drop packet: originator packet from ourself\n");
-+		return;
-+	}
+Changelog v3:
+* adding compatibility code for Linux < 4.6
+
+Changelog v2:
+* updating Tycho Andersen's email in Cc as @canonical.com returned an
+  "Undelivered Mail Returned to Sender"
+
+Cc'ing Tycho Andersen as he introduced the GENL_UNS_ADMIN_PERM in the=20
+following commit:
+
+4a92602aa1cd ("openvswitch: allow management from inside user namespaces"=
+)
+
+ compat-include/uapi/linux/genetlink.h | 22 ++++++++++++++++++++
+ net/batman-adv/netlink.c              | 30 +++++++++++++--------------
+ 2 files changed, 37 insertions(+), 15 deletions(-)
+ create mode 100644 compat-include/uapi/linux/genetlink.h
+
+diff --git a/compat-include/uapi/linux/genetlink.h b/compat-include/uapi/=
+linux/genetlink.h
+new file mode 100644
+index 00000000..5fd58e22
+--- /dev/null
++++ b/compat-include/uapi/linux/genetlink.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older ve=
+rsions
++ * of the Linux kernel.
++ */
 +
- 	/* If the troughput metric is 0, immediately drop the packet. No need to
- 	 * create orig_node / neigh_node for an unusable route.
- 	 */
-@@ -788,11 +794,6 @@ int batadv_v_ogm_packet_recv(struct sk_b
- 	if (batadv_is_my_mac(bat_priv, ethhdr->h_source))
- 		return NET_RX_DROP;
-=20
--	ogm_packet =3D (struct batadv_ogm2_packet *)skb->data;
--
--	if (batadv_is_my_mac(bat_priv, ogm_packet->orig))
--		return NET_RX_DROP;
--
- 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
-
-
-Patches currently in stable-queue which might be from sven@narfation.org are
-
-queue-4.9/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.9/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
--mesh.patch
-queue-4.9/ath10k-fix-max-antenna-gain-unit.patch
-queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
--lan.patch
-queue-4.9/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.9/batman-adv-fix-own-ogm-check-in-aggregated-ogms.patch
-queue-4.9/batman-adv-keep-fragments-equally-sized.patch
-queue-4.9/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
-ch
++#ifndef _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_GENETLINK_H_
++#define _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_GENETLINK_H_
++
++#include <linux/version.h>
++#include_next <uapi/linux/genetlink.h>
++
++#if LINUX_VERSION_IS_LESS(4, 6, 0)
++
++#define GENL_UNS_ADMIN_PERM GENL_ADMIN_PERM
++
++#endif /* LINUX_VERSION_IS_LESS(4, 6, 0) */
++
++#endif /* _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_GENETLINK_H_ */
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 29276284..00875e1d 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -1368,21 +1368,21 @@ static const struct genl_small_ops batadv_netlink=
+_ops[] =3D {
+ 	{
+ 		.cmd =3D BATADV_CMD_TP_METER,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.doit =3D batadv_netlink_tp_meter_start,
+ 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_TP_METER_CANCEL,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.doit =3D batadv_netlink_tp_meter_cancel,
+ 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_ROUTING_ALGOS,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_algo_dump,
+ 	},
+ 	{
+@@ -1397,68 +1397,68 @@ static const struct genl_small_ops batadv_netlink=
+_ops[] =3D {
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_TRANSTABLE_LOCAL,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_tt_local_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_TRANSTABLE_GLOBAL,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_tt_global_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_ORIGINATORS,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_orig_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_NEIGHBORS,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_hardif_neigh_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_GATEWAYS,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_gw_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_BLA_CLAIM,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_bla_claim_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_BLA_BACKBONE,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_bla_backbone_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_DAT_CACHE,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_dat_cache_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_GET_MCAST_FLAGS,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.dumpit =3D batadv_mcast_flags_dump,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_SET_MESH,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.doit =3D batadv_netlink_set_mesh,
+ 		.internal_flags =3D BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd =3D BATADV_CMD_SET_HARDIF,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.doit =3D batadv_netlink_set_hardif,
+ 		.internal_flags =3D BATADV_FLAG_NEED_MESH |
+ 				  BATADV_FLAG_NEED_HARDIF,
+@@ -1474,7 +1474,7 @@ static const struct genl_small_ops batadv_netlink_o=
+ps[] =3D {
+ 	{
+ 		.cmd =3D BATADV_CMD_SET_VLAN,
+ 		.validate =3D GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags =3D GENL_ADMIN_PERM,
++		.flags =3D GENL_UNS_ADMIN_PERM,
+ 		.doit =3D batadv_netlink_set_vlan,
+ 		.internal_flags =3D BATADV_FLAG_NEED_MESH |
+ 				  BATADV_FLAG_NEED_VLAN,
+--=20
+2.31.0
