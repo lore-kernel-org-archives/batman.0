@@ -1,108 +1,97 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.4 09/11] batman-adv: Reserve needed_*room for fragments
-Date: Sat, 20 Nov 2021 13:39:37 +0100
-Message-Id: <20211120123939.260723-10-sven@narfation.org>
-In-Reply-To: <20211120123939.260723-1-sven@narfation.org>
-References: <20211120123939.260723-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: 
+ <CA+HNRgC0FKMtSiDOZR3E_T_77C0QXv+r9kqncKNO5-ARwj4ZYA@mail.gmail.com>
+ <YYbu4iyiAp5HlUXZ@sellars>
+In-Reply-To: <YYbu4iyiAp5HlUXZ@sellars>
+From: Dweb Fan <dwebfan@gmail.com>
+Date: Sat, 6 Nov 2021 16:59:34 -0700
+Message-ID: 
+ <CA+HNRgD=ugdumi73q-rq43796B4_rgDReDX41Ng8ec-3Ux=d6A@mail.gmail.com>
+Subject: Re: Unable to get DHCP after join wlan0 WIFI mesh network
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-commit c5cbfc87558168ef4c3c27ce36eba6b83391db19 upstream.
+Hi Linus,
 
-The batadv net_device is trying to propagate the needed_headroom and
-needed_tailroom from the lower devices. This is needed to avoid cost
-intensive reallocations using pskb_expand_head during the transmission.
+Thanks for the detailed explanation. This really answers my question,
+although one small confusion is why these 2 directories:
+/sys/kernel/debug/batman_adv/ and /sys/class/net/wlan0/batman_adv, are
+not present. I even upgraded to the latest 5.14 kernel on Raspberry
+Pi, unable to find.
 
-But the fragmentation code split the skb's without adding extra room at the
-end/beginning of the various fragments. This reduced the performance of
-transmissions over complex scenarios (batadv on vxlan on wireguard) because
-the lower devices had to perform the reallocations at least once.
+Seems like 3 options can help eliminate wlan1 and use wlan0 for both
+protocol communication and real data communication:
+1. Develop a client agent at wifi client side to encapsulate regular
+IP packets into batman protocol packets, but the agent need be ported
+into different OS, MAC, Windows, even IOS, Android.
+2. Develop a server agent to intercept batman packets, and convert to
+regular ip packets.
+3. Enhance batman kernel module to detect packet type, and support the
+use case natively. :-)
 
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.4 backported: adjust context. ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/fragmentation.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+I'd like to do more research on it, and like to hear your suggestions
+on which option is better.
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 3aceac21b283..07dd799e0d56 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -394,6 +394,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
- 
- /**
-  * batadv_frag_create - create a fragment from skb
-+ * @net_dev: outgoing device for fragment
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-  * @fragment_size: size of new fragment
-@@ -404,22 +405,25 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  *
-  * Returns the new fragment, NULL on error.
-  */
--static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
-+static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
-+					  struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
- 					  unsigned int fragment_size)
- {
-+	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
-+	unsigned int tailroom = net_dev->needed_tailroom;
- 	struct sk_buff *skb_fragment;
- 	unsigned header_size = sizeof(*frag_head);
- 	unsigned mtu = fragment_size + header_size;
- 
--	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
-+	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
- 	if (!skb_fragment)
- 		goto err;
- 
- 	skb->priority = TC_PRIO_CONTROL;
- 
- 	/* Eat the last mtu-bytes of the skb */
--	skb_reserve(skb_fragment, header_size + ETH_HLEN);
-+	skb_reserve(skb_fragment, ll_reserved + header_size);
- 	skb_split(skb, skb_fragment, skb->len - fragment_size);
- 
- 	/* Add the header */
-@@ -442,11 +446,12 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
- 			     struct batadv_orig_node *orig_node,
- 			     struct batadv_neigh_node *neigh_node)
- {
-+	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_frag_packet frag_header;
- 	struct sk_buff *skb_fragment;
--	unsigned mtu = neigh_node->if_incoming->net_dev->mtu;
-+	unsigned mtu = net_dev->mtu;
- 	unsigned header_size = sizeof(frag_header);
- 	unsigned max_fragment_size, num_fragments;
- 	bool ret = false;
-@@ -489,7 +494,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
- 		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1)
- 			goto out_err;
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header,
-+		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
- 						  max_fragment_size);
- 		if (!skb_fragment)
- 			goto out_err;
--- 
-2.30.2
+Best Regards
+Dwebf
 
+On Sat, Nov 6, 2021 at 2:08 PM Linus L=C3=BCssing <linus.luessing@c0d3.blue=
+> wrote:
+>
+> Hi,
+>
+> Glad to see that more and more people are experimenting with WiFi
+> mesh networks.
+>
+> On Fri, Nov 05, 2021 at 04:22:11PM -0700, Dweb Fan wrote:
+> > Dear all,
+> >
+> > Thanks for making such a great project!
+> >
+> > I'm following the guide from
+> > https://github.com/binnes/WiFiMeshRaspberryPi, and setting up wifi
+> > mesh network on top of raspberry pi 3B+. Below steps are good now:
+> >  - batctl ping works (peer can ping each other through both IP and MAC =
+address)
+> >  - mac os wifi client can discover the ad-host network, and join the ne=
+twork
+>
+> This guide seems to set up two WiFi interfaces. wlan0 in ad-hoc
+> mode and wlan1 in AP mode. wlan0 is a secondary interface of bat0
+> and wlan1+bat0 are bridged:
+>
+>     ---br0---
+>    /         \
+>  bat0      wlan1(ap)
+>   |
+> wlan0(adhoc)
+>
+> On wlan0 is supposed to be only used to interconnect batman-adv
+> nodes. The batman-adv protocol is primarily spoken there.
+>
+> Client traffic from your mac os wifi client is probably not able
+> to speak the batman-adv protocol and is therefore supposed to go
+> "over" bat0 instead of "under" bat0. So your mac os client should
+> connect to the wlan1 AP interface.
+>
+> The traffic is then bridged from wlan1 to bat0 and batman-adv will
+> then encapsulate the client traffic. And then forward the
+> *encapsulated* traffic on wlan0 automatically to the correct
+> neighbor node.
+>
+> Hope this helps.
+>
+> Regards, Linus
