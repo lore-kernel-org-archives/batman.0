@@ -1,58 +1,66 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 5.4 1/3] batman-adv: Consider fragmentation for
- needed_headroom
-Date: Sat, 20 Nov 2021 13:40:51 +0100
-Message-Id: <20211120124053.261156-2-sven@narfation.org>
-In-Reply-To: <20211120124053.261156-1-sven@narfation.org>
-References: <20211120124053.261156-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Date: Sat, 6 Nov 2021 22:08:50 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: Unable to get DHCP after join wlan0 WIFI mesh network
+Message-ID: <YYbu4iyiAp5HlUXZ@sellars>
+References: 
+ <CA+HNRgC0FKMtSiDOZR3E_T_77C0QXv+r9kqncKNO5-ARwj4ZYA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: 
+ <CA+HNRgC0FKMtSiDOZR3E_T_77C0QXv+r9kqncKNO5-ARwj4ZYA@mail.gmail.com>
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-commit 4ca23e2c2074465bff55ea14221175fecdf63c5f upstream.
+Hi,
 
-If a batman-adv packets has to be fragmented, then the original batman-adv
-packet header is not stripped away. Instead, only a new header is added in
-front of the packet after it was split.
+Glad to see that more and more people are experimenting with WiFi
+mesh networks.
 
-This size must be considered to avoid cost intensive reallocations during
-the transmission through the various device layers.
+On Fri, Nov 05, 2021 at 04:22:11PM -0700, Dweb Fan wrote:
+> Dear all,
+> 
+> Thanks for making such a great project!
+> 
+> I'm following the guide from
+> https://github.com/binnes/WiFiMeshRaspberryPi, and setting up wifi
+> mesh network on top of raspberry pi 3B+. Below steps are good now:
+>  - batctl ping works (peer can ping each other through both IP and MAC address)
+>  - mac os wifi client can discover the ad-host network, and join the network
 
-Fixes: 7bca68c7844b ("batman-adv: Add lower layer needed_(head|tail)room to own ones")
-Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 3 +++
- 1 file changed, 3 insertions(+)
+This guide seems to set up two WiFi interfaces. wlan0 in ad-hoc
+mode and wlan1 in AP mode. wlan0 is a secondary interface of bat0
+and wlan1+bat0 are bridged:
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index afb52282d5bd..18e644f3cb30 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -554,6 +554,9 @@ static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
- 	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
- 	needed_headroom += batadv_max_header_len();
- 
-+	/* fragmentation headers don't strip the unicast/... header */
-+	needed_headroom += sizeof(struct batadv_frag_packet);
-+
- 	soft_iface->needed_headroom = needed_headroom;
- 	soft_iface->needed_tailroom = lower_tailroom;
- }
--- 
-2.30.2
+    ---br0---
+   /         \
+ bat0      wlan1(ap)
+  |
+wlan0(adhoc)
 
+On wlan0 is supposed to be only used to interconnect batman-adv
+nodes. The batman-adv protocol is primarily spoken there.
+
+Client traffic from your mac os wifi client is probably not able
+to speak the batman-adv protocol and is therefore supposed to go
+"over" bat0 instead of "under" bat0. So your mac os client should
+connect to the wlan1 AP interface.
+
+The traffic is then bridged from wlan1 to bat0 and batman-adv will
+then encapsulate the client traffic. And then forward the
+*encapsulated* traffic on wlan0 automatically to the correct
+neighbor node.
+
+Hope this helps.
+
+Regards, Linus
