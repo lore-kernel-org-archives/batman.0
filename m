@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.4 03/11] batman-adv: Prevent duplicated softif_vlan entry
-Date: Sat, 20 Nov 2021 13:39:31 +0100
-Message-Id: <20211120123939.260723-4-sven@narfation.org>
-In-Reply-To: <20211120123939.260723-1-sven@narfation.org>
-References: <20211120123939.260723-1-sven@narfation.org>
+Subject: [PATCH 5.4 3/3] batman-adv: Don't always reallocate the fragmentation
+ skb head
+Date: Sat, 20 Nov 2021 13:40:53 +0100
+Message-Id: <20211120124053.261156-4-sven@narfation.org>
+In-Reply-To: <20211120124053.261156-1-sven@narfation.org>
+References: <20211120124053.261156-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,80 +20,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: stable@vger.kernel.org
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-commit 94cb82f594ed86be303398d6dfc7640a6f1d45d4 upstream.
+commit 992b03b88e36254e26e9a4977ab948683e21bd9f upstream.
 
-The function batadv_softif_vlan_get is responsible for adding new
-softif_vlan to the softif_vlan_list. It first checks whether the entry
-already is in the list or not. If it is, then the creation of a new entry
-is aborted.
+When a packet is fragmented by batman-adv, the original batman-adv header
+is not modified. Only a new fragmentation is inserted between the original
+one and the ethernet header. The code must therefore make sure that it has
+a writable region of this size in the skbuff head.
 
-But the lock for the list is only held when the list is really modified.
-This could lead to duplicated entries because another context could create
-an entry with the same key between the check and the list manipulation.
+But it is not useful to always reallocate the skbuff by this size even when
+there would be more than enough headroom still in the skb. The reallocation
+is just to costly during in this codepath.
 
-The check and the manipulation of the list must therefore be in the same
-locked code section.
-
-Fixes: 5d2c05b21337 ("batman-adv: add per VLAN interface attribute framework")
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.4 backport: switch back to atomic_t based reference counting. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/soft-interface.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ net/batman-adv/fragmentation.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index ff693887ea82..f1e2e7e33500 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -539,15 +539,20 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	struct batadv_softif_vlan *vlan;
- 	int err;
- 
-+	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
-+
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
- 	if (vlan) {
- 		batadv_softif_vlan_free_ref(vlan);
-+		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 		return -EEXIST;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index f1d202ff396c..0da90e73c79b 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -527,13 +527,14 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 		frag_header.no++;
  	}
  
- 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
--	if (!vlan)
-+	if (!vlan) {
-+		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
- 		return -ENOMEM;
-+	}
- 
- 	vlan->bat_priv = bat_priv;
- 	vlan->vid = vid;
-@@ -555,16 +560,19 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 
- 	atomic_set(&vlan->ap_isolation, 0);
- 
-+	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
-+	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
-+
-+	/* batadv_sysfs_add_vlan cannot be in the spinlock section due to the
-+	 * sleeping behavior of the sysfs functions and the fs_reclaim lock
+-	/* Make room for the fragment header. */
+-	if (batadv_skb_head_push(skb, header_size) < 0 ||
+-	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
+-		ret = -ENOMEM;
++	/* make sure that there is at least enough head for the fragmentation
++	 * and ethernet headers
 +	 */
- 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
- 	if (err) {
--		kfree(vlan);
-+		/* ref for the list */
-+		batadv_softif_vlan_free_ref(vlan);
- 		return err;
- 	}
++	ret = skb_cow_head(skb, ETH_HLEN + header_size);
++	if (ret < 0)
+ 		goto put_primary_if;
+-	}
  
--	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
--	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
--	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
--
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag
- 	 */
++	skb_push(skb, header_size);
+ 	memcpy(skb->data, &frag_header, header_size);
+ 
+ 	/* Send the last fragment */
 -- 
 2.30.2
 
