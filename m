@@ -1,13 +1,12 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Keep fragments equally sized" has been added to
- the 4.9-stable tree
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:43:01 +0100
-In-Reply-To: <20211120123958.260826-2-sven@narfation.org>
-Message-ID: <1637671381212139@kroah.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4.4 11/11] batman-adv: Avoid WARN_ON timing related checks
+Date: Sat, 20 Nov 2021 13:39:39 +0100
+Message-Id: <20211120123939.260723-12-sven@narfation.org>
+In-Reply-To: <20211120123939.260723-1-sven@narfation.org>
+References: <20211120123939.260723-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,156 +16,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, martin@darmstadt.freifunk.net, sven@narfation.org, sw@simonwunderlich.de
-Cc: stable-commits@vger.kernel.org
-
-
-This is a note to let you know that I've just added the patch titled
-
-    batman-adv: Keep fragments equally sized
-
-to the 4.9-stable tree which can be found at:
-    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
-;a=3Dsummary
-
-The filename of the patch is:
-     batman-adv-keep-fragments-equally-sized.patch
-and it can be found in the queue-4.9 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From foo@baz Tue Nov 23 01:37:10 PM CET 2021
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:39:52 +0100
-Subject: batman-adv: Keep fragments equally sized
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, "Sven Eckelmann" <sven@narfation.org>,=
- "Martin Weinelt" <martin@darmstadt.freifunk.net>, "Linus L=FCssing" <linus=
-.luessing@c0d3.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>
-Message-ID: <20211120123958.260826-2-sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+commit 9f460ae31c4435fd022c443a6029352217a16ac1 upstream.
 
-commit 1c2bcc766be44467809f1798cd4ceacafe20a852 upstream.
+The soft/batadv interface for a queued OGM can be changed during the time
+the OGM was queued for transmission and when the OGM is actually
+transmitted by the worker.
 
-The batman-adv fragmentation packets have the design problem that they
-cannot be refragmented and cannot handle padding by the underlying link.
-The latter often leads to problems when networks are incorrectly configured
-and don't use a common MTU.
+But WARN_ON must be used to denote kernel bugs and not to print simple
+warnings. A warning can simply be printed using pr_warn.
 
-The sender could for example fragment a 1271 byte frame (plus external
-ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
-large MTU of the underlying link (max. 1294 byte frames). This would create
-a 1294 bytes large frame (fragment 2) and a 55 bytes large frame
-(fragment 1). The extra 54 bytes are the fragment header (20) added to each
-fragment and the external ethernet header (14) for the second fragment.
-
-Let us assume that the next hop is then not able to transport 1294 bytes to
-its next hop. The 1294 byte large frame will be dropped but the 55 bytes
-large fragment will still be forwarded to its destination.
-
-Or let us assume that the underlying hardware requires that each frame has
-a minimum size (e.g. 60 bytes). Then it will pad the 55 bytes frame to 60
-bytes. The receiver of the 60 bytes frame will no longer be able to
-correctly assemble the two frames together because it is not aware that 5
-bytes of the 60 bytes frame are padding and don't belong to the reassembled
-frame.
-
-This can partly be avoided by splitting frames more equally. In this
-example, the 675 and 674 bytes large fragment frames could both potentially
-reach its destination without being too large or too small.
-
-Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Reported-by: syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
+Fixes: ef0a937f7a14 ("batman-adv: consider outgoing interface in OGM sending")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: adjust context. ]
+[ bp: 4.4 backported: adjust context. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/fragmentation.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -396,7 +396,7 @@ out:
-  * batadv_frag_create - create a fragment from skb
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-- * @mtu: size of new fragment
-+ * @fragment_size: size of new fragment
-  *
-  * Split the passed skb into two fragments: A new one with size matching t=
-he
-  * passed mtu and the old one with the rest. The new skb contains data fro=
-m the
-@@ -406,11 +406,11 @@ out:
-  */
- static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
--					  unsigned int mtu)
-+					  unsigned int fragment_size)
- {
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size =3D sizeof(*frag_head);
--	unsigned int fragment_size =3D mtu - header_size;
-+	unsigned int mtu =3D fragment_size + header_size;
-=20
- 	skb_fragment =3D netdev_alloc_skb(NULL, mtu + ETH_HLEN);
- 	if (!skb_fragment)
-@@ -449,7 +449,7 @@ int batadv_frag_send_packet(struct sk_bu
- 	struct sk_buff *skb_fragment;
- 	unsigned int mtu =3D neigh_node->if_incoming->net_dev->mtu;
- 	unsigned int header_size =3D sizeof(frag_header);
--	unsigned int max_fragment_size, max_packet_size;
-+	unsigned int max_fragment_size, num_fragments;
- 	int ret =3D -1;
-=20
- 	/* To avoid merge and refragmentation at next-hops we never send
-@@ -457,10 +457,15 @@ int batadv_frag_send_packet(struct sk_bu
- 	 */
- 	mtu =3D min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
- 	max_fragment_size =3D mtu - header_size;
--	max_packet_size =3D max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
-+
-+	if (skb->len =3D=3D 0 || max_fragment_size =3D=3D 0)
-+		return -EINVAL;
-+
-+	num_fragments =3D (skb->len - 1) / max_fragment_size + 1;
-+	max_fragment_size =3D (skb->len - 1) / num_fragments + 1;
-=20
- 	/* Don't even try to fragment, if we need more than 16 fragments */
--	if (skb->len > max_packet_size)
-+	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index caea5bb38d4b..6f8d2fe114f6 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -526,8 +526,10 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
+ 	if (WARN_ON(!forw_packet->if_outgoing))
  		goto out;
-=20
- 	bat_priv =3D orig_node->bat_priv;
-@@ -498,7 +503,8 @@ int batadv_frag_send_packet(struct sk_bu
- 			goto out;
- 		}
-=20
--		skb_fragment =3D batadv_frag_create(skb, &frag_header, mtu);
-+		skb_fragment =3D batadv_frag_create(skb, &frag_header,
-+						  max_fragment_size);
- 		if (!skb_fragment)
- 			goto out;
-=20
+ 
+-	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
++	if (forw_packet->if_outgoing->soft_iface != soft_iface) {
++		pr_warn("%s: soft interface switch for queued OGM\n", __func__);
+ 		goto out;
++	}
+ 
+ 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
+ 		goto out;
+-- 
+2.30.2
 
-
-Patches currently in stable-queue which might be from sven@narfation.org are
-
-queue-4.9/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.9/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
--mesh.patch
-queue-4.9/ath10k-fix-max-antenna-gain-unit.patch
-queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
--lan.patch
-queue-4.9/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.9/batman-adv-fix-own-ogm-check-in-aggregated-ogms.patch
-queue-4.9/batman-adv-keep-fragments-equally-sized.patch
-queue-4.9/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
-ch
