@@ -1,11 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.4 11/11] batman-adv: Avoid WARN_ON timing related checks
-Date: Sat, 20 Nov 2021 13:39:39 +0100
-Message-Id: <20211120123939.260723-12-sven@narfation.org>
-In-Reply-To: <20211120123939.260723-1-sven@narfation.org>
-References: <20211120123939.260723-1-sven@narfation.org>
+Subject: [PATCH 4.19 0/4] batman-adv: Fixes for stable/linux-4.19.y
+Date: Sat, 20 Nov 2021 13:40:40 +0100
+Message-Id: <20211120124044.261086-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,44 +16,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-commit 9f460ae31c4435fd022c443a6029352217a16ac1 upstream.
+Hi,
 
-The soft/batadv interface for a queued OGM can be changed during the time
-the OGM was queued for transmission and when the OGM is actually
-transmitted by the worker.
+I went through  all changes in batman-adv since v4.19 with a Fixes: line
+and checked whether they were backported to the LTS kernels. The ones which
+weren't ported and applied to this branch are now part of this patch series.
 
-But WARN_ON must be used to denote kernel bugs and not to print simple
-warnings. A warning can simply be printed using pr_warn.
+There are also following three patches included:
 
-Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Reported-by: syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
-Fixes: ef0a937f7a14 ("batman-adv: consider outgoing interface in OGM sending")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.4 backported: adjust context. ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bat_iv_ogm.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+* batman-adv: Consider fragmentation for needed_headroom
+* batman-adv: Reserve needed_*room for fragments
+* batman-adv: Don't always reallocate the fragmentation skb head
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index caea5bb38d4b..6f8d2fe114f6 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -526,8 +526,10 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
- 	if (WARN_ON(!forw_packet->if_outgoing))
- 		goto out;
- 
--	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
-+	if (forw_packet->if_outgoing->soft_iface != soft_iface) {
-+		pr_warn("%s: soft interface switch for queued OGM\n", __func__);
- 		goto out;
-+	}
- 
- 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto out;
+which could in some circumstances cause packet loss but which were created
+to fix high CPU load/low throughput problems. But I've added them here
+anyway because the corresponding VXLAN patches were also added to stable.
+And some stable kernels also got these fixes a while back.
+
+Kind regards,
+	Sven
+
+Linus Lüssing (1):
+  batman-adv: mcast: fix duplicate mcast packets in BLA backbone from
+    LAN
+
+Sven Eckelmann (3):
+  batman-adv: Consider fragmentation for needed_headroom
+  batman-adv: Reserve needed_*room for fragments
+  batman-adv: Don't always reallocate the fragmentation skb head
+
+ net/batman-adv/fragmentation.c  | 26 ++++++++++++++++----------
+ net/batman-adv/hard-interface.c |  3 +++
+ net/batman-adv/multicast.c      | 31 +++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.h      | 15 +++++++++++++++
+ net/batman-adv/soft-interface.c |  5 ++---
+ 5 files changed, 67 insertions(+), 13 deletions(-)
+
 -- 
 2.30.2
 
