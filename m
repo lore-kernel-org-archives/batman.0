@@ -1,42 +1,172 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4.4 04/11] batman-adv: mcast: fix duplicate mcast packets in
+ BLA backbone from LAN
+Date: Sat, 20 Nov 2021 13:39:32 +0100
+Message-Id: <20211120123939.260723-5-sven@narfation.org>
+In-Reply-To: <20211120123939.260723-1-sven@narfation.org>
+References: <20211120123939.260723-1-sven@narfation.org>
 MIME-Version: 1.0
-Date: Tue, 30 Nov 2021 08:19:10 -0800
-In-Reply-To: <000000000000f5964705b7d47d8c@google.com>
-Message-ID: <000000000000dc091705d203eac6@google.com>
-Subject: Re: [syzbot] INFO: trying to register non-static key in
- l2cap_sock_teardown_cb
-From: syzbot <syzbot+a41dfef1d2e04910eb2e@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, bobo.shaobowang@huawei.com, davem@davemloft.net, hdanton@sina.com, johan.hedberg@gmail.com, kuba@kernel.org, linux-bluetooth@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, luiz.dentz@gmail.com, luiz.von.dentz@intel.com, marcel@holtmann.org, mareklindner@neomailbox.ch, miklos@szeredi.hu, mszeredi@redhat.com, netdev@vger.kernel.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
 
-syzbot suspects this issue was fixed by commit:
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-commit 1bff51ea59a9afb67d2dd78518ab0582a54a472c
-Author: Wang ShaoBo <bobo.shaobowang@huawei.com>
-Date:   Wed Sep 1 00:35:37 2021 +0000
+commit 3236d215ad38a3f5372e65cd1e0a52cf93d3c6a2 upstream.
 
-    Bluetooth: fix use-after-free error in lock_sock_nested()
+Scenario:
+* Multicast frame send from a BLA backbone (multiple nodes with
+  their bat0 bridged together, with BLA enabled)
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=134c881eb00000
-start commit:   73b7a6047971 net: dsa: bcm_sf2: support BCM4908's integrat..
-git tree:       net-next
-kernel config:  https://syzkaller.appspot.com/x/.config?x=9ce34124da4c882b
-dashboard link: https://syzkaller.appspot.com/bug?extid=a41dfef1d2e04910eb2e
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=166ee4cf500000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1337172f500000
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0
 
-If the result looks correct, please mark the issue as fixed by replying with:
+For multicast frames received via batman-adv broadcast packets the
+originator of the broadcast packet is checked before decapsulating and
+forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
+batadv_recv_bcast_packet()). If it came from a node which shares the
+same BLA backbone with us then it is not forwarded to bat0 to avoid a
+loop.
 
-#syz fix: Bluetooth: fix use-after-free error in lock_sock_nested()
+When sending a multicast frame in a non-4-address batman-adv unicast
+packet we are currently missing this check - and cannot do so because
+the batman-adv unicast packet has no originator address field.
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+However, we can simply fix this on the sender side by only sending the
+multicast frame via unicasts to interested nodes which do not share the
+same BLA backbone with us. This also nicely avoids some unnecessary
+transmissions on mesh side.
+
+Note that no infinite loop was observed, probably because of dropping
+via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
+utterly confuse switches/bridges, ICMPv6 duplicate address detection and
+neighbor discovery and therefore leads to long delays before being able
+to establish TCP connections, for instance. And it also leads to the Linux
+bridge printing messages like:
+"br-lan: received packet on eth1 with own address as source address ..."
+
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.4 backport: drop usage in non-existing batadv_mcast_forw_*,
+  correct fixes line ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/multicast.c      | 31 +++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.h      | 15 +++++++++++++++
+ net/batman-adv/soft-interface.c |  5 ++---
+ 3 files changed, 48 insertions(+), 3 deletions(-)
+
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8aa2d65df86f..44965f71ad73 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -44,7 +44,9 @@
+ #include <net/addrconf.h>
+ #include <net/ipv6.h>
+ 
++#include "bridge_loop_avoidance.h"
+ #include "packet.h"
++#include "send.h"
+ #include "translation-table.h"
+ 
+ /**
+@@ -805,6 +807,35 @@ void batadv_mcast_free(struct batadv_priv *bat_priv)
+ 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
+ }
+ 
++/**
++ * batadv_mcast_forw_send_orig() - send a multicast packet to an originator
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to send
++ * @vid: the vlan identifier
++ * @orig_node: the originator to send the packet to
++ *
++ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node)
++{
++	/* Avoid sending multicast-in-unicast packets to other BLA
++	 * gateways - they already got the frame from the LAN side
++	 * we share with them.
++	 * TODO: Refactor to take BLA into account earlier, to avoid
++	 * reducing the mcast_fanout count.
++	 */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
++		dev_kfree_skb(skb);
++		return NET_XMIT_SUCCESS;
++	}
++
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				       orig_node, vid);
++}
++
+ /**
+  * batadv_mcast_purge_orig - reset originator global mcast state modifications
+  * @orig: the originator which is going to get purged
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 8f3cb04b9f13..dd83ef07e2f2 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -44,6 +44,11 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+ 
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ void batadv_mcast_free(struct batadv_priv *bat_priv);
+@@ -68,6 +73,16 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ 	return 0;
+ }
+ 
++static inline int
++batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb,
++			    unsigned short vid,
++			    struct batadv_orig_node *orig_node)
++{
++	kfree_skb(skb);
++	return NET_XMIT_DROP;
++}
++
+ static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
+ {
+ }
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index f1e2e7e33500..64b46e9e365b 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -353,9 +353,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 				goto dropped;
+ 			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
+ 		} else if (mcast_single_orig) {
+-			ret = batadv_send_skb_unicast(bat_priv, skb,
+-						      BATADV_UNICAST, 0,
+-						      mcast_single_orig, vid);
++			ret = batadv_mcast_forw_send_orig(bat_priv, skb, vid,
++							  mcast_single_orig);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
+-- 
+2.30.2
+
