@@ -1,14 +1,11 @@
-Return-Path: <mudongliangabcd@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4.14 0/5] batman-adv: Fixes for stable/linux-4.14.y
+Date: Sat, 20 Nov 2021 13:40:13 +0100
+Message-Id: <20211120124018.260907-1-sven@narfation.org>
 MIME-Version: 1.0
-References: <20211101040103.388646-1-mudongliangabcd@gmail.com>
- <3170956.dbteMgFBTL@ripper>
-In-Reply-To: <3170956.dbteMgFBTL@ripper>
-From: Dongliang Mu <mudongliangabcd@gmail.com>
-Date: Mon, 1 Nov 2021 16:11:18 +0800
-Message-ID: 
- <CAD-N9QUFFchS=rWjy1GN14CKM+9NXE0C4tnR7zS3h-jZR_T9wA@mail.gmail.com>
-Subject: Re: [PATCH] net: batman-adv: fix warning in batadv_v_ogm_free
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,32 +15,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Antonio Quartulli <antonio@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, "open list:NETWORKING [GENERAL]" <netdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-On Mon, Nov 1, 2021 at 3:46 PM Sven Eckelmann <sven@narfation.org> wrote:
->
-> On Monday, 1 November 2021 05:01:02 CET Dongliang Mu wrote:
-> > Call Trace:
-> >  __cancel_work_timer+0x1c9/0x280 kernel/workqueue.c:3170
-> >  batadv_v_ogm_free+0x1d/0x50 net/batman-adv/bat_v_ogm.c:1076
-> >  batadv_mesh_free+0x35/0xa0 net/batman-adv/main.c:244
-> >  batadv_mesh_init+0x22a/0x240 net/batman-adv/main.c:226
-> >  batadv_softif_init_late+0x1ad/0x240 net/batman-adv/soft-interface.c:804
-> >  register_netdevice+0x15d/0x810 net/core/dev.c:10229
->
-> This is definitely not a backtrace of the current code and its error handling.
-> Please check the current code [1] and explain the situation against this
-> version.
+Hi,
 
-Yes, you're right. The error handling code in the upstream is not
-prone to this bug.
+I went through  all changes in batman-adv since v4.14 with a Fixes: line
+and checked whether they were backported to the LTS kernels. The ones which
+weren't ported and applied to this branch are now part of this patch series.
 
-My local syzkaller instance is fuzzing on 5.14-rc5
+There are also following three patches included:
 
+* batman-adv: Consider fragmentation for needed_headroom
+* batman-adv: Reserve needed_*room for fragments
+* batman-adv: Don't always reallocate the fragmentation skb head
 
->
-> Kind regards,
->         Sven
->
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/tree/net/batman-adv/main.c?id=ae0393500e3b0139210749d52d22b29002c20e16#n237
+which could in some circumstances cause packet loss but which were created
+to fix high CPU load/low throughput problems. But I've added them here
+anyway because the corresponding VXLAN patches were also added to stable.
+And some stable kernels also got these fixes a while back.
+
+Kind regards,
+	Sven
+
+Linus Lüssing (2):
+  batman-adv: mcast: fix duplicate mcast packets in BLA backbone from
+    LAN
+  batman-adv: mcast: fix duplicate mcast packets from BLA backbone to
+    mesh
+
+Sven Eckelmann (3):
+  batman-adv: Consider fragmentation for needed_headroom
+  batman-adv: Reserve needed_*room for fragments
+  batman-adv: Don't always reallocate the fragmentation skb head
+
+ net/batman-adv/bridge_loop_avoidance.c | 103 +++++++++++++++++++++----
+ net/batman-adv/fragmentation.c         |  26 ++++---
+ net/batman-adv/hard-interface.c        |   3 +
+ net/batman-adv/multicast.c             |  31 ++++++++
+ net/batman-adv/multicast.h             |  15 ++++
+ net/batman-adv/soft-interface.c        |   5 +-
+ 6 files changed, 154 insertions(+), 29 deletions(-)
+
+-- 
+2.30.2
+
