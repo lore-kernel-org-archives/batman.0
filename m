@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.19 0/4] batman-adv: Fixes for stable/linux-4.19.y
-Date: Sat, 20 Nov 2021 13:40:40 +0100
-Message-Id: <20211120124044.261086-1-sven@narfation.org>
+Subject: [PATCH 4.19 3/4] batman-adv: Reserve needed_*room for fragments
+Date: Sat, 20 Nov 2021 13:40:43 +0100
+Message-Id: <20211120124044.261086-4-sven@narfation.org>
+In-Reply-To: <20211120124044.261086-1-sven@narfation.org>
+References: <20211120124044.261086-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,44 +17,92 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi,
+commit c5cbfc87558168ef4c3c27ce36eba6b83391db19 upstream.
 
-I went through  all changes in batman-adv since v4.19 with a Fixes: line
-and checked whether they were backported to the LTS kernels. The ones which
-weren't ported and applied to this branch are now part of this patch series.
+The batadv net_device is trying to propagate the needed_headroom and
+needed_tailroom from the lower devices. This is needed to avoid cost
+intensive reallocations using pskb_expand_head during the transmission.
 
-There are also following three patches included:
+But the fragmentation code split the skb's without adding extra room at the
+end/beginning of the various fragments. This reduced the performance of
+transmissions over complex scenarios (batadv on vxlan on wireguard) because
+the lower devices had to perform the reallocations at least once.
 
-* batman-adv: Consider fragmentation for needed_headroom
-* batman-adv: Reserve needed_*room for fragments
-* batman-adv: Don't always reallocate the fragmentation skb head
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.19 backported: adjust context. ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/fragmentation.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-which could in some circumstances cause packet loss but which were created
-to fix high CPU load/low throughput problems. But I've added them here
-anyway because the corresponding VXLAN patches were also added to stable.
-And some stable kernels also got these fixes a while back.
-
-Kind regards,
-	Sven
-
-Linus Lüssing (1):
-  batman-adv: mcast: fix duplicate mcast packets in BLA backbone from
-    LAN
-
-Sven Eckelmann (3):
-  batman-adv: Consider fragmentation for needed_headroom
-  batman-adv: Reserve needed_*room for fragments
-  batman-adv: Don't always reallocate the fragmentation skb head
-
- net/batman-adv/fragmentation.c  | 26 ++++++++++++++++----------
- net/batman-adv/hard-interface.c |  3 +++
- net/batman-adv/multicast.c      | 31 +++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h      | 15 +++++++++++++++
- net/batman-adv/soft-interface.c |  5 ++---
- 5 files changed, 67 insertions(+), 13 deletions(-)
-
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 5b71a289d04f..2dbd870221e4 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -403,6 +403,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 
+ /**
+  * batadv_frag_create() - create a fragment from skb
++ * @net_dev: outgoing device for fragment
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+  * @fragment_size: size of new fragment
+@@ -413,22 +414,25 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  *
+  * Return: the new fragment, NULL on error.
+  */
+-static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
++static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
++					  struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+ 					  unsigned int fragment_size)
+ {
++	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
++	unsigned int tailroom = net_dev->needed_tailroom;
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+ 	unsigned int mtu = fragment_size + header_size;
+ 
+-	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
++	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
+ 	if (!skb_fragment)
+ 		goto err;
+ 
+ 	skb_fragment->priority = skb->priority;
+ 
+ 	/* Eat the last mtu-bytes of the skb */
+-	skb_reserve(skb_fragment, header_size + ETH_HLEN);
++	skb_reserve(skb_fragment, ll_reserved + header_size);
+ 	skb_split(skb, skb_fragment, skb->len - fragment_size);
+ 
+ 	/* Add the header */
+@@ -451,11 +455,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_neigh_node *neigh_node)
+ {
++	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+-	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
++	unsigned int mtu = net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+ 	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+@@ -515,7 +520,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header,
++		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
+ 						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
 -- 
 2.30.2
 
