@@ -1,11 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.14 4/5] batman-adv: Reserve needed_*room for fragments
-Date: Sat, 20 Nov 2021 13:40:17 +0100
-Message-Id: <20211120124018.260907-5-sven@narfation.org>
+Subject: [PATCH 4.14 1/5] batman-adv: mcast: fix duplicate mcast packets in
+ BLA backbone from LAN
+Date: Sat, 20 Nov 2021 13:40:14 +0100
+Message-Id: <20211120124018.260907-2-sven@narfation.org>
 In-Reply-To: <20211120124018.260907-1-sven@narfation.org>
 References: <20211120124018.260907-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,92 +19,157 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
 
-commit c5cbfc87558168ef4c3c27ce36eba6b83391db19 upstream.
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The batadv net_device is trying to propagate the needed_headroom and
-needed_tailroom from the lower devices. This is needed to avoid cost
-intensive reallocations using pskb_expand_head during the transmission.
+commit 3236d215ad38a3f5372e65cd1e0a52cf93d3c6a2 upstream.
 
-But the fragmentation code split the skb's without adding extra room at the
-end/beginning of the various fragments. This reduced the performance of
-transmissions over complex scenarios (batadv on vxlan on wireguard) because
-the lower devices had to perform the reallocations at least once.
+Scenario:
+* Multicast frame send from a BLA backbone (multiple nodes with
+  their bat0 bridged together, with BLA enabled)
 
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0
+
+For multicast frames received via batman-adv broadcast packets the
+originator of the broadcast packet is checked before decapsulating and
+forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
+batadv_recv_bcast_packet()). If it came from a node which shares the
+same BLA backbone with us then it is not forwarded to bat0 to avoid a
+loop.
+
+When sending a multicast frame in a non-4-address batman-adv unicast
+packet we are currently missing this check - and cannot do so because
+the batman-adv unicast packet has no originator address field.
+
+However, we can simply fix this on the sender side by only sending the
+multicast frame via unicasts to interested nodes which do not share the
+same BLA backbone with us. This also nicely avoids some unnecessary
+transmissions on mesh side.
+
+Note that no infinite loop was observed, probably because of dropping
+via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
+utterly confuse switches/bridges, ICMPv6 duplicate address detection and
+neighbor discovery and therefore leads to long delays before being able
+to establish TCP connections, for instance. And it also leads to the Linux
+bridge printing messages like:
+"br-lan: received packet on eth1 with own address as source address ..."
+
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.14 backported: adjust context. ]
+[ bp: 4.14 backport: drop usage in non-existing batadv_mcast_forw_*,
+  correct fixes line ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/fragmentation.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ net/batman-adv/multicast.c      | 31 +++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.h      | 15 +++++++++++++++
+ net/batman-adv/soft-interface.c |  5 ++---
+ 3 files changed, 48 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 788d62073964..f1446a04f055 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -402,6 +402,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index d47865e0e697..fc62f325f9ec 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -55,10 +55,12 @@
+ #include <net/ip.h>
+ #include <net/ipv6.h>
  
++#include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+ #include "packet.h"
++#include "send.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+ 
+@@ -1290,6 +1292,35 @@ void batadv_mcast_free(struct batadv_priv *bat_priv)
+ 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
+ }
+ 
++/**
++ * batadv_mcast_forw_send_orig() - send a multicast packet to an originator
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to send
++ * @vid: the vlan identifier
++ * @orig_node: the originator to send the packet to
++ *
++ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node)
++{
++	/* Avoid sending multicast-in-unicast packets to other BLA
++	 * gateways - they already got the frame from the LAN side
++	 * we share with them.
++	 * TODO: Refactor to take BLA into account earlier, to avoid
++	 * reducing the mcast_fanout count.
++	 */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
++		dev_kfree_skb(skb);
++		return NET_XMIT_SUCCESS;
++	}
++
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				       orig_node, vid);
++}
++
  /**
-  * batadv_frag_create - create a fragment from skb
-+ * @net_dev: outgoing device for fragment
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-  * @fragment_size: size of new fragment
-@@ -412,22 +413,25 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  *
-  * Return: the new fragment, NULL on error.
-  */
--static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
-+static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
-+					  struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
- 					  unsigned int fragment_size)
+  * batadv_mcast_purge_orig - reset originator global mcast state modifications
+  * @orig: the originator which is going to get purged
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 2a78cddab0e9..8faf4f4e0c75 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -43,6 +43,11 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+ 
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
+@@ -65,6 +70,16 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ 	return 0;
+ }
+ 
++static inline int
++batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb,
++			    unsigned short vid,
++			    struct batadv_orig_node *orig_node)
++{
++	kfree_skb(skb);
++	return NET_XMIT_DROP;
++}
++
+ static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
  {
-+	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
-+	unsigned int tailroom = net_dev->needed_tailroom;
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
- 	unsigned int mtu = fragment_size + header_size;
- 
--	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
-+	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
- 	if (!skb_fragment)
- 		goto err;
- 
- 	skb_fragment->priority = skb->priority;
- 
- 	/* Eat the last mtu-bytes of the skb */
--	skb_reserve(skb_fragment, header_size + ETH_HLEN);
-+	skb_reserve(skb_fragment, ll_reserved + header_size);
- 	skb_split(skb, skb_fragment, skb->len - fragment_size);
- 
- 	/* Add the header */
-@@ -450,11 +454,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			    struct batadv_orig_node *orig_node,
- 			    struct batadv_neigh_node *neigh_node)
- {
-+	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_frag_packet frag_header;
- 	struct sk_buff *skb_fragment;
--	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
-+	unsigned int mtu = net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
- 	unsigned int max_fragment_size, num_fragments;
- 	int ret;
-@@ -514,7 +519,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			goto put_primary_if;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header,
-+		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
- 						  max_fragment_size);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
+ }
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index ba9dce04343a..7a04ac96b121 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -359,9 +359,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 				goto dropped;
+ 			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
+ 		} else if (mcast_single_orig) {
+-			ret = batadv_send_skb_unicast(bat_priv, skb,
+-						      BATADV_UNICAST, 0,
+-						      mcast_single_orig, vid);
++			ret = batadv_mcast_forw_send_orig(bat_priv, skb, vid,
++							  mcast_single_orig);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
 -- 
 2.30.2
 
