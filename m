@@ -1,66 +1,175 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Sat, 6 Nov 2021 22:08:50 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: Unable to get DHCP after join wlan0 WIFI mesh network
-Message-ID: <YYbu4iyiAp5HlUXZ@sellars>
-References: 
- <CA+HNRgC0FKMtSiDOZR3E_T_77C0QXv+r9kqncKNO5-ARwj4ZYA@mail.gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 4.19 1/4] batman-adv: mcast: fix duplicate mcast packets in
+ BLA backbone from LAN
+Date: Sat, 20 Nov 2021 13:40:41 +0100
+Message-Id: <20211120124044.261086-2-sven@narfation.org>
+In-Reply-To: <20211120124044.261086-1-sven@narfation.org>
+References: <20211120124044.261086-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: 
- <CA+HNRgC0FKMtSiDOZR3E_T_77C0QXv+r9kqncKNO5-ARwj4ZYA@mail.gmail.com>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
 
-Hi,
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Glad to see that more and more people are experimenting with WiFi
-mesh networks.
+commit 3236d215ad38a3f5372e65cd1e0a52cf93d3c6a2 upstream.
 
-On Fri, Nov 05, 2021 at 04:22:11PM -0700, Dweb Fan wrote:
-> Dear all,
-> 
-> Thanks for making such a great project!
-> 
-> I'm following the guide from
-> https://github.com/binnes/WiFiMeshRaspberryPi, and setting up wifi
-> mesh network on top of raspberry pi 3B+. Below steps are good now:
->  - batctl ping works (peer can ping each other through both IP and MAC address)
->  - mac os wifi client can discover the ad-host network, and join the network
+Scenario:
+* Multicast frame send from a BLA backbone (multiple nodes with
+  their bat0 bridged together, with BLA enabled)
 
-This guide seems to set up two WiFi interfaces. wlan0 in ad-hoc
-mode and wlan1 in AP mode. wlan0 is a secondary interface of bat0
-and wlan1+bat0 are bridged:
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0
 
-    ---br0---
-   /         \
- bat0      wlan1(ap)
-  |
-wlan0(adhoc)
+For multicast frames received via batman-adv broadcast packets the
+originator of the broadcast packet is checked before decapsulating and
+forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
+batadv_recv_bcast_packet()). If it came from a node which shares the
+same BLA backbone with us then it is not forwarded to bat0 to avoid a
+loop.
 
-On wlan0 is supposed to be only used to interconnect batman-adv
-nodes. The batman-adv protocol is primarily spoken there.
+When sending a multicast frame in a non-4-address batman-adv unicast
+packet we are currently missing this check - and cannot do so because
+the batman-adv unicast packet has no originator address field.
 
-Client traffic from your mac os wifi client is probably not able
-to speak the batman-adv protocol and is therefore supposed to go
-"over" bat0 instead of "under" bat0. So your mac os client should
-connect to the wlan1 AP interface.
+However, we can simply fix this on the sender side by only sending the
+multicast frame via unicasts to interested nodes which do not share the
+same BLA backbone with us. This also nicely avoids some unnecessary
+transmissions on mesh side.
 
-The traffic is then bridged from wlan1 to bat0 and batman-adv will
-then encapsulate the client traffic. And then forward the
-*encapsulated* traffic on wlan0 automatically to the correct
-neighbor node.
+Note that no infinite loop was observed, probably because of dropping
+via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
+utterly confuse switches/bridges, ICMPv6 duplicate address detection and
+neighbor discovery and therefore leads to long delays before being able
+to establish TCP connections, for instance. And it also leads to the Linux
+bridge printing messages like:
+"br-lan: received packet on eth1 with own address as source address ..."
 
-Hope this helps.
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.19 backport: drop usage in non-existing batadv_mcast_forw*, correct
+  fixes line ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/multicast.c      | 31 +++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.h      | 15 +++++++++++++++
+ net/batman-adv/soft-interface.c |  5 ++---
+ 3 files changed, 48 insertions(+), 3 deletions(-)
 
-Regards, Linus
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index b90fe25d6b0b..9b3311dae2e4 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -62,10 +62,12 @@
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
++#include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+ #include "netlink.h"
++#include "send.h"
+ #include "soft-interface.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+@@ -1024,6 +1026,35 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	}
+ }
+ 
++/**
++ * batadv_mcast_forw_send_orig() - send a multicast packet to an originator
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to send
++ * @vid: the vlan identifier
++ * @orig_node: the originator to send the packet to
++ *
++ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node)
++{
++	/* Avoid sending multicast-in-unicast packets to other BLA
++	 * gateways - they already got the frame from the LAN side
++	 * we share with them.
++	 * TODO: Refactor to take BLA into account earlier, to avoid
++	 * reducing the mcast_fanout count.
++	 */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
++		dev_kfree_skb(skb);
++		return NET_XMIT_SUCCESS;
++	}
++
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				       orig_node, vid);
++}
++
+ /**
+  * batadv_mcast_want_unsnoop_update() - update unsnoop counter and list
+  * @bat_priv: the bat priv with all the soft interface information
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 3b04ab13f0eb..6f9f3813fc59 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -51,6 +51,11 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+ 
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
+@@ -78,6 +83,16 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ 	return 0;
+ }
+ 
++static inline int
++batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb,
++			    unsigned short vid,
++			    struct batadv_orig_node *orig_node)
++{
++	kfree_skb(skb);
++	return NET_XMIT_DROP;
++}
++
+ static inline int
+ batadv_mcast_mesh_info_put(struct sk_buff *msg, struct batadv_priv *bat_priv)
+ {
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 6ff78080ec7f..1003abb8cc35 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -367,9 +367,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 				goto dropped;
+ 			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
+ 		} else if (mcast_single_orig) {
+-			ret = batadv_send_skb_unicast(bat_priv, skb,
+-						      BATADV_UNICAST, 0,
+-						      mcast_single_orig, vid);
++			ret = batadv_mcast_forw_send_orig(bat_priv, skb, vid,
++							  mcast_single_orig);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
+-- 
+2.30.2
+
