@@ -1,12 +1,10 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Don't always reallocate the fragmentation skb
- head" has been added to the 4.19-stable tree
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:35:01 +0100
-In-Reply-To: <20211120124044.261086-5-sven@narfation.org>
-Message-ID: <16376709011227@kroah.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH 5.4 0/3] batman-adv: Fixes for stable/linux-4.19.y
+Date: Sat, 20 Nov 2021 13:40:50 +0100
+Message-Id: <20211120124053.261156-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,84 +15,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, sven@narfation.org, sw@simonwunderlich.de
-Cc: stable-commits@vger.kernel.org
-
-
-This is a note to let you know that I've just added the patch titled
-
-    batman-adv: Don't always reallocate the fragmentation skb head
-
-to the 4.19-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
-and it can be found in the queue-4.19 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From foo@baz Tue Nov 23 01:33:57 PM CET 2021
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:40:44 +0100
-Subject: batman-adv: Don't always reallocate the fragmentation skb head
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-Message-ID: <20211120124044.261086-5-sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+Hi,
 
-commit 992b03b88e36254e26e9a4977ab948683e21bd9f upstream.
+I went through  all changes in batman-adv since v4.19 with a Fixes: line
+and checked whether they were backported to the LTS kernels. The ones which
+weren't ported and applied to this branch are now part of this patch series.
 
-When a packet is fragmented by batman-adv, the original batman-adv header
-is not modified. Only a new fragmentation is inserted between the original
-one and the ethernet header. The code must therefore make sure that it has
-a writable region of this size in the skbuff head.
+For this kernel version, I only found following three patches:
 
-But it is not useful to always reallocate the skbuff by this size even when
-there would be more than enough headroom still in the skb. The reallocation
-is just to costly during in this codepath.
+* batman-adv: Consider fragmentation for needed_headroom
+* batman-adv: Reserve needed_*room for fragments
+* batman-adv: Don't always reallocate the fragmentation skb head
 
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- net/batman-adv/fragmentation.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+which could in some circumstances cause packet loss but which were created
+to fix high CPU load/low throughput problems. But I've added them here
+anyway because the corresponding VXLAN patches were also added to stable.
+And some stable kernels also got these fixes a while back.
 
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -539,13 +539,14 @@ int batadv_frag_send_packet(struct sk_bu
- 		frag_header.no++;
- 	}
- 
--	/* Make room for the fragment header. */
--	if (batadv_skb_head_push(skb, header_size) < 0 ||
--	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
--		ret = -ENOMEM;
-+	/* make sure that there is at least enough head for the fragmentation
-+	 * and ethernet headers
-+	 */
-+	ret = skb_cow_head(skb, ETH_HLEN + header_size);
-+	if (ret < 0)
- 		goto put_primary_if;
--	}
- 
-+	skb_push(skb, header_size);
- 	memcpy(skb->data, &frag_header, header_size);
- 
- 	/* Send the last fragment */
+Kind regards,
+	Sven
 
+Sven Eckelmann (3):
+  batman-adv: Consider fragmentation for needed_headroom
+  batman-adv: Reserve needed_*room for fragments
+  batman-adv: Don't always reallocate the fragmentation skb head
 
-Patches currently in stable-queue which might be from sven@narfation.org are
+ net/batman-adv/fragmentation.c  | 26 ++++++++++++++++----------
+ net/batman-adv/hard-interface.c |  3 +++
+ 2 files changed, 19 insertions(+), 10 deletions(-)
 
-queue-4.19/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.19/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.19/ath10k-fix-max-antenna-gain-unit.patch
-queue-4.19/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.patch
-queue-4.19/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.19/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
+-- 
+2.30.2
+
