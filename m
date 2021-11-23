@@ -1,13 +1,13 @@
 Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: mcast: fix duplicate mcast packets from BLA
- backbone to mesh" has been added to the 4.4-stable tree
+Subject: Patch "batman-adv: Reserve needed_*room for fragments" has been added
+ to the 4.19-stable tree
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:42:44 +0100
-In-Reply-To: <20211120123939.260723-7-sven@narfation.org>
-Message-ID: <1637671364234147@kroah.com>
+Date: Tue, 23 Nov 2021 13:35:01 +0100
+In-Reply-To: <20211120124044.261086-4-sven@narfation.org>
+Message-ID: <1637670901241132@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,251 +17,125 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, sven@narfation.org, sw@simonwunderlich.de
 Cc: stable-commits@vger.kernel.org
 
 
 This is a note to let you know that I've just added the patch titled
 
-    batman-adv: mcast: fix duplicate mcast packets from BLA backbone to mesh
+    batman-adv: Reserve needed_*room for fragments
 
-to the 4.4-stable tree which can be found at:
-    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
-;a=3Dsummary
+to the 4.19-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to-mesh=
-.patch
-and it can be found in the queue-4.4 subdirectory.
+     batman-adv-reserve-needed_-room-for-fragments.patch
+and it can be found in the queue-4.19 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
-From foo@baz Tue Nov 23 01:39:02 PM CET 2021
+From foo@baz Tue Nov 23 01:33:57 PM CET 2021
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:39:34 +0100
-Subject: batman-adv: mcast: fix duplicate mcast packets from BLA backbone t=
-o mesh
+Date: Sat, 20 Nov 2021 13:40:43 +0100
+Subject: batman-adv: Reserve needed_*room for fragments
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, "Linus L=FCssing" <linus.luessing@c0d3=
-.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>, "Sven Eckelmann" <sven@=
-narfation.org>
-Message-ID: <20211120123939.260723-7-sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Message-ID: <20211120124044.261086-4-sven@narfation.org>
 
-From: Linus L=FCssing <linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
 
-commit 2369e827046920ef0599e6a36b975ac5c0a359c2 upstream.
+commit c5cbfc87558168ef4c3c27ce36eba6b83391db19 upstream.
 
-Scenario:
-* Multicast frame send from BLA backbone gateways (multiple nodes
-  with their bat0 bridged together, with BLA enabled) sharing the same
-  LAN to nodes in the mesh
+The batadv net_device is trying to propagate the needed_headroom and
+needed_tailroom from the lower devices. This is needed to avoid cost
+intensive reallocations using pskb_expand_head during the transmission.
 
-Issue:
-* Nodes receive the frame multiple times on bat0 from the mesh,
-  once from each foreign BLA backbone gateway which shares the same LAN
-  with another
+But the fragmentation code split the skb's without adding extra room at the
+end/beginning of the various fragments. This reduced the performance of
+transmissions over complex scenarios (batadv on vxlan on wireguard) because
+the lower devices had to perform the reallocations at least once.
 
-For multicast frames via batman-adv broadcast packets coming from the
-same BLA backbone but from different backbone gateways duplicates are
-currently detected via a CRC history of previously received packets.
-
-However this CRC so far was not performed for multicast frames received
-via batman-adv unicast packets. Fixing this by appyling the same check
-for such packets, too.
-
-Room for improvements in the future: Ideally we would introduce the
-possibility to not only claim a client, but a complete originator, too.
-This would allow us to only send a multicast-in-unicast packet from a BLA
-backbone gateway claiming the node and by that avoid potential redundant
-transmissions in the first place.
-
-Fixes: fe2da6ff27c7 ("batman-adv: add broadcast duplicate check")
-Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.4 backported: adjust context, correct fixes line, switch back to
-  int return type ]
+[ bp: 4.19 backported: adjust context. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c |   99 ++++++++++++++++++++++++++++=
------
- 1 file changed, 85 insertions(+), 14 deletions(-)
+ net/batman-adv/fragmentation.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1370,31 +1370,32 @@ int batadv_bla_init(struct batadv_priv *
- }
-=20
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -403,6 +403,7 @@ out:
+ 
  /**
-- * batadv_bla_check_bcast_duplist
-+ * batadv_bla_check_duplist() - Check if a frame is in the broadcast dup.
-  * @bat_priv: the bat priv with all the soft interface information
-- * @skb: contains the bcast_packet to be checked
-+ * @skb: contains the multicast packet to be checked
-+ * @payload_ptr: pointer to position inside the head buffer of the skb
-+ *  marking the start of the data to be CRC'ed
-+ * @orig: originator mac address, NULL if unknown
+  * batadv_frag_create() - create a fragment from skb
++ * @net_dev: outgoing device for fragment
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+  * @fragment_size: size of new fragment
+@@ -413,22 +414,25 @@ out:
   *
-- * check if it is on our broadcast list. Another gateway might
-- * have sent the same packet because it is connected to the same backbone,
-- * so we have to remove this duplicate.
-+ * Check if it is on our broadcast list. Another gateway might have sent t=
-he
-+ * same packet because it is connected to the same backbone, so we have to
-+ * remove this duplicate.
-  *
-  * This is performed by checking the CRC, which will tell us
-  * with a good chance that it is the same packet. If it is furthermore
-  * sent by another host, drop it. We allow equal packets from
-  * the same host however as this might be intended.
+  * Return: the new fragment, NULL on error.
   */
--int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
--				   struct sk_buff *skb)
-+static int batadv_bla_check_duplist(struct batadv_priv *bat_priv,
-+				    struct sk_buff *skb, u8 *payload_ptr,
-+				    const u8 *orig)
+-static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
++static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
++					  struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+ 					  unsigned int fragment_size)
  {
- 	int i, curr, ret =3D 0;
- 	__be32 crc;
--	struct batadv_bcast_packet *bcast_packet;
- 	struct batadv_bcast_duplist_entry *entry;
-=20
--	bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
--
- 	/* calculate the crc ... */
--	crc =3D batadv_skb_crc32(skb, (u8 *)(bcast_packet + 1));
-+	crc =3D batadv_skb_crc32(skb, payload_ptr);
-=20
- 	spin_lock_bh(&bat_priv->bla.bcast_duplist_lock);
-=20
-@@ -1413,8 +1414,21 @@ int batadv_bla_check_bcast_duplist(struc
- 		if (entry->crc !=3D crc)
- 			continue;
-=20
--		if (batadv_compare_eth(entry->orig, bcast_packet->orig))
--			continue;
-+		/* are the originators both known and not anonymous? */
-+		if (orig && !is_zero_ether_addr(orig) &&
-+		    !is_zero_ether_addr(entry->orig)) {
-+			/* If known, check if the new frame came from
-+			 * the same originator:
-+			 * We are safe to take identical frames from the
-+			 * same orig, if known, as multiplications in
-+			 * the mesh are detected via the (orig, seqno) pair.
-+			 * So we can be a bit more liberal here and allow
-+			 * identical frames from the same orig which the source
-+			 * host might have sent multiple times on purpose.
-+			 */
-+			if (batadv_compare_eth(entry->orig, orig))
-+				continue;
-+		}
-=20
- 		/* this entry seems to match: same crc, not too old,
- 		 * and from another gw. therefore return 1 to forbid it.
-@@ -1430,7 +1444,14 @@ int batadv_bla_check_bcast_duplist(struc
- 	entry =3D &bat_priv->bla.bcast_duplist[curr];
- 	entry->crc =3D crc;
- 	entry->entrytime =3D jiffies;
--	ether_addr_copy(entry->orig, bcast_packet->orig);
-+
-+	/* known originator */
-+	if (orig)
-+		ether_addr_copy(entry->orig, orig);
-+	/* anonymous originator */
-+	else
-+		eth_zero_addr(entry->orig);
-+
- 	bat_priv->bla.bcast_duplist_curr =3D curr;
-=20
- out:
-@@ -1440,6 +1461,48 @@ out:
- }
-=20
- /**
-+ * batadv_bla_check_ucast_duplist() - Check if a frame is in the broadcast=
- dup.
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: contains the multicast packet to be checked, decapsulated from a
-+ *  unicast_packet
-+ *
-+ * Check if it is on our broadcast list. Another gateway might have sent t=
-he
-+ * same packet because it is connected to the same backbone, so we have to
-+ * remove this duplicate.
-+ *
-+ * Return: true if a packet is in the duplicate list, false otherwise.
-+ */
-+static bool batadv_bla_check_ucast_duplist(struct batadv_priv *bat_priv,
-+					   struct sk_buff *skb)
-+{
-+	return batadv_bla_check_duplist(bat_priv, skb, (u8 *)skb->data, NULL);
-+}
-+
-+/**
-+ * batadv_bla_check_bcast_duplist() - Check if a frame is in the broadcast=
- dup.
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: contains the bcast_packet to be checked
-+ *
-+ * Check if it is on our broadcast list. Another gateway might have sent t=
-he
-+ * same packet because it is connected to the same backbone, so we have to
-+ * remove this duplicate.
-+ *
-+ * Return: true if a packet is in the duplicate list, false otherwise.
-+ */
-+int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
-+				   struct sk_buff *skb)
-+{
-+	struct batadv_bcast_packet *bcast_packet;
-+	u8 *payload_ptr;
-+
-+	bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
-+	payload_ptr =3D (u8 *)(bcast_packet + 1);
-+
-+	return batadv_bla_check_duplist(bat_priv, skb, payload_ptr,
-+					bcast_packet->orig);
-+}
-+
-+/**
-  * batadv_bla_is_backbone_gw_orig
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig: originator mac address
-@@ -1591,6 +1654,14 @@ int batadv_bla_rx(struct batadv_priv *ba
- 			    packet_type =3D=3D BATADV_UNICAST)
- 				goto handled;
-=20
-+	/* potential duplicates from foreign BLA backbone gateways via
-+	 * multicast-in-unicast packets
-+	 */
-+	if (is_multicast_ether_addr(ethhdr->h_dest) &&
-+	    packet_type =3D=3D BATADV_UNICAST &&
-+	    batadv_bla_check_ucast_duplist(bat_priv, skb))
-+		goto handled;
-+
- 	ether_addr_copy(search_claim.addr, ethhdr->h_source);
- 	search_claim.vid =3D vid;
- 	claim =3D batadv_claim_hash_find(bat_priv, &search_claim);
++	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
++	unsigned int tailroom = net_dev->needed_tailroom;
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+ 	unsigned int mtu = fragment_size + header_size;
+ 
+-	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
++	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
+ 	if (!skb_fragment)
+ 		goto err;
+ 
+ 	skb_fragment->priority = skb->priority;
+ 
+ 	/* Eat the last mtu-bytes of the skb */
+-	skb_reserve(skb_fragment, header_size + ETH_HLEN);
++	skb_reserve(skb_fragment, ll_reserved + header_size);
+ 	skb_split(skb, skb_fragment, skb->len - fragment_size);
+ 
+ 	/* Add the header */
+@@ -451,11 +455,12 @@ int batadv_frag_send_packet(struct sk_bu
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_neigh_node *neigh_node)
+ {
++	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+-	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
++	unsigned int mtu = net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+ 	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+@@ -515,7 +520,7 @@ int batadv_frag_send_packet(struct sk_bu
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header,
++		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
+ 						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
 
 
 Patches currently in stable-queue which might be from sven@narfation.org are
 
-queue-4.4/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.4/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.4/batman-adv-set-.owner-to-this_module.patch
-queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
--mesh.patch
-queue-4.4/batman-adv-fix-multicast-tt-issues-with-bogus-roam-flags.patch
-queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
--lan.patch
-queue-4.4/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.4/net-batman-adv-fix-error-handling.patch
-queue-4.4/batman-adv-keep-fragments-equally-sized.patch
-queue-4.4/batman-adv-avoid-warn_on-timing-related-checks.patch
-queue-4.4/batman-adv-prevent-duplicated-softif_vlan-entry.patch
-queue-4.4/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
-ch
-queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
--mesh.patch
+queue-4.19/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-4.19/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
+queue-4.19/ath10k-fix-max-antenna-gain-unit.patch
+queue-4.19/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.patch
+queue-4.19/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-4.19/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
