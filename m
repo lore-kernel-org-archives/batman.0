@@ -1,10 +1,10 @@
 Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: mcast: fix duplicate mcast packets in BLA backbone
- from LAN" has been added to the 4.19-stable tree
+Subject: Patch "batman-adv: Keep fragments equally sized" has been added to
+ the 4.9-stable tree
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:35:01 +0100
-In-Reply-To: <20211120124044.261086-2-sven@narfation.org>
-Message-ID: <1637670901124192@kroah.com>
+Date: Tue, 23 Nov 2021 13:43:01 +0100
+In-Reply-To: <20211120123958.260826-2-sven@narfation.org>
+Message-ID: <1637671381212139@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -17,193 +17,156 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, martin@darmstadt.freifunk.net, sven@narfation.org, sw@simonwunderlich.de
 Cc: stable-commits@vger.kernel.org
 
 
 This is a note to let you know that I've just added the patch titled
 
-    batman-adv: mcast: fix duplicate mcast packets in BLA backbone from LAN
+    batman-adv: Keep fragments equally sized
 
-to the 4.19-stable tree which can be found at:
+to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
 ;a=3Dsummary
 
 The filename of the patch is:
-     batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.=
-patch
-and it can be found in the queue-4.19 subdirectory.
+     batman-adv-keep-fragments-equally-sized.patch
+and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
-From foo@baz Tue Nov 23 01:33:57 PM CET 2021
+From foo@baz Tue Nov 23 01:37:10 PM CET 2021
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:40:41 +0100
-Subject: batman-adv: mcast: fix duplicate mcast packets in BLA backbone fro=
-m LAN
+Date: Sat, 20 Nov 2021 13:39:52 +0100
+Subject: batman-adv: Keep fragments equally sized
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, "Linus L=FCssing" <linus.luessing@c0d3=
-.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>, "Sven Eckelmann" <sven@=
-narfation.org>
-Message-ID: <20211120124044.261086-2-sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, "Sven Eckelmann" <sven@narfation.org>,=
+ "Martin Weinelt" <martin@darmstadt.freifunk.net>, "Linus L=FCssing" <linus=
+.luessing@c0d3.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>
+Message-ID: <20211120123958.260826-2-sven@narfation.org>
 
-From: Linus L=FCssing <linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
 
-commit 3236d215ad38a3f5372e65cd1e0a52cf93d3c6a2 upstream.
+commit 1c2bcc766be44467809f1798cd4ceacafe20a852 upstream.
 
-Scenario:
-* Multicast frame send from a BLA backbone (multiple nodes with
-  their bat0 bridged together, with BLA enabled)
+The batman-adv fragmentation packets have the design problem that they
+cannot be refragmented and cannot handle padding by the underlying link.
+The latter often leads to problems when networks are incorrectly configured
+and don't use a common MTU.
 
-Issue:
-* BLA backbone nodes receive the frame multiple times on bat0
+The sender could for example fragment a 1271 byte frame (plus external
+ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
+large MTU of the underlying link (max. 1294 byte frames). This would create
+a 1294 bytes large frame (fragment 2) and a 55 bytes large frame
+(fragment 1). The extra 54 bytes are the fragment header (20) added to each
+fragment and the external ethernet header (14) for the second fragment.
 
-For multicast frames received via batman-adv broadcast packets the
-originator of the broadcast packet is checked before decapsulating and
-forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
-batadv_recv_bcast_packet()). If it came from a node which shares the
-same BLA backbone with us then it is not forwarded to bat0 to avoid a
-loop.
+Let us assume that the next hop is then not able to transport 1294 bytes to
+its next hop. The 1294 byte large frame will be dropped but the 55 bytes
+large fragment will still be forwarded to its destination.
 
-When sending a multicast frame in a non-4-address batman-adv unicast
-packet we are currently missing this check - and cannot do so because
-the batman-adv unicast packet has no originator address field.
+Or let us assume that the underlying hardware requires that each frame has
+a minimum size (e.g. 60 bytes). Then it will pad the 55 bytes frame to 60
+bytes. The receiver of the 60 bytes frame will no longer be able to
+correctly assemble the two frames together because it is not aware that 5
+bytes of the 60 bytes frame are padding and don't belong to the reassembled
+frame.
 
-However, we can simply fix this on the sender side by only sending the
-multicast frame via unicasts to interested nodes which do not share the
-same BLA backbone with us. This also nicely avoids some unnecessary
-transmissions on mesh side.
+This can partly be avoided by splitting frames more equally. In this
+example, the 675 and 674 bytes large fragment frames could both potentially
+reach its destination without being too large or too small.
 
-Note that no infinite loop was observed, probably because of dropping
-via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
-utterly confuse switches/bridges, ICMPv6 duplicate address detection and
-neighbor discovery and therefore leads to long delays before being able
-to establish TCP connections, for instance. And it also leads to the Linux
-bridge printing messages like:
-"br-lan: received packet on eth1 with own address as source address ..."
-
-Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multica=
-st packets")
-Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.19 backport: drop usage in non-existing batadv_mcast_forw*, correct
-  fixes line ]
+[ bp: 4.9 backported: adjust context. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/multicast.c      |   31 +++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h      |   15 +++++++++++++++
- net/batman-adv/soft-interface.c |    5 ++---
- 3 files changed, 48 insertions(+), 3 deletions(-)
+ net/batman-adv/fragmentation.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -62,10 +62,12 @@
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
-=20
-+#include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
- #include "log.h"
- #include "netlink.h"
-+#include "send.h"
- #include "soft-interface.h"
- #include "translation-table.h"
- #include "tvlv.h"
-@@ -1025,6 +1027,35 @@ batadv_mcast_forw_mode(struct batadv_pri
- }
-=20
- /**
-+ * batadv_mcast_forw_send_orig() - send a multicast packet to an originator
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the multicast packet to send
-+ * @vid: the vlan identifier
-+ * @orig_node: the originator to send the packet to
-+ *
-+ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
-+ */
-+int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb,
-+				unsigned short vid,
-+				struct batadv_orig_node *orig_node)
-+{
-+	/* Avoid sending multicast-in-unicast packets to other BLA
-+	 * gateways - they already got the frame from the LAN side
-+	 * we share with them.
-+	 * TODO: Refactor to take BLA into account earlier, to avoid
-+	 * reducing the mcast_fanout count.
-+	 */
-+	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
-+		dev_kfree_skb(skb);
-+		return NET_XMIT_SUCCESS;
-+	}
-+
-+	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
-+				       orig_node, vid);
-+}
-+
-+/**
-  * batadv_mcast_want_unsnoop_update() - update unsnoop counter and list
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig: the orig_node which multicast state might have changed of
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -51,6 +51,11 @@ enum batadv_forw_mode
- batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		       struct batadv_orig_node **mcast_single_orig);
-=20
-+int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+				struct sk_buff *skb,
-+				unsigned short vid,
-+				struct batadv_orig_node *orig_node);
-+
- void batadv_mcast_init(struct batadv_priv *bat_priv);
-=20
- int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-@@ -79,6 +84,16 @@ static inline int batadv_mcast_init(stru
- }
-=20
- static inline int
-+batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
-+			    struct sk_buff *skb,
-+			    unsigned short vid,
-+			    struct batadv_orig_node *orig_node)
-+{
-+	kfree_skb(skb);
-+	return NET_XMIT_DROP;
-+}
-+
-+static inline int
- batadv_mcast_mesh_info_put(struct sk_buff *msg, struct batadv_priv *bat_pr=
-iv)
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -396,7 +396,7 @@ out:
+  * batadv_frag_create - create a fragment from skb
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+- * @mtu: size of new fragment
++ * @fragment_size: size of new fragment
+  *
+  * Split the passed skb into two fragments: A new one with size matching t=
+he
+  * passed mtu and the old one with the rest. The new skb contains data fro=
+m the
+@@ -406,11 +406,11 @@ out:
+  */
+ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+-					  unsigned int mtu)
++					  unsigned int fragment_size)
  {
- 	return 0;
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -367,9 +367,8 @@ send:
- 				goto dropped;
- 			ret =3D batadv_send_skb_via_gw(bat_priv, skb, vid);
- 		} else if (mcast_single_orig) {
--			ret =3D batadv_send_skb_unicast(bat_priv, skb,
--						      BATADV_UNICAST, 0,
--						      mcast_single_orig, vid);
-+			ret =3D batadv_mcast_forw_send_orig(bat_priv, skb, vid,
-+							  mcast_single_orig);
- 		} else {
- 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
- 								  skb))
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size =3D sizeof(*frag_head);
+-	unsigned int fragment_size =3D mtu - header_size;
++	unsigned int mtu =3D fragment_size + header_size;
+=20
+ 	skb_fragment =3D netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -449,7 +449,7 @@ int batadv_frag_send_packet(struct sk_bu
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int mtu =3D neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size =3D sizeof(frag_header);
+-	unsigned int max_fragment_size, max_packet_size;
++	unsigned int max_fragment_size, num_fragments;
+ 	int ret =3D -1;
+=20
+ 	/* To avoid merge and refragmentation at next-hops we never send
+@@ -457,10 +457,15 @@ int batadv_frag_send_packet(struct sk_bu
+ 	 */
+ 	mtu =3D min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size =3D mtu - header_size;
+-	max_packet_size =3D max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
++
++	if (skb->len =3D=3D 0 || max_fragment_size =3D=3D 0)
++		return -EINVAL;
++
++	num_fragments =3D (skb->len - 1) / max_fragment_size + 1;
++	max_fragment_size =3D (skb->len - 1) / num_fragments + 1;
+=20
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+-	if (skb->len > max_packet_size)
++	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS)
+ 		goto out;
+=20
+ 	bat_priv =3D orig_node->bat_priv;
+@@ -498,7 +503,8 @@ int batadv_frag_send_packet(struct sk_bu
+ 			goto out;
+ 		}
+=20
+-		skb_fragment =3D batadv_frag_create(skb, &frag_header, mtu);
++		skb_fragment =3D batadv_frag_create(skb, &frag_header,
++						  max_fragment_size);
+ 		if (!skb_fragment)
+ 			goto out;
+=20
 
 
 Patches currently in stable-queue which might be from sven@narfation.org are
 
-queue-4.19/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.19/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.19/ath10k-fix-max-antenna-gain-unit.patch
-queue-4.19/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-fro=
-m-lan.patch
-queue-4.19/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.19/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pa=
-tch
+queue-4.9/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-4.9/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
+queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
+-mesh.patch
+queue-4.9/ath10k-fix-max-antenna-gain-unit.patch
+queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
+-lan.patch
+queue-4.9/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-4.9/batman-adv-fix-own-ogm-check-in-aggregated-ogms.patch
+queue-4.9/batman-adv-keep-fragments-equally-sized.patch
+queue-4.9/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
+ch
