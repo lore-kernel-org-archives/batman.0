@@ -1,12 +1,13 @@
-Return-Path: 
-  <3cnmeYQkbAPElrsdTeeXkTiibW.ZhhZeXnlXkVhgmXgm.Vhf@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Date: Tue, 23 Nov 2021 13:33:07 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 5.4 0/3] batman-adv: Fixes for stable/linux-4.19.y
+Message-ID: <YZzfgzhgkOM4Yypx@kroah.com>
+References: <20211120124053.261156-1-sven@narfation.org>
 MIME-Version: 1.0
-Date: Wed, 24 Nov 2021 09:42:10 -0800
-In-Reply-To: <000000000000ba80b905cdcd8b19@google.com>
-Message-ID: <0000000000009f52f205d18c60a7@google.com>
-Subject: Re: [syzbot] WARNING: ODEBUG bug in batadv_v_ogm_free
-From: syzbot <syzbot+0ef06384b5f39a16ebb9@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211120124053.261156-1-sven@narfation.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,26 +17,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jason@zx2c4.com, a@unstable.cc, amcohen@nvidia.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, dsahern@kernel.org, edumazet@google.com, fw@strlen.de, idosch@OSS.NVIDIA.COM, justin.iurman@uliege.be, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, paskripkin@gmail.com, praveen5582@gmail.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, willemb@google.com, yoshfuji@linux-ipv6.org, zxu@linkedin.com
+To: Sven Eckelmann <sven@narfation.org>
+Cc: stable@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-syzbot suspects this issue was fixed by commit:
+On Sat, Nov 20, 2021 at 01:40:50PM +0100, Sven Eckelmann wrote:
+> Hi,
+> 
+> I went through  all changes in batman-adv since v4.19 with a Fixes: line
+> and checked whether they were backported to the LTS kernels. The ones which
+> weren't ported and applied to this branch are now part of this patch series.
+> 
+> For this kernel version, I only found following three patches:
+> 
+> * batman-adv: Consider fragmentation for needed_headroom
+> * batman-adv: Reserve needed_*room for fragments
+> * batman-adv: Don't always reallocate the fragmentation skb head
+> 
+> which could in some circumstances cause packet loss but which were created
+> to fix high CPU load/low throughput problems. But I've added them here
+> anyway because the corresponding VXLAN patches were also added to stable.
+> And some stable kernels also got these fixes a while back.
+> 
+> Kind regards,
+> 	Sven
+> 
+> Sven Eckelmann (3):
+>   batman-adv: Consider fragmentation for needed_headroom
+>   batman-adv: Reserve needed_*room for fragments
+>   batman-adv: Don't always reallocate the fragmentation skb head
 
-commit 6f68cd634856f8ca93bafd623ba5357e0f648c68
-Author: Pavel Skripkin <paskripkin@gmail.com>
-Date:   Sun Oct 24 13:13:56 2021 +0000
+Now queued up, thanks.
 
-    net: batman-adv: fix error handling
-
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=114e3c16b00000
-start commit:   cf52ad5ff16c Merge tag 'driver-core-5.15-rc6' of git://git..
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=9479508d7bb83ad9
-dashboard link: https://syzkaller.appspot.com/bug?extid=0ef06384b5f39a16ebb9
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17af7344b00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15dc02fb300000
-
-If the result looks correct, please mark the issue as fixed by replying with:
-
-#syz fix: net: batman-adv: fix error handling
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+greg k-h
