@@ -1,10 +1,10 @@
 Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Avoid WARN_ON timing related checks" has been
+Subject: Patch "batman-adv: Prevent duplicated softif_vlan entry" has been
  added to the 4.4-stable tree
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:42:43 +0100
-In-Reply-To: <20211120123939.260723-12-sven@narfation.org>
-Message-ID: <1637671363207187@kroah.com>
+Date: Tue, 23 Nov 2021 13:42:44 +0100
+In-Reply-To: <20211120123939.260723-4-sven@narfation.org>
+Message-ID: <1637671364136221@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -17,19 +17,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, penguin-kernel@i-love.sakura.ne.jp, sven@narfation.org, sw@simonwunderlich.de, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, sven@narfation.org, sw@simonwunderlich.de
 Cc: stable-commits@vger.kernel.org
 
 
 This is a note to let you know that I've just added the patch titled
 
-    batman-adv: Avoid WARN_ON timing related checks
+    batman-adv: Prevent duplicated softif_vlan entry
 
 to the 4.4-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     batman-adv-avoid-warn_on-timing-related-checks.patch
+     batman-adv-prevent-duplicated-softif_vlan-entry.patch
 and it can be found in the queue-4.4 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -38,49 +38,87 @@ please let <stable@vger.kernel.org> know about it.
 
 From foo@baz Tue Nov 23 01:39:02 PM CET 2021
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:39:39 +0100
-Subject: batman-adv: Avoid WARN_ON timing related checks
+Date: Sat, 20 Nov 2021 13:39:31 +0100
+Subject: batman-adv: Prevent duplicated softif_vlan entry
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com, Simon Wunderlich <sw@simonwunderlich.de>
-Message-ID: <20211120123939.260723-12-sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Message-ID: <20211120123939.260723-4-sven@narfation.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-commit 9f460ae31c4435fd022c443a6029352217a16ac1 upstream.
+commit 94cb82f594ed86be303398d6dfc7640a6f1d45d4 upstream.
 
-The soft/batadv interface for a queued OGM can be changed during the time
-the OGM was queued for transmission and when the OGM is actually
-transmitted by the worker.
+The function batadv_softif_vlan_get is responsible for adding new
+softif_vlan to the softif_vlan_list. It first checks whether the entry
+already is in the list or not. If it is, then the creation of a new entry
+is aborted.
 
-But WARN_ON must be used to denote kernel bugs and not to print simple
-warnings. A warning can simply be printed using pr_warn.
+But the lock for the list is only held when the list is really modified.
+This could lead to duplicated entries because another context could create
+an entry with the same key between the check and the list manipulation.
 
-Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Reported-by: syzbot+c0b807de416427ff3dd1@syzkaller.appspotmail.com
-Fixes: ef0a937f7a14 ("batman-adv: consider outgoing interface in OGM sending")
+The check and the manipulation of the list must therefore be in the same
+locked code section.
+
+Fixes: 5d2c05b21337 ("batman-adv: add per VLAN interface attribute framework")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.4 backported: adjust context. ]
+[ bp: 4.4 backport: switch back to atomic_t based reference counting. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/bat_iv_ogm.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/batman-adv/soft-interface.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -526,8 +526,10 @@ static void batadv_iv_ogm_emit(struct ba
- 	if (WARN_ON(!forw_packet->if_outgoing))
- 		goto out;
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -539,15 +539,20 @@ int batadv_softif_create_vlan(struct bat
+ 	struct batadv_softif_vlan *vlan;
+ 	int err;
  
--	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
-+	if (forw_packet->if_outgoing->soft_iface != soft_iface) {
-+		pr_warn("%s: soft interface switch for queued OGM\n", __func__);
- 		goto out;
++	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
++
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+ 		batadv_softif_vlan_free_ref(vlan);
++		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 		return -EEXIST;
+ 	}
+ 
+ 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
+-	if (!vlan)
++	if (!vlan) {
++		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 		return -ENOMEM;
 +	}
  
- 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto out;
+ 	vlan->bat_priv = bat_priv;
+ 	vlan->vid = vid;
+@@ -555,16 +560,19 @@ int batadv_softif_create_vlan(struct bat
+ 
+ 	atomic_set(&vlan->ap_isolation, 0);
+ 
++	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
++	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
++
++	/* batadv_sysfs_add_vlan cannot be in the spinlock section due to the
++	 * sleeping behavior of the sysfs functions and the fs_reclaim lock
++	 */
+ 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+ 	if (err) {
+-		kfree(vlan);
++		/* ref for the list */
++		batadv_softif_vlan_free_ref(vlan);
+ 		return err;
+ 	}
+ 
+-	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+-	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+-	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+-
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
 
 
 Patches currently in stable-queue which might be from sven@narfation.org are
