@@ -1,11 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.4 00/11] batman-adv: Fixes for stable/linux-4.4.y
-Date: Sat, 20 Nov 2021 13:39:28 +0100
-Message-Id: <20211120123939.260723-1-sven@narfation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Subject: Patch "batman-adv: mcast: fix duplicate mcast packets in BLA backbone
+ from mesh" has been added to the 4.4-stable tree
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 23 Nov 2021 13:42:44 +0100
+In-Reply-To: <20211120123939.260723-6-sven@narfation.org>
+Message-ID: <16376713644214@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,61 +17,213 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
+Cc: stable-commits@vger.kernel.org
+
+
+This is a note to let you know that I've just added the patch titled
+
+    batman-adv: mcast: fix duplicate mcast packets in BLA backbone from mesh
+
+to the 4.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
+;a=3Dsummary
+
+The filename of the patch is:
+     batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-mesh=
+.patch
+and it can be found in the queue-4.4 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From foo@baz Tue Nov 23 01:39:02 PM CET 2021
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 20 Nov 2021 13:39:33 +0100
+Subject: batman-adv: mcast: fix duplicate mcast packets in BLA backbone fro=
+m mesh
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, "Linus L=FCssing" <linus.luessing@c0d3=
+.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>, "Sven Eckelmann" <sven@=
+narfation.org>
+Message-ID: <20211120123939.260723-6-sven@narfation.org>
 
-Hi,
+From: Linus L=FCssing <linus.luessing@c0d3.blue>
 
-I went through  all changes in batman-adv since v4.4 with a Fixes: line
-and checked whether they were backported to the LTS kernels. The ones which
-weren't ported and applied to this branch are now part of this patch series.
+commit 74c09b7275126da1b642b90c9cdc3ae8b729ad4b upstream
 
-There are also following three patches included:
+Scenario:
+* Multicast frame send from mesh to a BLA backbone (multiple nodes
+  with their bat0 bridged together, with BLA enabled)
 
-* batman-adv: Consider fragmentation for needed_headroom
-* batman-adv: Reserve needed_*room for fragments
-* batman-adv: Don't always reallocate the fragmentation skb head
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0,
+  once from mesh->bat0 and once from each backbone_gw from LAN
 
-which could in some circumstances cause packet loss but which were created
-to fix high CPU load/low throughput problems. But I've added them here
-anyway because the corresponding VXLAN patches were also added to stable.
-And some stable kernels also got these fixes a while back.
+For unicast, a node will send only to the best backbone gateway
+according to the TQ. However for multicast we currently cannot determine
+if multiple destination nodes share the same backbone if they don't share
+the same backbone with us. So we need to keep sending the unicasts to
+all backbone gateways and let the backbone gateways decide which one
+will forward the frame. We can use the CLAIM mechanism to make this
+decision.
 
-Kind regards,
-	Sven
+One catch: The batman-adv gateway feature for DHCP packets potentially
+sends multicast packets in the same batman-adv unicast header as the
+multicast optimizations code. And we are not allowed to drop those even
+if we did not claim the source address of the sender, as for such
+packets there is only this one multicast-in-unicast packet.
 
-Linus Lüssing (4):
-  batman-adv: Fix multicast TT issues with bogus ROAM flags
-  batman-adv: mcast: fix duplicate mcast packets in BLA backbone from
-    LAN
-  batman-adv: mcast: fix duplicate mcast packets in BLA backbone from
-    mesh
-  batman-adv: mcast: fix duplicate mcast packets from BLA backbone to
-    mesh
+How can we distinguish the two cases?
 
-Sven Eckelmann (6):
-  batman-adv: Keep fragments equally sized
-  batman-adv: Prevent duplicated softif_vlan entry
-  batman-adv: Consider fragmentation for needed_headroom
-  batman-adv: Reserve needed_*room for fragments
-  batman-adv: Don't always reallocate the fragmentation skb head
-  batman-adv: Avoid WARN_ON timing related checks
+The gateway feature uses a batman-adv unicast 4 address header. While
+the multicast-to-unicasts feature uses a simple, 3 address batman-adv
+unicast header. So let's use this to distinguish.
 
-Taehee Yoo (1):
-  batman-adv: set .owner to THIS_MODULE
+Fixes: 2d3f6ccc4ea5 ("batman-adv: check incoming packet type for bla")
+Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.4 backported: adjust context, correct fixes line ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c |   34 ++++++++++++++++++++++++----=
+-----
+ net/batman-adv/bridge_loop_avoidance.h |    4 +--
+ net/batman-adv/soft-interface.c        |    6 ++---
+ 3 files changed, 30 insertions(+), 14 deletions(-)
 
- net/batman-adv/bat_iv_ogm.c            |   4 +-
- net/batman-adv/bridge_loop_avoidance.c | 133 ++++++++++++++++++++-----
- net/batman-adv/bridge_loop_avoidance.h |   4 +-
- net/batman-adv/debugfs.c               |   1 +
- net/batman-adv/fragmentation.c         |  41 +++++---
- net/batman-adv/hard-interface.c        |   3 +
- net/batman-adv/multicast.c             |  31 ++++++
- net/batman-adv/multicast.h             |  15 +++
- net/batman-adv/soft-interface.c        |  31 +++---
- net/batman-adv/translation-table.c     |   6 +-
- 10 files changed, 215 insertions(+), 54 deletions(-)
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1542,7 +1542,7 @@ void batadv_bla_free(struct batadv_priv
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the frame to be checked
+  * @vid: the VLAN ID of the frame
+- * @is_bcast: the packet came in a broadcast packet type.
++ * @packet_type: the batman packet type this frame came in
+  *
+  * bla_rx avoidance checks if:
+  *  * we have to race for a claim
+@@ -1553,7 +1553,7 @@ void batadv_bla_free(struct batadv_priv
+  * process the skb.
+  */
+ int batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-		  unsigned short vid, bool is_bcast)
++		  unsigned short vid, int packet_type)
+ {
+ 	struct batadv_bla_backbone_gw *backbone_gw;
+ 	struct ethhdr *ethhdr;
+@@ -1572,9 +1572,24 @@ int batadv_bla_rx(struct batadv_priv *ba
+ 		goto allow;
+=20
+ 	if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
+-		/* don't allow broadcasts while requests are in flight */
+-		if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast)
+-			goto handled;
++		/* don't allow multicast packets while requests are in flight */
++		if (is_multicast_ether_addr(ethhdr->h_dest))
++			/* Both broadcast flooding or multicast-via-unicasts
++			 * delivery might send to multiple backbone gateways
++			 * sharing the same LAN and therefore need to coordinate
++			 * which backbone gateway forwards into the LAN,
++			 * by claiming the payload source address.
++			 *
++			 * Broadcast flooding and multicast-via-unicasts
++			 * delivery use the following two batman packet types.
++			 * Note: explicitly exclude BATADV_UNICAST_4ADDR,
++			 * as the DHCP gateway feature will send explicitly
++			 * to only one BLA gateway, so the claiming process
++			 * should be avoided there.
++			 */
++			if (packet_type =3D=3D BATADV_BCAST ||
++			    packet_type =3D=3D BATADV_UNICAST)
++				goto handled;
+=20
+ 	ether_addr_copy(search_claim.addr, ethhdr->h_source);
+ 	search_claim.vid =3D vid;
+@@ -1602,13 +1617,14 @@ int batadv_bla_rx(struct batadv_priv *ba
+ 		goto allow;
+ 	}
+=20
+-	/* if it is a broadcast ... */
+-	if (is_multicast_ether_addr(ethhdr->h_dest) && is_bcast) {
++	/* if it is a multicast ... */
++	if (is_multicast_ether_addr(ethhdr->h_dest) &&
++	    (packet_type =3D=3D BATADV_BCAST || packet_type =3D=3D BATADV_UNICAST=
+)) {
+ 		/* ... drop it. the responsible gateway is in charge.
+ 		 *
+-		 * We need to check is_bcast because with the gateway
++		 * We need to check packet type because with the gateway
+ 		 * feature, broadcasts (like DHCP requests) may be sent
+-		 * using a unicast packet type.
++		 * using a unicast 4 address packet type. See comment above.
+ 		 */
+ 		goto handled;
+ 	} else {
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -27,7 +27,7 @@ struct sk_buff;
+=20
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ int batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-		  unsigned short vid, bool is_bcast);
++		  unsigned short vid, int packet_type);
+ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		  unsigned short vid);
+ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
+@@ -50,7 +50,7 @@ void batadv_bla_free(struct batadv_priv
+=20
+ static inline int batadv_bla_rx(struct batadv_priv *bat_priv,
+ 				struct sk_buff *skb, unsigned short vid,
+-				bool is_bcast)
++				int packet_type)
+ {
+ 	return 0;
+ }
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -393,10 +393,10 @@ void batadv_interface_rx(struct net_devi
+ 	struct vlan_ethhdr *vhdr;
+ 	struct ethhdr *ethhdr;
+ 	unsigned short vid;
+-	bool is_bcast;
++	int packet_type;
+=20
+ 	batadv_bcast_packet =3D (struct batadv_bcast_packet *)skb->data;
+-	is_bcast =3D (batadv_bcast_packet->packet_type =3D=3D BATADV_BCAST);
++	packet_type =3D batadv_bcast_packet->packet_type;
+=20
+ 	/* check if enough space is available for pulling, and pull */
+ 	if (!pskb_may_pull(skb, hdr_size))
+@@ -444,7 +444,7 @@ void batadv_interface_rx(struct net_devi
+ 	/* Let the bridge loop avoidance check the packet. If will
+ 	 * not handle it, we can safely push it up.
+ 	 */
+-	if (batadv_bla_rx(bat_priv, skb, vid, is_bcast))
++	if (batadv_bla_rx(bat_priv, skb, vid, packet_type))
+ 		goto out;
+=20
+ 	if (orig_node)
 
--- 
-2.30.2
 
+Patches currently in stable-queue which might be from sven@narfation.org are
+
+queue-4.4/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-4.4/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
+queue-4.4/batman-adv-set-.owner-to-this_module.patch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
+-mesh.patch
+queue-4.4/batman-adv-fix-multicast-tt-issues-with-bogus-roam-flags.patch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
+-lan.patch
+queue-4.4/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-4.4/net-batman-adv-fix-error-handling.patch
+queue-4.4/batman-adv-keep-fragments-equally-sized.patch
+queue-4.4/batman-adv-avoid-warn_on-timing-related-checks.patch
+queue-4.4/batman-adv-prevent-duplicated-softif_vlan-entry.patch
+queue-4.4/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
+ch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
+-mesh.patch
