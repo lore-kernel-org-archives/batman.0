@@ -1,12 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.9 2/7] batman-adv: Fix own OGM check in aggregated OGMs
-Date: Sat, 20 Nov 2021 13:39:53 +0100
-Message-Id: <20211120123958.260826-3-sven@narfation.org>
-In-Reply-To: <20211120123958.260826-1-sven@narfation.org>
-References: <20211120123958.260826-1-sven@narfation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Subject: Patch "batman-adv: Don't always reallocate the fragmentation skb
+ head" has been added to the 4.4-stable tree
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 23 Nov 2021 13:42:43 +0100
+In-Reply-To: <20211120123939.260723-11-sven@narfation.org>
+Message-ID: <163767136344251@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,63 +17,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, sven@narfation.org, sw@simonwunderlich.de
+Cc: stable-commits@vger.kernel.org
+
+
+This is a note to let you know that I've just added the patch titled
+
+    batman-adv: Don't always reallocate the fragmentation skb head
+
+to the 4.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
+and it can be found in the queue-4.4 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From foo@baz Tue Nov 23 01:39:02 PM CET 2021
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 20 Nov 2021 13:39:38 +0100
+Subject: batman-adv: Don't always reallocate the fragmentation skb head
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Message-ID: <20211120123939.260723-11-sven@narfation.org>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
 
-commit d8bf0c01642275c7dca1e5d02c34e4199c200b1f upstream.
+commit 992b03b88e36254e26e9a4977ab948683e21bd9f upstream.
 
-The own OGM check is currently misplaced and can lead to the following
-issues:
+When a packet is fragmented by batman-adv, the original batman-adv header
+is not modified. Only a new fragmentation is inserted between the original
+one and the ethernet header. The code must therefore make sure that it has
+a writable region of this size in the skbuff head.
 
-For one thing we might receive an aggregated OGM from a neighbor node
-which has our own OGM in the first place. We would then not only skip
-our own OGM but erroneously also any other, following OGM in the
-aggregate.
+But it is not useful to always reallocate the skbuff by this size even when
+there would be more than enough headroom still in the skb. The reallocation
+is just to costly during in this codepath.
 
-For another, we might receive an OGM aggregate which has our own OGM in
-a place other then the first one. Then we would wrongly not skip this
-OGM, leading to populating the orginator and gateway table with ourself.
-
-Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: adjust context, correct fixes line ]
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.4 backported: adjust context, switch back to old return type +
+  labels ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/bat_v_ogm.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ net/batman-adv/fragmentation.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index d2e6885479cb..cb94ac988618 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -690,6 +690,12 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 		   ntohl(ogm_packet->seqno), ogm_throughput, ogm_packet->ttl,
- 		   ogm_packet->version, ntohs(ogm_packet->tvlv_len));
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -507,11 +507,13 @@ bool batadv_frag_send_packet(struct sk_b
+ 		frag_header.no++;
+ 	}
  
-+	if (batadv_is_my_mac(bat_priv, ogm_packet->orig)) {
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "Drop packet: originator packet from ourself\n");
-+		return;
-+	}
-+
- 	/* If the troughput metric is 0, immediately drop the packet. No need to
- 	 * create orig_node / neigh_node for an unusable route.
- 	 */
-@@ -788,11 +794,6 @@ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
- 	if (batadv_is_my_mac(bat_priv, ethhdr->h_source))
- 		return NET_RX_DROP;
+-	/* Make room for the fragment header. */
+-	if (batadv_skb_head_push(skb, header_size) < 0 ||
+-	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0)
++	/* make sure that there is at least enough head for the fragmentation
++	 * and ethernet headers
++	 */
++	if (skb_cow_head(skb, ETH_HLEN + header_size) < 0)
+ 		goto out_err;
  
--	ogm_packet = (struct batadv_ogm2_packet *)skb->data;
--
--	if (batadv_is_my_mac(bat_priv, ogm_packet->orig))
--		return NET_RX_DROP;
--
- 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
--- 
-2.30.2
++	skb_push(skb, header_size);
+ 	memcpy(skb->data, &frag_header, header_size);
+ 
+ 	/* Send the last fragment */
 
+
+Patches currently in stable-queue which might be from sven@narfation.org are
+
+queue-4.4/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-4.4/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
+queue-4.4/batman-adv-set-.owner-to-this_module.patch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to-mesh.patch
+queue-4.4/batman-adv-fix-multicast-tt-issues-with-bogus-roam-flags.patch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.patch
+queue-4.4/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-4.4/net-batman-adv-fix-error-handling.patch
+queue-4.4/batman-adv-keep-fragments-equally-sized.patch
+queue-4.4/batman-adv-avoid-warn_on-timing-related-checks.patch
+queue-4.4/batman-adv-prevent-duplicated-softif_vlan-entry.patch
+queue-4.4/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
+queue-4.4/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-mesh.patch
