@@ -1,11 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 5.4 0/3] batman-adv: Fixes for stable/linux-4.19.y
-Date: Sat, 20 Nov 2021 13:40:50 +0100
-Message-Id: <20211120124053.261156-1-sven@narfation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Subject: Patch "batman-adv: mcast: fix duplicate mcast packets in BLA backbone
+ from LAN" has been added to the 4.9-stable tree
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 23 Nov 2021 13:43:02 +0100
+In-Reply-To: <20211120123958.260826-4-sven@narfation.org>
+Message-ID: <1637671382128178@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,38 +17,196 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
+Cc: stable-commits@vger.kernel.org
+
+
+This is a note to let you know that I've just added the patch titled
+
+    batman-adv: mcast: fix duplicate mcast packets in BLA backbone from LAN
+
+to the 4.9-stable tree which can be found at:
+    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
+;a=3Dsummary
+
+The filename of the patch is:
+     batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.=
+patch
+and it can be found in the queue-4.9 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From foo@baz Tue Nov 23 01:37:10 PM CET 2021
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 20 Nov 2021 13:39:54 +0100
+Subject: batman-adv: mcast: fix duplicate mcast packets in BLA backbone fro=
+m LAN
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, "Linus L=FCssing" <linus.luessing@c0d3=
+.blue>, "Simon Wunderlich" <sw@simonwunderlich.de>, "Sven Eckelmann" <sven@=
+narfation.org>
+Message-ID: <20211120123958.260826-4-sven@narfation.org>
 
-Hi,
+From: Linus L=FCssing <linus.luessing@c0d3.blue>
 
-I went through  all changes in batman-adv since v4.19 with a Fixes: line
-and checked whether they were backported to the LTS kernels. The ones which
-weren't ported and applied to this branch are now part of this patch series.
+commit 3236d215ad38a3f5372e65cd1e0a52cf93d3c6a2 upstream.
 
-For this kernel version, I only found following three patches:
+Scenario:
+* Multicast frame send from a BLA backbone (multiple nodes with
+  their bat0 bridged together, with BLA enabled)
 
-* batman-adv: Consider fragmentation for needed_headroom
-* batman-adv: Reserve needed_*room for fragments
-* batman-adv: Don't always reallocate the fragmentation skb head
+Issue:
+* BLA backbone nodes receive the frame multiple times on bat0
 
-which could in some circumstances cause packet loss but which were created
-to fix high CPU load/low throughput problems. But I've added them here
-anyway because the corresponding VXLAN patches were also added to stable.
-And some stable kernels also got these fixes a while back.
+For multicast frames received via batman-adv broadcast packets the
+originator of the broadcast packet is checked before decapsulating and
+forwarding the frame to bat0 (batadv_bla_is_backbone_gw()->
+batadv_recv_bcast_packet()). If it came from a node which shares the
+same BLA backbone with us then it is not forwarded to bat0 to avoid a
+loop.
 
-Kind regards,
-	Sven
+When sending a multicast frame in a non-4-address batman-adv unicast
+packet we are currently missing this check - and cannot do so because
+the batman-adv unicast packet has no originator address field.
 
-Sven Eckelmann (3):
-  batman-adv: Consider fragmentation for needed_headroom
-  batman-adv: Reserve needed_*room for fragments
-  batman-adv: Don't always reallocate the fragmentation skb head
+However, we can simply fix this on the sender side by only sending the
+multicast frame via unicasts to interested nodes which do not share the
+same BLA backbone with us. This also nicely avoids some unnecessary
+transmissions on mesh side.
 
- net/batman-adv/fragmentation.c  | 26 ++++++++++++++++----------
- net/batman-adv/hard-interface.c |  3 +++
- 2 files changed, 19 insertions(+), 10 deletions(-)
+Note that no infinite loop was observed, probably because of dropping
+via batadv_interface_tx()->batadv_bla_tx(). However the duplicates still
+utterly confuse switches/bridges, ICMPv6 duplicate address detection and
+neighbor discovery and therefore leads to long delays before being able
+to establish TCP connections, for instance. And it also leads to the Linux
+bridge printing messages like:
+"br-lan: received packet on eth1 with own address as source address ..."
 
--- 
-2.30.2
+Fixes: fe2da6ff27c7 ("batman-adv: Modified forwarding behaviour for multica=
+st packets")
+Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.9 backport: drop usage in non-existing batadv_mcast_forw_*. ]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ net/batman-adv/multicast.c      |   31 +++++++++++++++++++++++++++++++
+ net/batman-adv/multicast.h      |   15 +++++++++++++++
+ net/batman-adv/soft-interface.c |    5 ++---
+ 3 files changed, 48 insertions(+), 3 deletions(-)
 
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -53,10 +53,12 @@
+ #include <net/ip.h>
+ #include <net/ipv6.h>
+=20
++#include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+ #include "packet.h"
++#include "send.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+=20
+@@ -1252,6 +1254,35 @@ void batadv_mcast_free(struct batadv_pri
+ }
+=20
+ /**
++ * batadv_mcast_forw_send_orig() - send a multicast packet to an originator
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast packet to send
++ * @vid: the vlan identifier
++ * @orig_node: the originator to send the packet to
++ *
++ * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node)
++{
++	/* Avoid sending multicast-in-unicast packets to other BLA
++	 * gateways - they already got the frame from the LAN side
++	 * we share with them.
++	 * TODO: Refactor to take BLA into account earlier, to avoid
++	 * reducing the mcast_fanout count.
++	 */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid)) {
++		dev_kfree_skb(skb);
++		return NET_XMIT_SUCCESS;
++	}
++
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				       orig_node, vid);
++}
++
++/**
+  * batadv_mcast_purge_orig - reset originator global mcast state modificat=
+ions
+  * @orig: the originator which is going to get purged
+  */
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -45,6 +45,11 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+=20
++int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				struct sk_buff *skb,
++				unsigned short vid,
++				struct batadv_orig_node *orig_node);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+=20
+ int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
+@@ -71,6 +76,16 @@ static inline int batadv_mcast_init(stru
+ 	return 0;
+ }
+=20
++static inline int
++batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb,
++			    unsigned short vid,
++			    struct batadv_orig_node *orig_node)
++{
++	kfree_skb(skb);
++	return NET_XMIT_DROP;
++}
++
+ static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
+ {
+ }
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -356,9 +356,8 @@ send:
+ 				goto dropped;
+ 			ret =3D batadv_send_skb_via_gw(bat_priv, skb, vid);
+ 		} else if (mcast_single_orig) {
+-			ret =3D batadv_send_skb_unicast(bat_priv, skb,
+-						      BATADV_UNICAST, 0,
+-						      mcast_single_orig, vid);
++			ret =3D batadv_mcast_forw_send_orig(bat_priv, skb, vid,
++							  mcast_single_orig);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
+
+
+Patches currently in stable-queue which might be from sven@narfation.org are
+
+queue-4.9/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-4.9/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
+queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to=
+-mesh.patch
+queue-4.9/ath10k-fix-max-antenna-gain-unit.patch
+queue-4.9/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from=
+-lan.patch
+queue-4.9/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-4.9/batman-adv-fix-own-ogm-check-in-aggregated-ogms.patch
+queue-4.9/batman-adv-keep-fragments-equally-sized.patch
+queue-4.9/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
+ch
