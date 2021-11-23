@@ -1,13 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.9 1/7] batman-adv: Keep fragments equally sized
-Date: Sat, 20 Nov 2021 13:39:52 +0100
-Message-Id: <20211120123958.260826-2-sven@narfation.org>
-In-Reply-To: <20211120123958.260826-1-sven@narfation.org>
-References: <20211120123958.260826-1-sven@narfation.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Subject: Patch "batman-adv: Consider fragmentation for needed_headroom" has
+ been added to the 5.4-stable tree
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 23 Nov 2021 13:33:40 +0100
+In-Reply-To: <20211120124053.261156-2-sven@narfation.org>
+Message-ID: <163767082091109@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,113 +17,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, linus.luessing@c0d3.blue, sven@narfation.org, sw@simonwunderlich.de
+Cc: stable-commits@vger.kernel.org
+
+
+This is a note to let you know that I've just added the patch titled
+
+    batman-adv: Consider fragmentation for needed_headroom
+
+to the 5.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.git=
+;a=3Dsummary
+
+The filename of the patch is:
+     batman-adv-consider-fragmentation-for-needed_headroom.patch
+and it can be found in the queue-5.4 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From foo@baz Tue Nov 23 01:32:30 PM CET 2021
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 20 Nov 2021 13:40:51 +0100
+Subject: batman-adv: Consider fragmentation for needed_headroom
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Martin Weinelt <martin@darmstadt.freifunk.net>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, "Sven Eckelmann" <sven@narfation.org>,=
+ "Linus L=FCssing" <linus.luessing@c0d3.blue>, "Simon Wunderlich" <sw@simon=
+wunderlich.de>
+Message-ID: <20211120124053.261156-2-sven@narfation.org>
 
-commit 1c2bcc766be44467809f1798cd4ceacafe20a852 upstream.
+From: Sven Eckelmann <sven@narfation.org>
 
-The batman-adv fragmentation packets have the design problem that they
-cannot be refragmented and cannot handle padding by the underlying link.
-The latter often leads to problems when networks are incorrectly configured
-and don't use a common MTU.
+commit 4ca23e2c2074465bff55ea14221175fecdf63c5f upstream.
 
-The sender could for example fragment a 1271 byte frame (plus external
-ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
-large MTU of the underlying link (max. 1294 byte frames). This would create
-a 1294 bytes large frame (fragment 2) and a 55 bytes large frame
-(fragment 1). The extra 54 bytes are the fragment header (20) added to each
-fragment and the external ethernet header (14) for the second fragment.
+If a batman-adv packets has to be fragmented, then the original batman-adv
+packet header is not stripped away. Instead, only a new header is added in
+front of the packet after it was split.
 
-Let us assume that the next hop is then not able to transport 1294 bytes to
-its next hop. The 1294 byte large frame will be dropped but the 55 bytes
-large fragment will still be forwarded to its destination.
+This size must be considered to avoid cost intensive reallocations during
+the transmission through the various device layers.
 
-Or let us assume that the underlying hardware requires that each frame has
-a minimum size (e.g. 60 bytes). Then it will pad the 55 bytes frame to 60
-bytes. The receiver of the 60 bytes frame will no longer be able to
-correctly assemble the two frames together because it is not aware that 5
-bytes of the 60 bytes frame are padding and don't belong to the reassembled
-frame.
-
-This can partly be avoided by splitting frames more equally. In this
-example, the 675 and 674 bytes large fragment frames could both potentially
-reach its destination without being too large or too small.
-
-Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Fixes: 7bca68c7844b ("batman-adv: Add lower layer needed_(head|tail)room to=
+ own ones")
+Reported-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: adjust context. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/fragmentation.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ net/batman-adv/hard-interface.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index fef21f75892e..b36606816bac 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -396,7 +396,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  * batadv_frag_create - create a fragment from skb
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-- * @mtu: size of new fragment
-+ * @fragment_size: size of new fragment
-  *
-  * Split the passed skb into two fragments: A new one with size matching the
-  * passed mtu and the old one with the rest. The new skb contains data from the
-@@ -406,11 +406,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  */
- static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
--					  unsigned int mtu)
-+					  unsigned int fragment_size)
- {
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
--	unsigned int fragment_size = mtu - header_size;
-+	unsigned int mtu = fragment_size + header_size;
- 
- 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
- 	if (!skb_fragment)
-@@ -449,7 +449,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	struct sk_buff *skb_fragment;
- 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
--	unsigned int max_fragment_size, max_packet_size;
-+	unsigned int max_fragment_size, num_fragments;
- 	int ret = -1;
- 
- 	/* To avoid merge and refragmentation at next-hops we never send
-@@ -457,10 +457,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	 */
- 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
- 	max_fragment_size = mtu - header_size;
--	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -554,6 +554,9 @@ static void batadv_hardif_recalc_extra_s
+ 	needed_headroom =3D lower_headroom + (lower_header_len - ETH_HLEN);
+ 	needed_headroom +=3D batadv_max_header_len();
+=20
++	/* fragmentation headers don't strip the unicast/... header */
++	needed_headroom +=3D sizeof(struct batadv_frag_packet);
 +
-+	if (skb->len == 0 || max_fragment_size == 0)
-+		return -EINVAL;
-+
-+	num_fragments = (skb->len - 1) / max_fragment_size + 1;
-+	max_fragment_size = (skb->len - 1) / num_fragments + 1;
- 
- 	/* Don't even try to fragment, if we need more than 16 fragments */
--	if (skb->len > max_packet_size)
-+	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS)
- 		goto out;
- 
- 	bat_priv = orig_node->bat_priv;
-@@ -498,7 +503,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			goto out;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
-+		skb_fragment = batadv_frag_create(skb, &frag_header,
-+						  max_fragment_size);
- 		if (!skb_fragment)
- 			goto out;
- 
--- 
-2.30.2
+ 	soft_iface->needed_headroom =3D needed_headroom;
+ 	soft_iface->needed_tailroom =3D lower_tailroom;
+ }
 
+
+Patches currently in stable-queue which might be from sven@narfation.org are
+
+queue-5.4/batman-adv-consider-fragmentation-for-needed_headroom.patch
+queue-5.4/batman-adv-reserve-needed_-room-for-fragments.patch
+queue-5.4/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.pat=
+ch
