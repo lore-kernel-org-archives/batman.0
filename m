@@ -1,13 +1,14 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Reserve needed_*room for fragments" has been added
- to the 4.14-stable tree
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 23 Nov 2021 13:38:33 +0100
-In-Reply-To: <20211120124018.260907-5-sven@narfation.org>
-Message-ID: <163767111357145@kroah.com>
+Return-Path: <paskripkin@gmail.com>
+Message-ID: <3233c950-3bec-99c8-4afe-efe6392c929d@gmail.com>
+Date: Wed, 24 Nov 2021 20:43:15 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
+Subject: Re: [syzbot] WARNING: ODEBUG bug in batadv_v_ogm_free
+Content-Language: en-US
+References: <0000000000009f52f205d18c60a7@google.com>
+From: Pavel Skripkin <paskripkin@gmail.com>
+In-Reply-To: <0000000000009f52f205d18c60a7@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,126 +18,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, gregkh@linuxfoundation.org, sven@narfation.org, sw@simonwunderlich.de
-Cc: stable-commits@vger.kernel.org
+To: syzbot <syzbot+0ef06384b5f39a16ebb9@syzkaller.appspotmail.com>, Jason@zx2c4.com, a@unstable.cc, amcohen@nvidia.com, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, dsahern@kernel.org, edumazet@google.com, fw@strlen.de, idosch@OSS.NVIDIA.COM, justin.iurman@uliege.be, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, praveen5582@gmail.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, willemb@google.com, yoshfuji@linux-ipv6.org, zxu@linkedin.com
+
+On 11/24/21 20:42, syzbot wrote:
+> syzbot suspects this issue was fixed by commit:
+> 
+> commit 6f68cd634856f8ca93bafd623ba5357e0f648c68
+> Author: Pavel Skripkin <paskripkin@gmail.com>
+> Date:   Sun Oct 24 13:13:56 2021 +0000
+> 
+>      net: batman-adv: fix error handling
+> 
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=114e3c16b00000
+> start commit:   cf52ad5ff16c Merge tag 'driver-core-5.15-rc6' of git://git..
+> git tree:       upstream
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=9479508d7bb83ad9
+> dashboard link: https://syzkaller.appspot.com/bug?extid=0ef06384b5f39a16ebb9
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17af7344b00000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15dc02fb300000
+> 
+> If the result looks correct, please mark the issue as fixed by replying with:
+> 
+> #syz fix: net: batman-adv: fix error handling
+> 
 
 
-This is a note to let you know that I've just added the patch titled
+#syz fix: net: batman-adv: fix error handling
 
-    batman-adv: Reserve needed_*room for fragments
-
-to the 4.14-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     batman-adv-reserve-needed_-room-for-fragments.patch
-and it can be found in the queue-4.14 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
+Looks valid
 
 
-From foo@baz Tue Nov 23 01:35:28 PM CET 2021
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Nov 2021 13:40:17 +0100
-Subject: batman-adv: Reserve needed_*room for fragments
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-Message-ID: <20211120124018.260907-5-sven@narfation.org>
-
-From: Sven Eckelmann <sven@narfation.org>
-
-commit c5cbfc87558168ef4c3c27ce36eba6b83391db19 upstream.
-
-The batadv net_device is trying to propagate the needed_headroom and
-needed_tailroom from the lower devices. This is needed to avoid cost
-intensive reallocations using pskb_expand_head during the transmission.
-
-But the fragmentation code split the skb's without adding extra room at the
-end/beginning of the various fragments. This reduced the performance of
-transmissions over complex scenarios (batadv on vxlan on wireguard) because
-the lower devices had to perform the reallocations at least once.
-
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.14 backported: adjust context. ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- net/batman-adv/fragmentation.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
-
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -402,6 +402,7 @@ out:
- 
- /**
-  * batadv_frag_create - create a fragment from skb
-+ * @net_dev: outgoing device for fragment
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-  * @fragment_size: size of new fragment
-@@ -412,22 +413,25 @@ out:
-  *
-  * Return: the new fragment, NULL on error.
-  */
--static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
-+static struct sk_buff *batadv_frag_create(struct net_device *net_dev,
-+					  struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
- 					  unsigned int fragment_size)
- {
-+	unsigned int ll_reserved = LL_RESERVED_SPACE(net_dev);
-+	unsigned int tailroom = net_dev->needed_tailroom;
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
- 	unsigned int mtu = fragment_size + header_size;
- 
--	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
-+	skb_fragment = dev_alloc_skb(ll_reserved + mtu + tailroom);
- 	if (!skb_fragment)
- 		goto err;
- 
- 	skb_fragment->priority = skb->priority;
- 
- 	/* Eat the last mtu-bytes of the skb */
--	skb_reserve(skb_fragment, header_size + ETH_HLEN);
-+	skb_reserve(skb_fragment, ll_reserved + header_size);
- 	skb_split(skb, skb_fragment, skb->len - fragment_size);
- 
- 	/* Add the header */
-@@ -450,11 +454,12 @@ int batadv_frag_send_packet(struct sk_bu
- 			    struct batadv_orig_node *orig_node,
- 			    struct batadv_neigh_node *neigh_node)
- {
-+	struct net_device *net_dev = neigh_node->if_incoming->net_dev;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_frag_packet frag_header;
- 	struct sk_buff *skb_fragment;
--	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
-+	unsigned int mtu = net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
- 	unsigned int max_fragment_size, num_fragments;
- 	int ret;
-@@ -514,7 +519,7 @@ int batadv_frag_send_packet(struct sk_bu
- 			goto put_primary_if;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header,
-+		skb_fragment = batadv_frag_create(net_dev, skb, &frag_header,
- 						  max_fragment_size);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
-
-
-Patches currently in stable-queue which might be from sven@narfation.org are
-
-queue-4.14/batman-adv-consider-fragmentation-for-needed_headroom.patch
-queue-4.14/ath9k-fix-potential-interrupt-storm-on-queue-reset.patch
-queue-4.14/batman-adv-mcast-fix-duplicate-mcast-packets-from-bla-backbone-to-mesh.patch
-queue-4.14/ath10k-fix-max-antenna-gain-unit.patch
-queue-4.14/batman-adv-mcast-fix-duplicate-mcast-packets-in-bla-backbone-from-lan.patch
-queue-4.14/batman-adv-reserve-needed_-room-for-fragments.patch
-queue-4.14/batman-adv-don-t-always-reallocate-the-fragmentation-skb-head.patch
+With regards,
+Pavel Skripkin
