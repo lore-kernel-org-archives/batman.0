@@ -1,8 +1,8 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: [PATCH 3/4] alfred: introduce 'change batman-adv interface' IPC call
-Date: Sun,  2 Jan 2022 12:31:35 +0100
-Message-Id: <20220102113136.470299-3-mareklindner@neomailbox.ch>
+Subject: [PATCH 4/4] alfred: introduce 'server status' IPC call
+Date: Sun,  2 Jan 2022 12:31:36 +0100
+Message-Id: <20220102113136.470299-4-mareklindner@neomailbox.ch>
 In-Reply-To: <20220102113136.470299-1-mareklindner@neomailbox.ch>
 References: <3748133.vRqKQLy7FI@rousseau>
  <20220102113136.470299-1-mareklindner@neomailbox.ch>
@@ -21,247 +21,324 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The batman-adv interface used by alfred can be changed at
-runtime by sending the CHANGE_BAT_IFACE command via unix
-socket.
+The 'server status' call exports the 'mode' as well as interface
+status via IPC. Both parameters can be modified at runtime via the
+IPC and as such, the current configuration is dynamic and not
+necessarily obvious.
+
+The server status 'request' and 'reply' packet types are added
+to allow the IPC client to initiate the status retrieval. The
+server will respond with the 'reply' message.
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- alfred.h     |  4 +++-
- client.c     | 37 +++++++++++++++++++++++++++++++++++++
- main.c       | 10 +++++++++-
- man/alfred.8 |  3 +++
- packet.h     | 14 ++++++++++++++
- unix_sock.c  | 27 ++++++++++++++++++++++++++-
- 6 files changed, 92 insertions(+), 3 deletions(-)
+ alfred.h     |  2 ++
+ client.c     | 87 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ main.c       |  9 +++++-
+ man/alfred.8 |  3 ++
+ packet.h     | 26 ++++++++++++++++
+ unix_sock.c  | 50 ++++++++++++++++++++++++++++++
+ 6 files changed, 176 insertions(+), 1 deletion(-)
 
 diff --git a/alfred.h b/alfred.h
-index 57d7daf..0fc6dc6 100644
+index 0fc6dc6..8ee7b21 100644
 --- a/alfred.h
 +++ b/alfred.h
-@@ -89,6 +89,7 @@ enum clientmode {
- 	CLIENT_SET_DATA,
+@@ -90,6 +90,7 @@ enum clientmode {
  	CLIENT_MODESWITCH,
  	CLIENT_CHANGE_INTERFACE,
-+	CLIENT_CHANGE_BAT_IFACE,
+ 	CLIENT_CHANGE_BAT_IFACE,
++	CLIENT_SERVER_STATUS,
  };
 =20
  struct interface {
-@@ -110,7 +111,7 @@ struct globals {
-=20
- 	char *change_interface;
- 	struct server *best_server;	/* NULL if we are a server ourselves */
--	const char *mesh_iface;
-+	char *mesh_iface;
- 	enum opmode opmode;
- 	enum clientmode clientmode;
- 	int clientmode_arg;
-@@ -150,6 +151,7 @@ int alfred_client_request_data(struct globals *global=
-s);
- int alfred_client_set_data(struct globals *globals);
+@@ -152,6 +153,7 @@ int alfred_client_set_data(struct globals *globals);
  int alfred_client_modeswitch(struct globals *globals);
  int alfred_client_change_interface(struct globals *globals);
-+int alfred_client_change_bat_iface(struct globals *globals);
+ int alfred_client_change_bat_iface(struct globals *globals);
++int alfred_client_server_status(struct globals *globals);
  /* recv.c */
  int recv_alfred_packet(struct globals *globals, struct interface *interf=
 ace,
  		       int recv_sock);
 diff --git a/client.c b/client.c
-index dc643f3..e1107bf 100644
+index e1107bf..d540a9f 100644
 --- a/client.c
 +++ b/client.c
-@@ -296,3 +296,40 @@ int alfred_client_change_interface(struct globals *g=
+@@ -333,3 +333,90 @@ int alfred_client_change_bat_iface(struct globals *g=
 lobals)
 =20
  	return 0;
  }
 +
-+int alfred_client_change_bat_iface(struct globals *globals)
++int alfred_client_server_status(struct globals *globals)
 +{
 +	unsigned char buf[MAX_PAYLOAD];
-+	struct alfred_change_bat_iface_v0 *change_bat_iface;
-+	int ret, len;
-+	size_t interface_len;
++	struct alfred_server_status_req_v0 *status_req;
++	struct alfred_server_status_rep_v0 *status_rep;
++	struct alfred_tlv *packet;
++	int ret, len, headsize, i;
 +
 +	if (unix_sock_open_client(globals))
 +		return -1;
 +
-+	interface_len =3D strlen(globals->mesh_iface);
-+	if (interface_len > sizeof(change_bat_iface->bat_iface)) {
-+		fprintf(stderr, "%s: batman-adv interface name list too long, not chan=
-ging\n",
-+			__func__);
-+		return 0;
-+	}
++	status_req =3D (struct alfred_server_status_req_v0 *)buf;
++	len =3D sizeof(*status_req);
 +
-+	change_bat_iface =3D (struct alfred_change_bat_iface_v0 *)buf;
-+	len =3D sizeof(*change_bat_iface);
-+
-+	change_bat_iface->header.type =3D ALFRED_CHANGE_BAT_IFACE;
-+	change_bat_iface->header.version =3D ALFRED_VERSION;
-+	change_bat_iface->header.length =3D htons(len - sizeof(change_bat_iface=
-->header));
-+	strncpy(change_bat_iface->bat_iface, globals->mesh_iface,
-+		sizeof(change_bat_iface->bat_iface));
-+	change_bat_iface->bat_iface[sizeof(change_bat_iface->bat_iface) - 1] =3D=
- '\0';
++	status_req->header.type =3D ALFRED_SERVER_STATUS;
++	status_req->header.version =3D ALFRED_VERSION;
++	status_req->header.length =3D 0;
 +
 +	ret =3D write(globals->unix_sock, buf, len);
 +	if (ret !=3D len)
 +		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
 +			__func__, ret, len, strerror(errno));
 +
-+	unix_sock_close(globals);
++	len =3D read(globals->unix_sock, buf, sizeof(buf));
++	if (len <=3D 0) {
++		perror("read from unix socket failed");
++		goto err;
++	}
 +
++	ret =3D -1;
++
++	/* drop too small packets */
++	headsize =3D sizeof(*packet);
++	if (len < headsize) {
++		perror("unexpected header size received from unix socket");
++		goto err;
++	}
++
++	packet =3D (struct alfred_tlv *)buf;
++
++	if ((len - headsize) < ((int)ntohs(packet->length))) {
++		perror("unexpected packet size received from unix socket");
++		goto err;
++	}
++
++	if (packet->version !=3D ALFRED_VERSION) {
++		perror("alfred version mismatch");
++		goto err;
++	}
++
++	status_rep =3D (struct alfred_server_status_rep_v0 *)buf;
++	headsize =3D ntohs(status_rep->header.length);
++
++	if (headsize < (int)(sizeof(*status_rep) - sizeof(status_rep->header)))
++		goto err;
++
++	fprintf(stdout, "alfred status:\n");
++
++	switch (status_rep->mode) {
++	case ALFRED_MODESWITCH_SECONDARY:
++		fprintf(stdout, "- mode: secondary\n");
++		break;
++	case ALFRED_MODESWITCH_PRIMARY:
++		fprintf(stdout, "- mode: primary\n");
++		break;
++	default:
++		fprintf(stderr, "- mode: unknown\n");
++		break;
++	}
++
++	fprintf(stderr, "- interfaces:\n");
++
++	for (i =3D 0; i < 16; i++) {
++		if (strlen(status_rep->ifaces[i].name) =3D=3D 0)
++			continue;
++
++		fprintf(stderr, "\t- name: %s\n",
++			status_rep->ifaces[i].name);
++	}
++
++	fprintf(stdout, "- batman-adv interface: %s\n", status_rep->bat_iface);
++
++err:
++	unix_sock_close(globals);
 +	return 0;
 +}
 diff --git a/main.c b/main.c
-index ad317cf..2cb6d44 100644
+index 2cb6d44..e2ac576 100644
 --- a/main.c
 +++ b/main.c
-@@ -37,6 +37,7 @@ static void alfred_usage(void)
- 	printf("  -M, --modeswitch primary            switch daemon to mode pri=
-mary\n");
+@@ -38,6 +38,7 @@ static void alfred_usage(void)
  	printf("                   secondary          switch daemon to mode sec=
 ondary\n");
  	printf("  -I, --change-interface [interface]  change to the specified i=
 nterface(s)\n");
-+	printf("  -B, --change-bat-iface [interface]  change to the specified b=
+ 	printf("  -B, --change-bat-iface [interface]  change to the specified b=
 atman-adv interface\n");
++	printf("  -S, --server-status                 request server status inf=
+o such as mode & interfaces\n");
  	printf("\n");
  	printf("server mode options:\n");
  	printf("  -i, --interface                     specify the interface (or=
  comma separated list of interfaces) to listen on\n");
-@@ -160,6 +161,7 @@ static struct globals *alfred_init(int argc, char *ar=
+@@ -162,6 +163,7 @@ static struct globals *alfred_init(int argc, char *ar=
 gv[])
- 		{"req-version",		required_argument,	NULL,	'V'},
  		{"modeswitch",		required_argument,	NULL,	'M'},
  		{"change-interface",	required_argument,	NULL,	'I'},
-+		{"change-bat-iface",	required_argument,	NULL,	'B'},
+ 		{"change-bat-iface",	required_argument,	NULL,	'B'},
++		{"server-status",	required_argument,	NULL,	'S'},
  		{"unix-path",		required_argument,	NULL,	'u'},
  		{"update-command",	required_argument,	NULL,	'c'},
  		{"version",		no_argument,		NULL,	'v'},
-@@ -194,7 +196,7 @@ static struct globals *alfred_init(int argc, char *ar=
+@@ -196,7 +198,7 @@ static struct globals *alfred_init(int argc, char *ar=
 gv[])
 =20
  	time_random_seed();
 =20
--	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:4:f", =
-long_options,
-+	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:u:dc:p:4:f"=
+-	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:u:dc:p:4:f"=
 , long_options,
++	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:Su:dc:p:4:f=
+", long_options,
  				  &opt_ind)) !=3D -1) {
  		switch (opt) {
  		case 'r':
-@@ -252,6 +254,10 @@ static struct globals *alfred_init(int argc, char *a=
-rgv[])
- 			globals->clientmode =3D CLIENT_CHANGE_INTERFACE;
- 			globals->change_interface =3D strdup(optarg);
+@@ -258,6 +260,9 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 			globals->clientmode =3D CLIENT_CHANGE_BAT_IFACE;
+ 			globals->mesh_iface =3D strdup(optarg);
  			break;
-+		case 'B':
-+			globals->clientmode =3D CLIENT_CHANGE_BAT_IFACE;
-+			globals->mesh_iface =3D strdup(optarg);
++		case 'S':
++			globals->clientmode =3D CLIENT_SERVER_STATUS;
 +			break;
  		case 'u':
  			globals->unix_path =3D optarg;
  			break;
-@@ -313,6 +319,8 @@ int main(int argc, char *argv[])
- 		return alfred_client_modeswitch(globals);
- 	case CLIENT_CHANGE_INTERFACE:
+@@ -321,6 +326,8 @@ int main(int argc, char *argv[])
  		return alfred_client_change_interface(globals);
-+	case CLIENT_CHANGE_BAT_IFACE:
-+		return alfred_client_change_bat_iface(globals);
+ 	case CLIENT_CHANGE_BAT_IFACE:
+ 		return alfred_client_change_bat_iface(globals);
++	case CLIENT_SERVER_STATUS:
++		return alfred_client_server_status(globals);
  	}
 =20
  	return 0;
 diff --git a/man/alfred.8 b/man/alfred.8
-index ff9b315..74814e0 100644
+index 74814e0..cf0eafc 100644
 --- a/man/alfred.8
 +++ b/man/alfred.8
-@@ -91,6 +91,9 @@ to 0 ('\fB\-V\fP 0').
+@@ -94,6 +94,9 @@ Change the alfred server to use the new \fBinterface\fP=
+(s)
  .TP
- \fB\-I\fP, \fB\-\-change\-interface\fP \fIinterface\fP
- Change the alfred server to use the new \fBinterface\fP(s)
+ \fB\-B\fP, \fB\-\-change\-bat\-iface\fP \fIinterface\fP
+ Change the alfred server to use the new \fBbatman-adv interface\fP
 +.TP
-+\fB\-B\fP, \fB\-\-change\-bat\-iface\fP \fIinterface\fP
-+Change the alfred server to use the new \fBbatman-adv interface\fP
++\fB\-S\fP, \fB\-\-server\-status\fP
++Request server status information such as mode & interfaces\fP
  .
  .SH SERVER OPTIONS
  .TP
 diff --git a/packet.h b/packet.h
-index 678f939..94c6a77 100644
+index 94c6a77..b9e1f2e 100644
 --- a/packet.h
 +++ b/packet.h
-@@ -68,6 +68,7 @@ enum alfred_packet_type {
- 	ALFRED_STATUS_ERROR =3D 4,
+@@ -69,6 +69,7 @@ enum alfred_packet_type {
  	ALFRED_MODESWITCH =3D 5,
  	ALFRED_CHANGE_INTERFACE =3D 6,
-+	ALFRED_CHANGE_BAT_IFACE =3D 7,
+ 	ALFRED_CHANGE_BAT_IFACE =3D 7,
++	ALFRED_SERVER_STATUS =3D 8,
  };
 =20
  /* packets */
-@@ -147,6 +148,19 @@ struct alfred_change_interface_v0 {
- 	char ifaces[IFNAMSIZ * 16];
- } __packed;
-=20
+@@ -159,6 +160,31 @@ struct alfred_change_interface_v0 {
+ struct alfred_change_bat_iface_v0 {
+ 	struct alfred_tlv header;
+ 	char bat_iface[IFNAMSIZ];
++};
++
 +/**
-+ * struct alfred_change_bat_iface_v0 - Request to change the
-+ * batman-adv interface
++ * struct alfred_server_status_req_v0 - server status request
 + * @header: TLV header describing the complete packet
-+ * @bat_iface: interface to be changed to
 + *
 + * Sent to the daemon by client
 + */
-+struct alfred_change_bat_iface_v0 {
++struct alfred_server_status_req_v0 {
 +	struct alfred_tlv header;
-+	char bat_iface[IFNAMSIZ];
 +} __packed;
 +
++/**
++ * struct alfred_server_status_req_v0 - server status reply
++ * @header: TLV header describing the complete packet
++ *
++ * Sent by the daemon to client in response to status request
++ */
++struct alfred_server_status_rep_v0 {
++	struct alfred_tlv header;
++	uint8_t mode;
++	struct {
++		char name[IFNAMSIZ];
++	} ifaces[16];
++	char bat_iface[IFNAMSIZ];
+ } __packed;
+=20
  /**
-  * struct alfred_status_v0 - Status info of a transaction
-  * @header: TLV header describing the complete packet
 diff --git a/unix_sock.c b/unix_sock.c
-index d9ad07b..bc39199 100644
+index bc39199..22a6805 100644
 --- a/unix_sock.c
 +++ b/unix_sock.c
-@@ -345,6 +345,27 @@ err:
+@@ -366,6 +366,53 @@ err:
  	return ret;
  }
 =20
-+static int
-+unix_sock_change_bat_iface(struct globals *globals,
-+			   struct alfred_change_bat_iface_v0 *change_bat_iface,
-+			   int client_sock)
++static int unix_sock_server_status(struct globals *globals, int client_s=
+ock)
 +{
-+	int len, ret =3D -1;
++	unsigned char buf[MAX_PAYLOAD];
++	struct alfred_server_status_rep_v0 *status_rep;
++	struct interface *interface;
++	int ret, len, iface_count;
 +
-+	len =3D ntohs(change_bat_iface->header.length);
++	status_rep =3D (struct alfred_server_status_rep_v0 *)buf;
++	len =3D sizeof(*status_rep);
 +
-+	if (len < (int)(sizeof(*change_bat_iface) - sizeof(change_bat_iface->he=
-ader)))
-+		goto err;
++	status_rep->header.type =3D ALFRED_SERVER_STATUS;
++	status_rep->header.version =3D ALFRED_VERSION;
++	status_rep->header.length =3D htons(len - sizeof(status_rep->header));
 +
-+	free(globals->mesh_iface);
-+	globals->mesh_iface =3D strdup(change_bat_iface->bat_iface);
++	switch (globals->opmode) {
++	case OPMODE_SECONDARY:
++		status_rep->mode =3D ALFRED_MODESWITCH_SECONDARY;
++		break;
++	case OPMODE_PRIMARY:
++		status_rep->mode =3D ALFRED_MODESWITCH_PRIMARY;
++		break;
++	default:
++		break;
++	}
 +
-+	ret =3D 0;
-+err:
-+	close(client_sock);
-+	return ret;
++	iface_count =3D 0;
++
++	list_for_each_entry(interface, &globals->interfaces, list) {
++		strncpy(status_rep->ifaces[iface_count].name,
++			interface->interface,
++			sizeof(status_rep->ifaces[iface_count].name));
++
++		iface_count++;
++	}
++
++	strncpy(status_rep->bat_iface, globals->mesh_iface,
++		sizeof(status_rep->bat_iface));
++
++	ret =3D write(client_sock, buf, len);
++	if (ret =3D=3D len)
++		return 0;
++
++	fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
++		__func__, ret, len, strerror(errno));
++	return -1;
 +}
 +
  int unix_sock_read(struct globals *globals)
  {
  	int client_sock;
-@@ -402,7 +423,11 @@ int unix_sock_read(struct globals *globals)
- 					     (struct alfred_change_interface_v0 *)packet,
- 					     client_sock);
+@@ -428,6 +475,9 @@ int unix_sock_read(struct globals *globals)
+ 						 (struct alfred_change_bat_iface_v0 *)packet,
+ 						 client_sock);
  		break;
--
-+	case ALFRED_CHANGE_BAT_IFACE:
-+		ret =3D unix_sock_change_bat_iface(globals,
-+						 (struct alfred_change_bat_iface_v0 *)packet,
-+						 client_sock);
++	case ALFRED_SERVER_STATUS:
++		ret =3D unix_sock_server_status(globals, client_sock);
 +		break;
  	default:
  		/* unknown packet type */
