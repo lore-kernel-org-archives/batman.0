@@ -1,15 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH 3/3] alfred: properly initialize stack buffer before
- sending over unix socket
-Date: Sat, 22 Jan 2022 09:03:12 +0100
-Message-ID: <18671636.mmkZKWO0Lj@sven-l14>
-In-Reply-To: <3612372.8DyAAORe3b@rousseau>
-References: <10410848.OOsao9LFFs@rousseau> <2782676.din1RKh0Nb@sven-l14>
- <3612372.8DyAAORe3b@rousseau>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/3] pull request for net-next: batman-adv 2022-01-03
+Date: Mon,  3 Jan 2022 18:17:19 +0100
+Message-Id: <20220103171722.1126109-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7240190.pbdr2JfxmK";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +16,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart7240190.pbdr2JfxmK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH 3/3] alfred: properly initialize stack buffer before sending over unix socket
-Date: Sat, 22 Jan 2022 09:03:12 +0100
-Message-ID: <18671636.mmkZKWO0Lj@sven-l14>
-In-Reply-To: <3612372.8DyAAORe3b@rousseau>
-References: <10410848.OOsao9LFFs@rousseau> <2782676.din1RKh0Nb@sven-l14> <3612372.8DyAAORe3b@rousseau>
+Hi Jakub, hi David,
 
-On Saturday, 22 January 2022 01:41:36 CET Marek Lindner wrote:
-[...]
-> The struct alfred_change_interface_v0 -> ifaces[IFNAMSIZ * 16] may be written 
-> to but not fully initialized. The interface name may be much shorter than the 
-> buffer holding it. Same applies struct alfred_change_bat_iface_v0 -> 
-> bat_iface[IFNAMSIZ] but to a lesser extent because the buffer is smaller.
+here is a little cleanup pull request of batman-adv to go into net-next.
 
-But strncpy writes n bytes (second parameter of n). So the name + n-
-strlen(name) 0-bytes. I thought I've corrected my earlier statement about 
-strncpy but maybe I forgot it. So strlcpy will take care of always writing a 
-single 0-byte at the end of a non-0-length buffer - but is not writing more than 
-1x 0-byte (so half of the buffer might be uninitialised). strncpy will fill 
-the remaining bytes with 0 but might end up writing NO 0-bytes when the buffer 
-was already full.
+Please pull or let me know of any problem!
 
-But in your status patch, not all 16 name entries were written. So it leaks 
-things from the stack and the receiver might parse things which are not 
-actually written by the sender. And your code was not explicitly making sure
-that the buffer ends with a 0-byte.
+Thank you,
+      Simon
 
-Kind regards,
-	Sven
---nextPart7240190.pbdr2JfxmK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The following changes since commit 66f4beaa6c1d28161f534471484b2daa2de1dc=
+e0:
 
------BEGIN PGP SIGNATURE-----
+  Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/h=
+erbert/crypto-2.6 (2021-11-12 12:35:46 -0800)
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmHrukAACgkQXYcKB8Em
-e0aNxw//Y+NsLF77hwjLQWK5OXBEO1z9/vQL65lvzDDk4e55vbPONEVMs9ByhRSL
-M2nZyptvIiuhOg+lXPFh2AHLmzg7xX6fYim4oJNqnfkG53PGvq5uxx8EyvuhOZ6P
-ygAAfofN7fC95qexN8Xyojrvty5UFy0e4viGWpvATm0mJJCNzNfA3R48otVRhvxP
-y7CM2rtmPE1eAf6L+YSPox33cEnGUpJMSHTMTFYjrknUuCwa4n5WltTEWrZ9vBxx
-lensA9ICCDHh8CGFYhGImlAVuNnXBzF4zF94caW4NfKpXMcb3Dd9KG4hB0HtrDcX
-bcjMgoU/ozepO915Ubyft9cXGd2LhPZ54SkcHlekgQRHNK6DU1rQWnP4frcT1KmF
-mJRwP+bWbuQHEfjTKTXtSA5oQbE/2ViwRfOYfXLFbm7OChATFvcDvKTMPnbzS9ju
-umZXGiVZ0iuLVpb+rTZfIHlD0hEqSvB3+k+CuVq9zI9vSL32aeMHq4num4NaFOr/
-I4O+MXnqfkugu/ppkLz/b25kHUxZvH857wiVvWp0gUcfKpwGY1GO1Co2ulTIcu3h
-x4mUir3icDYYH/DcB+sN1AH4yb2ySwwM7W8jV3xP/V8s7xlQ+XDTt9TTvDdyW0m+
-8nEjuqDrXVv0C7aVDIQpOFMdvJYJqYHTXk02CQVnVleTAzFqMEc=
-=t0ap
------END PGP SIGNATURE-----
+are available in the Git repository at:
 
---nextPart7240190.pbdr2JfxmK--
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
+220103
 
+for you to fetch changes up to cde3fac565a7df8805a4e0e28d84a0f90177099a:
 
+  batman-adv: remove unneeded variable in batadv_nc_init (2021-12-10 08:5=
+2:52 +0100)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - bump version strings, by Simon Wunderlich
+
+ - allow netlink usage in unprivileged containers, by Linus L=C3=BCssing
+
+ - remove unneeded variable, by Minghao Chi
+
+----------------------------------------------------------------
+Linus L=C3=BCssing (1):
+      batman-adv: allow netlink usage in unprivileged containers
+
+Minghao Chi (1):
+      batman-adv: remove unneeded variable in batadv_nc_init
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+ net/batman-adv/main.h           |  2 +-
+ net/batman-adv/netlink.c        | 30 +++++++++++++++---------------
+ net/batman-adv/network-coding.c |  8 ++------
+ 3 files changed, 18 insertions(+), 22 deletions(-)
