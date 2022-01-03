@@ -1,10 +1,13 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH] batman-adv: Remove redundant 'flush_workqueue()' calls
-Date: Mon, 10 Jan 2022 22:32:27 +0100
-Message-Id: 
- <2c2454cd728f427cada2c24cdb1ef2609dec5efc.1641850318.git.christophe.jaillet@wanadoo.fr>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 2/3] batman-adv: allow netlink usage in unprivileged
+ containers
+Date: Mon,  3 Jan 2022 18:17:21 +0100
+Message-Id: <20220103171722.1126109-3-sw@simonwunderlich.de>
+In-Reply-To: <20220103171722.1126109-1-sw@simonwunderlich.de>
+References: <20220103171722.1126109-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,39 +18,169 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Tycho Andersen <tycho@tycho.pizza>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-'destroy_workqueue()' already drains the queue before destroying it, so
-there is no need to flush it explicitly.
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Remove the redundant 'flush_workqueue()' calls.
+Currently, creating a batman-adv interface in an unprivileged LXD
+container and attaching secondary interfaces to it with "ip" or "batctl"
+works fine. However all batctl debug and configuration commands
+fail:
 
-This was generated with coccinelle:
+  root@container:~# batctl originators
+  Error received: Operation not permitted
+  root@container:~# batctl orig_interval
+  1000
+  root@container:~# batctl orig_interval 2000
+  root@container:~# batctl orig_interval
+  1000
 
-@@
-expression E;
-@@
-- 	flush_workqueue(E);
-	destroy_workqueue(E);
+To fix this change the generic netlink permissions from GENL_ADMIN_PERM
+to GENL_UNS_ADMIN_PERM. This way a batman-adv interface is fully
+maintainable as root from within a user namespace, from an unprivileged
+container.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+All except one batman-adv netlink setting are per interface and do not
+leak information or change settings from the host system and are
+therefore save to retrieve or modify as root from within an unprivileged
+container.
+
+"batctl routing_algo" / BATADV_CMD_GET_ROUTING_ALGOS is the only
+exception: It provides the batman-adv kernel module wide default routing
+algorithm. However it is read-only from netlink and an unprivileged
+container is still not allowed to modify
+/sys/module/batman_adv/parameters/routing_algo. Instead it is advised to
+use the newly introduced "batctl if create routing_algo RA_NAME" /
+IFLA_BATADV_ALGO_NAME to set the routing algorithm on interface
+creation, which already works fine in an unprivileged container.
+
+Cc: Tycho Andersen <tycho@tycho.pizza>
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 1 -
- 1 file changed, 1 deletion(-)
+ net/batman-adv/netlink.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 5207cd8d6ad8..8f1b724d0412 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -132,7 +132,6 @@ static void __exit batadv_exit(void)
- 	rtnl_link_unregister(&batadv_link_ops);
- 	unregister_netdevice_notifier(&batadv_hard_if_notifier);
- 
--	flush_workqueue(batadv_event_workqueue);
- 	destroy_workqueue(batadv_event_workqueue);
- 	batadv_event_workqueue = NULL;
- 
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 29276284d281..00875e1d8c44 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -1368,21 +1368,21 @@ static const struct genl_small_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_TP_METER,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.doit = batadv_netlink_tp_meter_start,
+ 		.internal_flags = BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_TP_METER_CANCEL,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.doit = batadv_netlink_tp_meter_cancel,
+ 		.internal_flags = BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_ROUTING_ALGOS,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_algo_dump,
+ 	},
+ 	{
+@@ -1397,68 +1397,68 @@ static const struct genl_small_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_GET_TRANSTABLE_LOCAL,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_tt_local_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_TRANSTABLE_GLOBAL,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_tt_global_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_ORIGINATORS,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_orig_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_NEIGHBORS,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_hardif_neigh_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_GATEWAYS,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_gw_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_BLA_CLAIM,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_bla_claim_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_BLA_BACKBONE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_bla_backbone_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_DAT_CACHE,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_dat_cache_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_GET_MCAST_FLAGS,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.dumpit = batadv_mcast_flags_dump,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_SET_MESH,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.doit = batadv_netlink_set_mesh,
+ 		.internal_flags = BATADV_FLAG_NEED_MESH,
+ 	},
+ 	{
+ 		.cmd = BATADV_CMD_SET_HARDIF,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.doit = batadv_netlink_set_hardif,
+ 		.internal_flags = BATADV_FLAG_NEED_MESH |
+ 				  BATADV_FLAG_NEED_HARDIF,
+@@ -1474,7 +1474,7 @@ static const struct genl_small_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_SET_VLAN,
+ 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+-		.flags = GENL_ADMIN_PERM,
++		.flags = GENL_UNS_ADMIN_PERM,
+ 		.doit = batadv_netlink_set_vlan,
+ 		.internal_flags = BATADV_FLAG_NEED_MESH |
+ 				  BATADV_FLAG_NEED_VLAN,
 -- 
-2.32.0
+2.30.2
 
