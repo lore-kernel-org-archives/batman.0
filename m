@@ -1,11 +1,15 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/1] pull request for net: batman-adv 2022-01-03
-Date: Mon,  3 Jan 2022 18:12:02 +0100
-Message-Id: <20220103171203.1124980-1-sw@simonwunderlich.de>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH 4/4] alfred: introduce 'server status' IPC call
+Date: Mon, 03 Jan 2022 10:09:23 +0100
+Message-ID: <1933904.MC1LskztYI@sven-l14>
+In-Reply-To: <20220102113136.470299-4-mareklindner@neomailbox.ch>
+References: <3748133.vRqKQLy7FI@rousseau>
+ <20220102113136.470299-1-mareklindner@neomailbox.ch>
+ <20220102113136.470299-4-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart9120863.S1E0kk7kuN";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,46 +20,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: davem@davemloft.net, kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-Hi David, hi Jakub,
+ 
+--nextPart9120863.S1E0kk7kuN
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: [PATCH 4/4] alfred: introduce 'server status' IPC call
+Date: Mon, 03 Jan 2022 10:09:23 +0100
+Message-ID: <1933904.MC1LskztYI@sven-l14>
+In-Reply-To: <20220102113136.470299-4-mareklindner@neomailbox.ch>
+References: <3748133.vRqKQLy7FI@rousseau> <20220102113136.470299-1-mareklindner@neomailbox.ch> <20220102113136.470299-4-mareklindner@neomailbox.ch>
 
-happy new year! Here is a bugfix for batman-adv which we would like to ha=
-ve integrated into net.
+On Sunday, 2 January 2022 12:31:36 CET Marek Lindner wrote:
+> +struct alfred_server_status_rep_v0 {
+> +       struct alfred_tlv header;
+> +       uint8_t mode;
+> +       struct {
+> +               char name[IFNAMSIZ];
+> +       } ifaces[16];
+> +       char bat_iface[IFNAMSIZ];
+>  } __packed;
 
-Please pull or let me know of any problem!
+Another thing which came to my mind: maybe it could be interesting to have the 
+status of an interface in the reply. So basically if netsock is >= 0 or not. 
+Not sure how to deal with the IPv4 mcast code. Most likely just by using 
+netsock_mcast and indicator.
 
-Thank you,
-      Simon
+Kind regards,
+	Sven
+--nextPart9120863.S1E0kk7kuN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-The following changes since commit 66f4beaa6c1d28161f534471484b2daa2de1dc=
-e0:
+-----BEGIN PGP SIGNATURE-----
 
-  Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/h=
-erbert/crypto-2.6 (2021-11-12 12:35:46 -0800)
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmHSvUMACgkQXYcKB8Em
+e0ZNDA//SdlyWDnlwUshUNkO6kJC2B9rX0N4dDa0n2gOzJeR4agQdww/isouatsi
++gdIIZofuq89gXFxOa10kaq+Bk/ZK8BPszMPbtH5EJlbQG9BaIjJAfJWLRaHdscd
+T3kUsWGuhthMmZn/ZWehNODLNUK+phYeW9oWWKRc6NC/2hKnpUvDIOVDG8JQW8hg
+AFRm+Z8BH+EC3fEogBTeWljFu4CUOcT+pGVZ0yqYhe1HlMjogCtz40hb0zAim2VB
+69yBSxjvtVYE9qkXdWgzjZVlH1H7GNi4qNdwqtEJF/tN5ZzL3ibDh9OVBWCZPb01
+6e0mROhz/CpNKt7g6Bk8zdHEexNzaR3PtYSy+liu2bCtoPK1sPX6Ald2R/oNol1M
+UJmcwRHG7NewnOpR1thQWS36xeozi76SJRyZjFc86HKGlL4Z0GZLF027sxyAsrzB
+yCgyt36zXUxhhbt293JgPq5YJS96mYkiSyt6XE3nOQFmlHvnrw7/E8uZoa95CbS5
+1VIdScIFbJd/Wc7sn+VFFX9flI8RGCnAZiwONy5bU5R+IkJxCfedQQpDy5p4g/1C
+SamUfu0R7hW3Mzk2N61MW3do2G0ec3wkX7lwaFMAg5QtHNQCGkA6H3IxP84CugOH
+verKn3pbXzPvPKEzBA6fuzCTd3SnuzZABIMS+RY31yJkOyjMnG0=
+=JJLP
+-----END PGP SIGNATURE-----
 
-are available in the Git repository at:
+--nextPart9120863.S1E0kk7kuN--
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-202=
-20103
 
-for you to fetch changes up to 938f2e0b57ffe8a6df71e1e177b2978b1b33fe5e:
-
-  batman-adv: mcast: don't send link-local multicast to mcast routers (20=
-22-01-02 09:31:17 +0100)
-
-----------------------------------------------------------------
-Here is a batman-adv bugfix:
-
- - avoid sending link-local multicast to multicast routers,
-   by Linus L=C3=BCssing
-
-----------------------------------------------------------------
-Linus L=C3=BCssing (1):
-      batman-adv: mcast: don't send link-local multicast to mcast routers
-
- net/batman-adv/multicast.c      | 15 ++++++++++-----
- net/batman-adv/multicast.h      | 10 ++++++----
- net/batman-adv/soft-interface.c |  7 +++++--
- 3 files changed, 21 insertions(+), 11 deletions(-)
