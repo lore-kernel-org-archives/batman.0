@@ -1,68 +1,39 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: alfred: runtime configuration
-Date: Sun, 02 Jan 2022 12:30:23 +0100
-Message-ID: <3748133.vRqKQLy7FI@rousseau>
+Return-Path: <fw@strlen.de>
+Date: Mon, 10 Jan 2022 12:48:50 +0100
+From: Florian Westphal <fw@strlen.de>
+Subject: Re: [syzbot] WARNING: suspicious RCU usage in __dev_queue_xmit
+Message-ID: <20220110114850.GD317@breakpoint.cc>
+References: <000000000000ca1d2005d537ebac@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2744425.ns5P1vhYYd";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000000000000ca1d2005d537ebac@google.com>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: syzbot <syzbot+e163f2ff7c3f7efd8203@syzkaller.appspotmail.com>
+Cc: a@unstable.cc, alobakin@pm.me, andrii@kernel.org, ast@kernel.org, atenart@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, coreteam@netfilter.org, daniel@iogearbox.net, davem@davemloft.net, fw@strlen.de, john.fastabend@gmail.com, jonathan.lemon@gmail.com, kadlec@netfilter.org, kafai@fb.com, kpsingh@kernel.org, kuba@kernel.org, linux-kernel@vger.kernel.org, lukas@wunner.de, mareklindner@neomailbox.ch, netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, pablo@netfilter.org, songliubraving@fb.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, yhs@fb.com
 
- 
---nextPart2744425.ns5P1vhYYd
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Marek Lindner <mareklindner@neomailbox.ch>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: alfred: runtime configuration
-Date: Sun, 02 Jan 2022 12:30:23 +0100
-Message-ID: <3748133.vRqKQLy7FI@rousseau>
+syzbot <syzbot+e163f2ff7c3f7efd8203@syzkaller.appspotmail.com> wrote:
+> Hello,
+> 
+> syzbot found the following issue on:
+> 
+> HEAD commit:    4c375272fb0b Merge branch 'net-add-preliminary-netdev-refc..
+> git tree:       net-next
+> console output: https://syzkaller.appspot.com/x/log.txt?x=164749a9b00000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=2b8e24e3a80e3875
+> dashboard link: https://syzkaller.appspot.com/bug?extid=e163f2ff7c3f7efd8203
+> compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=11493641b00000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=11ac6aceb00000
 
-Hi,
+> include/linux/netfilter_netdev.h:97 suspicious rcu_dereference_check() usage!
 
-the alfred daemon has built-in capabilities for accepting runtime 
-configuration. Network interfaces and alfred 'mode' (primary/secondary) 
-settings can be modified via instructions sent over unix socket.
-
-To make all settings configurable, the unix socket commands are extended to 
-also support setting the batman-adv interface name at runtime. Network 
-interfaces should no longer be required at startup as those can be configured 
-at runtime.
-
-All these runtime settings make understanding the current alfred configuration 
-tricky. Therefore, alfred should be able to export its operating configuration 
-via unix socket.
-
-Cheers,
-Marek
-
---nextPart2744425.ns5P1vhYYd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmHRjM8ACgkQU1VOj+62
-HMC+/Qf5AeDv8PmFhGPNSW2wFAcxxeLEgGalXyrwM1Zk0alru62ln4XSJAqWN9l+
-Ox5mdYzkLE6la2cVm7xaJFqfM6FzaNC8nGMVcVd6AtEYt2wldB5Pb8TiANyTX3ET
-XJ14gy42/2rpljdqtMRJEO9lh/Et3dEXExjf5TGGk0aVfvIDrEwc1nHeqbMNeg64
-UyMtZZnr6nZq/tsClat+3CSbOA6ynZxti+k12JjciPP1OHDUhiheAlDojymcGWWu
-K8TklX4dxL8Up46pnzc7tU+gx6j9/vsLO5u8A5+db1oFXmMXGTHekgqn0nqUgzCx
-S8kIVecKefdbC6D7RPCcJBxVBjb9dQ==
-=AXYb
------END PGP SIGNATURE-----
-
---nextPart2744425.ns5P1vhYYd--
-
-
+#syz fix: netfilter: egress: avoid a lockdep splat
