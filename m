@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH 3/3] alfred: properly initialize stack buffer before
- sending over unix socket
-Date: Sat, 22 Jan 2022 14:06:31 +0100
-Message-ID: <55198855.o2EDfbc6B2@rousseau>
-In-Reply-To: <18671636.mmkZKWO0Lj@sven-l14>
-References: <10410848.OOsao9LFFs@rousseau> <3612372.8DyAAORe3b@rousseau>
- <18671636.mmkZKWO0Lj@sven-l14>
+Return-Path: 
+  <3XwzcYQkbAPww23oeppivettmh.ksskpiywivgsrxirx.gsq@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9254362.6273V8V0VH";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Date: Mon, 10 Jan 2022 02:37:19 -0800
+Message-ID: <000000000000ca1d2005d537ebac@google.com>
+Subject: [syzbot] WARNING: suspicious RCU usage in __dev_queue_xmit
+From: syzbot <syzbot+e163f2ff7c3f7efd8203@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,73 +15,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
+To: a@unstable.cc, alobakin@pm.me, andrii@kernel.org, ast@kernel.org, atenart@kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, coreteam@netfilter.org, daniel@iogearbox.net, davem@davemloft.net, fw@strlen.de, john.fastabend@gmail.com, jonathan.lemon@gmail.com, kadlec@netfilter.org, kafai@fb.com, kpsingh@kernel.org, kuba@kernel.org, linux-kernel@vger.kernel.org, lukas@wunner.de, mareklindner@neomailbox.ch, netdev@vger.kernel.org, netfilter-devel@vger.kernel.org, pablo@netfilter.org, songliubraving@fb.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, yhs@fb.com
 
- 
---nextPart9254362.6273V8V0VH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Marek Lindner <mareklindner@neomailbox.ch>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH 3/3] alfred: properly initialize stack buffer before sending over unix socket
-Date: Sat, 22 Jan 2022 14:06:31 +0100
-Message-ID: <55198855.o2EDfbc6B2@rousseau>
-In-Reply-To: <18671636.mmkZKWO0Lj@sven-l14>
-References: <10410848.OOsao9LFFs@rousseau> <3612372.8DyAAORe3b@rousseau> <18671636.mmkZKWO0Lj@sven-l14>
+Hello,
 
-On Saturday, 22 January 2022 09:03:12 CET Sven Eckelmann wrote:
-> > The struct alfred_change_interface_v0 -> ifaces[IFNAMSIZ * 16] may be
-> > written to but not fully initialized. The interface name may be much
-> > shorter than the buffer holding it. Same applies struct
-> > alfred_change_bat_iface_v0 -> bat_iface[IFNAMSIZ] but to a lesser extent
-> > because the buffer is smaller.
->
-> But strncpy writes n bytes (second parameter of n). So the name + n-
-> strlen(name) 0-bytes. I thought I've corrected my earlier statement about
-> strncpy but maybe I forgot it. So strlcpy will take care of always writing a
-> single 0-byte at the end of a non-0-length buffer - but is not writing more
-> than 1x 0-byte (so half of the buffer might be uninitialised). strncpy will
-> fill the remaining bytes with 0 but might end up writing NO 0-bytes when
-> the buffer was already full.
+syzbot found the following issue on:
 
-Thanks for highlighting this difference between strncpy() and strlcpy(). I see 
-your point.
+HEAD commit:    4c375272fb0b Merge branch 'net-add-preliminary-netdev-refc..
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=164749a9b00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=2b8e24e3a80e3875
+dashboard link: https://syzkaller.appspot.com/bug?extid=e163f2ff7c3f7efd8203
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=11493641b00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=11ac6aceb00000
 
+The issue was bisected to:
 
-> But in your status patch, not all 16 name entries were written. So it leaks
-> things from the stack and the receiver might parse things which are not
-> actually written by the sender. And your code was not explicitly making sure
-> that the buffer ends with a 0-byte.
+commit 42df6e1d221dddc0f2acf2be37e68d553ad65f96
+Author: Lukas Wunner <lukas@wunner.de>
+Date:   Fri Oct 8 20:06:03 2021 +0000
 
-The server status patch iterates over the list of interfaces and performs 
-individual strncpy() calls, so that strncpy() can't initialize the entire 
-buffer unless there are 16 interfaces to begin with. Ok!
+    netfilter: Introduce egress hook
 
-Then drop this patch.
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1236329db00000
+final oops:     https://syzkaller.appspot.com/x/report.txt?x=1136329db00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=1636329db00000
 
-Kind regards,
-Marek Lindner
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+e163f2ff7c3f7efd8203@syzkaller.appspotmail.com
+Fixes: 42df6e1d221d ("netfilter: Introduce egress hook")
 
---nextPart9254362.6273V8V0VH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+=============================
+WARNING: suspicious RCU usage
+5.16.0-rc3-syzkaller #0 Not tainted
+-----------------------------
+include/linux/netfilter_netdev.h:97 suspicious rcu_dereference_check() usage!
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmHsAVcACgkQU1VOj+62
-HMBPzwf/R2fKcPUu2uEgFoW42nORtSrqxskpJgcc3At4DJj7GC77bzwBI13JJTcq
-J8M9r/Ov6QcXA8rSQXTsgVFxMXKycrYGG4Oiro5RMDoYVYHxch+SdmRsFVQfpX52
-6Drf7+XCNXVSZ7QR0raZ61NYyfxkZLc1Q5wD+IE/xm8Wo6DDnrsic8ysgnBjn3Xx
-ByG2KKZ0ZdS1u+Bc2B2l1+FjJetvVwqRzsR9zKL3AvoJnufxsonOqtS+bhtCtzSK
-xYL9jiTJ62ONTLdtUTHjX5nLuoGRLN7jegwFUuzu0KSRxwhKbtiyozmxAjJgDkng
-9O7/QhHvc9Pt/pfgGr559j7szYts+g==
-=JzoQ
------END PGP SIGNATURE-----
-
---nextPart9254362.6273V8V0VH--
+other info that might help us debug this:
 
 
+rcu_scheduler_active = 2, debug_locks = 1
+3 locks held by kworker/u4:2/49:
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: arch_atomic64_set arch/x86/include/asm/atomic64_64.h:34 [inline]
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: arch_atomic_long_set include/linux/atomic/atomic-long.h:41 [inline]
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: atomic_long_set include/linux/atomic/atomic-instrumented.h:1198 [inline]
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: set_work_data kernel/workqueue.c:635 [inline]
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: set_work_pool_and_clear_pending kernel/workqueue.c:662 [inline]
+ #0: ffff88814b0fe938 ((wq_completion)bat_events){+.+.}-{0:0}, at: process_one_work+0x896/0x1690 kernel/workqueue.c:2269
+ #1: ffffc9000119fdb0 ((work_completion)(&(&forw_packet_aggr->delayed_work)->work)){+.+.}-{0:0}, at: process_one_work+0x8ca/0x1690 kernel/workqueue.c:2273
+ #2: ffffffff8bb83b00 (rcu_read_lock_bh){....}-{1:2}, at: __dev_queue_xmit+0x1e3/0x3640 net/core/dev.c:4036
 
+stack backtrace:
+CPU: 1 PID: 49 Comm: kworker/u4:2 Not tainted 5.16.0-rc3-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: bat_events batadv_iv_send_outstanding_bat_ogm_packet
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:88 [inline]
+ dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106
+ nf_hook_egress include/linux/netfilter_netdev.h:97 [inline]
+ __dev_queue_xmit+0x2eac/0x3640 net/core/dev.c:4053
+ batadv_send_skb_packet+0x4a9/0x5f0 net/batman-adv/send.c:108
+ batadv_iv_ogm_send_to_if net/batman-adv/bat_iv_ogm.c:393 [inline]
+ batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:421 [inline]
+ batadv_iv_send_outstanding_bat_ogm_packet+0x6d7/0x8e0 net/batman-adv/bat_iv_ogm.c:1701
+ process_one_work+0x9b2/0x1690 kernel/workqueue.c:2298
+ worker_thread+0x658/0x11f0 kernel/workqueue.c:2445
+ kthread+0x405/0x4f0 kernel/kthread.c:327
+ ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:295
+ </TASK>
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches
