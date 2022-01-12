@@ -1,50 +1,67 @@
-Return-Path: <patchwork-bot+netdevbpf@kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: alfred: allow startup without network interface
+Date: Wed, 12 Jan 2022 22:11:48 +0100
+Message-ID: <1799242.Gl11JrvVGs@rousseau>
+In-Reply-To: <10410848.OOsao9LFFs@rousseau>
+References: <10410848.OOsao9LFFs@rousseau>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 1/1] batman-adv: mcast: don't send link-local multicast to
- mcast routers
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <164126881175.32247.1012598310655037825.git-patchwork-notify@kernel.org>
-Date: Tue, 04 Jan 2022 04:00:11 +0000
-References: <20220103171203.1124980-2-sw@simonwunderlich.de>
-In-Reply-To: <20220103171203.1124980-2-sw@simonwunderlich.de>
+Content-Type: multipart/signed; boundary="nextPart5759643.jAoCkZTbRQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linus.luessing@c0d3.blue, sven@narfation.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello:
+ 
+--nextPart5759643.jAoCkZTbRQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Subject: Re: alfred: allow startup without network interface
+Date: Wed, 12 Jan 2022 22:11:48 +0100
+Message-ID: <1799242.Gl11JrvVGs@rousseau>
+In-Reply-To: <10410848.OOsao9LFFs@rousseau>
+References: <10410848.OOsao9LFFs@rousseau>
 
-This patch was applied to netdev/net.git (master)
-by Simon Wunderlich <sw@simonwunderlich.de>:
+On Wednesday, 12 January 2022 22:02:58 CET Marek Lindner wrote:
+> To allow for these additional use cases and keep the current behavior, the
+> interface command line parameter shall accept 'none' as interface name
+> (similar to the batman-adv interface).
 
-On Mon,  3 Jan 2022 18:12:03 +0100 you wrote:
-> From: Linus Lüssing <linus.luessing@c0d3.blue>
-> 
-> The addition of routable multicast TX handling introduced a
-> bug/regression for packets with a link-local multicast destination:
-> These packets would be sent to all batman-adv nodes with a multicast
-> router and to all batman-adv nodes with an old version without multicast
-> router detection.
-> 
-> [...]
+Forgot to mention that these patches build upon master and:
 
-Here is the summary with links:
-  - [1/1] batman-adv: mcast: don't send link-local multicast to mcast routers
-    https://git.kernel.org/netdev/net/c/938f2e0b57ff
+* alfred: Avoid large send buffer for fixed size IPC commands
+* alfred: Simplify calculation of fixed size IPC TLV length
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+Cheers,
+Marek
+
+--nextPart5759643.jAoCkZTbRQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmHfRBQACgkQU1VOj+62
+HMASZwf/UBOZitHr0CI2P/adkaw8DtCi/4X3geEk9zSjm6vtbft/650O0pe/aKHI
+8beCjnR3B1v/wy2L4HkrKB2Xn6OSezgSPPWHcD8si9U+6MAKWR7meDFNVIXBW8xg
+ZzOqu6DazhD8SaVDG7hHwkG1deaWe8YDa7JPNtuiWnkcCX+mojHxY/7uDV10ORzc
+s/YQHTNMknG2WFwAaMdnK9Riy5K0Ary/0Joz26Vih78unrja6ANxpmA3eIvI/oGy
+wONtwSewt97o7e7dA+EMh3fFvFdfNFoSJWvNYtVXodQ2WBVch4kXpBF3RxFZAczZ
+3crym3f6CUsU4qyh/0DNwEwyUNeNpg==
+=7x9N
+-----END PGP SIGNATURE-----
+
+--nextPart5759643.jAoCkZTbRQ--
 
 
