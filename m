@@ -1,56 +1,67 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/3] batman-adv: remove unneeded variable in batadv_nc_init
-Date: Mon,  3 Jan 2022 18:17:22 +0100
-Message-Id: <20220103171722.1126109-4-sw@simonwunderlich.de>
-In-Reply-To: <20220103171722.1126109-1-sw@simonwunderlich.de>
-References: <20220103171722.1126109-1-sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: [PATCH 2/2] alfred: Simplify calculation of fixed size IPC TLV
+ length
+Date: Wed, 12 Jan 2022 17:11:06 +0100
+Message-ID: <1842756.Lh0aRYJY5D@rousseau>
+In-Reply-To: <20220104091103.162365-2-sven@narfation.org>
+References: <20220104091103.162365-1-sven@narfation.org>
+ <20220104091103.162365-2-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart5473470.eyY3ROyXAo";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Minghao Chi <chi.minghao@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
-
-Return status directly from function called.
-
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/network-coding.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 0a7f1d36a6a8..974d726fabb9 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -58,13 +58,9 @@ static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
-  */
- int __init batadv_nc_init(void)
- {
--	int ret;
--
- 	/* Register our packet type */
--	ret = batadv_recv_handler_register(BATADV_CODED,
--					   batadv_nc_recv_coded_packet);
--
--	return ret;
-+	return batadv_recv_handler_register(BATADV_CODED,
-+					    batadv_nc_recv_coded_packet);
- }
  
- /**
--- 
-2.30.2
+--nextPart5473470.eyY3ROyXAo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Subject: Re: [PATCH 2/2] alfred: Simplify calculation of fixed size IPC TLV length
+Date: Wed, 12 Jan 2022 17:11:06 +0100
+Message-ID: <1842756.Lh0aRYJY5D@rousseau>
+In-Reply-To: <20220104091103.162365-2-sven@narfation.org>
+References: <20220104091103.162365-1-sven@narfation.org> <20220104091103.162365-2-sven@narfation.org>
+
+On Tuesday, 4 January 2022 10:11:03 CET Sven Eckelmann wrote:
+> Instead of copying the same code to calculate the length of fixed size
+> TLVs, just use a common macro.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+
+Cheers,
+Marek
+
+--nextPart5473470.eyY3ROyXAo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmHe/ZoACgkQU1VOj+62
+HMDy3gf9HmSb/QqVrMqOOfbS2Nj3+aYkyf++Hfu2U4D1DqKuaymlyoAruD/mj7FV
+r8T+cJbc2ysWU1Ud2WjmcYRQdFxnGSd41hTuTYL4OnbN3ZASFmWmk7mVdoFd1Qzz
+2PDh3ivoTwSd/hJHk00SzYDKlKLxy5LUadQI4Ej8RYpktufT4uN8bJF+GJF6vXM3
+q5HRY8ccSIrOWZb3JyL2uFiL886wy/ZxFq2R7P7o16U5Hh4e7yx/GWEOAxjPAIGF
+P/UYsd7Z0Ge4ki4B/4l4pkKMHlnWZ5hsZuw9BHywxfdQIWlUFap3yan+WFmjCNEH
+RRX8314cnk9pfHUfF1U1sSE4mfLwKA==
+=zhQi
+-----END PGP SIGNATURE-----
+
+--nextPart5473470.eyY3ROyXAo--
+
 
