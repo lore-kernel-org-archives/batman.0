@@ -1,71 +1,74 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH 4/4] alfred: introduce 'server status' IPC call
-Date: Wed, 12 Jan 2022 22:14:15 +0100
-Message-ID: <4305571.4q7vW2cpkv@rousseau>
-In-Reply-To: <3214693.Z0pQRKLR2l@sven-l14>
-References: <3748133.vRqKQLy7FI@rousseau>
- <20220102113136.470299-4-mareklindner@neomailbox.ch>
- <3214693.Z0pQRKLR2l@sven-l14>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: compat: Fix linux/build_bug.h include for Linux
+ 4.9.297
+Date: Sun, 23 Jan 2022 13:39:41 +0100
+Message-Id: <20220123123941.132618-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1666924.J7kI1vASPN";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
+Linux 4.9.297 doesn't provide BUILD_BUG_ON anymore in linux/bug.h also
+identified itself with the version number 4.9.255 when decoding the
+LINUX_VERSION_CODE. So we have to try to guess now if we need to include
+linux/build_bug.h based on whether BUILD_BUG_ON is defined or not after
+including linux/bug.h.
+
+If not doing this, the build will fail with errors like:
+
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  net/batman-adv/bat_algo.c:146:1: error: undefined identifier 'BUILD_BUG_ON_ZERO'
+  In file included from ./arch/x86/include/asm/cpufeatures.h:5,
+                   from ./arch/x86/include/asm/cmpxchg.h:5,
+                   from ./arch/x86/include/asm/atomic.h:7,
+                   from ./include/linux/atomic.h:4,
+                   from net/batman-adv/main.h:207,
+                   from net/batman-adv/bat_algo.c:7:
+  ./arch/x86/include/asm/qspinlock.h: In function ‘virt_spin_lock’:
+  ./arch/x86/include/asm/required-features.h:104:29: error: implicit declaration of function ‘BUILD_BUG_ON_ZERO’ [-Werror=implicit-function-declaration]
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/build_bug.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/compat-include/linux/build_bug.h b/compat-include/linux/build_bug.h
+index 0eecc688..1002431d 100644
+--- a/compat-include/linux/build_bug.h
++++ b/compat-include/linux/build_bug.h
+@@ -15,6 +15,17 @@
+ #include_next <linux/build_bug.h>
+ #else
+ #include <linux/bug.h>
++
++/* Linux 4.9.297 doesn't provide BUILD_BUG_ON anymore in linux/bug.h
++ * also identified itself with the version number 4.9.255 when decoding the
++ * LINUX_VERSION_CODE. So we have to try to guess now if we need to include
++ * linux/build_bug.h based on whether BUILD_BUG_ON is defined  or not after
++ * including linux/bug.h
++ */
++#ifndef BUILD_BUG_ON
++#include_next <linux/build_bug.h>
++#endif
++
+ #endif
  
---nextPart1666924.J7kI1vASPN
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Marek Lindner <mareklindner@neomailbox.ch>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH 4/4] alfred: introduce 'server status' IPC call
-Date: Wed, 12 Jan 2022 22:14:15 +0100
-Message-ID: <4305571.4q7vW2cpkv@rousseau>
-In-Reply-To: <3214693.Z0pQRKLR2l@sven-l14>
-References: <3748133.vRqKQLy7FI@rousseau> <20220102113136.470299-4-mareklindner@neomailbox.ch> <3214693.Z0pQRKLR2l@sven-l14>
-
-On Sunday, 2 January 2022 15:43:37 CET Sven Eckelmann wrote:
-> @Simon, would you prefer to have a global "status" message (which cannot be
-> extended in the future) or separate "GET" queries for the existing commands:
-> 
-> * ALFRED_MODESWITCH -> ALFRED_GET_MODE
-> * ALFRED_CHANGE_INTERFACE -> ALFRED_GET_INTERFACES
-> * ALFRED_CHANGE_BAT_IFACE -> ALFRED_GET_BAT_IFACE
-
-Another option would be to work with TLVs inside a single server status 
-request. This would minimize the number of added packet definitions and retain 
-future extensibility.
-
-Cheers,
-Marek
-
---nextPart1666924.J7kI1vASPN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmHfRKgACgkQU1VOj+62
-HMBbqwgAuPJgAEZZ/j7jRvBbOeDNK96krIhmiBBhMDL8nTMXsfJlD/+A6K96Kg05
-Hh0SoWwjBXuw54CL3hBFWsKr29MRazND80/XRzLwY1jJaVnB/y3FIVJ4B3pzgA2b
-bELwCQdUUfOBlsGBhXXPB6UyDMEzGbmFlY/g3aZRuO2PS87h91LgE4UEGvaE9GyM
-fD1UmiTTAVtbtw1ZBY+merlQu9Fzb5tYdeDn+mz382hZ4Ul/Eyz77kn9WHtiOzw8
-rqbSKogwtyuZjS4KetqjFuSrE3gW6zJWbBFqGbblVlmJHcYn+GQ0u+ve/D2znsbj
-xQt3inNbHnKanGH78v+MLmLJ74KJ3Q==
-=2Vye
------END PGP SIGNATURE-----
-
---nextPart1666924.J7kI1vASPN--
-
+ #endif /* _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_ */
+-- 
+2.30.2
 
