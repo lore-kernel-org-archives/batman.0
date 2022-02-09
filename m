@@ -1,8 +1,8 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: [PATCH v2] alfred: introduce 'server status' IPC call
-Date: Mon,  7 Feb 2022 01:18:00 +0100
-Message-Id: <20220207001800.73490-1-mareklindner@neomailbox.ch>
+Subject: [PATCH v3] alfred: introduce 'server status' IPC call
+Date: Wed,  9 Feb 2022 17:43:54 +0100
+Message-Id: <20220209164354.652077-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -32,13 +32,16 @@ future backward compatible extension of the server status call.
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
+v3:
+ - close client socket at the end of unix_sock_server_status()
+
  alfred.h     |   2 +
  client.c     | 116 +++++++++++++++++++++++++++++++++++++++++++++++++++
  main.c       |   9 +++-
  man/alfred.8 |   3 ++
  packet.h     |  65 +++++++++++++++++++++++++++++
- unix_sock.c  |  83 ++++++++++++++++++++++++++++++++++++
- 6 files changed, 277 insertions(+), 1 deletion(-)
+ unix_sock.c  |  90 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 284 insertions(+), 1 deletion(-)
 
 diff --git a/alfred.h b/alfred.h
 index 9ab92a2..3d1d72a 100644
@@ -353,10 +356,10 @@ mation
 =20
  /**
 diff --git a/unix_sock.c b/unix_sock.c
-index bc39199..2e113df 100644
+index bc39199..9d4b1ca 100644
 --- a/unix_sock.c
 +++ b/unix_sock.c
-@@ -366,6 +366,86 @@ err:
+@@ -366,6 +366,93 @@ err:
  	return ret;
  }
 =20
@@ -437,18 +440,25 @@ n);
 +	status_rep->header.length =3D htons(len - sizeof(status_rep->header));
 +
 +	ret =3D write(client_sock, buf, len);
-+	if (ret =3D=3D len)
-+		return 0;
 +
-+	fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
-+		__func__, ret, len, strerror(errno));
-+	return -1;
++	if (ret !=3D len) {
++		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
++			__func__, ret, len, strerror(errno));
++		ret =3D -1;
++		goto err;
++	}
++
++	ret =3D 0;
++
++err:
++	close(client_sock);
++	return ret;
 +}
 +
  int unix_sock_read(struct globals *globals)
  {
  	int client_sock;
-@@ -428,6 +508,9 @@ int unix_sock_read(struct globals *globals)
+@@ -428,6 +515,9 @@ int unix_sock_read(struct globals *globals)
  						 (struct alfred_change_bat_iface_v0 *)packet,
  						 client_sock);
  		break;
