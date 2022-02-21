@@ -1,13 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [RFC PATCH 3/4] batman-adv: Don't expect inter-netns unique iflink
- indices
-Date: Mon, 28 Feb 2022 00:52:56 +0100
-Message-Id: <20220227235257.1324636-3-sven@narfation.org>
-In-Reply-To: <20220227235257.1324636-1-sven@narfation.org>
-References: <20220227235257.1324636-1-sven@narfation.org>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: [PATCH v4] alfred: introduce 'server status' IPC call
+Date: Tue, 22 Feb 2022 00:19:43 +0100
+Message-ID: <2116595.VMJfFIaldL@rousseau>
+In-Reply-To: <49865018.WmOq9pY62i@ripper>
+References: <20220220183614.54865-1-mareklindner@neomailbox.ch>
+ <49865018.WmOq9pY62i@ripper>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart2369180.30GYhE2k2L";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,93 +19,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sabrina Dubroca <sd@queasysnail.net>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-The ifindex doesn't have to be unique for multiple network namespaces on
-the same machine.
-
-  $ ip netns add test1
-  $ ip -net test1 link add dummy1 type dummy
-  $ ip netns add test2
-  $ ip -net test2 link add dummy2 type dummy
-
-  $ ip -net test1 link show dev dummy1
-  6: dummy1: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 96:81:55:1e:dd:85 brd ff:ff:ff:ff:ff:ff
-  $ ip -net test2 link show dev dummy2
-  6: dummy2: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 5a:3c:af:35:07:c3 brd ff:ff:ff:ff:ff:ff
-
-But the batman-adv code to walk through the various layers of virtual
-interfaces uses this assumption because dev_get_iflink handles it
-internally and doesn't return the actual netns of the iflink. And
-dev_get_iflink only documents the situation where ifindex == iflink for
-physical devices.
-
-But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
-because ipoib_get_iflink implements it even when it sometimes returns an
-iflink != ifindex and sometimes iflink == ifindex. The caller must
-therefore make sure itself to check both netns' and iflink + ifindex for
-equality. Only when they are equal, an "physical" interface was detected
-which should stop the traversal. On the other hand, vxcan_get_iflink can
-also return 0 in case there was currently no valid peer.
-
-Fixes: 3d48811b27f5 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
-Fixes: 2b45bb6c3aad ("batman-adv: additional checks for virtual interfaces on top of WiFi")
-Reported-by: Sabrina Dubroca <sd@queasysnail.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 8ed128bb..cdb6e542 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -157,13 +157,15 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 		return true;
  
- 	iflink = dev_get_iflink(net_dev);
--
--	/* no more parents..stop recursion */
--	if (iflink == 0 || iflink == net_dev->ifindex)
-+	if (iflink == 0)
- 		return false;
- 
- 	parent_net = batadv_getlink_net(net_dev, net);
- 
-+	/* iflink to itself, most likely physical device */
-+	if (net == parent_net && iflink == net_dev->ifindex)
-+		return false;
-+
- 	/* recurse over the parent device */
- 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
- 	/* if we got a NULL parent_dev there is something broken.. */
-@@ -223,8 +225,7 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 		return NULL;
- 
- 	iflink = dev_get_iflink(netdev);
--
--	if (netdev->ifindex == iflink) {
-+	if (iflink == 0) {
- 		dev_hold(netdev);
- 		return netdev;
- 	}
-@@ -235,6 +236,14 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 
- 	net = dev_net(hard_iface->soft_iface);
- 	real_net = batadv_getlink_net(netdev, net);
-+
-+	/* iflink to itself, most likely physical device */
-+	if (net == real_net && netdev->ifindex == iflink) {
-+		real_netdev = netdev;
-+		dev_hold(real_netdev);
-+		goto out;
-+	}
-+
- 	real_netdev = dev_get_by_index(real_net, iflink);
- 
- out:
--- 
-2.30.2
+--nextPart2369180.30GYhE2k2L
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH v4] alfred: introduce 'server status' IPC call
+Date: Tue, 22 Feb 2022 00:19:43 +0100
+Message-ID: <2116595.VMJfFIaldL@rousseau>
+In-Reply-To: <49865018.WmOq9pY62i@ripper>
+References: <20220220183614.54865-1-mareklindner@neomailbox.ch> <49865018.WmOq9pY62i@ripper>
+
+On Monday, 21 February 2022 10:14:18 CET Sven Eckelmann wrote:
+> On Sunday, 20 February 2022 19:36:14 CET Marek Lindner wrote:
+> > diff --git a/alfred.h b/alfred.h
+> > index 9ab92a2..598d38b 100644
+> > --- a/alfred.h
+> > +++ b/alfred.h
+> > @@ -33,6 +33,9 @@
+> > #define FIXED_TLV_LEN(__tlv_type) \
+> > htons(sizeof(__tlv_type) - sizeof(__tlv_type.header))
+> > 
+> > +#define FIXED_TLV_LEN_PTR(__tlv_type) \
+> > +       htons(sizeof(*__tlv_type) - sizeof(__tlv_type->header))
+> > +
+> 
+> This doesn't apply on master. And also doesn't make a lot of sense, because
+> you can now just use FIXED_TLV_LEN(*whatever). So I have dropped this part
+> and applied the rest.
+
+Your proposal did no compile and the master branch now also does not compile
+on ipq40xx:
+
+unix_sock.c: In function 'unix_sock_server_status':
+alfred.h:34:46: error: 'status_op_mode' is a pointer; did you mean to use '->'?
+  htons(sizeof(__tlv_type) - sizeof(__tlv_type.header))
+
+
+> Btw. good that you've spotted some prints to stderr which should actually be
+> to stdout. You only missed it for "mode: unknown". 
+
+The alfred server running not in primary and not in secondary mode was stderr
+worthy for me. But I also don't feel strongly about this.
+
+Cheers,
+Marek
+
+--nextPart2369180.30GYhE2k2L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmIUHg8ACgkQU1VOj+62
+HMBYMwf/WhorIkwpBquazXE7DxbWIvtaQpowAcPRHSLVafLJvRL7MGR1ovsX40CY
+VmQl4/l8hq7RDG51S8fwhsCmpIfm2wxZ3OaMZXrs2VPS/I3ux5Jsa8D1l4rY96am
+5nbDQXAjJaVTK12goXrwPZit3TdEIsj9z8R4cACRfhpE0j62Pj3gbyrXDlPYNBXt
+dlE4YRTJCxli+IhYyk9PeOt4sP/ZHkyayPRauBfFteD/1ZUTgxeIXXmXRluMcdDh
+z6HjLa0zsrDl8h8Q6aikVQ688QOVguXNrJ6Cq30APmlscvlzK3xUatUnuUeSABnF
+SgUlfdCUiRdulm4QM9UcqDrB2gcLHA==
+=gGQX
+-----END PGP SIGNATURE-----
+
+--nextPart2369180.30GYhE2k2L--
+
+
 
