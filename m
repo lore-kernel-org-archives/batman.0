@@ -1,9 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] alfred: Ensure processed change_iface packet is 0-terminated
-Date: Sat, 19 Feb 2022 08:54:24 +0100
-Message-Id: <20220219075424.802930-1-sven@narfation.org>
+Subject: [RFC PATCH 4/4] batman-adv: Demote batadv-on-batadv skip error
+ message
+Date: Mon, 28 Feb 2022 00:52:57 +0100
+Message-Id: <20220227235257.1324636-4-sven@narfation.org>
+In-Reply-To: <20220227235257.1324636-1-sven@narfation.org>
+References: <20220227235257.1324636-1-sven@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,30 +19,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Leonardo=20M=C3=B6rlein?= <freifunk@irrelefant.net>
 
-A client sending a alfred_change_interface_v0 packet to the alfred server
-might have forgotten to 0-terminate the string. In this case, strstr in
-unix_sock_change_iface might read outside of the available buffer.
+The error message "Cannot find parent device" was shown for users of
+macvtap (on batadv devices) whenever the macvtap was moved to a different
+netns. This happens because macvtap doesn't provide
 
+The situation for which this message is printed is actually not an error
+but just a warning that the optional sanity check was skipped. So demote
+the message from error to warning and adjust the text to better explain
+what happened.
+
+Reported-by: Leonardo Mörlein <freifunk@irrelefant.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- unix_sock.c | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/hard-interface.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/unix_sock.c b/unix_sock.c
-index bc39199..8c2b762 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -329,6 +329,8 @@ unix_sock_change_iface(struct globals *globals,
- 	if (len < (int)(sizeof(*change_iface) - sizeof(change_iface->header)))
- 		goto err;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index cdb6e542..83fb51b6 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -168,9 +168,9 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
  
-+	change_iface->ifaces[sizeof(change_iface->ifaces) - 1] = '\0';
-+
- 	if (globals->opmode == OPMODE_SECONDARY) {
- 		if (strstr(change_iface->ifaces, ",") != NULL) {
- 			ret = -EINVAL;
+ 	/* recurse over the parent device */
+ 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
+-	/* if we got a NULL parent_dev there is something broken.. */
+ 	if (!parent_dev) {
+-		pr_err("Cannot find parent device\n");
++		pr_warn("Cannot find parent device. Skipping batadv-on-batadv check for %s\n",
++			net_dev->name);
+ 		return false;
+ 	}
+ 
 -- 
 2.30.2
 
