@@ -1,83 +1,110 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v4] alfred: introduce 'server status' IPC call
-Date: Mon, 21 Feb 2022 10:14:18 +0100
-Message-ID: <49865018.WmOq9pY62i@ripper>
-In-Reply-To: <20220220183614.54865-1-mareklindner@neomailbox.ch>
-References: <20220220183614.54865-1-mareklindner@neomailbox.ch>
+Subject: [RFC PATCH 3/4] batman-adv: Don't expect inter-netns unique iflink
+ indices
+Date: Mon, 28 Feb 2022 00:52:56 +0100
+Message-Id: <20220227235257.1324636-3-sven@narfation.org>
+In-Reply-To: <20220227235257.1324636-1-sven@narfation.org>
+References: <20220227235257.1324636-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3242400.sB13epYpGi";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Sven Eckelmann <sven@narfation.org>, Sabrina Dubroca <sd@queasysnail.net>
 
+The ifindex doesn't have to be unique for multiple network namespaces on
+the same machine.
+
+  $ ip netns add test1
+  $ ip -net test1 link add dummy1 type dummy
+  $ ip netns add test2
+  $ ip -net test2 link add dummy2 type dummy
+
+  $ ip -net test1 link show dev dummy1
+  6: dummy1: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+      link/ether 96:81:55:1e:dd:85 brd ff:ff:ff:ff:ff:ff
+  $ ip -net test2 link show dev dummy2
+  6: dummy2: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+      link/ether 5a:3c:af:35:07:c3 brd ff:ff:ff:ff:ff:ff
+
+But the batman-adv code to walk through the various layers of virtual
+interfaces uses this assumption because dev_get_iflink handles it
+internally and doesn't return the actual netns of the iflink. And
+dev_get_iflink only documents the situation where ifindex == iflink for
+physical devices.
+
+But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
+because ipoib_get_iflink implements it even when it sometimes returns an
+iflink != ifindex and sometimes iflink == ifindex. The caller must
+therefore make sure itself to check both netns' and iflink + ifindex for
+equality. Only when they are equal, an "physical" interface was detected
+which should stop the traversal. On the other hand, vxcan_get_iflink can
+also return 0 in case there was currently no valid peer.
+
+Fixes: 3d48811b27f5 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
+Fixes: 2b45bb6c3aad ("batman-adv: additional checks for virtual interfaces on top of WiFi")
+Reported-by: Sabrina Dubroca <sd@queasysnail.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/hard-interface.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 8ed128bb..cdb6e542 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -157,13 +157,15 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ 		return true;
  
---nextPart3242400.sB13epYpGi
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH v4] alfred: introduce 'server status' IPC call
-Date: Mon, 21 Feb 2022 10:14:18 +0100
-Message-ID: <49865018.WmOq9pY62i@ripper>
-In-Reply-To: <20220220183614.54865-1-mareklindner@neomailbox.ch>
-References: <20220220183614.54865-1-mareklindner@neomailbox.ch>
-
-On Sunday, 20 February 2022 19:36:14 CET Marek Lindner wrote:
-> diff --git a/alfred.h b/alfred.h
-> index 9ab92a2..598d38b 100644
-> --- a/alfred.h
-> +++ b/alfred.h
-> @@ -33,6 +33,9 @@
->  #define FIXED_TLV_LEN(__tlv_type) \
->         htons(sizeof(__tlv_type) - sizeof(__tlv_type.header))
->  
-> +#define FIXED_TLV_LEN_PTR(__tlv_type) \
-> +       htons(sizeof(*__tlv_type) - sizeof(__tlv_type->header))
-> +
-
-This doesn't apply on master. And also doesn't make a lot of sense, because 
-you can now just use FIXED_TLV_LEN(*whatever). So I have dropped this part and 
-applied the rest.
-
-Btw. good that you've spotted some prints to stderr which should actually be 
-to stdout. You only missed it for "mode: unknown". I have also fixed this.
-
-Kind regards,
-	Sven
---nextPart3242400.sB13epYpGi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmITV+oACgkQXYcKB8Em
-e0Ze7hAAlG3PmLCTqgMIhTJUNSzM+xYY9LEEMr4gA5SMVdi+IrN8n3bMWF/0Fuog
-6bRDa/fAHXfNVcC8XzmOzY+U9HrIx2fU2E/BywR7ko1/htuddChunvKtxwhO+ckn
-Y9Lrxh3kkUo/NAsyvstpWupw6g2bE48C2XlNyXS7L5/lpB4ahNKBT5ISmiekyVHh
-Lrk2OINPDy2JhR7XaBYSc0H7GEQhi+KK/TZ7N6xP+VgjWoQlr2UEi9xRgMRkLmmU
-/7Awj7bf2LE75Nm5QsD8bPgGPclLIOomKfEhCc1Ox88OKSv8Jm7beHswcb0VVG1g
-IrbyLiM2FMOlcU4Amjn18c0OtK1RPwKnjE32XGp0Dx96PWtT8QHTNpNqeWo8I/bY
-Kl9sZdcJ6gyw0C5D5XgxvIGgDnncJbaPot+9pOIzKQZ1Z90v+i+msPhw6L7G9UTW
-Y/MWYTEyun/Dg+BcxdbccQXnMoEM+tnlMa0nABfuDdRPWKPq0imeUw5HcJE6lnrF
-91+jJVxA7YixQyDlMkBRpNHec2Gpd0A603rJkrI8uKLYmA+yQ4gXMG7xVoKv1kkg
-yXJWJMKth1BhEggUV+lBiwlKG7iapMMYU7EYsBD3tFTJJn1GUuNNCWgX0EkmzlQx
-NeYhDyrxK9p9dWQcH+Og4lX0MeuG2waAIE7o5Bt4i/sTBwsDNWo=
-=moav
------END PGP SIGNATURE-----
-
---nextPart3242400.sB13epYpGi--
-
+ 	iflink = dev_get_iflink(net_dev);
+-
+-	/* no more parents..stop recursion */
+-	if (iflink == 0 || iflink == net_dev->ifindex)
++	if (iflink == 0)
+ 		return false;
+ 
+ 	parent_net = batadv_getlink_net(net_dev, net);
+ 
++	/* iflink to itself, most likely physical device */
++	if (net == parent_net && iflink == net_dev->ifindex)
++		return false;
++
+ 	/* recurse over the parent device */
+ 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
+ 	/* if we got a NULL parent_dev there is something broken.. */
+@@ -223,8 +225,7 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
+ 		return NULL;
+ 
+ 	iflink = dev_get_iflink(netdev);
+-
+-	if (netdev->ifindex == iflink) {
++	if (iflink == 0) {
+ 		dev_hold(netdev);
+ 		return netdev;
+ 	}
+@@ -235,6 +236,14 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
+ 
+ 	net = dev_net(hard_iface->soft_iface);
+ 	real_net = batadv_getlink_net(netdev, net);
++
++	/* iflink to itself, most likely physical device */
++	if (net == real_net && netdev->ifindex == iflink) {
++		real_netdev = netdev;
++		dev_hold(real_netdev);
++		goto out;
++	}
++
+ 	real_netdev = dev_get_by_index(real_net, iflink);
+ 
+ out:
+-- 
+2.30.2
 
