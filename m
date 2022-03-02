@@ -1,111 +1,65 @@
-Return-Path: <sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH maint 3/3] batman-adv: Don't expect inter-netns unique iflink
- indices
-Date: Wed,  2 Mar 2022 19:49:46 +0100
-Message-Id: <20220302184946.414934-3-sven@narfation.org>
-In-Reply-To: <20220302184946.414934-1-sven@narfation.org>
-References: <20220302184946.414934-1-sven@narfation.org>
+Subject: [PATCH] batman-adv: make mc_forwarding atomic
+Date: Wed,  2 Mar 2022 20:05:13 +0100
+Message-Id: <20220302190513.417350-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sabrina Dubroca <sd@queasysnail.net>
 
-The ifindex doesn't have to be unique for multiple network namespaces on
-the same machine.
+From: Eric Dumazet <edumazet@google.com>
 
-  $ ip netns add test1
-  $ ip -net test1 link add dummy1 type dummy
-  $ ip netns add test2
-  $ ip -net test2 link add dummy2 type dummy
+This fixes minor data-races in ip6_mc_input() and
+batadv_mcast_mla_rtr_flags_softif_get_ipv6()
 
-  $ ip -net test1 link show dev dummy1
-  6: dummy1: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 96:81:55:1e:dd:85 brd ff:ff:ff:ff:ff:ff
-  $ ip -net test2 link show dev dummy2
-  6: dummy2: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 5a:3c:af:35:07:c3 brd ff:ff:ff:ff:ff:ff
-
-But the batman-adv code to walk through the various layers of virtual
-interfaces uses this assumption because dev_get_iflink handles it
-internally and doesn't return the actual netns of the iflink. And
-dev_get_iflink only documents the situation where ifindex == iflink for
-physical devices.
-
-But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
-because ipoib_get_iflink implements it even when it sometimes returns an
-iflink != ifindex and sometimes iflink == ifindex. The caller must
-therefore make sure itself to check both netns and iflink + ifindex for
-equality. Only when they are equal, a "physical" interface was detected
-which should stop the traversal. On the other hand, vxcan_get_iflink can
-also return 0 in case there was currently no valid peer. In this case, it
-is still necessary to stop.
-
-Fixes: 3d48811b27f5 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
-Fixes: 2b45bb6c3aad ("batman-adv: additional checks for virtual interfaces on top of WiFi")
-Reported-by: Sabrina Dubroca <sd@queasysnail.net>
+Signed-off-by: Eric Dumazet <edumazet@google.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[sven@narfation.org: Add ugly hack to get it building with old kernels]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+net-next commit 145c7a793838 ("ipv6: make mc_forwarding atomic")
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 8ed128bb..cdb6e542 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -157,13 +157,15 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 		return true;
- 
- 	iflink = dev_get_iflink(net_dev);
--
--	/* no more parents..stop recursion */
--	if (iflink == 0 || iflink == net_dev->ifindex)
-+	if (iflink == 0)
- 		return false;
- 
- 	parent_net = batadv_getlink_net(net_dev, net);
- 
-+	/* iflink to itself, most likely physical device */
-+	if (net == parent_net && iflink == net_dev->ifindex)
-+		return false;
-+
- 	/* recurse over the parent device */
- 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
- 	/* if we got a NULL parent_dev there is something broken.. */
-@@ -223,8 +225,7 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 		return NULL;
- 
- 	iflink = dev_get_iflink(netdev);
--
--	if (netdev->ifindex == iflink) {
-+	if (iflink == 0) {
- 		dev_hold(netdev);
- 		return netdev;
- 	}
-@@ -235,6 +236,14 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 
- 	net = dev_net(hard_iface->soft_iface);
- 	real_net = batadv_getlink_net(netdev, net);
-+
-+	/* iflink to itself, most likely physical device */
-+	if (net == real_net && netdev->ifindex == iflink) {
-+		real_netdev = netdev;
-+		dev_hold(real_netdev);
-+		goto out;
-+	}
-+
- 	real_netdev = dev_get_by_index(real_net, iflink);
- 
- out:
--- 
+I didn't find a good way to handle this. So either we introduce the
+auto-patch-before build stuff again or we allow minimal changes like this
+which are not in sync with upstream.
+
+I will try to have a look at ways how we can (with our build_tests):
+
+* filter out everything with UGLY_HACK + everything between
+  UGLY_HACK_OLD + UGLY_HACK_STOP before comparing it with upstream
+* have some automatic warning in case someone adds code to linux-merge.gi=
+t
+  with UGLY_HACK in it
+
+ net/batman-adv/multicast.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 1860de73..720c12c0 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -135,7 +135,11 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6=
+(struct net_device *dev)
+ {
+ 	struct inet6_dev *in6_dev =3D __in6_dev_get(dev);
+=20
++#if LINUX_VERSION_IS_GEQ(5, 18, 0) // UGLY_HACK_NEW
++	if (in6_dev && atomic_read(&in6_dev->cnf.mc_forwarding))
++#else // UGLY_HACK_OLD
+ 	if (in6_dev && in6_dev->cnf.mc_forwarding)
++#endif // UGLY_HACK_STOP
+ 		return BATADV_NO_FLAGS;
+ 	else
+ 		return BATADV_MCAST_WANT_NO_RTR6;
+--=20
 2.30.2
-
