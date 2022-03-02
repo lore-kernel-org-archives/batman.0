@@ -1,11 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.9 2/2] batman-adv: Don't expect inter-netns unique iflink
- indices
-Date: Wed,  9 Mar 2022 17:45:42 +0100
-Message-Id: <20220309164542.408824-3-sven@narfation.org>
-In-Reply-To: <20220309164542.408824-1-sven@narfation.org>
-References: <20220309164542.408824-1-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 3/4] batman-adv: Migrate to linux/container_of.h
+Date: Wed,  2 Mar 2022 17:35:21 +0100
+Message-Id: <20220302163522.102842-4-sw@simonwunderlich.de>
+In-Reply-To: <20220302163522.102842-1-sw@simonwunderlich.de>
+References: <20220302163522.102842-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,75 +16,308 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Sabrina Dubroca <sd@queasysnail.net>, Simon Wunderlich <sw@simonwunderlich.de>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-commit 6c1f41afc1dbe59d9d3c8bb0d80b749c119aa334 upstream.
+From: Sven Eckelmann <sven@narfation.org>
 
-The ifindex doesn't have to be unique for multiple network namespaces on
-the same machine.
+The commit d2a8ebbf8192 ("kernel.h: split out container_of() and
+typeof_member() macros")  introduced a new header for the container_of
+related macros from (previously) linux/kernel.h.
 
-  $ ip netns add test1
-  $ ip -net test1 link add dummy1 type dummy
-  $ ip netns add test2
-  $ ip -net test2 link add dummy2 type dummy
-
-  $ ip -net test1 link show dev dummy1
-  6: dummy1: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 96:81:55:1e:dd:85 brd ff:ff:ff:ff:ff:ff
-  $ ip -net test2 link show dev dummy2
-  6: dummy2: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 5a:3c:af:35:07:c3 brd ff:ff:ff:ff:ff:ff
-
-But the batman-adv code to walk through the various layers of virtual
-interfaces uses this assumption because dev_get_iflink handles it
-internally and doesn't return the actual netns of the iflink. And
-dev_get_iflink only documents the situation where ifindex == iflink for
-physical devices.
-
-But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
-because ipoib_get_iflink implements it even when it sometimes returns an
-iflink != ifindex and sometimes iflink == ifindex. The caller must
-therefore make sure itself to check both netns and iflink + ifindex for
-equality. Only when they are equal, a "physical" interface was detected
-which should stop the traversal. On the other hand, vxcan_get_iflink can
-also return 0 in case there was currently no valid peer. In this case, it
-is still necessary to stop.
-
-Fixes: b7eddd0b3950 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
-Fixes: 5ed4a460a1d3 ("batman-adv: additional checks for virtual interfaces on top of WiFi")
-Reported-by: Sabrina Dubroca <sd@queasysnail.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: drop modification of non-existing batadv_get_real_netdevice. ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ net/batman-adv/bat_iv_ogm.c            | 2 +-
+ net/batman-adv/bat_v_elp.c             | 2 +-
+ net/batman-adv/bat_v_ogm.c             | 2 +-
+ net/batman-adv/bridge_loop_avoidance.c | 1 +
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ net/batman-adv/gateway_client.c        | 1 +
+ net/batman-adv/hard-interface.c        | 2 +-
+ net/batman-adv/main.c                  | 1 +
+ net/batman-adv/multicast.c             | 1 +
+ net/batman-adv/network-coding.c        | 2 +-
+ net/batman-adv/originator.c            | 2 +-
+ net/batman-adv/send.c                  | 2 +-
+ net/batman-adv/soft-interface.c        | 2 +-
+ net/batman-adv/tp_meter.c              | 2 +-
+ net/batman-adv/translation-table.c     | 2 +-
+ net/batman-adv/tvlv.c                  | 2 +-
+ 16 files changed, 16 insertions(+), 12 deletions(-)
 
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index f94f538fa382..7f6a7c96ac92 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -13,13 +13,13 @@
+ #include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/init.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 71999e13f729..b6db999abf75 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -10,13 +10,13 @@
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/ethtool.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/minmax.h>
+ #include <linux/netdevice.h>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 1d750f3cb2e4..033639df96d8 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -9,12 +9,12 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 2ed9496fc41f..337e20b6586d 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -10,6 +10,7 @@
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/compiler.h>
++#include <linux/container_of.h>
+ #include <linux/crc16.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 2f008e329007..fefb51a5f606 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -11,6 +11,7 @@
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+@@ -20,7 +21,6 @@
+ #include <linux/in.h>
+ #include <linux/ip.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/netlink.h>
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index b7466136e292..d26124bc27e1 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 64cf9cd3be4d..eaf0a483211a 100644
+index 8a2b78f9c4b2..59d19097a54c 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -163,13 +163,15 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 		return true;
+@@ -9,11 +9,11 @@
  
- 	iflink = dev_get_iflink(net_dev);
--
--	/* no more parents..stop recursion */
--	if (iflink == 0 || iflink == net_dev->ifindex)
-+	if (iflink == 0)
- 		return false;
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/gfp.h>
+ #include <linux/if.h>
+ #include <linux/if_arp.h>
+ #include <linux/if_ether.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/limits.h>
+ #include <linux/list.h>
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 8f1b724d0412..e8a449915566 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -9,6 +9,7 @@
+ #include <linux/atomic.h>
+ #include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/crc32c.h>
+ #include <linux/device.h>
+ #include <linux/errno.h>
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index f4004cf0ff6f..1860de735661 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -11,6 +11,7 @@
+ #include <linux/bitops.h>
+ #include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 974d726fabb9..5f4aeeb60dc4 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -11,6 +11,7 @@
+ #include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/compiler.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+@@ -19,7 +20,6 @@
+ #include <linux/init.h>
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index aadc653ca1d8..34903df4fe93 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -8,11 +8,11 @@
+ #include "main.h"
  
- 	parent_net = batadv_getlink_net(net_dev, net);
+ #include <linux/atomic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 477d85a3b558..0379b126865d 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -10,13 +10,13 @@
+ #include <linux/atomic.h>
+ #include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if.h>
+ #include <linux/if_ether.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/netdevice.h>
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 2dbbe6c19609..0f5c0679b55a 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -11,6 +11,7 @@
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
++#include <linux/container_of.h>
+ #include <linux/cpumask.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -19,7 +20,6 @@
+ #include <linux/if_ether.h>
+ #include <linux/if_vlan.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 93730d30af54..7f3dd3c393e0 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -12,13 +12,13 @@
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
++#include <linux/container_of.h>
+ #include <linux/err.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/init.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/kthread.h>
+ #include <linux/limits.h>
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4b7ad6684bc4..8478034d3abf 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -13,6 +13,7 @@
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
++#include <linux/container_of.h>
+ #include <linux/crc32c.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -21,7 +22,6 @@
+ #include <linux/init.h>
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 0cb58eb04093..7ec2e2343884 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -7,10 +7,10 @@
+ #include "main.h"
  
-+	/* iflink to itself, most likely physical device */
-+	if (net == parent_net && iflink == net_dev->ifindex)
-+		return false;
-+
- 	/* recurse over the parent device */
- 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
- 	/* if we got a NULL parent_dev there is something broken.. */
+ #include <linux/byteorder/generic.h>
++#include <linux/container_of.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+-#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
 -- 
 2.30.2
 
