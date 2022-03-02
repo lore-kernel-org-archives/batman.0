@@ -1,10 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/4] batman-adv: Remove redundant 'flush_workqueue()' calls
-Date: Wed,  2 Mar 2022 17:35:20 +0100
-Message-Id: <20220302163522.102842-3-sw@simonwunderlich.de>
-In-Reply-To: <20220302163522.102842-1-sw@simonwunderlich.de>
-References: <20220302163522.102842-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH maint 2/3] batman-adv: Request iflink once in
+ batadv_get_real_netdevice
+Date: Wed,  2 Mar 2022 19:49:45 +0100
+Message-Id: <20220302184946.414934-2-sven@narfation.org>
+In-Reply-To: <20220302184946.414934-1-sven@narfation.org>
+References: <20220302184946.414934-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,43 +17,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+There is no need to call dev_get_iflink multiple times for the same
+net_device in batadv_get_real_netdevice. And since some of the
+ndo_get_iflink callbacks are dynamic (for example via RCUs like in
+vxcan_get_iflink), it could easily happen that the returned values are not
+stable. The pre-checks before __dev_get_by_index are then of course bogus.
 
-'destroy_workqueue()' already drains the queue before destroying it, so
-there is no need to flush it explicitly.
-
-Remove the redundant 'flush_workqueue()' calls.
-
-This was generated with coccinelle:
-
-@@
-expression E;
-@@
-- 	flush_workqueue(E);
-	destroy_workqueue(E);
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Fixes: 2b45bb6c3aad ("batman-adv: additional checks for virtual interfaces on top of WiFi")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 1 -
- 1 file changed, 1 deletion(-)
+ net/batman-adv/hard-interface.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 5207cd8d6ad8..8f1b724d0412 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -132,7 +132,6 @@ static void __exit batadv_exit(void)
- 	rtnl_link_unregister(&batadv_link_ops);
- 	unregister_netdevice_notifier(&batadv_hard_if_notifier);
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 774a26c5..8ed128bb 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -215,14 +215,16 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
+ 	struct net_device *real_netdev = NULL;
+ 	struct net *real_net;
+ 	struct net *net;
+-	int ifindex;
++	int iflink;
  
--	flush_workqueue(batadv_event_workqueue);
- 	destroy_workqueue(batadv_event_workqueue);
- 	batadv_event_workqueue = NULL;
+ 	ASSERT_RTNL();
  
+ 	if (!netdev)
+ 		return NULL;
+ 
+-	if (netdev->ifindex == dev_get_iflink(netdev)) {
++	iflink = dev_get_iflink(netdev);
++
++	if (netdev->ifindex == iflink) {
+ 		dev_hold(netdev);
+ 		return netdev;
+ 	}
+@@ -232,9 +234,8 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
+ 		goto out;
+ 
+ 	net = dev_net(hard_iface->soft_iface);
+-	ifindex = dev_get_iflink(netdev);
+ 	real_net = batadv_getlink_net(netdev, net);
+-	real_netdev = dev_get_by_index(real_net, ifindex);
++	real_netdev = dev_get_by_index(real_net, iflink);
+ 
+ out:
+ 	batadv_hardif_put(hard_iface);
 -- 
 2.30.2
 
