@@ -1,71 +1,88 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH maint 2/3] batman-adv: Request iflink once in
- batadv_get_real_netdevice
-Date: Wed,  2 Mar 2022 19:49:45 +0100
-Message-Id: <20220302184946.414934-2-sven@narfation.org>
-In-Reply-To: <20220302184946.414934-1-sven@narfation.org>
-References: <20220302184946.414934-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/3] pull request for net: batman-adv 2022-03-02
+Date: Wed,  2 Mar 2022 17:30:46 +0100
+Message-Id: <20220302163049.101957-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-There is no need to call dev_get_iflink multiple times for the same
-net_device in batadv_get_real_netdevice. And since some of the
-ndo_get_iflink callbacks are dynamic (for example via RCUs like in
-vxcan_get_iflink), it could easily happen that the returned values are not
-stable. The pre-checks before __dev_get_by_index are then of course bogus.
+Hi David, hi Jakub,
 
-Fixes: 2b45bb6c3aad ("batman-adv: additional checks for virtual interfaces on top of WiFi")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+here are some bugfixes for batman-adv which we would like to have integra=
+ted into net.
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 774a26c5..8ed128bb 100644
+Please pull or let me know of any problem!
+
+There might be a small merge conflict between the net and net-next pull
+requests which I both send today, specifically those two commits:
+
+* (batadv/net) 690bb6fb64f5 ("batman-adv: Request iflink once in batadv-o=
+n-batadv check")
+* (batadv/net-next) 6ee3c393eeb7 ("batman-adv: Demote batadv-on-batadv sk=
+ip error message")
+
+They should be resolved like this:=20
+
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -215,14 +215,16 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 	struct net_device *real_netdev = NULL;
- 	struct net *real_net;
- 	struct net *net;
--	int ifindex;
-+	int iflink;
- 
- 	ASSERT_RTNL();
- 
- 	if (!netdev)
- 		return NULL;
- 
--	if (netdev->ifindex == dev_get_iflink(netdev)) {
-+	iflink = dev_get_iflink(netdev);
-+
-+	if (netdev->ifindex == iflink) {
- 		dev_hold(netdev);
- 		return netdev;
- 	}
-@@ -232,9 +234,8 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 		goto out;
- 
- 	net = dev_net(hard_iface->soft_iface);
--	ifindex = dev_get_iflink(netdev);
- 	real_net = batadv_getlink_net(netdev, net);
--	real_netdev = dev_get_by_index(real_net, ifindex);
-+	real_netdev = dev_get_by_index(real_net, iflink);
- 
- out:
- 	batadv_hardif_put(hard_iface);
--- 
-2.30.2
+@@ -167,13 +167,7 @@
+ 		return false;
+=20
+ 	/* recurse over the parent device */
+-<<<<<<<
+-	parent_dev =3D __dev_get_by_index((struct net *)parent_net,
+-					dev_get_iflink(net_dev));
+-=3D=3D=3D=3D=3D=3D=3D
+ 	parent_dev =3D __dev_get_by_index((struct net *)parent_net, iflink);
+-	/* if we got a NULL parent_dev there is something broken.. */
+->>>>>>>
+ 	if (!parent_dev) {
+ 		pr_warn("Cannot find parent device. Skipping batadv-on-batadv check fo=
+r %s\n",
+ 			net_dev->name);
 
+Thank you,
+      Simon
+
+The following changes since commit e783362eb54cd99b2cac8b3a9aeac942e6f6ac=
+07:
+
+  Linux 5.17-rc1 (2022-01-23 10:12:53 +0200)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-202=
+20302
+
+for you to fetch changes up to 6c1f41afc1dbe59d9d3c8bb0d80b749c119aa334:
+
+  batman-adv: Don't expect inter-netns unique iflink indices (2022-03-02 =
+09:24:55 +0100)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - Remove redundant iflink requests, by Sven Eckelmann (2 patches)
+
+ - Don't expect inter-netns unique iflink indices, by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (3):
+      batman-adv: Request iflink once in batadv-on-batadv check
+      batman-adv: Request iflink once in batadv_get_real_netdevice
+      batman-adv: Don't expect inter-netns unique iflink indices
+
+ net/batman-adv/hard-interface.c | 29 ++++++++++++++++++++---------
+ 1 file changed, 20 insertions(+), 9 deletions(-)
