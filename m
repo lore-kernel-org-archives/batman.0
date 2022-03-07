@@ -1,114 +1,83 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/3] batman-adv: Don't expect inter-netns unique iflink
- indices
-Date: Wed,  2 Mar 2022 17:30:49 +0100
-Message-Id: <20220302163049.101957-4-sw@simonwunderlich.de>
-In-Reply-To: <20220302163049.101957-1-sw@simonwunderlich.de>
-References: <20220302163049.101957-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net, kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Sabrina Dubroca <sd@queasysnail.net>, Simon Wunderlich <sw@simonwunderlich.de>
-
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH net-next 05/10] batman-adv: Use netif_rx().
+Date: Mon, 07 Mar 2022 08:26:44 +0100
+Message-ID: <6057237.0618BOYifV@ripper>
+In-Reply-To: <20220306215753.3156276-6-bigeasy@linutronix.de>
+References: <20220306215753.3156276-1-bigeasy@linutronix.de>
+ <20220306215753.3156276-6-bigeasy@linutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart23526821.4xDK8nd8PC";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: netdev@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
 
-The ifindex doesn't have to be unique for multiple network namespaces on
-the same machine.
-
-  $ ip netns add test1
-  $ ip -net test1 link add dummy1 type dummy
-  $ ip netns add test2
-  $ ip -net test2 link add dummy2 type dummy
-
-  $ ip -net test1 link show dev dummy1
-  6: dummy1: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 96:81:55:1e:dd:85 brd ff:ff:ff:ff:ff:ff
-  $ ip -net test2 link show dev dummy2
-  6: dummy2: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
-      link/ether 5a:3c:af:35:07:c3 brd ff:ff:ff:ff:ff:ff
-
-But the batman-adv code to walk through the various layers of virtual
-interfaces uses this assumption because dev_get_iflink handles it
-internally and doesn't return the actual netns of the iflink. And
-dev_get_iflink only documents the situation where ifindex == iflink for
-physical devices.
-
-But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
-because ipoib_get_iflink implements it even when it sometimes returns an
-iflink != ifindex and sometimes iflink == ifindex. The caller must
-therefore make sure itself to check both netns and iflink + ifindex for
-equality. Only when they are equal, a "physical" interface was detected
-which should stop the traversal. On the other hand, vxcan_get_iflink can
-also return 0 in case there was currently no valid peer. In this case, it
-is still necessary to stop.
-
-Fixes: b7eddd0b3950 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
-Fixes: 5ed4a460a1d3 ("batman-adv: additional checks for virtual interfaces on top of WiFi")
-Reported-by: Sabrina Dubroca <sd@queasysnail.net>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/hard-interface.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index e2760cfce190..35fadb924849 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -157,13 +157,15 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 		return true;
  
- 	iflink = dev_get_iflink(net_dev);
--
--	/* no more parents..stop recursion */
--	if (iflink == 0 || iflink == net_dev->ifindex)
-+	if (iflink == 0)
- 		return false;
- 
- 	parent_net = batadv_getlink_net(net_dev, net);
- 
-+	/* iflink to itself, most likely physical device */
-+	if (net == parent_net && iflink == net_dev->ifindex)
-+		return false;
-+
- 	/* recurse over the parent device */
- 	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
- 	/* if we got a NULL parent_dev there is something broken.. */
-@@ -223,8 +225,7 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 		return NULL;
- 
- 	iflink = dev_get_iflink(netdev);
--
--	if (netdev->ifindex == iflink) {
-+	if (iflink == 0) {
- 		dev_hold(netdev);
- 		return netdev;
- 	}
-@@ -235,6 +236,14 @@ static struct net_device *batadv_get_real_netdevice(struct net_device *netdev)
- 
- 	net = dev_net(hard_iface->soft_iface);
- 	real_net = batadv_getlink_net(netdev, net);
-+
-+	/* iflink to itself, most likely physical device */
-+	if (net == real_net && netdev->ifindex == iflink) {
-+		real_netdev = netdev;
-+		dev_hold(real_netdev);
-+		goto out;
-+	}
-+
- 	real_netdev = dev_get_by_index(real_net, iflink);
- 
- out:
--- 
-2.30.2
+--nextPart23526821.4xDK8nd8PC
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: netdev@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH net-next 05/10] batman-adv: Use netif_rx().
+Date: Mon, 07 Mar 2022 08:26:44 +0100
+Message-ID: <6057237.0618BOYifV@ripper>
+In-Reply-To: <20220306215753.3156276-6-bigeasy@linutronix.de>
+References: <20220306215753.3156276-1-bigeasy@linutronix.de> <20220306215753.3156276-6-bigeasy@linutronix.de>
+
+On Sunday, 6 March 2022 22:57:48 CET Sebastian Andrzej Siewior wrote:
+> Since commit
+>    baebdf48c3600 ("net: dev: Makes sure netif_rx() can be invoked in any context.")
+> 
+> the function netif_rx() can be used in preemptible/thread context as
+> well as in interrupt context.
+> 
+> Use netif_rx().
+> 
+> Cc: Antonio Quartulli <a@unstable.cc>
+> Cc: Marek Lindner <mareklindner@neomailbox.ch>
+> Cc: Simon Wunderlich <sw@simonwunderlich.de>
+> Cc: Sven Eckelmann <sven@narfation.org>
+> Cc: b.a.t.m.a.n@lists.open-mesh.org
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+Acked-by: Sven Eckelmann <sven@narfation.org>
+--nextPart23526821.4xDK8nd8PC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmIls7QACgkQXYcKB8Em
+e0b2/Q//XcO0hhSLL1nArD2M/D4WHYoT7j507mGwYAJ9TxgHdAL1OMnK+rNBs0ad
+FjYaoPzYhnhMBDvVWnkAbr2B+GPp6h3LNzWbjvc9hX/HMewWynKM6bpYGgfmPOz3
+OSdTsrVGG9gmX5/rQUAjcYAXycOkiHWL3fsRzxjeB0BLwRjyOlXu77Y+E9sDNU41
+XZ4cyEwG1ylIWx+JvtaK9TquoNAZ7BwdlHKdLGcnpJ2REI8ir+myjy0SxmKxB3w2
+wi6YU6BfJXf1afHogDl4Tu4LmwJirs9+Gl+JPH+bQ9zD+V0hSYUN4akjCFuUAzM3
+erKsgZVyabJ0J9VQSwTZBgo0myiW63uCG467Pu0IFVkY+0WZtdG4Dt6Z07O8KwaX
++Ls8Kp2cUj5E76dodkQlFqaBP2tLCe9D9PUUmVIAdWuI+UT8S7cGRBN9pV70uxaf
+eRcdtiJ5GyCYDUoW7VxxslCiI/j3MjX1IE3/iqjImEbLXFXJb+TjVboYub8FXAtD
+Zjv+gzOi4NEyN3DduyecXQ0xig6wcfaY7osZi21svj3/dBCvHA7ahRp+FMz+8m05
+5Xf8QUQTQ2nydN/EqT/4Pn5zbsXM4e3fNoqZYj6QDfNCOccMItZRMCcdCZT1PPfo
+epdgj0HJCpuGGdLzDAGb1Q+OuGFVtmE6ZvE9ro97nS/qFqrX8SA=
+=cEkA
+-----END PGP SIGNATURE-----
+
+--nextPart23526821.4xDK8nd8PC--
+
 
