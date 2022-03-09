@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 4.9 1/2] batman-adv: Request iflink once in batadv-on-batadv
- check
-Date: Wed,  9 Mar 2022 17:45:41 +0100
-Message-Id: <20220309164542.408824-2-sven@narfation.org>
-In-Reply-To: <20220309164542.408824-1-sven@narfation.org>
-References: <20220309164542.408824-1-sven@narfation.org>
+Subject: [PATCH 4.9 0/2] batman-adv: Fixes for stable/linux-4.9.y
+Date: Wed,  9 Mar 2022 17:45:40 +0100
+Message-Id: <20220309164542.408824-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,57 +15,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-commit 690bb6fb64f5dc7437317153902573ecad67593d upstream.
+Hi,
 
-There is no need to call dev_get_iflink multiple times for the same
-net_device in batadv_is_on_batman_iface. And since some of the
-.ndo_get_iflink callbacks are dynamic (for example via RCUs like in
-vxcan_get_iflink), it could easily happen that the returned values are not
-stable. The pre-checks before __dev_get_by_index are then of course bogus.
+following two patches were backported "automatically" applied in
+4.14.y, 4.19.y, 5.4.y, 5.10.y, 5.5.y and 5.16.y. But they failed
+to apply cleanly in v4.9.y due to some changes in the patch context
+and one missing function in the older batman-adv version.
 
-Fixes: b7eddd0b3950 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-[ bp: 4.9 backported: adjust context. ]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/hard-interface.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+These problems were now fixed manually.
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 4f384abb4ced..64cf9cd3be4d 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -155,22 +155,23 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 	struct net *net = dev_net(net_dev);
- 	struct net_device *parent_dev;
- 	const struct net *parent_net;
-+	int iflink;
- 	bool ret;
- 
- 	/* check if this is a batman-adv mesh interface */
- 	if (batadv_softif_is_valid(net_dev))
- 		return true;
- 
-+	iflink = dev_get_iflink(net_dev);
-+
- 	/* no more parents..stop recursion */
--	if (dev_get_iflink(net_dev) == 0 ||
--	    dev_get_iflink(net_dev) == net_dev->ifindex)
-+	if (iflink == 0 || iflink == net_dev->ifindex)
- 		return false;
- 
- 	parent_net = batadv_getlink_net(net_dev, net);
- 
- 	/* recurse over the parent device */
--	parent_dev = __dev_get_by_index((struct net *)parent_net,
--					dev_get_iflink(net_dev));
-+	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
- 	/* if we got a NULL parent_dev there is something broken.. */
- 	if (!parent_dev) {
- 		pr_err("Cannot find parent device\n");
+Kind regards,
+	Sven
+
+Sven Eckelmann (2):
+  batman-adv: Request iflink once in batadv-on-batadv check
+  batman-adv: Don't expect inter-netns unique iflink indices
+
+ net/batman-adv/hard-interface.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
 -- 
 2.30.2
 
