@@ -1,10 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] batman-adv: Demote batadv-on-batadv skip error message
-Date: Wed,  2 Mar 2022 19:53:14 +0100
-Message-Id: <20220302185314.415571-1-sven@narfation.org>
+Subject: [PATCH 4.9 1/2] batman-adv: Request iflink once in batadv-on-batadv
+ check
+Date: Wed,  9 Mar 2022 17:45:41 +0100
+Message-Id: <20220309164542.408824-2-sven@narfation.org>
+In-Reply-To: <20220309164542.408824-1-sven@narfation.org>
+References: <20220309164542.408824-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,41 +17,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, =?UTF-8?q?Leonardo=20M=C3=B6rlein?= <freifunk@irrelefant.net>
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-The error message "Cannot find parent device" was shown for users of
-macvtap (on batadv devices) whenever the macvtap was moved to a different
-netns. This happens because macvtap doesn't provide an implementation for
-rtnl_link_ops->get_link_net.
+commit 690bb6fb64f5dc7437317153902573ecad67593d upstream.
 
-The situation for which this message is printed is actually not an error
-but just a warning that the optional sanity check was skipped. So demote
-the message from error to warning and adjust the text to better explain
-what happened.
+There is no need to call dev_get_iflink multiple times for the same
+net_device in batadv_is_on_batman_iface. And since some of the
+.ndo_get_iflink callbacks are dynamic (for example via RCUs like in
+vxcan_get_iflink), it could easily happen that the returned values are not
+stable. The pre-checks before __dev_get_by_index are then of course bogus.
 
-Reported-by: Leonardo Mörlein <freifunk@irrelefant.net>
+Fixes: b7eddd0b3950 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+[ bp: 4.9 backported: adjust context. ]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/hard-interface.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 59d19097..b25afc7f 100644
+index 4f384abb4ced..64cf9cd3be4d 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -165,9 +165,9 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 	/* recurse over the parent device */
- 	parent_dev = __dev_get_by_index((struct net *)parent_net,
- 					dev_get_iflink(net_dev));
--	/* if we got a NULL parent_dev there is something broken.. */
- 	if (!parent_dev) {
--		pr_err("Cannot find parent device\n");
-+		pr_warn("Cannot find parent device. Skipping batadv-on-batadv check for %s\n",
-+			net_dev->name);
- 		return false;
- 	}
+@@ -155,22 +155,23 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ 	struct net *net = dev_net(net_dev);
+ 	struct net_device *parent_dev;
+ 	const struct net *parent_net;
++	int iflink;
+ 	bool ret;
  
+ 	/* check if this is a batman-adv mesh interface */
+ 	if (batadv_softif_is_valid(net_dev))
+ 		return true;
+ 
++	iflink = dev_get_iflink(net_dev);
++
+ 	/* no more parents..stop recursion */
+-	if (dev_get_iflink(net_dev) == 0 ||
+-	    dev_get_iflink(net_dev) == net_dev->ifindex)
++	if (iflink == 0 || iflink == net_dev->ifindex)
+ 		return false;
+ 
+ 	parent_net = batadv_getlink_net(net_dev, net);
+ 
+ 	/* recurse over the parent device */
+-	parent_dev = __dev_get_by_index((struct net *)parent_net,
+-					dev_get_iflink(net_dev));
++	parent_dev = __dev_get_by_index((struct net *)parent_net, iflink);
+ 	/* if we got a NULL parent_dev there is something broken.. */
+ 	if (!parent_dev) {
+ 		pr_err("Cannot find parent device\n");
 -- 
 2.30.2
 
