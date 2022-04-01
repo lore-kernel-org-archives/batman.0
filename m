@@ -1,539 +1,143 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: [PATCH] alfred: notify event listener via unix socket
-Date: Sat, 30 Apr 2022 12:56:47 +0200
-Message-Id: <20220430105647.340588-1-mareklindner@neomailbox.ch>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 18/65] ipv6: make mc_forwarding atomic
+Date: Fri,  1 Apr 2022 10:41:19 -0400
+Message-Id: <20220401144206.1953700-18-sashal@kernel.org>
+In-Reply-To: <20220401144206.1953700-1-sashal@kernel.org>
+References: <20220401144206.1953700-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Eric Dumazet <edumazet@google.com>, "David S . Miller" <davem@davemloft.net>, Sasha Levin <sashal@kernel.org>, yoshfuji@linux-ipv6.org, dsahern@kernel.org, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-The alfred server instance accepts event notification registration
-via the unix socket. These notification sockets only inform
-registered parties of the availibility of an alfred datatype change.
-The actual data itself needs to be retrieved via the existing data
-retrieval mechanisms.
+From: Eric Dumazet <edumazet@google.com>
 
-Unlike the update-command this event monitor allows:
+[ Upstream commit 145c7a793838add5e004e7d49a67654dc7eba147 ]
 
-- multiple parallel listeners
-- programmatic access to changes without requiring multiple processes
+This fixes minor data-races in ip6_mc_input() and
+batadv_mcast_mla_rtr_flags_softif_get_ipv6()
 
-The alfred client allows to monitor events via the newly added '-E'
-(event monitor) command line option. Serving as debugging tool and
-example code at the same time.
-
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Eric Dumazet <edumazet@google.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- alfred.h     |  15 ++++++
- client.c     |  54 ++++++++++++++++++++
- main.c       |  10 +++-
- man/alfred.8 |   3 ++
- packet.h     |  26 ++++++++++
- recv.c       |   4 +-
- server.c     |   5 ++
- unix_sock.c  | 142 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 257 insertions(+), 2 deletions(-)
+ include/linux/ipv6.h       | 2 +-
+ net/batman-adv/multicast.c | 2 +-
+ net/ipv6/addrconf.c        | 4 ++--
+ net/ipv6/ip6_input.c       | 2 +-
+ net/ipv6/ip6mr.c           | 8 ++++----
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/alfred.h b/alfred.h
-index 2d98a30..f442c48 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -94,6 +94,7 @@ enum clientmode {
- 	CLIENT_CHANGE_INTERFACE,
- 	CLIENT_CHANGE_BAT_IFACE,
- 	CLIENT_SERVER_STATUS,
-+	CLIENT_EVENT_MONITOR,
- };
-=20
- struct interface {
-@@ -110,8 +111,15 @@ struct interface {
- 	struct list_head list;
- };
-=20
-+struct event_listener {
-+	int fd;
-+
-+	struct list_head list;
-+};
-+
- struct globals {
- 	struct list_head interfaces;
-+	struct list_head event_listeners;
-=20
- 	char *net_iface;
- 	struct server *best_server;	/* NULL if we are a server ourselves */
-@@ -157,6 +165,7 @@ int alfred_client_modeswitch(struct globals *globals)=
-;
- int alfred_client_change_interface(struct globals *globals);
- int alfred_client_change_bat_iface(struct globals *globals);
- int alfred_client_server_status(struct globals *globals);
-+int alfred_client_event_monitor(struct globals *globals);
- /* recv.c */
- int recv_alfred_packet(struct globals *globals, struct interface *interf=
-ace,
- 		       int recv_sock);
-@@ -186,6 +195,12 @@ int unix_sock_open_client(struct globals *globals);
- int unix_sock_close(struct globals *globals);
- int unix_sock_req_data_finish(struct globals *globals,
- 			      struct transaction_head *head);
-+int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
-,
-+				    fd_set *errfds, int maxsock);
-+void unix_sock_events_select_handle(struct globals *globals,
-+				    fd_set *fds, fd_set *errfds);
-+void unix_sock_events_close_all(struct globals *globals);
-+void unix_sock_event_notify(struct globals *globals, uint8_t type);
- /* vis.c */
- int vis_update_data(struct globals *globals);
- /* netsock.c */
-diff --git a/client.c b/client.c
-index 81cdd7c..9e88f47 100644
---- a/client.c
-+++ b/client.c
-@@ -452,3 +452,57 @@ err:
- 	unix_sock_close(globals);
- 	return 0;
- }
-+
-+int alfred_client_event_monitor(struct globals *globals)
-+{
-+	struct alfred_event_register_v0 event_register;
-+	struct alfred_event_notify_v0 event_notify;
-+	int ret, len;
-+
-+	if (unix_sock_open_client(globals))
-+		return -1;
-+
-+	len =3D sizeof(event_register);
-+
-+	event_register.header.type =3D ALFRED_EVENT_REGISTER;
-+	event_register.header.version =3D ALFRED_VERSION;
-+	event_register.header.length =3D 0;
-+
-+	ret =3D write(globals->unix_sock, &event_register, len);
-+	if (ret !=3D len) {
-+		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
-+			__func__, ret, len, strerror(errno));
-+		goto err;
-+	}
-+
-+	while (true) {
-+		len =3D read(globals->unix_sock, &event_notify, sizeof(event_notify));
-+		if (len =3D=3D 0) {
-+			fprintf(stdout, "Server closed the connection\n");
-+			goto err;
-+		}
-+
-+		if (len < 0) {
-+			perror("read from unix socket failed");
-+			goto err;
-+		}
-+
-+		if (len !=3D sizeof(event_notify)) {
-+			fprintf(stderr, "notify read bytes: %d (expected: %zu)\n",
-+				len, sizeof(event_notify));
-+				goto err;
-+		}
-+
-+		if (event_notify.header.version !=3D ALFRED_VERSION)
-+			continue;
-+
-+		if (event_notify.header.type !=3D ALFRED_EVENT_NOTIFY)
-+			continue;
-+
-+		fprintf(stdout, "Event: type =3D %d\n", event_notify.type);
-+	}
-+
-+err:
-+	unix_sock_close(globals);
-+	return 0;
-+}
-diff --git a/main.c b/main.c
-index 68d6efd..98bf64d 100644
---- a/main.c
-+++ b/main.c
-@@ -39,6 +39,7 @@ static void alfred_usage(void)
- 	printf("  -I, --change-interface [interface]  change to the specified i=
-nterface(s)\n");
- 	printf("  -B, --change-bat-iface [interface]  change to the specified b=
-atman-adv interface\n");
- 	printf("  -S, --server-status                 request server status inf=
-o such as mode & interfaces\n");
-+	printf("  -E, --event-monitor                 monitor alfred data recor=
-d update eventss\n");
- 	printf("\n");
- 	printf("server mode options:\n");
- 	printf("  -i, --interface                     specify the interface (or=
- comma separated list of interfaces) to listen on\n");
-@@ -164,6 +165,7 @@ static struct globals *alfred_init(int argc, char *ar=
-gv[])
- 		{"change-interface",	required_argument,	NULL,	'I'},
- 		{"change-bat-iface",	required_argument,	NULL,	'B'},
- 		{"server-status",	required_argument,	NULL,	'S'},
-+		{"event-monitor",	required_argument,	NULL,	'E'},
- 		{"unix-path",		required_argument,	NULL,	'u'},
- 		{"update-command",	required_argument,	NULL,	'c'},
- 		{"version",		no_argument,		NULL,	'v'},
-@@ -181,6 +183,7 @@ static struct globals *alfred_init(int argc, char *ar=
-gv[])
- 	memset(globals, 0, sizeof(*globals));
-=20
- 	INIT_LIST_HEAD(&globals->interfaces);
-+	INIT_LIST_HEAD(&globals->event_listeners);
- 	globals->net_iface =3D NULL;
- 	globals->opmode =3D OPMODE_SECONDARY;
- 	globals->clientmode =3D CLIENT_NONE;
-@@ -198,7 +201,7 @@ static struct globals *alfred_init(int argc, char *ar=
-gv[])
-=20
- 	time_random_seed();
-=20
--	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:Su:dc:p:4:f=
-", long_options,
-+	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:SEu:dc:p:4:=
-f", long_options,
- 				  &opt_ind)) !=3D -1) {
- 		switch (opt) {
- 		case 'r':
-@@ -263,6 +266,9 @@ static struct globals *alfred_init(int argc, char *ar=
-gv[])
- 		case 'S':
- 			globals->clientmode =3D CLIENT_SERVER_STATUS;
- 			break;
-+		case 'E':
-+			globals->clientmode =3D CLIENT_EVENT_MONITOR;
-+			break;
- 		case 'u':
- 			globals->unix_path =3D optarg;
- 			break;
-@@ -328,6 +334,8 @@ int main(int argc, char *argv[])
- 		return alfred_client_change_bat_iface(globals);
- 	case CLIENT_SERVER_STATUS:
- 		return alfred_client_server_status(globals);
-+	case CLIENT_EVENT_MONITOR:
-+		return alfred_client_event_monitor(globals);
- 	}
-=20
- 	return 0;
-diff --git a/man/alfred.8 b/man/alfred.8
-index cf0eafc..ca83f02 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -97,6 +97,9 @@ Change the alfred server to use the new \fBbatman-adv i=
-nterface\fP
- .TP
- \fB\-S\fP, \fB\-\-server\-status\fP
- Request server status information such as mode & interfaces\fP
-+.TP
-+\fB\-E\fP, \fB\-\-event\-monitor\fP
-+Start alfred event monitor connecting to the alfred server and reporting=
- update events\fP
- .
- .SH SERVER OPTIONS
- .TP
-diff --git a/packet.h b/packet.h
-index 0c1a2eb..84b027f 100644
---- a/packet.h
-+++ b/packet.h
-@@ -59,6 +59,8 @@ struct alfred_transaction_mgmt {
-  * @ALFRED_STATUS_ERROR: Error was detected during the transaction
-  * @ALFRED_MODESWITCH: Switch between different operation modes
-  * @ALFRED_CHANGE_INTERFACE: Change the listening interface
-+ * @ALFRED_EVENT_REGISTER: Request to be notified about alfred update ev=
-ents
-+ * @ALFRED_EVENT_NOTIFY: Data record update has been received
-  */
- enum alfred_packet_type {
- 	ALFRED_PUSH_DATA =3D 0,
-@@ -70,6 +72,8 @@ enum alfred_packet_type {
- 	ALFRED_CHANGE_INTERFACE =3D 6,
- 	ALFRED_CHANGE_BAT_IFACE =3D 7,
- 	ALFRED_SERVER_STATUS =3D 8,
-+	ALFRED_EVENT_REGISTER =3D 9,
-+	ALFRED_EVENT_NOTIFY =3D 10,
- };
-=20
- /* packets */
-@@ -229,6 +233,28 @@ struct alfred_server_status_rep_v0 {
- 	struct alfred_tlv header;
- } __packed;
-=20
-+/**
-+ * struct alfred_event_register_v0 - event registration message
-+ * @header: TLV header describing the complete packet
-+ *
-+ * Sent by the client to daemon to register for data record updates
-+ */
-+struct alfred_event_register_v0 {
-+	struct alfred_tlv header;
-+} __packed;
-+
-+/**
-+ * struct alfred_event_notify_v0 - event notification message
-+ * @header: TLV header describing the complete packet
-+ * @type: Type of the data triggering the event
-+ *
-+ * Sent by the daemon to client on data record update
-+ */
-+struct alfred_event_notify_v0 {
-+	struct alfred_tlv header;
-+	uint8_t type;
-+} __packed;
-+
- /**
-  * struct alfred_status_v0 - Status info of a transaction
-  * @header: TLV header describing the complete packet
-diff --git a/recv.c b/recv.c
-index 8acad10..36b3a49 100644
---- a/recv.c
-+++ b/recv.c
-@@ -76,8 +76,10 @@ static int finish_alfred_push_data(struct globals *glo=
-bals,
- 		/* check that data was changed */
- 		if (new_entry_created ||
- 		    dataset->data.header.length !=3D data_len ||
--		    memcmp(dataset->buf, data->data, data_len) !=3D 0)
-+		    memcmp(dataset->buf, data->data, data_len) !=3D 0) {
- 			changed_data_type(globals, data->header.type);
-+			unix_sock_event_notify(globals, data->header.type);
-+		}
-=20
- 		/* free old buffer */
- 		if (dataset->buf) {
-diff --git a/server.c b/server.c
-index bfc37bc..4078fe6 100644
---- a/server.c
-+++ b/server.c
-@@ -442,6 +442,8 @@ int alfred_server(struct globals *globals)
-=20
- 		maxsock =3D netsock_prepare_select(globals, &fds, maxsock);
- 		maxsock =3D netsock_prepare_select(globals, &errfds, maxsock);
-+		maxsock =3D unix_sock_events_select_prepare(globals, &fds,
-+							  &errfds, maxsock);
-=20
- 		ret =3D pselect(maxsock + 1, &fds, NULL, &errfds, &tv, NULL);
-=20
-@@ -450,6 +452,8 @@ int alfred_server(struct globals *globals)
- 		} else if (ret) {
- 			netsock_check_error(globals, &errfds);
-=20
-+			unix_sock_events_select_handle(globals, &fds, &errfds);
-+
- 			if (FD_ISSET(globals->unix_sock, &fds)) {
- 				unix_sock_read(globals);
- 				continue;
-@@ -478,5 +482,6 @@ int alfred_server(struct globals *globals)
-=20
- 	netsock_close_all(globals);
- 	unix_sock_close(globals);
-+	unix_sock_events_close_all(globals);
- 	return 0;
- }
-diff --git a/unix_sock.c b/unix_sock.c
-index 3894736..c45564d 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -13,6 +13,7 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <fcntl.h>
- #include <sys/socket.h>
- #include <sys/time.h>
- #include <sys/un.h>
-@@ -84,6 +85,7 @@ static int unix_sock_add_data(struct globals *globals,
- 			      struct alfred_push_data_v0 *push,
- 			      int client_sock)
+diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
+index f514a7dd8c9c..510f87656479 100644
+--- a/include/linux/ipv6.h
++++ b/include/linux/ipv6.h
+@@ -50,7 +50,7 @@ struct ipv6_devconf {
+ 	__s32		use_optimistic;
+ #endif
+ #ifdef CONFIG_IPV6_MROUTE
+-	__s32		mc_forwarding;
++	atomic_t	mc_forwarding;
+ #endif
+ 	__s32		disable_ipv6;
+ 	__s32		drop_unicast_in_l2_multicast;
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 139894ca788b..c8a341cd652c 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -136,7 +136,7 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6(struct net_device *dev)
  {
-+	bool new_entry_created =3D false;
- 	struct alfred_data *data;
- 	struct dataset *dataset;
- 	int len, data_len, ret =3D -1;
-@@ -138,10 +140,17 @@ static int unix_sock_add_data(struct globals *globa=
-ls,
- 			free(dataset);
- 			goto err;
- 		}
-+		new_entry_created =3D true;
+ 	struct inet6_dev *in6_dev = __in6_dev_get(dev);
+ 
+-	if (in6_dev && in6_dev->cnf.mc_forwarding)
++	if (in6_dev && atomic_read(&in6_dev->cnf.mc_forwarding))
+ 		return BATADV_NO_FLAGS;
+ 	else
+ 		return BATADV_MCAST_WANT_NO_RTR6;
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index 7c5bf39dca5d..86bcb1825698 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -542,7 +542,7 @@ static int inet6_netconf_fill_devconf(struct sk_buff *skb, int ifindex,
+ #ifdef CONFIG_IPV6_MROUTE
+ 	if ((all || type == NETCONFA_MC_FORWARDING) &&
+ 	    nla_put_s32(skb, NETCONFA_MC_FORWARDING,
+-			devconf->mc_forwarding) < 0)
++			atomic_read(&devconf->mc_forwarding)) < 0)
+ 		goto nla_put_failure;
+ #endif
+ 	if ((all || type == NETCONFA_PROXY_NEIGH) &&
+@@ -5515,7 +5515,7 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
+ 	array[DEVCONF_USE_OPTIMISTIC] = cnf->use_optimistic;
+ #endif
+ #ifdef CONFIG_IPV6_MROUTE
+-	array[DEVCONF_MC_FORWARDING] = cnf->mc_forwarding;
++	array[DEVCONF_MC_FORWARDING] = atomic_read(&cnf->mc_forwarding);
+ #endif
+ 	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
+ 	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
+diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
+index 06d60662717d..15ea3d082534 100644
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -509,7 +509,7 @@ int ip6_mc_input(struct sk_buff *skb)
+ 	/*
+ 	 *      IPv6 multicast router mode is now supported ;)
+ 	 */
+-	if (dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding &&
++	if (atomic_read(&dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding) &&
+ 	    !(ipv6_addr_type(&hdr->daddr) &
+ 	      (IPV6_ADDR_LOOPBACK|IPV6_ADDR_LINKLOCAL)) &&
+ 	    likely(!(IP6CB(skb)->flags & IP6SKB_FORWARDED))) {
+diff --git a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
+index 41cb348a7c3c..5f0ac47acc74 100644
+--- a/net/ipv6/ip6mr.c
++++ b/net/ipv6/ip6mr.c
+@@ -740,7 +740,7 @@ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
+ 
+ 	in6_dev = __in6_dev_get(dev);
+ 	if (in6_dev) {
+-		in6_dev->cnf.mc_forwarding--;
++		atomic_dec(&in6_dev->cnf.mc_forwarding);
+ 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
+ 					     NETCONFA_MC_FORWARDING,
+ 					     dev->ifindex, &in6_dev->cnf);
+@@ -908,7 +908,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
+ 
+ 	in6_dev = __in6_dev_get(dev);
+ 	if (in6_dev) {
+-		in6_dev->cnf.mc_forwarding++;
++		atomic_inc(&in6_dev->cnf.mc_forwarding);
+ 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
+ 					     NETCONFA_MC_FORWARDING,
+ 					     dev->ifindex, &in6_dev->cnf);
+@@ -1558,7 +1558,7 @@ static int ip6mr_sk_init(struct mr_table *mrt, struct sock *sk)
+ 	} else {
+ 		rcu_assign_pointer(mrt->mroute_sk, sk);
+ 		sock_set_flag(sk, SOCK_RCU_FREE);
+-		net->ipv6.devconf_all->mc_forwarding++;
++		atomic_inc(&net->ipv6.devconf_all->mc_forwarding);
  	}
- 	dataset->data_source =3D SOURCE_LOCAL;
- 	clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
-=20
-+	/* check that data was changed */
-+	if (new_entry_created ||
-+	    dataset->data.header.length !=3D data_len ||
-+	    memcmp(dataset->buf, data->data, data_len) !=3D 0)
-+		unix_sock_event_notify(globals, data->header.type);
-+
- 	/* free old buffer */
- 	free(dataset->buf);
-=20
-@@ -472,6 +481,37 @@ err:
- 	return ret;
- }
-=20
-+static int unix_sock_register_listener(struct globals *globals, int clie=
-nt_sock)
-+{
-+	struct event_listener *listener;
-+	int ret;
-+
-+	ret =3D fcntl(client_sock, F_GETFL, 0);
-+	if (ret < 0) {
-+		perror("failed to get file status flags");
-+		goto err;
-+	}
-+
-+	ret =3D fcntl(client_sock, F_SETFL, ret | O_NONBLOCK);
-+	if (ret < 0) {
-+		perror("failed to set file status flags");
-+		goto err;
-+	}
-+
-+	listener =3D malloc(sizeof(*listener));
-+	if (!listener)
-+		goto err;
-+
-+	listener->fd =3D client_sock;
-+	INIT_LIST_HEAD(&listener->list);
-+	list_add_tail(&listener->list, &globals->event_listeners);
-+	return 0;
-+
-+err:
-+	close(client_sock);
-+	return -1;
-+}
-+
- int unix_sock_read(struct globals *globals)
- {
- 	int client_sock;
-@@ -537,6 +577,9 @@ int unix_sock_read(struct globals *globals)
- 	case ALFRED_SERVER_STATUS:
- 		ret =3D unix_sock_server_status(globals, client_sock);
- 		break;
-+	case ALFRED_EVENT_REGISTER:
-+		ret =3D unix_sock_register_listener(globals, client_sock);
-+		break;
- 	default:
- 		/* unknown packet type */
- 		ret =3D -1;
-@@ -555,3 +598,102 @@ int unix_sock_close(struct globals *globals)
- 	close(globals->unix_sock);
- 	return 0;
- }
-+
-+static void unix_sock_event_listener_free(struct event_listener *listene=
-r)
-+{
-+	list_del_init(&listener->list);
-+	close(listener->fd);
-+	free(listener);
-+}
-+
-+static void unix_sock_event_notify_listener(struct event_listener *liste=
-ner,
-+					    uint8_t type)
-+{
-+	struct alfred_event_notify_v0 notify;
-+	int ret;
-+
-+	notify.header.type =3D ALFRED_EVENT_NOTIFY;
-+	notify.header.version =3D ALFRED_VERSION;
-+	notify.header.length =3D FIXED_TLV_LEN(notify);
-+	notify.type =3D type;
-+
-+	ret =3D write(listener->fd, &notify, sizeof(notify));
-+	if (ret =3D=3D sizeof(notify))
-+		return;
-+
-+	unix_sock_event_listener_free(listener);
-+}
-+
-+int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
-,
-+				    fd_set *errfds, int maxsock)
-+{
-+	struct event_listener *listener;
-+
-+	list_for_each_entry(listener, &globals->event_listeners, list) {
-+		if (listener->fd < 0)
-+			continue;
-+
-+		FD_SET(listener->fd, fds);
-+		FD_SET(listener->fd, errfds);
-+
-+		if (maxsock < listener->fd)
-+			maxsock =3D listener->fd;
-+	}
-+
-+	return maxsock;
-+}
-+
-+void unix_sock_events_select_handle(struct globals *globals,
-+				    fd_set *fds, fd_set *errfds)
-+{
-+	struct event_listener *listener, *tmp;
-+	char buff[4];
-+	int ret;
-+
-+	list_for_each_entry_safe(listener, tmp,
-+				 &globals->event_listeners, list) {
-+		if (FD_ISSET(listener->fd, fds)) {
-+			ret =3D recv(listener->fd, buff, sizeof(buff),
-+				   MSG_PEEK | MSG_DONTWAIT);
-+			/* listener has hung up */
-+			if (ret =3D=3D 0)
-+				unix_sock_event_listener_free(listener);
-+			else if (ret > 0) {
-+				fprintf(stderr, "Event listener has written to socket: %d - closing\=
-n",
-+					listener->fd);
-+				unix_sock_event_listener_free(listener);
-+			}
-+
-+			if (ret >=3D 0)
-+				continue;
-+		}
-+
-+		if (FD_ISSET(listener->fd, errfds)) {
-+			fprintf(stderr, "Error on event listener detected: %d\n",
-+				listener->fd);
-+			unix_sock_event_listener_free(listener);
-+			continue;
-+		}
-+	}
-+}
-+
-+void unix_sock_events_close_all(struct globals *globals)
-+{
-+	struct event_listener *listener, *tmp;
-+
-+	list_for_each_entry_safe(listener, tmp,
-+				 &globals->event_listeners, list) {
-+		unix_sock_event_listener_free(listener);
-+	}
-+}
-+
-+void unix_sock_event_notify(struct globals *globals, uint8_t type)
-+{
-+	struct event_listener *listener, *tmp;
-+
-+	/* if event notify is unsuccessful, listener socket is closed */
-+	list_for_each_entry_safe(listener, tmp,
-+				 &globals->event_listeners, list) {
-+		unix_sock_event_notify_listener(listener, type);
-+	}
-+}
---=20
-2.32.0.rc0
+ 	write_unlock_bh(&mrt_lock);
+ 
+@@ -1591,7 +1591,7 @@ int ip6mr_sk_done(struct sock *sk)
+ 			 * so the RCU grace period before sk freeing
+ 			 * is guaranteed by sk_destruct()
+ 			 */
+-			net->ipv6.devconf_all->mc_forwarding--;
++			atomic_dec(&net->ipv6.devconf_all->mc_forwarding);
+ 			write_unlock_bh(&mrt_lock);
+ 			inet6_netconf_notify_devconf(net, RTM_NEWNETCONF,
+ 						     NETCONFA_MC_FORWARDING,
+-- 
+2.34.1
+
