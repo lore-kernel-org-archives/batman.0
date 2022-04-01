@@ -1,10 +1,10 @@
 Return-Path: <sashal@kernel.org>
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.4 10/37] ipv6: make mc_forwarding atomic
-Date: Fri,  1 Apr 2022 10:44:19 -0400
-Message-Id: <20220401144446.1954694-10-sashal@kernel.org>
-In-Reply-To: <20220401144446.1954694-1-sashal@kernel.org>
-References: <20220401144446.1954694-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 27/98] ipv6: make mc_forwarding atomic
+Date: Fri,  1 Apr 2022 10:36:31 -0400
+Message-Id: <20220401143742.1952163-27-sashal@kernel.org>
+In-Reply-To: <20220401143742.1952163-1-sashal@kernel.org>
+References: <20220401143742.1952163-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -38,10 +38,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  5 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
-index bbe297bbbca5..d5c507311efb 100644
+index 07cba0b3496d..d1f386430795 100644
 --- a/include/linux/ipv6.h
 +++ b/include/linux/ipv6.h
-@@ -50,7 +50,7 @@ struct ipv6_devconf {
+@@ -51,7 +51,7 @@ struct ipv6_devconf {
  	__s32		use_optimistic;
  #endif
  #ifdef CONFIG_IPV6_MROUTE
@@ -51,10 +51,10 @@ index bbe297bbbca5..d5c507311efb 100644
  	__s32		disable_ipv6;
  	__s32		drop_unicast_in_l2_multicast;
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 09d81f9c2a64..6f0a9f439233 100644
+index 6e3419beca09..2853634a3979 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
-@@ -136,7 +136,7 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6(struct net_device *dev)
+@@ -134,7 +134,7 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6(struct net_device *dev)
  {
  	struct inet6_dev *in6_dev = __in6_dev_get(dev);
  
@@ -64,10 +64,10 @@ index 09d81f9c2a64..6f0a9f439233 100644
  	else
  		return BATADV_MCAST_WANT_NO_RTR6;
 diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index 60d070b25484..69aef71f32ea 100644
+index 1fe27807e471..3a8838b79bb6 100644
 --- a/net/ipv6/addrconf.c
 +++ b/net/ipv6/addrconf.c
-@@ -542,7 +542,7 @@ static int inet6_netconf_fill_devconf(struct sk_buff *skb, int ifindex,
+@@ -552,7 +552,7 @@ static int inet6_netconf_fill_devconf(struct sk_buff *skb, int ifindex,
  #ifdef CONFIG_IPV6_MROUTE
  	if ((all || type == NETCONFA_MC_FORWARDING) &&
  	    nla_put_s32(skb, NETCONFA_MC_FORWARDING,
@@ -76,7 +76,7 @@ index 60d070b25484..69aef71f32ea 100644
  		goto nla_put_failure;
  #endif
  	if ((all || type == NETCONFA_PROXY_NEIGH) &&
-@@ -5460,7 +5460,7 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
+@@ -5537,7 +5537,7 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
  	array[DEVCONF_USE_OPTIMISTIC] = cnf->use_optimistic;
  #endif
  #ifdef CONFIG_IPV6_MROUTE
@@ -86,10 +86,10 @@ index 60d070b25484..69aef71f32ea 100644
  	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
  	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
 diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
-index 7e5df23cbe7b..e6c4966aa956 100644
+index 80256717868e..d4b1e2c5aa76 100644
 --- a/net/ipv6/ip6_input.c
 +++ b/net/ipv6/ip6_input.c
-@@ -485,7 +485,7 @@ int ip6_mc_input(struct sk_buff *skb)
+@@ -508,7 +508,7 @@ int ip6_mc_input(struct sk_buff *skb)
  	/*
  	 *      IPv6 multicast router mode is now supported ;)
  	 */
@@ -99,10 +99,10 @@ index 7e5df23cbe7b..e6c4966aa956 100644
  	      (IPV6_ADDR_LOOPBACK|IPV6_ADDR_LINKLOCAL)) &&
  	    likely(!(IP6CB(skb)->flags & IP6SKB_FORWARDED))) {
 diff --git a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
-index aee1f6bc039a..6248e00c2bf7 100644
+index 6a4065d81aa9..91f1c5f56d5f 100644
 --- a/net/ipv6/ip6mr.c
 +++ b/net/ipv6/ip6mr.c
-@@ -736,7 +736,7 @@ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
+@@ -739,7 +739,7 @@ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
  
  	in6_dev = __in6_dev_get(dev);
  	if (in6_dev) {
@@ -111,7 +111,7 @@ index aee1f6bc039a..6248e00c2bf7 100644
  		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
  					     NETCONFA_MC_FORWARDING,
  					     dev->ifindex, &in6_dev->cnf);
-@@ -904,7 +904,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
+@@ -907,7 +907,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
  
  	in6_dev = __in6_dev_get(dev);
  	if (in6_dev) {
@@ -120,7 +120,7 @@ index aee1f6bc039a..6248e00c2bf7 100644
  		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
  					     NETCONFA_MC_FORWARDING,
  					     dev->ifindex, &in6_dev->cnf);
-@@ -1553,7 +1553,7 @@ static int ip6mr_sk_init(struct mr_table *mrt, struct sock *sk)
+@@ -1557,7 +1557,7 @@ static int ip6mr_sk_init(struct mr_table *mrt, struct sock *sk)
  	} else {
  		rcu_assign_pointer(mrt->mroute_sk, sk);
  		sock_set_flag(sk, SOCK_RCU_FREE);
@@ -129,7 +129,7 @@ index aee1f6bc039a..6248e00c2bf7 100644
  	}
  	write_unlock_bh(&mrt_lock);
  
-@@ -1586,7 +1586,7 @@ int ip6mr_sk_done(struct sock *sk)
+@@ -1590,7 +1590,7 @@ int ip6mr_sk_done(struct sock *sk)
  			 * so the RCU grace period before sk freeing
  			 * is guaranteed by sk_destruct()
  			 */
