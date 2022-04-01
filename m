@@ -1,10 +1,10 @@
-Return-Path: <yuzhe@nfschina.com>
-From: Yu Zhe <yuzhe@nfschina.com>
-Subject: [PATCH v2] batman-adv: remove unnecessary type castings
-Date: Tue, 26 Apr 2022 03:29:31 -0700
-Message-Id: <20220426102932.1613820-1-yuzhe@nfschina.com>
-In-Reply-To: <20220425113635.1609532-1-yuzhe@nfschina.com>
-References: <20220425113635.1609532-1-yuzhe@nfschina.com>
+Return-Path: <sashal@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.16 033/109] ipv6: make mc_forwarding atomic
+Date: Fri,  1 Apr 2022 10:31:40 -0400
+Message-Id: <20220401143256.1950537-33-sashal@kernel.org>
+In-Reply-To: <20220401143256.1950537-1-sashal@kernel.org>
+References: <20220401143256.1950537-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,98 +16,128 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, liqiong@nfschina.com, kernel-janitors@vger.kernel.org, hukun@nfschina.com, Yu Zhe <yuzhe@nfschina.com>, kernel test robot <lkp@intel.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Eric Dumazet <edumazet@google.com>, "David S . Miller" <davem@davemloft.net>, Sasha Levin <sashal@kernel.org>, yoshfuji@linux-ipv6.org, dsahern@kernel.org, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Yu Zhe <yuzhe@nfschina.com>
-[sven@narfation.org: Fix missing const in batadv_choose* functions]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Reported-by: kernel test robot <lkp@intel.com>
+From: Eric Dumazet <edumazet@google.com>
 
+[ Upstream commit 145c7a793838add5e004e7d49a67654dc7eba147 ]
+
+This fixes minor data-races in ip6_mc_input() and
+batadv_mcast_mla_rtr_flags_softif_get_ipv6()
+
+Signed-off-by: Eric Dumazet <edumazet@google.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-v2:
-- fix discarding 'const' qualifier from pointer target type
----
- net/batman-adv/bridge_loop_avoidance.c |  4 ++--
- net/batman-adv/translation-table.c     | 12 ++++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ include/linux/ipv6.h       | 2 +-
+ net/batman-adv/multicast.c | 2 +-
+ net/ipv6/addrconf.c        | 4 ++--
+ net/ipv6/ip6_input.c       | 2 +-
+ net/ipv6/ip6mr.c           | 8 ++++----
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 7f8a14d99cdb..37ce6cfb3520 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -65,7 +65,7 @@ batadv_bla_send_announce(struct batadv_priv *bat_priv,
-  */
- static inline u32 batadv_choose_claim(const void *data, u32 size)
+diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
+index a59d25f19385..b8641dc0ee66 100644
+--- a/include/linux/ipv6.h
++++ b/include/linux/ipv6.h
+@@ -51,7 +51,7 @@ struct ipv6_devconf {
+ 	__s32		use_optimistic;
+ #endif
+ #ifdef CONFIG_IPV6_MROUTE
+-	__s32		mc_forwarding;
++	atomic_t	mc_forwarding;
+ #endif
+ 	__s32		disable_ipv6;
+ 	__s32		drop_unicast_in_l2_multicast;
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index f4004cf0ff6f..9f311fddfaf9 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -134,7 +134,7 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6(struct net_device *dev)
  {
--	struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
-+	const struct batadv_bla_claim *claim = data;
- 	u32 hash = 0;
+ 	struct inet6_dev *in6_dev = __in6_dev_get(dev);
  
- 	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
-@@ -86,7 +86,7 @@ static inline u32 batadv_choose_backbone_gw(const void *data, u32 size)
- 	const struct batadv_bla_backbone_gw *gw;
- 	u32 hash = 0;
+-	if (in6_dev && in6_dev->cnf.mc_forwarding)
++	if (in6_dev && atomic_read(&in6_dev->cnf.mc_forwarding))
+ 		return BATADV_NO_FLAGS;
+ 	else
+ 		return BATADV_MCAST_WANT_NO_RTR6;
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index e92ca415756a..4f64fb285af7 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -554,7 +554,7 @@ static int inet6_netconf_fill_devconf(struct sk_buff *skb, int ifindex,
+ #ifdef CONFIG_IPV6_MROUTE
+ 	if ((all || type == NETCONFA_MC_FORWARDING) &&
+ 	    nla_put_s32(skb, NETCONFA_MC_FORWARDING,
+-			devconf->mc_forwarding) < 0)
++			atomic_read(&devconf->mc_forwarding)) < 0)
+ 		goto nla_put_failure;
+ #endif
+ 	if ((all || type == NETCONFA_PROXY_NEIGH) &&
+@@ -5539,7 +5539,7 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
+ 	array[DEVCONF_USE_OPTIMISTIC] = cnf->use_optimistic;
+ #endif
+ #ifdef CONFIG_IPV6_MROUTE
+-	array[DEVCONF_MC_FORWARDING] = cnf->mc_forwarding;
++	array[DEVCONF_MC_FORWARDING] = atomic_read(&cnf->mc_forwarding);
+ #endif
+ 	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
+ 	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
+diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
+index 80256717868e..d4b1e2c5aa76 100644
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -508,7 +508,7 @@ int ip6_mc_input(struct sk_buff *skb)
+ 	/*
+ 	 *      IPv6 multicast router mode is now supported ;)
+ 	 */
+-	if (dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding &&
++	if (atomic_read(&dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding) &&
+ 	    !(ipv6_addr_type(&hdr->daddr) &
+ 	      (IPV6_ADDR_LOOPBACK|IPV6_ADDR_LINKLOCAL)) &&
+ 	    likely(!(IP6CB(skb)->flags & IP6SKB_FORWARDED))) {
+diff --git a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
+index 6a4065d81aa9..91f1c5f56d5f 100644
+--- a/net/ipv6/ip6mr.c
++++ b/net/ipv6/ip6mr.c
+@@ -739,7 +739,7 @@ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
  
--	gw = (struct batadv_bla_backbone_gw *)data;
-+	gw = data;
- 	hash = jhash(&gw->orig, sizeof(gw->orig), hash);
- 	hash = jhash(&gw->vid, sizeof(gw->vid), hash);
+ 	in6_dev = __in6_dev_get(dev);
+ 	if (in6_dev) {
+-		in6_dev->cnf.mc_forwarding--;
++		atomic_dec(&in6_dev->cnf.mc_forwarding);
+ 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
+ 					     NETCONFA_MC_FORWARDING,
+ 					     dev->ifindex, &in6_dev->cnf);
+@@ -907,7 +907,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
  
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 8478034d3abf..01d30c1e412c 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -103,10 +103,10 @@ static bool batadv_compare_tt(const struct hlist_node *node, const void *data2)
-  */
- static inline u32 batadv_choose_tt(const void *data, u32 size)
- {
--	struct batadv_tt_common_entry *tt;
-+	const struct batadv_tt_common_entry *tt;
- 	u32 hash = 0;
+ 	in6_dev = __in6_dev_get(dev);
+ 	if (in6_dev) {
+-		in6_dev->cnf.mc_forwarding++;
++		atomic_inc(&in6_dev->cnf.mc_forwarding);
+ 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
+ 					     NETCONFA_MC_FORWARDING,
+ 					     dev->ifindex, &in6_dev->cnf);
+@@ -1557,7 +1557,7 @@ static int ip6mr_sk_init(struct mr_table *mrt, struct sock *sk)
+ 	} else {
+ 		rcu_assign_pointer(mrt->mroute_sk, sk);
+ 		sock_set_flag(sk, SOCK_RCU_FREE);
+-		net->ipv6.devconf_all->mc_forwarding++;
++		atomic_inc(&net->ipv6.devconf_all->mc_forwarding);
+ 	}
+ 	write_unlock_bh(&mrt_lock);
  
--	tt = (struct batadv_tt_common_entry *)data;
-+	tt = data;
- 	hash = jhash(&tt->addr, ETH_ALEN, hash);
- 	hash = jhash(&tt->vid, sizeof(tt->vid), hash);
- 
-@@ -2766,7 +2766,7 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 	u32 i;
- 
- 	tt_tot = batadv_tt_entries(tt_len);
--	tt_change = (struct batadv_tvlv_tt_change *)tvlv_buff;
-+	tt_change = tvlv_buff;
- 
- 	if (!valid_cb)
- 		return;
-@@ -3994,7 +3994,7 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	if (tvlv_value_len < sizeof(*tt_data))
- 		return;
- 
--	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
-+	tt_data = tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
- 	num_vlan = ntohs(tt_data->num_vlan);
-@@ -4037,7 +4037,7 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 	if (tvlv_value_len < sizeof(*tt_data))
- 		return NET_RX_SUCCESS;
- 
--	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
-+	tt_data = tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
- 	tt_vlan_len = sizeof(struct batadv_tvlv_tt_vlan_data);
-@@ -4129,7 +4129,7 @@ static int batadv_roam_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_RX);
--	roaming_adv = (struct batadv_tvlv_roam_adv *)tvlv_value;
-+	roaming_adv = tvlv_value;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Received ROAMING_ADV from %pM (client %pM)\n",
+@@ -1590,7 +1590,7 @@ int ip6mr_sk_done(struct sock *sk)
+ 			 * so the RCU grace period before sk freeing
+ 			 * is guaranteed by sk_destruct()
+ 			 */
+-			net->ipv6.devconf_all->mc_forwarding--;
++			atomic_dec(&net->ipv6.devconf_all->mc_forwarding);
+ 			write_unlock_bh(&mrt_lock);
+ 			inet6_netconf_notify_devconf(net, RTM_NEWNETCONF,
+ 						     NETCONFA_MC_FORWARDING,
 -- 
-2.25.1
+2.34.1
 
