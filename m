@@ -1,13 +1,10 @@
-Return-Path: <lkp@intel.com>
-Date: Fri, 22 Apr 2022 10:41:00 +0800
-From: kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH] batman-adv: remove unnecessary type castings
-Message-ID: <202204221051.PRtLc0f7-lkp@intel.com>
-References: <20220421154829.9775-1-yuzhe@nfschina.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: Don't skb_split skbuffs with frag_list
+Date: Sat, 16 Apr 2022 14:24:34 +0200
+Message-Id: <20220416122434.33061-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220421154829.9775-1-yuzhe@nfschina.com>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,75 +14,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Yu Zhe <yuzhe@nfschina.com>, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com
-Cc: kbuild-all@lists.01.org, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, liqiong@nfschina.com, kernel-janitors@vger.kernel.org, Yu Zhe <yuzhe@nfschina.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Felix Kaechele <felix@kaechele.ca>
 
-Hi Yu,
+The receiving interface might have used GRO to receive more fragments than
+MAX_SKB_FRAGS fragments. In this case, these will not be stored in
+skb_shinfo(skb)->frags but merged into the frag list.
 
-Thank you for the patch! Perhaps something to improve:
+batman-adv relies on the function skb_split to split packets up into
+multiple smaller packets which are not larger than the MTU on the outgoing
+interface. But this function cannot handle frag_list entries and is only
+operating on skb_shinfo(skb)->frags. If it is then still trying to split
+such an skb and xmit'ing it on an interface without support for
+NETIF_F_FRAGLIST then validate_xmit_skb() will try to linearize it. But
+this fails due to inconsistent information and __pskb_pull_tail will
+trigger a BUG_ON after skb_copy_bits() returns an error.
 
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.18-rc3 next-20220421]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+In case of entries in frag_list, just linearize the skb before operating on
+it with skb_split().
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Yu-Zhe/batman-adv-remove-unnecessary-type-castings/20220421-235254
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git b253435746d9a4a701b5f09211b9c14d3370d0da
-config: x86_64-randconfig-a013 (https://download.01.org/0day-ci/archive/20220422/202204221051.PRtLc0f7-lkp@intel.com/config)
-compiler: gcc-11 (Debian 11.2.0-20) 11.2.0
-reproduce (this is a W=1 build):
-        # https://github.com/intel-lab-lkp/linux/commit/2474b41c585e849d3546e0aba8f3c862735a04ff
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Yu-Zhe/batman-adv-remove-unnecessary-type-castings/20220421-235254
-        git checkout 2474b41c585e849d3546e0aba8f3c862735a04ff
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash net/batman-adv/
+Reported-by: Felix Kaechele <felix@kaechele.ca>
+Fixes: 9de347143505 ("batman-adv: layer2 unicast packet fragmentation")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/fragmentation.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>):
-
-   net/batman-adv/bridge_loop_avoidance.c: In function 'batadv_choose_claim':
->> net/batman-adv/bridge_loop_avoidance.c:68:42: warning: initialization discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-      68 |         struct batadv_bla_claim *claim = data;
-         |                                          ^~~~
---
-   net/batman-adv/translation-table.c: In function 'batadv_choose_tt':
->> net/batman-adv/translation-table.c:109:12: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-     109 |         tt = data;
-         |            ^
-
-
-vim +/const +68 net/batman-adv/bridge_loop_avoidance.c
-
-    53	
-    54	static void batadv_bla_periodic_work(struct work_struct *work);
-    55	static void
-    56	batadv_bla_send_announce(struct batadv_priv *bat_priv,
-    57				 struct batadv_bla_backbone_gw *backbone_gw);
-    58	
-    59	/**
-    60	 * batadv_choose_claim() - choose the right bucket for a claim.
-    61	 * @data: data to hash
-    62	 * @size: size of the hash table
-    63	 *
-    64	 * Return: the hash index of the claim
-    65	 */
-    66	static inline u32 batadv_choose_claim(const void *data, u32 size)
-    67	{
-  > 68		struct batadv_bla_claim *claim = data;
-    69		u32 hash = 0;
-    70	
-    71		hash = jhash(&claim->addr, sizeof(claim->addr), hash);
-    72		hash = jhash(&claim->vid, sizeof(claim->vid), hash);
-    73	
-    74		return hash % size;
-    75	}
-    76	
-
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 0899a729..c120c7c6 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -475,6 +475,17 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 		goto free_skb;
+ 	}
+ 
++	/* GRO might have added fragments to the fragment list instead of
++	 * frags[]. But this is not handled by skb_split and must be
++	 * linearized to avoid incorrect length information after all
++	 * batman-adv fragments were created and submitted to the
++	 * hard-interface
++	 */
++	if (skb_has_frag_list(skb) && __skb_linearize(skb)) {
++		ret = -ENOMEM;
++		goto free_skb;
++	}
++
+ 	/* Create one header to be copied to all fragments */
+ 	frag_header.packet_type = BATADV_UNICAST_FRAG;
+ 	frag_header.version = BATADV_COMPAT_VERSION;
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.30.2
+
