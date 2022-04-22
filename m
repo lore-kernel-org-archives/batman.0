@@ -1,12 +1,13 @@
-Return-Path: <sashal@kernel.org>
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.17 044/149] ipv6: make mc_forwarding atomic
-Date: Fri,  1 Apr 2022 10:23:51 -0400
-Message-Id: <20220401142536.1948161-44-sashal@kernel.org>
-In-Reply-To: <20220401142536.1948161-1-sashal@kernel.org>
-References: <20220401142536.1948161-1-sashal@kernel.org>
+Return-Path: <lkp@intel.com>
+Date: Fri, 22 Apr 2022 10:20:20 +0800
+From: kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH] batman-adv: remove unnecessary type castings
+Message-ID: <202204221027.ETcMYyKP-lkp@intel.com>
+References: <20220421154829.9775-1-yuzhe@nfschina.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220421154829.9775-1-yuzhe@nfschina.com>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,128 +17,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Eric Dumazet <edumazet@google.com>, "David S . Miller" <davem@davemloft.net>, Sasha Levin <sashal@kernel.org>, yoshfuji@linux-ipv6.org, dsahern@kernel.org, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Yu Zhe <yuzhe@nfschina.com>, mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org, davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com
+Cc: kbuild-all@lists.01.org, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, liqiong@nfschina.com, kernel-janitors@vger.kernel.org, Yu Zhe <yuzhe@nfschina.com>
 
-From: Eric Dumazet <edumazet@google.com>
+Hi Yu,
 
-[ Upstream commit 145c7a793838add5e004e7d49a67654dc7eba147 ]
+Thank you for the patch! Perhaps something to improve:
 
-This fixes minor data-races in ip6_mc_input() and
-batadv_mcast_mla_rtr_flags_softif_get_ipv6()
+[auto build test WARNING on linus/master]
+[also build test WARNING on v5.18-rc3 next-20220421]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Signed-off-by: Eric Dumazet <edumazet@google.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- include/linux/ipv6.h       | 2 +-
- net/batman-adv/multicast.c | 2 +-
- net/ipv6/addrconf.c        | 4 ++--
- net/ipv6/ip6_input.c       | 2 +-
- net/ipv6/ip6mr.c           | 8 ++++----
- 5 files changed, 9 insertions(+), 9 deletions(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Yu-Zhe/batman-adv-remove-unnecessary-type-castings/20220421-235254
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git b253435746d9a4a701b5f09211b9c14d3370d0da
+config: m68k-defconfig (https://download.01.org/0day-ci/archive/20220422/202204221027.ETcMYyKP-lkp@intel.com/config)
+compiler: m68k-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/2474b41c585e849d3546e0aba8f3c862735a04ff
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Yu-Zhe/batman-adv-remove-unnecessary-type-castings/20220421-235254
+        git checkout 2474b41c585e849d3546e0aba8f3c862735a04ff
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross W=1 O=build_dir ARCH=m68k SHELL=/bin/bash net/batman-adv/
 
-diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
-index a59d25f19385..b8641dc0ee66 100644
---- a/include/linux/ipv6.h
-+++ b/include/linux/ipv6.h
-@@ -51,7 +51,7 @@ struct ipv6_devconf {
- 	__s32		use_optimistic;
- #endif
- #ifdef CONFIG_IPV6_MROUTE
--	__s32		mc_forwarding;
-+	atomic_t	mc_forwarding;
- #endif
- 	__s32		disable_ipv6;
- 	__s32		drop_unicast_in_l2_multicast;
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index f4004cf0ff6f..9f311fddfaf9 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -134,7 +134,7 @@ static u8 batadv_mcast_mla_rtr_flags_softif_get_ipv6(struct net_device *dev)
- {
- 	struct inet6_dev *in6_dev = __in6_dev_get(dev);
- 
--	if (in6_dev && in6_dev->cnf.mc_forwarding)
-+	if (in6_dev && atomic_read(&in6_dev->cnf.mc_forwarding))
- 		return BATADV_NO_FLAGS;
- 	else
- 		return BATADV_MCAST_WANT_NO_RTR6;
-diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index f908e2fd30b2..4df84013c4e6 100644
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -554,7 +554,7 @@ static int inet6_netconf_fill_devconf(struct sk_buff *skb, int ifindex,
- #ifdef CONFIG_IPV6_MROUTE
- 	if ((all || type == NETCONFA_MC_FORWARDING) &&
- 	    nla_put_s32(skb, NETCONFA_MC_FORWARDING,
--			devconf->mc_forwarding) < 0)
-+			atomic_read(&devconf->mc_forwarding)) < 0)
- 		goto nla_put_failure;
- #endif
- 	if ((all || type == NETCONFA_PROXY_NEIGH) &&
-@@ -5539,7 +5539,7 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
- 	array[DEVCONF_USE_OPTIMISTIC] = cnf->use_optimistic;
- #endif
- #ifdef CONFIG_IPV6_MROUTE
--	array[DEVCONF_MC_FORWARDING] = cnf->mc_forwarding;
-+	array[DEVCONF_MC_FORWARDING] = atomic_read(&cnf->mc_forwarding);
- #endif
- 	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
- 	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
-diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
-index 80256717868e..d4b1e2c5aa76 100644
---- a/net/ipv6/ip6_input.c
-+++ b/net/ipv6/ip6_input.c
-@@ -508,7 +508,7 @@ int ip6_mc_input(struct sk_buff *skb)
- 	/*
- 	 *      IPv6 multicast router mode is now supported ;)
- 	 */
--	if (dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding &&
-+	if (atomic_read(&dev_net(skb->dev)->ipv6.devconf_all->mc_forwarding) &&
- 	    !(ipv6_addr_type(&hdr->daddr) &
- 	      (IPV6_ADDR_LOOPBACK|IPV6_ADDR_LINKLOCAL)) &&
- 	    likely(!(IP6CB(skb)->flags & IP6SKB_FORWARDED))) {
-diff --git a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
-index 8a2db926b5eb..e3c884678dbe 100644
---- a/net/ipv6/ip6mr.c
-+++ b/net/ipv6/ip6mr.c
-@@ -734,7 +734,7 @@ static int mif6_delete(struct mr_table *mrt, int vifi, int notify,
- 
- 	in6_dev = __in6_dev_get(dev);
- 	if (in6_dev) {
--		in6_dev->cnf.mc_forwarding--;
-+		atomic_dec(&in6_dev->cnf.mc_forwarding);
- 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
- 					     NETCONFA_MC_FORWARDING,
- 					     dev->ifindex, &in6_dev->cnf);
-@@ -902,7 +902,7 @@ static int mif6_add(struct net *net, struct mr_table *mrt,
- 
- 	in6_dev = __in6_dev_get(dev);
- 	if (in6_dev) {
--		in6_dev->cnf.mc_forwarding++;
-+		atomic_inc(&in6_dev->cnf.mc_forwarding);
- 		inet6_netconf_notify_devconf(dev_net(dev), RTM_NEWNETCONF,
- 					     NETCONFA_MC_FORWARDING,
- 					     dev->ifindex, &in6_dev->cnf);
-@@ -1553,7 +1553,7 @@ static int ip6mr_sk_init(struct mr_table *mrt, struct sock *sk)
- 	} else {
- 		rcu_assign_pointer(mrt->mroute_sk, sk);
- 		sock_set_flag(sk, SOCK_RCU_FREE);
--		net->ipv6.devconf_all->mc_forwarding++;
-+		atomic_inc(&net->ipv6.devconf_all->mc_forwarding);
- 	}
- 	write_unlock_bh(&mrt_lock);
- 
-@@ -1586,7 +1586,7 @@ int ip6mr_sk_done(struct sock *sk)
- 			 * so the RCU grace period before sk freeing
- 			 * is guaranteed by sk_destruct()
- 			 */
--			net->ipv6.devconf_all->mc_forwarding--;
-+			atomic_dec(&net->ipv6.devconf_all->mc_forwarding);
- 			write_unlock_bh(&mrt_lock);
- 			inet6_netconf_notify_devconf(net, RTM_NEWNETCONF,
- 						     NETCONFA_MC_FORWARDING,
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   net/batman-adv/bridge_loop_avoidance.c: In function 'batadv_choose_claim':
+>> net/batman-adv/bridge_loop_avoidance.c:68:42: warning: initialization discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+      68 |         struct batadv_bla_claim *claim = data;
+         |                                          ^~~~
+
+
+vim +/const +68 net/batman-adv/bridge_loop_avoidance.c
+
+    53	
+    54	static void batadv_bla_periodic_work(struct work_struct *work);
+    55	static void
+    56	batadv_bla_send_announce(struct batadv_priv *bat_priv,
+    57				 struct batadv_bla_backbone_gw *backbone_gw);
+    58	
+    59	/**
+    60	 * batadv_choose_claim() - choose the right bucket for a claim.
+    61	 * @data: data to hash
+    62	 * @size: size of the hash table
+    63	 *
+    64	 * Return: the hash index of the claim
+    65	 */
+    66	static inline u32 batadv_choose_claim(const void *data, u32 size)
+    67	{
+  > 68		struct batadv_bla_claim *claim = data;
+    69		u32 hash = 0;
+    70	
+    71		hash = jhash(&claim->addr, sizeof(claim->addr), hash);
+    72		hash = jhash(&claim->vid, sizeof(claim->vid), hash);
+    73	
+    74		return hash % size;
+    75	}
+    76	
+
 -- 
-2.34.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
