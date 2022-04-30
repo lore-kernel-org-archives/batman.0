@@ -1,13 +1,10 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Kernel crash when using batman-adv 2022.0 over VXLAN
-Date: Sat, 16 Apr 2022 12:08:54 +0200
-Message-ID: <3014612.pz5OENx0Be@sven-l14>
-In-Reply-To: <3a4465b0-ddf6-151f-0082-0d4533a7eff0@kaechele.ca>
-References: <3a4465b0-ddf6-151f-0082-0d4533a7eff0@kaechele.ca>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: [PATCH] alfred: notify event listener via unix socket
+Date: Sat, 30 Apr 2022 12:56:47 +0200
+Message-Id: <20220430105647.340588-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2030628.CM80vvO7ju";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,261 +15,525 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Felix Kaechele <felix@kaechele.ca>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
- 
---nextPart2030628.CM80vvO7ju
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Felix Kaechele <felix@kaechele.ca>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: Kernel crash when using batman-adv 2022.0 over VXLAN
-Date: Sat, 16 Apr 2022 12:08:54 +0200
-Message-ID: <3014612.pz5OENx0Be@sven-l14>
-In-Reply-To: <3a4465b0-ddf6-151f-0082-0d4533a7eff0@kaechele.ca>
-References: <3a4465b0-ddf6-151f-0082-0d4533a7eff0@kaechele.ca>
+The alfred server instance accepts event notification registration
+via the unix socket. These notification sockets only inform
+registered parties of the availibility of an alfred datatype change.
+The actual data itself needs to be retrieved via the existing data
+retrieval mechanisms.
 
-On Saturday, 16 April 2022 02:23:59 CEST Felix Kaechele wrote:
-> Hi there,
-> 
-> I am seeing odd kernel crashes when using batman-adv over VXLAN.
-> This is in a Freifunk environment on our VPN gateway side where clients 
-> connect using L2TPv3 tunnels and the gateways are interconnected using 
-> VXLAN.
-> 
-> The setup is as follows on both ends:
-> 
-> - Both machines are Hetzner Cloud VMs (CX11)
-> - OS: Fedora 36 (Pre-release) / Kernel 5.17.2-300.fc36.x86_64
+Unlike the update-command this event monitor allows:
 
-So it doesn't crash in batman-adv but the skbuff code complains about it when 
-it went through the bridge. The code which crashes is:
+- multiple parallel listeners
+- programmatic access to changes without requiring multiple processes
 
-    void *__pskb_pull_tail(struct sk_buff *skb, int delta)
-    {
-    	/* If skb has not enough free space at tail, get new one
-    	 * plus 128 bytes for future expansions. If we have enough
-    	 * room at tail, reallocate without expansion only if skb is cloned.
-    	 */
-    	int i, k, eat = (skb->tail + delta) - skb->end;
-    
-    	if (eat > 0 || skb_cloned(skb)) {
-    		if (pskb_expand_head(skb, 0, eat > 0 ? eat + 128 : 0,
-    				     GFP_ATOMIC))
-    			return NULL;
-    	}
-    
-    	BUG_ON(skb_copy_bits(skb, skb_headlen(skb),
-    			     skb_tail_pointer(skb), delta));
+The alfred client allows to monitor events via the newly added '-E'
+(event monitor) command line option. Serving as debugging tool and
+example code at the same time.
 
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ alfred.h     |  15 ++++++
+ client.c     |  54 ++++++++++++++++++++
+ main.c       |  10 +++-
+ man/alfred.8 |   3 ++
+ packet.h     |  26 ++++++++++
+ recv.c       |   4 +-
+ server.c     |   5 ++
+ unix_sock.c  | 142 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 257 insertions(+), 2 deletions(-)
 
-So it seems like skb_copy_bits fails because it is unable to copy (delta) 
-bytes from the skb at the start of the header to tail. Afaik, this can only 
-happen when skb_headlen(skb) + delta is larger than the complete length of the 
-skb. Or when the same thing is true for any of its fragments.
-
-Question is now: what is calling the function with which parameter. So the 
-first step was to try to decode the stacktrace (more or less well) via the
-./scripts/decode_stacktrace.sh and the vmlinux from
-https://kojipkgs.fedoraproject.org//packages/kernel/5.17.2/300.fc36/x86_64/kernel-debug-debuginfo-5.17.2-300.fc36.x86_64.rpm
-
-    $ ~/linux-5.17.2/scripts/decode_stacktrace.sh  vmlinux < ~/decoded 
-    [  240.816265] ------------[ cut here ]------------
-    [  240.819307] kernel BUG at net/core/skbuff.c:2247!
-    [  240.822038] invalid opcode: 0000 [#1] PREEMPT SMP PTI
-    [  240.824163] CPU: 0 PID: 13 Comm: ksoftirqd/0 Kdump: loaded Not tainted 5.17.2-300.fc36.x86_64 #1
-    [  240.827627] Hardware name: Hetzner vServer, BIOS 20171111 11/11/2017
-    [  240.829406] RIP: 0010:__pskb_pull_tail (./include/linux/mm.h:717 ./include/linux/mm.h:723 ./include/linux/mm.h:1198 ./include/linux/mm.h:1237 ./include/linux/skbuff.h:3188 ./include/linux/skbuff.h:3200 net/core/skbuff.c:2327) 
-    [ 240.830860] Code: 8b b4 24 bc 00 00 00 4d 8b 84 24 c0 00 00 00 49 8d 14 30 48 8b 7a 08 e9 2d fe ff ff 48 c7 c6 e8 bc 5e 8b e8 e2 30 83 ff 0f 0b <0f> 0b 29 c2 48 89 7c 24 08 42 8d 34 3a e8 3e fc ff ff 48 8b 7c 24
-    All code
-    ========
-       0:   8b b4 24 bc 00 00 00    mov    0xbc(%rsp),%esi
-       7:   4d 8b 84 24 c0 00 00    mov    0xc0(%r12),%r8
-       e:   00 
-       f:   49 8d 14 30             lea    (%r8,%rsi,1),%rdx
-      13:   48 8b 7a 08             mov    0x8(%rdx),%rdi
-      17:   e9 2d fe ff ff          jmpq   0xfffffffffffffe49
-      1c:   48 c7 c6 e8 bc 5e 8b    mov    $0xffffffff8b5ebce8,%rsi
-      23:   e8 e2 30 83 ff          callq  0xffffffffff83310a
-      28:   0f 0b                   ud2    
-      2a:*  0f 0b                   ud2             <-- trapping instruction
-      2c:   29 c2                   sub    %eax,%edx
-      2e:   48 89 7c 24 08          mov    %rdi,0x8(%rsp)
-      33:   42 8d 34 3a             lea    (%rdx,%r15,1),%esi
-      37:   e8 3e fc ff ff          callq  0xfffffffffffffc7a
-      3c:   48                      rex.W
-      3d:   8b                      .byte 0x8b
-      3e:   7c 24                   jl     0x64
-    
-    Code starting with the faulting instruction
-    ===========================================
-       0:   0f 0b                   ud2    
-       2:   29 c2                   sub    %eax,%edx
-       4:   48 89 7c 24 08          mov    %rdi,0x8(%rsp)
-       9:   42 8d 34 3a             lea    (%rdx,%r15,1),%esi
-       d:   e8 3e fc ff ff          callq  0xfffffffffffffc50
-      12:   48                      rex.W
-      13:   8b                      .byte 0x8b
-      14:   7c 24                   jl     0x3a
-    [  240.837601] RSP: 0018:fffface380073830 EFLAGS: 00010282
-    [  240.839764] RAX: 00000000fffffff2 RBX: ffff921d9f863b00 RCX: 0000000000000001
-    [  240.842436] RDX: 0000000000000001 RSI: ffff921d8f145640 RDI: 0000000000000380
-    [  240.844451] RBP: fffface380073868 R08: ffff921d84dd9cac R09: 0000000000000022
-    [  240.846478] R10: 0000000000000001 R11: 00000000000002bf R12: ffff921d9f863b00
-    [  240.848510] R13: 00000000000002eb R14: 0000000000000000 R15: 0000000000000001
-    [  240.850622] FS:  0000000000000000(0000) GS:ffff921dfcc00000(0000) knlGS:0000000000000000
-    [  240.852960] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-    [  240.854570] CR2: 000056045b049188 CR3: 0000000004dd6004 CR4: 00000000007706f0
-    [  240.856238] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-    [  240.857883] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-    [  240.859503] PKRU: 55555554
-    [  240.861767] Call Trace:
-    [  240.863187]  <TASK>
-    [  240.864458] validate_xmit_skb (./include/linux/skbuff.h:3465 net/core/dev.c:3563) 
-    [  240.866141] validate_xmit_skb_list (net/core/dev.c:3605) 
-    [  240.868019] sch_direct_xmit (net/sched/sch_generic.c:330) 
-    [  240.869946] __dev_queue_xmit (./include/net/pkt_sched.h:131 net/core/dev.c:3709 net/core/dev.c:4081) 
-    [  240.871507] ? packet_rcv (net/packet/af_packet.c:2127) 
-    [  240.872908] ? __br_forward (./include/linux/rcupdate.h:273 ./include/linux/rcupdate.h:727 ./include/linux/netfilter.h:264 ./include/linux/netfilter.h:305 net/bridge/br_forward.c:115) bridge
-    [  240.874740] br_dev_queue_push_xmit (net/bridge/br_forward.c:53) bridge
-    [  240.876785] br_dev_xmit (net/bridge/br_device.c:108) bridge
-    [  240.878537] ? dev_queue_xmit_nit (./include/linux/skbuff.h:1471 ./include/linux/skbuff.h:1510 ./include/linux/skbuff.h:2895 net/core/dev.c:2242) 
-    [  240.880264] dev_hard_start_xmit (./include/linux/netdevice.h:4684 ./include/linux/netdevice.h:4699 net/core/dev.c:3473 net/core/dev.c:3489) 
-    [  240.881885] __dev_queue_xmit (net/core/dev.c:3700 net/core/dev.c:4081) 
-    [  240.883393] ? nf_ct_deliver_cached_events (net/netfilter/nf_conntrack_ecache.c:234) nf_conntrack
-    [  240.885479] ? __build_skb (net/core/skbuff.c:239) 
-    [  240.886950] ? kmem_cache_alloc (mm/slub.c:3214 mm/slub.c:3238 mm/slub.c:3243) 
-    [  240.888709] batadv_send_skb_packet (net/batman-adv/send.c:109) batman_adv
-    [  240.890611] batadv_send_unicast_skb (net/batman-adv/send.c:150) batman_adv
-    [  240.892551] batadv_frag_send_packet (net/batman-adv/fragmentation.c:424 net/batman-adv/fragmentation.c:508) batman_adv
-    [  240.894473] batadv_send_skb_to_orig (net/batman-adv/send.c:197) batman_adv
-    [  240.896484] batadv_route_unicast_packet (net/batman-adv/routing.c:706) batman_adv
-    [  240.898417] batadv_recv_unicast_packet (net/batman-adv/routing.c:1020) batman_adv
-    [  240.900277] batadv_batman_skb_recv (net/batman-adv/hard-interface.h:92 net/batman-adv/main.c:486) batman_adv
-    [  240.902309] __netif_receive_skb_list_core (net/core/dev.c:5397 net/core/dev.c:5383 net/core/dev.c:5442) 
-    [  240.904458] netif_receive_skb_list_internal (./include/linux/sched/mm.h:330 net/core/dev.c:5489 net/core/dev.c:5585) 
-    [  240.906350] napi_complete_done (./include/linux/list.h:37 ./include/net/gro.h:426 ./include/net/gro.h:421 net/core/dev.c:5932) 
-    [  240.908177] gro_cell_poll (net/core/gro_cells.c:54) 
-    [  240.909499] __napi_poll+0x2b/0x160 
-    [  240.910763] net_rx_action (net/core/dev.c:6538) 
-    [  240.912082] __do_softirq (kernel/softirq.c:560) 
-    [  240.913511] ? smpboot_register_percpu_thread (kernel/smpboot.c:107) 
-    [  240.915107] run_ksoftirqd (kernel/softirq.c:916) 
-    [  240.916346] smpboot_thread_fn (kernel/smpboot.c:144 (discriminator 3)) 
-    [  240.917643] kthread (kernel/kthread.c:376) 
-    [  240.919179] ? kthread_complete_and_exit (kernel/kthread.c:332) 
-    [  240.921504] ret_from_fork (arch/x86/entry/entry_64.S:301) 
-    [  240.923424]  </TASK>
-    [  240.924914] Modules linked in: tun vxlan ip_gre ip_tunnel gre intel_rapl_msr intel_rapl_common isst_if_common nfit libnvdimm snd_pcm nft_nat snd_timer nft_masq snd virtio_net nft_meta_bridge nft_ct nft_chain_nat nf_nat bochs nf_conntrack soundcore joydev nf_defrag_ipv6 nf_defrag_ipv4 drm_vram_helper net_failover pcspkr drm_ttm_helper virtio_balloon ttm nf_tables failover i2c_piix4 nfnetlink l2tp_eth l2tp_netlink l2tp_core ip6_udp_tunnel udp_tunnel tcp_westwood batman_adv cfg80211 vfat fat bridge stp llc rfkill fuse crct10dif_pclmul crc32_pclmul crc32c_intel ghash_clmulni_intel serio_raw virtio_console virtio_scsi ata_generic qemu_fw_cfg pata_acpi
-
-
-As we can see, the __pskb_pull_tail comes from __skb_linearize. And its done 
-using skb->data_len. According to our previous investigation for the non-
-frag_list check, this would mean that
-skb_headlen(skb) + skb->data_len > skb->len. And the definition of skb_headlen 
-is skb->len - skb->data_len. So it can be transformed to:
-
-     skb->len - skb->data_len + skb->data_len > skb->len
-
-or
-
-     skb->len > skb->len
-
-Of course, this contradicts itself. So we have to assume that it either failed 
-on the fragments or data_len changed - which I don't think that it does this 
-in pskb_expand_head. But maybe someone can correct me.
-
-But we can say that skb_needs_linearize in  net/core/dev.c:3562 returns true 
-for some reason. batman-adv should not create any skb_fragments but will 
-happily forward it to skb_split to create two skbs (and thus one batman-adv 
-fragment packet might actually contain the skb fragments which were coming 
-from the outside). So linearization by the dev_xmit code would be required 
-when:
-
-* skb is non linear (skb->data_len != 0)
-* AND either:
-  - skb has a skb fraglist (not batman-adv fraglist) && underlying interface 
-    doesn't support NETIF_F_FRAGLIST
-    (afaik, this can happen with skb_gro_receive but isn't handled by 
-     skb_split)
-  - skb has frags but underlying interface doesn't support support NETIF_F_SG
-
-I am not sure what was used to receive the packet and what was then used to 
-outgoing interface. But it seems like the receiving interface created either 
-an skb with fraglist + the outgoing interface doesn't support it. Or the 
-receiving interface created skb frags but the outgoing interface doesn't 
-support scatter gather.
-
-Still doesn't explain 100% why the skb_copy_bits fails. If you want then you 
-can try to add a skb_linearize(skb) to the start of batadv_batman_skb_recv 
-(directly after the variable declarations):
-
-	/* keep skb linear */
-	if (skb_linearize(skb) < 0)
-		goto err_out;
-
-to check if batman-adv is (indirectly) forwarding the problem with the skb or 
-really introducing it (by incorrectly creating skb fragments somewhere). If 
-this solves it, please remove the change and test if it also helps to just get 
-rid of the fraglist:
-
-	if (skb_has_frag_list(skb) && __skb_linearize(skb))
-		goto err_out;
-
-And if this really helps, please move this code code to 
-batadv_frag_send_packet. This should look like this
-
-    diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-    index 0899a729..5fc07263 100644
-    --- a/net/batman-adv/fragmentation.c
-    +++ b/net/batman-adv/fragmentation.c
-    @@ -475,6 +475,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
-     		goto free_skb;
-     	}
-     
-    +	/* GRO might have added fragments to the fragment list instead of
-    +	 * frags[]. But this is not handled by skb_split and must be
-    +	 * linearized before it is given to it
-    +	 */
-    +	if (skb_has_frag_list(skb) && __skb_linearize(skb)) {
-    +		ret = -ENOMEM;
-    +		goto free_skb;
-    +	}
-    +
-     	/* Create one header to be copied to all fragments */
-     	frag_header.packet_type = BATADV_UNICAST_FRAG;
-     	frag_header.version = BATADV_COMPAT_VERSION;
-
-
-Thanks for the report and good luck with the testing - and I hope you find 
-better easter eggs this year than this bug ;)
-
-Kind regards,
-	Sven
---nextPart2030628.CM80vvO7ju
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmJalbYACgkQXYcKB8Em
-e0YVuxAAhymhMpf0wMz4aPzO1XKHzW31LkN98d5FwiUgyihxK2xQ5Ct0IdNdpdy2
-9M0zl12wlV5p+ALEEd4ZF9PhY5swD9kIHYSBHutWe6bCUHlzJjXHowRqkNbkCnPW
-/iIhlwNJAInkjcCHDSYcA7Pdtrmqn+IABqpoicZs75ig8fQTBglx1IyxuU5UPj9/
-1sqRg6PLU3Lg72uhY6ZkxIb+o/qD91s4T0vVsRusQvehxVaS8FLiIKTyY3I1qATk
-jKFWqxpK2mqokV1Xen6fyaJZhf2d0p+t+uBpR1bt99m99xqRlYaYsdIYKbACXr2s
-hLSCOASIpZfS1aGTSkKS41w5FbhR0zTkMx2V+Owqzwuy0lNDKeYiJ7qhHdKCQpXs
-7v6Iq48i8sf9CXMsmxYB/2h7QpjoDs9W4fDNBQpSYZvmJeyTCm2nQLQ0BOaW66tK
-49z5LYwi5GIUty/ukOPQ42xPNQKNyla86NaaZkUS+y6Ol5Oa3rKXp+segIKESyrC
-a6felM1vljuvWcLxfASvSvmtkMfqewD8wwM7xMSD+s2imTdnLPclmhly9iVCP8MB
-qsW6sNrlRoJdpb7xjkGZWBvxfFCKt4it7m2QstGeE/5OoRwTscmybi8un9ZYa8ww
-TK0L6MKhs/g6szEgJ0zM4BScq4SndldoKc7CeA4EPAHt4AE2OS8=
-=kXnU
------END PGP SIGNATURE-----
-
---nextPart2030628.CM80vvO7ju--
-
-
+diff --git a/alfred.h b/alfred.h
+index 2d98a30..f442c48 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -94,6 +94,7 @@ enum clientmode {
+ 	CLIENT_CHANGE_INTERFACE,
+ 	CLIENT_CHANGE_BAT_IFACE,
+ 	CLIENT_SERVER_STATUS,
++	CLIENT_EVENT_MONITOR,
+ };
+=20
+ struct interface {
+@@ -110,8 +111,15 @@ struct interface {
+ 	struct list_head list;
+ };
+=20
++struct event_listener {
++	int fd;
++
++	struct list_head list;
++};
++
+ struct globals {
+ 	struct list_head interfaces;
++	struct list_head event_listeners;
+=20
+ 	char *net_iface;
+ 	struct server *best_server;	/* NULL if we are a server ourselves */
+@@ -157,6 +165,7 @@ int alfred_client_modeswitch(struct globals *globals)=
+;
+ int alfred_client_change_interface(struct globals *globals);
+ int alfred_client_change_bat_iface(struct globals *globals);
+ int alfred_client_server_status(struct globals *globals);
++int alfred_client_event_monitor(struct globals *globals);
+ /* recv.c */
+ int recv_alfred_packet(struct globals *globals, struct interface *interf=
+ace,
+ 		       int recv_sock);
+@@ -186,6 +195,12 @@ int unix_sock_open_client(struct globals *globals);
+ int unix_sock_close(struct globals *globals);
+ int unix_sock_req_data_finish(struct globals *globals,
+ 			      struct transaction_head *head);
++int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
+,
++				    fd_set *errfds, int maxsock);
++void unix_sock_events_select_handle(struct globals *globals,
++				    fd_set *fds, fd_set *errfds);
++void unix_sock_events_close_all(struct globals *globals);
++void unix_sock_event_notify(struct globals *globals, uint8_t type);
+ /* vis.c */
+ int vis_update_data(struct globals *globals);
+ /* netsock.c */
+diff --git a/client.c b/client.c
+index 81cdd7c..9e88f47 100644
+--- a/client.c
++++ b/client.c
+@@ -452,3 +452,57 @@ err:
+ 	unix_sock_close(globals);
+ 	return 0;
+ }
++
++int alfred_client_event_monitor(struct globals *globals)
++{
++	struct alfred_event_register_v0 event_register;
++	struct alfred_event_notify_v0 event_notify;
++	int ret, len;
++
++	if (unix_sock_open_client(globals))
++		return -1;
++
++	len =3D sizeof(event_register);
++
++	event_register.header.type =3D ALFRED_EVENT_REGISTER;
++	event_register.header.version =3D ALFRED_VERSION;
++	event_register.header.length =3D 0;
++
++	ret =3D write(globals->unix_sock, &event_register, len);
++	if (ret !=3D len) {
++		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
++			__func__, ret, len, strerror(errno));
++		goto err;
++	}
++
++	while (true) {
++		len =3D read(globals->unix_sock, &event_notify, sizeof(event_notify));
++		if (len =3D=3D 0) {
++			fprintf(stdout, "Server closed the connection\n");
++			goto err;
++		}
++
++		if (len < 0) {
++			perror("read from unix socket failed");
++			goto err;
++		}
++
++		if (len !=3D sizeof(event_notify)) {
++			fprintf(stderr, "notify read bytes: %d (expected: %zu)\n",
++				len, sizeof(event_notify));
++				goto err;
++		}
++
++		if (event_notify.header.version !=3D ALFRED_VERSION)
++			continue;
++
++		if (event_notify.header.type !=3D ALFRED_EVENT_NOTIFY)
++			continue;
++
++		fprintf(stdout, "Event: type =3D %d\n", event_notify.type);
++	}
++
++err:
++	unix_sock_close(globals);
++	return 0;
++}
+diff --git a/main.c b/main.c
+index 68d6efd..98bf64d 100644
+--- a/main.c
++++ b/main.c
+@@ -39,6 +39,7 @@ static void alfred_usage(void)
+ 	printf("  -I, --change-interface [interface]  change to the specified i=
+nterface(s)\n");
+ 	printf("  -B, --change-bat-iface [interface]  change to the specified b=
+atman-adv interface\n");
+ 	printf("  -S, --server-status                 request server status inf=
+o such as mode & interfaces\n");
++	printf("  -E, --event-monitor                 monitor alfred data recor=
+d update eventss\n");
+ 	printf("\n");
+ 	printf("server mode options:\n");
+ 	printf("  -i, --interface                     specify the interface (or=
+ comma separated list of interfaces) to listen on\n");
+@@ -164,6 +165,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 		{"change-interface",	required_argument,	NULL,	'I'},
+ 		{"change-bat-iface",	required_argument,	NULL,	'B'},
+ 		{"server-status",	required_argument,	NULL,	'S'},
++		{"event-monitor",	required_argument,	NULL,	'E'},
+ 		{"unix-path",		required_argument,	NULL,	'u'},
+ 		{"update-command",	required_argument,	NULL,	'c'},
+ 		{"version",		no_argument,		NULL,	'v'},
+@@ -181,6 +183,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 	memset(globals, 0, sizeof(*globals));
+=20
+ 	INIT_LIST_HEAD(&globals->interfaces);
++	INIT_LIST_HEAD(&globals->event_listeners);
+ 	globals->net_iface =3D NULL;
+ 	globals->opmode =3D OPMODE_SECONDARY;
+ 	globals->clientmode =3D CLIENT_NONE;
+@@ -198,7 +201,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+=20
+ 	time_random_seed();
+=20
+-	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:Su:dc:p:4:f=
+", long_options,
++	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:SEu:dc:p:4:=
+f", long_options,
+ 				  &opt_ind)) !=3D -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -263,6 +266,9 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 		case 'S':
+ 			globals->clientmode =3D CLIENT_SERVER_STATUS;
+ 			break;
++		case 'E':
++			globals->clientmode =3D CLIENT_EVENT_MONITOR;
++			break;
+ 		case 'u':
+ 			globals->unix_path =3D optarg;
+ 			break;
+@@ -328,6 +334,8 @@ int main(int argc, char *argv[])
+ 		return alfred_client_change_bat_iface(globals);
+ 	case CLIENT_SERVER_STATUS:
+ 		return alfred_client_server_status(globals);
++	case CLIENT_EVENT_MONITOR:
++		return alfred_client_event_monitor(globals);
+ 	}
+=20
+ 	return 0;
+diff --git a/man/alfred.8 b/man/alfred.8
+index cf0eafc..ca83f02 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -97,6 +97,9 @@ Change the alfred server to use the new \fBbatman-adv i=
+nterface\fP
+ .TP
+ \fB\-S\fP, \fB\-\-server\-status\fP
+ Request server status information such as mode & interfaces\fP
++.TP
++\fB\-E\fP, \fB\-\-event\-monitor\fP
++Start alfred event monitor connecting to the alfred server and reporting=
+ update events\fP
+ .
+ .SH SERVER OPTIONS
+ .TP
+diff --git a/packet.h b/packet.h
+index 0c1a2eb..84b027f 100644
+--- a/packet.h
++++ b/packet.h
+@@ -59,6 +59,8 @@ struct alfred_transaction_mgmt {
+  * @ALFRED_STATUS_ERROR: Error was detected during the transaction
+  * @ALFRED_MODESWITCH: Switch between different operation modes
+  * @ALFRED_CHANGE_INTERFACE: Change the listening interface
++ * @ALFRED_EVENT_REGISTER: Request to be notified about alfred update ev=
+ents
++ * @ALFRED_EVENT_NOTIFY: Data record update has been received
+  */
+ enum alfred_packet_type {
+ 	ALFRED_PUSH_DATA =3D 0,
+@@ -70,6 +72,8 @@ enum alfred_packet_type {
+ 	ALFRED_CHANGE_INTERFACE =3D 6,
+ 	ALFRED_CHANGE_BAT_IFACE =3D 7,
+ 	ALFRED_SERVER_STATUS =3D 8,
++	ALFRED_EVENT_REGISTER =3D 9,
++	ALFRED_EVENT_NOTIFY =3D 10,
+ };
+=20
+ /* packets */
+@@ -229,6 +233,28 @@ struct alfred_server_status_rep_v0 {
+ 	struct alfred_tlv header;
+ } __packed;
+=20
++/**
++ * struct alfred_event_register_v0 - event registration message
++ * @header: TLV header describing the complete packet
++ *
++ * Sent by the client to daemon to register for data record updates
++ */
++struct alfred_event_register_v0 {
++	struct alfred_tlv header;
++} __packed;
++
++/**
++ * struct alfred_event_notify_v0 - event notification message
++ * @header: TLV header describing the complete packet
++ * @type: Type of the data triggering the event
++ *
++ * Sent by the daemon to client on data record update
++ */
++struct alfred_event_notify_v0 {
++	struct alfred_tlv header;
++	uint8_t type;
++} __packed;
++
+ /**
+  * struct alfred_status_v0 - Status info of a transaction
+  * @header: TLV header describing the complete packet
+diff --git a/recv.c b/recv.c
+index 8acad10..36b3a49 100644
+--- a/recv.c
++++ b/recv.c
+@@ -76,8 +76,10 @@ static int finish_alfred_push_data(struct globals *glo=
+bals,
+ 		/* check that data was changed */
+ 		if (new_entry_created ||
+ 		    dataset->data.header.length !=3D data_len ||
+-		    memcmp(dataset->buf, data->data, data_len) !=3D 0)
++		    memcmp(dataset->buf, data->data, data_len) !=3D 0) {
+ 			changed_data_type(globals, data->header.type);
++			unix_sock_event_notify(globals, data->header.type);
++		}
+=20
+ 		/* free old buffer */
+ 		if (dataset->buf) {
+diff --git a/server.c b/server.c
+index bfc37bc..4078fe6 100644
+--- a/server.c
++++ b/server.c
+@@ -442,6 +442,8 @@ int alfred_server(struct globals *globals)
+=20
+ 		maxsock =3D netsock_prepare_select(globals, &fds, maxsock);
+ 		maxsock =3D netsock_prepare_select(globals, &errfds, maxsock);
++		maxsock =3D unix_sock_events_select_prepare(globals, &fds,
++							  &errfds, maxsock);
+=20
+ 		ret =3D pselect(maxsock + 1, &fds, NULL, &errfds, &tv, NULL);
+=20
+@@ -450,6 +452,8 @@ int alfred_server(struct globals *globals)
+ 		} else if (ret) {
+ 			netsock_check_error(globals, &errfds);
+=20
++			unix_sock_events_select_handle(globals, &fds, &errfds);
++
+ 			if (FD_ISSET(globals->unix_sock, &fds)) {
+ 				unix_sock_read(globals);
+ 				continue;
+@@ -478,5 +482,6 @@ int alfred_server(struct globals *globals)
+=20
+ 	netsock_close_all(globals);
+ 	unix_sock_close(globals);
++	unix_sock_events_close_all(globals);
+ 	return 0;
+ }
+diff --git a/unix_sock.c b/unix_sock.c
+index 3894736..c45564d 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -13,6 +13,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <fcntl.h>
+ #include <sys/socket.h>
+ #include <sys/time.h>
+ #include <sys/un.h>
+@@ -84,6 +85,7 @@ static int unix_sock_add_data(struct globals *globals,
+ 			      struct alfred_push_data_v0 *push,
+ 			      int client_sock)
+ {
++	bool new_entry_created =3D false;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
+ 	int len, data_len, ret =3D -1;
+@@ -138,10 +140,17 @@ static int unix_sock_add_data(struct globals *globa=
+ls,
+ 			free(dataset);
+ 			goto err;
+ 		}
++		new_entry_created =3D true;
+ 	}
+ 	dataset->data_source =3D SOURCE_LOCAL;
+ 	clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+=20
++	/* check that data was changed */
++	if (new_entry_created ||
++	    dataset->data.header.length !=3D data_len ||
++	    memcmp(dataset->buf, data->data, data_len) !=3D 0)
++		unix_sock_event_notify(globals, data->header.type);
++
+ 	/* free old buffer */
+ 	free(dataset->buf);
+=20
+@@ -472,6 +481,37 @@ err:
+ 	return ret;
+ }
+=20
++static int unix_sock_register_listener(struct globals *globals, int clie=
+nt_sock)
++{
++	struct event_listener *listener;
++	int ret;
++
++	ret =3D fcntl(client_sock, F_GETFL, 0);
++	if (ret < 0) {
++		perror("failed to get file status flags");
++		goto err;
++	}
++
++	ret =3D fcntl(client_sock, F_SETFL, ret | O_NONBLOCK);
++	if (ret < 0) {
++		perror("failed to set file status flags");
++		goto err;
++	}
++
++	listener =3D malloc(sizeof(*listener));
++	if (!listener)
++		goto err;
++
++	listener->fd =3D client_sock;
++	INIT_LIST_HEAD(&listener->list);
++	list_add_tail(&listener->list, &globals->event_listeners);
++	return 0;
++
++err:
++	close(client_sock);
++	return -1;
++}
++
+ int unix_sock_read(struct globals *globals)
+ {
+ 	int client_sock;
+@@ -537,6 +577,9 @@ int unix_sock_read(struct globals *globals)
+ 	case ALFRED_SERVER_STATUS:
+ 		ret =3D unix_sock_server_status(globals, client_sock);
+ 		break;
++	case ALFRED_EVENT_REGISTER:
++		ret =3D unix_sock_register_listener(globals, client_sock);
++		break;
+ 	default:
+ 		/* unknown packet type */
+ 		ret =3D -1;
+@@ -555,3 +598,102 @@ int unix_sock_close(struct globals *globals)
+ 	close(globals->unix_sock);
+ 	return 0;
+ }
++
++static void unix_sock_event_listener_free(struct event_listener *listene=
+r)
++{
++	list_del_init(&listener->list);
++	close(listener->fd);
++	free(listener);
++}
++
++static void unix_sock_event_notify_listener(struct event_listener *liste=
+ner,
++					    uint8_t type)
++{
++	struct alfred_event_notify_v0 notify;
++	int ret;
++
++	notify.header.type =3D ALFRED_EVENT_NOTIFY;
++	notify.header.version =3D ALFRED_VERSION;
++	notify.header.length =3D FIXED_TLV_LEN(notify);
++	notify.type =3D type;
++
++	ret =3D write(listener->fd, &notify, sizeof(notify));
++	if (ret =3D=3D sizeof(notify))
++		return;
++
++	unix_sock_event_listener_free(listener);
++}
++
++int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
+,
++				    fd_set *errfds, int maxsock)
++{
++	struct event_listener *listener;
++
++	list_for_each_entry(listener, &globals->event_listeners, list) {
++		if (listener->fd < 0)
++			continue;
++
++		FD_SET(listener->fd, fds);
++		FD_SET(listener->fd, errfds);
++
++		if (maxsock < listener->fd)
++			maxsock =3D listener->fd;
++	}
++
++	return maxsock;
++}
++
++void unix_sock_events_select_handle(struct globals *globals,
++				    fd_set *fds, fd_set *errfds)
++{
++	struct event_listener *listener, *tmp;
++	char buff[4];
++	int ret;
++
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		if (FD_ISSET(listener->fd, fds)) {
++			ret =3D recv(listener->fd, buff, sizeof(buff),
++				   MSG_PEEK | MSG_DONTWAIT);
++			/* listener has hung up */
++			if (ret =3D=3D 0)
++				unix_sock_event_listener_free(listener);
++			else if (ret > 0) {
++				fprintf(stderr, "Event listener has written to socket: %d - closing\=
+n",
++					listener->fd);
++				unix_sock_event_listener_free(listener);
++			}
++
++			if (ret >=3D 0)
++				continue;
++		}
++
++		if (FD_ISSET(listener->fd, errfds)) {
++			fprintf(stderr, "Error on event listener detected: %d\n",
++				listener->fd);
++			unix_sock_event_listener_free(listener);
++			continue;
++		}
++	}
++}
++
++void unix_sock_events_close_all(struct globals *globals)
++{
++	struct event_listener *listener, *tmp;
++
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		unix_sock_event_listener_free(listener);
++	}
++}
++
++void unix_sock_event_notify(struct globals *globals, uint8_t type)
++{
++	struct event_listener *listener, *tmp;
++
++	/* if event notify is unsuccessful, listener socket is closed */
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		unix_sock_event_notify_listener(listener, type);
++	}
++}
+--=20
+2.32.0.rc0
