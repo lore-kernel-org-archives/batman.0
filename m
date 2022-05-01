@@ -1,112 +1,189 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 2/2] batman-adv: remove unnecessary type castings
-Date: Sun,  8 May 2022 15:26:16 +0200
-Message-Id: <20220508132616.21232-3-sw@simonwunderlich.de>
-In-Reply-To: <20220508132616.21232-1-sw@simonwunderlich.de>
-References: <20220508132616.21232-1-sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH] alfred: notify event listener via unix socket
+Date: Sun, 01 May 2022 09:54:26 +0200
+Message-ID: <3246469.CvshgyVVUE@sven-l14>
+In-Reply-To: <20220430105647.340588-1-mareklindner@neomailbox.ch>
+References: <20220430105647.340588-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="nextPart2884461.XNjEgDIyLQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Yu Zhe <yuzhe@nfschina.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Yu Zhe <yuzhe@nfschina.com>
+ 
+--nextPart2884461.XNjEgDIyLQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: [PATCH] alfred: notify event listener via unix socket
+Date: Sun, 01 May 2022 09:54:26 +0200
+Message-ID: <3246469.CvshgyVVUE@sven-l14>
+In-Reply-To: <20220430105647.340588-1-mareklindner@neomailbox.ch>
+References: <20220430105647.340588-1-mareklindner@neomailbox.ch>
 
-remove unnecessary void* type castings.
+On Saturday, 30 April 2022 12:56:47 CEST Marek Lindner wrote:
+> The alfred server instance accepts event notification registration
+> via the unix socket. These notification sockets only inform
+> registered parties of the availibility of an alfred datatype change.
 
-Signed-off-by: Yu Zhe <yuzhe@nfschina.com>
-[sven@narfation.org: Fix missing const in batadv_choose* functions]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bridge_loop_avoidance.c |  4 ++--
- net/batman-adv/translation-table.c     | 12 ++++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+availability
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 7f8a14d99cdb..37ce6cfb3520 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -65,7 +65,7 @@ batadv_bla_send_announce(struct batadv_priv *bat_priv,
-  */
- static inline u32 batadv_choose_claim(const void *data, u32 size)
- {
--	struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
-+	const struct batadv_bla_claim *claim = data;
- 	u32 hash = 0;
- 
- 	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
-@@ -86,7 +86,7 @@ static inline u32 batadv_choose_backbone_gw(const void *data, u32 size)
- 	const struct batadv_bla_backbone_gw *gw;
- 	u32 hash = 0;
- 
--	gw = (struct batadv_bla_backbone_gw *)data;
-+	gw = data;
- 	hash = jhash(&gw->orig, sizeof(gw->orig), hash);
- 	hash = jhash(&gw->vid, sizeof(gw->vid), hash);
- 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 8478034d3abf..01d30c1e412c 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -103,10 +103,10 @@ static bool batadv_compare_tt(const struct hlist_node *node, const void *data2)
-  */
- static inline u32 batadv_choose_tt(const void *data, u32 size)
- {
--	struct batadv_tt_common_entry *tt;
-+	const struct batadv_tt_common_entry *tt;
- 	u32 hash = 0;
- 
--	tt = (struct batadv_tt_common_entry *)data;
-+	tt = data;
- 	hash = jhash(&tt->addr, ETH_ALEN, hash);
- 	hash = jhash(&tt->vid, sizeof(tt->vid), hash);
- 
-@@ -2766,7 +2766,7 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 	u32 i;
- 
- 	tt_tot = batadv_tt_entries(tt_len);
--	tt_change = (struct batadv_tvlv_tt_change *)tvlv_buff;
-+	tt_change = tvlv_buff;
- 
- 	if (!valid_cb)
- 		return;
-@@ -3994,7 +3994,7 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	if (tvlv_value_len < sizeof(*tt_data))
- 		return;
- 
--	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
-+	tt_data = tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
- 	num_vlan = ntohs(tt_data->num_vlan);
-@@ -4037,7 +4037,7 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 	if (tvlv_value_len < sizeof(*tt_data))
- 		return NET_RX_SUCCESS;
- 
--	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
-+	tt_data = tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
- 	tt_vlan_len = sizeof(struct batadv_tvlv_tt_vlan_data);
-@@ -4129,7 +4129,7 @@ static int batadv_roam_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_RX);
--	roaming_adv = (struct batadv_tvlv_roam_adv *)tvlv_value;
-+	roaming_adv = tvlv_value;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Received ROAMING_ADV from %pM (client %pM)\n",
--- 
-2.30.2
+
+> +int alfred_client_event_monitor(struct globals *globals)
+> +{
+[...]
+> +		fprintf(stdout, "Event: type = %d\n", event_notify.type);
+
+event_notify.type is unsigned and not signed.
+
+
+> diff --git a/main.c b/main.c
+> index 68d6efd..98bf64d 100644
+> --- a/main.c
+> +++ b/main.c
+> @@ -39,6 +39,7 @@ static void alfred_usage(void)
+>  	printf("  -I, --change-interface [interface]  change to the specified interface(s)\n");
+>  	printf("  -B, --change-bat-iface [interface]  change to the specified batman-adv interface\n");
+>  	printf("  -S, --server-status                 request server status info such as mode & interfaces\n");
+> +	printf("  -E, --event-monitor                 monitor alfred data record update eventss\n");
+
+events
+
+>  	printf("\n");
+>  	printf("server mode options:\n");
+>  	printf("  -i, --interface                     specify the interface (or comma separated list of interfaces) to listen on\n");
+> @@ -164,6 +165,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+>  		{"change-interface",	required_argument,	NULL,	'I'},
+>  		{"change-bat-iface",	required_argument,	NULL,	'B'},
+>  		{"server-status",	required_argument,	NULL,	'S'},
+> +		{"event-monitor",	required_argument,	NULL,	'E'},
+
+
+Why does it require an argument but the usage doesn't describe the argument? 
+See also getopt_long which also doesn't expect an argument
+
+
+> @@ -138,10 +140,17 @@ static int unix_sock_add_data(struct globals *globals,
+>  			free(dataset);
+>  			goto err;
+>  		}
+> +		new_entry_created = true;
+>  	}
+>  	dataset->data_source = SOURCE_LOCAL;
+>  	clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+>  
+> +	/* check that data was changed */
+> +	if (new_entry_created ||
+> +	    dataset->data.header.length != data_len ||
+> +	    memcmp(dataset->buf, data->data, data_len) != 0)
+> +		unix_sock_event_notify(globals, data->header.type);
+> +
+
+I am wondering now if it could be interesting for the listener whether the 
+data is from us or some remote (for example via the source mac). Does anyone 
+else have an opinion about that?
+
+
+
+
+> +static int unix_sock_register_listener(struct globals *globals, int client_sock)
+> +{
+> +	struct event_listener *listener;
+> +	int ret;
+> +
+> +	ret = fcntl(client_sock, F_GETFL, 0);
+> +	if (ret < 0) {
+> +		perror("failed to get file status flags");
+> +		goto err;
+> +	}
+> +
+> +	ret = fcntl(client_sock, F_SETFL, ret | O_NONBLOCK);
+> +	if (ret < 0) {
+> +		perror("failed to set file status flags");
+> +		goto err;
+> +	}
+> +
+> +	listener = malloc(sizeof(*listener));
+> +	if (!listener)
+> +		goto err;
+> +
+> +	listener->fd = client_sock;
+> +	INIT_LIST_HEAD(&listener->list);
+> +	list_add_tail(&listener->list, &globals->event_listeners);
+
+INIT_LIST_HEAD (of the prev/next pointer) is not necessary when you just 
+overwrite the next/prev pointer in the next line via list_add_tail
+
+> +
+> +static void unix_sock_event_listener_free(struct event_listener *listener)
+> +{
+> +	list_del_init(&listener->list);
+> +	close(listener->fd);
+> +	free(listener);
+
+list_del_init has no benefit (only downsides) when you free the memory anyway 
+at the end of the function
+
+
+> +int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds,
+> +				    fd_set *errfds, int maxsock)
+> +{
+> +	struct event_listener *listener;
+> +
+> +	list_for_each_entry(listener, &globals->event_listeners, list) {
+> +		if (listener->fd < 0)
+> +			continue;
+> +
+> +		FD_SET(listener->fd, fds);
+> +		FD_SET(listener->fd, errfds);
+> +
+> +		if (maxsock < listener->fd)
+> +			maxsock = listener->fd;
+> +	}
+> +
+> +	return maxsock;
+> +}
+
+I should really rewrite the socket mainloop using epoll.... but this is just a 
+side note and not a problem in your patch.
+
+Kind regards,
+	Sven
+--nextPart2884461.XNjEgDIyLQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmJuPLIACgkQXYcKB8Em
+e0YE2w/+OuzbG95KeZ+rGKz+/JsHl3qwJZjlt7MWNoorBNUG8CXata8kJHcT9x8S
+9mfUbalzzLnqncyYd7nzcJTx++gHe10PCTOgtUqAh76erD6GqnzvE013/1pryAD9
+YjyiAtczIVfCkIibtFb9HIOW/8BgY7QUSkUZDSg9gDosq/JClVhiJtuNJHDM5NI1
+/JgxGluCktIoWgT1iqwr6p6kN4MOlV2EbrtBN/jtub3BXHc5TLOPNyQis04hix+s
+7sHTdr6Ll8LJ5auYSoN96jaEI5iWzs2Mmvtt0xcDjsyT8VJvBep5jSLNbsKyec6S
+XJZlxIAN/gwHMh9j04IjJ+p0VXHKLEqOSMVpExn8V+WGk16z8WipNsL/1hBY3raI
+5x8YklJAc4cV2klubI6Z40zbs6M114+WBNJuguRvS0kyL5rAt59YIawYdXGHVb9L
+kpld/N8pLw2CBln3rJqKolzm7cRgtiT17VuwQqDK8y8KB0QhD+ULmQpS2SXB/+3C
+H7Il7gU2ZI8c9E2nGZy5cHAsK2JvrYnMtHlHqSsOxXEzelihVv4PpA6maCUuuxIw
+N3sRVQn8S7LLQzGRqmur4pwrn7kdYnCROnbqBI+wT5QvfOq+/2OibrhsChUCx44k
+FYRHXa/ojy50vQ6hefM0avmEaRtq2MXyKbKRftgMvDa2DgbTfkI=
+=nxxw
+-----END PGP SIGNATURE-----
+
+--nextPart2884461.XNjEgDIyLQ--
+
 
