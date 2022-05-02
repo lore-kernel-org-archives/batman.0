@@ -1,211 +1,545 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 1/2] alfred: Stabilize synchronization period using timerfd
-Date: Sun,  1 May 2022 14:28:29 +0200
-Message-Id: <20220501122830.22344-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: [PATCH v2] alfred: notify event listener via unix socket
+Date: Mon,  2 May 2022 13:46:51 +0200
+Message-Id: <20220502114651.771309-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The current way of scheduling the synchronization related events tends to
-cause drift from a perfect periodic timer. This happens because it doesn't
-calculate the next event based on a fixed start time + period * the number
-of past synchronization periods. Instead, the next event was scheduled
-based on the time before the last select() - ignoring that non-zero time
-was spend processing events.
+The alfred server instance accepts event notification registration
+via the unix socket. These notification sockets only inform
+registered parties of the availability of an alfred datatype change.
+The actual data itself needs to be retrieved via the existing data
+retrieval mechanisms.
 
-For a 10 second period, this usually looks somthing like:
+Unlike the update-command this event monitor allows:
 
-  [24.043904208] announce primary ...
-  [34.044216187] announce primary ...
-  [44.053485658] announce primary ...
-  [54.063562062] announce primary ...
-  [64.073517069] announce primary ...
+- multiple parallel listeners
+- programmatic access to changes without requiring multiple processes
 
-To avoid this drift, just use timerfd as rather stable periodic timer event
-sources. It also has the benefit of making it easier to use multiple
-periodic timers with different periods.
+The alfred client allows to monitor events via the newly added '-E'
+(event monitor) command line option. Serving as debugging tool and
+example code at the same time.
 
-Only some small jitter can be seen with this external timer implementation:
-
-  [12.673756426] announce primary ...
-  [22.673779811] announce primary ...
-  [32.673778362] announce primary ...
-  [42.673775216] announce primary ...
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- alfred.h |  2 ++
- server.c | 89 +++++++++++++++++++++++++++++++++++---------------------
- 2 files changed, 58 insertions(+), 33 deletions(-)
+
+v2:
+- fix typ0s
+- replace list_del_init() with list_del()
+- remove unnecessary INIT_LIST_HEAD()
+- change --event-monitor to not require an argument
+
+ alfred.h     |  15 ++++++
+ client.c     |  54 ++++++++++++++++++++
+ main.c       |  10 +++-
+ man/alfred.8 |   3 ++
+ packet.h     |  26 ++++++++++
+ recv.c       |   4 +-
+ server.c     |   5 ++
+ unix_sock.c  | 141 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 256 insertions(+), 2 deletions(-)
 
 diff --git a/alfred.h b/alfred.h
-index 2d98a30..2679515 100644
+index 2d98a30..f442c48 100644
 --- a/alfred.h
 +++ b/alfred.h
-@@ -124,6 +124,8 @@ struct globals {
- 	uint8_t ipv4mode:1;
- 	uint8_t force:1;
- 
-+	int check_timerfd;
+@@ -94,6 +94,7 @@ enum clientmode {
+ 	CLIENT_CHANGE_INTERFACE,
+ 	CLIENT_CHANGE_BAT_IFACE,
+ 	CLIENT_SERVER_STATUS,
++	CLIENT_EVENT_MONITOR,
+ };
+=20
+ struct interface {
+@@ -110,8 +111,15 @@ struct interface {
+ 	struct list_head list;
+ };
+=20
++struct event_listener {
++	int fd;
 +
- 	int unix_sock;
- 	const char *unix_path;
- 
-diff --git a/server.c b/server.c
-index bfc37bc..b5ec7b2 100644
---- a/server.c
-+++ b/server.c
-@@ -20,6 +20,7 @@
- #include <sys/socket.h>
- #include <sys/ioctl.h>
- #include <sys/time.h>
-+#include <sys/timerfd.h>
- #include <sys/types.h>
- #include <unistd.h>
- #include <time.h>
-@@ -366,17 +367,44 @@ static void execute_update_command(struct globals *globals)
- 	free(command);
++	struct list_head list;
++};
++
+ struct globals {
+ 	struct list_head interfaces;
++	struct list_head event_listeners;
+=20
+ 	char *net_iface;
+ 	struct server *best_server;	/* NULL if we are a server ourselves */
+@@ -157,6 +165,7 @@ int alfred_client_modeswitch(struct globals *globals)=
+;
+ int alfred_client_change_interface(struct globals *globals);
+ int alfred_client_change_bat_iface(struct globals *globals);
+ int alfred_client_server_status(struct globals *globals);
++int alfred_client_event_monitor(struct globals *globals);
+ /* recv.c */
+ int recv_alfred_packet(struct globals *globals, struct interface *interf=
+ace,
+ 		       int recv_sock);
+@@ -186,6 +195,12 @@ int unix_sock_open_client(struct globals *globals);
+ int unix_sock_close(struct globals *globals);
+ int unix_sock_req_data_finish(struct globals *globals,
+ 			      struct transaction_head *head);
++int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
+,
++				    fd_set *errfds, int maxsock);
++void unix_sock_events_select_handle(struct globals *globals,
++				    fd_set *fds, fd_set *errfds);
++void unix_sock_events_close_all(struct globals *globals);
++void unix_sock_event_notify(struct globals *globals, uint8_t type);
+ /* vis.c */
+ int vis_update_data(struct globals *globals);
+ /* netsock.c */
+diff --git a/client.c b/client.c
+index 81cdd7c..d86d23c 100644
+--- a/client.c
++++ b/client.c
+@@ -452,3 +452,57 @@ err:
+ 	unix_sock_close(globals);
+ 	return 0;
  }
- 
-+static int create_sync_period_timer(struct globals *globals)
++
++int alfred_client_event_monitor(struct globals *globals)
 +{
-+	struct itimerspec sync_timer;
-+	int ret;
++	struct alfred_event_register_v0 event_register;
++	struct alfred_event_notify_v0 event_notify;
++	int ret, len;
 +
-+	globals->check_timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
-+	if (globals->check_timerfd < 0) {
-+		perror("Failed to create periodic timer");
++	if (unix_sock_open_client(globals))
 +		return -1;
++
++	len =3D sizeof(event_register);
++
++	event_register.header.type =3D ALFRED_EVENT_REGISTER;
++	event_register.header.version =3D ALFRED_VERSION;
++	event_register.header.length =3D 0;
++
++	ret =3D write(globals->unix_sock, &event_register, len);
++	if (ret !=3D len) {
++		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
++			__func__, ret, len, strerror(errno));
++		goto err;
 +	}
 +
-+	sync_timer.it_value = globals->sync_period;
-+	sync_timer.it_interval = globals->sync_period;
++	while (true) {
++		len =3D read(globals->unix_sock, &event_notify, sizeof(event_notify));
++		if (len =3D=3D 0) {
++			fprintf(stdout, "Server closed the connection\n");
++			goto err;
++		}
 +
-+	ret = timerfd_settime(globals->check_timerfd, 0, &sync_timer, NULL);
-+	if (ret < 0) {
-+		perror("Failed to arm synchronization timer");
-+		return -1;
++		if (len < 0) {
++			perror("read from unix socket failed");
++			goto err;
++		}
++
++		if (len !=3D sizeof(event_notify)) {
++			fprintf(stderr, "notify read bytes: %d (expected: %zu)\n",
++				len, sizeof(event_notify));
++				goto err;
++		}
++
++		if (event_notify.header.version !=3D ALFRED_VERSION)
++			continue;
++
++		if (event_notify.header.type !=3D ALFRED_EVENT_NOTIFY)
++			continue;
++
++		fprintf(stdout, "Event: type =3D %hhu\n", event_notify.type);
 +	}
 +
++err:
++	unix_sock_close(globals);
 +	return 0;
 +}
-+
- int alfred_server(struct globals *globals)
- {
- 	int maxsock, ret, recvs;
--	struct timespec last_check, now, tv;
-+	struct timespec now;
- 	fd_set fds, errfds;
- 	size_t num_interfaces;
-+	uint64_t timer_exp;
- 	int num_socks;
- 
- 	if (create_hashes(globals))
- 		return -1;
- 
-+	if (create_sync_period_timer(globals))
-+		return -1;
-+
- 	if (unix_sock_open_daemon(globals))
- 		return -1;
- 
-@@ -414,25 +442,10 @@ int alfred_server(struct globals *globals)
- 		return -1;
+diff --git a/main.c b/main.c
+index 68d6efd..6dfb1e7 100644
+--- a/main.c
++++ b/main.c
+@@ -39,6 +39,7 @@ static void alfred_usage(void)
+ 	printf("  -I, --change-interface [interface]  change to the specified i=
+nterface(s)\n");
+ 	printf("  -B, --change-bat-iface [interface]  change to the specified b=
+atman-adv interface\n");
+ 	printf("  -S, --server-status                 request server status inf=
+o such as mode & interfaces\n");
++	printf("  -E, --event-monitor                 monitor alfred data recor=
+d update events\n");
+ 	printf("\n");
+ 	printf("server mode options:\n");
+ 	printf("  -i, --interface                     specify the interface (or=
+ comma separated list of interfaces) to listen on\n");
+@@ -164,6 +165,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 		{"change-interface",	required_argument,	NULL,	'I'},
+ 		{"change-bat-iface",	required_argument,	NULL,	'B'},
+ 		{"server-status",	required_argument,	NULL,	'S'},
++		{"event-monitor",	no_argument,		NULL,	'E'},
+ 		{"unix-path",		required_argument,	NULL,	'u'},
+ 		{"update-command",	required_argument,	NULL,	'c'},
+ 		{"version",		no_argument,		NULL,	'v'},
+@@ -181,6 +183,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 	memset(globals, 0, sizeof(*globals));
+=20
+ 	INIT_LIST_HEAD(&globals->interfaces);
++	INIT_LIST_HEAD(&globals->event_listeners);
+ 	globals->net_iface =3D NULL;
+ 	globals->opmode =3D OPMODE_SECONDARY;
+ 	globals->clientmode =3D CLIENT_NONE;
+@@ -198,7 +201,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+=20
+ 	time_random_seed();
+=20
+-	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:Su:dc:p:4:f=
+", long_options,
++	while ((opt =3D getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:B:SEu:dc:p:4:=
+f", long_options,
+ 				  &opt_ind)) !=3D -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -263,6 +266,9 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+ 		case 'S':
+ 			globals->clientmode =3D CLIENT_SERVER_STATUS;
+ 			break;
++		case 'E':
++			globals->clientmode =3D CLIENT_EVENT_MONITOR;
++			break;
+ 		case 'u':
+ 			globals->unix_path =3D optarg;
+ 			break;
+@@ -328,6 +334,8 @@ int main(int argc, char *argv[])
+ 		return alfred_client_change_bat_iface(globals);
+ 	case CLIENT_SERVER_STATUS:
+ 		return alfred_client_server_status(globals);
++	case CLIENT_EVENT_MONITOR:
++		return alfred_client_event_monitor(globals);
  	}
- 
--	clock_gettime(CLOCK_MONOTONIC, &last_check);
--	globals->if_check = last_check;
-+	clock_gettime(CLOCK_MONOTONIC, &now);
-+	globals->if_check = now;
- 
- 	while (1) {
--		clock_gettime(CLOCK_MONOTONIC, &now);
--
--		/* subtract the synchronization period from the current time
--		 * NOTE: this is an atypical usage of time_diff as it ignores the return
--		 * value and store the result back into now, essentially performing the
--		 * operation:
--		 * now -= globals->sync_period;
--		 */
--		time_diff(&now, &globals->sync_period, &now);
--
--		if (!time_diff(&last_check, &now, &tv)) {
--			tv.tv_sec = 0;
--			tv.tv_nsec = 0;
--		}
--
- 		netsock_reopen(globals);
- 
- 		FD_ZERO(&fds);
-@@ -440,10 +453,14 @@ int alfred_server(struct globals *globals)
- 		FD_SET(globals->unix_sock, &fds);
- 		maxsock = globals->unix_sock;
- 
-+		FD_SET(globals->check_timerfd, &fds);
-+		if (maxsock < globals->check_timerfd)
-+			maxsock = globals->check_timerfd;
+=20
+ 	return 0;
+diff --git a/man/alfred.8 b/man/alfred.8
+index cf0eafc..ca83f02 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -97,6 +97,9 @@ Change the alfred server to use the new \fBbatman-adv i=
+nterface\fP
+ .TP
+ \fB\-S\fP, \fB\-\-server\-status\fP
+ Request server status information such as mode & interfaces\fP
++.TP
++\fB\-E\fP, \fB\-\-event\-monitor\fP
++Start alfred event monitor connecting to the alfred server and reporting=
+ update events\fP
+ .
+ .SH SERVER OPTIONS
+ .TP
+diff --git a/packet.h b/packet.h
+index 0c1a2eb..84b027f 100644
+--- a/packet.h
++++ b/packet.h
+@@ -59,6 +59,8 @@ struct alfred_transaction_mgmt {
+  * @ALFRED_STATUS_ERROR: Error was detected during the transaction
+  * @ALFRED_MODESWITCH: Switch between different operation modes
+  * @ALFRED_CHANGE_INTERFACE: Change the listening interface
++ * @ALFRED_EVENT_REGISTER: Request to be notified about alfred update ev=
+ents
++ * @ALFRED_EVENT_NOTIFY: Data record update has been received
+  */
+ enum alfred_packet_type {
+ 	ALFRED_PUSH_DATA =3D 0,
+@@ -70,6 +72,8 @@ enum alfred_packet_type {
+ 	ALFRED_CHANGE_INTERFACE =3D 6,
+ 	ALFRED_CHANGE_BAT_IFACE =3D 7,
+ 	ALFRED_SERVER_STATUS =3D 8,
++	ALFRED_EVENT_REGISTER =3D 9,
++	ALFRED_EVENT_NOTIFY =3D 10,
+ };
+=20
+ /* packets */
+@@ -229,6 +233,28 @@ struct alfred_server_status_rep_v0 {
+ 	struct alfred_tlv header;
+ } __packed;
+=20
++/**
++ * struct alfred_event_register_v0 - event registration message
++ * @header: TLV header describing the complete packet
++ *
++ * Sent by the client to daemon to register for data record updates
++ */
++struct alfred_event_register_v0 {
++	struct alfred_tlv header;
++} __packed;
 +
- 		maxsock = netsock_prepare_select(globals, &fds, maxsock);
- 		maxsock = netsock_prepare_select(globals, &errfds, maxsock);
- 
--		ret = pselect(maxsock + 1, &fds, NULL, &errfds, &tv, NULL);
-+		ret = pselect(maxsock + 1, &fds, NULL, &errfds, NULL, NULL);
- 
- 		if (ret == -1) {
- 			perror("main loop select failed ...");
-@@ -459,21 +476,27 @@ int alfred_server(struct globals *globals)
- 					continue;
- 			}
- 		}
--		clock_gettime(CLOCK_MONOTONIC, &last_check);
--
--		if (globals->opmode == OPMODE_PRIMARY) {
--			/* we are a primary */
--			printf("[%ld.%09ld] announce primary ...\n", last_check.tv_sec, last_check.tv_nsec);
--			announce_primary(globals);
--			sync_data(globals);
--		} else {
--			/* send local data to server */
--			update_server_info(globals);
--			push_local_data(globals);
++/**
++ * struct alfred_event_notify_v0 - event notification message
++ * @header: TLV header describing the complete packet
++ * @type: Type of the data triggering the event
++ *
++ * Sent by the daemon to client on data record update
++ */
++struct alfred_event_notify_v0 {
++	struct alfred_tlv header;
++	uint8_t type;
++} __packed;
 +
-+		if (FD_ISSET(globals->check_timerfd, &fds)) {
-+			read(globals->check_timerfd, &timer_exp,
-+			     sizeof(timer_exp));
-+			clock_gettime(CLOCK_MONOTONIC, &now);
+ /**
+  * struct alfred_status_v0 - Status info of a transaction
+  * @header: TLV header describing the complete packet
+diff --git a/recv.c b/recv.c
+index 8acad10..36b3a49 100644
+--- a/recv.c
++++ b/recv.c
+@@ -76,8 +76,10 @@ static int finish_alfred_push_data(struct globals *glo=
+bals,
+ 		/* check that data was changed */
+ 		if (new_entry_created ||
+ 		    dataset->data.header.length !=3D data_len ||
+-		    memcmp(dataset->buf, data->data, data_len) !=3D 0)
++		    memcmp(dataset->buf, data->data, data_len) !=3D 0) {
+ 			changed_data_type(globals, data->header.type);
++			unix_sock_event_notify(globals, data->header.type);
++		}
+=20
+ 		/* free old buffer */
+ 		if (dataset->buf) {
+diff --git a/server.c b/server.c
+index bfc37bc..4078fe6 100644
+--- a/server.c
++++ b/server.c
+@@ -442,6 +442,8 @@ int alfred_server(struct globals *globals)
+=20
+ 		maxsock =3D netsock_prepare_select(globals, &fds, maxsock);
+ 		maxsock =3D netsock_prepare_select(globals, &errfds, maxsock);
++		maxsock =3D unix_sock_events_select_prepare(globals, &fds,
++							  &errfds, maxsock);
+=20
+ 		ret =3D pselect(maxsock + 1, &fds, NULL, &errfds, &tv, NULL);
+=20
+@@ -450,6 +452,8 @@ int alfred_server(struct globals *globals)
+ 		} else if (ret) {
+ 			netsock_check_error(globals, &errfds);
+=20
++			unix_sock_events_select_handle(globals, &fds, &errfds);
 +
-+			if (globals->opmode == OPMODE_PRIMARY) {
-+				/* we are a primary */
-+				printf("[%ld.%09ld] announce primary ...\n",
-+				       now.tv_sec, now.tv_nsec);
-+				announce_primary(globals);
-+				sync_data(globals);
-+			} else {
-+				/* send local data to server */
-+				update_server_info(globals);
-+				push_local_data(globals);
-+			}
-+			purge_data(globals);
-+			check_if_sockets(globals);
-+			execute_update_command(globals);
- 		}
--		purge_data(globals);
--		check_if_sockets(globals);
--		execute_update_command(globals);
- 	}
- 
+ 			if (FD_ISSET(globals->unix_sock, &fds)) {
+ 				unix_sock_read(globals);
+ 				continue;
+@@ -478,5 +482,6 @@ int alfred_server(struct globals *globals)
+=20
  	netsock_close_all(globals);
--- 
-2.30.2
-
+ 	unix_sock_close(globals);
++	unix_sock_events_close_all(globals);
+ 	return 0;
+ }
+diff --git a/unix_sock.c b/unix_sock.c
+index 3894736..f488763 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -13,6 +13,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <fcntl.h>
+ #include <sys/socket.h>
+ #include <sys/time.h>
+ #include <sys/un.h>
+@@ -84,6 +85,7 @@ static int unix_sock_add_data(struct globals *globals,
+ 			      struct alfred_push_data_v0 *push,
+ 			      int client_sock)
+ {
++	bool new_entry_created =3D false;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
+ 	int len, data_len, ret =3D -1;
+@@ -138,10 +140,17 @@ static int unix_sock_add_data(struct globals *globa=
+ls,
+ 			free(dataset);
+ 			goto err;
+ 		}
++		new_entry_created =3D true;
+ 	}
+ 	dataset->data_source =3D SOURCE_LOCAL;
+ 	clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+=20
++	/* check that data was changed */
++	if (new_entry_created ||
++	    dataset->data.header.length !=3D data_len ||
++	    memcmp(dataset->buf, data->data, data_len) !=3D 0)
++		unix_sock_event_notify(globals, data->header.type);
++
+ 	/* free old buffer */
+ 	free(dataset->buf);
+=20
+@@ -472,6 +481,36 @@ err:
+ 	return ret;
+ }
+=20
++static int unix_sock_register_listener(struct globals *globals, int clie=
+nt_sock)
++{
++	struct event_listener *listener;
++	int ret;
++
++	ret =3D fcntl(client_sock, F_GETFL, 0);
++	if (ret < 0) {
++		perror("failed to get file status flags");
++		goto err;
++	}
++
++	ret =3D fcntl(client_sock, F_SETFL, ret | O_NONBLOCK);
++	if (ret < 0) {
++		perror("failed to set file status flags");
++		goto err;
++	}
++
++	listener =3D malloc(sizeof(*listener));
++	if (!listener)
++		goto err;
++
++	listener->fd =3D client_sock;
++	list_add_tail(&listener->list, &globals->event_listeners);
++	return 0;
++
++err:
++	close(client_sock);
++	return -1;
++}
++
+ int unix_sock_read(struct globals *globals)
+ {
+ 	int client_sock;
+@@ -537,6 +576,9 @@ int unix_sock_read(struct globals *globals)
+ 	case ALFRED_SERVER_STATUS:
+ 		ret =3D unix_sock_server_status(globals, client_sock);
+ 		break;
++	case ALFRED_EVENT_REGISTER:
++		ret =3D unix_sock_register_listener(globals, client_sock);
++		break;
+ 	default:
+ 		/* unknown packet type */
+ 		ret =3D -1;
+@@ -555,3 +597,102 @@ int unix_sock_close(struct globals *globals)
+ 	close(globals->unix_sock);
+ 	return 0;
+ }
++
++static void unix_sock_event_listener_free(struct event_listener *listene=
+r)
++{
++	list_del(&listener->list);
++	close(listener->fd);
++	free(listener);
++}
++
++static void unix_sock_event_notify_listener(struct event_listener *liste=
+ner,
++					    uint8_t type)
++{
++	struct alfred_event_notify_v0 notify;
++	int ret;
++
++	notify.header.type =3D ALFRED_EVENT_NOTIFY;
++	notify.header.version =3D ALFRED_VERSION;
++	notify.header.length =3D FIXED_TLV_LEN(notify);
++	notify.type =3D type;
++
++	ret =3D write(listener->fd, &notify, sizeof(notify));
++	if (ret =3D=3D sizeof(notify))
++		return;
++
++	unix_sock_event_listener_free(listener);
++}
++
++int unix_sock_events_select_prepare(struct globals *globals, fd_set *fds=
+,
++				    fd_set *errfds, int maxsock)
++{
++	struct event_listener *listener;
++
++	list_for_each_entry(listener, &globals->event_listeners, list) {
++		if (listener->fd < 0)
++			continue;
++
++		FD_SET(listener->fd, fds);
++		FD_SET(listener->fd, errfds);
++
++		if (maxsock < listener->fd)
++			maxsock =3D listener->fd;
++	}
++
++	return maxsock;
++}
++
++void unix_sock_events_select_handle(struct globals *globals,
++				    fd_set *fds, fd_set *errfds)
++{
++	struct event_listener *listener, *tmp;
++	char buff[4];
++	int ret;
++
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		if (FD_ISSET(listener->fd, fds)) {
++			ret =3D recv(listener->fd, buff, sizeof(buff),
++				   MSG_PEEK | MSG_DONTWAIT);
++			/* listener has hung up */
++			if (ret =3D=3D 0)
++				unix_sock_event_listener_free(listener);
++			else if (ret > 0) {
++				fprintf(stderr, "Event listener has written to socket: %d - closing\=
+n",
++					listener->fd);
++				unix_sock_event_listener_free(listener);
++			}
++
++			if (ret >=3D 0)
++				continue;
++		}
++
++		if (FD_ISSET(listener->fd, errfds)) {
++			fprintf(stderr, "Error on event listener detected: %d\n",
++				listener->fd);
++			unix_sock_event_listener_free(listener);
++			continue;
++		}
++	}
++}
++
++void unix_sock_events_close_all(struct globals *globals)
++{
++	struct event_listener *listener, *tmp;
++
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		unix_sock_event_listener_free(listener);
++	}
++}
++
++void unix_sock_event_notify(struct globals *globals, uint8_t type)
++{
++	struct event_listener *listener, *tmp;
++
++	/* if event notify is unsuccessful, listener socket is closed */
++	list_for_each_entry_safe(listener, tmp,
++				 &globals->event_listeners, list) {
++		unix_sock_event_notify_listener(listener, type);
++	}
++}
+--=20
+2.32.0.rc0
