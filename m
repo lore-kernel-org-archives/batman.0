@@ -1,73 +1,50 @@
-Return-Path: <sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/1] batman-adv: Don't skb_split skbuffs with frag_list
-Date: Sun,  8 May 2022 15:21:10 +0200
-Message-Id: <20220508132110.20451-2-sw@simonwunderlich.de>
-In-Reply-To: <20220508132110.20451-1-sw@simonwunderlich.de>
-References: <20220508132110.20451-1-sw@simonwunderlich.de>
+Subject: [PATCH 1/2] batman-adv: Start new development cycle
+Date: Sun,  8 May 2022 15:26:15 +0200
+Message-Id: <20220508132616.21232-2-sw@simonwunderlich.de>
+In-Reply-To: <20220508132616.21232-1-sw@simonwunderlich.de>
+References: <20220508132616.21232-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net, kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Felix Kaechele <felix@kaechele.ca>, Simon Wunderlich <sw@simonwunderlich.de>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+This version will contain all the (major or even only minor) changes for
+Linux 5.19.
 
-The receiving interface might have used GRO to receive more fragments than
-MAX_SKB_FRAGS fragments. In this case, these will not be stored in
-skb_shinfo(skb)->frags but merged into the frag list.
+The version number isn't a semantic version number with major and minor
+information. It is just encoding the year of the expected publishing as
+Linux -rc1 and the number of published versions this year (starting at 0)=
+.
 
-batman-adv relies on the function skb_split to split packets up into
-multiple smaller packets which are not larger than the MTU on the outgoing
-interface. But this function cannot handle frag_list entries and is only
-operating on skb_shinfo(skb)->frags. If it is still trying to split such an
-skb and xmit'ing it on an interface without support for NETIF_F_FRAGLIST,
-then validate_xmit_skb() will try to linearize it. But this fails due to
-inconsistent information. And __pskb_pull_tail will trigger a BUG_ON after
-skb_copy_bits() returns an error.
-
-In case of entries in frag_list, just linearize the skb before operating on
-it with skb_split().
-
-Reported-by: Felix Kaechele <felix@kaechele.ca>
-Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Tested-by: Felix Kaechele <felix@kaechele.ca>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/fragmentation.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 0899a729a23f..c120c7c6d25f 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -475,6 +475,17 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 		goto free_skb;
- 	}
- 
-+	/* GRO might have added fragments to the fragment list instead of
-+	 * frags[]. But this is not handled by skb_split and must be
-+	 * linearized to avoid incorrect length information after all
-+	 * batman-adv fragments were created and submitted to the
-+	 * hard-interface
-+	 */
-+	if (skb_has_frag_list(skb) && __skb_linearize(skb)) {
-+		ret = -ENOMEM;
-+		goto free_skb;
-+	}
-+
- 	/* Create one header to be copied to all fragments */
- 	frag_header.packet_type = BATADV_UNICAST_FRAG;
- 	frag_header.version = BATADV_COMPAT_VERSION;
--- 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index f3be82999f1f..23f3d53f4b51 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -13,7 +13,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+=20
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2022.1"
++#define BATADV_SOURCE_VERSION "2022.2"
+ #endif
+=20
+ /* B.A.T.M.A.N. parameters */
+--=20
 2.30.2
-
