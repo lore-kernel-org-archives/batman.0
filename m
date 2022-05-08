@@ -1,11 +1,9 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/1] pull request for net: batman-adv 2022-05-08
+Date: Sun,  8 May 2022 15:21:09 +0200
+Message-Id: <20220508132110.20451-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-From: Charles Chien <cchien@creonexsystems.com>
-Date: Thu, 19 May 2022 23:18:45 -0700
-Message-ID: 
- <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
-Subject: Question about batman for ARM
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,39 +15,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hello developers,
+Hi David, hi Jakub,
 
+here is a bugfix for batman-adv which we would like to have integrated in=
+to net.
 
+Please pull or let me know of any problem!
 
-We=E2=80=99re currently trying to install batman-adv on an ARM platform but=
- we
-ran into some issues and we would appreciate your help to answer our
-questions below:
+Thank you,
+      Simon
 
-Is the batman-adv module compatible with an ARM processor (Raspberry PI 4)?
+The following changes since commit 3123109284176b1532874591f7c81f3837bbdc=
+17:
 
+  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
 
+are available in the Git repository at:
 
-I=E2=80=99m trying to install batman-adv onto an ARM Raspberry PI 4 with a
-Debian based Linux distribution (Pop OS). However, when I run
-=E2=80=9Cmodprobe batman-adv=E2=80=9D, it returns a FATAL error complaining=
- that the
-module is not found in the =E2=80=9C/lib/modules=E2=80=9D directory. Where =
-can I
-find/download the =E2=80=9C.ko=E2=80=9D for batman-adv for the ARM platform=
-?
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-202=
+20508
 
+for you to fetch changes up to a063f2fba3fa633a599253b62561051ac185fa99:
 
+  batman-adv: Don't skb_split skbuffs with frag_list (2022-04-17 23:41:44=
+ +0200)
 
-And if I need to recompile the .ko file for ARM, is there an online
-repository where I can find the original source code for the
-batman-adv driver?
+----------------------------------------------------------------
+Here is a batman-adv bugfix:
 
+ - Don't skb_split skbuffs with frag_list, by Sven Eckelmann
 
+----------------------------------------------------------------
+Sven Eckelmann (1):
+      batman-adv: Don't skb_split skbuffs with frag_list
 
-
---=20
-Regards,
-Charles
+ net/batman-adv/fragmentation.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
