@@ -1,50 +1,63 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH] alfred: Drop argument requirement from --server-status
-Date: Mon,  2 May 2022 13:40:00 +0200
-Message-Id: <20220502114000.25980-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/2] pull request for net-next: batman-adv 2022-05-08
+Date: Sun,  8 May 2022 15:26:14 +0200
+Message-Id: <20220508132616.21232-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-The short form -S doesn't require a parameter but the --server-status
-requires one (which no one reads). If none is supplied, following is
-printed:
+Hi Jakub, hi David,
 
-   ./alfred: option '--server-status' requires an argument
+here is a very little cleanup pull request of batman-adv to go into net-n=
+ext.
 
-and the execution stops. Just drop this requirement because it is not used
-and no where documented.
+Please pull or let me know of any problem!
 
-Fixes: 5a7d28b1866d ("alfred: introduce 'server status' IPC call")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thank you,
+      Simon
 
-diff --git a/main.c b/main.c
-index 68d6efd..30e18a5 100644
---- a/main.c
-+++ b/main.c
-@@ -163,7 +163,7 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		{"modeswitch",		required_argument,	NULL,	'M'},
- 		{"change-interface",	required_argument,	NULL,	'I'},
- 		{"change-bat-iface",	required_argument,	NULL,	'B'},
--		{"server-status",	required_argument,	NULL,	'S'},
-+		{"server-status",	no_argument,		NULL,	'S'},
- 		{"unix-path",		required_argument,	NULL,	'u'},
- 		{"update-command",	required_argument,	NULL,	'c'},
- 		{"version",		no_argument,		NULL,	'v'},
--- 
-2.34.1
+The following changes since commit 3123109284176b1532874591f7c81f3837bbdc=
+17:
 
+  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
+
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
+220508
+
+for you to fetch changes up to 8864d2fcf04385cabb8c8bb159f1f2ba5790cf71:
+
+  batman-adv: remove unnecessary type castings (2022-04-22 11:23:46 +0200=
+)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - bump version strings, by Simon Wunderlich
+
+ - remove unnecessary type castings, by Yu Zhe
+
+----------------------------------------------------------------
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Yu Zhe (1):
+      batman-adv: remove unnecessary type castings
+
+ net/batman-adv/bridge_loop_avoidance.c |  4 ++--
+ net/batman-adv/main.h                  |  2 +-
+ net/batman-adv/translation-table.c     | 12 ++++++------
+ 3 files changed, 9 insertions(+), 9 deletions(-)
