@@ -1,88 +1,52 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH v2] alfred: notify event listener via unix socket
-Date: Tue, 17 May 2022 09:44:07 +0200
-Message-ID: <10034333.HCmk49s6kI@rousseau>
-In-Reply-To: <1727325.kRQH6uYu6r@sven-desktop>
-References: <20220502114651.771309-1-mareklindner@neomailbox.ch>
- <1727325.kRQH6uYu6r@sven-desktop>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6068079.UanAL4W2Ky";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [PATCH 1/2] batman-adv: Start new development cycle
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <165202681169.7776.6221908264196100235.git-patchwork-notify@kernel.org>
+Date: Sun, 08 May 2022 16:20:11 +0000
+References: <20220508132616.21232-2-sw@simonwunderlich.de>
+In-Reply-To: <20220508132616.21232-2-sw@simonwunderlich.de>
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart6068079.UanAL4W2Ky
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Marek Lindner <mareklindner@neomailbox.ch>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v2] alfred: notify event listener via unix socket
-Date: Tue, 17 May 2022 09:44:07 +0200
-Message-ID: <10034333.HCmk49s6kI@rousseau>
-In-Reply-To: <1727325.kRQH6uYu6r@sven-desktop>
-References: <20220502114651.771309-1-mareklindner@neomailbox.ch> <1727325.kRQH6uYu6r@sven-desktop>
+Hello:
 
-Hi,
+This series was applied to netdev/net-next.git (master)
+by Simon Wunderlich <sw@simonwunderlich.de>:
 
-On Saturday, 14 May 2022 11:51:38 CEST Sven Eckelmann wrote:
-> This version cannot be applied on top of the current master. I have attached
-> the diff for the things which (afaik) need to be changed when you rebase
-> the patch.
-> 
-> I have also attached the change to support the reporting of the source mac
-> for the changed dataset.
+On Sun,  8 May 2022 15:26:15 +0200 you wrote:
+> This version will contain all the (major or even only minor) changes fo=
+r
+> Linux 5.19.
+>=20
+> The version number isn't a semantic version number with major and minor
+> information. It is just encoding the year of the expected publishing as
+> Linux -rc1 and the number of published versions this year (starting at =
+0).
+>=20
+> [...]
 
-I like the epoll change (to avoid unnecessary clutter) and also the source MAC 
-reporting. For debugging purposes it might be useful to know where the change 
-came from.
+Here is the summary with links:
+  - [1/2] batman-adv: Start new development cycle
+    https://git.kernel.org/netdev/net-next/c/cfa4e7b1bcf8
+  - [2/2] batman-adv: remove unnecessary type castings
+    https://git.kernel.org/netdev/net-next/c/8864d2fcf043
 
-Thanks for preparing the rebase & code change patches. Wouldn't you say that 
-EPOLL_CTL_DEL somewhere near unix_sock_event_listener_free() could be helpful?
-
-Something like:
--static void unix_sock_event_listener_free(struct event_listener *listener)
-+static void unix_sock_event_listener_free(struct globals *globals,
-+                                         struct event_listener *listener)
- {
-        list_del(&listener->list);
-+       epoll_ctl(globals->epollfd, EPOLL_CTL_DEL, listener->fd, NULL);
-        close(listener->fd);
-        free(listener);
- }
-
-Kind regards,
-Marek Lindner
-
---nextPart6068079.UanAL4W2Ky
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAmKDUkcACgkQU1VOj+62
-HMA06Qf/eBSCN2ELpUFBphUDZbOzYX6P7X6tVFMEqGYqkJxaEHBWf8sndUUodqsg
-x4mUCN2ImDHmWkhBLRhiuk9m4/2F4nIymK6GdacUC0ivz/BkPmsb0m63bDM00oyN
-D1EwIjaKIHB83zk3MM901IJH4JhaB2umMbWsq7e8t3fTWlid4shRSdTOTT11kZUj
-mo3nRvA6U+FbM9yj8VVf5e7DBIOnFmP6eEoHlm0Rl1nkRl19Wn/zQyqNkvGgthCR
-hQUkZj/f12TTiZhMcWkIoxmJPLE1kzgiOZvC8uz/0Rnbsp19TiWG95HE7y55UX5W
-Yuhd/PDohx/Tba2SsW78dsy2VGpW/g==
-=K/zn
------END PGP SIGNATURE-----
-
---nextPart6068079.UanAL4W2Ky--
-
-
+You are awesome, thank you!
+--=20
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
