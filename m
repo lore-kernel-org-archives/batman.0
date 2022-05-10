@@ -1,61 +1,56 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Date: Tue, 31 May 2022 14:54:12 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [RFC PATCH v3 1/1] mac80211: use AQL airtime for expected
- throughput.
-Message-ID: <YpYP9NBD+Wmzup+s@sellars>
-References: <20220531100922.491344-1-gasmibal@gmail.com>
+Return-Path: <patchwork-bot+netdevbpf@kernel.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20220531100922.491344-1-gasmibal@gmail.com>
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 1/1] batman-adv: Don't skb_split skbuffs with frag_list
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <165214561288.15844.2929287601845577779.git-patchwork-notify@kernel.org>
+Date: Tue, 10 May 2022 01:20:12 +0000
+References: <20220508132110.20451-2-sw@simonwunderlich.de>
+In-Reply-To: <20220508132110.20451-2-sw@simonwunderlich.de>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Baligh Gasmi <gasmibal@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "open list:MAC80211" <linux-wireless@vger.kernel.org>, "open list:NETWORKING [GENERAL]" <netdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, felix@kaechele.ca
 
-On Tue, May 31, 2022 at 12:09:22PM +0200, Baligh Gasmi wrote:
-> Since the integration of AQL, packet TX airtime estimation is
-> calculated and counted to be used for the dequeue limit.
+Hello:
+
+This patch was applied to netdev/net.git (master)
+by Simon Wunderlich <sw@simonwunderlich.de>:
+
+On Sun,  8 May 2022 15:21:10 +0200 you wrote:
+> From: Sven Eckelmann <sven@narfation.org>
 > 
-> Use this estimated airtime to compute expected throughput for
-> each station.
+> The receiving interface might have used GRO to receive more fragments than
+> MAX_SKB_FRAGS fragments. In this case, these will not be stored in
+> skb_shinfo(skb)->frags but merged into the frag list.
 > 
-> It will be a generic mac80211 implementation. If the driver has
-> get_expected_throughput implementation, it will be used instead.
+> batman-adv relies on the function skb_split to split packets up into
+> multiple smaller packets which are not larger than the MTU on the outgoing
+> interface. But this function cannot handle frag_list entries and is only
+> operating on skb_shinfo(skb)->frags. If it is still trying to split such an
+> skb and xmit'ing it on an interface without support for NETIF_F_FRAGLIST,
+> then validate_xmit_skb() will try to linearize it. But this fails due to
+> inconsistent information. And __pskb_pull_tail will trigger a BUG_ON after
+> skb_copy_bits() returns an error.
 > 
-> Useful for L2 routing protocols, like B.A.T.M.A.N.
-> 
-> Signed-off-by: Baligh Gasmi <gasmibal@gmail.com>
+> [...]
 
-Hi Baligh,
+Here is the summary with links:
+  - [1/1] batman-adv: Don't skb_split skbuffs with frag_list
+    https://git.kernel.org/netdev/net/c/a063f2fba3fa
 
-Thanks for your work, this indeed sounds very relevant for
-batman-adv. Do you have some test results on how this compares to
-real throughput? And maybe how it compares to other methods we
-already have in the kernel, like expected throughput via
-minstrel_ht rate control or the estimates performed in 802.11s
-HWMP [0]?
-
-Is there a certain minimum amount of traffic you'd suggest to have
-enough samples to get a meaningful result?
-
-I'm also wondering if we are starting to accumulate too many
-places to provide wifi expected throughput calculations. Do you
-see a chance that this generic mac80211 implementation could be made
-good enough to be used as the sole source for both batman-adv and
-802.11s HWMP, for instance? Or do you see some pros and cons
-between the different methods?
-
-Regards, Linus
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
-[0]: https://elixir.bootlin.com/linux/v5.18/source/net/mac80211/mesh_hwmp.c#L295
