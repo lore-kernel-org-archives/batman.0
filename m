@@ -1,93 +1,116 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH net 11/12] batman-adv: fix iflink detection in
- batadv_is_on_batman_iface
-Date: Sat, 14 May 2022 12:21:16 +0200
-Message-ID: <1754593.qx6Pg7X6uG@sven-desktop>
-In-Reply-To: 
- <afa206858a88910691bdb917d0956cea3f32f667.1600770261.git.sd@queasysnail.net>
-References: <cover.1600770261.git.sd@queasysnail.net>
- <afa206858a88910691bdb917d0956cea3f32f667.1600770261.git.sd@queasysnail.net>
+Return-Path: <cchien@creonexsystems.com>
+From: <cchien@creonexsystems.com>
+References: 
+ <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
+ <2546299.1OsWWQgn6R@ripper>
+In-Reply-To: <2546299.1OsWWQgn6R@ripper>
+Subject: RE: Question about batman for ARM
+Date: Fri, 20 May 2022 08:51:00 -0700
+Message-ID: <03ca01d86c61$6781b190$368514b0$@creonexsystems.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart41320831.pHRkKXBtVs";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-us
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: Sabrina Dubroca <sd@queasysnail.net>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: 'Sven Eckelmann' <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart41320831.pHRkKXBtVs
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Sabrina Dubroca <sd@queasysnail.net>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Subject: Re: [PATCH net 11/12] batman-adv: fix iflink detection in batadv_is_on_batman_iface
-Date: Sat, 14 May 2022 12:21:16 +0200
-Message-ID: <1754593.qx6Pg7X6uG@sven-desktop>
-In-Reply-To: <afa206858a88910691bdb917d0956cea3f32f667.1600770261.git.sd@queasysnail.net>
-References: <cover.1600770261.git.sd@queasysnail.net> <afa206858a88910691bdb917d0956cea3f32f667.1600770261.git.sd@queasysnail.net>
 
-On Thursday, 1 October 2020 09:59:35 CEST Sabrina Dubroca wrote:
-> device has the same ifindex as its link. Let's use the presence of a
-> ndo_get_iflink operation, rather than the value it returns, to detect
-> a device without a link.
+Hi Sven,
 
-There wasn't any activity in this patchset since a while, it doesn't apply
-anymore and the assumptions made here doesn't seem to be reflect the current
-situation in the kernel. See commit 6c1f41afc1db ("batman-adv: Don't expect
-inter-netns unique iflink indices"):
+Thank you for the quick and informative response.
+We will look into your suggestions.
 
-> But only checking for dev->netdev_ops->ndo_get_iflink is also not an option
-> because ipoib_get_iflink implements it even when it sometimes returns an
-> iflink != ifindex and sometimes iflink == ifindex. The caller must
-> therefore make sure itself to check both netns and iflink + ifindex for
-> equality. Only when they are equal, a "physical" interface was detected
-> which should stop the traversal. On the other hand, vxcan_get_iflink can
-> also return 0 in case there was currently no valid peer. In this case, it
-> is still necessary to stop.
+Regards,
+Charles
+_____________
+CreoNex Systems
+2625 Townsgate Road, Suite 330
+Westlake Village, CA 91320
+www.creonexsystems.com
+(805) 558-9687
+This message (including any attachments) is for the named addressee(s)'s =
+use only. It may contain sensitive, confidential, private proprietary or =
+legally privileged information intended for a specific individual and =
+purpose, and is protected by law. If you are not the intended recipient, =
+please immediately delete it and all copies of it from your system, =
+destroy any hard copies of it and notify the sender. Any use, =
+disclosure, copying, or distribution of this message and/or any =
+attachments is strictly prohibited.
 
-It would would be nice when the situation would be better but the proposed 
-patches don't solve it. So I will mark the two patches as "Rejected" (from 
-"Changes requested") in batadv's patchwork. It is not meant as sign of
-disapproval of someone working in this area to improve the situation - I just
-don't want to wait for the v2 [1] anymore.
+
+-----Original Message-----
+From: Sven Eckelmann <sven@narfation.org>=20
+Sent: Friday, May 20, 2022 12:43 AM
+To: Charles Chien <cchien@creonexsystems.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: Question about batman for ARM
+
+On Friday, 20 May 2022 08:18:45 CEST Charles Chien wrote:
+> We=E2=80=99re currently trying to install batman-adv on an ARM =
+platform but we=20
+> ran into some issues and we would appreciate your help to answer our=20
+> questions below:
+>=20
+> Is the batman-adv module compatible with an ARM processor (Raspberry =
+PI 4)?
+
+There is not just an "ARM" processor. It is a family of various =
+processors.
+
+Anyway, it can be used easily on Raspberry Pi - just make sure that you =
+use a good wifi device + driver (+firmware) which actually can =
+communicate over IBSS/802.11s (without forwarding enabled) and has no =
+(extreme low) peer limit.=20
+Unfortunately, you cannot take this for granted.
+
+> I=E2=80=99m trying to install batman-adv onto an ARM Raspberry PI 4 =
+with a=20
+> Debian based Linux distribution (Pop OS). However, when I run=20
+> =E2=80=9Cmodprobe batman-adv=E2=80=9D, it returns a FATAL error =
+complaining that the=20
+> module is not found in the =E2=80=9C/lib/modules=E2=80=9D directory. =
+Where can I=20
+> find/download the =E2=80=9C.ko=E2=80=9D for batman-adv for the ARM =
+platform?
+
+Ehrm, this is not how this works. You cannot just use a kernel module =
+and hope that it works on all kernel (builds) available in the universe. =
+This is also why we write following in each batman-adv release news =
+entry: "As the kernel module always depends on the Linux kernel it is =
+compiled against, it does not make sense to provide binaries on our =
+website. As usual, you will find the signed tarballs in our download =
+section:"
+
+Either your distribution has to enable this module in their kernel build =
+or you have to get their kernel headers (and build scripts) and then =
+build it from scratch. And at least on the default Debian kernel, =
+batman-adv is enabled since ages - so no idea why PopOS doesn't ship it
+
+> And if I need to recompile the .ko file for ARM, is there an online=20
+> repository where I can find the original source code for the=20
+> batman-adv driver?
+
+This is mentioned in multiple places on the website. Just to mention a =
+few interesting pages:
+
+* https://www.open-mesh.org/projects/open-mesh/wiki
+* https://www.open-mesh.org/news/108
+* https://www.open-mesh.org/projects/open-mesh/wiki/Download
+* https://www.open-mesh.org/projects/open-mesh/wiki/UsingBatmanGit
+* https://git.open-mesh.org/
+  https://git.open-mesh.org/batman-adv.git
+* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/
 
 Kind regards,
 	Sven
-
-[1] https://lore.kernel.org/all/20201002090703.GD3565727@bistromath.localdomain/
---nextPart41320831.pHRkKXBtVs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmJ/gpwACgkQXYcKB8Em
-e0b8bg//cTQcj0L6HvTbt3v4eZIOw1E9xQVtfh3w7zKEagsEIyz8fPapiqG4uHOd
-aZukT6tVDAyxT6ce+1sm07hVcBfMEeMf+a6BrobdVJ6cvKXt31O+juUEiAl8qex1
-8begZbq/5tTZmKkgiHUbvZeW8lBDwrlvvSwYLXTwqbjJoIKVfvFucOSHnYD/N7Ho
-XN9wfHcZng5Q/XFGuu6Ki5cvX1j/ygzW1MH6bHzat7+RCDxt3ri7CuFAHQ6cnf33
-bZPoFStCjgJLZ+5VZcTPNVHe6bZv1uwGxniSyaPi4T3HNoIWnGsPUndY7us/jBtl
-LLyObHy9Tli2ARjL599L2e/fTayDKwro/DTGYSpuXTvz9FgIG4wZiwoSQK2TVx2I
-sAPfkspDbB3MPG+Os0XBfDrB3plZeFZgFyLYYDf9DmCQxm1XKLUm8sZa6G7s3Wjf
-xlBqB4JwLjXxltnbTsHyUgu4PewMCIrJglau/uL3/03WDMO+eGhtVa4ZsISdP3rM
-rnibmZ46GS7c4Nr5gNC00ecjr/36dTn6sc//ZBbbFEm+FZVXixJ6P1Zzcg4rqdKV
-xv6a3z8hLUtvh9Gxxt8jwH4XSWtufTe+RG5mu+QDEy5prxCUWoAReJRQsO1hGJG1
-y/ZQMvW3aXzyCA27wyCgsbLACX0W3tD7O7ponxGV3o7XfI0wssU=
-=97Bw
------END PGP SIGNATURE-----
-
---nextPart41320831.pHRkKXBtVs--
-
 
