@@ -1,14 +1,14 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] alfred: notify event listener via unix socket
-Date: Sun, 01 May 2022 11:12:12 +0200
-Message-ID: <2357978.S02m7aqKFs@sven-desktop>
-In-Reply-To: <1831000.Ehg04xY5OU@rousseau>
-References: <20220430105647.340588-1-mareklindner@neomailbox.ch>
- <3246469.CvshgyVVUE@sven-l14> <1831000.Ehg04xY5OU@rousseau>
+Date: Tue, 31 May 2022 14:54:12 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [RFC PATCH v3 1/1] mac80211: use AQL airtime for expected
+ throughput.
+Message-ID: <YpYP9NBD+Wmzup+s@sellars>
+References: <20220531100922.491344-1-gasmibal@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6694723.kCZG3UKmh0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20220531100922.491344-1-gasmibal@gmail.com>
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,59 +19,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: Baligh Gasmi <gasmibal@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "open list:MAC80211" <linux-wireless@vger.kernel.org>, "open list:NETWORKING [GENERAL]" <netdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart6694723.kCZG3UKmh0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
-Subject: Re: [PATCH] alfred: notify event listener via unix socket
-Date: Sun, 01 May 2022 11:12:12 +0200
-Message-ID: <2357978.S02m7aqKFs@sven-desktop>
-In-Reply-To: <1831000.Ehg04xY5OU@rousseau>
-References: <20220430105647.340588-1-mareklindner@neomailbox.ch> <3246469.CvshgyVVUE@sven-l14> <1831000.Ehg04xY5OU@rousseau>
-
-On Sunday, 1 May 2022 11:10:13 CEST Marek Lindner wrote:
-> > > +static void unix_sock_event_listener_free(struct event_listener
-> > > *listener)
-> > > +{
-> > > +	list_del_init(&listener->list);
-> > > +	close(listener->fd);
-> > > +	free(listener);
-> > 
-> > list_del_init has no benefit (only downsides) when you free the memory
-> > anyway at the end of the function
+On Tue, May 31, 2022 at 12:09:22PM +0200, Baligh Gasmi wrote:
+> Since the integration of AQL, packet TX airtime estimation is
+> calculated and counted to be used for the dequeue limit.
 > 
-> What are those downsides you are referring to ?
+> Use this estimated airtime to compute expected throughput for
+> each station.
+> 
+> It will be a generic mac80211 implementation. If the driver has
+> get_expected_throughput implementation, it will be used instead.
+> 
+> Useful for L2 routing protocols, like B.A.T.M.A.N.
+> 
+> Signed-off-by: Baligh Gasmi <gasmibal@gmail.com>
 
-Additional writes for something which is dropped anyway.
+Hi Baligh,
 
-Kind regards,
-	Sven
---nextPart6694723.kCZG3UKmh0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Thanks for your work, this indeed sounds very relevant for
+batman-adv. Do you have some test results on how this compares to
+real throughput? And maybe how it compares to other methods we
+already have in the kernel, like expected throughput via
+minstrel_ht rate control or the estimates performed in 802.11s
+HWMP [0]?
 
------BEGIN PGP SIGNATURE-----
+Is there a certain minimum amount of traffic you'd suggest to have
+enough samples to get a meaningful result?
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmJuTuwACgkQXYcKB8Em
-e0ac7xAAixNv1iu2z2g2RZSiQMlttPeE7AGetRNJmBZXhhWAEZV9//Enphge5x6J
-G02xJkqgtJdKP8B77CTd5lWhqflqs22PdECjss6nXyGmzuYFjD/gP3uC0bA45ARC
-bIF/Kp745mAj6iBQS/fBI/dwkT+NMVoVfr9tI/SBvT4SP0inh28zl2oP156jf/LR
-lbtAsiYvb279/Dwo71pCooI3H6PyRausvQ/XmTxESIqM9CKp1d0o3okvPbC5Mkm7
-BThMZTLkXWAmlGr7k6vXzZxFXPxO9MC23SDhfzjJGquZeBWf20VXDfvLYQHw5eU/
-uAn/uB/prZ/KRUz+djtFrboy7+xv2k0cDJBeU2vlwHTNECfCR7zauD3WjujF8Ov+
-s22GS7rG9aGFq914tVgHqmFm0zKkdng9uEqTe2SHZmMzoqRX2KvHcHe4XpHHXtAA
-YpvXlXBNmHXnbVz7Wz8r66R3TjM9nej/Ccalt8mFIJcNnPPd8DqbS2FDydgy2I45
-zDR9QhdjgitLQk9usgF2kPvcsSy9vZ9a0wkKLbetXl0ty3tuBMAyIXyw7oWOzSE7
-Pg+rLtWyk0kxAfTzlSTGyr/EUEib9NjtgA92610g/K8YlvutwOfMU0BljCkv0hwc
-xqbcJ5Xx3ENMstJdtqAdXPcSHbAI6RTTZdnH61MFjjkirF/AMa0=
-=03aU
------END PGP SIGNATURE-----
+I'm also wondering if we are starting to accumulate too many
+places to provide wifi expected throughput calculations. Do you
+see a chance that this generic mac80211 implementation could be made
+good enough to be used as the sole source for both batman-adv and
+802.11s HWMP, for instance? Or do you see some pros and cons
+between the different methods?
 
---nextPart6694723.kCZG3UKmh0--
+Regards, Linus
 
 
+[0]: https://elixir.bootlin.com/linux/v5.18/source/net/mac80211/mesh_hwmp.c#L295
