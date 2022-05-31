@@ -1,16 +1,15 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Question about batman for ARM
-Date: Mon, 20 Jun 2022 14:50:54 +0200
-Message-ID: <20961862.b4RiU9qLUR@ripper>
-In-Reply-To: <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
-References: 
- <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
- <3826484.QQW5a1qdB9@ripper>
- <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart20699880.uRv7U2kVex";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+References: <20220531100922.491344-1-gasmibal@gmail.com>
+ <YpYP9NBD+Wmzup+s@sellars>
+In-Reply-To: <YpYP9NBD+Wmzup+s@sellars>
+From: Baligh GASMI <gasmibal@gmail.com>
+Date: Tue, 31 May 2022 16:26:10 +0200
+Message-ID: 
+ <CALxDnQYd5KzaBBxNnj7S_7joZFULY4pEsJ=gdePWcPM-K3i0cA@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 1/1] mac80211: use AQL airtime for expected
+ throughput.
+Content-Type: text/plain; charset="UTF-8"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,84 +20,73 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: cchien@creonexsystems.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: Johannes Berg <johannes@sipsolutions.net>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "open list:MAC80211" <linux-wireless@vger.kernel.org>, "open list:NETWORKING [GENERAL]" <netdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
- 
---nextPart20699880.uRv7U2kVex
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: cchien@creonexsystems.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: Question about batman for ARM
-Date: Mon, 20 Jun 2022 14:50:54 +0200
-Message-ID: <20961862.b4RiU9qLUR@ripper>
-In-Reply-To: <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
-References: <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com> <3826484.QQW5a1qdB9@ripper> <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
+Hi,
+>
+> On Tue, May 31, 2022 at 12:09:22PM +0200, Baligh Gasmi wrote:
+> > Since the integration of AQL, packet TX airtime estimation is
+> > calculated and counted to be used for the dequeue limit.
+> >
+> > Use this estimated airtime to compute expected throughput for
+> > each station.
+> >
+> > It will be a generic mac80211 implementation. If the driver has
+> > get_expected_throughput implementation, it will be used instead.
+> >
+> > Useful for L2 routing protocols, like B.A.T.M.A.N.
+> >
+> > Signed-off-by: Baligh Gasmi <gasmibal@gmail.com>
+>
+> Hi Baligh,
+>
+> Thanks for your work, this indeed sounds very relevant for
+> batman-adv. Do you have some test results on how this compares to
+> real throughput? And maybe how it compares to other methods we
+> already have in the kernel, like expected throughput via
+> minstrel_ht rate control or the estimates performed in 802.11s
+> HWMP [0]?
 
-On Monday, 20 June 2022 12:20:19 CEST cchien@creonexsystems.com wrote:
-> Does BATMAN ADV interfaces with the radio via the network driver or does
-> BATMAN include the network driver?
+I'll share a comparison between an iperf3 running and the current
+value of this implementation.
+What I can say, for now, is that they are close to each other.
+The minstrel_ht still a better implementation for expected throughput.
+That's why if there is minstrel_ht support, it will be used instead of
+this implementation.
+However, 802.11s metric is another story, it's a parameter used by the
+HWMP routing protocol for the path selection, so it could be based on
+the expected throughput, but it includes other factors that could be
+mesh specific.
+For me, 802.11s metric and expected throughput are not necessarily the
+same values.
 
-As said before, it is interfacing with the generic ethernet netdev layer of 
-the kernel. For example in:
+>
+> Is there a certain minimum amount of traffic you'd suggest to have
+> enough samples to get a meaningful result?
 
-* https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b890252a865efa91:/net/batman-adv/hard-interface.c#l727
-* https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b890252a865efa91:/net/batman-adv/send.c#l108
-* https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b890252a865efa91:/net/batman-adv/hard-interface.c#l185
+I'm using a burst of 50 ARP packets, padded to have 1024 bytes.
+(to be optimized)
 
-There are a lot of other places when it uses the abstraction interfaces of the 
-kernels for ethernet related communication.
+>
+> I'm also wondering if we are starting to accumulate too many
+> places to provide wifi expected throughput calculations. Do you
+> see a chance that this generic mac80211 implementation could be made
+> good enough to be used as the sole source for both batman-adv and
+> 802.11s HWMP, for instance? Or do you see some pros and cons
+> between the different methods?
+>
 
-For B.A.T.M.A.N. V, it is also trying to get throughput information via 
-various generic kernel functionality:
+I think that this implementation is still based on an estimation, so
+it's not good as a minstrel.
+It's based on the AQL airtime estimation. With a phy_rate of the last
+sent packet, and average aggregated packets, and other stuff ...
+The whole idea is not to replace current implementation, but to extend
+other drivers (to have something is better than having nothing !)
+Since batman-adv needs the expected throughput to make a decision, it
+will get a value regardless of the driver implementation.
 
-* https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b890252a865efa91:/net/batman-adv/bat_v_elp.c#l67
-
-There is also one detection for wifi interfaces to decide whether broadcast 
-messages should be repeated or not:
-
-* https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b890252a865efa91:/net/batman-adv/hard-interface.c#l877
-
-
-> Can you provide some guidance on where the network driver or interface to
-> network driver is located within BATMAN?
-
-It is not talking directly to the driver. It is always using abstraction 
-layers. Either the normal network core, ethernet or cfg80211 abstraction 
-interfaces. But these don't abstract the requirement for ethernet 
-compatibility away - the underlying device must provide this either directly 
-or via a wrapper. Just perform a `git grep -e ETH_ -e eth_ -e ethhdr` to
-see that it is build around the concept of ethernet packets.
-
-Also things like originators and the complete translation table only works 
-with ethernet addresses.
-
-Kind regards,
-	Sven
---nextPart20699880.uRv7U2kVex
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmKwbS4ACgkQXYcKB8Em
-e0Zeig/8D6/qjebcv1juFxgH6K+OAFC74CXh3i2NBtfRt+P2Qdow87Hg6SXCfwxo
-zqvU7KkK88RNPXb+uMBoSjLrdJs1WugUZ99aBcSa0FuifjTcJjRf5qMAmnsOZyW3
-zwwxgaI8fjU8StfqSFGGCrIXz7hdQhbJTA4YCYM6EMxYB3pOXwrQWy4xxotbpKPs
-9FyLpe+Gp8EflWK8vrq7qjaV7oqhaJ2AGA27iBOFKhkWVkMrHy1lC0afIgXKvajh
-QTsikRPbt6Ig7GiS6AqUU3BeEAel15ytIoyAv1/5sH3vTzEXtP7yUuozGfeNZ4p+
-nEJ5X/eNu7chZLUiyp+lxkG2+E+DKLED59N3r2uWkEcN/PDQXoeluuKZWmMRAUSu
-7C0EW5NzfXeNXh7trXGAV4Xqyytaxyt0oh1A1TUU0e+4YOs78Uqwp8Ed/M9xSGOz
-eYZk+sQ4o8czruuW4eiIQPtu3PcEOp+Z7LLY6KVKCJYTgYmIyTiHL8+5r7lc8vmb
-aLG3N62+4+d9jP1Q1eFjfRuPa+Cp935WswDX2FvVtFt2eu2fAmxphNJYaitphIsI
-VFLC94lCOAOkQE3Pia4M2jOR5d1j/qNbmNvqfJ/vqo4EN/rbn3DDf+TcECFQALPn
-biiPHbxykaK/e0NDNAHUx+dgC7ek2HZZz3HQs3fQi2uVulnaUAo=
-=4gz0
------END PGP SIGNATURE-----
-
---nextPart20699880.uRv7U2kVex--
-
-
+> Regards, Linus
+>
+>
+> [0]: https://elixir.bootlin.com/linux/v5.18/source/net/mac80211/mesh_hwmp.c#L295
