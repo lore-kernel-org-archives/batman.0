@@ -1,117 +1,67 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v2] batman-adv: tracing: Use the new __vstring() helper
-Date: Mon, 25 Jul 2022 09:33:56 +0200
-Message-ID: <3133019.BU9PzZYyX2@ripper>
-In-Reply-To: <20220724191650.236b1355@rorschach.local.home>
-References: <20220724191650.236b1355@rorschach.local.home>
+Return-Path: <SRS0=aaZh=XK=goodmis.org=rostedt@kernel.org>
+Message-ID: <20220705224751.080390002@goodmis.org>
+Date: Tue, 05 Jul 2022 18:45:05 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 12/13] batman-adv: tracing: Use the new __vstring() helper
+References: <20220705224453.120955146@goodmis.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2457081.NBQ8aREyQt";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
+From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
+
+Instead of open coding a __dynamic_array() with a fixed length (which
+defeats the purpose of the dynamic array in the first place). Use the new
+__vstring() helper that will use a va_list and only write enough of the
+string into the ring buffer that is needed.
+
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Paolo Abeni <pabeni@redhat.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+---
+ net/batman-adv/trace.h | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
+index d673ebdd0426..67d2a8a0196c 100644
+--- a/net/batman-adv/trace.h
++++ b/net/batman-adv/trace.h
+@@ -40,16 +40,13 @@ TRACE_EVENT(batadv_dbg,
+ 	    TP_STRUCT__entry(
+ 		    __string(device, bat_priv->soft_iface->name)
+ 		    __string(driver, KBUILD_MODNAME)
+-		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
++		    __vstring(msg, vaf->fmt, vaf->va)
+ 	    ),
  
---nextPart2457081.NBQ8aREyQt
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] batman-adv: tracing: Use the new __vstring() helper
-Date: Mon, 25 Jul 2022 09:33:56 +0200
-Message-ID: <3133019.BU9PzZYyX2@ripper>
-In-Reply-To: <20220724191650.236b1355@rorschach.local.home>
-References: <20220724191650.236b1355@rorschach.local.home>
-
-On Monday, 25 July 2022 01:16:50 CEST Steven Rostedt wrote:
-> From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
-> 
-> Instead of open coding a __dynamic_array() with a fixed length (which
-> defeats the purpose of the dynamic array in the first place). Use the new
-> __vstring() helper that will use a va_list and only write enough of the
-> string into the ring buffer that is needed.
-
-Acked-by: Sven Eckelmann <sven@narfation.org>
-
-(and sorry for taking such a long time to respond to the v1 version of the 
-patch).
-
-> ---
-> Changes since v1:  https://lkml.kernel.org/r/20220705224751.080390002@goodmis.org
-> 
->  - Removed no longer used BATADV_MAX_MSG_LEN
-> 
->  net/batman-adv/trace.h | 9 ++-------
->  1 file changed, 2 insertions(+), 7 deletions(-)
-> 
-> diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-> index d673ebdd0426..31c8f922651d 100644
-> --- a/net/batman-adv/trace.h
-> +++ b/net/batman-adv/trace.h
-> @@ -28,8 +28,6 @@
->  
->  #endif /* CONFIG_BATMAN_ADV_TRACING */
->  
-> -#define BATADV_MAX_MSG_LEN	256
-> -
->  TRACE_EVENT(batadv_dbg,
->  
->  	    TP_PROTO(struct batadv_priv *bat_priv,
-> @@ -40,16 +38,13 @@ TRACE_EVENT(batadv_dbg,
->  	    TP_STRUCT__entry(
->  		    __string(device, bat_priv->soft_iface->name)
->  		    __string(driver, KBUILD_MODNAME)
-> -		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
-> +		    __vstring(msg, vaf->fmt, vaf->va)
->  	    ),
->  
->  	    TP_fast_assign(
->  		    __assign_str(device, bat_priv->soft_iface->name);
->  		    __assign_str(driver, KBUILD_MODNAME);
-> -		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
-> -					   BATADV_MAX_MSG_LEN,
-> -					   vaf->fmt,
-> -					   *vaf->va) >= BATADV_MAX_MSG_LEN);
-> +		    __assign_vstr(msg, vaf->fmt, vaf->va);
->  	    ),
->  
->  	    TP_printk(
-> 
-
-
---nextPart2457081.NBQ8aREyQt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmLeR2QACgkQXYcKB8Em
-e0b++BAA1XfqNG8IgHveLdrDXzvP9gh02aQZJljfpbrrsVoc4G4wUNFttNnxxY62
-fcFyFXGm4UXe0QxcgW2H0oazYxwOBP68I80Q5kqAPzeVyWny9piJ3Gk0izE0x5St
-uM7nIs3GO+uAF2qEKjAJIvf8V/RzBt+ZSjqiS1rFXw8uSwB//3mhuoO8rLvzT4Sz
-GfRkx8P+YvYHERQDJiFd8jco5an1zNJcM6SA//XfIfg2onaI07aO11fJ+izIRvyo
-nP6bwmQSp3ct/6ESTfzVqEk6EluYIR3g20n7j6qHZp9PylMKzKg2Vi6Tjuh2ATpf
-EEhTHB9m5EjANyX/tmRllLetsRTq9sw5Nvgd+RaUYZPhJFDfSnRPDtELCZknkD4F
-kfA95tY3/YHwsyw+/yP2CSK68tSIleR2dZHWFeMUoC9xxE3tX7VpZjv2fWhhOZ9X
-upX9AyS21y/i++eWHPn4YGjMSkxP9zuMAzNK6gvFEgeA69CdnKovwph4zv6+5pca
-RFQrVImbU81RkQaTihFrZPGVosc8/uNRpOkJ3a5k6jTRtV8NquAKjjVGfClGU6zC
-1oJCpK4z7542bGU29BGTXOEKzp0H/VhynrSmFEO8aukEsPsNvBjjz/7FIfiLTg6s
-H1yEZdH0ovjpAi4jieIBJs1wh9Q5wCrjJK52+pyw5LHB7s+7wko=
-=i8q+
------END PGP SIGNATURE-----
-
---nextPart2457081.NBQ8aREyQt--
-
-
+ 	    TP_fast_assign(
+ 		    __assign_str(device, bat_priv->soft_iface->name);
+ 		    __assign_str(driver, KBUILD_MODNAME);
+-		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
+-					   BATADV_MAX_MSG_LEN,
+-					   vaf->fmt,
+-					   *vaf->va) >= BATADV_MAX_MSG_LEN);
++		    __assign_vstr(msg, vaf->fmt, vaf->va);
+ 	    ),
+ 
+ 	    TP_printk(
+-- 
+2.35.1
