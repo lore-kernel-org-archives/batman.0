@@ -1,11 +1,12 @@
-Return-Path: <SRS0=0Aet=X5=goodmis.org=rostedt@kernel.org>
-Date: Sun, 24 Jul 2022 19:16:50 -0400
+Return-Path: <SRS0=9/gF=XT=goodmis.org=rostedt@kernel.org>
+Message-ID: <20220714164331.060725040@goodmis.org>
+Date: Thu, 14 Jul 2022 12:43:13 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH v2] batman-adv: tracing: Use the new __vstring() helper
-Message-ID: <20220724191650.236b1355@rorschach.local.home>
+Subject: [for-next][PATCH 17/23] batman-adv: tracing: Use the new __vstring()
+ helper
+References: <20220714164256.403842845@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,7 +16,7 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: LKML <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
 From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
@@ -24,6 +25,8 @@ Instead of open coding a __dynamic_array() with a fixed length (which
 defeats the purpose of the dynamic array in the first place). Use the new
 __vstring() helper that will use a va_list and only write enough of the
 string into the ring buffer that is needed.
+
+Link: https://lkml.kernel.org/r/20220705224751.080390002@goodmis.org
 
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 Cc: Ingo Molnar <mingo@kernel.org>
@@ -39,27 +42,14 @@ Cc: b.a.t.m.a.n@lists.open-mesh.org
 Cc: netdev@vger.kernel.org
 Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 ---
-Changes since v1:  https://lkml.kernel.org/r/20220705224751.080390002@goodmis.org
-
- - Removed no longer used BATADV_MAX_MSG_LEN
-
- net/batman-adv/trace.h | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ net/batman-adv/trace.h | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-index d673ebdd0426..31c8f922651d 100644
+index d673ebdd0426..67d2a8a0196c 100644
 --- a/net/batman-adv/trace.h
 +++ b/net/batman-adv/trace.h
-@@ -28,8 +28,6 @@
- 
- #endif /* CONFIG_BATMAN_ADV_TRACING */
- 
--#define BATADV_MAX_MSG_LEN	256
--
- TRACE_EVENT(batadv_dbg,
- 
- 	    TP_PROTO(struct batadv_priv *bat_priv,
-@@ -40,16 +38,13 @@ TRACE_EVENT(batadv_dbg,
+@@ -40,16 +40,13 @@ TRACE_EVENT(batadv_dbg,
  	    TP_STRUCT__entry(
  		    __string(device, bat_priv->soft_iface->name)
  		    __string(driver, KBUILD_MODNAME)
@@ -80,4 +70,3 @@ index d673ebdd0426..31c8f922651d 100644
  	    TP_printk(
 -- 
 2.35.1
-
