@@ -1,12 +1,13 @@
-Return-Path: <SRS0=Kc5+=YE=goodmis.org=rostedt@kernel.org>
-Message-ID: <20220731190432.106094347@goodmis.org>
-Date: Sun, 31 Jul 2022 15:03:31 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [for-next][PATCH 02/21] batman-adv: tracing: Use the new __vstring()
- helper
-References: <20220731190329.641602282@goodmis.org>
+Return-Path: <gregkh@linuxfoundation.org>
+Subject: Patch "batman-adv: Use netif_rx_any_context() any." has been added to
+ the 5.15-stable tree
+From: <gregkh@linuxfoundation.org>
+Date: Sat, 23 Jul 2022 17:19:55 +0200
+In-Reply-To: <YtbW7Ca3t4/3qB7k@linutronix.de>
+Message-ID: <1658589595237141@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,66 +17,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, bigeasy@linutronix.de, davem@davemloft.net, gregkh@linuxfoundation.org, mareklindner@neomailbox.ch, sashal@kernel.org, sven@narfation.org, sw@simonwunderlich.de, tglx@linutronix.de
+Cc: stable-commits@vger.kernel.org
 
-From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
 
-Instead of open coding a __dynamic_array() with a fixed length (which
-defeats the purpose of the dynamic array in the first place). Use the new
-__vstring() helper that will use a va_list and only write enough of the
-string into the ring buffer that is needed.
+This is a note to let you know that I've just added the patch titled
 
-Link: https://lkml.kernel.org/r/20220724191650.236b1355@rorschach.local.home
+    batman-adv: Use netif_rx_any_context() any.
 
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Eric Dumazet <edumazet@google.com>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Paolo Abeni <pabeni@redhat.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
-Acked-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+to the 5.15-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     batman-adv-use-netif_rx_any_context-any.patch
+and it can be found in the queue-5.15 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From bigeasy@linutronix.de  Sat Jul 23 17:18:39 2022
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Tue, 19 Jul 2022 18:08:12 +0200
+Subject: batman-adv: Use netif_rx_any_context() any.
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>
+Message-ID: <YtbW7Ca3t4/3qB7k@linutronix.de>
+Content-Disposition: inline
+
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+
+This reverts the stable commit
+   e65d78b12fbc0 ("batman-adv: Use netif_rx().")
+
+The commit message says:
+
+| Since commit
+|    baebdf48c3600 ("net: dev: Makes sure netif_rx() can be invoked in any context.")
+|
+| the function netif_rx() can be used in preemptible/thread context as
+| well as in interrupt context.
+
+This commit (baebdf48c3600) has not been backported to the 5.15 stable
+series and therefore, the commit which builds upon it, must not be
+backported either.
+
+Revert the backport and use netif_rx_any_context() again.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- net/batman-adv/trace.h | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-index d673ebdd0426..31c8f922651d 100644
---- a/net/batman-adv/trace.h
-+++ b/net/batman-adv/trace.h
-@@ -28,8 +28,6 @@
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -443,7 +443,7 @@ static void batadv_bla_send_claim(struct
+ 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+ 			   skb->len + ETH_HLEN);
  
- #endif /* CONFIG_BATMAN_ADV_TRACING */
- 
--#define BATADV_MAX_MSG_LEN	256
--
- TRACE_EVENT(batadv_dbg,
- 
- 	    TP_PROTO(struct batadv_priv *bat_priv,
-@@ -40,16 +38,13 @@ TRACE_EVENT(batadv_dbg,
- 	    TP_STRUCT__entry(
- 		    __string(device, bat_priv->soft_iface->name)
- 		    __string(driver, KBUILD_MODNAME)
--		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
-+		    __vstring(msg, vaf->fmt, vaf->va)
- 	    ),
- 
- 	    TP_fast_assign(
- 		    __assign_str(device, bat_priv->soft_iface->name);
- 		    __assign_str(driver, KBUILD_MODNAME);
--		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
--					   BATADV_MAX_MSG_LEN,
--					   vaf->fmt,
--					   *vaf->va) >= BATADV_MAX_MSG_LEN);
-+		    __assign_vstr(msg, vaf->fmt, vaf->va);
- 	    ),
- 
- 	    TP_printk(
--- 
-2.35.1
+-	netif_rx(skb);
++	netif_rx_any_context(skb);
+ out:
+ 	batadv_hardif_put(primary_if);
+ }
+
+
+Patches currently in stable-queue which might be from bigeasy@linutronix.de are
+
+queue-5.15/batman-adv-use-netif_rx_any_context-any.patch
