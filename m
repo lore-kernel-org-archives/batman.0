@@ -1,88 +1,99 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Subject: Patch "batman-adv: Use netif_rx_any_context() any." has been added to
- the 5.15-stable tree
-From: <gregkh@linuxfoundation.org>
-Date: Sat, 23 Jul 2022 17:19:55 +0200
-In-Reply-To: <YtbW7Ca3t4/3qB7k@linutronix.de>
-Message-ID: <1658589595237141@kroah.com>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH] batman-adv: tracing: Use the new __vstring() helper
+Date: Sun, 24 Jul 2022 23:27:19 +0200
+Message-Id: <20220724212719.92570-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, bigeasy@linutronix.de, davem@davemloft.net, gregkh@linuxfoundation.org, mareklindner@neomailbox.ch, sashal@kernel.org, sven@narfation.org, sw@simonwunderlich.de, tglx@linutronix.de
-Cc: stable-commits@vger.kernel.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
 
-This is a note to let you know that I've just added the patch titled
+Instead of open coding a __dynamic_array() with a fixed length (which
+defeats the purpose of the dynamic array in the first place). Use the new
+__vstring() helper that will use a va_list and only write enough of the
+string into the ring buffer that is needed.
 
-    batman-adv: Use netif_rx_any_context() any.
+Link: https://lkml.kernel.org/r/20220705224751.080390002@goodmis.org
 
-to the 5.15-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     batman-adv-use-netif_rx_any_context-any.patch
-and it can be found in the queue-5.15 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From bigeasy@linutronix.de  Sat Jul 23 17:18:39 2022
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date: Tue, 19 Jul 2022 18:08:12 +0200
-Subject: batman-adv: Use netif_rx_any_context() any.
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>
-Message-ID: <YtbW7Ca3t4/3qB7k@linutronix.de>
-Content-Disposition: inline
-
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-
-This reverts the stable commit
-   e65d78b12fbc0 ("batman-adv: Use netif_rx().")
-
-The commit message says:
-
-| Since commit
-|    baebdf48c3600 ("net: dev: Makes sure netif_rx() can be invoked in any context.")
-|
-| the function netif_rx() can be used in preemptible/thread context as
-| well as in interrupt context.
-
-This commit (baebdf48c3600) has not been backported to the 5.15 stable
-series and therefore, the commit which builds upon it, must not be
-backported either.
-
-Revert the backport and use netif_rx_any_context() again.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+[sven@narfation.org: add compat code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Already added to
+https://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git/c=
+ommit/?h=3Dfor-next&id=3D013cfbccb0cb3bbac478666aed78e4f5f7e39dd6
 
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -443,7 +443,7 @@ static void batadv_bla_send_claim(struct
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
- 
--	netif_rx(skb);
-+	netif_rx_any_context(skb);
- out:
- 	batadv_hardif_put(primary_if);
- }
+ compat-include/linux/tracepoint.h | 24 ++++++++++++++++++++++++
+ net/batman-adv/trace.h            |  7 ++-----
+ 2 files changed, 26 insertions(+), 5 deletions(-)
+ create mode 100644 compat-include/linux/tracepoint.h
 
-
-Patches currently in stable-queue which might be from bigeasy@linutronix.de are
-
-queue-5.15/batman-adv-use-netif_rx_any_context-any.patch
+diff --git a/compat-include/linux/tracepoint.h b/compat-include/linux/tra=
+cepoint.h
+new file mode 100644
+index 00000000..61df01a3
+--- /dev/null
++++ b/compat-include/linux/tracepoint.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older ve=
+rsions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_TRACEPOINT_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_TRACEPOINT_H_
++
++#include <linux/version.h>
++#include_next <linux/tracepoint.h>
++
++#if LINUX_VERSION_IS_LESS(5, 19, 0)
++
++#define __vstring(item, fmt, ap) __dynamic_array(char, item, 256)
++#define __assign_vstr(dst, fmt, va) \
++	WARN_ON_ONCE(vsnprintf(__get_dynamic_array(dst), 256, fmt, *va) >=3D 25=
+6)
++
++#endif /* LINUX_VERSION_IS_LESS(5, 19, 0) */
++
++#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_TRACEPOINT_H_ */
+diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
+index d673ebdd..67d2a8a0 100644
+--- a/net/batman-adv/trace.h
++++ b/net/batman-adv/trace.h
+@@ -40,16 +40,13 @@ TRACE_EVENT(batadv_dbg,
+ 	    TP_STRUCT__entry(
+ 		    __string(device, bat_priv->soft_iface->name)
+ 		    __string(driver, KBUILD_MODNAME)
+-		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
++		    __vstring(msg, vaf->fmt, vaf->va)
+ 	    ),
+=20
+ 	    TP_fast_assign(
+ 		    __assign_str(device, bat_priv->soft_iface->name);
+ 		    __assign_str(driver, KBUILD_MODNAME);
+-		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
+-					   BATADV_MAX_MSG_LEN,
+-					   vaf->fmt,
+-					   *vaf->va) >=3D BATADV_MAX_MSG_LEN);
++		    __assign_vstr(msg, vaf->fmt, vaf->va);
+ 	    ),
+=20
+ 	    TP_printk(
+--=20
+2.30.2
