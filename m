@@ -1,89 +1,56 @@
-Return-Path: <gregkh@linuxfoundation.org>
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 5.19 1114/1157] batman-adv: tracing: Use the new __vstring()
- helper
-Date: Mon, 15 Aug 2022 20:07:50 +0200
-Message-Id: <20220815180524.874593378@linuxfoundation.org>
-In-Reply-To: <20220815180439.416659447@linuxfoundation.org>
-References: <20220815180439.416659447@linuxfoundation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: [PATCH 3/3] alfred: mismaching declarations of is_valid_ether_addr()
+Date: Thu,  4 Aug 2022 20:52:12 +0200
+Message-Id: <20220804185212.3074514-3-mareklindner@neomailbox.ch>
+In-Reply-To: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
+References: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Marek Lindner <mareklindner@neomailbox.ch>, Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, "Steven Rostedt (Google)" <rostedt@goodmis.org>, Sasha Levin <sashal@kernel.org>
-
-From: Steven Rostedt (Google) <rostedt@goodmis.org>
-
-[ Upstream commit 9abc291812d784bd4a26c01af4ebdbf9f2dbf0bb ]
-
-Instead of open coding a __dynamic_array() with a fixed length (which
-defeats the purpose of the dynamic array in the first place). Use the new
-__vstring() helper that will use a va_list and only write enough of the
-string into the ring buffer that is needed.
-
-Link: https://lkml.kernel.org/r/20220724191650.236b1355@rorschach.local.home
-
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <a@unstable.cc>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Eric Dumazet <edumazet@google.com>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Paolo Abeni <pabeni@redhat.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
-Acked-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+
+util.c:57:34: warning: argument 1 of type =E2=80=98uint8_t[6]=E2=80=99
+   {aka =E2=80=98unsigned char[6]=E2=80=99} with mismatched bound [-Warra=
+y-parameter=3D]
+   57 | bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
+      |                          ~~~~~~~~^~~~~~~~~~~~~~
+In file included from util.c:20:
+alfred.h:231:35: note: previously declared as =E2=80=98uint8_t *=E2=80=99
+  {aka =E2=80=98unsigned char *=E2=80=99}
+  231 | bool is_valid_ether_addr(uint8_t *addr);
+      |                          ~~~~~~~~~^~~~
+
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/trace.h | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ alfred.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
-index d673ebdd0426..31c8f922651d 100644
---- a/net/batman-adv/trace.h
-+++ b/net/batman-adv/trace.h
-@@ -28,8 +28,6 @@
- 
- #endif /* CONFIG_BATMAN_ADV_TRACING */
- 
--#define BATADV_MAX_MSG_LEN	256
--
- TRACE_EVENT(batadv_dbg,
- 
- 	    TP_PROTO(struct batadv_priv *bat_priv,
-@@ -40,16 +38,13 @@ TRACE_EVENT(batadv_dbg,
- 	    TP_STRUCT__entry(
- 		    __string(device, bat_priv->soft_iface->name)
- 		    __string(driver, KBUILD_MODNAME)
--		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
-+		    __vstring(msg, vaf->fmt, vaf->va)
- 	    ),
- 
- 	    TP_fast_assign(
- 		    __assign_str(device, bat_priv->soft_iface->name);
- 		    __assign_str(driver, KBUILD_MODNAME);
--		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
--					   BATADV_MAX_MSG_LEN,
--					   vaf->fmt,
--					   *vaf->va) >= BATADV_MAX_MSG_LEN);
-+		    __assign_vstr(msg, vaf->fmt, vaf->va);
- 	    ),
- 
- 	    TP_printk(
--- 
-2.35.1
-
-
-
+diff --git a/alfred.h b/alfred.h
+index 6fb57ce..97f0093 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -228,7 +228,7 @@ int time_diff(struct timespec *tv1, struct timespec *=
+tv2,
+ 	      struct timespec *tvdiff);
+ void time_random_seed(void);
+ uint16_t get_random_id(void);
+-bool is_valid_ether_addr(uint8_t *addr);
++bool is_valid_ether_addr(uint8_t addr[ETH_ALEN]);
+ bool is_iface_disabled(char *iface);
+ int ipv4_arp_request(struct interface *interface, const alfred_addr *add=
+r,
+ 		     struct ether_addr *mac);
+--=20
+2.36.1
