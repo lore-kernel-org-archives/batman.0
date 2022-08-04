@@ -1,10 +1,9 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: [PATCH 2/3] alfred: fix erroneous documentation of '-r' argument
-Date: Thu,  4 Aug 2022 20:52:11 +0200
-Message-Id: <20220804185212.3074514-2-mareklindner@neomailbox.ch>
-In-Reply-To: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
-References: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
+Subject: [PATCH 1/3] alfred: add missing alfred_event_notify_v0 struct
+ documentation
+Date: Thu,  4 Aug 2022 20:52:10 +0200
+Message-Id: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +21,20 @@ Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- main.c       | 2 +-
- man/alfred.8 | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ packet.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/main.c b/main.c
-index 3fe7b42..2c3f06e 100644
---- a/main.c
-+++ b/main.c
-@@ -31,7 +31,7 @@ static void alfred_usage(void)
- 	printf("  -s, --set-data [data type]          sets new data to distribu=
-te from stdin\n");
- 	printf("                                      for the supplied data typ=
-e (0-255)\n");
- 	printf("  -r, --request [data type]           collect data from the net=
-work and prints\n");
--	printf("                                      it on the network\n");
-+	printf("                                      it on stdout\n");
- 	printf("  -d, --verbose                       Show extra information in=
- the data output\n");
- 	printf("  -V, --req-version                   specify the data version =
-set for -s\n");
- 	printf("  -M, --modeswitch primary            switch daemon to mode pri=
-mary\n");
-diff --git a/man/alfred.8 b/man/alfred.8
-index ca83f02..20c703b 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -67,7 +67,7 @@ must be periodically written again to alfred, otherwise=
- it will timeout and
- alfred will forget about it (after 10 minutes).
- .TP
- \fB\-r\fP, \fB\-\-request\fP \fIdata\-type\fP
--Collect data from the network and prints it on the network
-+Collect data from the network and prints it on stdout
- .TP
- \fB\-d\fP, \fB\-\-verbose\fP
- Show extra information in the data output
+diff --git a/packet.h b/packet.h
+index b8d528e..c0723b8 100644
+--- a/packet.h
++++ b/packet.h
+@@ -247,6 +247,7 @@ struct alfred_event_register_v0 {
+  * struct alfred_event_notify_v0 - event notification message
+  * @header: TLV header describing the complete packet
+  * @type: Type of the data triggering the event
++ * @source: Mac address of the original source of the data
+  *
+  * Sent by the daemon to client on data record update
+  */
 --=20
 2.36.1
