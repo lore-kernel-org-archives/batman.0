@@ -1,11 +1,14 @@
-Return-Path: <syoshida@redhat.com>
-From: Shigeru Yoshida <syoshida@redhat.com>
-Subject: [PATCH] batman-adv: Fix hang up with small MTU hard-interface
-Date: Sat, 20 Aug 2022 12:25:16 +0900
-Message-Id: <20220820032516.200446-1-syoshida@redhat.com>
+Return-Path: <gregkh@linuxfoundation.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 5.18 1046/1095] batman-adv: tracing: Use the new __vstring()
+ helper
+Date: Mon, 15 Aug 2022 20:07:25 +0200
+Message-Id: <20220815180512.360819821@linuxfoundation.org>
+In-Reply-To: <20220815180429.240518113@linuxfoundation.org>
+References: <20220815180429.240518113@linuxfoundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,50 +18,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Shigeru Yoshida <syoshida@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Marek Lindner <mareklindner@neomailbox.ch>, Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, "Steven Rostedt (Google)" <rostedt@goodmis.org>, Sasha Levin <sashal@kernel.org>
 
-The system hangs up when batman-adv soft-interface is created on
-hard-interface with small MTU.  For example, the following commands
-create batman-adv soft-interface on dummy interface with zero MTU:
+From: Steven Rostedt (Google) <rostedt@goodmis.org>
 
-  # ip link add name dummy0 type dummy
-  # ip link set mtu 0 dev dummy0
-  # ip link set up dev dummy0
-  # ip link add name bat0 type batadv
-  # ip link set dev dummy0 master bat0
+[ Upstream commit 9abc291812d784bd4a26c01af4ebdbf9f2dbf0bb ]
 
-These commands cause the system hang up with the following messages:
+Instead of open coding a __dynamic_array() with a fixed length (which
+defeats the purpose of the dynamic array in the first place). Use the new
+__vstring() helper that will use a va_list and only write enough of the
+string into the ring buffer that is needed.
 
-  [   90.578925][ T6689] batman_adv: bat0: Adding interface: dummy0
-  [   90.580884][ T6689] batman_adv: bat0: The MTU of interface dummy0 is too small (0) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
-  [   90.586264][ T6689] batman_adv: bat0: Interface activated: dummy0
-  [   90.590061][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
-  [   90.595517][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
-  [   90.598499][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+Link: https://lkml.kernel.org/r/20220724191650.236b1355@rorschach.local.home
 
-This patch fixes this issue by returning error when enabling
-hard-interface with small MTU size.
-
-Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Paolo Abeni <pabeni@redhat.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
+Acked-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- net/batman-adv/hard-interface.c | 3 +++
- 1 file changed, 3 insertions(+)
+ net/batman-adv/trace.h | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index b8f8da7ee3de..dce5557800e9 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -700,6 +700,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	int max_header_len = batadv_max_header_len();
- 	int ret;
+diff --git a/net/batman-adv/trace.h b/net/batman-adv/trace.h
+index d673ebdd0426..31c8f922651d 100644
+--- a/net/batman-adv/trace.h
++++ b/net/batman-adv/trace.h
+@@ -28,8 +28,6 @@
  
-+	if (hard_iface->net_dev->mtu < ETH_MIN_MTU + max_header_len)
-+		return -EINVAL;
-+
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		goto out;
+ #endif /* CONFIG_BATMAN_ADV_TRACING */
  
+-#define BATADV_MAX_MSG_LEN	256
+-
+ TRACE_EVENT(batadv_dbg,
+ 
+ 	    TP_PROTO(struct batadv_priv *bat_priv,
+@@ -40,16 +38,13 @@ TRACE_EVENT(batadv_dbg,
+ 	    TP_STRUCT__entry(
+ 		    __string(device, bat_priv->soft_iface->name)
+ 		    __string(driver, KBUILD_MODNAME)
+-		    __dynamic_array(char, msg, BATADV_MAX_MSG_LEN)
++		    __vstring(msg, vaf->fmt, vaf->va)
+ 	    ),
+ 
+ 	    TP_fast_assign(
+ 		    __assign_str(device, bat_priv->soft_iface->name);
+ 		    __assign_str(driver, KBUILD_MODNAME);
+-		    WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
+-					   BATADV_MAX_MSG_LEN,
+-					   vaf->fmt,
+-					   *vaf->va) >= BATADV_MAX_MSG_LEN);
++		    __assign_vstr(msg, vaf->fmt, vaf->va);
+ 	    ),
+ 
+ 	    TP_printk(
 -- 
-2.37.2
+2.35.1
+
+
 
