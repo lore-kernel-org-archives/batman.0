@@ -1,11 +1,11 @@
 Return-Path: <gregkh@linuxfoundation.org>
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 5.18 1046/1095] batman-adv: tracing: Use the new __vstring()
+Subject: [PATCH 5.19 1114/1157] batman-adv: tracing: Use the new __vstring()
  helper
-Date: Mon, 15 Aug 2022 20:07:25 +0200
-Message-Id: <20220815180512.360819821@linuxfoundation.org>
-In-Reply-To: <20220815180429.240518113@linuxfoundation.org>
-References: <20220815180429.240518113@linuxfoundation.org>
+Date: Mon, 15 Aug 2022 20:07:50 +0200
+Message-Id: <20220815180524.874593378@linuxfoundation.org>
+In-Reply-To: <20220815180439.416659447@linuxfoundation.org>
+References: <20220815180439.416659447@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
