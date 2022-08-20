@@ -1,16 +1,11 @@
-Return-Path: <SRS0=0Aet=X5=goodmis.org=rostedt@kernel.org>
-Date: Sun, 24 Jul 2022 19:12:50 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [for-next][PATCH 17/23] batman-adv: tracing: Use the new
- __vstring() helper
-Message-ID: <20220724191250.2097b8eb@rorschach.local.home>
-In-Reply-To: <8828005.nfsgNN4c79@sven-l14>
-References: <20220714164256.403842845@goodmis.org>
-	<20220714164331.060725040@goodmis.org>
-	<8828005.nfsgNN4c79@sven-l14>
+Return-Path: <syoshida@redhat.com>
+From: Shigeru Yoshida <syoshida@redhat.com>
+Subject: [PATCH] batman-adv: Fix hang up with small MTU hard-interface
+Date: Sat, 20 Aug 2022 12:25:16 +0900
+Message-Id: <20220820032516.200446-1-syoshida@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"; x-default=true
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
 	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,21 +15,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, sven@narfation.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Shigeru Yoshida <syoshida@redhat.com>
 
-On Sun, 24 Jul 2022 23:31:01 +0200
-Sven Eckelmann <sven@narfation.org> wrote:
+The system hangs up when batman-adv soft-interface is created on
+hard-interface with small MTU.  For example, the following commands
+create batman-adv soft-interface on dummy interface with zero MTU:
 
-> On Thursday, 14 July 2022 18:43:13 CEST Steven Rostedt wrote:
-> > From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
-> > 
-> > Instead of open coding a __dynamic_array() with a fixed length (which
-> > defeats the purpose of the dynamic array in the first place).  
-> 
-> Please also make sure to remove the define of BATADV_MAX_MSG_LEN
+  # ip link add name dummy0 type dummy
+  # ip link set mtu 0 dev dummy0
+  # ip link set up dev dummy0
+  # ip link add name bat0 type batadv
+  # ip link set dev dummy0 master bat0
 
-I usually do not like to rebase my for-next and just add on a patch to
-do something like this, but for this series I'll make an exception.
+These commands cause the system hang up with the following messages:
 
--- Steve
+  [   90.578925][ T6689] batman_adv: bat0: Adding interface: dummy0
+  [   90.580884][ T6689] batman_adv: bat0: The MTU of interface dummy0 is too small (0) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
+  [   90.586264][ T6689] batman_adv: bat0: Interface activated: dummy0
+  [   90.590061][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+  [   90.595517][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+  [   90.598499][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+
+This patch fixes this issue by returning error when enabling
+hard-interface with small MTU size.
+
+Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+---
+ net/batman-adv/hard-interface.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index b8f8da7ee3de..dce5557800e9 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -700,6 +700,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	int max_header_len = batadv_max_header_len();
+ 	int ret;
+ 
++	if (hard_iface->net_dev->mtu < ETH_MIN_MTU + max_header_len)
++		return -EINVAL;
++
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+ 		goto out;
+ 
+-- 
+2.37.2
+
