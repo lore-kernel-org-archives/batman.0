@@ -1,40 +1,45 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Subject: [PATCH 1/3] alfred: add missing alfred_event_notify_v0 struct
- documentation
-Date: Thu,  4 Aug 2022 20:52:10 +0200
-Message-Id: <20220804185212.3074514-1-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Return-Path: <syoshida@redhat.com>
+Date: Thu, 08 Sep 2022 01:25:56 +0900 (JST)
+Message-Id: <20220908.012556.1223002692465040215.syoshida@redhat.com>
+Subject: Re: [PATCH] batman-adv: Fix hang up with small MTU
+ hard-interface,Re: [PATCH] batman-adv: Fix hang up with small MTU
+ hard-interface
+From: Shigeru Yoshida <syoshida@redhat.com>
+In-Reply-To: <42632958.r4OcKK3suL@ripper>
+References: <20220820032516.200446-1-syoshida@redhat.com>
+	<20220908.010037.1643964170435041362.syoshida@redhat.com>
+	<42632958.r4OcKK3suL@ripper>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: sven@narfation.org
+Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- packet.h | 1 +
- 1 file changed, 1 insertion(+)
+Hi Sven,
 
-diff --git a/packet.h b/packet.h
-index b8d528e..c0723b8 100644
---- a/packet.h
-+++ b/packet.h
-@@ -247,6 +247,7 @@ struct alfred_event_register_v0 {
-  * struct alfred_event_notify_v0 - event notification message
-  * @header: TLV header describing the complete packet
-  * @type: Type of the data triggering the event
-+ * @source: Mac address of the original source of the data
-  *
-  * Sent by the daemon to client on data record update
-  */
---=20
-2.36.1
+On Wed, 07 Sep 2022 18:04:09 +0200,Wed, 07 Sep 2022 18:04:09 +0200, Sven Eckelmann wrote:
+> On Wednesday, 7 September 2022 18:00:37 CEST Shigeru Yoshida wrote:
+>> ping?
+> 
+> This was applied a while ago:
+> 
+> https://git.open-mesh.org/linux-merge.git/commit/b1cb8a71f1eaec4eb77051590f7f561f25b15e32
+
+Sorry, I didn't notice that.  Thank you so much!!
+
+Thanks,
+Shigeru
+
+> 
+> Kind regards,
+> 	Sven
+
