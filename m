@@ -1,10 +1,8 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 1/4] batman-adv: Start new development cycle
-Date: Fri, 16 Sep 2022 18:14:51 +0200
-Message-Id: <20220916161454.1413154-2-sw@simonwunderlich.de>
-In-Reply-To: <20220916161454.1413154-1-sw@simonwunderlich.de>
-References: <20220916161454.1413154-1-sw@simonwunderlich.de>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: [PATCH 1/2] alfred: remove unnecessary backslash
+Date: Wed, 14 Sep 2022 20:40:34 +0200
+Message-Id: <20220914184035.1437928-1-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +15,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-This version will contain all the (major or even only minor) changes for
-Linux 6.1.
-
-The version number isn't a semantic version number with major and minor
-information. It is just encoding the year of the expected publishing as
-Linux -rc1 and the number of published versions this year (starting at 0)=
-.
-
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/main.h | 2 +-
+ alfred.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 23f3d53f4b51..c48803b32bb0 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -13,7 +13,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
-=20
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2022.2"
-+#define BATADV_SOURCE_VERSION "2022.3"
- #endif
-=20
- /* B.A.T.M.A.N. parameters */
+diff --git a/alfred.h b/alfred.h
+index 97f0093..a4a3d37 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -210,7 +210,7 @@ int unix_sock_close(struct globals *globals);
+ int unix_sock_req_data_finish(struct globals *globals,
+ 			      struct transaction_head *head);
+ void unix_sock_events_close_all(struct globals *globals);
+-void unix_sock_event_notify(struct globals *globals, uint8_t type,\
++void unix_sock_event_notify(struct globals *globals, uint8_t type,
+ 			    const uint8_t source[ETH_ALEN]);
+ /* vis.c */
+ int vis_update_data(struct globals *globals);
 --=20
-2.30.2
+2.37.2
