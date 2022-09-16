@@ -1,45 +1,58 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 3/4] batman-adv: Drop initialization of flexible
+ ethtool_link_ksettings
+Date: Fri, 16 Sep 2022 18:14:53 +0200
+Message-Id: <20220916161454.1413154-4-sw@simonwunderlich.de>
+In-Reply-To: <20220916161454.1413154-1-sw@simonwunderlich.de>
+References: <20220916161454.1413154-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-From: dan <dandenson@gmail.com>
-Date: Tue, 6 Sep 2022 09:56:15 -0600
-Message-ID: 
- <CAA_JP8Ucxq8=RZhxUfKtEDGs43wQTCd8UY_JJXGC=CWrM8Uofg@mail.gmail.com>
-Subject: zero hop penalty interface?
-Content-Type: text/plain; charset="UTF-8"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: kuba@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi all.  I'm struggling to find an answer to this specific question
-about path selection.
+From: Sven Eckelmann <sven@narfation.org>
 
-I'm looking at building a prototype mesh out of the banana pi BPI-R3.
-That's a dual band wifi 6/6e router that runs open-wrt.  1x 2.4Ghz and
-1x5-6Ghz.
+The commit 94dfc73e7cf4 ("treewide: uapi: Replace zero-length arrays with
+flexible-array members") changed various structures from using 0-length
+arrays to flexible arrays
 
-I would build this as a quasi-dual radio mesh.  ie, I want to favor
-the 5-6Ghz radio and add a large hop penalty to the 2.4Ghz so that
-it's only used for backup.  The 2.4Ghz is a fraction the speed of the
-5-6Ghz.
+  net/batman-adv/bat_v_elp.c: note: in included file:
+  ./include/linux/ethtool.h:148:38: warning: nested flexible array
+  net/batman-adv/bat_v_elp.c:128:9: warning: using sizeof on a flexible structure
 
-What I'm considering is that as I saturate the 'single radio mesh'
-that the 5-6Ghz radios is essentially making since 2.4Ghz is purposely
-high-cost, I may want to add a second unit starting from the main
-uplink out as a secondary mesh, then linking both units together via
-2.5-5GbE ports on the device.
+In theory, this could be worked around by using {} as initializer for the
+variable on the stack. But this variable doesn't has to be initialized at
+all by the caller of __ethtool_get_link_ksettings - everything will be
+initialized by the callee when no error occurs.
 
-The question is, can I make the hop penalty zero so the mesh treats
-this pair of routers basically as one?  for instance data comes into
-node10a's 5Ghz radio, I'd like that to try to go across the 'zero
-cost' ethernet and exit via node10b's 5Ghz radio to make this
-effectively a dual radio mesh.  Ultimately the same would be true of
-the 2.4Ghz but again, that's ideally for backup meshing as it should
-look like an expensive hop.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_v_elp.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index b6db999abf75..f1741fbfb617 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -125,7 +125,6 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	/* if not a wifi interface, check if this device provides data via
+ 	 * ethtool (e.g. an Ethernet adapter)
+ 	 */
+-	memset(&link_settings, 0, sizeof(link_settings));
+ 	rtnl_lock();
+ 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
+ 	rtnl_unlock();
+-- 
+2.30.2
+
