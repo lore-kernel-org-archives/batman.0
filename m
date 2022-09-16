@@ -1,71 +1,78 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH] batman-adv: Fix hang up with small MTU hard-interface
-Date: Wed, 07 Sep 2022 18:04:09 +0200
-Message-ID: <42632958.r4OcKK3suL@ripper>
-In-Reply-To: <20220908.010037.1643964170435041362.syoshida@redhat.com>
-References: <20220820032516.200446-1-syoshida@redhat.com>
- <20220908.010037.1643964170435041362.syoshida@redhat.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 1/1] batman-adv: Fix hang up with small MTU hard-interface
+Date: Fri, 16 Sep 2022 18:09:31 +0200
+Message-Id: <20220916160931.1412407-2-sw@simonwunderlich.de>
+In-Reply-To: <20220916160931.1412407-1-sw@simonwunderlich.de>
+References: <20220916160931.1412407-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4058084.qTfXEPDQMy";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, Shigeru Yoshida <syoshida@redhat.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, syoshida@redhat.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net, kuba@kernel.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Shigeru Yoshida <syoshida@redhat.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Shigeru Yoshida <syoshida@redhat.com>
+
+The system hangs up when batman-adv soft-interface is created on
+hard-interface with small MTU.  For example, the following commands
+create batman-adv soft-interface on dummy interface with zero MTU:
+
+  # ip link add name dummy0 type dummy
+  # ip link set mtu 0 dev dummy0
+  # ip link set up dev dummy0
+  # ip link add name bat0 type batadv
+  # ip link set dev dummy0 master bat0
+
+These commands cause the system hang up with the following messages:
+
+  [   90.578925][ T6689] batman_adv: bat0: Adding interface: dummy0
+  [   90.580884][ T6689] batman_adv: bat0: The MTU of interface dummy0 is too small (0) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
+  [   90.586264][ T6689] batman_adv: bat0: Interface activated: dummy0
+  [   90.590061][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+  [   90.595517][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+  [   90.598499][ T6689] batman_adv: bat0: Forced to purge local tt entries to fit new maximum fragment MTU (-320)
+
+This patch fixes this issue by returning error when enabling
+hard-interface with small MTU size.
+
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+Signed-off-by: Shigeru Yoshida <syoshida@redhat.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index b8f8da7ee3de..41c1ad33d009 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -10,6 +10,7 @@
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
++#include <linux/errno.h>
+ #include <linux/gfp.h>
+ #include <linux/if.h>
+ #include <linux/if_arp.h>
+@@ -700,6 +701,9 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	int max_header_len = batadv_max_header_len();
+ 	int ret;
  
---nextPart4058084.qTfXEPDQMy
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, Shigeru Yoshida <syoshida@redhat.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, syoshida@redhat.com
-Subject: Re: [PATCH] batman-adv: Fix hang up with small MTU hard-interface
-Date: Wed, 07 Sep 2022 18:04:09 +0200
-Message-ID: <42632958.r4OcKK3suL@ripper>
-In-Reply-To: <20220908.010037.1643964170435041362.syoshida@redhat.com>
-References: <20220820032516.200446-1-syoshida@redhat.com> <20220908.010037.1643964170435041362.syoshida@redhat.com>
-
-On Wednesday, 7 September 2022 18:00:37 CEST Shigeru Yoshida wrote:
-> ping?
-
-This was applied a while ago:
-
-https://git.open-mesh.org/linux-merge.git/commit/b1cb8a71f1eaec4eb77051590f7f561f25b15e32
-
-Kind regards,
-	Sven
---nextPart4058084.qTfXEPDQMy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmMYwPoACgkQXYcKB8Em
-e0YkpxAAw93Jox1VjVWR13czWE4LUUU1/oWpo4lAGC+flzdJonm189/6WIvdk2GG
-82iew4c2O+5+utYT+V/HzEG/ztw7VQxDIJTEtGSPkWpr2IU+tSOHeVoVyDysBazl
-vp8djDOoCBk7IvIOHeEsAT5aMtIrctgzQYwHXDqSo7zKhNJLtZ4+lbgdRxcY4qpQ
-H9Rbbm74MjUJggYN2NnCp37+y6rLnJ1E1a+LUPVnk30+4aSNUMztoZ6+tDOypT7F
-voYRW9foZHeRz0wLCxbEMJK00QysMVJdufJBQapbkypJ++1eyu7mvPPzbIOan9ij
-ednS7VoYvJZ/da95Rkkr+4q2JF1navvhBpcdy3pKN6XvGpz1Igwe6+v/jeiLHmG3
-7MU53TBNMhYIW3dK/w+bvUcEDawjQrmGdLwIxPQPkaPFbP5sBtn+lKgBC98/GpuH
-NMP+yHc86gCb9KV1EC4BL9AOzwvYrtyh2auADpfz8+OQAsuZ25S6XjP0EwM5Vv1H
-+jo09KwxD1HlLTJZNxrUPjyHz3zIB1t7LUlyRuTNpK9mznsg3rCic0RkBruE4sHb
-g6yGIv15WoyfyOF+8vK/nngRT15C06WYZmqIlaJjK1kB9v2JjrTf4c7PTdwmQIXn
-UcxMG+EAXVXvkXCNf8kPNTGp/+3ys8yejuN0SoT/Y/eDb0a071w=
-=o9GE
------END PGP SIGNATURE-----
-
---nextPart4058084.qTfXEPDQMy--
-
++	if (hard_iface->net_dev->mtu < ETH_MIN_MTU + max_header_len)
++		return -EINVAL;
++
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+ 		goto out;
+ 
+-- 
+2.30.2
 
