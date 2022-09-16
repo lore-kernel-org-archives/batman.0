@@ -1,58 +1,72 @@
-Return-Path: <sw@simonwunderlich.de>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/4] batman-adv: Drop initialization of flexible
- ethtool_link_ksettings
-Date: Fri, 16 Sep 2022 18:14:53 +0200
-Message-Id: <20220916161454.1413154-4-sw@simonwunderlich.de>
-In-Reply-To: <20220916161454.1413154-1-sw@simonwunderlich.de>
-References: <20220916161454.1413154-1-sw@simonwunderlich.de>
+Subject: [PATCH 0/4] pull request for net-next: batman-adv 2022-09-16
+Date: Fri, 16 Sep 2022 18:14:50 +0200
+Message-Id: <20220916161454.1413154-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+Hi Jakub, hi David,
 
-The commit 94dfc73e7cf4 ("treewide: uapi: Replace zero-length arrays with
-flexible-array members") changed various structures from using 0-length
-arrays to flexible arrays
+here is a little cleanup pull request of batman-adv to go into net-next.
 
-  net/batman-adv/bat_v_elp.c: note: in included file:
-  ./include/linux/ethtool.h:148:38: warning: nested flexible array
-  net/batman-adv/bat_v_elp.c:128:9: warning: using sizeof on a flexible structure
+Please pull or let me know of any problem!
 
-In theory, this could be worked around by using {} as initializer for the
-variable on the stack. But this variable doesn't has to be initialized at
-all by the caller of __ethtool_get_link_ksettings - everything will be
-initialized by the callee when no error occurs.
+Thank you,
+      Simon
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bat_v_elp.c | 1 -
- 1 file changed, 1 deletion(-)
+The following changes since commit 568035b01cfb107af8d2e4bd2fb9aea22cf5b8=
+68:
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index b6db999abf75..f1741fbfb617 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -125,7 +125,6 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
- 	/* if not a wifi interface, check if this device provides data via
- 	 * ethtool (e.g. an Ethernet adapter)
- 	 */
--	memset(&link_settings, 0, sizeof(link_settings));
- 	rtnl_lock();
- 	ret = __ethtool_get_link_ksettings(hard_iface->net_dev, &link_settings);
- 	rtnl_unlock();
--- 
-2.30.2
+  Linux 6.0-rc1 (2022-08-14 15:50:18 -0700)
 
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
+220916
+
+for you to fetch changes up to 76af7483b3c7c42571aae767b553ef7d436305e9:
+
+  batman-adv: remove unused struct definitions (2022-09-15 08:16:05 +0200=
+)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - bump version strings, by Simon Wunderlich
+
+ - drop unused headers in trace.h, by Sven Eckelmann
+
+ - drop initialization of flexible ethtool_link_ksettings,
+   by Sven Eckelmann
+
+ - remove unused struct definitions, by Marek Lindner
+
+----------------------------------------------------------------
+Marek Lindner (1):
+      batman-adv: remove unused struct definitions
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Sven Eckelmann (2):
+      batman-adv: Drop unused headers in trace.h
+      batman-adv: Drop initialization of flexible ethtool_link_ksettings
+
+ net/batman-adv/bat_v_elp.c |  1 -
+ net/batman-adv/main.h      |  2 +-
+ net/batman-adv/trace.h     |  2 --
+ net/batman-adv/types.h     | 39 ---------------------------------------
+ 4 files changed, 1 insertion(+), 43 deletions(-)
