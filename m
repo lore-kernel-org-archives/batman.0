@@ -1,72 +1,83 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 0/4] pull request for net-next: batman-adv 2022-09-16
-Date: Fri, 16 Sep 2022 18:14:50 +0200
-Message-Id: <20220916161454.1413154-1-sw@simonwunderlich.de>
+Subject: [PATCH 4/4] batman-adv: remove unused struct definitions
+Date: Fri, 16 Sep 2022 18:14:54 +0200
+Message-Id: <20220916161454.1413154-5-sw@simonwunderlich.de>
+In-Reply-To: <20220916161454.1413154-1-sw@simonwunderlich.de>
+References: <20220916161454.1413154-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: kuba@kernel.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi Jakub, hi David,
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-here is a little cleanup pull request of batman-adv to go into net-next.
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/types.h | 39 ---------------------------------------
+ 1 file changed, 39 deletions(-)
 
-Please pull or let me know of any problem!
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 2be5d4a712c5..758cd797a063 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1740,45 +1740,6 @@ struct batadv_priv {
+ #endif
+ };
+ 
+-/**
+- * struct batadv_socket_client - layer2 icmp socket client data
+- */
+-struct batadv_socket_client {
+-	/**
+-	 * @queue_list: packet queue for packets destined for this socket client
+-	 */
+-	struct list_head queue_list;
+-
+-	/** @queue_len: number of packets in the packet queue (queue_list) */
+-	unsigned int queue_len;
+-
+-	/** @index: socket client's index in the batadv_socket_client_hash */
+-	unsigned char index;
+-
+-	/** @lock: lock protecting queue_list, queue_len & index */
+-	spinlock_t lock;
+-
+-	/** @queue_wait: socket client's wait queue */
+-	wait_queue_head_t queue_wait;
+-
+-	/** @bat_priv: pointer to soft_iface this client belongs to */
+-	struct batadv_priv *bat_priv;
+-};
+-
+-/**
+- * struct batadv_socket_packet - layer2 icmp packet for socket client
+- */
+-struct batadv_socket_packet {
+-	/** @list: list node for &batadv_socket_client.queue_list */
+-	struct list_head list;
+-
+-	/** @icmp_len: size of the layer2 icmp packet */
+-	size_t icmp_len;
+-
+-	/** @icmp_packet: layer2 icmp packet */
+-	u8 icmp_packet[BATADV_ICMP_MAX_PACKET_SIZE];
+-};
+-
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 
+ /**
+-- 
+2.30.2
 
-Thank you,
-      Simon
-
-The following changes since commit 568035b01cfb107af8d2e4bd2fb9aea22cf5b8=
-68:
-
-  Linux 6.0-rc1 (2022-08-14 15:50:18 -0700)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20=
-220916
-
-for you to fetch changes up to 76af7483b3c7c42571aae767b553ef7d436305e9:
-
-  batman-adv: remove unused struct definitions (2022-09-15 08:16:05 +0200=
-)
-
-----------------------------------------------------------------
-This cleanup patchset includes the following patches:
-
- - bump version strings, by Simon Wunderlich
-
- - drop unused headers in trace.h, by Sven Eckelmann
-
- - drop initialization of flexible ethtool_link_ksettings,
-   by Sven Eckelmann
-
- - remove unused struct definitions, by Marek Lindner
-
-----------------------------------------------------------------
-Marek Lindner (1):
-      batman-adv: remove unused struct definitions
-
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (2):
-      batman-adv: Drop unused headers in trace.h
-      batman-adv: Drop initialization of flexible ethtool_link_ksettings
-
- net/batman-adv/bat_v_elp.c |  1 -
- net/batman-adv/main.h      |  2 +-
- net/batman-adv/trace.h     |  2 --
- net/batman-adv/types.h     | 39 ---------------------------------------
- 4 files changed, 1 insertion(+), 43 deletions(-)
