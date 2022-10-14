@@ -1,53 +1,51 @@
-Return-Path: <patchwork-bot+netdevbpf@kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Subject: Re: Setting up a network
+Date: Fri, 14 Oct 2022 11:12:35 +0200
+Message-ID: <2863759.e9J7NaK4W3@voltaire>
+In-Reply-To: 
+ <YZWsIncflVzGz7YEypQoc3ZI_TgJAX1ImjtvQIYV9uQ5WV-hH7Wle-Ptv13MeMD17Oc4gl1d5DgVy7mPAD6Pihnqzpr0vvdSdQ6Io0UxsLU=@protonmail.com>
+References: <166569740414.1271.17407115359212984217@diktynna.open-mesh.org>
+ <YZWsIncflVzGz7YEypQoc3ZI_TgJAX1ImjtvQIYV9uQ5WV-hH7Wle-Ptv13MeMD17Oc4gl1d5DgVy7mPAD6Pihnqzpr0vvdSdQ6Io0UxsLU=@protonmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 1/1] batman-adv: Fix hang up with small MTU hard-interface
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <166363681491.30260.14164726870306150299.git-patchwork-notify@kernel.org>
-Date: Tue, 20 Sep 2022 01:20:14 +0000
-References: <20220916160931.1412407-2-sw@simonwunderlich.de>
-In-Reply-To: <20220916160931.1412407-2-sw@simonwunderlich.de>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, syoshida@redhat.com, sven@narfation.org
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, colinconnoly <colinconnoly@protonmail.com>
 
-Hello:
+Hi Colin,
 
-This patch was applied to netdev/net.git (master)
-by Simon Wunderlich <sw@simonwunderlich.de>:
+> I saw your program(s) mentioned in an article regarding some of the
+> technical responses to the blackout in Egypt. It seems really cool and I
+> was trying to figure out where to start! I'm not super technically advanced
+> but can pick up stuff relatively quickly. Where/what would you recommend I
+> study to try and figure out how to set up a mesh network?
 
-On Fri, 16 Sep 2022 18:09:31 +0200 you wrote:
-> From: Shigeru Yoshida <syoshida@redhat.com>
-> 
-> The system hangs up when batman-adv soft-interface is created on
-> hard-interface with small MTU.  For example, the following commands
-> create batman-adv soft-interface on dummy interface with zero MTU:
-> 
->   # ip link add name dummy0 type dummy
->   # ip link set mtu 0 dev dummy0
->   # ip link set up dev dummy0
->   # ip link add name bat0 type batadv
->   # ip link set dev dummy0 master bat0
-> 
-> [...]
+since you are at the very beginning, it might make sense to get your hands on 
+one of the popular mesh Linux distributions for routers, such as:
 
-Here is the summary with links:
-  - [1/1] batman-adv: Fix hang up with small MTU hard-interface
-    https://git.kernel.org/netdev/net/c/b1cb8a71f1ea
+- Gluon: https://gluon.readthedocs.io/en/latest/
+- LibreMesh: https://libremesh.org/
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+When searching for compatible hardware, please refer to the distributions 
+websites. They typically maintain lists of supported hardware.
+
+This saves you from having to deal with WiFi driver problems, firmware 
+compilation & mesh configuration and countless pitfalls.
+
+Any question you may have about specifics of those distributions you better ask 
+in the respective forums / chat groups / mailing list.
+
+Cheers,
+Marek
 
 
