@@ -1,89 +1,120 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: Question about batman for ARM
-Date: Tue, 01 Nov 2022 20:32:48 +0100
-Message-ID: <2368065.5ID8ZXoMCK@ripper>
-In-Reply-To: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
+Return-Path: <cchien@creonexsystems.com>
+From: <cchien@creonexsystems.com>
 References: 
  <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
+ <3826484.QQW5a1qdB9@ripper>
+ <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
  <20961862.b4RiU9qLUR@ripper>
- <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
+In-Reply-To: <20961862.b4RiU9qLUR@ripper>
+Subject: RE: Question about batman for ARM
+Date: Tue, 1 Nov 2022 11:49:54 -0700
+Message-ID: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2092444.bCxPy3x5Xm";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Language: en-us
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: cchien@creonexsystems.com
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: 'Sven Eckelmann' <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
- 
---nextPart2092444.bCxPy3x5Xm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
+Hi Sven,
+
+Thank you for your past suggestions.
+We are now looking into getting BATMAN working on a Zynq-7000 Xilinx FPGA.
+This FPGA hosts dual-arm A9 cores. We have successfully loaded up Ubuntu on
+this platform and it is running
+Linux version 4.19.0-xilinx-v2019.2 (oe-user@oe-host) (gcc version 8.2.0
+(GCC))
+
+The above line is from cat /proc/version.
+
+Can you point me to a BATMAN installation for this OS and platform? I could
+not find any resources online for this.
+The way suggested by BATMAN home page does not work for some reason.
+
+Thank you for your help.
+
+Regards,
+Charles
+_____________
+CreoNex Systems
+2625 Townsgate Road, Suite 330
+Westlake Village, CA 91320
+www.creonexsystems.com
+(805) 558-9687
+This message (including any attachments) is for the named addressee(s)'s use
+only. It may contain sensitive, confidential, private proprietary or legally
+privileged information intended for a specific individual and purpose, and
+is protected by law. If you are not the intended recipient, please
+immediately delete it and all copies of it from your system, destroy any
+hard copies of it and notify the sender. Any use, disclosure, copying, or
+distribution of this message and/or any attachments is strictly prohibited.
+
+
+-----Original Message-----
+From: Sven Eckelmann <sven@narfation.org> 
+Sent: Monday, June 20, 2022 5:51 AM
 To: cchien@creonexsystems.com
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 Subject: Re: Question about batman for ARM
-Date: Tue, 01 Nov 2022 20:32:48 +0100
-Message-ID: <2368065.5ID8ZXoMCK@ripper>
-In-Reply-To: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
-References: <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com> <20961862.b4RiU9qLUR@ripper> <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
 
-On Tuesday, 1 November 2022 19:49:54 CET cchien@creonexsystems.com wrote:
-> We are now looking into getting BATMAN working on a Zynq-7000 Xilinx FPGA.
-> This FPGA hosts dual-arm A9 cores. We have successfully loaded up Ubuntu on
-> this platform and it is running
-> Linux version 4.19.0-xilinx-v2019.2 (oe-user@oe-host) (gcc version 8.2.0
-> (GCC))
+On Monday, 20 June 2022 12:20:19 CEST cchien@creonexsystems.com wrote:
+> Does BATMAN ADV interfaces with the radio via the network driver or 
+> does BATMAN include the network driver?
 
-I don't know what this should be. It is not an ubuntu kernel (more like an 
-openembedded kernel). So you might have to get in contact with whoever 
-provided you with this kernel and ask them how to build externel kernel 
-modules against this kernel. They hopefully have some linux-headers package 
-which you can install and then build some kernel modules against it.
+As said before, it is interfacing with the generic ethernet netdev layer of
+the kernel. For example in:
 
-And if it is openembedded (with yocto) then you can either try to update
-these recipes (which are using ancient batman-adv versions):
+*
+https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b89025
+2a865efa91:/net/batman-adv/hard-interface.c#l727
+*
+https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b89025
+2a865efa91:/net/batman-adv/send.c#l108
+*
+https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b89025
+2a865efa91:/net/batman-adv/hard-interface.c#l185
 
-https://github.com/jhaws1982/meta-batman
+There are a lot of other places when it uses the abstraction interfaces of
+the kernels for ethernet related communication.
 
-Or simply enable CONFIG_BATMAN_ADV (and related symbols) in your kernel 
-configuration which you are using to build this kernel. It will not be
-the most recent batman-adv version but better than nothing.
+For B.A.T.M.A.N. V, it is also trying to get throughput information via
+various generic kernel functionality:
+
+*
+https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b89025
+2a865efa91:/net/batman-adv/bat_v_elp.c#l67
+
+There is also one detection for wifi interfaces to decide whether broadcast
+messages should be repeated or not:
+
+*
+https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b89025
+2a865efa91:/net/batman-adv/hard-interface.c#l877
+
+
+> Can you provide some guidance on where the network driver or interface 
+> to network driver is located within BATMAN?
+
+It is not talking directly to the driver. It is always using abstraction
+layers. Either the normal network core, ethernet or cfg80211 abstraction
+interfaces. But these don't abstract the requirement for ethernet
+compatibility away - the underlying device must provide this either directly
+or via a wrapper. Just perform a `git grep -e ETH_ -e eth_ -e ethhdr` to see
+that it is build around the concept of ethernet packets.
+
+Also things like originators and the complete translation table only works
+with ethernet addresses.
 
 Kind regards,
 	Sven
-
---nextPart2092444.bCxPy3x5Xm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmNhdGAACgkQXYcKB8Em
-e0bRGxAAgTp8SS2FDvAhYkCZaNsGvf960QrzwzJlgi/QUU6hGIKMgC+2tgG/Rrjf
-fBduDVbOnVOCz1r6XqMNuXn2pEVAaYyf2iSP/rmL23jGLHKle32pscsrAEJCRI7s
-31SXA833tK22fAAAGTKwFBOJb1b7yByT0RZ31zA7tCts4lMxdLmAEwT12QgnNDLz
-BX103w3eTPtXqQZ/GTpUZREfVq0FCt/UJJ+XTT8PWVypHwtVbEBfv9tJeZiwbw3i
-qQcigcnIe/CpumJqowKRVyWMtmHlN7vIeHoeNDDYyYCBqfrX1KUJ36sFVli4UqFb
-AG0uCIaXOi+EyuGE4Y9j36BewHckMmQgw6moTpm+ZGj+svLylDVqasiJbe69jO2+
-SJX31LObWwpHneju1DKZtTdtAW2WdUjAoRH5PnGvtKFcK6cNgTFdlCAzuhLIJd1F
-kmi2bPVV20rpH65s7MdPELiQ68YEpV+KRV22NVI1wqU/YZe3JrxGlOc+YO31xzB1
-dq6452aTHqztRs0uNxxpTdF/s11dOjkD2uHwAm3ZY5ICo8qyEVkhVw9QL9NGmm6C
-WG7ft2+nyUpTZO4c6ZLPxF0q4oQm7LStBVc9/JcO4KJhP9RgILUOMe8Lgc5jLipx
-GAOCTbqsfrYJbsyZn6a121mBg4TsFuicq0j9yaIcoGWX1vnV3wA=
-=+u7h
------END PGP SIGNATURE-----
-
---nextPart2092444.bCxPy3x5Xm--
-
 
