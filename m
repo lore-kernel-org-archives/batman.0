@@ -1,35 +1,89 @@
-Return-Path: <netdev-owner@kernel.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: Question about batman for ARM
+Date: Tue, 01 Nov 2022 20:32:48 +0100
+Message-ID: <2368065.5ID8ZXoMCK@ripper>
+In-Reply-To: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
+References: 
+ <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
+ <20961862.b4RiU9qLUR@ripper>
+ <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
 MIME-Version: 1.0
-Date: Sun, 16 Oct 2022 10:34:23 -0700
-In-Reply-To: <0000000000009d327505b0999237@google.com>
-Message-ID: <00000000000013612005eb2a4525@google.com>
-Subject: Re: [syzbot] INFO: rcu detected stall in batadv_nc_worker (3)
-From: syzbot <syzbot+69904c3b4a09e8fa2e1b@syzkaller.appspotmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; boundary="nextPart2092444.bCxPy3x5Xm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
-To: a@unstable.cc, alsa-devel@alsa-project.org, b.a.t.m.a.n@lists.open-mesh.org, broonie@kernel.org, davem@davemloft.net, dvyukov@google.com, edumazet@google.com, hdanton@sina.com, jhs@mojatatu.com, jiri@resnulli.us, kuba@kernel.org, lgirdwood@gmail.com, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, pabeni@redhat.com, perex@perex.cz, povik+lin@cutebit.org, steve@sk2.org, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, tglx@linutronix.de, tiwai@suse.com, tonymarislogistics@yandex.com, xiyou.wangcong@gmail.com
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+To: cchien@creonexsystems.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-syzbot has bisected this issue to:
+ 
+--nextPart2092444.bCxPy3x5Xm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: cchien@creonexsystems.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: Question about batman for ARM
+Date: Tue, 01 Nov 2022 20:32:48 +0100
+Message-ID: <2368065.5ID8ZXoMCK@ripper>
+In-Reply-To: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
+References: <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com> <20961862.b4RiU9qLUR@ripper> <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
 
-commit f8a4018c826fde6137425bbdbe524d5973feb173
-Author: Mark Brown <broonie@kernel.org>
-Date:   Thu Jun 2 13:53:04 2022 +0000
+On Tuesday, 1 November 2022 19:49:54 CET cchien@creonexsystems.com wrote:
+> We are now looking into getting BATMAN working on a Zynq-7000 Xilinx FPGA.
+> This FPGA hosts dual-arm A9 cores. We have successfully loaded up Ubuntu on
+> this platform and it is running
+> Linux version 4.19.0-xilinx-v2019.2 (oe-user@oe-host) (gcc version 8.2.0
+> (GCC))
 
-    ASoC: tas2770: Use modern ASoC DAI format terminology
+I don't know what this should be. It is not an ubuntu kernel (more like an 
+openembedded kernel). So you might have to get in contact with whoever 
+provided you with this kernel and ask them how to build externel kernel 
+modules against this kernel. They hopefully have some linux-headers package 
+which you can install and then build some kernel modules against it.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=164d4978880000
-start commit:   55be6084c8e0 Merge tag 'timers-core-2022-10-05' of git://g..
-git tree:       upstream
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=154d4978880000
-console output: https://syzkaller.appspot.com/x/log.txt?x=114d4978880000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=df75278aabf0681a
-dashboard link: https://syzkaller.appspot.com/bug?extid=69904c3b4a09e8fa2e1b
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16e2e478880000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=149ca17c880000
+And if it is openembedded (with yocto) then you can either try to update
+these recipes (which are using ancient batman-adv versions):
 
-Reported-by: syzbot+69904c3b4a09e8fa2e1b@syzkaller.appspotmail.com
-Fixes: f8a4018c826f ("ASoC: tas2770: Use modern ASoC DAI format terminology")
+https://github.com/jhaws1982/meta-batman
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+Or simply enable CONFIG_BATMAN_ADV (and related symbols) in your kernel 
+configuration which you are using to build this kernel. It will not be
+the most recent batman-adv version but better than nothing.
+
+Kind regards,
+	Sven
+
+--nextPart2092444.bCxPy3x5Xm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmNhdGAACgkQXYcKB8Em
+e0bRGxAAgTp8SS2FDvAhYkCZaNsGvf960QrzwzJlgi/QUU6hGIKMgC+2tgG/Rrjf
+fBduDVbOnVOCz1r6XqMNuXn2pEVAaYyf2iSP/rmL23jGLHKle32pscsrAEJCRI7s
+31SXA833tK22fAAAGTKwFBOJb1b7yByT0RZ31zA7tCts4lMxdLmAEwT12QgnNDLz
+BX103w3eTPtXqQZ/GTpUZREfVq0FCt/UJJ+XTT8PWVypHwtVbEBfv9tJeZiwbw3i
+qQcigcnIe/CpumJqowKRVyWMtmHlN7vIeHoeNDDYyYCBqfrX1KUJ36sFVli4UqFb
+AG0uCIaXOi+EyuGE4Y9j36BewHckMmQgw6moTpm+ZGj+svLylDVqasiJbe69jO2+
+SJX31LObWwpHneju1DKZtTdtAW2WdUjAoRH5PnGvtKFcK6cNgTFdlCAzuhLIJd1F
+kmi2bPVV20rpH65s7MdPELiQ68YEpV+KRV22NVI1wqU/YZe3JrxGlOc+YO31xzB1
+dq6452aTHqztRs0uNxxpTdF/s11dOjkD2uHwAm3ZY5ICo8qyEVkhVw9QL9NGmm6C
+WG7ft2+nyUpTZO4c6ZLPxF0q4oQm7LStBVc9/JcO4KJhP9RgILUOMe8Lgc5jLipx
+GAOCTbqsfrYJbsyZn6a121mBg4TsFuicq0j9yaIcoGWX1vnV3wA=
+=+u7h
+-----END PGP SIGNATURE-----
+
+--nextPart2092444.bCxPy3x5Xm--
+
 
