@@ -1,115 +1,96 @@
 Return-Path: <netdev-owner@kernel.org>
 MIME-Version: 1.0
-Date: Tue, 29 Nov 2022 01:28:34 -0800
-Message-ID: <000000000000ac218905ee989c07@google.com>
-Subject: [syzbot] WARNING in batadv_nc_purge_paths
-From: syzbot <syzbot+5b817d9e3b5fb5f051fc@syzkaller.appspotmail.com>
+Date: Mon, 21 Nov 2022 23:57:36 -0800
+In-Reply-To: <000000000000c1e64305ed9dc5e8@google.com>
+Message-ID: <000000000000782c8605ee0a8612@google.com>
+Subject: Re: [syzbot] BUG: MAX_LOCKDEP_ENTRIES too low! (3)
+From: syzbot <syzbot+b04c9ffbbd2f303d00d9@syzkaller.appspotmail.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, pabeni@redhat.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, edumazet@google.com, jhs@mojatatu.com, jiri@resnulli.us, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, pabeni@redhat.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, xiyou.wangcong@gmail.com
 
-Hello,
+syzbot has found a reproducer for the following issue on:
 
-syzbot found the following issue on:
-
-HEAD commit:    65762d97e6fa Merge branch 'for-next/perf' into for-kernelci
-git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-kernelci
-console output: https://syzkaller.appspot.com/x/log.txt?x=1558f7fd880000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=56d0c7c3a2304e8f
-dashboard link: https://syzkaller.appspot.com/bug?extid=5b817d9e3b5fb5f051fc
-compiler:       Debian clang version 13.0.1-++20220126092033+75e33f71c2da-1~exp1~20220126212112.63, GNU ld (GNU Binutils for Debian) 2.35.2
-userspace arch: arm64
-
-Unfortunately, I don't have any reproducer for this issue yet.
+HEAD commit:    9ab000d9ac54 Merge branch 'nfc-leaks'
+git tree:       net
+console+strace: https://syzkaller.appspot.com/x/log.txt?x=178f3db5880000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=6f4e5e9899396248
+dashboard link: https://syzkaller.appspot.com/bug?extid=b04c9ffbbd2f303d00d9
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=15051edd880000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15b9d365880000
 
 Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/52f702197b30/disk-65762d97.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/72189c2789ce/vmlinux-65762d97.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/ec0349196c98/Image-65762d97.gz.xz
+disk image: https://storage.googleapis.com/syzbot-assets/0db12aff8b37/disk-9ab000d9.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/62dc4dacf73e/vmlinux-9ab000d9.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/0cc1ecdd9ab6/bzImage-9ab000d9.xz
 
 IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+5b817d9e3b5fb5f051fc@syzkaller.appspotmail.com
+Reported-by: syzbot+b04c9ffbbd2f303d00d9@syzkaller.appspotmail.com
 
-------------[ cut here ]------------
-WARNING: CPU: 1 PID: 3498 at kernel/softirq.c:376 __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
-Modules linked in:
-CPU: 1 PID: 3498 Comm: kworker/u4:11 Not tainted 6.1.0-rc6-syzkaller-32653-g65762d97e6fa #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 09/30/2022
-Workqueue: bat_events batadv_nc_worker
+8021q: adding VLAN 0 to HW filter on device batadv968
+BUG: MAX_LOCKDEP_ENTRIES too low!
+turning off the locking correctness validator.
+CPU: 1 PID: 5813 Comm: syz-executor248 Not tainted 6.1.0-rc5-syzkaller-00128-g9ab000d9ac54 #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 10/26/2022
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:88 [inline]
+ dump_stack_lvl+0xd1/0x138 lib/dump_stack.c:106
+ alloc_list_entry.cold+0x11/0x18 kernel/locking/lockdep.c:1402
+ add_lock_to_list kernel/locking/lockdep.c:1423 [inline]
+ check_prev_add kernel/locking/lockdep.c:3167 [inline]
+ check_prevs_add kernel/locking/lockdep.c:3216 [inline]
+ validate_chain kernel/locking/lockdep.c:3831 [inline]
+ __lock_acquire+0x3626/0x56d0 kernel/locking/lockdep.c:5055
+ lock_acquire kernel/locking/lockdep.c:5668 [inline]
+ lock_acquire+0x1e3/0x630 kernel/locking/lockdep.c:5633
+ __raw_spin_lock_bh include/linux/spinlock_api_smp.h:126 [inline]
+ _raw_spin_lock_bh+0x33/0x40 kernel/locking/spinlock.c:178
+ spin_lock_bh include/linux/spinlock.h:355 [inline]
+ batadv_tt_local_event+0x1f6/0x7e0 net/batman-adv/translation-table.c:482
+ batadv_tt_local_add+0x638/0x1f50 net/batman-adv/translation-table.c:758
+ batadv_softif_create_vlan+0x2ed/0x530 net/batman-adv/soft-interface.c:586
+ batadv_interface_add_vid+0xd7/0x110 net/batman-adv/soft-interface.c:646
+ vlan_add_rx_filter_info+0x149/0x1d0 net/8021q/vlan_core.c:211
+ __vlan_vid_add net/8021q/vlan_core.c:306 [inline]
+ vlan_vid_add+0x3f6/0x7f0 net/8021q/vlan_core.c:336
+ vlan_device_event.cold+0x28/0x2d net/8021q/vlan.c:385
+ notifier_call_chain+0xb5/0x200 kernel/notifier.c:87
+ call_netdevice_notifiers_info+0xb5/0x130 net/core/dev.c:1945
+ call_netdevice_notifiers_extack net/core/dev.c:1983 [inline]
+ call_netdevice_notifiers net/core/dev.c:1997 [inline]
+ dev_open net/core/dev.c:1473 [inline]
+ dev_open+0x136/0x150 net/core/dev.c:1461
+ team_port_add drivers/net/team/team.c:1215 [inline]
+ team_add_slave+0xa03/0x1b90 drivers/net/team/team.c:1984
+ do_set_master+0x1c8/0x220 net/core/rtnetlink.c:2578
+ rtnl_newlink_create net/core/rtnetlink.c:3381 [inline]
+ __rtnl_newlink+0x13ac/0x17e0 net/core/rtnetlink.c:3581
+ rtnl_newlink+0x68/0xa0 net/core/rtnetlink.c:3594
+ rtnetlink_rcv_msg+0x43e/0xca0 net/core/rtnetlink.c:6091
+ netlink_rcv_skb+0x157/0x430 net/netlink/af_netlink.c:2540
+ netlink_unicast_kernel net/netlink/af_netlink.c:1319 [inline]
+ netlink_unicast+0x547/0x7f0 net/netlink/af_netlink.c:1345
+ netlink_sendmsg+0x91b/0xe10 net/netlink/af_netlink.c:1921
+ sock_sendmsg_nosec net/socket.c:714 [inline]
+ sock_sendmsg+0xd3/0x120 net/socket.c:734
+ ____sys_sendmsg+0x712/0x8c0 net/socket.c:2482
+ ___sys_sendmsg+0x110/0x1b0 net/socket.c:2536
+ __sys_sendmsg+0xf7/0x1c0 net/socket.c:2565
+ do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+ do_syscall_64+0x39/0xb0 arch/x86/entry/common.c:80
+ entry_SYSCALL_64_after_hwframe+0x63/0xcd
+RIP: 0033:0x7f2d5511cab9
+Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 e1 14 00 00 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 c0 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffddb541428 EFLAGS: 00000246 ORIG_RAX: 000000000000002e
+RAX: ffffffffffffffda RBX: 000000000003d335 RCX: 00007f2d5511cab9
+RDX: 0000000000000000 RSI: 0000000020000300 RDI: 0000000000000004
+RBP: 0000000000000000 R08: 00007ffddb5415c8 R09: 00007ffddb5415c8
+R10: 00007ffddb5415c8 R11: 0000000000000246 R12: 00007ffddb54143c
+R13: 431bde82d7b634db R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+team968: Port device batadv968 added
 
-pstate: 20400005 (nzCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
-pc : __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
-lr : __raw_spin_unlock_bh include/linux/spinlock_api_smp.h:167 [inline]
-lr : _raw_spin_unlock_bh+0x48/0x58 kernel/locking/spinlock.c:210
-sp : ffff80001398bc60
-x29: ffff80001398bc60
- x28: ffff80000d2fb000
- x27: ffff80000d2fb000
-
-x26: 000000000000007e
- x25: 0000000000000004
- x24: 0000000000000000
-
-x23: ffff0000f2dcdf80
- x22: 0000000000000000
- x21: ffff00011ed2b480
-
-x20: ffff80000bf44c08
- x19: 0000000000000201
- x18: 0000000000000163
-
-x17: ffff80000c0cd83c
- x16: ffff80000dbe6158
- x15: ffff00011ed2b480
-
-x14: 00000000000000c8
- x13: 00000000ffffffff
- x12: ffff00011ed2b480
-
-x11: ff808000095cfff8
- x10: 00000000ffffffff
- x9 : ffff80000d2d09a0
-
-x8 : 0000000000000201
- x7 : ffff80000bf44a98
- x6 : 0000000000000000
-
-x5 : 0000000000000000
- x4 : 0000000000000001
- x3 : 0000000000000000
-
-x2 : 0000000000000001
- x1 : 0000000000000201
- x0 : ffff80000bf44c08
-
-Call trace:
- __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
- __raw_spin_unlock_bh include/linux/spinlock_api_smp.h:167 [inline]
- _raw_spin_unlock_bh+0x48/0x58 kernel/locking/spinlock.c:210
- spin_unlock_bh include/linux/spinlock.h:395 [inline]
- batadv_nc_purge_paths+0x1d0/0x214 net/batman-adv/network-coding.c:471
- batadv_nc_worker+0x3a8/0x484 net/batman-adv/network-coding.c:722
- process_one_work+0x2d8/0x504 kernel/workqueue.c:2289
- worker_thread+0x340/0x610 kernel/workqueue.c:2436
- kthread+0x12c/0x158 kernel/kthread.c:376
- ret_from_fork+0x10/0x20 arch/arm64/kernel/entry.S:863
-irq event stamp: 28503233
-hardirqs last  enabled at (28503231): [<ffff800008106f78>] __local_bh_enable_ip+0x13c/0x1a4 kernel/softirq.c:401
-hardirqs last disabled at (28503233): [<ffff80000c0809a4>] __el1_irq arch/arm64/kernel/entry-common.c:468 [inline]
-hardirqs last disabled at (28503233): [<ffff80000c0809a4>] el1_interrupt+0x24/0x68 arch/arm64/kernel/entry-common.c:486
-softirqs last  enabled at (28503230): [<ffff80000bf44c08>] spin_unlock_bh include/linux/spinlock.h:395 [inline]
-softirqs last  enabled at (28503230): [<ffff80000bf44c08>] batadv_nc_purge_paths+0x1d0/0x214 net/batman-adv/network-coding.c:471
-softirqs last disabled at (28503232): [<ffff80000bf44a98>] spin_lock_bh include/linux/spinlock.h:355 [inline]
-softirqs last disabled at (28503232): [<ffff80000bf44a98>] batadv_nc_purge_paths+0x60/0x214 net/batman-adv/network-coding.c:442
----[ end trace 0000000000000000 ]---
-
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
