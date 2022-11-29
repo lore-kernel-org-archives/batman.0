@@ -1,145 +1,115 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-Message-ID: <852bdcd2-f7e5-531e-8602-28f966df558a@web.de>
-Date: Tue, 1 Nov 2022 20:31:31 +0100
+Return-Path: <netdev-owner@kernel.org>
 MIME-Version: 1.0
-Subject: Re: Question about batman for ARM
-References: 
- <CAKau_3_sEaG2w7M+rQ-nuVG3_5GWHEV3UxmdG1bM-WPY7S8WxA@mail.gmail.com>
- <3826484.QQW5a1qdB9@ripper>
- <014301d8848f$5874d0b0$095e7210$@creonexsystems.com>
- <20961862.b4RiU9qLUR@ripper>
- <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
-Content-Language: en-US
-From: Moritz Warning <moritzwarning@web.de>
-In-Reply-To: <01ba01d8ee22$bc00d6e0$340284a0$@creonexsystems.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Date: Tue, 29 Nov 2022 01:28:34 -0800
+Message-ID: <000000000000ac218905ee989c07@google.com>
+Subject: [syzbot] WARNING in batadv_nc_purge_paths
+From: syzbot <syzbot+5b817d9e3b5fb5f051fc@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org, linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch, netdev@vger.kernel.org, pabeni@redhat.com, sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 
-Hi Charles,
+Hello,
 
-batman-adv is part of the Linux kernel. So it might very well be present o=
-n your system already.
-But you might need to install batctl package to enable and configure it.
+syzbot found the following issue on:
 
-On 11/1/22 19:49, cchien@creonexsystems.com wrote:
-> Hi Sven,
->
-> Thank you for your past suggestions.
-> We are now looking into getting BATMAN working on a Zynq-7000 Xilinx FPG=
-A.
-> This FPGA hosts dual-arm A9 cores. We have successfully loaded up Ubuntu=
- on
-> this platform and it is running
-> Linux version 4.19.0-xilinx-v2019.2 (oe-user@oe-host) (gcc version 8.2.0
-> (GCC))
->
-> The above line is from cat /proc/version.
->
-> Can you point me to a BATMAN installation for this OS and platform? I co=
-uld
-> not find any resources online for this.
-> The way suggested by BATMAN home page does not work for some reason.
->
-> Thank you for your help.
->
-> Regards,
-> Charles
-> _____________
-> CreoNex Systems
-> 2625 Townsgate Road, Suite 330
-> Westlake Village, CA 91320
-> www.creonexsystems.com
-> (805) 558-9687
-> This message (including any attachments) is for the named addressee(s)'s=
- use
-> only. It may contain sensitive, confidential, private proprietary or leg=
-ally
-> privileged information intended for a specific individual and purpose, a=
-nd
-> is protected by law. If you are not the intended recipient, please
-> immediately delete it and all copies of it from your system, destroy any
-> hard copies of it and notify the sender. Any use, disclosure, copying, o=
-r
-> distribution of this message and/or any attachments is strictly prohibit=
-ed.
->
->
-> -----Original Message-----
-> From: Sven Eckelmann <sven@narfation.org>
-> Sent: Monday, June 20, 2022 5:51 AM
-> To: cchien@creonexsystems.com
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Subject: Re: Question about batman for ARM
->
-> On Monday, 20 June 2022 12:20:19 CEST cchien@creonexsystems.com wrote:
->> Does BATMAN ADV interfaces with the radio via the network driver or
->> does BATMAN include the network driver?
->
-> As said before, it is interfacing with the generic ethernet netdev layer=
- of
-> the kernel. For example in:
->
-> *
-> https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b8=
-9025
-> 2a865efa91:/net/batman-adv/hard-interface.c#l727
-> *
-> https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b8=
-9025
-> 2a865efa91:/net/batman-adv/send.c#l108
-> *
-> https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b8=
-9025
-> 2a865efa91:/net/batman-adv/hard-interface.c#l185
->
-> There are a lot of other places when it uses the abstraction interfaces =
-of
-> the kernels for ethernet related communication.
->
-> For B.A.T.M.A.N. V, it is also trying to get throughput information via
-> various generic kernel functionality:
->
-> *
-> https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b8=
-9025
-> 2a865efa91:/net/batman-adv/bat_v_elp.c#l67
->
-> There is also one detection for wifi interfaces to decide whether broadc=
-ast
-> messages should be repeated or not:
->
-> *
-> https://git.open-mesh.org/batman-adv.git/blob/caa1eb0cf7bf8ebfe43bba06b8=
-9025
-> 2a865efa91:/net/batman-adv/hard-interface.c#l877
->
->
->> Can you provide some guidance on where the network driver or interface
->> to network driver is located within BATMAN?
->
-> It is not talking directly to the driver. It is always using abstraction
-> layers. Either the normal network core, ethernet or cfg80211 abstraction
-> interfaces. But these don't abstract the requirement for ethernet
-> compatibility away - the underlying device must provide this either dire=
-ctly
-> or via a wrapper. Just perform a `git grep -e ETH_ -e eth_ -e ethhdr` to=
- see
-> that it is build around the concept of ethernet packets.
->
-> Also things like originators and the complete translation table only wor=
-ks
-> with ethernet addresses.
->
-> Kind regards,
-> 	Sven
+HEAD commit:    65762d97e6fa Merge branch 'for-next/perf' into for-kernelci
+git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-kernelci
+console output: https://syzkaller.appspot.com/x/log.txt?x=1558f7fd880000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=56d0c7c3a2304e8f
+dashboard link: https://syzkaller.appspot.com/bug?extid=5b817d9e3b5fb5f051fc
+compiler:       Debian clang version 13.0.1-++20220126092033+75e33f71c2da-1~exp1~20220126212112.63, GNU ld (GNU Binutils for Debian) 2.35.2
+userspace arch: arm64
+
+Unfortunately, I don't have any reproducer for this issue yet.
+
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/52f702197b30/disk-65762d97.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/72189c2789ce/vmlinux-65762d97.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/ec0349196c98/Image-65762d97.gz.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+5b817d9e3b5fb5f051fc@syzkaller.appspotmail.com
+
+------------[ cut here ]------------
+WARNING: CPU: 1 PID: 3498 at kernel/softirq.c:376 __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
+Modules linked in:
+CPU: 1 PID: 3498 Comm: kworker/u4:11 Not tainted 6.1.0-rc6-syzkaller-32653-g65762d97e6fa #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 09/30/2022
+Workqueue: bat_events batadv_nc_worker
+
+pstate: 20400005 (nzCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
+lr : __raw_spin_unlock_bh include/linux/spinlock_api_smp.h:167 [inline]
+lr : _raw_spin_unlock_bh+0x48/0x58 kernel/locking/spinlock.c:210
+sp : ffff80001398bc60
+x29: ffff80001398bc60
+ x28: ffff80000d2fb000
+ x27: ffff80000d2fb000
+
+x26: 000000000000007e
+ x25: 0000000000000004
+ x24: 0000000000000000
+
+x23: ffff0000f2dcdf80
+ x22: 0000000000000000
+ x21: ffff00011ed2b480
+
+x20: ffff80000bf44c08
+ x19: 0000000000000201
+ x18: 0000000000000163
+
+x17: ffff80000c0cd83c
+ x16: ffff80000dbe6158
+ x15: ffff00011ed2b480
+
+x14: 00000000000000c8
+ x13: 00000000ffffffff
+ x12: ffff00011ed2b480
+
+x11: ff808000095cfff8
+ x10: 00000000ffffffff
+ x9 : ffff80000d2d09a0
+
+x8 : 0000000000000201
+ x7 : ffff80000bf44a98
+ x6 : 0000000000000000
+
+x5 : 0000000000000000
+ x4 : 0000000000000001
+ x3 : 0000000000000000
+
+x2 : 0000000000000001
+ x1 : 0000000000000201
+ x0 : ffff80000bf44c08
+
+Call trace:
+ __local_bh_enable_ip+0x180/0x1a4 kernel/softirq.c:376
+ __raw_spin_unlock_bh include/linux/spinlock_api_smp.h:167 [inline]
+ _raw_spin_unlock_bh+0x48/0x58 kernel/locking/spinlock.c:210
+ spin_unlock_bh include/linux/spinlock.h:395 [inline]
+ batadv_nc_purge_paths+0x1d0/0x214 net/batman-adv/network-coding.c:471
+ batadv_nc_worker+0x3a8/0x484 net/batman-adv/network-coding.c:722
+ process_one_work+0x2d8/0x504 kernel/workqueue.c:2289
+ worker_thread+0x340/0x610 kernel/workqueue.c:2436
+ kthread+0x12c/0x158 kernel/kthread.c:376
+ ret_from_fork+0x10/0x20 arch/arm64/kernel/entry.S:863
+irq event stamp: 28503233
+hardirqs last  enabled at (28503231): [<ffff800008106f78>] __local_bh_enable_ip+0x13c/0x1a4 kernel/softirq.c:401
+hardirqs last disabled at (28503233): [<ffff80000c0809a4>] __el1_irq arch/arm64/kernel/entry-common.c:468 [inline]
+hardirqs last disabled at (28503233): [<ffff80000c0809a4>] el1_interrupt+0x24/0x68 arch/arm64/kernel/entry-common.c:486
+softirqs last  enabled at (28503230): [<ffff80000bf44c08>] spin_unlock_bh include/linux/spinlock.h:395 [inline]
+softirqs last  enabled at (28503230): [<ffff80000bf44c08>] batadv_nc_purge_paths+0x1d0/0x214 net/batman-adv/network-coding.c:471
+softirqs last disabled at (28503232): [<ffff80000bf44a98>] spin_lock_bh include/linux/spinlock.h:355 [inline]
+softirqs last disabled at (28503232): [<ffff80000bf44a98>] batadv_nc_purge_paths+0x60/0x214 net/batman-adv/network-coding.c:442
+---[ end trace 0000000000000000 ]---
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
