@@ -1,404 +1,268 @@
-Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH 2/5] batman-adv: tvlv: prepare for tvlv enabled multicast
- packet type
-Date: Mon, 26 Dec 2022 17:02:30 +0100
-Message-Id: <20221226160233.9521-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20221226160233.9521-1-linus.luessing@c0d3.blue>
-References: <20221226160233.9521-1-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [RFC PATCH] batman-adv: Drop support for Linux < 4.14
+Date: Fri, 16 Dec 2022 20:08:23 +0100
+Message-Id: <20221216190823.574479-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
-List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+	<b.a.t.m.a.n.lists.open-mesh.org>
+List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
-List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
+List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
+List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Prepare TVLV infrastructure for more packet types, in particular the
-upcoming batman-adv multicast packet type.
+The Linux Kernel 4.9 reached its end of life [1] after 6 years. Instead it
+is recommended to use at least kernel 4.14. It is also over 5 years
+old but still maintained by the stable kernel team. All older kernels
+(4.9 - v4.13) will be dropped to reduce the support overhead.
 
-For that swap the OGM vs. unicast-tvlv packet boolean indicator to an
-explicit unsigned integer packet type variable. And provide the skb
-to a call to batadv_tvlv_containers_process(), as later the multicast
-packet's TVLV handler will need to have access not only to the TVLV but
-the full skb for forwarding. Forwarding will be invoked from the
-multicast packet's TVLVs' contents later.
+[1] TODO: https://lore.kernel.org/r/XXXX
 
-Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- include/uapi/linux/batadv_packet.h     |  2 +
- net/batman-adv/bat_v_ogm.c             |  4 +-
- net/batman-adv/distributed-arp-table.c |  2 +-
- net/batman-adv/gateway_common.c        |  2 +-
- net/batman-adv/multicast.c             |  2 +-
- net/batman-adv/routing.c               |  7 ++-
- net/batman-adv/translation-table.c     |  4 +-
- net/batman-adv/tvlv.c                  | 71 ++++++++++++++++++--------
- net/batman-adv/tvlv.h                  |  8 +--
- net/batman-adv/types.h                 |  6 +++
- 10 files changed, 73 insertions(+), 35 deletions(-)
+ README.external.rst                  |  2 +-
+ compat-include/linux/build_bug.h     | 31 -------------------------
+ compat-include/linux/netdevice.h     | 19 ----------------
+ compat-include/linux/prandom.h       |  1 -
+ compat-include/linux/skbuff.h        | 29 ------------------------
+ compat-include/linux/timer.h         | 34 ----------------------------
+ compat-include/uapi/linux/if_ether.h | 25 --------------------
+ compat.h                             | 10 --------
+ 8 files changed, 1 insertion(+), 150 deletions(-)
+ delete mode 100644 compat-include/linux/build_bug.h
+ delete mode 100644 compat-include/linux/timer.h
+ delete mode 100644 compat-include/uapi/linux/if_ether.h
 
-diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/bata=
-dv_packet.h
-index ea4692c339ce..9204e4494b25 100644
---- a/include/uapi/linux/batadv_packet.h
-+++ b/include/uapi/linux/batadv_packet.h
-@@ -26,6 +26,7 @@
-  * @BATADV_CODED: network coded packets
-  * @BATADV_ELP: echo location packets for B.A.T.M.A.N. V
-  * @BATADV_OGM2: originator messages for B.A.T.M.A.N. V
-+ * @BATADV_MCAST: multicast packet with multiple destination addresses
-  *
-  * @BATADV_UNICAST: unicast packets carrying unicast payload traffic
-  * @BATADV_UNICAST_FRAG: unicast packets carrying a fragment of the orig=
-inal
-@@ -42,6 +43,7 @@ enum batadv_packettype {
- 	BATADV_CODED            =3D 0x02,
- 	BATADV_ELP		=3D 0x03,
- 	BATADV_OGM2		=3D 0x04,
-+	BATADV_MCAST            =3D 0x05,
- 	/* 0x40 - 0x7f: unicast */
- #define BATADV_UNICAST_MIN     0x40
- 	BATADV_UNICAST          =3D 0x40,
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 033639df96d8..296fcff487bc 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -800,8 +800,8 @@ batadv_v_ogm_process_per_outif(struct batadv_priv *ba=
-t_priv,
-=20
- 	/* only unknown & newer OGMs contain TVLVs we are interested in */
- 	if (seqno_age > 0 && if_outgoing =3D=3D BATADV_IF_DEFAULT)
--		batadv_tvlv_containers_process(bat_priv, true, orig_node,
--					       NULL, NULL,
-+		batadv_tvlv_containers_process(bat_priv, BATADV_OGM2, orig_node,
-+					       NULL,
- 					       (unsigned char *)(ogm2 + 1),
- 					       ntohs(ogm2->tvlv_len));
-=20
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/dist=
-ributed-arp-table.c
-index fefb51a5f606..6968e55eb971 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -822,7 +822,7 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
- 	batadv_dat_start_timer(bat_priv);
-=20
- 	batadv_tvlv_handler_register(bat_priv, batadv_dat_tvlv_ogm_handler_v1,
--				     NULL, BATADV_TVLV_DAT, 1,
-+				     NULL, NULL, BATADV_TVLV_DAT, 1,
- 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
- 	batadv_dat_tvlv_container_update(bat_priv);
- 	return 0;
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_com=
-mon.c
-index 9349c76f30c5..6a964a773f57 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -259,7 +259,7 @@ void batadv_gw_init(struct batadv_priv *bat_priv)
- 		atomic_set(&bat_priv->gw.sel_class, 1);
-=20
- 	batadv_tvlv_handler_register(bat_priv, batadv_gw_tvlv_ogm_handler_v1,
--				     NULL, BATADV_TVLV_GW, 1,
-+				     NULL, NULL, BATADV_TVLV_GW, 1,
- 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
- }
-=20
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index dbe7fcfad512..548ab08d96fa 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -1827,7 +1827,7 @@ static void batadv_mcast_tvlv_ogm_handler(struct ba=
-tadv_priv *bat_priv,
- void batadv_mcast_init(struct batadv_priv *bat_priv)
- {
- 	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler,
--				     NULL, BATADV_TVLV_MCAST, 2,
-+				     NULL, NULL, BATADV_TVLV_MCAST, 2,
- 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
-=20
- 	INIT_DELAYED_WORK(&bat_priv->mcast.work, batadv_mcast_mla_update);
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 83f31494ea4d..163cd43c4821 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1073,10 +1073,9 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
- 	if (tvlv_buff_len > skb->len - hdr_size)
- 		goto free_skb;
-=20
--	ret =3D batadv_tvlv_containers_process(bat_priv, false, NULL,
--					     unicast_tvlv_packet->src,
--					     unicast_tvlv_packet->dst,
--					     tvlv_buff, tvlv_buff_len);
-+	ret =3D batadv_tvlv_containers_process(bat_priv, BATADV_UNICAST_TVLV,
-+					     NULL, skb, tvlv_buff,
-+					     tvlv_buff_len);
-=20
- 	if (ret !=3D NET_RX_SUCCESS) {
- 		ret =3D batadv_route_unicast_packet(skb, recv_if);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translat=
-ion-table.c
-index 01d30c1e412c..36ca31252a73 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -4168,11 +4168,11 @@ int batadv_tt_init(struct batadv_priv *bat_priv)
- 	}
-=20
- 	batadv_tvlv_handler_register(bat_priv, batadv_tt_tvlv_ogm_handler_v1,
--				     batadv_tt_tvlv_unicast_handler_v1,
-+				     batadv_tt_tvlv_unicast_handler_v1, NULL,
- 				     BATADV_TVLV_TT, 1, BATADV_NO_FLAGS);
-=20
- 	batadv_tvlv_handler_register(bat_priv, NULL,
--				     batadv_roam_tvlv_unicast_handler_v1,
-+				     batadv_roam_tvlv_unicast_handler_v1, NULL,
- 				     BATADV_TVLV_ROAM, 1, BATADV_NO_FLAGS);
-=20
- 	INIT_DELAYED_WORK(&bat_priv->tt.work, batadv_tt_purge);
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 7ec2e2343884..258a23e6e5a8 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -352,10 +352,9 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_p=
-riv *bat_priv,
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-  * @tvlv_handler: tvlv callback function handling the tvlv content
-- * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast =
-packet
-+ * @packet_type: indicates for which packet type the TVLV handler is cal=
-led
-  * @orig_node: orig node emitting the ogm packet
-- * @src: source mac address of the unicast packet
-- * @dst: destination mac address of the unicast packet
-+ * @skb: the skb the TVLV handler is called for
-  * @tvlv_value: tvlv content
-  * @tvlv_value_len: tvlv content length
-  *
-@@ -364,15 +363,17 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_=
-priv *bat_priv,
-  */
- static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
- 				    struct batadv_tvlv_handler *tvlv_handler,
--				    bool ogm_source,
-+				    u8 packet_type,
- 				    struct batadv_orig_node *orig_node,
--				    u8 *src, u8 *dst,
--				    void *tvlv_value, u16 tvlv_value_len)
-+				    struct sk_buff *skb, void *tvlv_value,
-+				    u16 tvlv_value_len)
- {
- 	if (!tvlv_handler)
- 		return NET_RX_SUCCESS;
-=20
--	if (ogm_source) {
-+	switch (packet_type) {
-+	case BATADV_IV_OGM:
-+	case BATADV_OGM2:
- 		if (!tvlv_handler->ogm_handler)
- 			return NET_RX_SUCCESS;
-=20
-@@ -383,19 +384,37 @@ static int batadv_tvlv_call_handler(struct batadv_p=
-riv *bat_priv,
- 					  BATADV_NO_FLAGS,
- 					  tvlv_value, tvlv_value_len);
- 		tvlv_handler->flags |=3D BATADV_TVLV_HANDLER_OGM_CALLED;
--	} else {
--		if (!src)
--			return NET_RX_SUCCESS;
-+		break;
-+	case BATADV_UNICAST_TVLV:
-+		u8 *src;
-+		u8 *dst;
-=20
--		if (!dst)
-+		if (!skb)
- 			return NET_RX_SUCCESS;
-=20
- 		if (!tvlv_handler->unicast_handler)
- 			return NET_RX_SUCCESS;
-=20
-+		src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-+		dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-+
- 		return tvlv_handler->unicast_handler(bat_priv, src,
- 						     dst, tvlv_value,
- 						     tvlv_value_len);
-+	case BATADV_MCAST:
-+		unsigned int tvlv_offset;
-+
-+		if (!skb)
-+			return NET_RX_SUCCESS;
-+
-+		if (!tvlv_handler->mcast_handler)
-+			return NET_RX_SUCCESS;
-+
-+		tvlv_offset =3D (unsigned char *)tvlv_value - skb->data;
-+		skb_set_network_header(skb, tvlv_offset);
-+		skb_set_transport_header(skb, tvlv_offset + tvlv_value_len);
-+
-+		return tvlv_handler->mcast_handler(bat_priv, skb);
- 	}
-=20
- 	return NET_RX_SUCCESS;
-@@ -405,10 +424,9 @@ static int batadv_tvlv_call_handler(struct batadv_pr=
-iv *bat_priv,
-  * batadv_tvlv_containers_process() - parse the given tvlv buffer to cal=
-l the
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-- * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast =
-packet
-+ * @packet_type: indicates for which packet type the TVLV handler is cal=
-led
-  * @orig_node: orig node emitting the ogm packet
-- * @src: source mac address of the unicast packet
-- * @dst: destination mac address of the unicast packet
-+ * @skb: the skb the TVLV handler is called for
-  * @tvlv_value: tvlv content
-  * @tvlv_value_len: tvlv content length
-  *
-@@ -416,10 +434,10 @@ static int batadv_tvlv_call_handler(struct batadv_p=
-riv *bat_priv,
-  * handler callbacks.
-  */
- int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
--				   bool ogm_source,
-+				   u8 packet_type,
- 				   struct batadv_orig_node *orig_node,
--				   u8 *src, u8 *dst,
--				   void *tvlv_value, u16 tvlv_value_len)
-+				   struct sk_buff *skb, void *tvlv_value,
-+				   u16 tvlv_value_len)
- {
- 	struct batadv_tvlv_handler *tvlv_handler;
- 	struct batadv_tvlv_hdr *tvlv_hdr;
-@@ -441,20 +459,24 @@ int batadv_tvlv_containers_process(struct batadv_pr=
-iv *bat_priv,
- 						       tvlv_hdr->version);
-=20
- 		ret |=3D batadv_tvlv_call_handler(bat_priv, tvlv_handler,
--						ogm_source, orig_node,
--						src, dst, tvlv_value,
-+						packet_type, orig_node, skb,
-+						tvlv_value,
- 						tvlv_value_cont_len);
- 		batadv_tvlv_handler_put(tvlv_handler);
- 		tvlv_value =3D (u8 *)tvlv_value + tvlv_value_cont_len;
- 		tvlv_value_len -=3D tvlv_value_cont_len;
- 	}
-=20
--	if (!ogm_source)
-+	if (packet_type !=3D BATADV_IV_OGM &&
-+	    packet_type !=3D BATADV_OGM2)
- 		return ret;
-=20
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(tvlv_handler,
- 				 &bat_priv->tvlv.handler_list, list) {
-+		if (!tvlv_handler->ogm_handler)
-+			continue;
-+
- 		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
- 		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CALLED))
- 			tvlv_handler->ogm_handler(bat_priv, orig_node,
-@@ -490,7 +512,7 @@ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_=
-priv,
-=20
- 	tvlv_value =3D batadv_ogm_packet + 1;
-=20
--	batadv_tvlv_containers_process(bat_priv, true, orig_node, NULL, NULL,
-+	batadv_tvlv_containers_process(bat_priv, BATADV_IV_OGM, orig_node, NULL=
-,
- 				       tvlv_value, tvlv_value_len);
- }
-=20
-@@ -504,6 +526,10 @@ void batadv_tvlv_ogm_receive(struct batadv_priv *bat=
-_priv,
-  * @uptr: unicast tvlv handler callback function. This function receives=
- the
-  *  source & destination of the unicast packet as well as the tvlv conte=
-nt
-  *  to process.
-+ * @mptr: multicast packet tvlv handler callback function. This function
-+ *  receives the full skb to process, with the skb network header pointi=
-ng
-+ *  to the current tvlv and the skb transport header pointing to the fir=
-st
-+ *  byte after the current tvlv.
-  * @type: tvlv handler type to be registered
-  * @version: tvlv handler version to be registered
-  * @flags: flags to enable or disable TVLV API behavior
-@@ -518,6 +544,8 @@ void batadv_tvlv_handler_register(struct batadv_priv =
-*bat_priv,
- 					      u8 *src, u8 *dst,
- 					      void *tvlv_value,
- 					      u16 tvlv_value_len),
-+				  int (*mptr)(struct batadv_priv *bat_priv,
-+					      struct sk_buff *skb),
- 				  u8 type, u8 version, u8 flags)
- {
- 	struct batadv_tvlv_handler *tvlv_handler;
-@@ -539,6 +567,7 @@ void batadv_tvlv_handler_register(struct batadv_priv =
-*bat_priv,
-=20
- 	tvlv_handler->ogm_handler =3D optr;
- 	tvlv_handler->unicast_handler =3D uptr;
-+	tvlv_handler->mcast_handler =3D mptr;
- 	tvlv_handler->type =3D type;
- 	tvlv_handler->version =3D version;
- 	tvlv_handler->flags =3D flags;
-diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
-index 4cf8af00fc11..ebf8b4037adb 100644
---- a/net/batman-adv/tvlv.h
-+++ b/net/batman-adv/tvlv.h
-@@ -34,14 +34,16 @@ void batadv_tvlv_handler_register(struct batadv_priv =
-*bat_priv,
- 					      u8 *src, u8 *dst,
- 					      void *tvlv_value,
- 					      u16 tvlv_value_len),
-+				  int (*mptr)(struct batadv_priv *bat_priv,
-+					      struct sk_buff *skb),
- 				  u8 type, u8 version, u8 flags);
- void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
- 				    u8 type, u8 version);
- int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
--				   bool ogm_source,
-+				   u8 packet_type,
- 				   struct batadv_orig_node *orig_node,
--				   u8 *src, u8 *dst,
--				   void *tvlv_buff, u16 tvlv_buff_len);
-+				   struct sk_buff *skb, void *tvlv_buff,
-+				   u16 tvlv_buff_len);
- void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, const u8 *sr=
-c,
- 			      const u8 *dst, u8 type, u8 version,
- 			      void *tvlv_value, u16 tvlv_value_len);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 758cd797a063..ca9449ec9836 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -2335,6 +2335,12 @@ struct batadv_tvlv_handler {
- 			       u8 *src, u8 *dst,
- 			       void *tvlv_value, u16 tvlv_value_len);
-=20
-+	/**
-+	 * @mcast_handler: handler callback which is given the tvlv payload to
-+	 *  process on incoming mcast packet
-+	 */
-+	int (*mcast_handler)(struct batadv_priv *bat_priv, struct sk_buff *skb)=
-;
-+
- 	/** @type: tvlv type this handler feels responsible for */
- 	u8 type;
-=20
---=20
-2.39.0
+diff --git a/README.external.rst b/README.external.rst
+index 34f3a8d4..e9f00ee0 100644
+--- a/README.external.rst
++++ b/README.external.rst
+@@ -12,7 +12,7 @@ and as an external module. The external  module   allows  to  get
+ new    features without  upgrading  to  a  newer  kernel  version
+ and to get batman-adv specific bug fixes for  kernels  that   are
+ not   supported   anymore.  It compiles  against  and should work
+-with  Linux 4.9  -  6.1.  Supporting  older   versions   is   not
++with  Linux 4.14  -  6.1.  Supporting  older  versions   is   not
+ planned,  but it's probably easy to backport it. If you work on a
+ backport, feel free to contact us.  :-)
+ 
+diff --git a/compat-include/linux/build_bug.h b/compat-include/linux/build_bug.h
+deleted file mode 100644
+index 8ec79069..00000000
+--- a/compat-include/linux/build_bug.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright (C) B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
+-
+-#include <linux/version.h>
+-#if LINUX_VERSION_IS_GEQ(4, 13, 0)
+-#include_next <linux/build_bug.h>
+-#else
+-#include <linux/bug.h>
+-
+-/* Linux 4.9.297 doesn't provide BUILD_BUG_ON anymore in linux/bug.h
+- * also identified itself with the version number 4.9.255 when decoding the
+- * LINUX_VERSION_CODE. So we have to try to guess now if we need to include
+- * linux/build_bug.h based on whether BUILD_BUG_ON is defined  or not after
+- * including linux/bug.h
+- */
+-#ifndef BUILD_BUG_ON
+-#include_next <linux/build_bug.h>
+-#endif
+-
+-#endif
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_ */
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index eeb31bed..3188ad3d 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -20,25 +20,6 @@
+ 
+ #endif /* LINUX_VERSION_IS_LESS(4, 15, 0) */
+ 
+-#if LINUX_VERSION_IS_LESS(4, 11, 9)
+-
+-/* work around missing attribute needs_free_netdev and priv_destructor in
+- * net_device
+- */
+-#define ether_setup(dev) \
+-	void batadv_softif_free2(struct net_device *dev) \
+-	{ \
+-		batadv_softif_free(dev); \
+-		free_netdev(dev); \
+-	} \
+-	void (*t1)(struct net_device *dev) __attribute__((unused)); \
+-	bool t2 __attribute__((unused)); \
+-	ether_setup(dev)
+-#define needs_free_netdev destructor = batadv_softif_free2; t2
+-#define priv_destructor destructor = batadv_softif_free2; t1
+-
+-#endif /* LINUX_VERSION_IS_LESS(4, 11, 9) */
+-
+ 
+ #if LINUX_VERSION_IS_LESS(5, 15, 0)
+ 
+diff --git a/compat-include/linux/prandom.h b/compat-include/linux/prandom.h
+index dc227e61..ec2f5244 100644
+--- a/compat-include/linux/prandom.h
++++ b/compat-include/linux/prandom.h
+@@ -12,7 +12,6 @@
+ 
+ #include <linux/version.h>
+ #if LINUX_VERSION_IS_GEQ(5, 8, 1) || \
+-    (LINUX_VERSION_IS_GEQ(4, 9, 233) && LINUX_VERSION_IS_LESS(4, 10, 0)) || \
+     (LINUX_VERSION_IS_GEQ(4, 14, 193) && LINUX_VERSION_IS_LESS(4, 15, 0)) || \
+     (LINUX_VERSION_IS_GEQ(4, 19, 138) && LINUX_VERSION_IS_LESS(4, 20, 0)) || \
+     (LINUX_VERSION_IS_GEQ(5, 4, 57) && LINUX_VERSION_IS_LESS(5, 5, 0)) || \
+diff --git a/compat-include/linux/skbuff.h b/compat-include/linux/skbuff.h
+index 77c4e99f..eda2d181 100644
+--- a/compat-include/linux/skbuff.h
++++ b/compat-include/linux/skbuff.h
+@@ -13,35 +13,6 @@
+ #include <linux/version.h>
+ #include_next <linux/skbuff.h>
+ 
+-#if LINUX_VERSION_IS_LESS(4, 13, 0)
+-
+-static inline void *batadv_skb_put(struct sk_buff *skb, unsigned int len)
+-{
+-	return (void *)skb_put(skb, len);
+-}
+-#define skb_put batadv_skb_put
+-
+-static inline void *skb_put_zero(struct sk_buff *skb, unsigned int len)
+-{
+-	void *tmp = skb_put(skb, len);
+-
+-	memset(tmp, 0, len);
+-
+-	return tmp;
+-}
+-
+-static inline void *skb_put_data(struct sk_buff *skb, const void *data,
+-				 unsigned int len)
+-{
+-	void *tmp = skb_put(skb, len);
+-
+-	memcpy(tmp, data, len);
+-
+-	return tmp;
+-}
+-
+-#endif /* LINUX_VERSION_IS_LESS(4, 13, 0) */
+-
+ #if LINUX_VERSION_IS_LESS(5, 4, 0)
+ 
+ #define nf_reset_ct nf_reset
+diff --git a/compat-include/linux/timer.h b/compat-include/linux/timer.h
+deleted file mode 100644
+index 36da61f7..00000000
+--- a/compat-include/linux/timer.h
++++ /dev/null
+@@ -1,34 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright (C) B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H
+-
+-#include <linux/version.h>
+-#include_next <linux/timer.h>
+-
+-#if LINUX_VERSION_IS_LESS(4, 14, 0)
+-
+-#define TIMER_DATA_TYPE		unsigned long
+-#define TIMER_FUNC_TYPE		void (*)(TIMER_DATA_TYPE)
+-
+-static inline void timer_setup(struct timer_list *timer,
+-			       void (*callback)(struct timer_list *),
+-			       unsigned int flags)
+-{
+-	__setup_timer(timer, (TIMER_FUNC_TYPE)callback,
+-		      (TIMER_DATA_TYPE)timer, flags);
+-}
+-
+-#define from_timer(var, callback_timer, timer_fieldname) \
+-	container_of(callback_timer, typeof(*var), timer_fieldname)
+-
+-#endif /* LINUX_VERSION_IS_LESS(4, 14, 0) */
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H */
+diff --git a/compat-include/uapi/linux/if_ether.h b/compat-include/uapi/linux/if_ether.h
+deleted file mode 100644
+index a23fa4d8..00000000
+--- a/compat-include/uapi/linux/if_ether.h
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright (C) B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_
+-#define _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_
+-
+-#include <linux/version.h>
+-#include_next <uapi/linux/if_ether.h>
+-
+-
+-#if LINUX_VERSION_IS_LESS(4, 10, 0)
+-
+-#ifndef ETH_MIN_MTU
+-#define ETH_MIN_MTU	68
+-#endif
+-
+-#endif /* LINUX_VERSION_IS_LESS(4, 10, 0) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_ */
+diff --git a/compat.h b/compat.h
+index 86e68d83..8e19f9bb 100644
+--- a/compat.h
++++ b/compat.h
+@@ -15,16 +15,6 @@
+ 
+ #include "compat-autoconf.h"
+ 
+-#if LINUX_VERSION_IS_LESS(4, 13, 0)
+-
+-#define batadv_softif_validate(__tb, __data, __extack) \
+-	batadv_softif_validate(__tb, __data)
+-
+-#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
+-	batadv_softif_newlink(__src_net, __dev, __tb, __data)
+-
+-#endif /* LINUX_VERSION_IS_LESS(4, 13, 0) */
+-
+ 
+ #if LINUX_VERSION_IS_LESS(4, 15, 0)
+ 
+-- 
+2.35.1
+
