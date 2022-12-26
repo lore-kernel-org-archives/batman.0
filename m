@@ -1,10 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH 4/5] batman-adv: mcast: implement multicast packet generation
-Date: Mon, 26 Dec 2022 17:02:32 +0100
-Message-Id: <20221226160233.9521-5-linus.luessing@c0d3.blue>
-In-Reply-To: <20221226160233.9521-1-linus.luessing@c0d3.blue>
-References: <20221226160233.9521-1-linus.luessing@c0d3.blue>
+Subject: [PATCH v3 4/5] batman-adv: mcast: implement multicast packet
+ generation
+Date: Mon, 26 Dec 2022 21:42:36 +0100
+Message-Id: <20221226204237.10403-5-linus.luessing@c0d3.blue>
+In-Reply-To: <20221226204237.10403-1-linus.luessing@c0d3.blue>
+References: <20221226204237.10403-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -33,7 +34,7 @@ For another checks are implemented to determine if encapsulating a
 multicast packet in this new batman-adv multicast packet type and using
 it is feasible. Those checks are:
 
-1) Have all nodes signaled that the are capable of handling the new
+1) Have all nodes signaled that they are capable of handling the new
    batman-adv multicast packet type?
 2) Do all active hard interfaces of all nodes, including us, have an MTU
    of at least 1280 bytes?
@@ -52,16 +53,16 @@ Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
  net/batman-adv/multicast.c      |  79 ++++-
  net/batman-adv/multicast.h      |  24 +-
- net/batman-adv/multicast_forw.c | 504 ++++++++++++++++++++++++++++++++
+ net/batman-adv/multicast_forw.c | 511 ++++++++++++++++++++++++++++++++
  net/batman-adv/soft-interface.c |   6 +-
  net/batman-adv/types.h          |   6 +
- 5 files changed, 611 insertions(+), 8 deletions(-)
+ 5 files changed, 618 insertions(+), 8 deletions(-)
 
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index d674e8394439..fb548924be04 100644
+index f2b1e523fd85..d74cb96896e9 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
-@@ -1178,17 +1178,62 @@ static int batadv_mcast_forw_rtr_count(struct bat=
+@@ -1177,17 +1177,62 @@ static int batadv_mcast_forw_rtr_count(struct bat=
 adv_priv *bat_priv,
  	}
  }
@@ -94,7 +95,7 @@ s)
 + *	is smaller or equal to the configured multicast fanout.
 + *	BATADV_FORW_BCAST: Otherwise.
 + */
-+enum batadv_forw_mode
++static enum batadv_forw_mode
 +batadv_mcast_forw_mode_by_count(struct batadv_priv *bat_priv,
 +				struct sk_buff *skb, unsigned short vid,
 +				int is_routable, int count)
@@ -131,7 +132,7 @@ s)
  {
  	int ret, tt_count, ip_count, unsnoop_count, total_count;
  	bool is_unsnoopable =3D false;
-@@ -1218,10 +1263,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pri=
+@@ -1217,10 +1262,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pri=
 v, struct sk_buff *skb,
  	else if (unsnoop_count)
  		return BATADV_FORW_BCAST;
@@ -146,7 +147,7 @@ v, struct sk_buff *skb,
  }
 =20
  /**
-@@ -1781,6 +1824,31 @@ static void batadv_mcast_want_rtr6_update(struct b=
+@@ -1780,6 +1823,31 @@ static void batadv_mcast_want_rtr6_update(struct b=
 atadv_priv *bat_priv,
  	}
  }
@@ -182,7 +183,7 @@ iv,
  /**
   * batadv_mcast_tvlv_flags_get() - get multicast flags from an OGM TVLV
   * @enabled: whether the originator has multicast TVLV support enabled
-@@ -1849,6 +1917,7 @@ static void batadv_mcast_tvlv_ogm_handler(struct ba=
+@@ -1848,6 +1916,7 @@ static void batadv_mcast_tvlv_ogm_handler(struct ba=
 tadv_priv *bat_priv,
  	batadv_mcast_want_ipv6_update(bat_priv, orig, mcast_flags);
  	batadv_mcast_want_rtr4_update(bat_priv, orig, mcast_flags);
@@ -192,7 +193,7 @@ tadv_priv *bat_priv,
  	orig->mcast_flags =3D mcast_flags;
  	spin_unlock_bh(&orig->mcast_handler_lock);
 diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index a5c0f384bb9a..6746a919f4a0 100644
+index a5c0f384bb9a..a83510b2007a 100644
 --- a/net/batman-adv/multicast.h
 +++ b/net/batman-adv/multicast.h
 @@ -28,6 +28,12 @@ enum batadv_forw_mode {
@@ -224,11 +225,11 @@ index a5c0f384bb9a..6746a919f4a0 100644
  int batadv_mcast_forw_tracker_tvlv_handler(struct batadv_priv *bat_priv,
  					   struct sk_buff *skb);
 =20
-+int batadv_mcast_forw_packet_hdrlen(unsigned int num_dests);
++unsigned int batadv_mcast_forw_packet_hdrlen(unsigned int num_dests);
 +
-+int batadv_mcast_forw_push(struct batadv_priv *bat_priv, struct sk_buff =
-*skb,
-+			   unsigned short vid, int is_routable);
++bool batadv_mcast_forw_push(struct batadv_priv *bat_priv, struct sk_buff=
+ *skb,
++			    unsigned short vid, int is_routable);
 +
 +int batadv_mcast_forw_mcsend(struct batadv_priv *bat_priv, struct sk_buf=
 f *skb);
@@ -260,24 +261,36 @@ adv_orig_node *orig_node)
  #endif /* _NET_BATMAN_ADV_MULTICAST_H_ */
 diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_f=
 orw.c
-index d378e6f2de18..e2b0cd51cec4 100644
+index 4a6e0def0987..9637c8fa4577 100644
 --- a/net/batman-adv/multicast_forw.c
 +++ b/net/batman-adv/multicast_forw.c
-@@ -8,17 +8,293 @@
+@@ -7,24 +7,307 @@
+ #include "multicast.h"
+ #include "main.h"
 =20
++#include <linux/bug.h>
++#include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
  #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
  #include <linux/if_ether.h>
 +#include <linux/if_vlan.h>
 +#include <linux/ipv6.h>
++#include <linux/limits.h>
  #include <linux/netdevice.h>
++#include <linux/rculist.h>
++#include <linux/rcupdate.h>
  #include <linux/skbuff.h>
+ #include <linux/stddef.h>
++#include <linux/string.h>
  #include <linux/types.h>
+ #include <uapi/linux/batadv_packet.h>
 =20
 +#include "bridge_loop_avoidance.h"
  #include "originator.h"
  #include "routing.h"
  #include "send.h"
-+#include "soft-interface.h"
 +#include "translation-table.h"
 =20
  #define batadv_mcast_forw_tracker_for_each_dest(dest, num_dests) \
@@ -390,8 +403,10 @@ v,
 +		orig_node =3D batadv_mcast_forw_orig_entry(node, entry_offset);
 +		if (!orig_node ||
 +		    !batadv_mcast_forw_push_dest(bat_priv, skb, vid, orig_node,
-+						 num_dests))
++						 num_dests)) {
++			rcu_read_unlock();
 +			return false;
++		}
 +	}
 +	rcu_read_unlock();
 +
@@ -585,7 +600,7 @@ f *skb,
   * batadv_mcast_forw_tracker_hdrlen() - calculate tracker TVLV header le=
 ngth
   * @num_dests: the number of destination addresses to taken into account
-@@ -39,6 +315,120 @@ static int batadv_mcast_forw_tracker_hdrlen(unsigned=
+@@ -45,6 +328,120 @@ static int batadv_mcast_forw_tracker_hdrlen(unsigned=
  int num_dests)
  		return len - sizeof(mcast_tracker->align);
  }
@@ -724,7 +739,7 @@ ise, on
   * batadv_mcast_forw_orig_to_neigh() - get next hop neighbor to an orig =
 address
   * @bat_priv: the bat priv with all the soft interface information
-@@ -266,3 +656,117 @@ int batadv_mcast_forw_tracker_tvlv_handler(struct b=
+@@ -272,3 +669,117 @@ int batadv_mcast_forw_tracker_tvlv_handler(struct b=
 atadv_priv *bat_priv,
  {
  	return batadv_mcast_forw_packet(bat_priv, skb, false);
@@ -854,10 +869,10 @@ t packet
 +}
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
 ace.c
-index d30598eb557c..2a80fa3dd3b1 100644
+index 97f4d7abe54e..d2b402e9c71f 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -299,12 +299,13 @@ static netdev_tx_t batadv_interface_tx(struct sk_bu=
+@@ -298,12 +298,13 @@ static netdev_tx_t batadv_interface_tx(struct sk_bu=
 ff *skb,
 =20
  send:
@@ -873,7 +888,7 @@ ff *skb,
  				do_bcast =3D false;
  				break;
  			case BATADV_FORW_NONE:
-@@ -363,6 +364,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
+@@ -362,6 +363,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
  *skb,
  		} else if (forw_mode =3D=3D BATADV_FORW_UCASTS) {
  			ret =3D batadv_mcast_forw_send(bat_priv, skb, vid,
@@ -883,7 +898,7 @@ ff *skb,
  		} else {
  			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
  								  skb))
-@@ -760,6 +763,7 @@ static int batadv_softif_init_late(struct net_device =
+@@ -759,6 +762,7 @@ static int batadv_softif_init_late(struct net_device =
 *dev)
  	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
  	atomic_set(&bat_priv->mcast.num_want_all_ipv4, 0);
