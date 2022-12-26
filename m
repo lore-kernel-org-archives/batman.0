@@ -1,268 +1,501 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: [RFC PATCH] batman-adv: Drop support for Linux < 4.14
-Date: Fri, 16 Dec 2022 20:08:23 +0100
-Message-Id: <20221216190823.574479-1-sven@narfation.org>
+Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH 1/5] batman-adv: mcast: remove now redundant single ucast
+ forwarding
+Date: Mon, 26 Dec 2022 17:02:29 +0100
+Message-Id: <20221226160233.9521-2-linus.luessing@c0d3.blue>
+In-Reply-To: <20221226160233.9521-1-linus.luessing@c0d3.blue>
+References: <20221226160233.9521-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
-List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
-List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
-List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
+List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
+List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
-The Linux Kernel 4.9 reached its end of life [1] after 6 years. Instead it
-is recommended to use at least kernel 4.14. It is also over 5 years
-old but still maintained by the stable kernel team. All older kernels
-(4.9 - v4.13) will be dropped to reduce the support overhead.
+The multicast code to send a multicast packet via multiple batman-adv
+unicast packets is not only capable of sending to multiple but also to a
+single node. Therefore we can safely remove the old, specialized, now
+redundant multicast-to-single-unicast code.
 
-[1] TODO: https://lore.kernel.org/r/XXXX
+The only functional change of this simplification is that the edge case
+of allowing a multicast packet with an unsnoopable destination address
+(224.0.0.0/24 or ff02::1) where only a single node has signaled interest
+in it via the batman-adv want-all-unsnoopables multicast flag is now
+transmitted via a batman-adv broadcast instead of a batman-adv unicast
+packet. Maintaining this edge case feature does not seem worth the extra
+lines of code and people should just not expect to be able to snoop and
+optimize such unsnoopable multicast addresses when bridges are involved.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+While at it also renaming a few items in the batadv_forw_mode enum to
+prepare for the new batman-adv multicast packet type.
+
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
- README.external.rst                  |  2 +-
- compat-include/linux/build_bug.h     | 31 -------------------------
- compat-include/linux/netdevice.h     | 19 ----------------
- compat-include/linux/prandom.h       |  1 -
- compat-include/linux/skbuff.h        | 29 ------------------------
- compat-include/linux/timer.h         | 34 ----------------------------
- compat-include/uapi/linux/if_ether.h | 25 --------------------
- compat.h                             | 10 --------
- 8 files changed, 1 insertion(+), 150 deletions(-)
- delete mode 100644 compat-include/linux/build_bug.h
- delete mode 100644 compat-include/linux/timer.h
- delete mode 100644 compat-include/uapi/linux/if_ether.h
+ net/batman-adv/multicast.c      | 248 ++------------------------------
+ net/batman-adv/multicast.h      |  38 +----
+ net/batman-adv/soft-interface.c |  25 ++--
+ 3 files changed, 33 insertions(+), 278 deletions(-)
 
-diff --git a/README.external.rst b/README.external.rst
-index 34f3a8d4..e9f00ee0 100644
---- a/README.external.rst
-+++ b/README.external.rst
-@@ -12,7 +12,7 @@ and as an external module. The external  module   allows  to  get
- new    features without  upgrading  to  a  newer  kernel  version
- and to get batman-adv specific bug fixes for  kernels  that   are
- not   supported   anymore.  It compiles  against  and should work
--with  Linux 4.9  -  6.1.  Supporting  older   versions   is   not
-+with  Linux 4.14  -  6.1.  Supporting  older  versions   is   not
- planned,  but it's probably easy to backport it. If you work on a
- backport, feel free to contact us.  :-)
- 
-diff --git a/compat-include/linux/build_bug.h b/compat-include/linux/build_bug.h
-deleted file mode 100644
-index 8ec79069..00000000
---- a/compat-include/linux/build_bug.h
-+++ /dev/null
-@@ -1,31 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) B.A.T.M.A.N. contributors:
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 34897a15ad9d..dbe7fcfad512 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -1144,223 +1144,20 @@ static int batadv_mcast_forw_rtr_count(struct ba=
+tadv_priv *bat_priv,
+ 	}
+ }
+=20
+-/**
+- * batadv_mcast_forw_tt_node_get() - get a multicast tt node
+- * @bat_priv: the bat priv with all the soft interface information
+- * @ethhdr: the ether header containing the multicast destination
 - *
-- * Marek Lindner, Simon Wunderlich
-- *
-- * This file contains macros for maintaining compatibility with older versions
-- * of the Linux kernel.
+- * Return: an orig_node matching the multicast address provided by ethhd=
+r
+- * via a translation table lookup. This increases the returned nodes ref=
+count.
 - */
--
--#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
--#define _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
--
--#include <linux/version.h>
--#if LINUX_VERSION_IS_GEQ(4, 13, 0)
--#include_next <linux/build_bug.h>
--#else
--#include <linux/bug.h>
--
--/* Linux 4.9.297 doesn't provide BUILD_BUG_ON anymore in linux/bug.h
-- * also identified itself with the version number 4.9.255 when decoding the
-- * LINUX_VERSION_CODE. So we have to try to guess now if we need to include
-- * linux/build_bug.h based on whether BUILD_BUG_ON is defined  or not after
-- * including linux/bug.h
-- */
--#ifndef BUILD_BUG_ON
--#include_next <linux/build_bug.h>
--#endif
--
--#endif
--
--#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_ */
-diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
-index eeb31bed..3188ad3d 100644
---- a/compat-include/linux/netdevice.h
-+++ b/compat-include/linux/netdevice.h
-@@ -20,25 +20,6 @@
- 
- #endif /* LINUX_VERSION_IS_LESS(4, 15, 0) */
- 
--#if LINUX_VERSION_IS_LESS(4, 11, 9)
--
--/* work around missing attribute needs_free_netdev and priv_destructor in
-- * net_device
-- */
--#define ether_setup(dev) \
--	void batadv_softif_free2(struct net_device *dev) \
--	{ \
--		batadv_softif_free(dev); \
--		free_netdev(dev); \
--	} \
--	void (*t1)(struct net_device *dev) __attribute__((unused)); \
--	bool t2 __attribute__((unused)); \
--	ether_setup(dev)
--#define needs_free_netdev destructor = batadv_softif_free2; t2
--#define priv_destructor destructor = batadv_softif_free2; t1
--
--#endif /* LINUX_VERSION_IS_LESS(4, 11, 9) */
--
- 
- #if LINUX_VERSION_IS_LESS(5, 15, 0)
- 
-diff --git a/compat-include/linux/prandom.h b/compat-include/linux/prandom.h
-index dc227e61..ec2f5244 100644
---- a/compat-include/linux/prandom.h
-+++ b/compat-include/linux/prandom.h
-@@ -12,7 +12,6 @@
- 
- #include <linux/version.h>
- #if LINUX_VERSION_IS_GEQ(5, 8, 1) || \
--    (LINUX_VERSION_IS_GEQ(4, 9, 233) && LINUX_VERSION_IS_LESS(4, 10, 0)) || \
-     (LINUX_VERSION_IS_GEQ(4, 14, 193) && LINUX_VERSION_IS_LESS(4, 15, 0)) || \
-     (LINUX_VERSION_IS_GEQ(4, 19, 138) && LINUX_VERSION_IS_LESS(4, 20, 0)) || \
-     (LINUX_VERSION_IS_GEQ(5, 4, 57) && LINUX_VERSION_IS_LESS(5, 5, 0)) || \
-diff --git a/compat-include/linux/skbuff.h b/compat-include/linux/skbuff.h
-index 77c4e99f..eda2d181 100644
---- a/compat-include/linux/skbuff.h
-+++ b/compat-include/linux/skbuff.h
-@@ -13,35 +13,6 @@
- #include <linux/version.h>
- #include_next <linux/skbuff.h>
- 
--#if LINUX_VERSION_IS_LESS(4, 13, 0)
--
--static inline void *batadv_skb_put(struct sk_buff *skb, unsigned int len)
+-static struct batadv_orig_node *
+-batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
+-			      struct ethhdr *ethhdr)
 -{
--	return (void *)skb_put(skb, len);
--}
--#define skb_put batadv_skb_put
--
--static inline void *skb_put_zero(struct sk_buff *skb, unsigned int len)
--{
--	void *tmp = skb_put(skb, len);
--
--	memset(tmp, 0, len);
--
--	return tmp;
+-	return batadv_transtable_search(bat_priv, NULL, ethhdr->h_dest,
+-					BATADV_NO_FLAGS);
 -}
 -
--static inline void *skb_put_data(struct sk_buff *skb, const void *data,
--				 unsigned int len)
+-/**
+- * batadv_mcast_forw_ipv4_node_get() - get a node with an ipv4 flag
+- * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 flag se=
+t and
+- * increases its refcount.
+- */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
 -{
--	void *tmp = skb_put(skb, len);
+-	struct batadv_orig_node *tmp_orig_node, *orig_node =3D NULL;
 -
--	memcpy(tmp, data, len);
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_orig_node,
+-				 &bat_priv->mcast.want_all_ipv4_list,
+-				 mcast_want_all_ipv4_node) {
+-		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+-			continue;
 -
--	return tmp;
+-		orig_node =3D tmp_orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return orig_node;
 -}
 -
--#endif /* LINUX_VERSION_IS_LESS(4, 13, 0) */
--
- #if LINUX_VERSION_IS_LESS(5, 4, 0)
- 
- #define nf_reset_ct nf_reset
-diff --git a/compat-include/linux/timer.h b/compat-include/linux/timer.h
-deleted file mode 100644
-index 36da61f7..00000000
---- a/compat-include/linux/timer.h
-+++ /dev/null
-@@ -1,34 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) B.A.T.M.A.N. contributors:
+-/**
+- * batadv_mcast_forw_ipv6_node_get() - get a node with an ipv6 flag
+- * @bat_priv: the bat priv with all the soft interface information
 - *
-- * Marek Lindner, Simon Wunderlich
-- *
-- * This file contains macros for maintaining compatibility with older versions
-- * of the Linux kernel.
+- * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_IPV6 flag se=
+t
+- * and increases its refcount.
 - */
--
--#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H
--#define _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H
--
--#include <linux/version.h>
--#include_next <linux/timer.h>
--
--#if LINUX_VERSION_IS_LESS(4, 14, 0)
--
--#define TIMER_DATA_TYPE		unsigned long
--#define TIMER_FUNC_TYPE		void (*)(TIMER_DATA_TYPE)
--
--static inline void timer_setup(struct timer_list *timer,
--			       void (*callback)(struct timer_list *),
--			       unsigned int flags)
+-static struct batadv_orig_node *
+-batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
 -{
--	__setup_timer(timer, (TIMER_FUNC_TYPE)callback,
--		      (TIMER_DATA_TYPE)timer, flags);
+-	struct batadv_orig_node *tmp_orig_node, *orig_node =3D NULL;
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_orig_node,
+-				 &bat_priv->mcast.want_all_ipv6_list,
+-				 mcast_want_all_ipv6_node) {
+-		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+-			continue;
+-
+-		orig_node =3D tmp_orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return orig_node;
 -}
 -
--#define from_timer(var, callback_timer, timer_fieldname) \
--	container_of(callback_timer, typeof(*var), timer_fieldname)
--
--#endif /* LINUX_VERSION_IS_LESS(4, 14, 0) */
--
--#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_TIMER_H */
-diff --git a/compat-include/uapi/linux/if_ether.h b/compat-include/uapi/linux/if_ether.h
-deleted file mode 100644
-index a23fa4d8..00000000
---- a/compat-include/uapi/linux/if_ether.h
-+++ /dev/null
-@@ -1,25 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright (C) B.A.T.M.A.N. contributors:
+-/**
+- * batadv_mcast_forw_ip_node_get() - get a node with an ipv4/ipv6 flag
+- * @bat_priv: the bat priv with all the soft interface information
+- * @ethhdr: an ethernet header to determine the protocol family from
 - *
-- * Marek Lindner, Simon Wunderlich
-- *
-- * This file contains macros for maintaining compatibility with older versions
-- * of the Linux kernel.
+- * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 or
+- * BATADV_MCAST_WANT_ALL_IPV6 flag, depending on the provided ethhdr, se=
+ts and
+- * increases its refcount.
 - */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
+-			      struct ethhdr *ethhdr)
+-{
+-	switch (ntohs(ethhdr->h_proto)) {
+-	case ETH_P_IP:
+-		return batadv_mcast_forw_ipv4_node_get(bat_priv);
+-	case ETH_P_IPV6:
+-		return batadv_mcast_forw_ipv6_node_get(bat_priv);
+-	default:
+-		/* we shouldn't be here... */
+-		return NULL;
+-	}
+-}
 -
--#ifndef _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_
--#define _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_
+-/**
+- * batadv_mcast_forw_unsnoop_node_get() - get a node with an unsnoopable=
+ flag
+- * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_UNSNOOPABLES=
+ flag
+- * set and increases its refcount.
+- */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
+-{
+-	struct batadv_orig_node *tmp_orig_node, *orig_node =3D NULL;
 -
--#include <linux/version.h>
--#include_next <uapi/linux/if_ether.h>
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_orig_node,
+-				 &bat_priv->mcast.want_all_unsnoopables_list,
+-				 mcast_want_all_unsnoopables_node) {
+-		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+-			continue;
 -
+-		orig_node =3D tmp_orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
 -
--#if LINUX_VERSION_IS_LESS(4, 10, 0)
+-	return orig_node;
+-}
 -
--#ifndef ETH_MIN_MTU
--#define ETH_MIN_MTU	68
--#endif
+-/**
+- * batadv_mcast_forw_rtr4_node_get() - get a node with an ipv4 mcast rou=
+ter flag
+- * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: an orig_node which has the BATADV_MCAST_WANT_NO_RTR4 flag uns=
+et and
+- * increases its refcount.
+- */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_rtr4_node_get(struct batadv_priv *bat_priv)
+-{
+-	struct batadv_orig_node *tmp_orig_node, *orig_node =3D NULL;
 -
--#endif /* LINUX_VERSION_IS_LESS(4, 10, 0) */
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_orig_node,
+-				 &bat_priv->mcast.want_all_rtr4_list,
+-				 mcast_want_all_rtr4_node) {
+-		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+-			continue;
 -
--#endif	/* _NET_BATMAN_ADV_COMPAT_UAPI_LINUX_IF_ETHER_H_ */
-diff --git a/compat.h b/compat.h
-index 86e68d83..8e19f9bb 100644
---- a/compat.h
-+++ b/compat.h
-@@ -15,16 +15,6 @@
- 
- #include "compat-autoconf.h"
- 
--#if LINUX_VERSION_IS_LESS(4, 13, 0)
+-		orig_node =3D tmp_orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
 -
--#define batadv_softif_validate(__tb, __data, __extack) \
--	batadv_softif_validate(__tb, __data)
+-	return orig_node;
+-}
 -
--#define batadv_softif_newlink(__src_net, __dev, __tb, __data, __extack) \
--	batadv_softif_newlink(__src_net, __dev, __tb, __data)
+-/**
+- * batadv_mcast_forw_rtr6_node_get() - get a node with an ipv6 mcast rou=
+ter flag
+- * @bat_priv: the bat priv with all the soft interface information
+- *
+- * Return: an orig_node which has the BATADV_MCAST_WANT_NO_RTR6 flag uns=
+et
+- * and increases its refcount.
+- */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_rtr6_node_get(struct batadv_priv *bat_priv)
+-{
+-	struct batadv_orig_node *tmp_orig_node, *orig_node =3D NULL;
 -
--#endif /* LINUX_VERSION_IS_LESS(4, 13, 0) */
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_orig_node,
+-				 &bat_priv->mcast.want_all_rtr6_list,
+-				 mcast_want_all_rtr6_node) {
+-		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+-			continue;
 -
- 
- #if LINUX_VERSION_IS_LESS(4, 15, 0)
- 
--- 
-2.35.1
-
+-		orig_node =3D tmp_orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return orig_node;
+-}
+-
+-/**
+- * batadv_mcast_forw_rtr_node_get() - get a node with an ipv4/ipv6 route=
+r flag
+- * @bat_priv: the bat priv with all the soft interface information
+- * @ethhdr: an ethernet header to determine the protocol family from
+- *
+- * Return: an orig_node which has no BATADV_MCAST_WANT_NO_RTR4 or
+- * BATADV_MCAST_WANT_NO_RTR6 flag, depending on the provided ethhdr, set=
+ and
+- * increases its refcount.
+- */
+-static struct batadv_orig_node *
+-batadv_mcast_forw_rtr_node_get(struct batadv_priv *bat_priv,
+-			       struct ethhdr *ethhdr)
+-{
+-	switch (ntohs(ethhdr->h_proto)) {
+-	case ETH_P_IP:
+-		return batadv_mcast_forw_rtr4_node_get(bat_priv);
+-	case ETH_P_IPV6:
+-		return batadv_mcast_forw_rtr6_node_get(bat_priv);
+-	default:
+-		/* we shouldn't be here... */
+-		return NULL;
+-	}
+-}
+-
+ /**
+  * batadv_mcast_forw_mode() - check on how to forward a multicast packet
+  * @bat_priv: the bat priv with all the soft interface information
+- * @skb: The multicast packet to check
+- * @orig: an originator to be set to forward the skb to
++ * @skb: the multicast packet to check
+  * @is_routable: stores whether the destination is routable
+  *
+- * Return: the forwarding mode as enum batadv_forw_mode and in case of
+- * BATADV_FORW_SINGLE set the orig to the single originator the skb
+- * should be forwarded to.
++ * Return: The forwarding mode as enum batadv_forw_mode.
+  */
+ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb=
+,
+-		       struct batadv_orig_node **orig, int *is_routable)
++		       int *is_routable)
+ {
+ 	int ret, tt_count, ip_count, unsnoop_count, total_count;
+ 	bool is_unsnoopable =3D false;
+-	unsigned int mcast_fanout;
+ 	struct ethhdr *ethhdr;
+ 	int rtr_count =3D 0;
+=20
+@@ -1369,7 +1166,7 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv=
+, struct sk_buff *skb,
+ 	if (ret =3D=3D -ENOMEM)
+ 		return BATADV_FORW_NONE;
+ 	else if (ret < 0)
+-		return BATADV_FORW_ALL;
++		return BATADV_FORW_BCAST;
+=20
+ 	ethhdr =3D eth_hdr(skb);
+=20
+@@ -1382,32 +1179,15 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
+iv, struct sk_buff *skb,
+=20
+ 	total_count =3D tt_count + ip_count + unsnoop_count + rtr_count;
+=20
+-	switch (total_count) {
+-	case 1:
+-		if (tt_count)
+-			*orig =3D batadv_mcast_forw_tt_node_get(bat_priv, ethhdr);
+-		else if (ip_count)
+-			*orig =3D batadv_mcast_forw_ip_node_get(bat_priv, ethhdr);
+-		else if (unsnoop_count)
+-			*orig =3D batadv_mcast_forw_unsnoop_node_get(bat_priv);
+-		else if (rtr_count)
+-			*orig =3D batadv_mcast_forw_rtr_node_get(bat_priv,
+-							       ethhdr);
+-
+-		if (*orig)
+-			return BATADV_FORW_SINGLE;
+-
+-		fallthrough;
+-	case 0:
++	if (!total_count)
+ 		return BATADV_FORW_NONE;
+-	default:
+-		mcast_fanout =3D atomic_read(&bat_priv->multicast_fanout);
++	else if (unsnoop_count)
++		return BATADV_FORW_BCAST;
+=20
+-		if (!unsnoop_count && total_count <=3D mcast_fanout)
+-			return BATADV_FORW_SOME;
+-	}
++	if (total_count <=3D atomic_read(&bat_priv->multicast_fanout))
++		return BATADV_FORW_UCASTS;
+=20
+-	return BATADV_FORW_ALL;
++	return BATADV_FORW_BCAST;
+ }
+=20
+ /**
+@@ -1419,10 +1199,10 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
+iv, struct sk_buff *skb,
+  *
+  * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
+  */
+-int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
+-				struct sk_buff *skb,
+-				unsigned short vid,
+-				struct batadv_orig_node *orig_node)
++static int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
++				       struct sk_buff *skb,
++				       unsigned short vid,
++				       struct batadv_orig_node *orig_node)
+ {
+ 	/* Avoid sending multicast-in-unicast packets to other BLA
+ 	 * gateways - they already got the frame from the LAN side
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 8aec818d0bf6..a9770d8d6d36 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -17,23 +17,16 @@
+  */
+ enum batadv_forw_mode {
+ 	/**
+-	 * @BATADV_FORW_ALL: forward the packet to all nodes (currently via
+-	 *  classic flooding)
++	 * @BATADV_FORW_BCAST: forward the packet to all nodes via a batman-adv
++	 *  broadcast packet
+ 	 */
+-	BATADV_FORW_ALL,
++	BATADV_FORW_BCAST,
+=20
+ 	/**
+-	 * @BATADV_FORW_SOME: forward the packet to some nodes (currently via
+-	 *  a multicast-to-unicast conversion and the BATMAN unicast routing
+-	 *  protocol)
++	 * @BATADV_FORW_UCASTS: forward the packet to some nodes via one
++	 *  or more batman-adv unicast packets
+ 	 */
+-	BATADV_FORW_SOME,
+-
+-	/**
+-	 * @BATADV_FORW_SINGLE: forward the packet to a single node (currently
+-	 *  via the BATMAN unicast routing protocol)
+-	 */
+-	BATADV_FORW_SINGLE,
++	BATADV_FORW_UCASTS,
+=20
+ 	/** @BATADV_FORW_NONE: don't forward, drop it */
+ 	BATADV_FORW_NONE,
+@@ -43,14 +36,8 @@ enum batadv_forw_mode {
+=20
+ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb=
+,
+-		       struct batadv_orig_node **mcast_single_orig,
+ 		       int *is_routable);
+=20
+-int batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
+-				struct sk_buff *skb,
+-				unsigned short vid,
+-				struct batadv_orig_node *orig_node);
+-
+ int batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff =
+*skb,
+ 			   unsigned short vid, int is_routable);
+=20
+@@ -69,20 +56,9 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *=
+orig_node);
+=20
+ static inline enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb=
+,
+-		       struct batadv_orig_node **mcast_single_orig,
+ 		       int *is_routable)
+ {
+-	return BATADV_FORW_ALL;
+-}
+-
+-static inline int
+-batadv_mcast_forw_send_orig(struct batadv_priv *bat_priv,
+-			    struct sk_buff *skb,
+-			    unsigned short vid,
+-			    struct batadv_orig_node *orig_node)
+-{
+-	kfree_skb(skb);
+-	return NET_XMIT_DROP;
++	return BATADV_FORW_BCAST;
+ }
+=20
+ static inline int
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
+ace.c
+index 0f5c0679b55a..b70d0167d2fa 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -196,8 +196,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
+ *skb,
+ 	unsigned short vid;
+ 	u32 seqno;
+ 	int gw_mode;
+-	enum batadv_forw_mode forw_mode =3D BATADV_FORW_SINGLE;
+-	struct batadv_orig_node *mcast_single_orig =3D NULL;
++	enum batadv_forw_mode forw_mode =3D BATADV_FORW_BCAST;
+ 	int mcast_is_routable =3D 0;
+ 	int network_offset =3D ETH_HLEN;
+ 	__be16 proto;
+@@ -301,14 +300,18 @@ static netdev_tx_t batadv_interface_tx(struct sk_bu=
+ff *skb,
+ send:
+ 		if (do_bcast && !is_broadcast_ether_addr(ethhdr->h_dest)) {
+ 			forw_mode =3D batadv_mcast_forw_mode(bat_priv, skb,
+-							   &mcast_single_orig,
+ 							   &mcast_is_routable);
+-			if (forw_mode =3D=3D BATADV_FORW_NONE)
+-				goto dropped;
+-
+-			if (forw_mode =3D=3D BATADV_FORW_SINGLE ||
+-			    forw_mode =3D=3D BATADV_FORW_SOME)
++			switch (forw_mode) {
++			case BATADV_FORW_BCAST:
++				break;
++			case BATADV_FORW_UCASTS:
+ 				do_bcast =3D false;
++				break;
++			case BATADV_FORW_NONE:
++				fallthrough;
++			default:
++				goto dropped;
++			}
+ 		}
+ 	}
+=20
+@@ -357,10 +360,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buf=
+f *skb,
+ 			if (ret)
+ 				goto dropped;
+ 			ret =3D batadv_send_skb_via_gw(bat_priv, skb, vid);
+-		} else if (mcast_single_orig) {
+-			ret =3D batadv_mcast_forw_send_orig(bat_priv, skb, vid,
+-							  mcast_single_orig);
+-		} else if (forw_mode =3D=3D BATADV_FORW_SOME) {
++		} else if (forw_mode =3D=3D BATADV_FORW_UCASTS) {
+ 			ret =3D batadv_mcast_forw_send(bat_priv, skb, vid,
+ 						     mcast_is_routable);
+ 		} else {
+@@ -386,7 +386,6 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
+ *skb,
+ dropped_freed:
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_TX_DROPPED);
+ end:
+-	batadv_orig_node_put(mcast_single_orig);
+ 	batadv_hardif_put(primary_if);
+ 	return NETDEV_TX_OK;
+ }
+--=20
+2.39.0
