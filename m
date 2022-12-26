@@ -1,11 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: Implementation of a Stateless Multicast Packet Type
+Date: Mon, 26 Dec 2022 17:02:28 +0100
+Message-Id: <20221226160233.9521-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-From: dan <dandenson@gmail.com>
-Date: Thu, 29 Dec 2022 13:15:53 -0700
-Message-ID: 
- <CAA_JP8ULjMoUymX6M-Guz7Z0AcXZd8TOm3R_E8K-LTyiaNEOgA@mail.gmail.com>
-Subject: using alfred (or other means) to collect link data
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,25 +16,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I'm looking for a way to collect link data between nodes.  My
-google-fu has failed me on how to get node-to-node data like latency
-or throughput etc.  Is there any model built in to batman-adv/alfred
-to poll this data?  I only really finding the batvis data which is
-just returning metric.
+Hi,
 
-I'm mostly wanting to see how traffic is flowing, where links are
-being more heavily used especially if those are not shortest paths
-(suggests I have something to fix) and to keep track of a sort of high
-water mark to metric ratio.  ie, this link has done 260Mbps with the
-link metric <=1.2 in the last 48 hours and it's currently doing
-105Mbps at 1.08 metric.
+The following patchset implements a stateless, TVLV capable batman-adv
+multicast packet type.
 
-my current plan is to run scripts to find 1 hop neighbors and either
-so an arp-scan or find IP and ping directly on a schedule and store
-that in alfred or just push it up to my database but this is a little
-brute-forcy considering batman-adv is doing some of this work to
-create the route metric in the first place.
+The new batman-adv multicast packet type allows to contain several
+originator destination MAC addresses within a TVLV. Routers on the way wi=
+ll
+potentially split the batman-adv multicast packet and adjust its tracker
+TVLV contents.
 
-Any advice appreciated.  Thanks.
+Routing decisions are still based on the selected BATMAN IV or BATMAN V
+routing algorithm. So this new batman-adv multicast packet type retains
+the same loop-free properties.
+
+The purpose of this new packet type is to allow to forward an IP
+multicast packet with less transmissions / overhead than the
+multicast-via-multiple-unicasts approach. Or to reach a lot more
+destinations (currently up to 196, depending on the payload size, see
+Wiki documentation for details) than with the default multicast fanout
+for the via-unicasts approach.
+
+This will allow using applications like mDNS again in several Freifunk
+communities. And with less transmissions will also make more bulky
+multicast applications, like media streaming (to an assessable amount of
+receivers) a lot more feasible.
+
+This approach is way simpler than the original multicast (tracker) packet
+approach we envisioned years ago. As it involves no maintenance of an
+extra, state based multicast routing table. However the TVLV capability
+should allow to extend things later, to split control and data plane a bi=
+t
+more for instance, to further increase the number of destinations, to
+further reduce overhead.
+
+A compact overview can be found in the Wiki here, including limitations:
+
+https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-Packet-Type
+
+Regards, Linus
+
