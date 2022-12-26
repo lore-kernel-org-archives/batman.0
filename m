@@ -1,8 +1,8 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v4 0/5] Implementation of a Stateless Multicast Packet Type
-Date: Tue, 27 Dec 2022 20:34:04 +0100
-Message-Id: <20221227193409.13461-1-linus.luessing@c0d3.blue>
+Subject: [PATCH v2 0/5] Implementation of a Stateless Multicast Packet Type
+Date: Mon, 26 Dec 2022 17:15:49 +0100
+Message-Id: <20221226161554.9657-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -59,57 +59,7 @@ https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-Packet-Type
 
 Regards, Linus
 
-___
-
-Changelog v4:
-* PATCH 4/5:
-  * add missing include for linux/types.h in multicast.h
-  * add missing kerneldoc for @bat_priv in batadv_mcast_forw_push_dest()
-    and batadv_mcast_forw_push_tvlvs()
-  * use sizeof_field(type, field) instead of sizeof(((type *)0)->field)
-    in batadv_mcast_forw_push_dest()
-* PATCH 5/5:
-  * rename num_dests_remove to num_dests_reduce in
-    batadv_mcast_forw_shrink_align_offse() to fix kerneldocs and for
-    consistency=20
-  * fix typo in kerneldoc in batadv_mcast_forw_shrink_update_headers()
-    -> @num_dest_reduce -> @num_dests_reduce=20
-  * use sizeof_field(type, field) instead of sizeof(((type *)0)->field)
-    in batadv_mcast_forw_shrink_align_offset()
-
-Changelog v3:
-* PATCH 1/5:
-  * remove now obsolete includes
-* PATCH 2/5:
-  * fix batadv_tvlv_handler_register() in network-coding.c
-  * add missing include for linux/skbuff.h
-  * move variable declarations out of the switch case
-    in batadv_tvlv_call_handler()
-* PATCH 3/5:
-  * remove unnecessary include of multicast.h in routing.c
-  * add a few missing includes to multicast_forw.c
-    (linux/byteorder/generic.h, linux/errno.h, linux/gfp.h, linux/stddef.=
-h
-     uapi/linux/batadv_packet.h, multicast.h)
-* PATCH 4/5:
-  * add missing rcu_read_unlock() in error case before returning in
-    batadv_mcast_forw_push_dests_list()
-  * remove unnecessary include of soft-interface.h in multicast_forw.c
-  * add a few missing includes to multicast_forw.c
-    (linux/bug.h, linux/build_bug.h, linux/limits.h, linux/rculist.h,
-     linux/rcupdate.h, linux/string.h)
-  * make batadv_mcast_forw_mode_by_count() static
-  * fix return types in the declaration of
-    batadv_mcast_forw_packet_hdrlen() and batadv_mcast_forw_push()
-    in multicast.h
-  * fix typo in commit message: "that the are capable of"
-    -> "that the*y* are capable of"
-* PATCH 5/5:
-  * make batadv_mcast_forw_shrink_pack_dests() adhere to 80 characters
-    per line for consistency
-  * add a "continue" statement after the jump label in
-    batadv_mcast_forw_shrink_pack_dests() to silence the sparse error
-    "error: label at end of compound statement"
+---
 
 Changelog v2:
 * Add "[PATCH v2 0/5]" prefix to title of cover letter, so that
