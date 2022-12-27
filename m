@@ -1,11 +1,11 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v2 1/5] batman-adv: mcast: remove now redundant single ucast
+Subject: [PATCH v4 1/5] batman-adv: mcast: remove now redundant single ucast
  forwarding
-Date: Mon, 26 Dec 2022 17:15:50 +0100
-Message-Id: <20221226161554.9657-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20221226161554.9657-1-linus.luessing@c0d3.blue>
-References: <20221226161554.9657-1-linus.luessing@c0d3.blue>
+Date: Tue, 27 Dec 2022 20:34:05 +0100
+Message-Id: <20221227193409.13461-2-linus.luessing@c0d3.blue>
+In-Reply-To: <20221227193409.13461-1-linus.luessing@c0d3.blue>
+References: <20221227193409.13461-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
@@ -41,16 +41,24 @@ prepare for the new batman-adv multicast packet type.
 
 Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 ---
- net/batman-adv/multicast.c      | 248 ++------------------------------
+ net/batman-adv/multicast.c      | 249 ++------------------------------
  net/batman-adv/multicast.h      |  38 +----
- net/batman-adv/soft-interface.c |  25 ++--
- 3 files changed, 33 insertions(+), 278 deletions(-)
+ net/batman-adv/soft-interface.c |  26 ++--
+ 3 files changed, 33 insertions(+), 280 deletions(-)
 
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 34897a15ad9d..dbe7fcfad512 100644
+index 34897a15ad9d..505f230dc49e 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
-@@ -1144,223 +1144,20 @@ static int batadv_mcast_forw_rtr_count(struct ba=
+@@ -26,7 +26,6 @@
+ #include <linux/ipv6.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
+-#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -1144,223 +1143,20 @@ static int batadv_mcast_forw_rtr_count(struct ba=
 tadv_priv *bat_priv,
  	}
  }
@@ -292,7 +300,7 @@ r flag
  	struct ethhdr *ethhdr;
  	int rtr_count =3D 0;
 =20
-@@ -1369,7 +1166,7 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv=
+@@ -1369,7 +1165,7 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv=
 , struct sk_buff *skb,
  	if (ret =3D=3D -ENOMEM)
  		return BATADV_FORW_NONE;
@@ -302,7 +310,7 @@ r flag
 =20
  	ethhdr =3D eth_hdr(skb);
 =20
-@@ -1382,32 +1179,15 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
+@@ -1382,32 +1178,15 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
 iv, struct sk_buff *skb,
 =20
  	total_count =3D tt_count + ip_count + unsnoop_count + rtr_count;
@@ -342,7 +350,7 @@ iv, struct sk_buff *skb,
  }
 =20
  /**
-@@ -1419,10 +1199,10 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
+@@ -1419,10 +1198,10 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_pr=
 iv, struct sk_buff *skb,
   *
   * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
@@ -435,10 +443,18 @@ orig_node);
  static inline int
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
 ace.c
-index 0f5c0679b55a..b70d0167d2fa 100644
+index 0f5c0679b55a..125f4628687c 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -196,8 +196,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
+@@ -48,7 +48,6 @@
+ #include "hard-interface.h"
+ #include "multicast.h"
+ #include "network-coding.h"
+-#include "originator.h"
+ #include "send.h"
+ #include "translation-table.h"
+=20
+@@ -196,8 +195,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
  *skb,
  	unsigned short vid;
  	u32 seqno;
@@ -449,7 +465,7 @@ index 0f5c0679b55a..b70d0167d2fa 100644
  	int mcast_is_routable =3D 0;
  	int network_offset =3D ETH_HLEN;
  	__be16 proto;
-@@ -301,14 +300,18 @@ static netdev_tx_t batadv_interface_tx(struct sk_bu=
+@@ -301,14 +299,18 @@ static netdev_tx_t batadv_interface_tx(struct sk_bu=
 ff *skb,
  send:
  		if (do_bcast && !is_broadcast_ether_addr(ethhdr->h_dest)) {
@@ -475,7 +491,7 @@ ff *skb,
  		}
  	}
 =20
-@@ -357,10 +360,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buf=
+@@ -357,10 +359,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buf=
 f *skb,
  			if (ret)
  				goto dropped;
@@ -488,7 +504,7 @@ f *skb,
  			ret =3D batadv_mcast_forw_send(bat_priv, skb, vid,
  						     mcast_is_routable);
  		} else {
-@@ -386,7 +386,6 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
+@@ -386,7 +385,6 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff=
  *skb,
  dropped_freed:
  	batadv_inc_counter(bat_priv, BATADV_CNT_TX_DROPPED);
