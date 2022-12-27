@@ -1,15 +1,14 @@
 Return-Path: <b.a.t.m.a.n-bounces@lists.open-mesh.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v2 4/5] batman-adv: mcast: implement multicast packet
- generation
-Date: Mon, 26 Dec 2022 19:24:49 +0100
-Message-ID: <3910235.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20221226161554.9657-5-linus.luessing@c0d3.blue>
-References: <20221226161554.9657-1-linus.luessing@c0d3.blue>
- <20221226161554.9657-5-linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH v4 3/5] batman-adv: mcast: implement multicast packet
+ reception and forwarding
+Date: Tue, 27 Dec 2022 20:34:07 +0100
+Message-Id: <20221227193409.13461-4-linus.luessing@c0d3.blue>
+In-Reply-To: <20221227193409.13461-1-linus.luessing@c0d3.blue>
+References: <20221227193409.13461-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3671786.iIbC2pHGDl";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,5804 +20,802 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-
- 
---nextPart3671786.iIbC2pHGDl
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Date: Mon, 26 Dec 2022 19:24:49 +0100
-Message-ID: <3910235.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20221226161554.9657-5-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-
-On Monday, 26 December 2022 17:15:53 CET Linus L=C3=BCssing wrote:
-> Implement the preparation of a batman-adv multicast packet and use this
-> under certain conditions.
->=20
-> For one thing this implements the capability to push a complete
-> batman-adv multicast packet header, including a tracker TVLV with all
-> originator destinations that have signaled interest in it, onto a given
-> ethernet frame with an IP multicast packet inside.
->=20
-> For another checks are implemented to determine if encapsulating a
-> multicast packet in this new batman-adv multicast packet type and using
-> it is feasible. Those checks are:
->=20
-> 1) Have all nodes signaled that the are capable of handling the new
->    batman-adv multicast packet type?
-> 2) Do all active hard interfaces of all nodes, including us, have an MTU
->    of at least 1280 bytes?
-> 3) Does a complete multicast packet header with all its destination
->    addresses fit onto the given multicast packet / ethernet frame and
->    does not exceed 1280 bytes?
->=20
-> If all checks passed then the new batman-adv multicast packet type will
-> be used for transmission and distribution. Otherwise we fall back to one =
-or
-> more batman-adv unicast packet transmissions, if possible. Or if not
-> possible we will fall back to classic flooding through a batman-adv
-> broadcast packet.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
-> ---
->  net/batman-adv/multicast.c      |  79 ++++-
->  net/batman-adv/multicast.h      |  24 +-
->  net/batman-adv/multicast_forw.c | 504 ++++++++++++++++++++++++++++++++
->  net/batman-adv/soft-interface.c |   6 +-
->  net/batman-adv/types.h          |   6 +
->  5 files changed, 611 insertions(+), 8 deletions(-)
-
-Name of failed tests
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-ecsv/pu
-=2D------
-
- * checkpatch ./net/batman-adv/multicast_forw.c
- * headers
- * kerneldoc ./net/batman-adv/multicast_forw.c
- * sparse linux-4.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.11 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.11 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-4.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-4.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-4.14 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-4.14 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-4.14.302 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy =
-MCAST=3Dy BATMAN_V=3Dy
- * sparse linux-4.14.302 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy =
-MCAST=3Dn BATMAN_V=3Dy
- * sparse linux-4.14.302 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn =
-MCAST=3Dn BATMAN_V=3Dy
- * sparse linux-4.15 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-4.17 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.17 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.18 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-4.18 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-4.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-4.19 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy =
-MCAST=3Dn BATMAN_V=3Dn
- * sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn =
-MCAST=3Dy BATMAN_V=3Dy
- * sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy =
-MCAST=3Dy BATMAN_V=3Dn
- * sparse linux-4.19.269 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy =
-MCAST=3Dy BATMAN_V=3Dn
- * sparse linux-4.20 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-4.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-4.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-4.9.336 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn M=
-CAST=3Dy BATMAN_V=3Dn
- * sparse linux-4.9.336 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn M=
-CAST=3Dn BATMAN_V=3Dy
- * sparse linux-4.9.336 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy M=
-CAST=3Dn BATMAN_V=3Dy
- * sparse linux-4.9.336 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn M=
-CAST=3Dn BATMAN_V=3Dy
- * sparse linux-5.0 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.10 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-5.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.10 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn =
-MCAST=3Dn BATMAN_V=3Dy
- * sparse linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn =
-MCAST=3Dy BATMAN_V=3Dn
- * sparse linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy =
-MCAST=3Dy BATMAN_V=3Dn
- * sparse linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy =
-MCAST=3Dn BATMAN_V=3Dn
- * sparse linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn =
-MCAST=3Dy BATMAN_V=3Dy
- * sparse linux-5.11 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dy MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-5.12 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-5.12 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.12 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.13 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAS=
-T=3Dy BATMAN_V=3Dy
- * sparse linux-5.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.14 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn M=
-CAST=3Dn BATMAN_V=3Dy
- * sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy M=
-CAST=3Dn BATMAN_V=3Dn
- * sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn M=
-CAST=3Dn BATMAN_V=3Dn
- * sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn M=
-CAST=3Dy BATMAN_V=3Dn
- * sparse linux-5.15.83 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy M=
-CAST=3Dn BATMAN_V=3Dy
- * sparse linux-5.16 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.16 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.16 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dy
- * sparse linux-5.18 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAS=
-T=3Dy BATMAN_V=3Dn
- * sparse linux-5.18 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAS=
-T=3Dn BATMAN_V=3Dn
- * sparse linux-5.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-5.2 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.2 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.4 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.4.227 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy M=
-CAST=3Dy BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.6 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.6 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.7 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.7 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.7 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.7 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.8 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.8 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-5.9 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-5.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dn
- * sparse linux-5.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-6.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
-=3Dn BATMAN_V=3Dy
- * sparse linux-6.0 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-6.0.13 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MC=
-AST=3Dy BATMAN_V=3Dy
- * sparse linux-6.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dn
- * sparse linux-6.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
-=3Dy BATMAN_V=3Dy
- * sparse linux-6.1 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
-=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.11 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.14 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.14 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.14.302 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy=
- NC=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.14.302 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy=
- NC=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-4.15 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.18 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-4.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.19 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.19.269 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn=
- NC=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn=
- NC=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn=
- NC=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.19.269 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy=
- NC=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.20 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-4.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.9.336 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy =
-NC=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-4.9.336 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn =
-NC=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.0 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.10 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.10 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy=
- NC=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy=
- NC=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn=
- NC=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy=
- NC=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.11 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.13 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.14 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn =
-NC=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy =
-NC=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.15.83 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn =
-NC=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.16 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.18 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.18 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.2 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.2 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.4 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.4.227 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy =
-NC=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.5 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.6 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.7 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.7 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.7 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-5.9 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-5.9 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-5.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
- * unused_symbols linux-5.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
- * unused_symbols linux-6.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-6.0 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-6.0.13 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn N=
-C=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-6.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
- * unused_symbols linux-6.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dy
- * unused_symbols linux-6.1 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
-
-
-Output of different failed tests
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-
-ecsv/pu: checkpatch ./net/batman-adv/multicast_forw.c
-=2D----------------------------------------------------
-
-    CHECK: Macro argument reuse 'num_dests' - possible side-effects?
-    #24: FILE: ./net/batman-adv/multicast_forw.c:24:
-    +#define batadv_mcast_forw_tracker_for_each_dest(dest, num_dests) \
-    +   for (; num_dests; num_dests--, (dest) +=3D ETH_ALEN)
-   =20
-    total: 0 errors, 0 warnings, 1 checks, 772 lines checked
-
-ecsv/pu: headers
-=2D---------------
-
-    diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-    index 85f4b070..2f07a325 100644
-    --- a/net/batman-adv/multicast.c
-    +++ b/net/batman-adv/multicast.c
-    @@ -26,7 +26,6 @@
-     #include <linux/ipv6.h>
-     #include <linux/jiffies.h>
-     #include <linux/kernel.h>
-    -#include <linux/kref.h>
-     #include <linux/list.h>
-     #include <linux/lockdep.h>
-     #include <linux/netdevice.h>
-    diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast=
-_forw.c
-    index 05386847..0d214e0e 100644
-    --- a/net/batman-adv/multicast_forw.c
-    +++ b/net/batman-adv/multicast_forw.c
-    @@ -6,19 +6,29 @@
-    =20
-     #include "main.h" // IWYU pragma: keep
-    =20
-    +#include <linux/bug.h>
-    +#include <linux/build_bug.h>
-    +#include <linux/byteorder/generic.h>
-    +#include <linux/errno.h>
-     #include <linux/etherdevice.h>
-    +#include <linux/gfp.h>
-     #include <linux/if_ether.h>
-     #include <linux/if_vlan.h>
-     #include <linux/ipv6.h>
-    +#include <linux/limits.h>
-     #include <linux/netdevice.h>
-    +#include <linux/rculist.h>
-    +#include <linux/rcupdate.h>
-     #include <linux/skbuff.h>
-    +#include <linux/stddef.h>
-    +#include <linux/string.h>
-     #include <linux/types.h>
-    +#include <uapi/linux/batadv_packet.h>
-    =20
-     #include "bridge_loop_avoidance.h"
-     #include "originator.h"
-     #include "routing.h"
-     #include "send.h"
-    -#include "soft-interface.h"
-     #include "translation-table.h"
-    =20
-     #define batadv_mcast_forw_tracker_for_each_dest(dest, num_dests) \
-    diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-    index 0ecb86b3..eb905740 100644
-    --- a/net/batman-adv/routing.c
-    +++ b/net/batman-adv/routing.c
-    @@ -30,7 +30,6 @@
-     #include "fragmentation.h"
-     #include "hard-interface.h"
-     #include "log.h"
-    -#include "multicast.h"
-     #include "network-coding.h"
-     #include "originator.h"
-     #include "send.h"
-    diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-inte=
-rface.c
-    index b76b85b2..69334ef8 100644
-    --- a/net/batman-adv/soft-interface.c
-    +++ b/net/batman-adv/soft-interface.c
-    @@ -48,7 +48,6 @@
-     #include "hard-interface.h"
-     #include "multicast.h"
-     #include "network-coding.h"
-    -#include "originator.h"
-     #include "send.h"
-     #include "translation-table.h"
-    =20
-    diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
-    index d1c4e072..743688d1 100644
-    --- a/net/batman-adv/tvlv.h
-    +++ b/net/batman-adv/tvlv.h
-    @@ -9,6 +9,7 @@
-    =20
-     #include "main.h" // IWYU pragma: keep
-    =20
-    +#include <linux/skbuff.h>
-     #include <linux/types.h>
-     #include <uapi/linux/batadv_packet.h>
-
-ecsv/pu: kerneldoc ./net/batman-adv/multicast_forw.c
-=2D---------------------------------------------------
-
-    ./net/batman-adv/multicast_forw.c:72: warning: Function parameter or me=
-mber 'bat_priv' not described in 'batadv_mcast_forw_push_dest'
-    ./net/batman-adv/multicast_forw.c:385: warning: Function parameter or m=
-ember 'bat_priv' not described in 'batadv_mcast_forw_push_tvlvs'
-
-ecsv/pu: sparse linux-4.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:295: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:553: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1490: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.11 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:295: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:553: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1492: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.11 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:295: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:553: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1492: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:303: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:561: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1512: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:315: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:573: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1503: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.14.302 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy N=
-C=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:330: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:588: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1556: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.14.302 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy N=
-C=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:330: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:588: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1556: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.14.302 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy N=
-C=3Dn MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:330: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:588: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1556: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.15 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:317: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:575: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1508: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.15 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:317: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:575: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1508: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:313: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:559: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1571: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.17 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:313: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:559: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1571: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.18 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:318: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:558: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1500: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.18 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:318: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:558: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1500: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3D=
-n MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:306: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:546: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1517: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3D=
-n MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:306: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:546: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1517: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:306: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:546: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1517: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn N=
-C=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:304: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:544: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1551: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn N=
-C=3Dn MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:304: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:544: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1551: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.19.269 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn N=
-C=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:304: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:544: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1551: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.20 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:292: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:516: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1563: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:294: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:544: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1490: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:294: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:544: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1490: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.9.336 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:308: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:558: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1544: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.9.336 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:308: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:558: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1544: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-4.9.336 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dn MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:308: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:558: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1544: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.0 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:277: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:492: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1553: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:276: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:486: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1571: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:276: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:486: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1571: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:496: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1805: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:496: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1805: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:496: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1805: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy N=
-C=3Dn MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:286: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1837: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10.159 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy N=
-C=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:286: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1837: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn N=
-C=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:286: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1837: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.10.159 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy N=
-C=3Dn MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:286: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1837: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.11 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3D=
-y MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:496: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1800: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.12 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:271: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:514: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1851: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.12 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:271: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:514: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1851: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.13 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3D=
-y MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:272: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:515: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1847: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.14 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:271: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:514: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1851: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:277: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:540: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1868: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.15 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3D=
-n MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:277: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:540: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1868: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=
-=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:289: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:552: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1902: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=
-=3Dn MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:289: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:552: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1902: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=
-=3Dn MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:289: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:552: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1902: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.16 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3D=
-n MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:287: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:549: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1846: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.16 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:287: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:549: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1846: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3D=
-n MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:288: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:550: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1834: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3D=
-y MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:288: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:550: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1834: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:489: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1595: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.2 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:489: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1595: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.2 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    make[3]: *** [scripts/Makefile.build:279: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:489: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1595: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:281: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1624: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:281: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1624: _module_/home/build_test/build_env/tmp.HZw=
-c7zjBJI] Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:509: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1652: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.4 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:509: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1652: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.4.227 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=
-=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:262: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1739: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1693: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1693: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1693: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:266: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1693: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.6 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:268: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:505: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1683: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:268: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:505: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1683: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.7 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:267: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:488: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1729: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.7 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:267: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:488: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1729: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:267: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:488: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1729: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:267: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:488: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1729: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.8 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:281: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1756: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44: warning: incorrect type in argument 4 (different base types)
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    expected int ( *mptr )( ... )
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:44:    got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:37: error: not enough arguments for function batadv_tvlv_handler_r=
-egister
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:281: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1756: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.8 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: typename in expression
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: Expected ; at end of statement
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:26:=
- error: got int
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:17:=
- error: undefined identifier 'u8'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:21:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:17:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:401:64:=
- error: undefined identifier 'src'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:17:=
- error: undefined identifier 'unsigned'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:413:17:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:414:45:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:415:47:=
- error: undefined identifier 'tvlv_offset'
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:281: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:497: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1756: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.9 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:283: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:500: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1784: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-5.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:283: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:500: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1784: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-6.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn=
- MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:249: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:465: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1852: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn=
- MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c: In fun=
-ction =E2=80=98batadv_tvlv_call_handler=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:389:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       u8 *src;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:390:3: =
-error: expected expression before =E2=80=98u8=E2=80=99
-       u8 *dst;
-       ^~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-error: =E2=80=98dst=E2=80=99 undeclared (first use in this function)
-       dst =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->dst;
-       ^~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:399:3: =
-note: each undeclared identifier is reported only once for each function it=
- appears in
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:405:3: =
-error: a label can only be part of a statement and a declaration is not a s=
-tatement
-       unsigned int tvlv_offset;
-       ^~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:398:7: =
-warning: this statement may fall through [-Wimplicit-fallthrough=3D]
-       src =3D ((struct batadv_unicast_tvlv_packet *)skb->data)->src;
-       ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.c:404:2: =
-note: here
-      case BATADV_MCAST:
-      ^~~~
-    make[3]: *** [scripts/Makefile.build:249: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/tvlv.o] Error 1
-    make[2]: *** [scripts/Makefile.build:465: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1852: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-6.0 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:249: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:465: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1852: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-6.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy=
- MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast.c:12=
-06:1: warning: symbol 'batadv_mcast_forw_mode_by_count' was not declared. S=
-hould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:654:5: warning: symbol 'batadv_mcast_forw_tracker_tvlv_handler' was no=
-t declared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:669:14: warning: symbol 'batadv_mcast_forw_packet_hdrlen' was not decl=
-ared. Should it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:726:6: warning: symbol 'batadv_mcast_forw_push' was not declared. Shou=
-ld it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:760:5: warning: symbol 'batadv_mcast_forw_mcsend' was not declared. Sh=
-ould it be static?
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/multicast_forw=
-=2Ec:107:12: warning: context imbalance in 'batadv_mcast_forw_push_dests_li=
-st' - wrong count at exit
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:250: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:500: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1992: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: sparse linux-6.1 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy=
- MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec: In function =E2=80=98batadv_nc_mesh_init=E2=80=99:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:163:16: warning: passing argument 4 of =E2=80=98batadv_tvlv_handler_re=
-gister=E2=80=99 makes pointer from integer without a cast [-Wint-conversion]
-              NULL, BATADV_TVLV_NC, 1,
-                    ^~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:37:13: =
-note: expected =E2=80=98int (*)(struct batadv_priv *, struct sk_buff *)=E2=
-=80=99 but argument is of type =E2=80=98int=E2=80=99
-           int (*mptr)(struct batadv_priv *bat_priv,
-           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                struct sk_buff *skb),
-                ~~~~~~~~~~~~~~~~~~~~
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/network-coding=
-=2Ec:162:2: error: too few arguments to function =E2=80=98batadv_tvlv_handl=
-er_register=E2=80=99
-      batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
-      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    In file included from /home/build_test/build_env/tmp.HZwc7zjBJI/net/bat=
-man-adv/network-coding.c:45:
-    /home/build_test/build_env/tmp.HZwc7zjBJI/net/batman-adv/tvlv.h:27:6: n=
-ote: declared here
-     void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    make[3]: *** [scripts/Makefile.build:250: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv/network-coding.o] Error 1
-    make[2]: *** [scripts/Makefile.build:500: /home/build_test/build_env/tm=
-p.HZwc7zjBJI/net/batman-adv] Error 2
-    make[1]: *** [Makefile:1992: /home/build_test/build_env/tmp.HZwc7zjBJI]=
- Error 2
-    make: *** [Makefile:68: all] Error 2
-
-ecsv/pu: unused_symbols linux-4.14.302 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACI=
-NG=3Dy NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hash_destroy
-    batadv_hash_new
-    batadv_hash_set_lock_class
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-4.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3D=
-n NC=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.0 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3D=
-y NC=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hash_set_lock_class
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.15.83 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACIN=
-G=3Dn NC=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_event_workqueue
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_hash_destroy
-    batadv_hash_new
-    batadv_hash_set_lock_class
-    batadv_is_my_mac
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=
-=3Dn NC=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hash_destroy
-    batadv_hash_new
-    batadv_hash_set_lock_class
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.18 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=
-=3Dy NC=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_is_backbone_gw_orig
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_is_my_mac
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3D=
-n NC=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_hash_destroy
-    batadv_hash_new
-    batadv_hash_set_lock_class
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.4.227 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACIN=
-G=3Dy NC=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_hash_set_lock_class
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3D=
-y NC=3Dy MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.5 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3D=
-n NC=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_is_backbone_gw_orig
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.7 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3D=
-y NC=3Dn MCAST=3Dy BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_mcast_forw_mode_by_count
-
-ecsv/pu: unused_symbols linux-5.9 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3D=
-y NC=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_hash_set_lock_class
-    batadv_is_my_mac
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-5.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3D=
-y NC=3Dy MCAST=3Dn BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_is_backbone_gw_orig
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-6.0 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3D=
-n NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-6.0.13 cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=
-=3Dn NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hash_set_lock_class
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-6.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3D=
-y NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_mcast_forw_mcsend
-    batadv_mcast_forw_mode
-    batadv_mcast_forw_mode_by_count
-    batadv_mcast_forw_send
-    batadv_mcast_purge_orig
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-ecsv/pu: unused_symbols linux-6.1 cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3D=
-y NC=3Dy MCAST=3Dn BATMAN_V=3Dn
-=2D------------------------------------------------------------------------=
-=2D-
-
-    batadv_algo_get
-    batadv_algo_select
-    batadv_bla_check_bcast_duplist
-    batadv_bla_is_backbone_gw
-    batadv_bla_is_backbone_gw_orig
-    batadv_bla_rx
-    batadv_bla_tx
-    batadv_broadcast_addr
-    batadv_dat_drop_broadcast_packet
-    batadv_dat_snoop_incoming_arp_reply
-    batadv_dat_snoop_incoming_arp_request
-    batadv_dat_snoop_incoming_dhcp_ack
-    batadv_dat_snoop_outgoing_arp_reply
-    batadv_dat_snoop_outgoing_arp_request
-    batadv_dat_snoop_outgoing_dhcp_ack
-    batadv_frag_purge_orig
-    batadv_frag_send_packet
-    batadv_frag_skb_buffer
-    batadv_frag_skb_fwd
-    batadv_gw_dhcp_recipient_get
-    batadv_gw_election
-    batadv_gw_get_selected_orig
-    batadv_gw_node_delete
-    batadv_gw_out_of_range
-    batadv_hardif_disable_interface
-    batadv_hardif_enable_interface
-    batadv_hardif_min_mtu
-    batadv_hardif_no_broadcast
-    batadv_is_my_mac
-    batadv_mesh_free
-    batadv_mesh_init
-    batadv_netlink_tpmeter_notify
-    batadv_routing_algo
-    batadv_skb_set_priority
-    batadv_vlan_ap_isola_get
-
-
-Statistics
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-ecsv/pu
-=2D------
-
-=46ailed tests:               193
-Started build tests:        111
-Tested Linux versions:       37
-Tested configs:              79
-
---nextPart3671786.iIbC2pHGDl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmOp5vEACgkQXYcKB8Em
-e0bbUA//XwkPM/WG3BZpFzrwmei6GmStltxHhdsQF1vGeHs0ici7lLIvBBTizw92
-dFzJo4+vVzzLAmotPHYYKzB6ZZyMhKp1IbTbHagaBRuFwmQ4oc+2WbjT9ZeqBseI
-porBShpOA4h0ywU/14w9sjU+U+nvdRRuE9w5kHOOqptBLU1AaaGOx22pp6AffAYw
-rVfHrjbiOXRNXxRFFsrSPeoQWkB4iRLq41y4zaUoHW16yNinBz4plXQ+KNlhTBXt
-r2Ftv7R8YY04l9E1VgXInR6xD+XmPUE2Ft1/VC6nYc6u6EffmMBgcmOT+BIkuWtN
-mI8ftqC7P860oNDdCakZQbLEvYBjYI2ptN54MJwatpRpVaePiLUAXj6qT2EUzQYo
-Xy5mKUgi2pXhdggVRQ53kG7V7KkVtzAA/EPTJiQQhE0Lwv05Ygb2cc5iiF8lxcOJ
-0gJ85Y+lPtLcE/lv6QK3S2tjDxz8igt62CPV+j/KVQiaPsgj7bDmn+lIR74+m7MD
-MkbtKNhSeih6tm5IcLsuA3EUAvqnaTPsVSOBhkr34v4jwJoZLVSp1dZKTMkHk+UV
-a0Jn+Uw1NYKlAq6k8+NFPMeiQZYhoTYcfEQwkSoSiIoVdkiulsfgU3is9DKYmIWs
-d2GWmV5r342TmgPfxjrbwKoxvU3s38kX4WEu1TMJ3lzHb77AqAs=
-=k3F/
------END PGP SIGNATURE-----
-
---nextPart3671786.iIbC2pHGDl--
-
-
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+
+Implement functionality to receive and forward a new TVLV capable
+multicast packet type.
+
+The new batman-adv multicast packet type allows to contain several
+originator destination addresses within a TVLV. Routers on the way will
+potentially split the batman-adv multicast packet and adjust its tracker
+TVLV contents.
+
+Routing decisions are still based on the selected BATMAN IV or BATMAN V
+routing algorithm. So this new batman-adv multicast packet type retains
+the same loop-free properties.
+
+Also a new OGM multicast TVLV flag is introduced to signal to other
+nodes that we are capable of handling a batman-adv multicast packet and
+multicast tracker TVLV. And that all of our hard interfaces have an MTU
+of at least 1280 bytes (IPv6 minimum MTU), as a simple solution for now
+to avoid MTU issues while forwarding.
+
+Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+---
+ include/uapi/linux/batadv_packet.h |  48 ++++-
+ net/batman-adv/Makefile            |   1 +
+ net/batman-adv/main.c              |   2 +
+ net/batman-adv/multicast.c         |  48 ++++-
+ net/batman-adv/multicast.h         |   5 +
+ net/batman-adv/multicast_forw.c    | 274 +++++++++++++++++++++++++++++
+ net/batman-adv/originator.c        |   1 +
+ net/batman-adv/routing.c           |  68 +++++++
+ net/batman-adv/routing.h           |  11 ++
+ net/batman-adv/soft-interface.c    |  12 ++
+ net/batman-adv/types.h             |  64 +++++++
+ 11 files changed, 523 insertions(+), 11 deletions(-)
+ create mode 100644 net/batman-adv/multicast_forw.c
+
+diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/bata=
+dv_packet.h
+index 9204e4494b25..77021519cd26 100644
+--- a/include/uapi/linux/batadv_packet.h
++++ b/include/uapi/linux/batadv_packet.h
+@@ -116,6 +116,9 @@ enum batadv_icmp_packettype {
+  * only need routable IPv4 multicast packets we signed up for explicitly
+  * @BATADV_MCAST_WANT_NO_RTR6: we have no IPv6 multicast router and ther=
+efore
+  * only need routable IPv6 multicast packets we signed up for explicitly
++ * @BATADV_MCAST_HAVE_MC_PTYPE_CAPA: we can parse, receive and forward
++ * batman-adv multicast packets with a multicast tracker TVLV. And all o=
+ur
++ * hard interfaces have an MTU of at least 1280 bytes.
+  */
+ enum batadv_mcast_flags {
+ 	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	=3D 1UL << 0,
+@@ -123,6 +126,7 @@ enum batadv_mcast_flags {
+ 	BATADV_MCAST_WANT_ALL_IPV6		=3D 1UL << 2,
+ 	BATADV_MCAST_WANT_NO_RTR4		=3D 1UL << 3,
+ 	BATADV_MCAST_WANT_NO_RTR6		=3D 1UL << 4,
++	BATADV_MCAST_HAVE_MC_PTYPE_CAPA		=3D 1UL << 5,
+ };
+=20
+ /* tt data subtypes */
+@@ -174,14 +178,16 @@ enum batadv_bla_claimframe {
+  * @BATADV_TVLV_TT: translation table tvlv
+  * @BATADV_TVLV_ROAM: roaming advertisement tvlv
+  * @BATADV_TVLV_MCAST: multicast capability tvlv
++ * @BATADV_TVLV_MCAST_TRACKER: multicast tracker tvlv
+  */
+ enum batadv_tvlv_type {
+-	BATADV_TVLV_GW		=3D 0x01,
+-	BATADV_TVLV_DAT		=3D 0x02,
+-	BATADV_TVLV_NC		=3D 0x03,
+-	BATADV_TVLV_TT		=3D 0x04,
+-	BATADV_TVLV_ROAM	=3D 0x05,
+-	BATADV_TVLV_MCAST	=3D 0x06,
++	BATADV_TVLV_GW			=3D 0x01,
++	BATADV_TVLV_DAT			=3D 0x02,
++	BATADV_TVLV_NC			=3D 0x03,
++	BATADV_TVLV_TT			=3D 0x04,
++	BATADV_TVLV_ROAM		=3D 0x05,
++	BATADV_TVLV_MCAST		=3D 0x06,
++	BATADV_TVLV_MCAST_TRACKER	=3D 0x07,
+ };
+=20
+ #pragma pack(2)
+@@ -487,6 +493,25 @@ struct batadv_bcast_packet {
+ 	 */
+ };
+=20
++/**
++ * struct batadv_mcast_packet - multicast packet for network payload
++ * @packet_type: batman-adv packet type, part of the general header
++ * @version: batman-adv protocol version, part of the general header
++ * @ttl: time to live for this packet, part of the general header
++ * @reserved: reserved byte for alignment
++ * @tvlv_len: length of the appended tvlv buffer (in bytes)
++ */
++struct batadv_mcast_packet {
++	__u8 packet_type;
++	__u8 version;
++	__u8 ttl;
++	__u8 reserved;
++	__be16 tvlv_len;
++	/* "4 bytes boundary + 2 bytes" long to make the payload after the
++	 * following ethernet header again 4 bytes boundary aligned
++	 */
++};
++
+ /**
+  * struct batadv_coded_packet - network coded packet
+  * @packet_type: batman-adv packet type, part of the general header
+@@ -628,6 +653,17 @@ struct batadv_tvlv_mcast_data {
+ 	__u8 reserved[3];
+ };
+=20
++/**
++ * struct batadv_tvlv_mcast_tracker - payload of a multicast tracker tvl=
+v
++ * @num_dests: number of subsequent destination originator MAC addresses
++ * @align: (optional) alignment bytes to make the tracker TVLV 4 bytes a=
+ligned,
++ * present if num_dests are even, not present if odd
++ */
++struct batadv_tvlv_mcast_tracker {
++	__be16	num_dests;
++	__u8	align[2];
++};
++
+ #pragma pack()
+=20
+ #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
+diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
+index 3bd0760c76a2..b51d8b071b56 100644
+--- a/net/batman-adv/Makefile
++++ b/net/batman-adv/Makefile
+@@ -20,6 +20,7 @@ batman-adv-y +=3D hash.o
+ batman-adv-$(CONFIG_BATMAN_ADV_DEBUG) +=3D log.o
+ batman-adv-y +=3D main.o
+ batman-adv-$(CONFIG_BATMAN_ADV_MCAST) +=3D multicast.o
++batman-adv-$(CONFIG_BATMAN_ADV_MCAST) +=3D multicast_forw.o
+ batman-adv-y +=3D netlink.o
+ batman-adv-$(CONFIG_BATMAN_ADV_NC) +=3D network-coding.o
+ batman-adv-y +=3D originator.o
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index e8a449915566..50b2bf2b748c 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -532,6 +532,8 @@ static void batadv_recv_handler_init(void)
+=20
+ 	/* broadcast packet */
+ 	batadv_rx_handler[BATADV_BCAST] =3D batadv_recv_bcast_packet;
++	/* multicast packet */
++	batadv_rx_handler[BATADV_MCAST] =3D batadv_recv_mcast_packet;
+=20
+ 	/* unicast packets ... */
+ 	/* unicast with 4 addresses packet */
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 27511a063311..f2b1e523fd85 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -243,6 +243,37 @@ static u8 batadv_mcast_mla_rtr_flags_get(struct bata=
+dv_priv *bat_priv,
+ 	return flags;
+ }
+=20
++/**
++ * batadv_mcast_mla_forw_flags_get() - get multicast forwarding flags
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * Checks if all active hard interfaces have an MTU larger or equal to 1=
+280
++ * bytes (IPv6 minimum MTU).
++ *
++ * Return: BATADV_MCAST_HAVE_MC_PTYPE_CAPA if yes, BATADV_NO_FLAGS other=
+wise.
++ */
++static u8 batadv_mcast_mla_forw_flags_get(struct batadv_priv *bat_priv)
++{
++	const struct batadv_hard_iface *hard_iface;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->if_status !=3D BATADV_IF_ACTIVE)
++			continue;
++
++		if (hard_iface->soft_iface !=3D bat_priv->soft_iface)
++			continue;
++
++		if (hard_iface->net_dev->mtu < IPV6_MIN_MTU) {
++			rcu_read_unlock();
++			return BATADV_NO_FLAGS;
++		}
++	}
++	rcu_read_unlock();
++
++	return BATADV_MCAST_HAVE_MC_PTYPE_CAPA;
++}
++
+ /**
+  * batadv_mcast_mla_flags_get() - get the new multicast flags
+  * @bat_priv: the bat priv with all the soft interface information
+@@ -264,6 +295,7 @@ batadv_mcast_mla_flags_get(struct batadv_priv *bat_pr=
+iv)
+ 	mla_flags.enabled =3D 1;
+ 	mla_flags.tvlv_flags |=3D batadv_mcast_mla_rtr_flags_get(bat_priv,
+ 							       bridge);
++	mla_flags.tvlv_flags |=3D batadv_mcast_mla_forw_flags_get(bat_priv);
+=20
+ 	if (!bridge)
+ 		return mla_flags;
+@@ -814,23 +846,25 @@ static void batadv_mcast_flags_log(struct batadv_pr=
+iv *bat_priv, u8 flags)
+ {
+ 	bool old_enabled =3D bat_priv->mcast.mla_flags.enabled;
+ 	u8 old_flags =3D bat_priv->mcast.mla_flags.tvlv_flags;
+-	char str_old_flags[] =3D "[.... . ]";
++	char str_old_flags[] =3D "[.... . .]";
+=20
+-	sprintf(str_old_flags, "[%c%c%c%s%s]",
++	sprintf(str_old_flags, "[%c%c%c%s%s%c]",
+ 		(old_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
+ 		(old_flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
+ 		(old_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
+ 		!(old_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+-		!(old_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
++		!(old_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
++		!(old_flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
+=20
+ 	batadv_dbg(BATADV_DBG_MCAST, bat_priv,
+-		   "Changing multicast flags from '%s' to '[%c%c%c%s%s]'\n",
++		   "Changing multicast flags from '%s' to '[%c%c%c%s%s%c]'\n",
+ 		   old_enabled ? str_old_flags : "<undefined>",
+ 		   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
+ 		   (flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
+ 		   (flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
+ 		   !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+-		   !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
++		   !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
++		   !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
+ }
+=20
+ /**
+@@ -1828,6 +1862,10 @@ void batadv_mcast_init(struct batadv_priv *bat_pri=
+v)
+ 	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler,
+ 				     NULL, NULL, BATADV_TVLV_MCAST, 2,
+ 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++	batadv_tvlv_handler_register(bat_priv, NULL, NULL,
++				     batadv_mcast_forw_tracker_tvlv_handler,
++				     BATADV_TVLV_MCAST_TRACKER, 1,
++				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
+=20
+ 	INIT_DELAYED_WORK(&bat_priv->mcast.work, batadv_mcast_mla_update);
+ 	batadv_mcast_start_timer(bat_priv);
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index a9770d8d6d36..a5c0f384bb9a 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -52,6 +52,11 @@ void batadv_mcast_free(struct batadv_priv *bat_priv);
+=20
+ void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
+=20
++/* multicast_forw.c */
++
++int batadv_mcast_forw_tracker_tvlv_handler(struct batadv_priv *bat_priv,
++					   struct sk_buff *skb);
++
+ #else
+=20
+ static inline enum batadv_forw_mode
+diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_f=
+orw.c
+new file mode 100644
+index 000000000000..4a6e0def0987
+--- /dev/null
++++ b/net/batman-adv/multicast_forw.c
+@@ -0,0 +1,274 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Linus L=C3=BCssing
++ */
++
++#include "multicast.h"
++#include "main.h"
++
++#include <linux/byteorder/generic.h>
++#include <linux/errno.h>
++#include <linux/etherdevice.h>
++#include <linux/gfp.h>
++#include <linux/if_ether.h>
++#include <linux/netdevice.h>
++#include <linux/skbuff.h>
++#include <linux/stddef.h>
++#include <linux/types.h>
++#include <uapi/linux/batadv_packet.h>
++
++#include "originator.h"
++#include "routing.h"
++#include "send.h"
++
++#define batadv_mcast_forw_tracker_for_each_dest(dest, num_dests) \
++	for (; num_dests; num_dests--, (dest) +=3D ETH_ALEN)
++
++/**
++ * batadv_mcast_forw_tracker_hdrlen() - calculate tracker TVLV header le=
+ngth
++ * @num_dests: the number of destination addresses to taken into account
++ *
++ * Return: The size of the multicast tracker TVLV structure if the numbe=
+r of
++ * destinations is even or that size minus the 2 alignment bytes otherwi=
+se.
++ */
++static int batadv_mcast_forw_tracker_hdrlen(unsigned int num_dests)
++{
++	struct batadv_tvlv_mcast_tracker *mcast_tracker;
++	unsigned int len =3D sizeof(*mcast_tracker);
++
++	/* new #dests even: with 2 byte padding to TVLV */
++	if (!(num_dests % 2))
++		return len;
++	/* new #dests odd: without 2 byte padding to TVLV */
++	else
++		return len - sizeof(mcast_tracker->align);
++}
++
++/**
++ * batadv_mcast_forw_orig_to_neigh() - get next hop neighbor to an orig =
+address
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_addr: the originator MAC address to search the best next hop ro=
+uter for
++ *
++ * Return: A neighbor node which is the best router towards the given or=
+iginator
++ * address.
++ */
++static struct batadv_neigh_node *
++batadv_mcast_forw_orig_to_neigh(struct batadv_priv *bat_priv, u8 *orig_a=
+ddr)
++{
++	struct batadv_neigh_node *neigh_node;
++	struct batadv_orig_node *orig_node;
++
++	orig_node =3D batadv_orig_hash_find(bat_priv, orig_addr);
++	if (!orig_node)
++		return NULL;
++
++	neigh_node =3D batadv_find_router(bat_priv, orig_node, NULL);
++	batadv_orig_node_put(orig_node);
++
++	return neigh_node;
++}
++
++/**
++ * batadv_mcast_forw_scrub_dests() - scrub destinations in a tracker TVL=
+V
++ * @bat_priv: the bat priv with all the soft interface information
++ * @comp_neigh: next hop neighbor to scrub+collect destinations for
++ * @dest: start MAC entry in original skb's tracker TVLV
++ * @next_dest: start MAC entry in to be sent skb's tracker TVLV
++ * @num_dests: number of remaining destination MAC entries to iterate ov=
+er
++ *
++ * This sorts destination entries into either the original batman-adv
++ * multicast packet or the skb (copy) that is going to be sent to comp_n=
+eigh
++ * next.
++ *
++ * In preparation for the next, to be (unicast) transmitted batman-adv m=
+ulticast
++ * packet skb to be sent to the given neighbor node, tries to collect al=
+l
++ * originator MAC addresses that have the given neighbor node as their n=
+ext hop
++ * in the to be transmitted skb (copy), which next_dest points into. Tha=
+t is we
++ * zero all destination entries in next_dest which do not have comp_neig=
+h as
++ * their next hop. And zero all destination entries in the original skb =
+that
++ * would have comp_neigh as their next hop (to avoid redundant transmiss=
+ions and
++ * duplicated payload later).
++ */
++static void
++batadv_mcast_forw_scrub_dests(struct batadv_priv *bat_priv,
++			      struct batadv_neigh_node *comp_neigh, u8 *dest,
++			      u8 *next_dest, u16 num_dests)
++{
++	struct batadv_neigh_node *next_neigh;
++
++	/* skip first entry, this is what we are comparing with */
++	eth_zero_addr(dest);
++	dest +=3D ETH_ALEN;
++	next_dest +=3D ETH_ALEN;
++	num_dests--;
++
++	batadv_mcast_forw_tracker_for_each_dest(next_dest, num_dests) {
++		if (is_zero_ether_addr(next_dest))
++			goto scrub_next;
++
++		if (is_multicast_ether_addr(next_dest)) {
++			eth_zero_addr(dest);
++			eth_zero_addr(next_dest);
++			goto scrub_next;
++		}
++
++		next_neigh =3D batadv_mcast_forw_orig_to_neigh(bat_priv,
++							     next_dest);
++		if (!next_neigh) {
++			eth_zero_addr(next_dest);
++			goto scrub_next;
++		}
++
++		/* Is this for our next packet to transmit? */
++		if (batadv_compare_eth(next_neigh->addr, comp_neigh->addr))
++			eth_zero_addr(dest);
++		else
++			eth_zero_addr(next_dest);
++
++		batadv_neigh_node_put(next_neigh);
++scrub_next:
++		dest +=3D ETH_ALEN;
++	}
++}
++
++/**
++ * batadv_mcast_forw_packet() - forward a batman-adv multicast packet
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the received or locally generated batman-adv multicast packet
++ * @local_xmit: indicates that the packet was locally generated and not =
+received
++ *
++ * Parses the tracker TVLV of a batman-adv multicast packet and forwards=
+ the
++ * packet as indicated in this TVLV.
++ *
++ * Caller needs to set the skb network header to the start of the multic=
+ast
++ * tracker TVLV (excluding the generic TVLV header) and the skb transpor=
+t header
++ * to the next byte after this multicast tracker TVLV.
++ *
++ * Caller needs to free the skb.
++ *
++ * Return: NET_RX_SUCCESS or NET_RX_DROP on success or a negative error
++ * code on failure. NET_RX_SUCCESS if the received packet is supposed to=
+ be
++ * decapsulated and forwarded to the own soft interface, NET_RX_DROP oth=
+erwise.
++ */
++static int batadv_mcast_forw_packet(struct batadv_priv *bat_priv,
++				    struct sk_buff *skb, bool local_xmit)
++{
++	struct batadv_tvlv_mcast_tracker *mcast_tracker;
++	unsigned int tvlv_len, tracker_hdrlen;
++	struct batadv_neigh_node *neigh_node;
++	unsigned long offset, num_dests_off;
++	struct sk_buff *nexthop_skb;
++	unsigned char *skb_net_hdr;
++	bool local_recv =3D false;
++	bool xmitted =3D false;
++	u8 *dest, *next_dest;
++	u16 num_dests;
++	int ret;
++
++	/* check if num_dests is within skb length */
++	num_dests_off =3D offsetof(struct batadv_tvlv_mcast_tracker, num_dests)=
+;
++	if (num_dests_off > skb_network_header_len(skb))
++		return -EINVAL;
++
++	skb_net_hdr =3D skb_network_header(skb);
++	mcast_tracker =3D (struct batadv_tvlv_mcast_tracker *)skb_net_hdr;
++	num_dests =3D ntohs(mcast_tracker->num_dests);
++
++	tracker_hdrlen =3D batadv_mcast_forw_tracker_hdrlen(num_dests);
++	dest =3D (u8 *)mcast_tracker + tracker_hdrlen;
++
++	/* check if full tracker tvlv is within skb length */
++	tvlv_len =3D tracker_hdrlen + ETH_ALEN * num_dests;
++	if (tvlv_len > skb_network_header_len(skb))
++		return -EINVAL;
++
++	batadv_mcast_forw_tracker_for_each_dest(dest, num_dests) {
++		if (is_zero_ether_addr(dest))
++			continue;
++
++		/* only unicast originator addresses supported */
++		if (is_multicast_ether_addr(dest)) {
++			eth_zero_addr(dest);
++			continue;
++		}
++
++		if (batadv_is_my_mac(bat_priv, dest)) {
++			eth_zero_addr(dest);
++			local_recv =3D true;
++			continue;
++		}
++
++		neigh_node =3D batadv_mcast_forw_orig_to_neigh(bat_priv, dest);
++		if (!neigh_node) {
++			eth_zero_addr(dest);
++			continue;
++		}
++
++		nexthop_skb =3D skb_copy(skb, GFP_ATOMIC);
++		if (!nexthop_skb) {
++			batadv_neigh_node_put(neigh_node);
++			return -ENOMEM;
++		}
++
++		offset =3D dest - skb->data;
++		next_dest =3D nexthop_skb->data + offset;
++
++		batadv_mcast_forw_scrub_dests(bat_priv, neigh_node, dest,
++					      next_dest, num_dests);
++
++		batadv_inc_counter(bat_priv, BATADV_CNT_MCAST_TX);
++		batadv_add_counter(bat_priv, BATADV_CNT_MCAST_TX_BYTES,
++				   nexthop_skb->len + ETH_HLEN);
++		xmitted =3D true;
++		ret =3D batadv_send_unicast_skb(nexthop_skb, neigh_node);
++
++		batadv_neigh_node_put(neigh_node);
++
++		if (ret < 0)
++			return ret;
++	}
++
++	if (xmitted) {
++		if (local_xmit) {
++			batadv_inc_counter(bat_priv, BATADV_CNT_MCAST_TX_LOCAL);
++			batadv_add_counter(bat_priv,
++					   BATADV_CNT_MCAST_TX_LOCAL_BYTES,
++					   skb->len -
++					   skb_transport_offset(skb));
++		} else {
++			batadv_inc_counter(bat_priv, BATADV_CNT_MCAST_FWD);
++			batadv_add_counter(bat_priv, BATADV_CNT_MCAST_FWD_BYTES,
++					   skb->len + ETH_HLEN);
++		}
++	}
++
++	if (local_recv)
++		return NET_RX_SUCCESS;
++	else
++		return NET_RX_DROP;
++}
++
++/**
++ * batadv_mcast_forw_tracker_tvlv_handler() - handle an mcast tracker tv=
+lv
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the received batman-adv multicast packet
++ *
++ * Parses the tracker TVLV of an incoming batman-adv multicast packet an=
+d
++ * forwards the packet as indicated in this TVLV.
++ *
++ * Caller needs to set the skb network header to the start of the multic=
+ast
++ * tracker TVLV (excluding the generic TVLV header) and the skb transpor=
+t header
++ * to the next byte after this multicast tracker TVLV.
++ *
++ * Caller needs to free the skb.
++ *
++ * Return: NET_RX_SUCCESS or NET_RX_DROP on success or a negative error
++ * code on failure. NET_RX_SUCCESS if the received packet is supposed to=
+ be
++ * decapsulated and forwarded to the own soft interface, NET_RX_DROP oth=
+erwise.
++ */
++int batadv_mcast_forw_tracker_tvlv_handler(struct batadv_priv *bat_priv,
++					   struct sk_buff *skb)
++{
++	return batadv_mcast_forw_packet(bat_priv, skb, false);
++}
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 34903df4fe93..e46ce83c516a 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -942,6 +942,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct =
+batadv_priv *bat_priv,
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 	orig_node->mcast_flags =3D BATADV_MCAST_WANT_NO_RTR4;
+ 	orig_node->mcast_flags |=3D BATADV_MCAST_WANT_NO_RTR6;
++	orig_node->mcast_flags |=3D BATADV_MCAST_HAVE_MC_PTYPE_CAPA;
+ 	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
+ 	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
+ 	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 163cd43c4821..432184548849 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1270,3 +1270,71 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 	batadv_orig_node_put(orig_node);
+ 	return ret;
+ }
++
++#ifdef CONFIG_BATMAN_ADV_MCAST
++/**
++ * batadv_recv_mcast_packet() - process received batman-adv multicast pa=
+cket
++ * @skb: the received batman-adv multicast packet
++ * @recv_if: interface that the skb is received on
++ *
++ * Parses the given, received batman-adv multicast packet. Depending on =
+the
++ * contents of its TVLV forwards it and/or decapsulates it to hand it to=
+ the
++ * soft interface.
++ *
++ * Return: NET_RX_DROP if the skb is not consumed, NET_RX_SUCCESS otherw=
+ise.
++ */
++int batadv_recv_mcast_packet(struct sk_buff *skb,
++			     struct batadv_hard_iface *recv_if)
++{
++	struct batadv_priv *bat_priv =3D netdev_priv(recv_if->soft_iface);
++	struct batadv_mcast_packet *mcast_packet;
++	int hdr_size =3D sizeof(*mcast_packet);
++	unsigned char *tvlv_buff;
++	int ret =3D NET_RX_DROP;
++	u16 tvlv_buff_len;
++
++	if (batadv_check_unicast_packet(bat_priv, skb, hdr_size) < 0)
++		goto free_skb;
++
++	/* create a copy of the skb, if needed, to modify it. */
++	if (skb_cow(skb, ETH_HLEN) < 0)
++		goto free_skb;
++
++	/* packet needs to be linearized to access the tvlv content */
++	if (skb_linearize(skb) < 0)
++		goto free_skb;
++
++	mcast_packet =3D (struct batadv_mcast_packet *)skb->data;
++
++	tvlv_buff =3D (unsigned char *)(skb->data + hdr_size);
++	tvlv_buff_len =3D ntohs(mcast_packet->tvlv_len);
++
++	if (tvlv_buff_len > skb->len - hdr_size)
++		goto free_skb;
++
++	ret =3D batadv_tvlv_containers_process(bat_priv, BATADV_MCAST, NULL, sk=
+b,
++					     tvlv_buff, tvlv_buff_len);
++	if (ret >=3D 0) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_MCAST_RX);
++		batadv_add_counter(bat_priv, BATADV_CNT_MCAST_RX_BYTES,
++				   skb->len + ETH_HLEN);
++	}
++
++	hdr_size +=3D tvlv_buff_len;
++
++	if (ret =3D=3D NET_RX_SUCCESS && (skb->len - hdr_size >=3D ETH_HLEN)) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_MCAST_RX_LOCAL);
++		batadv_add_counter(bat_priv, BATADV_CNT_MCAST_RX_LOCAL_BYTES,
++				   skb->len - hdr_size);
++
++		batadv_interface_rx(bat_priv->soft_iface, skb, hdr_size, NULL);
++		/* skb was consumed */
++		skb =3D NULL;
++	}
++
++free_skb:
++	kfree_skb(skb);
++
++	return ret;
++}
++#endif /* CONFIG_BATMAN_ADV_MCAST */
+diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
+index 5f387786e9a7..d8293a83fb82 100644
+--- a/net/batman-adv/routing.h
++++ b/net/batman-adv/routing.h
+@@ -27,6 +27,17 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 			    struct batadv_hard_iface *iface);
+ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if);
++#ifdef CONFIG_BATMAN_ADV_MCAST
++int batadv_recv_mcast_packet(struct sk_buff *skb,
++			     struct batadv_hard_iface *recv_if);
++#else
++static inline int batadv_recv_mcast_packet(struct sk_buff *skb,
++					   struct batadv_hard_iface *recv_if)
++{
++	kfree_skb(skb);
++	return NET_RX_DROP;
++}
++#endif
+ int batadv_recv_tt_query(struct sk_buff *skb,
+ 			 struct batadv_hard_iface *recv_if);
+ int batadv_recv_roam_adv(struct sk_buff *skb,
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
+ace.c
+index 125f4628687c..97f4d7abe54e 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -922,6 +922,18 @@ static const struct {
+ 	{ "tt_response_rx" },
+ 	{ "tt_roam_adv_tx" },
+ 	{ "tt_roam_adv_rx" },
++#ifdef CONFIG_BATMAN_ADV_MCAST
++	{ "mcast_tx" },
++	{ "mcast_tx_bytes" },
++	{ "mcast_tx_local" },
++	{ "mcast_tx_local_bytes" },
++	{ "mcast_rx" },
++	{ "mcast_rx_bytes" },
++	{ "mcast_rx_local" },
++	{ "mcast_rx_local_bytes" },
++	{ "mcast_fwd" },
++	{ "mcast_fwd_bytes" },
++#endif
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 	{ "dat_get_tx" },
+ 	{ "dat_get_rx" },
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index ca9449ec9836..a2fee3325b29 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -862,6 +862,70 @@ enum batadv_counters {
+ 	 */
+ 	BATADV_CNT_TT_ROAM_ADV_RX,
+=20
++#ifdef CONFIG_BATMAN_ADV_MCAST
++	/**
++	 * @BATADV_CNT_MCAST_TX: transmitted batman-adv multicast packets
++	 *  counter
++	 */
++	BATADV_CNT_MCAST_TX,
++
++	/**
++	 * @BATADV_CNT_MCAST_TX_BYTES: transmitted batman-adv multicast packets
++	 *  bytes counter
++	 */
++	BATADV_CNT_MCAST_TX_BYTES,
++
++	/**
++	 * @BATADV_CNT_MCAST_TX_LOCAL: counter for multicast packets which
++	 *  were locally encapsulated and transmitted as batman-adv multicast
++	 *  packets
++	 */
++	BATADV_CNT_MCAST_TX_LOCAL,
++
++	/**
++	 * @BATADV_CNT_MCAST_TX_LOCAL_BYTES: bytes counter for multicast packet=
+s
++	 *  which were locally encapsulated and transmitted as batman-adv
++	 *  multicast packets
++	 */
++	BATADV_CNT_MCAST_TX_LOCAL_BYTES,
++
++	/**
++	 * @BATADV_CNT_MCAST_RX: received batman-adv multicast packet counter
++	 */
++	BATADV_CNT_MCAST_RX,
++
++	/**
++	 * @BATADV_CNT_MCAST_RX_BYTES: received batman-adv multicast packet
++	 *  bytes counter
++	 */
++	BATADV_CNT_MCAST_RX_BYTES,
++
++	/**
++	 * @BATADV_CNT_MCAST_RX_LOCAL: counter for received batman-adv multicas=
+t
++	 *  packets which were forwarded to the local soft interface
++	 */
++	BATADV_CNT_MCAST_RX_LOCAL,
++
++	/**
++	 * @BATADV_CNT_MCAST_RX_LOCAL_BYTES: bytes counter for received
++	 *  batman-adv multicast packets which were forwarded to the local soft
++	 *  interface
++	 */
++	BATADV_CNT_MCAST_RX_LOCAL_BYTES,
++
++	/**
++	 * @BATADV_CNT_MCAST_FWD: counter for received batman-adv multicast
++	 *  packets which were forwarded to other, neighboring nodes
++	 */
++	BATADV_CNT_MCAST_FWD,
++
++	/**
++	 * @BATADV_CNT_MCAST_FWD_BYTES: bytes counter for received batman-adv
++	 *  multicast packets which were forwarded to other, neighboring nodes
++	 */
++	BATADV_CNT_MCAST_FWD_BYTES,
++#endif
++
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 	/**
+ 	 * @BATADV_CNT_DAT_GET_TX: transmitted dht GET traffic packet counter
+--=20
+2.39.0
