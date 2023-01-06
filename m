@@ -4,143 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96387C3DA7A;
-	Fri,  6 Jan 2023 17:54:19 +0000 (UTC)
-Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 80981846E7;
-	Fri,  6 Jan 2023 18:54:16 +0100 (CET)
-Received: from dvalin.narfation.org (dvalin.narfation.org [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id EC57B80704
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  6 Jan 2023 18:54:11 +0100 (CET)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D7CDC54EBD
+	for <batman@archiver.kernel.org>; Fri,  6 Jan 2023 18:16:35 +0000 (UTC)
+Received: by diktynna.open-mesh.org (Postfix, from userid 0)
+	id 9092A846CD; Fri,  6 Jan 2023 19:16:33 +0100 (CET)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A1BDA802D9
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  6 Jan 2023 18:21:05 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1673027652;
+	s=20121; t=1673025665;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=4RnskvD0sPfFWrvvzCOeRK2FpF8AaFflIMbQkjTXqj8=;
-	b=w9mOIqgdY6aXJR0inPbHymT5CdQGOgRJMJRAYFBsZy8e3SkE/SiObOR6I+C2pbph4o76UH
-	a8jvVbCy8qObaIIUVpPUPwl4PXS3566XDWU5x+ayyZ8dyOdrYe2UyjuIJuyQpWHqNLwwcG
-	lVAqMvpd6UZyG99a7VOcQIRvB/ZO3wc=
+	bh=aECQDuvOgmgfaYm9pl4DujutaWs/j0WDgyv7ehpmJJ8=;
+	b=RQOqyueT6G722cIXPOzknBLUxwR7l16VHdpn1m8yBMct4qtn+V8TR7IJsCO2/bCVIeALCp
+	up8Yf8Hbu5yb6jvwgIUaLGBeKxujXV/fbQ5Rt2W28F0BqGIpptImoUJqxDUBS23+pBunCl
+	jSm8JuTFRGfl5G+3AbGDY3c2mUZhBQA=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=CcCh6Z0s;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="kczs/yrJ";
 	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1673027652; a=rsa-sha256;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1673025665; a=rsa-sha256;
 	cv=none;
-	b=iauxvl01tmL0J/4jdaP70IJuTFz2M0sjh9/pPn/Jo4x1bVSvZ57SX3MPp5j+PudLNTUZOA
-	+cggwNDskqaAZawHu97osqIUl915XMBt6xuu8QmtpoIUkAqsak62+/GKWsYRqMnxhxlJwu
-	NgqNUQn9PHObp7YGF6uUwSTAAIbNU30=
+	b=TEJIBoeU+iLjWaI4yEsDM4cvJyf1Bd+usnIiut3qXn6QylZJMQ/XyyDSkUyuEVzTmLi9+P
+	EMFfqUfCDVExmvwZxjRWWLwxOL3O6FmLpDzrvm7cWOfksomnjOeTlxylmbnz+OprBUdnLj
+	wY+OIad95SHjMvKUHRosUAseNY0Gzp4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1673027651;
+	s=20121; t=1673025665;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4RnskvD0sPfFWrvvzCOeRK2FpF8AaFflIMbQkjTXqj8=;
-	b=CcCh6Z0sNRQtyLwAFMFeJg8HC6ipkSHNOuOJtu5pSyXieqL78+Cpv1rWdSjtN3C6+533gQ
-	T6SJQJeS+ya2Zcv0fUvYjrYkQTTpfGnPG6P93LUxtE9vw8I7rm2bbWbD0ByQqn7Ej7Zrj8
-	42WawiryfM3wnVAg6TpXipwwzmQGJoE=
+	bh=aECQDuvOgmgfaYm9pl4DujutaWs/j0WDgyv7ehpmJJ8=;
+	b=kczs/yrJ7uryN/z4n/Ro2c+gdjpBtib+0Hng2Dx1h24pIZvY7Jy6UzzLmm9BVySH8y3Tk+
+	xnTZ+mWf68gHc0r2aBstFIk5X75F6w+4kzdBh7OdFElUtMHY6Ok6XNF4ZP8HU0add+SBFA
+	bOXNQJk4sbpb9UB6Z6Kfnw33PBJF+/M=
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [PATCH v4 2/5] batman-adv: tvlv: prepare for tvlv enabled multicast packet type
-Date: Fri, 06 Jan 2023 18:54:08 +0100
-Message-ID: <3853553.NG923GbCHz@sven-l14>
-In-Reply-To: <20221227193409.13461-3-linus.luessing@c0d3.blue>
-References: <20221227193409.13461-1-linus.luessing@c0d3.blue> <20221227193409.13461-3-linus.luessing@c0d3.blue>
+Subject: Re: [PATCH v4 1/5] batman-adv: mcast: remove now redundant single
+ ucast forwarding
+Date: Fri, 06 Jan 2023 18:21:02 +0100
+Message-ID: <3367184.CQOukoFCf9@sven-l14>
+In-Reply-To: <20221227193409.13461-2-linus.luessing@c0d3.blue>
+References: <20221227193409.13461-1-linus.luessing@c0d3.blue>
+ <20221227193409.13461-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart838040496.0ifERbkFSE"; micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: H6WUQXKCONLMFQQRLXLSKC43XFK4IKAC
-X-Message-ID-Hash: H6WUQXKCONLMFQQRLXLSKC43XFK4IKAC
+Content-Type: multipart/signed; boundary="nextPart24444831.6Emhk5qWAg";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S
+X-Message-ID-Hash: EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S
 X-MailFrom: sven@narfation.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-b.a.t.m.a.n.lists.open-mesh.org-0; header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; suspicious-header
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
+ loop; banned-address; member-moderation;
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; suspicious-header
 X-Mailman-Version: 3.2.1
 Precedence: list
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/H6WUQXKCONLMFQQRLXLSKC43XFK4IKAC/>
-List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n.lists.open-mesh.org>
+Archived-At: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S/>
+List-Archive: 
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart838040496.0ifERbkFSE
+--nextPart24444831.6Emhk5qWAg
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 06 Jan 2023 18:54:08 +0100
-Message-ID: <3853553.NG923GbCHz@sven-l14>
-In-Reply-To: <20221227193409.13461-3-linus.luessing@c0d3.blue>
+Date: Fri, 06 Jan 2023 18:21:02 +0100
+Message-ID: <3367184.CQOukoFCf9@sven-l14>
+In-Reply-To: <20221227193409.13461-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 
-On Tuesday, 27 December 2022 20:34:06 CET Linus L=FCssing wrote:
-> Prepare TVLV infrastructure for more packet types, in particular the
-> upcoming batman-adv multicast packet type.
+On Tuesday, 27 December 2022 20:34:05 CET Linus L=FCssing wrote:
+> The multicast code to send a multicast packet via multiple batman-adv
+> unicast packets is not only capable of sending to multiple but also to a
+> single node. Therefore we can safely remove the old, specialized, now
+> redundant multicast-to-single-unicast code.
 >=20
-> For that swap the OGM vs. unicast-tvlv packet boolean indicator to an
-> explicit unsigned integer packet type variable. And provide the skb
-> to a call to batadv_tvlv_containers_process(), as later the multicast
-> packet's TVLV handler will need to have access not only to the TVLV but
-> the full skb for forwarding. Forwarding will be invoked from the
-> multicast packet's TVLVs' contents later.
+> The only functional change of this simplification is that the edge case
+> of allowing a multicast packet with an unsnoopable destination address
+> (224.0.0.0/24 or ff02::1) where only a single node has signaled interest
+> in it via the batman-adv want-all-unsnoopables multicast flag is now
+> transmitted via a batman-adv broadcast instead of a batman-adv unicast
+> packet. Maintaining this edge case feature does not seem worth the extra
+> lines of code and people should just not expect to be able to snoop and
+> optimize such unsnoopable multicast addresses when bridges are involved.
+>=20
+> While at it also renaming a few items in the batadv_forw_mode enum to
+> prepare for the new batman-adv multicast packet type.
 >=20
 > Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 > ---
->  include/uapi/linux/batadv_packet.h     |  2 +
->  net/batman-adv/bat_v_ogm.c             |  4 +-
->  net/batman-adv/distributed-arp-table.c |  2 +-
->  net/batman-adv/gateway_common.c        |  2 +-
->  net/batman-adv/multicast.c             |  2 +-
->  net/batman-adv/network-coding.c        |  2 +-
->  net/batman-adv/routing.c               |  7 ++-
->  net/batman-adv/translation-table.c     |  4 +-
->  net/batman-adv/tvlv.c                  | 71 ++++++++++++++++++--------
->  net/batman-adv/tvlv.h                  |  9 ++--
->  net/batman-adv/types.h                 |  6 +++
->  11 files changed, 74 insertions(+), 37 deletions(-)
-
-
-I am rather unhappy that the TVLV handlers parts are not static, constant,=
-=20
-global objects which are just presented to batadv_tvlv_handler_register. Th=
-e=20
-batadv_tvlv_containers_process parameters start to become a mess. Anyway, t=
-his=20
-has not really anything to do with your patch.=20
-
+>  net/batman-adv/multicast.c      | 249 ++------------------------------
+>  net/batman-adv/multicast.h      |  38 +----
+>  net/batman-adv/soft-interface.c |  26 ++--
+>  3 files changed, 33 insertions(+), 280 deletions(-)
 
 Acked-by: Sven Eckelmann <sven@narfation.org>
-
-Just wondering if it is a good idea to use the network/transport header=20
-offsets/pointers like this.
 
 Kind regards,
 	Sven
 
---nextPart838040496.0ifERbkFSE
+--nextPart24444831.6Emhk5qWAg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmO4YEAACgkQXYcKB8Em
-e0b/TA//R64HtpAzwiiX69YT0o79AcDtFuOYPUxsXBB4b6I6Cxmpbp7Slw3nuysx
-GcA5fNP1hG01VoWJV6ckhv+jX7V7aDSqPDvd27PoFSuC5sC/7p1raK883th26+vb
-Yalisrhr9lHUFfNEgP+OyzR7QYNEsLPIJj8WSl3mmODAfcGnxVS+VKg4nqT/jrA5
-t/EE38dkGiZsQhHOYVZRwxVwlhPUZP1vqH8+HQzzxS8Y8Fuy+fVN2m76LtnOWNlv
-bTJi+sFOtU0Ejb3OAxu42YTRi51TdiZvqc3J7MP8zK1h6pQlVb+2ksZ9saeeQzHI
-rSib76gi82Chd+IWtzbbU3ZuQMNQl+/3hy6rqsOSnd62PaLcLvX1kBxL3FNSd89d
-2UFxkI61utzxGjo4wsGWXGpcfb/SsgOugUA3oJsw9QSsjPw9uZ1PR0APRKEj5rty
-EbCG92SIPia2AtecehyKrcS6f1AwDDakeQ8c66W1JJjqzxursQxQgHzYV0GpvE/N
-tm57xaGYIaIEpuzAeOv6paVdTqX+vqr7xMhRnv7fMkd2puDgtrw7rovCf6XfTrLs
-ruhwEnB6PRUHR5UzuMq9rlpwwu8wW4+TLv34V+4qa48+xpg8rlvlmAD3X13nUPmR
-Ar6PXlSk0ZPVrWtkelxR7clsJb3mG3BUC6qxcTXla3sYR6pR9QQ=
-=n7Xc
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmO4WH4ACgkQXYcKB8Em
+e0ZMZRAAwegBhINs8Ov63CAYGr0Lo6xiDPCyxHjSaMMpXoGtPF+CC9Zq6ZGBeDAG
+qqqr8++5JCzPtJLrr7/nGH6KAgEfmqUV0/FSG+FSIq95mtvLvKBZ9hCRRwbg0XW9
+kj67r/AtPAGHaOSvq+EpZhgQp/FpHA+l/qJ5wQ2WJf7B1jjc5eLiQnT3ZCtCQoqQ
+AlFqgz68rzwTOIpfp+5hcYYUQvQwC+RA9mO1A0eARWGA8sPIljY55XodUFGDFA9f
+zzp9qKYla0Yoa7XEghNbl1pQrxbZkp8TvsK5nQH4tLJbIWdrtPbAPMt6q2LpgDX5
+Vrz0mWFQK7IROjULIGCEor8I9dnNC8KZWDNLrjygepqGqpLcaavcgUm216EgsRUT
+DusNohAUjz8vXQm1BDtWg5HtX1TsblOZ34Mk98+7hUCwOHv5VOgR998IcqKyZtTr
+W3fgdenemDQPVu8FuPXCPtqQ9M8u3/DjxUsDwRoXK72gU7yhNfLZRmbMNBKWAspp
+FS3SoJ/b+LYUh/dQgpvDlgw9IvaNcr+3HJbLK+FKTxtdlpms1W3A/x122sXhFi9x
+sDBPAIKvfS1r79wmZXElzWTvHJ3EDpZ/js5XYiw5uiBO91whHRxK4d/UAqF13/nC
++p0PkDNm2RpwHDp1ZqbxsK0EnVhHKJBPNiU8Ul6YrBXrYGKBWAc=
+=S5HF
 -----END PGP SIGNATURE-----
 
---nextPart838040496.0ifERbkFSE--
+--nextPart24444831.6Emhk5qWAg--
 
 
