@@ -4,141 +4,163 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D7CDC54EBD
-	for <batman@archiver.kernel.org>; Fri,  6 Jan 2023 18:16:35 +0000 (UTC)
-Received: by diktynna.open-mesh.org (Postfix, from userid 0)
-	id 9092A846CD; Fri,  6 Jan 2023 19:16:33 +0100 (CET)
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A1BDA802D9
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  6 Jan 2023 18:21:05 +0100 (CET)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 709D1C54EBD;
+	Fri,  6 Jan 2023 19:54:38 +0000 (UTC)
+Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTP id EA836846F3;
+	Fri,  6 Jan 2023 20:54:34 +0100 (CET)
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 85041808E1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  6 Jan 2023 20:54:31 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1673025665;
+	s=20121; t=1673034871;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=aECQDuvOgmgfaYm9pl4DujutaWs/j0WDgyv7ehpmJJ8=;
-	b=RQOqyueT6G722cIXPOzknBLUxwR7l16VHdpn1m8yBMct4qtn+V8TR7IJsCO2/bCVIeALCp
-	up8Yf8Hbu5yb6jvwgIUaLGBeKxujXV/fbQ5Rt2W28F0BqGIpptImoUJqxDUBS23+pBunCl
-	jSm8JuTFRGfl5G+3AbGDY3c2mUZhBQA=
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 dkim-signature; bh=AueWTe21QMyFGpKWDdUP/IlYfMZAUbFI2KmoTy6O2/A=;
+	b=z2rs37cH1lIqr3Vhi1l/LOFEsLUdkMh9LE9l8tQsMiUc1osY8iaSGjLyAhNPIKq/giQy6K
+	vI4bdyPGKBS1k2e8ntCS9tf+FuaYU05VAV9faa5lRc9dIUOc145e0GETmVpQr+5rKJZyL2
+	/tOT5TgsvGx3Yn0iZvFCTScoFXR07LQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="kczs/yrJ";
+	dkim=pass header.d=narfation.org header.s=20121 header.b="p/erQvwq";
 	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1673025665; a=rsa-sha256;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1673034871; a=rsa-sha256;
 	cv=none;
-	b=TEJIBoeU+iLjWaI4yEsDM4cvJyf1Bd+usnIiut3qXn6QylZJMQ/XyyDSkUyuEVzTmLi9+P
-	EMFfqUfCDVExmvwZxjRWWLwxOL3O6FmLpDzrvm7cWOfksomnjOeTlxylmbnz+OprBUdnLj
-	wY+OIad95SHjMvKUHRosUAseNY0Gzp4=
+	b=SQxerxWCsekGnkZamtCdCs4DPo96x890vZJZzM6PZgtmp0Gq+dzVFm+T3+01aAFJb5ZhP4
+	/eTW+qaixt0eiUbwzxGnT49x0r7p3XcK02d8/18xAfzPjmCFVZOsfKFEWPqgACIH3ELtsH
+	0SxrPLg6Krtq/WWoKvP6P2p8VbFXAno=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1673025665;
+	s=20121; t=1673034871;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=aECQDuvOgmgfaYm9pl4DujutaWs/j0WDgyv7ehpmJJ8=;
-	b=kczs/yrJ7uryN/z4n/Ro2c+gdjpBtib+0Hng2Dx1h24pIZvY7Jy6UzzLmm9BVySH8y3Tk+
-	xnTZ+mWf68gHc0r2aBstFIk5X75F6w+4kzdBh7OdFElUtMHY6Ok6XNF4ZP8HU0add+SBFA
-	bOXNQJk4sbpb9UB6Z6Kfnw33PBJF+/M=
+	 to:to:cc:mime-version:mime-version:content-type:content-type;
+	bh=AueWTe21QMyFGpKWDdUP/IlYfMZAUbFI2KmoTy6O2/A=;
+	b=p/erQvwqLakEYxB/Cu+g2rkXChlaAP1PZESko+oglLe4Ibj/W9bL7HgkEC8VAetwr5OvaW
+	9oTA0Hou7PkLneHF5C0wM4JR2Plw0f6e6WZEFNCctmZAPQr0pvhD/bDnAtOqwXtPC+zEiw
+	ehHDXG4oNNCvZ4ILdr8W5j4NjsTRMto=
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Subject: Re: [PATCH v4 1/5] batman-adv: mcast: remove now redundant single
- ucast forwarding
-Date: Fri, 06 Jan 2023 18:21:02 +0100
-Message-ID: <3367184.CQOukoFCf9@sven-l14>
-In-Reply-To: <20221227193409.13461-2-linus.luessing@c0d3.blue>
-References: <20221227193409.13461-1-linus.luessing@c0d3.blue>
- <20221227193409.13461-2-linus.luessing@c0d3.blue>
+Subject: Mailing list mirror on lore.kernel.org
+Date: Fri, 06 Jan 2023 20:54:17 +0100
+Message-ID: <3249673.X513TT2pbd@sven-l14>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart24444831.6Emhk5qWAg";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S
-X-Message-ID-Hash: EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S
+Content-Type: multipart/signed; boundary="nextPart3674341.C4sosBPzcN"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: S5QKHQXTTE7JWZDK2ZZZG3VYQDNEJJQS
+X-Message-ID-Hash: S5QKHQXTTE7JWZDK2ZZZG3VYQDNEJJQS
 X-MailFrom: sven@narfation.org
-X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
- loop; banned-address; member-moderation;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; suspicious-header
+X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-b.a.t.m.a.n.lists.open-mesh.org-0; header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; suspicious-header
 X-Mailman-Version: 3.2.1
 Precedence: list
-List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
-Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EDUGWYIQOMPLQVUDOZH4WN2CLE6OZC4S/>
-List-Archive: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
+List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
+Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/S5QKHQXTTE7JWZDK2ZZZG3VYQDNEJJQS/>
+List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart24444831.6Emhk5qWAg
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
+--nextPart3674341.C4sosBPzcN
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 06 Jan 2023 18:21:02 +0100
-Message-ID: <3367184.CQOukoFCf9@sven-l14>
-In-Reply-To: <20221227193409.13461-2-linus.luessing@c0d3.blue>
+Subject: Mailing list mirror on lore.kernel.org
+Date: Fri, 06 Jan 2023 20:54:17 +0100
+Message-ID: <3249673.X513TT2pbd@sven-l14>
 MIME-Version: 1.0
 
-On Tuesday, 27 December 2022 20:34:05 CET Linus L=FCssing wrote:
-> The multicast code to send a multicast packet via multiple batman-adv
-> unicast packets is not only capable of sending to multiple but also to a
-> single node. Therefore we can safely remove the old, specialized, now
-> redundant multicast-to-single-unicast code.
->=20
-> The only functional change of this simplification is that the edge case
-> of allowing a multicast packet with an unsnoopable destination address
-> (224.0.0.0/24 or ff02::1) where only a single node has signaled interest
-> in it via the batman-adv want-all-unsnoopables multicast flag is now
-> transmitted via a batman-adv broadcast instead of a batman-adv unicast
-> packet. Maintaining this edge case feature does not seem worth the extra
-> lines of code and people should just not expect to be able to snoop and
-> optimize such unsnoopable multicast addresses when bridges are involved.
->=20
-> While at it also renaming a few items in the batadv_forw_mode enum to
-> prepare for the new batman-adv multicast packet type.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  net/batman-adv/multicast.c      | 249 ++------------------------------
->  net/batman-adv/multicast.h      |  38 +----
->  net/batman-adv/soft-interface.c |  26 ++--
->  3 files changed, 33 insertions(+), 280 deletions(-)
+Hi,
 
-Acked-by: Sven Eckelmann <sven@narfation.org>
+maybe some of you remember the time when the archive of this mailing list was 
+also mirrored to Gmane - providing services like web ui, nntp or raw 
+(unmangled) mail downloads. But the original Gmane is gone since a long time. 
+And the other public mirror (mail-archive.com) is a lot more web centric and 
+not integrated in the kernel.org infrastructure.
+
+
+So I spend my time between the years to fix the situation and create an 
+sanitized archive of all the old mails form this mailing list. This was then 
+submitted to the kernel.org's helpdesk for inclusion in their public-inbox [1]
+infrastructure [2].
+
+To make a long story short: you can now find the mails also under
+https://lore.kernel.org/batman/
+
+
+Some features are:
+
+* NNTP/Atom feed support
+* being able to follow threads spanning multiple (kernel) mailing lists
+* handle your patch queues with b4
+
+  For example when you want to apply the new multicast patches from Linus:
+
+     $ b4 am 20221227193409.13461-1-linus.luessing@c0d3.blue
+     $ git am ./v4_20221227_linus_luessing_implementation_of_a_stateless_multicast_packet_type.mbx
+
+  Similar things can also be done to prepare the patches for submission.
+
+  See
+
+  - https://people.kernel.org/monsieuricon/introducing-b4-and-patch-attestation
+  - https://people.kernel.org/monsieuricon/sending-a-kernel-patch-with-b4-part-1
+
+* whole mailinglist archive available as git repository
+
+  At the moment, our single epoch can be mirrored using:
+
+    $ git clone --mirror https://lore.kernel.org/batman/0 batman/git/0.git
+    # but you should use public-inbox/ or otherwise you might miss some 
+    # archives in case it is split into multiple epochs
+
+  See
+
+  - https://lore.kernel.org/batman/_/text/mirror/
+  - https://people.kernel.org/monsieuricon/subscribing-to-lore-lists-with-grokmirror
+
+* Subscribe^W Pull mailing list with filters via (lore)lei
+
+  See
+
+  - https://people.kernel.org/monsieuricon/lore-lei-part-1-getting-started
+  - https://people.kernel.org/monsieuricon/lore-lei-part-2-now-with-imap
+
+
+
+The hyperkitty mailing archives on lists.open-mesh.org will continue to be 
+supported. But their archives are not perfectly suited for working with 
+patch(sets) - so this should be a nice addition for some people.
+
+And I will also continue to use patchwork for keeping track of patches. 
+lore.kernel.org and its tooling just adds a cherry on top.
 
 Kind regards,
 	Sven
 
---nextPart24444831.6Emhk5qWAg
+[1] https://public-inbox.org/README.html
+[2] https://www.kernel.org/lore.html
+--nextPart3674341.C4sosBPzcN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmO4WH4ACgkQXYcKB8Em
-e0ZMZRAAwegBhINs8Ov63CAYGr0Lo6xiDPCyxHjSaMMpXoGtPF+CC9Zq6ZGBeDAG
-qqqr8++5JCzPtJLrr7/nGH6KAgEfmqUV0/FSG+FSIq95mtvLvKBZ9hCRRwbg0XW9
-kj67r/AtPAGHaOSvq+EpZhgQp/FpHA+l/qJ5wQ2WJf7B1jjc5eLiQnT3ZCtCQoqQ
-AlFqgz68rzwTOIpfp+5hcYYUQvQwC+RA9mO1A0eARWGA8sPIljY55XodUFGDFA9f
-zzp9qKYla0Yoa7XEghNbl1pQrxbZkp8TvsK5nQH4tLJbIWdrtPbAPMt6q2LpgDX5
-Vrz0mWFQK7IROjULIGCEor8I9dnNC8KZWDNLrjygepqGqpLcaavcgUm216EgsRUT
-DusNohAUjz8vXQm1BDtWg5HtX1TsblOZ34Mk98+7hUCwOHv5VOgR998IcqKyZtTr
-W3fgdenemDQPVu8FuPXCPtqQ9M8u3/DjxUsDwRoXK72gU7yhNfLZRmbMNBKWAspp
-FS3SoJ/b+LYUh/dQgpvDlgw9IvaNcr+3HJbLK+FKTxtdlpms1W3A/x122sXhFi9x
-sDBPAIKvfS1r79wmZXElzWTvHJ3EDpZ/js5XYiw5uiBO91whHRxK4d/UAqF13/nC
-+p0PkDNm2RpwHDp1ZqbxsK0EnVhHKJBPNiU8Ul6YrBXrYGKBWAc=
-=S5HF
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmO4fGkACgkQXYcKB8Em
+e0Z0Rw//RFP4xSmJHr2WHBippnknGkXvfbAKGaSV/jPsHzcyZBV/MbtNZeuw+/WO
+AoPYGaGhtctNP1fR6pk882/lNg4LOy9HOWQncNN/h9GWsKU6VSiZMaKPjlO9MnDF
+XfO/WiQFKyUCIGPK7Y31Qpl7CCIXhs2Jz+Fzd/lpEAt0VnvxIMI42UoWvoNEszmN
+tZFB4bEGPY/pBnfgPzfK4Znr5WpfjPd7QyTx+0wPzqdhBA9dO9SQJWkH/PNBt2UF
+0+lXIDy81ic8ScqYTXMACqLyM2eSx0aolQyp5RZ2wTLRAB/ZrAclx0vNX3fzweIW
+tVGrECmny5LnlOnFB2AVAVoVsZ5JWSRcFxszG4orqGUh+PR7wHg04VjXvFXb/Lmj
+3AkqooIrYUfRO4FpnQ7FG6OJNzPH+ZbX5Yy3mTNz8h9WRMrWrof8UtmAdfbdKgXZ
+PKOzQ9F5Xhg2ynZyKeSqEPy6xCsz5V8SpXkLLcF4c0jmE87+M3/+vUVnp55k/+0i
++/5AHe0Bfu3BUm6sjGEE+5imOmKMWjHYFK3fC+JNzxk0IXrwaQ8ZmXDJk+pmMcaR
+QsLrN6sE4P1dLjx25b/JGuQTMQdwtq8bkENb2WvRiDxYy8U2mzXkkQOHLM9gEyXf
+VtEZt1l/UMzQhmJ3qKpEm4BwyyHCro+THfrWFRUbbOSlSiOzIJk=
+=P7eN
 -----END PGP SIGNATURE-----
 
---nextPart24444831.6Emhk5qWAg--
+--nextPart3674341.C4sosBPzcN--
 
 
