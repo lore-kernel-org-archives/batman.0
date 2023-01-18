@@ -4,127 +4,180 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB3B0C46467
-	for <batman@archiver.kernel.org>; Mon, 16 Jan 2023 18:31:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46212C32793
+	for <batman@archiver.kernel.org>; Wed, 18 Jan 2023 21:16:17 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C33CD83DA3
-	for <batman@archiver.kernel.org>; Mon, 16 Jan 2023 19:31:40 +0100 (CET)
-Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3595F803A5
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 16 Jan 2023 19:31:17 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1673893877; a=rsa-sha256;
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A207E83DFB
+	for <batman@archiver.kernel.org>; Wed, 18 Jan 2023 22:16:14 +0100 (CET)
+Received: from dvalin.narfation.org (dvalin.narfation.org [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id AE7168065C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 18 Jan 2023 22:15:46 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1674076546; a=rsa-sha256;
 	cv=none;
-	b=TC/hr+vIxlZQi84b6mS8gYjH1ULeHAJX9M/Y82F7AaxTEvWOJsuLCZZuEAMJY+oh37WHbw
-	6i00EM5bJwPNlHANhR4VcQd+R/uQ6AohfaBj1sv9zGIsIJlAnlAyClnq6+DdZAkTQkfkej
-	FbOKPpxyjID/wkI5bUt8vRutfmyblSA=
+	b=ahi5OdAHcEojuek8WpbkrOfuTtWZ+YixFnaHy/RqJUMb4KkfxdRzC/1XbaGH4wO1JEPzr/
+	g52fs7xBMKdGpyjKyw9yYCEGAtNpO7UjEFGMk+qG6DFBQYL/HGeiE/41B1OT/kFKSRdF7a
+	RpQWImcxnKAjTzxW5RoQ+w5FmG1yBdI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=none (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue has no SPF policy when checking 116.203.183.178) smtp.mailfrom=linus.luessing@c0d3.blue;
-	dmarc=none
+	dkim=pass header.d=narfation.org header.s=20121 header.b="Rz/2HCZU";
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1673893877;
+	s=20121; t=1674076546;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=35gY9HMGR8qg3128Le4UDVr1HUZ3REP4aNiiCNLt5Wg=;
+	b=nvRdIzWlvSQNI1WNiNiuLb6cI+kJQiPFzzidlLACfbyOKKmj7sD5QpjCNMMEVwZhKm9dJT
+	QGhmZnfc//uWBvo3/ztII5YnXPRLfO8nK0RxHgtJdBQz588/JZvsHICiLXHSatHzs/wewl
+	Wmb7SWzZf/pY2fKhYA6+lggTG2kgwmw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1674076546;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=SSLbGrdbi3zOQvozut8sXHxzVAN1kcs3dMNIVR/SL7A=;
-	b=WZR64A1ROncHT2PAULiST7XQASLA5TD1sr50uaVOnpEx0g7LYwYROOmQcQacj1IHfwudop
-	75aveQZwxoXbfMWlBLCg9cIHJG5os+CtJ0blOEnJnQQ8Ncrh+6u/bUdd2u6vAUxtEdLPC9
-	R3Nl6nlYEPi6oBZfBQn4R8GXU8S3T6s=
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 3A6294129D;
-	Mon, 16 Jan 2023 19:31:15 +0100 (CET)
-Date: Mon, 16 Jan 2023 19:31:13 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-To: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH v4 3/5] batman-adv: mcast: implement multicast packet
- reception and forwarding
-Message-ID: <Y8WX8a0REDduYlKW@sellars>
-References: <20221227193409.13461-1-linus.luessing@c0d3.blue>
- <20221227193409.13461-4-linus.luessing@c0d3.blue>
- <7420352.31tnzDBltd@sven-l14>
+	bh=35gY9HMGR8qg3128Le4UDVr1HUZ3REP4aNiiCNLt5Wg=;
+	b=Rz/2HCZUQkZkgUzSvLwo5QC8rd/jjdylq5PAtya1R3gkiiOYB2ZUXFYpOj5qxZCsTz0sxS
+	hcuLqqLYZvTHh8MTT1L8VvIiCZRSTsD6WnAc2J7aojQS/84xeHLPn4TMygnXxj7DQra7Ev
+	ejMFcozLKit/MKu5gfYADL433ABND9s=
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [PATCH v4 4/5] batman-adv: mcast: implement multicast packet generation
+Date: Wed, 18 Jan 2023 22:15:35 +0100
+Message-ID: <6523978.yeldW9W7Dk@sven-desktop>
+In-Reply-To: <20221227193409.13461-5-linus.luessing@c0d3.blue>
+References: <20221227193409.13461-1-linus.luessing@c0d3.blue> <20221227193409.13461-5-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <7420352.31tnzDBltd@sven-l14>
-X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: 3BAOSL53AC7LFK46OVIYKBA4NH73SDGV
-X-Message-ID-Hash: 3BAOSL53AC7LFK46OVIYKBA4NH73SDGV
-X-MailFrom: linus.luessing@c0d3.blue
+Content-Type: multipart/signed; boundary="nextPart1810144.VFTImQeyzU"; micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: 5MQMBTFWTGJ3NS6ZNEIIZDTUTGBQPVQ2
+X-Message-ID-Hash: 5MQMBTFWTGJ3NS6ZNEIIZDTUTGBQPVQ2
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-b.a.t.m.a.n.lists.open-mesh.org-0; header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; suspicious-header
-CC: b.a.t.m.a.n@lists.open-mesh.org
 X-Mailman-Version: 3.2.1
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3BAOSL53AC7LFK46OVIYKBA4NH73SDGV/>
+Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5MQMBTFWTGJ3NS6ZNEIIZDTUTGBQPVQ2/>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sun, Jan 15, 2023 at 06:56:37PM +0100, Sven Eckelmann wrote:
-> [...]
-> > +static void
-> > +batadv_mcast_forw_scrub_dests(struct batadv_priv *bat_priv,
-> > +			      struct batadv_neigh_node *comp_neigh, u8 *dest,
-> > +			      u8 *next_dest, u16 num_dests)
-> > +{
-> > +	struct batadv_neigh_node *next_neigh;
-> > +
-> > +	/* skip first entry, this is what we are comparing with */
-> > +	eth_zero_addr(dest);
-> > +	dest += ETH_ALEN;
-> > +	next_dest += ETH_ALEN;
-> > +	num_dests--;
-> > +
-> > +	batadv_mcast_forw_tracker_for_each_dest(next_dest, num_dests) {
-> > +		if (is_zero_ether_addr(next_dest))
-> > +			goto scrub_next;
-> > +
-> > +		if (is_multicast_ether_addr(next_dest)) {
-> > +			eth_zero_addr(dest);
-> > +			eth_zero_addr(next_dest);
-> > +			goto scrub_next;
-> > +		}
-> > +
-> > +		next_neigh = batadv_mcast_forw_orig_to_neigh(bat_priv,
-> > +							     next_dest);
-> > +		if (!next_neigh) {
-> > +			eth_zero_addr(next_dest);
-> 
-> Why is the original skb not touched in this case?
-> 
-> It might not be a problem because you are also doing the 
-> batadv_mcast_forw_orig_to_neigh check in batadv_mcast_forw_packet. But I was 
-> just wondering about it
+--nextPart1810144.VFTImQeyzU
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Subject: Re: [PATCH v4 4/5] batman-adv: mcast: implement multicast packet generation
+Date: Wed, 18 Jan 2023 22:15:35 +0100
+Message-ID: <6523978.yeldW9W7Dk@sven-desktop>
+In-Reply-To: <20221227193409.13461-5-linus.luessing@c0d3.blue>
+References: <20221227193409.13461-1-linus.luessing@c0d3.blue> <20221227193409.13461-5-linus.luessing@c0d3.blue>
 
-I actually thought the same at some point, to potentially reduce the
-number of neighbor node lookups, and tried it. And then
-realized that it can break local reception. The destination
-address might be our own one and then the neighbor node lookup
-will return NULL, too.
+On Tuesday, 27 December 2022 20:34:08 CET Linus L=FCssing wrote:
+> Implement the preparation of a batman-adv multicast packet and use this
+> under certain conditions.
+>=20
+> For one thing this implements the capability to push a complete
+> batman-adv multicast packet header, including a tracker TVLV with all
+> originator destinations that have signaled interest in it, onto a given
+> ethernet frame with an IP multicast packet inside.
+>=20
+> For another checks are implemented to determine if encapsulating a
+> multicast packet in this new batman-adv multicast packet type and using
+> it is feasible. Those checks are:
+>=20
+> 1) Have all nodes signaled that they are capable of handling the new
+>    batman-adv multicast packet type?
+> 2) Do all active hard interfaces of all nodes, including us, have an MTU
+>    of at least 1280 bytes?
+> 3) Does a complete multicast packet header with all its destination
+>    addresses fit onto the given multicast packet / ethernet frame and
+>    does not exceed 1280 bytes?
+>=20
+> If all checks passed then the new batman-adv multicast packet type will
+> be used for transmission and distribution. Otherwise we fall back to one =
+or
+> more batman-adv unicast packet transmissions, if possible. Or if not
+> possible we will fall back to classic flooding through a batman-adv
+> broadcast packet.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  net/batman-adv/multicast.c      |  79 ++++-
+>  net/batman-adv/multicast.h      |  25 +-
+>  net/batman-adv/multicast_forw.c | 513 ++++++++++++++++++++++++++++++++
+>  net/batman-adv/soft-interface.c |   6 +-
+>  net/batman-adv/types.h          |   6 +
+>  5 files changed, 621 insertions(+), 8 deletions(-)
 
-So instead of adding another batadv_is_my_mac() check in yet
-another place and branching here in scrub_dests(), I thought I'd keep
-it simple.
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-I could also add these two lines in scrub_dests(), the check and zeroing,
-I'm just not quite sure if we would overall gain something with it, as
-batadv_is_my_mac() can be a bit expensive at the moment when there are
-many interfaces?
+Btw. it is spelled "outer" and not "outter"
 
-> 
-> 
-> Btw. it could happen that you send out a packet with zero destinations in the 
-> TVLV because the neighbor disappeared between the 
-> batadv_mcast_forw_orig_to_neigh in batadv_mcast_forw_packet and in 
-> batadv_mcast_forw_scrub_dests
+[...]
+> +/**
+> + * batadv_mcast_forw_expand_head() - expand headroom for an mcast packet
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @skb: the multicast packet to send
+> + *
+> + * Tries to expand an skb's headroom so that its head to tail is 1298
+> + * bytes (minimum IPv6 MTU + vlan ethernet header size) large.
+> + *
+> + * Return: -EINVAL if the given skb's length is too large or -ENOMEM on =
+memory
+> + * allocation failure. Otherwise, on success, zero is returned.
+> + */
+> +static int batadv_mcast_forw_expand_head(struct batadv_priv *bat_priv,
+> +					 struct sk_buff *skb)
+> +{
+> +	int hdr_size =3D VLAN_ETH_HLEN + IPV6_MIN_MTU - skb->len;
+> +
+> +	 /* TODO: Could be tightened to actual number of destination nodes?
+> +	  * But it's tricky, number of destinations might have increased since
+> +	  * we last checked.
+> +	  */
 
-Ah good point. Hm, the protocol should be robust enough on
-the receiver side to handle it. And it should overall happen very rarely.
-I'm indifferent to adding two more lines of code to check that.
 
-> 
-> Kind regards,
-> 	Sven
+But it might at least be a good start. So basically a "we can at least=20
+guarantee that there is enough room for what we've seen in our precheck"
+
+And you could make sure that we still have enough headroom for our lower=20
+devices. Not that we steal from the headroom which they need - because your=
+=20
+headroom is not part of the needed_headroom which we report. But of course,=
+ we=20
+don't know the outgoing device (yet) - so this makes it harder to figure ou=
+t=20
+how large we need to allocate it.
+
+
+Kind regards,
+	Sven
+--nextPart1810144.VFTImQeyzU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmPIYXcACgkQXYcKB8Em
+e0bTPxAAzhreOAl+WsxPkXoZgU2qwG9XJnI7PdDVg+jk/JX2wfCuSAvi5tRh2CA9
+V/9SNZ2QIW3V/ipHvC7Ae8tujVxrk8SXnmQqF78TZSBvBu9eEtQHUv9bu2J9fmOh
+gtvP9hjeU4umZWrIoDAM1BrMGU5XO47pBcTyzDVKjlQReLRznPiE5A2c99H1QPXN
+ub5mIPdWznkIjeAcZgX1vMD1393C0UIsritRugOhMeUNJAaLfUN6MSDk7cvDDjlt
+VzHe4VUr3d5DF/phq+cSsdoPCFvrzQGDHV9NKZUlvWI7Nr3wNduIs1APWcnHseQm
+hDuzYtNR7ahdMT1ozeQNflbSOLf3sR6TxzuGHAa16jDy/0L/SEl40M2pQ1yx1Rq8
+maCLDcdIQsVO2UHsv8hXAuh5Dy3rTUquBBXO8U5hCvsYghP6JmUf9zC3Ka5irhBH
+R8tDI/o1HFVjWIcpoQsyed8Pz/QgYPbxiTmW4Pp5zmSQI7inq+5SgARVAfBdMCHC
+zjGeyfAtAHrreXT+7qmdv7j74o5kXW97nf4K4GIlwSm8uJ6aMKUEJGr8Rli/boP9
+NGxknOxdp76tyqgk5u7jhdE89K4og8ma41ZkYPDNVUx/2/wgdi782Qy0r+g4d+ZU
+j28YaR3RkANzBvoeE0f6hbCBEHzozWlIlplKlgKYV9ct0LzBigI=
+=toue
+-----END PGP SIGNATURE-----
+
+--nextPart1810144.VFTImQeyzU--
+
 
