@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADEE5C77B73
-	for <batman-adv@archiver.kernel.org>; Fri, 26 May 2023 16:49:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B425BC77B73
+	for <batman-adv@archiver.kernel.org>; Fri, 26 May 2023 20:30:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0B09E81F18
-	for <batman-adv@archiver.kernel.org>; Fri, 26 May 2023 18:49:27 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A657081AF9
+	for <batman-adv@archiver.kernel.org>; Fri, 26 May 2023 22:30:27 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1685119766;
- b=wfHUu/QCuTIdSWxJSfOd6PAM0WF87xwToag9qAso3n+W+wf5xq3brLPppvydTVKijnkgC
- /wanYuV/3VoVdj6VI2L8+8JG99xJPEoxVfl6QIrwhdbSZ8loG5et78SrKqbsNPNY0ve6o5N
- bAC5fVUoPyOO+5IOkENygsovY4nKtS8=
+ t=1685133026;
+ b=UX3hTVihPQLsGpn21lkbOIlIkU/G7+UJM0mplkqTV7b+jGod/xDi4eiqIVwKHl09e/Po8
+ lc5e4Kw98Sih/kcjqcCDCw7esWgTuwRxJyO5nfJVfTw+1YJ8zCvc5FmR6Go4TkaRsRUOcCO
+ AF6PkCUFzsj+drbxvOO8nCLzvhfSr4Y=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1685119766; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1685133026; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=aj1j1eWnCNHkS6D2DwM5Jr/0q4xT5pPG+Y73M+V83Ao=;
- b=rim5GZ7ewsvnmqBqTOCf07XIUEa/WnDCzkYLBLTEHC2vUuGkdlfqOIBrgDYa/9BP23I9I
- lMLDO8Hg+DZYfnQHdp2mCYAnannGowyagQ3D87TkjU6K/LknVEIa6A+1JQVmLt26wNBYkcF
- EeL44x0phbq7K8yV6vPtk+MN1wQpE9Q=
+ list-archive; bh=nrJocbC9yujvo/q/Zvs4to1pf3VWKChUTxeNN8aTAa0=;
+ b=oeCJny0gx5ucVCPFy2q/Zxg2I+7v1RoEdhi1P7l22T/7IjmBig7nYvgabT7MKxRb31dHM
+ 0+6LMv1vQrM8QRRdSc7ZIy+wid8u56y1MZ9j8k3XCC8dUsFtpivnJvJRYstAHiCfKXUyNGA
+ qG37FHnTborL1jdYXnu0UN6V/jmaCuc=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=narfation.org;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org; arc=pass; dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4BEAD80F1E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 26 May 2023 18:49:25 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 31A3280FC3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 26 May 2023 22:30:23 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1685119765;
+	s=20121; t=1685133024;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=aj1j1eWnCNHkS6D2DwM5Jr/0q4xT5pPG+Y73M+V83Ao=;
-	b=vbHZ1LPjkGVmF3fibJz0hF99v3qkE8ZN747q+65Fsce49MFgOAqIo5AMObSn+rIrwj6HIH
-	RQf6l3FODq5SVUnuGf33NxdZuCtf0JIDXEp245Oxcx2yBKIVPgUmFy3Eii38Fmb5H/6apd
-	t4YggS7Cwqj7aL76nQ9oKuT7DiKgrP0=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1685119765; a=rsa-sha256;
+	bh=nrJocbC9yujvo/q/Zvs4to1pf3VWKChUTxeNN8aTAa0=;
+	b=bwEABRsUSOqJA6IFimxNz3pP+LfoP/K/5pev/vKFiC40/eqWxbNC9UgMZPRE37M0bpt9q5
+	9Pim6ngbc1E05B1Oa9l39ANMIzt0ZZ5MaJRllhcbKPvVYThBvaXVa1d7vEbrMZqWEPqgAD
+	HnAdM4OAjW6hZyfTZMeLGXerKsttKN8=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1685133024; a=rsa-sha256;
 	cv=none;
-	b=BBMswLoxDhAa7Ib46TwHMNe+LM34/+AnZpD54d5OH1wjpx0ka8dZVwjRdm14l9PdXKP+Fc
-	FG68Ptf0Ltkzfv1t3PJ507CfRBjT3Rl8LFEApcUF2JxRyqEdgKCzMiI/L2SNkMFVj5Rytx
-	r9R7BLE7dUC22qfFTLyMGy05IbDckrI=
+	b=KPF88wdWCEkr5YnQUHihjCGatCcUsxkiOdLE0BR3RqPwvlpS5MQDFjzVo2rN7N7JY2KrIu
+	m6YumivOwpRxJGwdRmZcR4WzK8cG3g+mbDy/mUKpDzrmFA3svRs6nNu8NRHO6um+6SrO1V
+	7groE3Uue4VF46Z72eo3kL1OOneLDlU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=PPtGipJ+;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="I/LSxf9e";
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1685119764;
+	s=20121; t=1685133022;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=aj1j1eWnCNHkS6D2DwM5Jr/0q4xT5pPG+Y73M+V83Ao=;
-	b=PPtGipJ+XCfC1BdEMlL0wR14pV4KVlh6ULCXamLHvi7/yCy2Ee54zxE1Q/q3dXr8m2o6Ij
-	qCodqHEpyEYzJrWzrbTjSZUFq1mO6UqMXdj1143hCwgibbfVPnYIiiuweiecv/IFx1PwR4
-	+Bx1iRyCjH0IDgFHOD9aP0UPCL0DQKE=
+	bh=nrJocbC9yujvo/q/Zvs4to1pf3VWKChUTxeNN8aTAa0=;
+	b=I/LSxf9eXH1Ikzq1flOLF5C80S7pH/0I/Jm0EFS5cz2h5bm7XpXIbRPK2L0iu7XbaFTqTq
+	eNci93A+CRVdDUe6klTXO/tCMUkmTXTEk34RO8c3ohoKfnzOqMwP+DzxhjOBweZcZAYypG
+	B8AS5+F3I3PkNhHN5zgPby7OKPsQst0=
 From: Sven Eckelmann <sven@narfation.org>
 To: Marek Lindner <mareklindner@neomailbox.ch>,
  Vladislav Efanov <VEfanov@ispras.ru>
 Subject: Re: [PATCH] batman-adv: Broken sync while rescheduling delayed work
-Date: Fri, 26 May 2023 18:49:21 +0200
-Message-ID: <5834562.MhkbZ0Pkbq@bentobox>
+Date: Fri, 26 May 2023 22:30:16 +0200
+Message-ID: <7526514.EvYhyI6sBW@sven-l14>
 In-Reply-To: <20230526161632.1460753-1-VEfanov@ispras.ru>
 References: <20230526161632.1460753-1-VEfanov@ispras.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1760861.VLH7GnMWUR";
+Content-Type: multipart/signed; boundary="nextPart3740035.kQq0lBPeGt";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: P3I6RE5PRIV5Q6AIAL73EECQPRXKYVPL
-X-Message-ID-Hash: P3I6RE5PRIV5Q6AIAL73EECQPRXKYVPL
+Message-ID-Hash: PDBDOQ7SJLGY5MQSJMQQ2OPNBQ56UXRM
+X-Message-ID-Hash: PDBDOQ7SJLGY5MQSJMQQ2OPNBQ56UXRM
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency; loop; banned-address; member-moderation; header-match-b.a.t.m.a.n.lists.open-mesh.org-0; header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size; news-moderation; no-subject; digests; suspicious-header
-CC: Vladislav Efanov <VEfanov@ispras.ru>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
+CC: Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
 X-Mailman-Version: 3.3.3
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n.lists.open-mesh.org>
-Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/P3I6RE5PRIV5Q6AIAL73EECQPRXKYVPL/>
+Archived-At: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PDBDOQ7SJLGY5MQSJMQQ2OPNBQ56UXRM/>
 List-Archive: <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
@@ -87,58 +87,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart1760861.VLH7GnMWUR
+--nextPart3740035.kQq0lBPeGt
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 26 May 2023 18:49:21 +0200
-Message-ID: <5834562.MhkbZ0Pkbq@bentobox>
+Date: Fri, 26 May 2023 22:30:16 +0200
+Message-ID: <7526514.EvYhyI6sBW@sven-l14>
 In-Reply-To: <20230526161632.1460753-1-VEfanov@ispras.ru>
 References: <20230526161632.1460753-1-VEfanov@ispras.ru>
 MIME-Version: 1.0
 
 On Friday, 26 May 2023 18:16:32 CEST Vladislav Efanov wrote:
+> Syzkaller got a lot of crashes like:
+> KASAN: use-after-free Write in *_timers*
+> 
+> All of these crashes point to the same memory area:
+> 
+> The buggy address belongs to the object at ffff88801f870000
+>  which belongs to the cache kmalloc-8k of size 8192
+> The buggy address is located 5320 bytes inside of
+>  8192-byte region [ffff88801f870000, ffff88801f872000)
+> 
+> This area belongs to :
+>         batadv_priv->batadv_priv_dat->delayed_work->timer_list
+> 
 > The reason for these issues is the lack of synchronization. Delayed
 > work (batadv_dat_purge) schedules new timer/work while the device
 > is being deleted. As the result new timer/delayed work is set after
 > cancel_delayed_work_sync() was called. So after the device is freed
 > the timer list contains pointer to already freed memory.
+> 
+> Found by Linux Verification Center (linuxtesting.org) with syzkaller.
+> 
+> Fixes: 2f1dfbe18507 ("batman-adv: Distributed ARP Table - implement local storage")
+> Signed-off-by: Vladislav Efanov <VEfanov@ispras.ru>
+> ---
 
-You are most likely right but could you please point out what in the worker is 
-checked by the workqueue code that prevents it from being scheduled again?  
-(and which seems to be overwritten as your patch seems to suggest)
 
-I think __cancel_work_timer marked the work as canceling but 
-batadv_dat_start_timer reinitialized the worked (thus removing this important 
-state). Would be nice if you could either correct me or confirm what I think to 
-remember.
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-Kind regards,
+Thanks,
 	Sven
-
---nextPart1760861.VLH7GnMWUR
+--nextPart3740035.kQq0lBPeGt
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmRw4xEACgkQXYcKB8Em
-e0Zk4w/9EOOJrN9tg9/gQ5TCqm6SySIDZqpQW/AeUktUNl88NPsdjzOeJtKSqv4H
-hvfTgoAiOsAEuB2HoHlumdo5OZkYWwZFLmYhYbNZUH5HXVcAciAkLLabK8dSUBTX
-9EKzdDb3PY7+eGIAAMUn2CF4l2WEkOzBIdVHpV6iXyL7l+qOx/IeRPDLX/WKJKPX
-kh6IOP/i/bqYDdOs62+p4MYboTh2CGrSjpLGz9yOiM4rndr4clemJDQsuhbVhJ5F
-fbTNtJJUtu6u4fwgdj7yHMIpZy/rXGAtj4NruSC95eR7P4Jm8R9P2j023+pF3Shy
-OtzFG52bCd7Gz4fIVS5Vjqi1OMwZvVDi/ufvRfD8mRWg7oGg+SauY6iBM45GhJUx
-G9R3DUuC8WJ774iWhYa1ZGHltQ6t0xBZfWOAdA1YxCoNuNbFMPOetJHcPj4D8w1y
-CLY3rKYINm3hSpNPVgmcnCYEbCOL8ZJ1pDDeZtZbhcGIE1PKUaJ+QcCOseoPRyAn
-gi+uoidkcG3sMDBWUYqpbx/QTjpBTtS16D4LazRUyhyBg1qLTYdhhdv06QZ2Dq2x
-XaSYVWsdvLcIAFXfBXuneoff3Kj+26DTo/qOizhMzjANDYVyzn/4na80xvrCfAZS
-EZ1MzcWh1zbKpRlUfFzGnUP3ZllHxRlHPmiF5qx9NjqTI074om0=
-=vwPk
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmRxFtgACgkQXYcKB8Em
+e0ZD0RAAp8e/HTANDtMQF/tKm+CEosGlP+Hp8Aqdd8nNfTXXC2DJAouO/TO2ycmq
+G0N393ff6vuTkebzzuM8QqOQxFVMGCH/VDGZEkOAr+Qyq8V6Vq50uCJUyi1TkCEk
+lhM/wvBXJbadpikiJdkYdfJFBMUcNqRnMsmvDU3ASPw8g4/ZlTfRDKPn56UUUjb1
+juIiGBWFTQ0tzcEh5p9YgrArb/jI7YkZR4BNfheFEoPZqZRkP5CaonXE436uQIjz
+raVe+QnxlGHVFUGpIyebNEB5/ZtWN1gsOXetqLcjFgjkwh9Qvow8tjNv13VqbTd5
+rUHp8HoTwrq3UGNW3xUzRWuxJtQBOwKrNmebw2CN179C4qEZjipY14XnfGngZLyE
+27QcB6s4wWz1UMjIiZ8OnN7gAzDmHKde1LqdQQp9WaAfLwFKCEeNMECg1QhQExaD
+vsfUr5aNuaLNk9KV/l+sus4hOCzeGCgmlUsrw9rWR3yk5PEjpUeg0IkJmZr7nFkx
+ykj5yPFHvgFi6q0VV7ppV4iXEoPTP7s4uZqCeHn8MQ1jVNZio/l7YhwZBYN3pfbK
+5nv2jKXsK079UHV9qzmhQH31jZEh//jwcupyMF+k63RpQM8sfENKb25EkUJN5ebQ
+gNnzdr1ElKsPD8TUQ1B9SVI0QKNpTGMXWsiNjX/BMVblnUvcxKE=
+=sHaT
 -----END PGP SIGNATURE-----
 
---nextPart1760861.VLH7GnMWUR--
+--nextPart3740035.kQq0lBPeGt--
 
 
 
