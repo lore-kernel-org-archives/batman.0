@@ -4,121 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9276BC77B7A
-	for <batman@archiver.kernel.org>; Wed,  7 Jun 2023 15:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7FA6C7EE25
+	for <batman@archiver.kernel.org>; Thu,  8 Jun 2023 06:39:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8683D815C8
-	for <batman@archiver.kernel.org>; Wed,  7 Jun 2023 17:55:24 +0200 (CEST)
-ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1686153324;
- b=FnfkSyCOupuTqup2XLhZOtAG0YWEXDJW1EUk1opQMRQ28qcjjDltLrZf6o6uuRlZ6VIXM
- v4QymX7NQY1AN0h/NLJVCb5WtG59xkbe9LyqkoWA7iEbcZ4xa7Gv6lQbTlrobuw9To06cES
- SMSK8fxhgQ73oP1hc82gXVEao0ua0kA=
-ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1686153324; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9102381720
+	for <batman@archiver.kernel.org>; Thu,  8 Jun 2023 08:39:36 +0200 (CEST)
+ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1686206376;
+ b=ZO5M6wgH0LA1DD106YfHFRrcrxnzE54G5zhoFAhzj20P1Vs87BZvWDdKD023HmtJTuPtl
+ D9mz5NzkuHdif0MWdeg16eAMDdZpWvhwAXohDEvOGSfLIwADGYA1BBJGBA1r5VKW0U+p9vq
+ CSXpFt6KxXa2qSnLmVUxPiZrke50JDw=
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1686206376; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=3bhEhu0OiNNDzF9hlUr2mVxR3tx7ZYsrXal5Roza8mg=;
- b=IBDeTT1UO5uBNq1KB6axNctrYT/BxBeg/yry5D6LzQZz9AOFfZWhMNfl/Ukh8VcJfufn0
- D7OJZMan9IB2WktY/YhDCexB7ysjI26BVr06rbHmKXUTmxcM4drXLxfxbzLMpDw45cQ95Oz
- Ud0fFpxbxTz8IAd9lY2rHIh2AthhvPM=
-ARC-Authentication-Results: i=3; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ list-archive; bh=o2v5VCvK6VNHOiZxAr9pmeXt/7HYG7vSW8TR5+VCsgI=;
+ b=XqDCOc4IRHSoCaSkM6CuRjqSjJuZX7OIo3X7G4Pv/upX+MeOcWybsLcDJGLqympUCEwEv
+ 3hsa/W1l06jyNk6ikjFO5QS2+61VMRbcifaq8tLWqq8B7Cj93fLNunfK1q6ZgK74xgLDY/B
+ v1HF5pdWm97bIFDLGuQaoQOixmgO7r4=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
  policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2AEA280519
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed,  7 Jun 2023 17:55:21 +0200 (CEST)
-ARC-Seal: i=2; s=20121; d=open-mesh.org; t=1686153321; a=rsa-sha256;
-	cv=pass;
-	b=2dLTvJWeKYIvL7RXRpHndiAw2gpfzP561kLiuvZMp/Zu953lFwKcN6DhjeqolLH20bp9ep
-	NRL9llBxScbQ4OKJHS5Zbk2wSWb1xe79OA5JquIMh2CfrUe1auucMhTFBNz8rzQY8PKj9Q
-	IkBW9HWllwamcEWwkIOfoP4xnq5/Kgo=
-ARC-Authentication-Results: i=2;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 609F280519
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu,  8 Jun 2023 07:00:25 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1686200426; a=rsa-sha256;
+	cv=none;
+	b=XQqxifJjLE9/Rha+qXFGuAPjptwOPLjs3aRN6VhuJnk9KinnhYZx44qiOieZ04pKxaztrd
+	WPePlQTPIaFgZWH5tG23Zppx3UItmQdqaYpjKVnU6B+GldhCOkCf+tyVLpc7EZakckYEXv
+	A/UZdgnP4xIU1qrIloPB14qvMGiR2JM=
+ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=vYL141pj;
-	arc=pass ("simonwunderlich.de:s=09092022:i=1");
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1686153321;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b="I1oRQak/";
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
+ permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=none) header.from=kernel.org
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1686200426;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=3bhEhu0OiNNDzF9hlUr2mVxR3tx7ZYsrXal5Roza8mg=;
-	b=QvFyQs5cmbvBHCNvcW2O9T0KJwnS3KQ/TYn0UMFCjLlsbYevaeKy9EvpGahtubgIAzUmzo
-	ylP6epTE9z/YlP7+BvI0qSx5kfmCByyFxeK9vuKjsAM0oKZk+Xq5IZrxyd3rmuIgsBRAzS
-	leKpfbVcwCwu4e4/go3VJy2Tm3wAuhQ=
-Received: from kero.packetmixer.de
- (p200300C5970e9fD858c5a4eeF27C1696.dip0.t-ipconnect.de
- [IPv6:2003:c5:970e:9fd8:58c5:a4ee:f27c:1696])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits)
- server-digest SHA256)
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=o2v5VCvK6VNHOiZxAr9pmeXt/7HYG7vSW8TR5+VCsgI=;
+	b=hly53GzRiRClTRmYAROPuzyJVnp4we5nQrHdjN+oqiRi/HPUZFlTzIxJGwBaosPBd2f+Wg
+	YVJADgSjXMdNPUv80jt6LrSZHyrk9hOTYPcuWbb2sUH8NUSLnbSMBq8Ye27wrU+SqWhLFg
+	NIpeeYbSYiqee8/VQG3XqjR/KQjztk0=
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 9D6A6FA14B;
-	Wed,  7 Jun 2023 17:55:20 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1686153320;
- h=from:from:sender:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:references; bh=3bhEhu0OiNNDzF9hlUr2mVxR3tx7ZYsrXal5Roza8mg=;
-	b=vYL141pjQ56Ybg/Hl8o3UsFCPAUZlQKv+5S+oXk5CYfgCpjfFeOFituGUh7F2xdCvNKWUL
-	RlHg8uhZqUDPt74eI8TqB3sMRBECe4l7HhVdV07Rr6jDxHYdC6SMLrWTGz1/uWv47VkQk3
-	yrPGZtjq8u82SU77pHEk+IpcnhxIrIyEl4rhWaehlxYnMngTfMtdjKj01LW+Sehd57cZfM
-	PcODbTeJ9xJbumwxfulPUYbKtcO0mzMehucBEwLk8DEyYC55ieqeksEtN3iMHEcumJK5uB
-	Dqyujb4vPqMtPN/REKdGTLWZEK++X8Q+s6URCWX8phQ7UgsS7i9jU0VBgY1Grg==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: davem@davemloft.net,
-	kuba@kernel.org
-Subject: [PATCH 0/1] pull request for net: batman-adv 2023-06-07
-Date: Wed,  7 Jun 2023 17:55:14 +0200
-Message-Id: <20230607155515.548120-1-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.30.2
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 34956647FF;
+	Thu,  8 Jun 2023 05:00:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0BFF8C433EF;
+	Thu,  8 Jun 2023 05:00:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1686200423;
+	bh=u6gKiDY/HsEUHdRq8tbpupxV7SXGRVcLLZSbJkFwsS8=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=I1oRQak/+uFzko5FE0Pmz5GM1pd6Bj2Wbo37WxJr6NhpWcou97N4jHFsdJNuJx9Tz
+	 CaeNWZk4GmcQmt7kRirQHZnA7wrY51vTpejJwFDMNyi1W39Ejp+9TF/0v5Ukyl4DzF
+	 YV807/eIAa4ZfM/MVdsXsa8+4q44VGPajT8QFumyJNCG/CbKy69sX0JpobQVY1B7t/
+	 TKxYAuJ9eHyG/elj38hi1UqJ9rxXoBcFNOekrHYKpvLdKaJyswP/k2OCSk0/cVMtwe
+	 hc6QVXe+QcKU/FI4bEFPySoD5pgacnVUt4kR3XlFzcfZCbVCvMSbHUle68NWt/IrAC
+	 70AaPClVNjVmQ==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ DFB12E87232;
+	Thu,  8 Jun 2023 05:00:22 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=simonwunderlich.de; s=09092022; t=1686153320;
-	h=from:from:sender:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:references; bh=3bhEhu0OiNNDzF9hlUr2mVxR3tx7ZYsrXal5Roza8mg=;
-	b=Ofhec/EtB3wobPBexMwcU+5vUwzFzTSttQDzNsE+uRZnrYtbZsBgf3/8sWFAKkmbPz3BPE
-	kx3aQ6ShwmaDy9NPbYhCJtrKH5oj6TOEPbKp0YqQst7oHFc5ZGtMOF/MbWI8vjCvyYqKS0
-	eIySPpDCnxUsgf+ciMZ5WE65NYRtOQ240RTpseoV2Y8gzZNibOZmwNFyaqoKq22RyX5xF5
-	fawgTuzMjNjOYnY6jFgoljdIBNhf1g+p6a71QD3ddJMq7uAViuVJg3qOLoWLVUYcBkMFov
-	ybPaOkf9NTTmhMzlJtcHJift3KvhjWwQ9jDtG1wMCIRFo8qagC07d95vwqpINg==
-ARC-Seal: i=1; s=09092022; d=simonwunderlich.de; t=1686153320; a=rsa-sha256;
-	cv=none;
-	b=JvoZYcMWVjHQ+HuZg/hlPQqP/G8Edh2VzqJNUq2e+mbj+bdZ1rz6SM/h027wGo3zPMoS6m+tkvXTiy5ZHcWseoPgFiMszRgXSXpmdpX7VpXq2WawKTrskwIoK5AIqr6lSDCskUs01eILGDh6gu0wWA7NZW1e7/EP4uPJ331kTobNipfrd5WZK5DdNpxmW/Lx6F6++uTkYF7aA/Npoet/7rKjaVr5vwFVAMZOEbErHBTFGRM1hHrxaIwQa7L4C1xPpPpeL7E49dd65GWsi3Xl3ftRR+vhKI8ZFTKKnpQrjsRwisQgm8pAIpyuvrBCUNkTtpEFQ29xu2fIIRCqBr73JQ==
-ARC-Authentication-Results: i=1;
-	mail.simonwunderlich.de;
-	auth=pass smtp.auth=sw@simonwunderlich.de smtp.mailfrom=sw@simonwunderlich.de
-Message-ID-Hash: UNLHLJIPTKX6NJQESDLGTO77I4WHM72U
-X-Message-ID-Hash: UNLHLJIPTKX6NJQESDLGTO77I4WHM72U
-X-MailFrom: sw@simonwunderlich.de
+Subject: Re: [PATCH 1/1] batman-adv: Broken sync while rescheduling delayed
+ work
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <168620042291.23382.13609079860562597568.git-patchwork-notify@kernel.org>
+Date: Thu, 08 Jun 2023 05:00:22 +0000
+References: <20230607155515.548120-2-sw@simonwunderlich.de>
+In-Reply-To: <20230607155515.548120-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
-CC: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-1
+Message-ID-Hash: NCWYTDQVEXKEE7ROEMDT5Q3GYTELQJJV
+X-Message-ID-Hash: NCWYTDQVEXKEE7ROEMDT5Q3GYTELQJJV
+X-Mailman-Approved-At: Thu, 08 Jun 2023 08:39:30 +0200
+CC: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, VEfanov@ispras.ru, stable@kernel.org
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/UNLHLJIPTKX6NJQESDLGTO77I4WHM72U/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JCE4SF3HR523SRY7V2KEP45TBVJISPF3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -127,36 +117,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi David, hi Jakub,
+Hello:
 
-here is a bugfix for batman-adv which we would like to have integrated into net.
+This patch was applied to netdev/net.git (main)
+by Simon Wunderlich <sw@simonwunderlich.de>:
 
-Please pull or let me know of any problem!
+On Wed,  7 Jun 2023 17:55:15 +0200 you wrote:
+> From: Vladislav Efanov <VEfanov@ispras.ru>
+> 
+> Syzkaller got a lot of crashes like:
+> KASAN: use-after-free Write in *_timers*
+> 
+> All of these crashes point to the same memory area:
+> 
+> [...]
 
-Thank you,
-      Simon
+Here is the summary with links:
+  - [1/1] batman-adv: Broken sync while rescheduling delayed work
+    https://git.kernel.org/netdev/net/c/abac3ac97fe8
 
-The following changes since commit 44c026a73be8038f03dbdeef028b642880cf1511:
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-  Linux 6.4-rc3 (2023-05-21 14:05:48 -0700)
 
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20230607
-
-for you to fetch changes up to abac3ac97fe8734b620e7322a116450d7f90aa43:
-
-  batman-adv: Broken sync while rescheduling delayed work (2023-05-26 23:14:49 +0200)
-
-----------------------------------------------------------------
-Here is a batman-adv bugfix:
-
- - fix a broken sync while rescheduling delayed work, by
-   Vladislav Efanov
-
-----------------------------------------------------------------
-Vladislav Efanov (1):
-      batman-adv: Broken sync while rescheduling delayed work
-
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
