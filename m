@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E980EB64DA
-	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 08:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D8D1C0015E
+	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 08:17:04 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id EF3DB824A8
-	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 10:16:22 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9E9C68267A
+	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 10:17:02 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1689754582;
- b=B4yd9pexykz1lfSVTY5GYPh1DKBlfRvpJmCPg9LvghwbCsw9msh0qoQ81sJHX6Olxn7jb
- 1yX2gwMtOyIYVerhcWPMz0cbMLyBqQzOihIMVcJxhBWGgctO1OspI1IpOFb6hirSR6xV3ea
- qiXhYhnNkDickeY4aSPhFwmOuhEOiSo=
+ t=1689754622;
+ b=qmppDg0OQW+yuVfACXYZB8PbqSGnZAQrs0fBcCb80yGUo0//tT678E+jkU7g/+oxKLE+p
+ zX4jkQosFJMPYYMPNqbVvMVoComZQWpTJjR0RjkK7tjzJfpFD4hkYb6KuoXz5WQ68Fn+HYz
+ tI6dM75K8KNW9QrIcPzDEYusaHBZSUs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1689754582; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1689754622; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=YsrfVK+IH6rtxItVlK59FCeeMb9VUmQo6t3hZq/f4Z4=;
- b=33RJYVVTR75tFe3Wy1BptGjx2PzL/DDhbJ7jNb/AqRxbmgQFCxqQBQ8jcgfCwsB3A5DAN
- i565dptAvQE6M+W5C0CCe4AWGm2JrZm2ff383IcW+HfdZemGaEhkIL0GLCDRa8ZiFi46ckP
- e1CxihtD5zu41e/qpxv9/1L7utyNR+A=
+ list-archive; bh=D4yCP+kPBfAcMFcbUlzk/L1SR8XiLbCQWDuFAAf2P1c=;
+ b=XvloqFPjXXA7xB9U9U/AJ08317Fwn5PhYyQDhv6+9IFqaLtwEChdb6w1gMxCjBEwt1Sce
+ nSovw0s6q/gPfApKiCOPpGPQWytXXq6b7iz+XRpIWCX9Wvy0w+N6AOHaero78aHX/mHxNLC
+ 7NVjhAXzkBicXTYwoYYw5jT26TQiFnw=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -35,68 +35,68 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 96F3981B76
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 19 Jul 2023 10:15:32 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6487A81B76
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 19 Jul 2023 10:15:35 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1689754532;
+	s=20121; t=1689754535;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=YsrfVK+IH6rtxItVlK59FCeeMb9VUmQo6t3hZq/f4Z4=;
-	b=oz2a/OJAvnFm9LRB9h6YO1Pi0DDsufrmdbzGiokRdHOGJF821iuWAIaZaPghgQxEMAwrJ7
-	Wseb1IYGG9odpbOMMVGilr4b7iNqdCZxfvzw1IYeTGd4JGWvFGMeBVaCgUueknI4FuhOHm
-	KS/f0p8Usp1q5qt6uBHDfF6wxDR9MaM=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1689754532; a=rsa-sha256;
+	bh=D4yCP+kPBfAcMFcbUlzk/L1SR8XiLbCQWDuFAAf2P1c=;
+	b=ydoTDvahRUBccOciIZH4wHkrIXVWuqpoVTFGIirGc2XG39SIpJliILe1S03ZNZxATGUFmL
+	HcPpqWOGqKK4HnAxRJxzU/UisUpFLJu1zOGprnHmIQuMN5+CNImakIuA5y1mx0PXIf+BwG
+	DSgr+06a63snyK4dpOBNpFUENnWXVhc=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1689754535; a=rsa-sha256;
 	cv=none;
-	b=icbCEJO7+OPhIaY2207DW54NdcdXkVXQO/A1Gg0Kgk8MAwKys0Av6ebl/Bch3VATUssHWP
-	2UsrpZ2P7uAgxtRcSj1JQTityYGQjbU3FH6n5DmlbJofEGHqyGanhu9eEJsDvxri2O1nBm
-	v3HpLtuTglmgJvOPF3XfZ49b4l/vV24=
+	b=er/5+CfABsu9brjldIG70L8hy76zOTjeJmCBgbYuyT+J+Qe8i6xTz2AwAx25oBRnDDAbpK
+	2j0e2snU4laTZ1drDDJS1Yj+hPGeckz6e2ONL7dlLLYy6HN8+KD9ebVGE+yOqHdIiqzIGa
+	DCu8rIIzOv64e8YGMaxFDjlZbjek6a0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=Xj2Yk88E;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=PmJ6LGBa;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1689754532;
+	s=20121; t=1689754534;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=YsrfVK+IH6rtxItVlK59FCeeMb9VUmQo6t3hZq/f4Z4=;
-	b=Xj2Yk88E4oT/Jm1UOAXhp93G2qiMOr2oqKQqKwNDeS2Z+tYc/N6D/6hA5bijo+X4upSTez
-	/mjO2PiXBd0MyuTb3B5Vp0YIkcm9pHNZcoKANNKjdkfiUdsP+0hTeQShHCCKBgnMxOLYzV
-	qbkxBowLTKDHBVjZY1Dt+uHWnr0qH4w=
+	bh=D4yCP+kPBfAcMFcbUlzk/L1SR8XiLbCQWDuFAAf2P1c=;
+	b=PmJ6LGBa62bpqxnkddGegtSK8R0xiybTMuFroYcj0MT12pkurLbhPdggkCmJgm/Xli7iHb
+	tBFlqjkhbQoH6sUAShJAGyTft7C6g9vN/DChj2ZCHAgwZNLAGwELgvfmzJiSZKN9rf3wKQ
+	8Yzwu3ESolgAgHY5CVosk4M3W0LCZmo=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 19 Jul 2023 10:15:05 +0200
-Subject: [PATCH 1/2] batman-adv: Trigger events for auto adjusted MTU
+Date: Wed, 19 Jul 2023 10:15:06 +0200
+Subject: [PATCH 2/2] batman-adv: Don't increase MTU when set by user
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230719-mtu-v1-1-48fd024f0f56@narfation.org>
+Message-Id: <20230719-mtu-v1-2-48fd024f0f56@narfation.org>
 References: <20230719-mtu-v1-0-48fd024f0f56@narfation.org>
 In-Reply-To: <20230719-mtu-v1-0-48fd024f0f56@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1267; i=sven@narfation.org;
- h=from:subject:message-id; bh=0TNwkq/zFnFdB203Lxc7qjRh5CWamDuzodSovjrzM6Q=;
- b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBkt5uelkw6YibGD2peKJZ1M4D01mK6K9GaZZ0Ee
- qC8H2L7vOmJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZLebngAKCRBdhwoHwSZ7
- RqWmEACq013KASqVhyz+O9uo1FDl6R7WfaDem9odG5INqGBVJpnkKFXj3R7IWT00HxDoh3Dupoq
- ymokcBzuxgUkQHRNA0/khw1Z0ccoLSJzhaWSNSx787iFLYg0gPbVLQClvaEDRiq3Nu/VDp0s1bF
- XB+P1hTGnjIsXWyMJ4V0HlteY4S22l9xDk50t3+3rIhF0uHbHnf7gj+cTT7AICzBKIBRljzTa2D
- uHcnTVcy5Ls1zJLo2RWgGqhr+gZZFraClGyhY2eU8O5Zwk4sEJK5QrVR0H2GeEexsvmXf1juUAy
- mloNrpw9aHqa62vR/0MfuvgCxQyaFIAMiveaLZiRXqyw0eB1bbh40hSEF+DByKoreJyqHhJeXZw
- 8iBxfr5F+M2NsRbTRVr+D0164hWjh3yS5i+ehs3jFv+T0SHECeW+e4ZG9hKDYdsiPJ68fvhBx0i
- 8eUkAeKcZjrYTJgfTmUpnyMdZg8VPWRV7DJSCYDSBZ54jtLgSb6oaFR4kHgFbp/FSjSfEyxpgZx
- ZGt53J+cO5KtdzehcJLDCaHcenA47p2V0KWLTTg++2TjxGvi00tjgnihjlG0sGl8Y+qB7wx3Ewe
- djeVQ2k4NMvj+BbrHnTIVsSCJglGFyZYEEF4VBmIoaUxOtf/YzEv47ch1MzVwz8EUlM7kLeoHN+
- BtiNCGHGKvilblQ==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2731; i=sven@narfation.org;
+ h=from:subject:message-id; bh=mnEOlgLRcyvbgwlPBj8TvwY3NzW7oLcU9IpSL/TvYEA=;
+ b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBkt5ueWpmnLb7qupxcmQFXTJafSO6QoSZKNeTJm
+ 6mlvEaLJvqJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZLebngAKCRBdhwoHwSZ7
+ RqTmD/0VfqG8CeFO36jIdnOjHwwoGl+Q/YnwYndtJGqeX/pAwH+/0dBCZOcrBviYIz5MlAbhgGW
+ Ke8oRrlXX2X+lFSapy9bpBG1V32lgcwAmwHyG6kN4OogvmaICod39YLZMHUPaLcAAPINTacazKw
+ cPZ25CReQTSLhx5qqysKx2LAcO1aHp2DXpIti0x2PenW2yP+WdCD4mdHdUX5jqu4dZ6yErkZdtq
+ ZQ3fzGSBcgJd5mZvOrCSH5WB/p054l+DnFgAq42k2+7I87nT0JekrbPd5yUVMGxHU4/dhmwogK/
+ AeXpxIr2xuHck66or4KVrVVBzrF3DBEpuVHqLQj5ErVHrjRGCNAmVy2LIU02P4W5vF66n9wlOhc
+ FQMByvKQeYtvIA957tYsYqCcNehUV4RfmSn7ylcL8Fe9bF5RrOnHhwaK68I5IFm25Dqylvvcdn5
+ 56qkQHbC9JrBMLh3ZJ/Qr2GV9j/+euc6lDIPfaKPRbbFXCfzQBC4T/ekx5Ge2+KMXhg91e41FSj
+ 2wZEqTbHcrURcvfnETiYAGqbFFFb26HU3Zoo/Jz0Uv0NfQFfx69yqxw2oAVBxU8bHs9GOz9VzGR
+ ZO+g89+0O2xC4v3+gpnjG3JfRmPoEQSN2FG6Mwlz7BMjYi1HWFZ85uD6PICA0932o+hKWr4QIs1
+ bVliTVV44oVxlQw==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: P2GAWAXBDZPAE4XMXOQWF5P2XFLOSTUF
-X-Message-ID-Hash: P2GAWAXBDZPAE4XMXOQWF5P2XFLOSTUF
+Message-ID-Hash: 55R44KQQVMRXEYYRKAQBUWSQBDXZ2MFG
+X-Message-ID-Hash: 55R44KQQVMRXEYYRKAQBUWSQBDXZ2MFG
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -109,7 +109,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/P2GAWAXBDZPAE4XMXOQWF5P2XFLOSTUF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/55R44KQQVMRXEYYRKAQBUWSQBDXZ2MFG/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -118,34 +118,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-If an interface changes the MTU, it is expected that an NETDEV_PRECHANGEMTU
-and NETDEV_CHANGEMTU notification events is triggered. This worked fine for
-.ndo_change_mtu based changes because core networking code took care of it.
-But for auto-adjustments after hard-interfaces changes, these events were
-simply missing.
+If the user set an MTU value, it usually means that there are special
+requirements for the MTU. But if an interface gots activated, the MTU was
+always recalculated and then the user set value was overwritten.
 
-Due to this problem, non-batman-adv components weren't aware of MTU changes
-and thus couldn't perform their own tasks correctly.
+The only reason why this user set value has to be overwritten, is when the
+MTU has to be decreased because batman-adv is not able to transfer packets
+with the user specified size.
 
-Fixes: 8009e9f7ac4f ("set bat0 MTU according to the MTUs of the hard interfaces")
+Fixes: 88861ea9acb7 ("[batman-adv] replacing if up/down timer with kernel notifications")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 14 +++++++++++++-
+ net/batman-adv/soft-interface.c |  3 +++
+ net/batman-adv/types.h          |  6 ++++++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 41c1ad33..ae5762af 100644
+index ae5762af..24c9c0c3 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -630,7 +630,7 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+@@ -630,7 +630,19 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
   */
  void batadv_update_min_mtu(struct net_device *soft_iface)
  {
--	soft_iface->mtu = batadv_hardif_min_mtu(soft_iface);
-+	dev_set_mtu(soft_iface, batadv_hardif_min_mtu(soft_iface));
+-	dev_set_mtu(soft_iface, batadv_hardif_min_mtu(soft_iface));
++	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
++	int limit_mtu;
++	int mtu;
++
++	mtu = batadv_hardif_min_mtu(soft_iface);
++
++	if (bat_priv->mtu_set_by_user)
++		limit_mtu = bat_priv->mtu_set_by_user;
++	else
++		limit_mtu = ETH_DATA_LEN;
++
++	mtu = min(mtu, limit_mtu);
++	dev_set_mtu(soft_iface, mtu);
  
  	/* Check if the local translate table should be cleaned up to match a
  	 * new (and smaller) MTU.
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index d3fdf822..85d00dc9 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -153,11 +153,14 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 
+ static int batadv_interface_change_mtu(struct net_device *dev, int new_mtu)
+ {
++	struct batadv_priv *bat_priv = netdev_priv(dev);
++
+ 	/* check ranges */
+ 	if (new_mtu < 68 || new_mtu > batadv_hardif_min_mtu(dev))
+ 		return -EINVAL;
+ 
+ 	dev->mtu = new_mtu;
++	bat_priv->mtu_set_by_user = new_mtu;
+ 
+ 	return 0;
+ }
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index ca9449ec..cf1a0eaf 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1546,6 +1546,12 @@ struct batadv_priv {
+ 	/** @soft_iface: net device which holds this struct as private data */
+ 	struct net_device *soft_iface;
+ 
++	/**
++	 * @mtu_set_by_user: MTU was set once by user
++	 * protected by rtnl_lock
++	 */
++	int mtu_set_by_user;
++
+ 	/**
+ 	 * @bat_counters: mesh internal traffic statistic counters (see
+ 	 *  batadv_counters)
 
 -- 
 2.39.2
