@@ -1,85 +1,73 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7C6BEB64DA
-	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 09:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 528EEEB64DA
+	for <batman@archiver.kernel.org>; Thu, 20 Jul 2023 04:36:33 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 573AC821A9
-	for <batman-adv@archiver.kernel.org>; Wed, 19 Jul 2023 11:22:25 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8DEDE8256D
+	for <batman@archiver.kernel.org>; Thu, 20 Jul 2023 06:36:31 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1689758545;
- b=06uhWnvkhzaj52WVVxdX7s61a8xbHPJC4RcTPFfI7IXCfUTUmf23aGhEM6i4MWEewI44k
- W0U4Kn3rLmtVS3BPtbk64C4BcYl+8CNnDZGaViKXeBlfkjytzbKZuHPLl2swtcCIgbKwE9I
- ZO1g2puFjXMfuVnPxwCjQCHqgJQy/WM=
+ t=1689827791;
+ b=zURb7UEA+vy9AzEPNKA2pnaXIRUkELF1hL4xNg0ShbupYvm47PZ1etSWn8wDfAB+FLEAX
+ EaPnKydN5ZhyeOUMX1tdmSf0eWM9PKqcoJOHg+BkF3aIAeBRHx7RY5XVTxbDbspjw/lzbuo
+ Qc3NhCWTpBLhxpYgJOebRcbBLHAH+3E=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1689758545; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1689827791; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=mEWpYjjrY7iTSNPSw65KeuSgqNfLLQ8t1r7/plOeiUo=;
- b=iIo04LRixErnGNe/2abL5ywOgqLxsj5f0+xC9dcM9kfv05jHnp97lbS5xxDzAIR17V6yU
- UN34GinIJvQFfU7Qg+miB4yEK3zSzca8JwOi3GZpl6eQd2SRPbfW/oZKN1j1X1+yGTHOmK9
- HZtapuRW7j5Tv4OJ9vaPqbbi9DOvckc=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=+AFOB1SMDe18T0zRDjL1MHpe77OeXtulKQ1SWW5wmFs=;
+ b=0hft+ArIxK8Huxx3n/v6N9QXdC4OILWJlKmVQiPTWguW6JWyqTQoJiqZLibSbj3MZ3q/X
+ ZQtz/tJeJRN730KaoXB3qxceZSHRJWKOQoQkTl+vNSHquQNqHSmV4TLZa+ll1D8ld1JOU9y
+ 3eojEAK7W8ZNerLor24wUrDSYx7pWec=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 112E2807AA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 19 Jul 2023 11:22:14 +0200 (CEST)
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 95B7F80C40
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 20 Jul 2023 06:36:01 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1689758535;
+	s=20121; t=1689827761;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=mEWpYjjrY7iTSNPSw65KeuSgqNfLLQ8t1r7/plOeiUo=;
-	b=mRYJWMiSB+Zkz9Fcv1c5NGq0xodfQDWAf19hOTDWxF/qiGcl1Z703qAyYm4hmHEmB3D9sr
-	tEdKWEKVnF6lY/bSAcXlRqGxIKy1IfsuyT3anU34l7WQWa+pRjo0ZhUIFQUwyP0IEPPXHs
-	QnWIxqDosjA5aX/slA1O3c9vKnA499c=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1689758536; a=rsa-sha256;
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+AFOB1SMDe18T0zRDjL1MHpe77OeXtulKQ1SWW5wmFs=;
+	b=oz0y0BwLmZ37ETy9WdTRb1DZbJwctlhh3PMuUtRTpx3TFtBuu2jj/MwvGiXAND5w3i6kx6
+	3w9ZLnj3eLPZ2ms/sOzz9y9PVZmt5E9XJUlkV6qkmqIwsGBUC6lax8wWIRIHIdR96EqnsI
+	4UqfXC9jo2Et9L4bFWhl+PLIIRboBdc=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1689827761; a=rsa-sha256;
 	cv=none;
-	b=SIHgKfxsS3DT9o7LHOYKSU2v+dZAGi7XQXaDkHb6TfaD+FRyfCztWVjgk0xuZjObzHGlvc
-	s33ERO6oZELrHNPSc2aVxROd36HAzashGmR8qjZ8E+raURYSCrvfv4tkTNoBFA0bGzL8OA
-	bhsWllfyIIhuzbIJVX9tGCZ8ht2qPKw=
+	b=pWRrYnVAuD/Xks3WkoIOGmYdipObh+E0PJSkWR4hH//Acxvxneqbbhkhair6dsMJvrp7uX
+	XwuqGNAsN+RMS9dI5UfIf+M6KunVEPTY3uqK75pNQoTqrA/TpW2t91wXEv80QxKibw3nZ9
+	OyGkWKTsS55cFxC7WYKAzikAZL+swMI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=FOkiUMOv;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1689758534;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=mEWpYjjrY7iTSNPSw65KeuSgqNfLLQ8t1r7/plOeiUo=;
-	b=FOkiUMOv/Vz+01V1a6do/lHx4BSWoyEUm2jhtePQtrpucZT7EnlZ2DZLPiGx5+BSZxcxUH
-	ZAwjHK48K9CZjTdeZBvqGP2f2lbV9yRM8ONFAsxHttuqa3LmKsUNzzcIK1S8qsP9UHo4Ce
-	kpOcEgGvxyDewyN5MQl96F5bjZZULT8=
-From: Sven Eckelmann <sven@narfation.org>
+	dkim=none;
+	spf=none (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue has no
+ SPF policy when checking 116.203.183.178)
+ smtp.mailfrom=linus.luessing@c0d3.blue;
+	dmarc=none
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 184B249B1E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 20 Jul 2023 06:35:59 +0200 (CEST)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: 
- Re: [PATCH v5 0/3] Implementation of a Stateless Multicast Packet Type
-Date: Wed, 19 Jul 2023 11:22:12 +0200
-Message-ID: <3919114.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20230708215113.15325-1-linus.luessing@c0d3.blue>
-References: <20230708215113.15325-1-linus.luessing@c0d3.blue>
+Subject: [PATCH v6 0/3] Implementation of a Stateless Multicast Packet Type
+Date: Thu, 20 Jul 2023 06:35:52 +0200
+Message-Id: <20230720043556.12163-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3678145.iIbC2pHGDl";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: V5R7MG345YOCHWMPJMH66OLEH4QLYIVE
-X-Message-ID-Hash: V5R7MG345YOCHWMPJMH66OLEH4QLYIVE
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: TBARKHEEYCINWPR6B6BSXP3OIUTDIYUG
+X-Message-ID-Hash: TBARKHEEYCINWPR6B6BSXP3OIUTDIYUG
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -91,7 +79,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/V5R7MG345YOCHWMPJMH66OLEH4QLYIVE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TBARKHEEYCINWPR6B6BSXP3OIUTDIYUG/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -100,118 +88,133 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3678145.iIbC2pHGDl
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Date: Wed, 19 Jul 2023 11:22:12 +0200
-Message-ID: <3919114.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20230708215113.15325-1-linus.luessing@c0d3.blue>
-References: <20230708215113.15325-1-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
+Hi,
 
-On Saturday, 8 July 2023 23:51:10 CEST Linus L=FCssing wrote:
-[...]
-> Changelog v5:
-> * removed patches 1/5 + 2/5, as they were already applied
-> * rebased to current main branch
-> * changed padding behaviour:
->   * now 2 bytes padding on the end of the multicast
->     tracker TVLV, if number of destination nodes is
->     even
->   * as number of destination nodes might change between
->     initial check until after pushing them, functions
->     to post-adjust padding after pushing were added
-> * added/fixed TTL handling
-> * removed skb_pull() bailing from sub-functions of
->   batadv_mcast_forw_push(), to only have a single
->   skb_pull() to keep track of in batadv_mcast_forw_push()
->   to revert the changes to the skb; instead a
->   "unsigned short *tvlv_len" is passsed along in=20
->   batadv_mcast_.*push.*() functions to keep track of
->   how many bytes were pushed
-> * moved + verified skb->ip_summed invalidation
-> * batadv_mcast_forw_shrink_tracker() xmas tree ordering
-> * reword batadv_mcast_forw_push_dest() "Return:" kerneldoc
-> * fixed spelling: outter -> outer
+The following patchset implements a stateless, TVLV capable batman-adv
+multicast packet type.
 
+The new batman-adv multicast packet type allows to contain several
+originator destination MAC addresses within a TVLV. Routers on the way will
+potentially split the batman-adv multicast packet and adjust its tracker
+TVLV contents.
 
-Didn't perform any actual review. But here are the buildbot complaints. The=
-=20
-compiler.h is missing since patch 2 (for the "likely()").
+Routing decisions are still based on the selected BATMAN IV or BATMAN V
+routing algorithm. So this new batman-adv multicast packet type retains
+the same loop-free properties.
 
-Output of different failed tests
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
+The purpose of this new packet type is to allow to forward an IP
+multicast packet with less transmissions / overhead than the 
+multicast-via-multiple-unicasts approach. Or to reach a lot more
+destinations (currently up to 196, depending on the payload size, see 
+Wiki documentation for details) than with the default multicast fanout
+for the via-unicasts approach.
 
-ecsv/multicast: headers
-=2D----------------------
+This will allow using applications like mDNS again in several Freifunk
+communities. And with less transmissions will also make more bulky
+multicast applications, like media streaming (to an assessable amount of
+receivers) a lot more feasible.
 
-    diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast=
-_forw.c
-    index a90e9057..96ec3f06 100644
-    --- a/net/batman-adv/multicast_forw.c
-    +++ b/net/batman-adv/multicast_forw.c
-    @@ -10,6 +10,7 @@
-     #include <linux/bug.h>
-     #include <linux/build_bug.h>
-     #include <linux/byteorder/generic.h>
-    +#include <linux/compiler.h>
-     #include <linux/errno.h>
-     #include <linux/etherdevice.h>
-     #include <linux/gfp.h>
+This approach is way simpler than the original multicast (tracker) packet
+approach we envisioned years ago. As it involves no maintenance of an
+extra, state based multicast routing table. However the TVLV capability
+should allow to extend things later, to split control and data plane a bit
+more for instance, to further increase the number of destinations, to
+further reduce overhead.
 
-ecsv/multicast: kerneldoc ./net/batman-adv/multicast_forw.c
-=2D----------------------------------------------------------
+A compact overview can be found in the Wiki here, including limitations:
 
-    ./net/batman-adv/multicast_forw.c:433: warning: Function parameter or m=
-ember 'num_dests_pushed' not described in 'batadv_mcast_forw_push_adjust_pa=
-dding'
+https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-Packet-Type
 
-ecsv/multicast: sparse linux-5.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy=
- NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
+Regards, Linus
 
-    /home/build_test/build_env/tmp.SpMnhX4MAz/net/batman-adv/multicast_forw=
-=2Ec:783:7: warning: symbol 'batadv_mcast_forw_shrink_align_offset' was not=
- declared. Should it be static?
+---
 
-ecsv/multicast: unused_symbols linux-5.1 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRA=
-CING=3Dy NC=3Dy MCAST=3Dy BATMAN_V=3Dy
-=2D------------------------------------------------------------------------=
-=2D-
+Changelog v6:
+* PATCH 2/3:
+  * add missing include of linux/compiler.h for the newly added
+    likely() in v5
+  * added kerneldoc for @num_dests_pushed to
+    the in v5 newly added batadv_mcast_forw_push_adjust_padding()
+  * updated kerneldoc of batadv_mcast_forw_push_adjust_padding(),
+    original text was wrongly copy & pasted from
+    batadv_mcast_forw_push_est_padding() without adjustments
+* PATCH 3/3:
+  * added missing "static" attribute to the newly added
+    batadv_mcast_forw_shrink_align_offset() in v5
 
-    batadv_mcast_forw_shrink_align_offset
+Changelog v5:
+* removed patches 1/5 + 2/5, as they were already applied
+* rebased to current main branch
+* changed padding behaviour:
+  * now 2 bytes padding on the end of the multicast
+    tracker TVLV, if number of destination nodes is
+    even
+  * as number of destination nodes might change between
+    initial check until after pushing them, functions
+    to post-adjust padding after pushing were added
+* added/fixed TTL handling
+* removed skb_pull() bailing from sub-functions of
+  batadv_mcast_forw_push(), to only have a single
+  skb_pull() to keep track of in batadv_mcast_forw_push()
+  to revert the changes to the skb; instead a
+  "unsigned short *tvlv_len" is passsed along in 
+  batadv_mcast_.*push.*() functions to keep track of
+  how many bytes were pushed
+* moved + verified skb->ip_summed invalidation
+* batadv_mcast_forw_shrink_tracker() xmas tree ordering
+* reword batadv_mcast_forw_push_dest() "Return:" kerneldoc
+* fixed spelling: outter -> outer
 
-Kind regards,
-	Sven
+Changelog v4:
+* PATCH 4/5:
+  * add missing include for linux/types.h in multicast.h
+  * add missing kerneldoc for @bat_priv in batadv_mcast_forw_push_dest()
+    and batadv_mcast_forw_push_tvlvs()
+  * use sizeof_field(type, field) instead of sizeof(((type *)0)->field)
+    in batadv_mcast_forw_push_dest()
+* PATCH 5/5:
+  * rename num_dests_remove to num_dests_reduce in
+    batadv_mcast_forw_shrink_align_offse() to fix kerneldocs and for
+    consistency
+  * fix typo in kerneldoc in batadv_mcast_forw_shrink_update_headers()
+    -> @num_dest_reduce -> @num_dests_reduce
+  * use sizeof_field(type, field) instead of sizeof(((type *)0)->field)
+    in batadv_mcast_forw_shrink_align_offset()
 
---nextPart3678145.iIbC2pHGDl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Changelog v3:
+* PATCH 1/5:
+  * remove now obsolete includes
+* PATCH 2/5:
+  * fix batadv_tvlv_handler_register() in network-coding.c
+  * add missing include for linux/skbuff.h
+  * move variable declarations out of the switch case
+    in batadv_tvlv_call_handler()
+* PATCH 3/5:
+  * remove unnecessary include of multicast.h in routing.c
+  * add a few missing includes to multicast_forw.c
+    (linux/byteorder/generic.h, linux/errno.h, linux/gfp.h, linux/stddef.h
+     uapi/linux/batadv_packet.h, multicast.h)
+* PATCH 4/5:
+  * add missing rcu_read_unlock() in error case before returning in
+    batadv_mcast_forw_push_dests_list()
+  * remove unnecessary include of soft-interface.h in multicast_forw.c
+  * add a few missing includes to multicast_forw.c
+    (linux/bug.h, linux/build_bug.h, linux/limits.h, linux/rculist.h,
+     linux/rcupdate.h, linux/string.h)
+  * make batadv_mcast_forw_mode_by_count() static
+  * fix return types in the declaration of
+    batadv_mcast_forw_packet_hdrlen() and batadv_mcast_forw_push()
+    in multicast.h
+  * fix typo in commit message: "that the are capable of"
+    -> "that the*y* are capable of"
+* PATCH 5/5:
+  * make batadv_mcast_forw_shrink_pack_dests() adhere to 80 characters
+    per line for consistency
+  * add a "continue" statement after the jump label in
+    batadv_mcast_forw_shrink_pack_dests() to silence the sparse error
+    "error: label at end of compound statement"
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmS3q0QACgkQXYcKB8Em
-e0Y+Hg//XQSMmuwxVODGcPEKT6e3j1z1J6Dp8METw9P+j5oJ8pQIRRNJ9ak8feTb
-8a05bTbyZrzwOETdJ0OcaY2rd1pcZZGkhjj9XldE63xRoyId3Whvqa4vfAFJ5Kay
-Hh1esUKTNp60p+crJd0/agWTd5HRhZ3KcCqPOV0HiWZTfHS5YSRQux00FyF0Qh9z
-JjdeMuJ3IC4EL7zEQA9T5WQs4lz/g4+xoG/0QviDSOMovR1lGOar6gJDb3IIXSdz
-qLZJA6n6w3Duf6GYI/bshq+o60oZdKApUkiS6xa26l/Yo5jOZINtnfss+rZhhdsa
-9NwIS0Mcz9/R7YQ+asnHE+qagEIW9SYna/gDRGmXDlBjghKKZGsoKCmJ7Hyd51FJ
-R1Mxe+OZ6EWmTNCFjwRLaoBWb9XODBpWQ/A8mDlFzp6kbS6zbt1nJD5z2gxvn9Rk
-XGerafeXRko1Rnla2+vIYhvsGAUJsHsl+uYOOhPwhcDw0iL5vE9B+zYm+hFg0rY+
-pzAhnhqyjIojfGQH/KgiIxb5oM8PDqxLxpeylN/Bosajqa7e3vJH40DS1vV1UELM
-mIXf87wR/M+Sb9h0wn2FamAbpWZsfYSS75e66vXGi7V3W5YGU1M4Z9Qjx9asncj+
-d1fA2LyfIL6ytq7wzRM863i6uiVQkjRhlIcO8wrA7szfftV88nU=
-=BLwU
------END PGP SIGNATURE-----
-
---nextPart3678145.iIbC2pHGDl--
-
-
+Changelog v2:
+* Add "[PATCH v2 0/5]" prefix to title of cover letter, so that
+  Patchwork can hopefully find it - no other changes
 
