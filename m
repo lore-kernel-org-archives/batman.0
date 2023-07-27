@@ -4,94 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16541C001DC
-	for <batman-adv@archiver.kernel.org>; Wed, 26 Jul 2023 14:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CB63C41513
+	for <batman-adv@archiver.kernel.org>; Thu, 27 Jul 2023 08:14:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 779C082844
-	for <batman-adv@archiver.kernel.org>; Wed, 26 Jul 2023 16:33:23 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7A1648198D
+	for <batman-adv@archiver.kernel.org>; Thu, 27 Jul 2023 10:14:27 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1690382003;
- b=u+iomNOt3KufwY85awUdHjgvAk7tyqAsD9cOp7lss47ipJtjq6M9ZuBY200H3Zi9glMFj
- gExxcvnR1F9OexcpGACAg8Ojt0A3g2MHdenAx/9E8Jfn3ow9DVsgyMR4FcmQpvcRSPR6bRm
- 6SmSfL66CsH4Io01BjpVa48NxotymI0=
+ t=1690445667;
+ b=FQtxQbetaO3uKzer4v3mIKtv0NMMgFX1oPaoFoUO+CBsxxxjaVpOtKl0ubXWlNZJqrDLY
+ tvwvSzPkK+Mk/zqbqqPYOY1DsHj/nYGnCBvSyBzL/2LuPpys+aNGcbWSy4/MLKlKP1cbkBQ
+ InhOJ5F9m0JX/PRowMPFv5xvsN9gDtU=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1690382003; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1690445667; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=JEk0oN8up0PQzpQFqA6fuCCUtYz9jMjhoWDO+U6ZZ3U=;
- b=KW9dVCfJwBheBl6CrZ6FdZaGBaPtQqO7Eld5P2ZKZC35NllZTz4muUTknLgm57tbRKyMk
- 1EuNS3Ru11D18SgDuiHIjPr0VXrpRIOewxSa5f5lhuFmnj7Sacrb0IRzVu0TEBh/XBiov46
- LpRXmqhIvlRIsup2E3KF69UqEIm5Zkc=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
+ list-archive; bh=KZF4PzwCEwwYcaRBoN0IAh9F1yO0UcrBopOx4zosWIM=;
+ b=mLCP0YCrL0ks9U2hXZ9dYUFmHmfo48ilH0BXQTORsn2IBjMv1X0o/Y/OG+XiNBj00/e1W
+ y54qNpczcOt7tyYER4kMBFY0YPKuAFFmnC/uCoUOzb0ymgQYgsBvKTbUb0h7QkjHQyidoC0
+ hJ1jLVnO3nlBEFmRhyqg+bg0un0QDWg=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=pass;
-  dmarc=fail (Used From Domain Record) header.from=huawei.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used From Domain Record) header.from=huawei.com
- policy.dmarc=quarantine
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 34A518092B
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 26 Jul 2023 16:26:37 +0200 (CEST)
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4DC5B800F3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 27 Jul 2023 10:14:09 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1690381599;
+	s=20121; t=1690445649;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=JEk0oN8up0PQzpQFqA6fuCCUtYz9jMjhoWDO+U6ZZ3U=;
-	b=tI1BHDKgswggcUvMrtvC1LoQ11ZYzhVl7ym2HeKuE2fKMuNWc1qEVzhUEkMW6IVYhnf8NF
-	6J14GwwLY/ubeJ7dZB1xbcfaQNrfZ7D6qDx1IM1QlEvvxCdtogYUFGQB3XBitXjbKh9AT8
-	tuvrHhP+3EzpBL/MXYOEmwm01pOs4uA=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=KZF4PzwCEwwYcaRBoN0IAh9F1yO0UcrBopOx4zosWIM=;
+	b=FTujBhGafH4Az5LKQdxt1WQFvzLn1IKZT+HY7DmvdvxqqQ3ijce3B9eMBmEldEIcxPcGPE
+	rVXlRyWq7ekp7aWIKlcalJcAVA3eycbMBY8JdUL7x2gTNbMck+/Q8d3oSkUm0bIofAn48T
+	RFR5eQhinfmfbsH1PjYKwVf9iuuMOjQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	dmarc=pass (policy=quarantine) header.from=huawei.com;
-	spf=pass (diktynna.open-mesh.org: domain of yuehaibing@huawei.com designates
- 45.249.212.188 as permitted sender) smtp.mailfrom=yuehaibing@huawei.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1690381599; a=rsa-sha256;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=ZPJOzje3;
+	dmarc=pass (policy=none) header.from=narfation.org;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1690445649; a=rsa-sha256;
 	cv=none;
-	b=CqIfpQU5proCSmJ//hBEmp+oPCBMpgF7o+7D5lOBlkOSw2A1zXySoM/VKHxjqgHNafkUS/
-	9Z5Z0pCY7U5naAbUseBgJbdSuG+yHwjFKqkjnceKwirxKoqal5udwnzk3IrFMvzOJAPkOy
-	hgh+nOd5ct+2drTgey5pHtdbpyBOs3E=
-Received: from canpemm500007.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R9x4T22F7zTkyW;
-	Wed, 26 Jul 2023 22:24:57 +0800 (CST)
-Received: from localhost (10.174.179.215) by canpemm500007.china.huawei.com
- (7.192.104.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Wed, 26 Jul
- 2023 22:26:31 +0800
-From: YueHaibing <yuehaibing@huawei.com>
-To: <mareklindner@neomailbox.ch>, <sw@simonwunderlich.de>, <a@unstable.cc>,
-	<sven@narfation.org>, <davem@davemloft.net>, <edumazet@google.com>,
-	<kuba@kernel.org>, <pabeni@redhat.com>, <yuehaibing@huawei.com>
-Subject: [PATCH net-next] batman-adv: Remove unused declarations
-Date: Wed, 26 Jul 2023 22:25:25 +0800
-Message-ID: <20230726142525.29572-1-yuehaibing@huawei.com>
-X-Mailer: git-send-email 2.10.2.windows.1
+	b=cMxoxKvwC3KmUPVC/XsdM7d70ZPxfMlMNk6OgEInVowu5CQPBZegm2egtlMC8a3fWKPLIq
+	4aGElJpz5rKspFE+Ft3reHCBvZ7NEAOf0BaVLMYPE/f23Y08OAPH/EPc9AOys6AUH/Y9WX
+	PGgridut+XcuLdBf9U/yAx4oE6vHgUQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1690445648;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=KZF4PzwCEwwYcaRBoN0IAh9F1yO0UcrBopOx4zosWIM=;
+	b=ZPJOzje3mQ9zLjH6aq8w/gtFiqvhDK00YTpOGDYF2dq6u7ux7FNxARSw0X+jMe2j4ELEMC
+	KEAJwcwguLGMr1vKMcWOADpM4fe12e7pAxeuFMRuecQNc53BlbhcOHjASL2fiXj4OXxVPk
+	zHmA6Ro//NfFm+1azolgeQSH3EJSYvs=
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH RFC 0/3] batman-adv: Enable support for jumbo frames
+Date: Thu, 27 Jul 2023 10:13:41 +0200
+Message-Id: <20230727-jumbo-mtu-v1-0-036ce1a6e33c@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.174.179.215]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- canpemm500007.china.huawei.com (7.192.104.62)
-X-CFilter-Loop: Reflected
-X-MailFrom: yuehaibing@huawei.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIADYnwmQC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI2MDcyNz3azS3KR83dySUl1D4xRzYzMDU8tkCxMloPqCotS0zAqwWdFKQW7
+ OSrG1tQC5d+PLYAAAAA==
+To: b.a.t.m.a.n@lists.open-mesh.org
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1126; i=sven@narfation.org;
+ h=from:subject:message-id; bh=vgQXIjYngWdbFmxWUYBJNc7cdXpNQabIniflKlrDZUo=;
+ b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBkwidGtCrs6XuViSosNZA+3vHlVbigizFEK/jeC
+ Mb3TSAlXmqJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZMInRgAKCRBdhwoHwSZ7
+ RqzEEACA2AB6wftHtcWJPzBBvBrUr95aQMeL9xG8toSXJwpP33aOt0zW3Uw4zljKFMafL2AfEzu
+ mL3Pxyr8M2d+Kkd0X/sKxxVX76LHO6btv8pYD0pqBvLnVWcr/0eIX+JQx3khVcGf10PKSXL4uuy
+ fBkdGy4IGNKQRESp2D6ivGdjQod3W3gDUR5N5lsakWMrgtP2vDj21FpXoT1ZFJpf4pk/4Lmp3bK
+ ZIMEA+8aphv8ddTTn28wqbSEoF6gBRaasNN9Xu/jTRDJUA6Max5cW+WbZ8J9wcue/WKxKQU36LF
+ 0HEe0WFGlE94RZ0IeAo1Nlpc2MGVx2cZwdcu4z10c9her+y2Oada3ujblgXQVAFwTCK6qlOk4lc
+ YwyZTfpD9SFh73SbMIHBcV3RzRACI/EVTKedUsyZByb0en++3Q4gI5FV0tWmvvzJZL6yVp9iPFp
+ b1HiZqzB8uf9PP2PkjU40zt7I1sS9uIfiamsBWt43JigbiZBqSzeBOjaUynEuM+1HcIUIgTmPxn
+ 2di+oQMjyHIObaAdSmDvHvdgfA1C1ZDU+tMChbK007+hscWvVOfZucXkoQK2JYR7khp6hz18CjI
+ 8RFYOoekNdLkZdroJ0C9GXpYODph7EuBRZdF6YBO4mAunh+fxaGSawK1xyob63Vgjdg/NNV80Xu
+ sGAYzQJFGr+DhVw==
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: KVUH4LT6ATMLUNXR5HQD2EJIYFXKCCFK
+X-Message-ID-Hash: KVUH4LT6ATMLUNXR5HQD2EJIYFXKCCFK
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1
-Message-ID-Hash: BHCYAW2ZS56MZBMNPWQICHEK5ZILRFM6
-X-Message-ID-Hash: BHCYAW2ZS56MZBMNPWQICHEK5ZILRFM6
-X-Mailman-Approved-At: Wed, 26 Jul 2023 16:33:07 +0200
-CC: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BHCYAW2ZS56MZBMNPWQICHEK5ZILRFM6/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/KVUH4LT6ATMLUNXR5HQD2EJIYFXKCCFK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -100,31 +116,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Since commit 335fbe0f5d25 ("batman-adv: tvlv - convert tt query packet to use tvlv unicast packets")
-batadv_recv_tt_query() is not used.
-And commit 122edaa05940 ("batman-adv: tvlv - convert roaming adv packet to use tvlv unicast packets")
-left behind batadv_recv_roam_adv().
+There are from time to time discussions about supporting jumbo frames
+with batman-adv. While the changes were known since a longe time [1], no
+actual tests were performed and no actual reviews were gathered.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Maybe some more interest can be stirred up by this RFC and some
+Tested-by/Reviewed-by [2] can be collected - or some fixes.
+
+[1] https://www.open-mesh.org/issues/365
+[2] https://www.kernel.org/doc/html/v6.4/process/submitting-patches.html#using-reported-by-tested-by-reviewed-by-suggested-by-and-fixes
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.h | 4 ----
- 1 file changed, 4 deletions(-)
+Sven Eckelmann (3):
+      batman-adv: Avoid magic value for minimum MTU
+      batman-adv: Check hardif MTU against runtime MTU
+      batman-adv: Add support for jumbo frames
 
-diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
-index 5f387786e9a7..afd15b3879f1 100644
---- a/net/batman-adv/routing.h
-+++ b/net/batman-adv/routing.h
-@@ -27,10 +27,6 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
- 			    struct batadv_hard_iface *iface);
- int batadv_recv_bcast_packet(struct sk_buff *skb,
- 			     struct batadv_hard_iface *recv_if);
--int batadv_recv_tt_query(struct sk_buff *skb,
--			 struct batadv_hard_iface *recv_if);
--int batadv_recv_roam_adv(struct sk_buff *skb,
--			 struct batadv_hard_iface *recv_if);
- int batadv_recv_unicast_tvlv(struct sk_buff *skb,
- 			     struct batadv_hard_iface *recv_if);
- int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
+ net/batman-adv/hard-interface.c | 24 ++++++++++++++----------
+ net/batman-adv/main.h           |  2 ++
+ net/batman-adv/soft-interface.c |  5 +++--
+ 3 files changed, 19 insertions(+), 12 deletions(-)
+---
+base-commit: f779cdaf7782ee765dbddd31f6d9a89abf0c52f9
+change-id: 20230727-jumbo-mtu-13d736059c84
+
+Best regards,
 -- 
-2.34.1
+Sven Eckelmann <sven@narfation.org>
 
