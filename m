@@ -4,45 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6E4EC001DF
-	for <batman-adv@archiver.kernel.org>; Tue,  1 Aug 2023 02:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDC63C001DF
+	for <batman-adv@archiver.kernel.org>; Tue,  1 Aug 2023 02:17:05 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 27EC081ACC
-	for <batman-adv@archiver.kernel.org>; Tue,  1 Aug 2023 04:16:24 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4116482F93
+	for <batman-adv@archiver.kernel.org>; Tue,  1 Aug 2023 04:17:04 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1690856184;
- b=YpvhPSweOvVvVCkYDKRk7BewUh1aGTDj1fjxvE1Q6bFqjhPab3Q9LbuNxD+NdELBfjif/
- TJy5nDOS7PrDKc5jFjYNNu16H0VnKLVlurZa1fXM0gZ3b6WUx5s55DE9jgh5bKwVBzcnF8v
- nIvsVxfLD54xsFUCGCe1KLePdQso+W8=
+ t=1690856224;
+ b=KL5SC5AKLOQDle1aCcLHXjeiDuPUw8OreP2hW28XVsJbX0HlGeOnzHitwBbiiE5/X5Gyo
+ Al31F/wKTBuiG3t0YJY5p9k3yQAR04s0318xsqeHF15YZiRAawHFtsz8UXRGSYAlmYHyjI6
+ wxwBuIo0xWCkIltuBnwJqN63P/GXzqE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1690856184; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1690856224; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=bvTZJ9LMWzmJ4GhcFuuUa3Y/pnvdJtowu0JQA8DVDPo=;
- b=M6w2ocJQMIhThJsofnjo/Vwc/W3oTxBik8DBVq/uW1DmIeALdQLKhWqZWOePyyZYAHgOA
- 3sigaJ5q+FnHEitvYMztfSQvXcITUOJnd8lzTNSwPfnEIO+hmtntgkVfdSVAySg9U7o0NJF
- h3hu2lK8ey61KOM1Ms6he8kyp6kHhTM=
+ list-archive; bh=IvhuJtFl9DAwONGO1Z8s83vJdRTQFLStXQVfm0R1zKc=;
+ b=lfraHvWI2DKy7L3ehcJOHpSx0IU6HAhM+PMZeLLdNBjtRnVEZiYM8rXitTY1TChuESDBs
+ uUm8vrfGTGrUUuxvwyago4MZ6L+jsLYs7Mg3F4G8kdvK+2vMy6m2WkaBG/+OoKqSJ5K4d2i
+ 6p6ugSiwwRyQ1EiMBiVUcY9YnugjPio=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
   dmarc=none
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
 Received: from mail.aperture-lab.de (mail.aperture-lab.de
  [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A12FF806FC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue,  1 Aug 2023 04:15:48 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 34F618097B
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue,  1 Aug 2023 04:15:47 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1690856149;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bvTZJ9LMWzmJ4GhcFuuUa3Y/pnvdJtowu0JQA8DVDPo=;
-	b=hQ3PWL3jwtgQJb9TLjPoKCwR+hMehLAmv/6FpXBuLzqYQ1WxVyqWVrGPbDsdH5A/x9ORfe
-	UUBbZb0+t7c2VEvr6Dvz+JnrooP8fhDYCYTuvJYx/7mbfYOzEgCyYAMQDe8YNRr02wwJ8c
-	EZCs6D0vhHULcL9XWkdL9IqyNamJRvc=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=IvhuJtFl9DAwONGO1Z8s83vJdRTQFLStXQVfm0R1zKc=;
+	b=bu1R0DnYsetZWvJYV8xFTYX9q8quQZhaWFXIjyLP8F5TT8EH4QGQZPYs5HzSNpH1Z4va/d
+	P475KbWxDcOyuR1m12xyCK8Vg6YO2CJ2pSNYqbzOdw8sRfhHxOg/Rf0BcTCvYDnuwG9pOV
+	kZ8VrQiOhKICd5RwQSX1dq516WI5w7w=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
@@ -52,25 +51,23 @@ ARC-Authentication-Results: i=1;
 	dmarc=none
 ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1690856149; a=rsa-sha256;
 	cv=none;
-	b=qLz6A4YtsTSgUz1eQ/2WgKAn7f55uzS3YoDaamhGTqj26K9rYPxy2BgMj35vYAnq+0RVOw
-	ylFQUzcB7LARpyLzl3RstY3woSG7ta22z3KisWYniBobVda3wukCyuubO1eu82JsCVW7iP
-	qErbf68aGsjGU8SM+1/m1Flv7pTL/Fc=
+	b=mNmmcH+bCNhtydP/ZPMgoddBWOW2XL08l1LCpeSWV0SP3Qiw2CqAp2mcyFljR53JGlLKCq
+	BFmpJvxNsgjo6G0BcHho2JBLfpuUXc89Krj0/sSoLHX//tUGcA13H9Z3hG1lEttVVeqKOa
+	jHo4xnxdm2nIKrYNcXq/qlhs5i3G6rQ=
 Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 0F6B949B57;
-	Tue,  1 Aug 2023 04:15:48 +0200 (CEST)
+ with ESMTPSA id 31B1B49B04;
+	Tue,  1 Aug 2023 04:15:46 +0200 (CEST)
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: [PATCH 2/2] batctl: tcpdump: parse batman-adv mcast packet type
-Date: Tue,  1 Aug 2023 04:15:37 +0200
-Message-Id: <20230801021537.22036-2-linus.luessing@c0d3.blue>
-In-Reply-To: <20230801021537.22036-1-linus.luessing@c0d3.blue>
-References: <20230801021537.22036-1-linus.luessing@c0d3.blue>
+Subject: [PATCH 1/2] batctl: mcast_flags: update to current state
+Date: Tue,  1 Aug 2023 04:15:36 +0200
+Message-Id: <20230801021537.22036-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: OQ3JHXTODOHBV25B4FQEVMOJBUJ3CIGE
-X-Message-ID-Hash: OQ3JHXTODOHBV25B4FQEVMOJBUJ3CIGE
+Message-ID-Hash: 4E74EH3YNKWXP4N7SNHAJ547EVZLEMUQ
+X-Message-ID-Hash: 4E74EH3YNKWXP4N7SNHAJ547EVZLEMUQ
 X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -83,7 +80,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OQ3JHXTODOHBV25B4FQEVMOJBUJ3CIGE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4E74EH3YNKWXP4N7SNHAJ547EVZLEMUQ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -92,290 +89,296 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Implement a batctl tcpdump parsing of the new batman-adv multicast
-packet type, including its multicast tracker TVLV and encapsulated
-payload data.
+Add the new "P" flag, which signals support for the new batman-adv
+multicast packet type, to the "batctl mcast_flags" and "batctl tcpdump"
+outputs.
+
+The examples in the README.rst are updated, too, including a description
+for the R4 and R6 flags.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- tcpdump.c | 134 +++++++++++++++++++++++++++++++++++++++++++++++-------
- tcpdump.h |   1 +
- 2 files changed, 119 insertions(+), 16 deletions(-)
+ README.rst      | 88 ++++++++++++++++++++++++++++---------------------
+ batadv_packet.h | 45 +++++++++++++++++++++----
+ genl_json.c     |  2 ++
+ mcast_flags.c   |  8 +++--
+ tcpdump.c       |  5 +--
+ 5 files changed, 100 insertions(+), 48 deletions(-)
 
+diff --git a/README.rst b/README.rst
+index 606d55721204..3495fba02e0e 100644
+--- a/README.rst
++++ b/README.rst
+@@ -323,15 +323,15 @@ Usage::
+ 
+ Example::
+ 
+-  Multicast flags (own flags: [U46])
++  Multicast flags (own flags: [U46R4R6.])
+   * Bridged [U]                           U
+   * No IGMP/MLD Querier [4/6]:            ./.
+   * Shadowing IGMP/MLD Querier [4/6]:     4/6
+   -------------------------------------------
+          Originator Flags
+-  02:04:64:a4:39:c1 [U..]
+-  02:04:64:a4:39:c2 [U..]
+-  02:04:64:a4:39:c3 [...]
++  02:04:64:a4:39:c1 [U... . .]
++  02:04:64:a4:39:c2 [...R4R6.]
++  02:04:64:a4:39:c3 [.... . P]
+ 
+ where
+ 
+@@ -348,6 +348,17 @@ U:
+ 6:
+   wants all IPv6 multicast traffic, meaning other nodes need to always forward
+   any IPv6 multicast traffic to it
++R4:
++  wants all routable IPv4 multicast traffic, meaning other nodes need to always
++  forward multicast traffic destined to 224.0.0.0/4 excluding 224.0.0.0/24 to
++  it
++R6:
++  wants all routable IPv6 multicast traffic, meaning other nodes need to always
++  forward multicast traffic destined to ffXY::/16 with Y > 2 (scope greater
++  than link-local) to it
++P:
++  the node either cannot handle batman-adv multicast packets with a multicast
++  tracker TVLV or one of its hard interfaces has an MTU smaller than 1280 bytes
+ 
+ If a node does not have multicast optimizations available (e.g. old batman-adv
+ version or optimizations not compiled in), therefore not announcing any
+@@ -930,39 +941,42 @@ Example::
+ 
+   $ batctl meshif bat0 mcast_flags_json | json_pp
+   [
+-      {
+-          "mcast_flags": {
+-              "all_unsnoopables": true,
+-              "raw": 1,
+-              "want_all_ipv4": false,
+-              "want_all_ipv6": false,
+-              "want_no_rtr_ipv4": false,
+-              "want_no_rtr_ipv6": false
+-          },
+-          "orig_address": "9e:58:32:59:54:c3"
+-      },
+-      {
+-          "mcast_flags": {
+-              "all_unsnoopables": true,
+-              "raw": 1,
+-              "want_all_ipv4": false,
+-              "want_all_ipv6": false,
+-              "want_no_rtr_ipv4": false,
+-              "want_no_rtr_ipv6": false
+-          },
+-          "orig_address": "32:12:17:0a:21:63"
+-      },
+-      {
+-          "mcast_flags": {
+-              "all_unsnoopables": true,
+-              "raw": 1,
+-              "want_all_ipv4": false,
+-              "want_all_ipv6": false,
+-              "want_no_rtr_ipv4": false,
+-              "want_no_rtr_ipv6": false
+-          },
+-          "orig_address": "1a:34:8c:c4:fe:13"
+-      },
++     {
++        "mcast_flags" : {
++           "all_unsnoopables" : true,
++           "have_mc_ptype_capa" : true,
++           "raw" : 57,
++           "want_all_ipv4" : false,
++           "want_all_ipv6" : false,
++           "want_no_rtr_ipv4" : true,
++           "want_no_rtr_ipv6" : true
++        },
++        "orig_address" : "02:04:64:a4:39:c1"
++     },
++     {
++        "mcast_flags" : {
++           "all_unsnoopables" : false,
++           "have_mc_ptype_capa" : true,
++           "raw" : 40,
++           "want_all_ipv4" : false,
++           "want_all_ipv6" : false,
++           "want_no_rtr_ipv4" : true,
++           "want_no_rtr_ipv6" : false
++        },
++        "orig_address" : "02:04:64:a4:39:c2"
++     },
++     {
++        "mcast_flags" : {
++           "all_unsnoopables" : false,
++           "have_mc_ptype_capa" : false,
++           "raw" : 24,
++           "want_all_ipv4" : false,
++           "want_all_ipv6" : false,
++           "want_no_rtr_ipv4" : true,
++           "want_no_rtr_ipv6" : true
++        },
++        "orig_address" : "02:04:64:a4:39:c3"
++     },
+   [...]
+   ]
+ 
+diff --git a/batadv_packet.h b/batadv_packet.h
+index 9204e4494b25..6e25753015df 100644
+--- a/batadv_packet.h
++++ b/batadv_packet.h
+@@ -116,6 +116,9 @@ enum batadv_icmp_packettype {
+  * only need routable IPv4 multicast packets we signed up for explicitly
+  * @BATADV_MCAST_WANT_NO_RTR6: we have no IPv6 multicast router and therefore
+  * only need routable IPv6 multicast packets we signed up for explicitly
++ * @BATADV_MCAST_HAVE_MC_PTYPE_CAPA: we can parse, receive and forward
++ * batman-adv multicast packets with a multicast tracker TVLV. And all our
++ * hard interfaces have an MTU of at least 1280 bytes.
+  */
+ enum batadv_mcast_flags {
+ 	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	= 1UL << 0,
+@@ -123,6 +126,7 @@ enum batadv_mcast_flags {
+ 	BATADV_MCAST_WANT_ALL_IPV6		= 1UL << 2,
+ 	BATADV_MCAST_WANT_NO_RTR4		= 1UL << 3,
+ 	BATADV_MCAST_WANT_NO_RTR6		= 1UL << 4,
++	BATADV_MCAST_HAVE_MC_PTYPE_CAPA		= 1UL << 5,
+ };
+ 
+ /* tt data subtypes */
+@@ -174,14 +178,16 @@ enum batadv_bla_claimframe {
+  * @BATADV_TVLV_TT: translation table tvlv
+  * @BATADV_TVLV_ROAM: roaming advertisement tvlv
+  * @BATADV_TVLV_MCAST: multicast capability tvlv
++ * @BATADV_TVLV_MCAST_TRACKER: multicast tracker tvlv
+  */
+ enum batadv_tvlv_type {
+-	BATADV_TVLV_GW		= 0x01,
+-	BATADV_TVLV_DAT		= 0x02,
+-	BATADV_TVLV_NC		= 0x03,
+-	BATADV_TVLV_TT		= 0x04,
+-	BATADV_TVLV_ROAM	= 0x05,
+-	BATADV_TVLV_MCAST	= 0x06,
++	BATADV_TVLV_GW			= 0x01,
++	BATADV_TVLV_DAT			= 0x02,
++	BATADV_TVLV_NC			= 0x03,
++	BATADV_TVLV_TT			= 0x04,
++	BATADV_TVLV_ROAM		= 0x05,
++	BATADV_TVLV_MCAST		= 0x06,
++	BATADV_TVLV_MCAST_TRACKER	= 0x07,
+ };
+ 
+ #pragma pack(2)
+@@ -487,6 +493,25 @@ struct batadv_bcast_packet {
+ 	 */
+ };
+ 
++/**
++ * struct batadv_mcast_packet - multicast packet for network payload
++ * @packet_type: batman-adv packet type, part of the general header
++ * @version: batman-adv protocol version, part of the general header
++ * @ttl: time to live for this packet, part of the general header
++ * @reserved: reserved byte for alignment
++ * @tvlv_len: length of the appended tvlv buffer (in bytes)
++ */
++struct batadv_mcast_packet {
++	__u8 packet_type;
++	__u8 version;
++	__u8 ttl;
++	__u8 reserved;
++	__be16 tvlv_len;
++	/* "4 bytes boundary + 2 bytes" long to make the payload after the
++	 * following ethernet header again 4 bytes boundary aligned
++	 */
++};
++
+ /**
+  * struct batadv_coded_packet - network coded packet
+  * @packet_type: batman-adv packet type, part of the general header
+@@ -628,6 +653,14 @@ struct batadv_tvlv_mcast_data {
+ 	__u8 reserved[3];
+ };
+ 
++/**
++ * struct batadv_tvlv_mcast_tracker - payload of a multicast tracker tvlv
++ * @num_dests: number of subsequent destination originator MAC addresses
++ */
++struct batadv_tvlv_mcast_tracker {
++	__be16	num_dests;
++};
++
+ #pragma pack()
+ 
+ #endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
+diff --git a/genl_json.c b/genl_json.c
+index 2be533d064e0..4cb1bafca8ef 100644
+--- a/genl_json.c
++++ b/genl_json.c
+@@ -157,6 +157,8 @@ static void nljson_print_mcastflags(struct nlattr *attrs[], int idx)
+ 	       val & BATADV_MCAST_WANT_NO_RTR4 ? "true" : "false");
+ 	printf("\"want_no_rtr_ipv6\": %s,",
+ 	       val & BATADV_MCAST_WANT_NO_RTR6 ? "true" : "false");
++	printf("\"have_mc_ptype_capa\": %s,",
++	       val & BATADV_MCAST_HAVE_MC_PTYPE_CAPA ? "true" : "false");
+ 	printf("\"raw\": %"PRIu32, val);
+ 	putchar('}');
+ }
+diff --git a/mcast_flags.c b/mcast_flags.c
+index 44344e0c1f61..7d4c1d69adfb 100644
+--- a/mcast_flags.c
++++ b/mcast_flags.c
+@@ -80,12 +80,13 @@ static int mcast_flags_callback(struct nl_msg *msg, void *arg)
+ 	if (attrs[BATADV_ATTR_MCAST_FLAGS]) {
+ 		flags = nla_get_u32(attrs[BATADV_ATTR_MCAST_FLAGS]);
+ 
+-		printf("[%c%c%c%s%s]\n",
++		printf("[%c%c%c%s%s%c]\n",
+ 		       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
+ 		       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
+ 		       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.',
+ 		       !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+-		       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
++		       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
++		       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
+ 	} else {
+ 		printf("-\n");
+ 	}
+@@ -125,7 +126,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
+         }
+ 
+ 	ret = asprintf(&header,
+-		"Multicast flags (own flags: [%c%c%c%s%s])\n"
++		"Multicast flags (own flags: [%c%c%c%s%s%c])\n"
+ 		 "* Bridged [U]\t\t\t\t%c\n"
+ 		 "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n"
+ 		 "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n"
+@@ -136,6 +137,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
+ 		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
+ 	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+ 	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
++	         !(mcast_flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.',
+ 		 bridged ? 'U' : '.',
+ 		 querier4, querier6, shadowing4, shadowing6,
+ 		 "Originator", "Flags");
 diff --git a/tcpdump.c b/tcpdump.c
-index debcb0ae517a..5e7c76c69bd1 100644
+index 9a830b2ba8b2..debcb0ae517a 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
-@@ -57,7 +57,8 @@ static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
- 				       DUMP_TYPE_BATELP | DUMP_TYPE_BATICMP |
- 				       DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST |
- 				       DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG |
--				       DUMP_TYPE_NONBAT | DUMP_TYPE_BATCODED;
-+				       DUMP_TYPE_NONBAT | DUMP_TYPE_BATCODED |
-+				       DUMP_TYPE_BATMCAST;
- static unsigned short dump_level;
+@@ -231,12 +231,13 @@ static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
  
- static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
-@@ -82,6 +83,7 @@ static void tcpdump_usage(void)
- 	fprintf(stderr, " \t\t%3d - batman unicast tvlv packets\n", DUMP_TYPE_BATUTVLV);
- 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
- 	fprintf(stderr, " \t\t%3d - batman coded packets\n", DUMP_TYPE_BATCODED);
-+	fprintf(stderr, " \t\t%3d - batman multicast packets\n", DUMP_TYPE_BATMCAST);
- 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
+ 	flags = tvlv->flags;
+ 
+-	printf("\tTVLV MCASTv2: [%c%c%c%s%s]\n",
++	printf("\tTVLV MCASTv2: [%c%c%c%s%s%c]\n",
+ 	       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
+ 	       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
+ 	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.',
+ 	       !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+-	       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
++	       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
++	       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
  }
  
-@@ -101,7 +103,8 @@ static int print_time(void)
- 	return 1;
- }
- 
--static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
-+static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len,
-+				    int read_opt __maybe_unused)
- {
- 	struct batadv_tvlv_gateway_data *tvlv = buff;
- 	uint32_t down, up;
-@@ -119,8 +122,9 @@ static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
- 	       down / 10, down % 10, up / 10, up % 10);
- }
- 
--static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
--				     ssize_t buff_len)
-+static void batctl_tvlv_parse_dat_v1(void *buff __maybe_unused,
-+				     ssize_t buff_len,
-+				     int read_opt __maybe_unused)
- {
- 	if (buff_len != 0) {
- 		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
-@@ -131,8 +135,9 @@ static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
- 	printf("\tTVLV DATv1: enabled\n");
- }
- 
--static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
--				    ssize_t buff_len)
-+static void batctl_tvlv_parse_nc_v1(void *buff __maybe_unused,
-+				    ssize_t buff_len,
-+				    int read_opt __maybe_unused)
- {
- 	if (buff_len != 0) {
- 		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
-@@ -143,7 +148,8 @@ static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
- 	printf("\tTVLV NCv1: enabled\n");
- }
- 
--static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
-+static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
-+				    int read_opt __maybe_unused)
- {
- 	struct batadv_tvlv_tt_data *tvlv = buff;
- 	struct batadv_tvlv_tt_vlan_data *vlan;
-@@ -183,7 +189,8 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
- 	}
- }
- 
--static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
-+static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
-+				      int read_opt __maybe_unused)
- {
- 	struct batadv_tvlv_roam_adv *tvlv = buff;
- 
-@@ -199,7 +206,8 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
- }
- 
- static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
--				       ssize_t buff_len)
-+				       ssize_t buff_len,
-+				       int read_opt __maybe_unused)
- {
- 	struct batadv_tvlv_mcast_data *tvlv = buff;
- 	uint8_t flags;
-@@ -218,7 +226,8 @@ static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
- 	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
- }
- 
--static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
-+static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len,
-+				       int read_opt __maybe_unused)
- {
- 	struct batadv_tvlv_mcast_data *tvlv = buff;
- 	uint8_t flags;
-@@ -240,7 +249,37 @@ static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
- 	       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
- }
- 
--typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
-+static void
-+batctl_tvlv_parse_mcast_tracker_v1(void *buff, ssize_t buff_len, int read_opt)
-+{
-+	struct batadv_tvlv_mcast_tracker *tvlv = buff;
-+	size_t tvlv_len = sizeof(*tvlv);
-+	struct ether_addr *dst;
-+	uint16_t num_dests;
-+
-+	if (buff_len < (ssize_t)tvlv_len) {
-+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
-+			"TVLV MCAST TRACKER v1", tvlv_len, buff_len);
-+		return;
-+	}
-+
-+	num_dests = ntohs(tvlv->num_dests);
-+	tvlv_len += num_dests * ETH_ALEN;
-+	dst = (struct ether_addr *)(tvlv + 1);
-+
-+	if (buff_len < (ssize_t)tvlv_len) {
-+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
-+			"TVLV MCAST TRACKER v1 (with destinations)", tvlv_len, buff_len);
-+		return;
-+	}
-+
-+	printf("\tTVLV MCAST TRACKER v1, destinations (%hu):\n", num_dests);
-+
-+	for (int i = 0; i < num_dests; i++)
-+		printf("\t\t%s\n", get_name_by_macaddr(dst++, read_opt));
-+}
-+
-+typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len, int read_opt);
- 
- static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
- {
-@@ -295,12 +334,20 @@ static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
- 			return NULL;
- 		}
- 
-+	case BATADV_TVLV_MCAST_TRACKER:
-+		switch (version) {
-+		case 1:
-+			return batctl_tvlv_parse_mcast_tracker_v1;
-+		default:
-+			return NULL;
-+		}
-+
- 	default:
- 		return NULL;
- 	}
- }
- 
--static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len)
-+static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len, int read_opt)
- {
- 	struct batadv_tvlv_hdr *tvlv_hdr;
- 	batctl_tvlv_parser_t parser;
-@@ -318,7 +365,7 @@ static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len)
- 
- 		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
- 		if (parser)
--			parser(ptr, len);
-+			parser(ptr, len, read_opt);
- 
- 		/* go to the next container */
- 		ptr += len;
-@@ -358,7 +405,7 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
- 	       buff_len - sizeof(struct ether_header), tvlv_len,
- 	       tvlv_packet->ttl);
- 
--	dump_tvlv((uint8_t *)(tvlv_packet + 1), tvlv_len);
-+	dump_tvlv((uint8_t *)(tvlv_packet + 1), tvlv_len, read_opt);
- }
- 
- static int dump_bla2_claim(struct ether_header *eth_hdr,
-@@ -779,7 +826,7 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
- 	check_len -= sizeof(struct batadv_ogm_packet);
- 	LEN_CHECK(check_len, (size_t)tvlv_len, "BAT OGM TVLV (containers)");
- 
--	dump_tvlv((uint8_t *)(batman_ogm_packet + 1), tvlv_len);
-+	dump_tvlv((uint8_t *)(batman_ogm_packet + 1), tvlv_len, read_opt);
- }
- 
- static void dump_batman_ogm2(unsigned char *packet_buff, ssize_t buff_len,
-@@ -823,7 +870,7 @@ static void dump_batman_ogm2(unsigned char *packet_buff, ssize_t buff_len,
- 	check_len -= BATADV_OGM2_HLEN;
- 	LEN_CHECK(check_len, (size_t)tvlv_len, "BAT OGM2 TVLV (containers)");
- 
--	dump_tvlv((uint8_t *)(batman_ogm2 + 1), tvlv_len);
-+	dump_tvlv((uint8_t *)(batman_ogm2 + 1), tvlv_len, read_opt);
- }
- 
- static void dump_batman_elp(unsigned char *packet_buff, ssize_t buff_len,
-@@ -988,6 +1035,57 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int
- 		      read_opt, time_printed);
- }
- 
-+static void dump_batman_mcast(unsigned char *packet_buff, ssize_t buff_len,
-+			      int read_opt, int time_printed)
-+{
-+	struct batadv_mcast_packet *mcast_packet;
-+	struct ether_header *ether_header;
-+	uint8_t *tvlv_hdr;
-+	ssize_t check_len;
-+	size_t tvlv_len;
-+
-+	check_len = (size_t)buff_len - sizeof(struct ether_header);
-+
-+	LEN_CHECK(check_len, sizeof(*mcast_packet), "BAT MCAST");
-+	check_len -= sizeof(*mcast_packet);
-+
-+	ether_header = (struct ether_header *)packet_buff;
-+	mcast_packet = (struct batadv_mcast_packet *)(ether_header + 1);
-+	tvlv_len = ntohs(mcast_packet->tvlv_len);
-+
-+	LEN_CHECK(check_len, tvlv_len, "BAT MCAST TVLV (containers)");
-+	check_len -= tvlv_len;
-+
-+	tvlv_hdr = (uint8_t *)(mcast_packet + 1);
-+
-+	if (!time_printed)
-+		time_printed = print_time();
-+
-+	printf("BAT %s > ",
-+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
-+
-+	printf("%s: MCAST, ttl %hhu, ",
-+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost, read_opt),
-+	       mcast_packet->ttl);
-+
-+	/* batman-adv mcast packet's data payload is optional */
-+	if (check_len >= ETH_HLEN) {
-+		ether_header = (struct ether_header *)(tvlv_hdr + tvlv_len);
-+
-+		printf("%s > ",
-+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
-+		printf("%s, ",
-+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost, read_opt));
-+
-+		parse_eth_hdr((unsigned char *)ether_header, check_len,
-+			      read_opt, time_printed);
-+	} else {
-+		printf("\n");
-+	}
-+
-+	dump_tvlv(tvlv_hdr, tvlv_len, read_opt);
-+}
-+
- static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
- {
- 	struct batadv_coded_packet *coded_packet;
-@@ -1106,6 +1204,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
- 			if (dump_level & DUMP_TYPE_BATBCAST)
- 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
- 			break;
-+		case BATADV_MCAST:
-+			if (dump_level & DUMP_TYPE_BATMCAST)
-+				dump_batman_mcast(packet_buff, buff_len, read_opt, time_printed);
-+			break;
- 		case BATADV_CODED:
- 			if (dump_level & DUMP_TYPE_BATCODED)
- 				dump_batman_coded(packet_buff, buff_len, read_opt, time_printed);
-diff --git a/tcpdump.h b/tcpdump.h
-index 527fb7f0891d..be64aeb810c6 100644
---- a/tcpdump.h
-+++ b/tcpdump.h
-@@ -34,6 +34,7 @@
- #define DUMP_TYPE_BATFRAG 128
- #define DUMP_TYPE_NONBAT 256
- #define DUMP_TYPE_BATCODED 512
-+#define DUMP_TYPE_BATMCAST 1024
- 
- #define IEEE80211_FCTL_FTYPE 0x0c00
- #define IEEE80211_FCTL_TODS 0x0001
+ typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
 -- 
 2.40.1
 
