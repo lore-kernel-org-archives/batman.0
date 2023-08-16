@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 868DCC001B0
-	for <batman-adv@archiver.kernel.org>; Wed, 16 Aug 2023 16:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4E73C001B0
+	for <batman-adv@archiver.kernel.org>; Wed, 16 Aug 2023 16:34:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AE0F283375
-	for <batman-adv@archiver.kernel.org>; Wed, 16 Aug 2023 18:33:53 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E762F835A3
+	for <batman-adv@archiver.kernel.org>; Wed, 16 Aug 2023 18:34:36 +0200 (CEST)
 ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1692203633;
- b=jz8V1wEVuH+P3qxe+ikFZhlGN+yIpPY+K83/yuwxHRregcF+m9/QeWIRCdDOCCp5Js5XG
- 610QrU5qnBVrbxAWcqQ5MXxULdubHcqPctNcdI1IV6SU8p0CB48NPhVp9lSsQwVAjVdjJS0
- fZ6XDh391ZHrlB4JsH5SD2Wi1qBnG/Y=
+ t=1692203676;
+ b=H/eU3Nl2OWVcBdRLlJ4uwJhQrT938llEg/9Of5yZLlcap8RXytEhiEvQ+gRSBfgqh/bU8
+ koRapnpYxwlJ3xqKsDS8C2NjBLfJXX+FH19pg3g/TP1SyYyxBpjFRwVLS/cO4MSMy37yV5d
+ RhhffEES3HaSTnhm6L1GTmQTbG5zt5c=
 ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1692203633; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1692203676; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=m1w6FoGMV+sfhD7tg4nzP8v3sE5qiFtEwg083Tmb81U=;
- b=oUtlzAdDtEd/cnA/UDQuML1SpUgxLQMKEWPkKmevdehrWoj1LDBc3Z9XCrpKnGO+2tCov
- WHlaDVH45c4fSWre46WRoRx63qGsEp4dR3P3GOnTCRge+7ONSlkTYgM0cuNNJE4BHHeR9DF
- /jwjqwslvxAdTyb5mrG9IOZZjUXF23c=
+ list-archive; bh=TDr4ApcYiSq7b1LH4pTlLUo+yJYCl799b+ZbteyLDqg=;
+ b=25BJwzbODR9MyqYF+AQY6To4dzxK+ED7nSHrDLfxIT22q9HVuiSXeg6yrVnDMKfA1lsfa
+ +VyXz4C8SfGoqAUcRzXD+UJjCj2J3qWG4w9cm8yghP1FN/7ZS0gRSq8UNlLDzJIZ3kMNX96
+ Vjuy5TQseFHYfKJvmrQo9k7XFspcQJE=
 ARC-Authentication-Results: i=3; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
   arc=pass;
@@ -34,29 +34,30 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B4C4D814CF
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 16 Aug 2023 18:33:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 13962814CF
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 16 Aug 2023 18:33:21 +0200 (CEST)
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1692203600;
+	s=20121; t=1692203601;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=m1w6FoGMV+sfhD7tg4nzP8v3sE5qiFtEwg083Tmb81U=;
-	b=i9Kpvp3UgBbXXMGT24bOQVUgdDTNGicCPqfU6V8cvGr6dMvdeObfIKKNvGuWgSC28i+dIq
-	KqadmRCgh8ZC+kq22Pyc1XaMLdObI8V69GsPfVnX53nh8n31J1HPLkurfBvrSe8YpI8WE5
-	VxId9b7gvHFsxrEiG5/NdPAuwUy4yGs=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=TDr4ApcYiSq7b1LH4pTlLUo+yJYCl799b+ZbteyLDqg=;
+	b=UyNLBOcBidA7B6kiKr9DgR+L39TxSP2QNatoWoVRUYvDosZpTYQ8aXHIU4koYI3lc/P3pW
+	T0CW/kULer7qieaiZo6Bm1FW0hxAD+J24LP9eZq+PyX/5S4lmO6pSVmLDicfe6Tg8umOeG
+	hSO6l2eNEsoRrpvMQO8zCzKWSPt9h7I=
 ARC-Authentication-Results: i=2;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=F3hUDqEb;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=RNif1Elg;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	arc=pass ("simonwunderlich.de:s=09092022:i=1")
-ARC-Seal: i=2; s=20121; d=open-mesh.org; t=1692203600; a=rsa-sha256;
+ARC-Seal: i=2; s=20121; d=open-mesh.org; t=1692203601; a=rsa-sha256;
 	cv=pass;
-	b=bcjK2cn5F2TGyywJ0iT7di1xRKZMSSKCkjI50fpcVug0/zIxLql7+5Rnj9mwipY0IK8T2c
-	JzYUuXxHuJD7gIlR5TWy+ZtWtX6fFnVO6+r4Iem1S/E50DklJjPjlt2Oi6t4HpPdDqZXWe
-	fFV4LOUMEJK3irJmquesMWbR3xQmXC8=
+	b=bh4s3XR70FLtMtmMS1+5ZxEMfJUBBvJPiE1Pv7kyMwWgBF3tgiZnI4nPocgjpiNIYyKCLj
+	4WMQ/HvGsiS1IRYNTfKg6DVWYBX1/L0VMNm1zFfjC/SjMmHomJv6+6g7q1XrRQbP8AkG0B
+	GzX9ogFeSlmolX3hL2tunpBwDU7lyBM=
 Received: from kero.packetmixer.de
  (p200300FA272a67000Bb2D6DcAf57d46E.dip0.t-ipconnect.de
  [IPv6:2003:fa:272a:6700:bb2:d6dc:af57:d46e])
@@ -64,26 +65,29 @@ Received: from kero.packetmixer.de
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits)
  server-digest SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 64368FB5B0;
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id C0A49FB5B1;
 	Wed, 16 Aug 2023 18:33:20 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
 	s=09092022; t=1692203600;
  h=from:from:sender:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:references; bh=m1w6FoGMV+sfhD7tg4nzP8v3sE5qiFtEwg083Tmb81U=;
-	b=F3hUDqEbmJekyGRawjrUDrekktiIIGEiZO6ZqsP4F/8/5U4J5dyFVnlioGi3/wGXPzjzgF
-	OR2SUHwjZcGvyWslqMh78BrrJUwRZMrCIRJCJ/A8dSU8cdLkWdNTC5Qo9yuadLRGKgEnth
-	b1K+qzmZYSN6JYTdckO0eSgcn5yy023JSAz+aNqD+a/CFfNRYYNYXgrOKaOe5QFwvJak7H
-	DEpE3Jh6fQo3gPS7ZT9MnpeNCumRCc7QQIc7ak/3hBrF9w151B/bMOYH7bJZjF7YoEToSV
-	EVLt8GFuaOXMkFbbHrA9btUS4NOC3r9vo8J8BC0tRP3tIbdFQvZcw14An+xkMg==
+	 in-reply-to:in-reply-to:references:references;
+	bh=TDr4ApcYiSq7b1LH4pTlLUo+yJYCl799b+ZbteyLDqg=;
+	b=RNif1ElgLtX1XNgo34EMgkPcO5bvSJuM3smEAG7H32FxEb7chYcIVrae2OLivrI+qGX9K+
+	qhSu5jlg0SDB3jzGGv9zQVtIF6d9PZn2Mb4pumvvyy32Q0GeE8z1pnHZD7z0fVSRRD2NuX
+	boI/Cw6s1v3WsJgag07VuUl8bem2UYV1m9BbNEbtmiXHyHeyeSCvmmEtl53aYo6wE5JSnv
+	HxyAsX+rYBmHMmDPMhUyxSRJxDUQGZFLh2ZZEljSTNna3a0TsSZRWKzWotkPSxe7t3zjhO
+	1vheyMFebETNMepkbK1hCgtPedUky5vA0eR/oAcMXHRPYuimJs4LCRaV2iG62w==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: davem@davemloft.net,
 	kuba@kernel.org
-Subject: [PATCH 0/5] pull request for net: batman-adv 2023-08-16
-Date: Wed, 16 Aug 2023 18:33:13 +0200
-Message-Id: <20230816163318.189996-1-sw@simonwunderlich.de>
+Subject: [PATCH 1/5] batman-adv: Trigger events for auto adjusted MTU
+Date: Wed, 16 Aug 2023 18:33:14 +0200
+Message-Id: <20230816163318.189996-2-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230816163318.189996-1-sw@simonwunderlich.de>
+References: <20230816163318.189996-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
@@ -91,20 +95,21 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
 	h=from:from:sender:reply-to:subject:subject:date:date:
 	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
 	 content-type:content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:references; bh=m1w6FoGMV+sfhD7tg4nzP8v3sE5qiFtEwg083Tmb81U=;
-	b=w5zzxd2iYrgIPHMMWMgNsHPeyKEvPUrotjdrBAta2yBKE6sSzjtLbrjYlDLDs/BAl40U8I
-	orVg+3+SL2m2/rpRqQkdEx3u9wEm+Mmk09Z92g6SIcQfSAOZsFfByMv8tGqoMfKJsNZ0ZY
-	Iz2F0NltGKXXy0KED36TUEbn3R3gkeEBUvJvCPukc1KOpQjARrovFykxk757udt0nVr8qB
-	9bWiLyCBXznHQMYUi0nXeZJWFfZHBAgzDmFrGWblH6O8C3MNBD5gvrJvqulSy3ATCP0+tq
-	BiUFxxZc2nyT7iPziZNqnPdmPLDpdHIh66UDRSEWARwNU+IZa+WCwkUI0Mba2A==
+	 in-reply-to:in-reply-to:references:references;
+	bh=TDr4ApcYiSq7b1LH4pTlLUo+yJYCl799b+ZbteyLDqg=;
+	b=lY2tZcU3Oc7gr3m4vR+VbFmStW3bKrvzjD0zoTvWkAJrLM9sXyA9lelui69YIzNxgIvv5a
+	AWbZE4XLalZWSaM7KMvwVHaCFbSkh6u6D0MdzaAmnGKAOjR232tmJuV5bIFZAOvZ+Sa1Df
+	nAYThj5auLs8M2WQb3nsyLajr9pPMPFYPd7Wsyfbm+hJGi2fRixPa2RuWQVkLHGs2OLugc
+	THblU1YavYRkhedX9cGacj54kZtNhEEQ5CPMEmeJwz68si3mlYO41oG+Aods3gTMXcuZ2c
+	iMTIp6k0zW5hCQB9hnPL5J+F/3LH0jJJHH2Sglx6LdnXucAiQMPBnWxagEg98Q==
 ARC-Seal: i=1; s=09092022; d=simonwunderlich.de; t=1692203600; a=rsa-sha256;
 	cv=none;
-	b=hi9As+oKAsM71PgOCV5+aZUmKgvQPNgiAe34JsFGZQ1zGoxISTlDI8Yn/CZAsVOMGSja8JQsPEMwFU6AZ3TdgagsoC485sq/0/dp87RH7mp0gze1JcNe0AdtXVTMJwaWNC3XGXUqXJGM7xM5EiyQpmekwsJixO6pPW8L1BysXvHjZuM3I6Or5Dno+V7460CSBK3riYxAyzs5k9PMUkbsKCSRxUHDzdLQ9sOMEX+Lxib4Vy6k359X7nAp+wfx2tSFuh9BJP7EJFD2Z18hJ9i7t2Pkh8bKHhqFoAOQ0RA1VWABfTcLrQczgXUdyKKB9Z4C7igbm3LWRoDTIA08w5HsSA==
+	b=gi3BxAgYdVgaF7/GAmc3riqNqKa2RKe2eKZHU5kqbFwPdZ40JQlzZ+5RwZPzpr8HdHVhB3meZJ770phCT883HX7Z0rWSmrBTJAGLwq1ik7J4J6i3Q8Qzcj1LLdM6Q6lBwvYMALicQUDE221CxwCBteT7gZyLXA5xdb9Eekol5eOKRVMy8txqUFfQ61CvH4rqxxz637Ity0pdrY4M9lt/tWYzsOm2IBcifqr65LJoCWfkKSnBoCXaQGTXOnmArH/3P2gIMi4oMWJyOgNDwPJvGhgcUfTkR/x6jAP6invWK+fhJMxl0IvEA+vIBFrUCndlmlrQUl1c08KAl/SIKI9jDQ==
 ARC-Authentication-Results: i=1;
 	mail.simonwunderlich.de;
 	auth=pass smtp.auth=sw@simonwunderlich.de smtp.mailfrom=sw@simonwunderlich.de
-Message-ID-Hash: EKR3Y4WRJSBT5SMAB22GBWOXCWLE5BLW
-X-Message-ID-Hash: EKR3Y4WRJSBT5SMAB22GBWOXCWLE5BLW
+Message-ID-Hash: OEQIZIMAEIB6SJESQPL2OVN7UDNZUNMV
+X-Message-ID-Hash: OEQIZIMAEIB6SJESQPL2OVN7UDNZUNMV
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -112,13 +117,14 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
  administrivia; implicit-dest; max-recipients; max-size; news-moderation;
  no-subject; digests; suspicious-header
-CC: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+CC: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ stable@vger.kernel.org
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EKR3Y4WRJSBT5SMAB22GBWOXCWLE5BLW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OEQIZIMAEIB6SJESQPL2OVN7UDNZUNMV/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -127,50 +133,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi David, hi Jakub,
+From: Sven Eckelmann <sven@narfation.org>
 
-here are a few bugfixes for batman-adv which we would like to have integrated into net.
+If an interface changes the MTU, it is expected that an NETDEV_PRECHANGEMTU
+and NETDEV_CHANGEMTU notification events is triggered. This worked fine for
+.ndo_change_mtu based changes because core networking code took care of it.
+But for auto-adjustments after hard-interfaces changes, these events were
+simply missing.
 
-Please pull or let me know of any problem!
+Due to this problem, non-batman-adv components weren't aware of MTU changes
+and thus couldn't perform their own tasks correctly.
 
-Thank you,
-      Simon
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+Cc: stable@vger.kernel.org
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/hard-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 41c1ad33d009..ae5762af0146 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -630,7 +630,7 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+  */
+ void batadv_update_min_mtu(struct net_device *soft_iface)
+ {
+-	soft_iface->mtu = batadv_hardif_min_mtu(soft_iface);
++	dev_set_mtu(soft_iface, batadv_hardif_min_mtu(soft_iface));
+ 
+ 	/* Check if the local translate table should be cleaned up to match a
+ 	 * new (and smaller) MTU.
+-- 
+2.39.2
 
-  Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
-
-are available in the Git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20230816
-
-for you to fetch changes up to 421d467dc2d483175bad4fb76a31b9e5a3d744cf:
-
-  batman-adv: Fix batadv_v_ogm_aggr_send memory leak (2023-08-09 17:33:03 +0200)
-
-----------------------------------------------------------------
-Here are some batman-adv bugfixes:
-
- - Fix issues with adjusted MTUs (2 patches), by Sven Eckelmann
-
- - Fix header access for memory reallocation case, by Remi Pommarel
-
- - Fix two memory leaks (2 patches), by Remi Pommarel
-
-----------------------------------------------------------------
-Remi Pommarel (3):
-      batman-adv: Do not get eth header before batadv_check_management_packet
-      batman-adv: Fix TT global entry leak when client roamed back
-      batman-adv: Fix batadv_v_ogm_aggr_send memory leak
-
-Sven Eckelmann (2):
-      batman-adv: Trigger events for auto adjusted MTU
-      batman-adv: Don't increase MTU when set by user
-
- net/batman-adv/bat_v_elp.c         |  3 ++-
- net/batman-adv/bat_v_ogm.c         |  7 +++++--
- net/batman-adv/hard-interface.c    | 14 +++++++++++++-
- net/batman-adv/soft-interface.c    |  3 +++
- net/batman-adv/translation-table.c |  1 -
- net/batman-adv/types.h             |  6 ++++++
- 6 files changed, 29 insertions(+), 5 deletions(-)
