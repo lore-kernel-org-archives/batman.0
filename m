@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39A24EE4996
-	for <batman-adv@archiver.kernel.org>; Tue, 22 Aug 2023 11:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F4DEE49AB
+	for <batman-adv@archiver.kernel.org>; Wed, 23 Aug 2023 06:26:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 725E38311B
-	for <batman-adv@archiver.kernel.org>; Tue, 22 Aug 2023 13:54:00 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 6E6928332C
+	for <batman-adv@archiver.kernel.org>; Wed, 23 Aug 2023 08:26:35 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1692705240;
- b=Ivgc7pwl8Mf63UeNkIOc1bXjVli4MrUnC0DIS3ERt4fYg3QdcEHRF4l7U4MKqpsSeeLtZ
- ORaqo8h4rpQ1Urc6AtkGp3qE/AO5WqmIc/rGjmN9gbxj0GWuOjHr9siwKA7TprmxGsXBvIE
- SjzT0N1zmLxLhyFY+hXCVF5qwAB397k=
+ t=1692771995;
+ b=cLyyogRuL1U60xSaX8MY7B2rXHuYQWiulagtW7zbD+yWDwKjjj6Fqt1jCWv9bV/ydoA2n
+ b4MFykugRoh41MPa8shp6OmjCjgzGFi+lX5jtnQ+3npBwB3TuzlvlkQH7GI5ePWq01H+iyD
+ 5x9vGe3MiZf/dWKtfTcXNmmecrOwIcQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1692705240; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1692771995; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=OcSyWDcOO9K6QMqsIfE1q93YdgrK/01T64BGNyTvHJs=;
- b=gnrL7f4oywCZtAkFpwRUZscSMpn9i3T7FC1eHy645ri1vdbERZApVncSt5j/KdYsXeV7l
- wIde2Ip2nH2hGr/PEIeRxh6ZR7Y1Pi0Kec7j7sXWPd+21s7mLgp5skQcFolAXZuLpqKzQFd
- RHaj9gkpTy42Z4+tu6zm8JgA2Hlo480=
+ list-archive; bh=TMbKJwO+dc00bTMpCiqOyqvM6FpMffgS6jke6PHJEZg=;
+ b=rsJDhO/lJ6Wst/xTCLrY99mZcfsn6t10sbQ0n71etPieB92vc5hVfTN4QswCu42CZ9T1m
+ rAs1cgR5YeAo7aiEnqqwzksVKqUSVMJUI94feh4ZIt/BAwlCpswihrWfixdAc0qJG2jtpJn
+ GobFU5JFgOiP8JHNtV/iHqKwHHBIpS8=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=kernel.org
@@ -34,79 +34,85 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4818C80757
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 22 Aug 2023 09:55:45 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id ADFDA802ED
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 23 Aug 2023 02:30:27 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1692690945;
+	s=20121; t=1692750627;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=OcSyWDcOO9K6QMqsIfE1q93YdgrK/01T64BGNyTvHJs=;
-	b=yNKuk10o9LnuTWLJ1IEgRbEuxP8yS6+baaKOV7DRlGtErcZdG5LpGeHENyvzUqg2ORMZDY
-	qlQUgAjUHO0u7LK2ylaKRKk05PBM0BhDmoHSiF+foZTSxiQPoGSuMWbWKnxLFHggfWkDCm
-	4g+hE36vsFqIVfcsStNh3VvWzmV79pk=
+	bh=TMbKJwO+dc00bTMpCiqOyqvM6FpMffgS6jke6PHJEZg=;
+	b=ohrVqxYhqBjxHDnXNFqAA1cCA56sf/eyTsBGJxpAuNNvT/X1Ih8zAKuHFPSFucbdsxsl7T
+	Jtzg7GQ3clyY0yi1LgstHfPYLlEEniXPZXCgkTdnC5G52d1Lm9nqwvKk+2Kg6V9vmgDbS+
+	y0cSy6N9/XBl317VCP++5K+9Q3lMGJc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=ZmeH0c00;
-	spf=pass (diktynna.open-mesh.org: domain of horms@kernel.org designates
- 2604:1380:4641:c500::1 as permitted sender) smtp.mailfrom=horms@kernel.org;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=UFktCEzc;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
+ permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
 	dmarc=pass (policy=none) header.from=kernel.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1692690945; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1692750627; a=rsa-sha256;
 	cv=none;
-	b=S4EGMlYOBQkqH7yYvI96ChhnN2Zcdo/SAfwxEFe3JJ5f6VmIENLSISR6624bEc4r2UvplN
-	gFCZq19vIo0GdjAQsPkPg2rY3kffuM3tbFZXnEsPAnMeQIEFcU3HpSM3CYq0Dwg85X1QWi
-	2iNCgQmP4/rhfPf51AU02gIFZPpyIIg=
+	b=FAU9q/eoHfhkbZrkgl8xssSwgQI2v8A4LtraywZ+PiLdD9863OHl7ImAQs6w0PVU+pdPYG
+	ergPVoCwcDIrxVGCibL5Gujo+Q7ZFCwq9RjKp/JLGUkROB8FrhBmw9F8AVairxeF4ECB5F
+	Xe9MQEMhrPz0L6PGevkT/kl+l8Ep1nA=
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9F95160EBB;
-	Tue, 22 Aug 2023 07:55:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A98EC433C7;
-	Tue, 22 Aug 2023 07:55:41 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 3DE9563600;
+	Wed, 23 Aug 2023 00:30:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B149CC433CB;
+	Wed, 23 Aug 2023 00:30:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1692690943;
-	bh=HgS4yGKAG70Gf+ddyrfQ4yCXJvgfhzVcU5cE2sHvA9I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZmeH0c00ZEtMrTSee7G6WcrDoSDkz6l1EhgHWG8XYQCpb3JTyzQv5iTt3GMmc76ne
-	 i1F1KiRzfGGdgIs8m48wRn1si931WnDn7FDAkX18fj4/FPytTfgkvyE5l0ukjG/kV0
-	 gGc3eOCKJeYdBy7Rz4o/jnBDaaVk4Aa0Bl3WdmeR+BpAL6Oqbiz/Uj8jk10qAw0D9t
-	 VSsqXjYuXo6W1yUW1evsW1CJT0tckM3QDcfBijXoD41oZkCaYW1iKIzO6RdYoblcUN
-	 BIvXBy3xB6d8jQXDNahmfXhNId5AEdPJMyOoo103N3Uv6aNDWlWGpWk9gUDsuwEezH
-	 0IWLP+fv7l51Q==
-Date: Tue, 22 Aug 2023 09:55:39 +0200
-From: Simon Horman <horms@kernel.org>
-To: Sven Eckelmann <sven@narfation.org>
+	s=k20201202; t=1692750624;
+	bh=CoLz3mD8z3EEnrbY+VFjJFD64qCW/Afi2VmVdewI4/Y=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=UFktCEzctW4y2wlIHFFSLqgvs8nF6H4/MQ0qiQbUQJQaBffabN1Q0a8OIZ7KGWKKo
+	 RDWWy/buROKpjv0mRDtiCE4Rs9znIT46WTR3DzwjKMWKvcEjnWqu9yvjOT2fmMcGzn
+	 BkchH9KiP4aQhRy2XBra5KLNT79lMLo/6g9L4swtYCCqj8sQPDcYAITtcip/Sia9C6
+	 qKCwiDHNOR9/tnQFbNsBtv0M2Jk0qJ5KMCbFk0A1Yuh+NgkZX89MAbF7eRy5KhJupb
+	 jnWF+F46LHMnODf2egESvoD1Ok8SDelwkRR8kM1jCNjhDZX2WDzBUNgqcoe4IGXeSO
+	 sHQ1LkO2moqZQ==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ 96E97E21ED3;
+	Wed, 23 Aug 2023 00:30:24 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Subject: Re: [PATCH net] batman-adv: Hold rtnl lock during MTU update via
  netlink
-Message-ID: <20230822075539.GU2711035@kernel.org>
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <169275062461.22438.15672454677210639225.git-patchwork-notify@kernel.org>
+Date: Wed, 23 Aug 2023 00:30:24 +0000
 References: 
  <20230821-batadv-missing-mtu-rtnl-lock-v1-1-1c5a7bfe861e@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: 
  <20230821-batadv-missing-mtu-rtnl-lock-v1-1-1c5a7bfe861e@narfation.org>
-X-MailFrom: horms@kernel.org
+To: Sven Eckelmann <sven@narfation.org>
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1
-Message-ID-Hash: J6625VXPWM3J4SQSYPE6ITN7ZRCWOM3Z
-X-Message-ID-Hash: J6625VXPWM3J4SQSYPE6ITN7ZRCWOM3Z
-X-Mailman-Approved-At: Tue, 22 Aug 2023 13:53:21 +0200
-CC: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org,
- netdev@vger.kernel.org, stable@vger.kernel.org,
- syzbot+f8812454d9b3ac00d282@syzkaller.appspotmail.com
+Message-ID-Hash: GXV6KQ7Q3D7RA2EFTYMZXOJF7YEZQTF6
+X-Message-ID-Hash: GXV6KQ7Q3D7RA2EFTYMZXOJF7YEZQTF6
+X-Mailman-Approved-At: Wed, 23 Aug 2023 08:26:00 +0200
+CC: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
+ stable@vger.kernel.org, syzbot+f8812454d9b3ac00d282@syzkaller.appspotmail.com
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/J6625VXPWM3J4SQSYPE6ITN7ZRCWOM3Z/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JPU7SKJP4762ZURNZ6RZQPMBYVGFMXGM/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,7 +121,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Mon, Aug 21, 2023 at 09:48:48PM +0200, Sven Eckelmann wrote:
+Hello:
+
+This patch was applied to netdev/net.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
+
+On Mon, 21 Aug 2023 21:48:48 +0200 you wrote:
 > The automatic recalculation of the maximum allowed MTU is usually triggered
 > by code sections which are already rtnl lock protected by callers outside
 > of batman-adv. But when the fragmentation setting is changed via
@@ -125,21 +136,15 @@ On Mon, Aug 21, 2023 at 09:48:48PM +0200, Sven Eckelmann wrote:
 > uses netdevice notifiers. And this code will then fail the check for this
 > lock:
 > 
->   RTNL: assertion failed at net/core/dev.c (1953)
-> 
-> Cc: stable@vger.kernel.org
-> Reported-by: syzbot+f8812454d9b3ac00d282@syzkaller.appspotmail.com
-> Fixes: c6a953cce8d0 ("batman-adv: Trigger events for auto adjusted MTU")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> [...]
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Here is the summary with links:
+  - [net] batman-adv: Hold rtnl lock during MTU update via netlink
+    https://git.kernel.org/netdev/net/c/987aae75fc10
 
-> ---
-> This problem was just identified by syzbot [1]. I hope it is ok to directly
-> send this patch to netdev instead of creating a single-patch PR from
-> the batadv/net branch. If you still prefer a PR then we can also prepare
-> it.
-> 
-> [1] https://lore.kernel.org/r/0000000000009bbb4b0603717cde@google.com
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-...
+
