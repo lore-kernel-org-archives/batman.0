@@ -1,101 +1,100 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC602C83F11
-	for <batman-adv@archiver.kernel.org>; Mon, 28 Aug 2023 02:36:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 900B8EE14A5
+	for <batman@archiver.kernel.org>; Wed,  6 Sep 2023 15:50:43 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2A76483349
-	for <batman-adv@archiver.kernel.org>; Mon, 28 Aug 2023 04:36:32 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B9DC48311B
+	for <batman@archiver.kernel.org>; Wed,  6 Sep 2023 17:50:41 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1693190192;
- b=2P5j+aoX6ngu3fn4huiSD/wASD7vTDVAY98CzmsJ2swMxCRj20btNpkwkGqvwi+aLLu0C
- T0YAEPRChT3X6+lL84vEnACbFl5LEhgWrm9qneuJ07C8xqeNPOgbiD7ag7oGNy7uRnAw0vG
- 6KJ6C5NaTfnKPN7XQrQ+3Xfaa7eO228=
+ t=1694015441;
+ b=bnuWRdGpMLap3AeL2FDCKc2DqX8T+Hx9rrSdXGoQlwSZXQgqNC/gI5NSAw9oBg8DIrW+Y
+ No5E3vgOSzseZlCcflPMnJhApHO7CqNTdOyVQb+yEEsCvkcKGcEXyZUteUJBOI1TiPkrJct
+ KZnlzUxkgx4yG0SVfRTp3jZW82ZXDPM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1693190192; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1694015441; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=FifDf28yvuZJQzcHb+JuLWl+M8PNz/FpcXOqYTZ6xOA=;
- b=EGCpc8CGVxrslhFnBiFqluEx3pgpPhgOTgRo5/Qcb6XSp6uCnOqA7GH55PUYP9I8b7Gs8
- KfcabIKRjXEXAuCAwTwvio4ebsH2ZBFAH1ZFwgTuMJYqSXbGim1vR58tugd+kYeiBapowya
- wcIQRv3ph4VR4CJlx2icccWx4EiFLII=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
+ list-archive; bh=EqoEz7n9W6QX2+v4CWr9+TFM+9Qbrg2rvQj8O/dSyMc=;
+ b=CeOj95jW/B2YQoOV8cttOQ56Fy6X4m2VJ9UUyE2RNYLvRA+X+5UPwXOLPUm0XYbMVL8XT
+ behGfNswXnKRBchelPzfehhLrTUpeuK8STFVCyEFxqiBgpWxeB2LoVL9PS5nkkkCjlkUbmI
+ +nWp5MC58fcSUqwmaCTjMPDVwrcrqM0=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kkk-web.de;
   arc=pass;
-  dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
- policy.dmarc=none
-Received: from mail-pg1-f207.google.com (mail-pg1-f207.google.com
- [209.85.215.207])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B195080EAA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 28 Aug 2023 04:35:52 +0200 (CEST)
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=kkk-web.de;
+ arc=pass; dmarc=none
+Received: from mailout03.agenturserver.de (mailout03.agenturserver.de
+ [153.92.196.166])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id C468F80216
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed,  6 Sep 2023 17:50:30 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1693190152;
+	s=20121; t=1694015435;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type;
-	bh=FifDf28yvuZJQzcHb+JuLWl+M8PNz/FpcXOqYTZ6xOA=;
-	b=CgIN/jhyCFrzuuqI7i/uBvXxzcr3K7jTVLJtv4laNHDR4HRz6Ah8Rh+psDw/w10Sm9ZoUJ
-	KcByv9IJh+7q1XindQWAYxXeTIuUjHnTD0sgMfElssmwSBflo4DVeHwD84yh0jm9j1OekZ
-	bwrJ9nj/so+D5ijAPnYVeAQ6Dc00FPs=
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 dkim-signature; bh=EqoEz7n9W6QX2+v4CWr9+TFM+9Qbrg2rvQj8O/dSyMc=;
+	b=F8DmQo5p8yZWWf9r5AnYhDce/WYlBOlWi8rJ33BaR6A8ewBlYTHirUpWuWe7hsTvmy7RN6
+	/PchDm9eoXq0UKo7qhnYrYLPuMaTwnOTZ2cjE90K9twaXDgNMwm1wu4pwW9LKuIU/1npGP
+	AZNOMTtPlvAz9pptDMTasmf5Ws1dAeM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of
- 3BgjsZAkbAPMntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
- designates 209.85.215.207 as permitted sender)
- smtp.mailfrom=3BgjsZAkbAPMntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com;
-	dmarc=fail reason="SPF not aligned (relaxed),
- No valid DKIM" header.from=appspotmail.com (policy=none)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1693190152; a=rsa-sha256;
+	dkim=pass header.d=kkk-web.de header.s=agenturserver header.b=DoYXuGSv;
+	spf=pass (diktynna.open-mesh.org: domain of mailing.m1@kkk-web.de designates
+ 153.92.196.166 as permitted sender) smtp.mailfrom=mailing.m1@kkk-web.de;
+	dmarc=none
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1694015435; a=rsa-sha256;
 	cv=none;
-	b=NOF8iheRO7oI8xp/zs7TpDF9hHcG3D5bFm9ZOovZeMsygLezvj5aacGb7IUzvWNeEQAmT7
-	R+q0dsc0x3ZbOcuYI/W0/ny2wNIDDURnPxppX2k2Kn8BEZxhqS9yBEBg5b7ZEFKweN5hkR
-	RGAVaMjZnFaMqmjS0hOfUZ72mUl7MMA=
-Received: by mail-pg1-f207.google.com with SMTP id
- 41be03b00d2f7-56fb25fdf06so1455506a12.1
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Sun, 27 Aug 2023 19:35:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1693190151; x=1693794951;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=FifDf28yvuZJQzcHb+JuLWl+M8PNz/FpcXOqYTZ6xOA=;
-        b=hGOsnF3J4Ii9VzOYtG4IMARMHkkKRDirlD9sjCAZ+aJtgQ4nfd5BcWxsG4Gtx5gfVM
-         5I1xxHQXg5u6Kc2URwHw9yeDTYgkWanY/rfpoLiXh9ti/kqFyPdHcu/pBSGFUHpD0w3r
-         tfkU6/sB9n3bFB/21UQYMJc8JJvNHcqdu+92IsF6XycORNRERbIKOOzH/kpJKWhKKFoe
-         dKipTa0l2v08DkjBqyC0+LJcYwWWv47wOtMVzkm3GFiI0nhu2+jDAqLq7cJ4Z7jTkYdx
-         X4xKXHzQjhFCePuVGjgsk0lKgk67T0lhmvBfTkhYHxdONKGdzUodOVwsnRvp/0BtmOfm
-         GvMg==
-X-Gm-Message-State: AOJu0YzCnlH6FL7Tm1GqsIUjMZfmOpUkT+1jy/yxKfBgRTgj1+ESLrwh
-	28IgmtdqIqaXK2c6quR2ArMz2Kh+9/6Rya5mYAlzajhEI862
-X-Google-Smtp-Source: 
- AGHT+IHnbP7U5FzNlZ6kHAL4cMXGliHk4ZBtFiDNRNVosdYIhIsFvl1za+QBfa/p11T90NI7yW3PXMyM8aXKQwlcepCd1ZgOzbWY
+	b=qR3Y1Cij8IRSxUy88ITXLO+Sq82Bsr1MjowMUHfEZiLq1OZHJ5l7kaJ2oZMIGp4O4AtCLk
+	wASBGk3zc28lRT6f+93XSTH/yTZhNAb0leMF7oMzIl7V9apyCVgabHVHFWiBqahIjh6Yl9
+	YyU/vajpC+fPtiM9avltdZVxJHboxrE=
+Received: from mail02.agenturserver.de (mail02.internal [192.168.51.35])
+	by mailout03.agenturserver.de (Postfix) with ESMTP id 50CD444A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed,  6 Sep 2023 17:50:30 +0200 (CEST)
+Received: from XXX.XXX.XXX.XXX (XXXXX.XX [XXX.XXX.XXX.XXX])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	(No client certificate requested)
+	(Authenticated sender: p381503p13)
+	by mail.agenturserver.de (Postfix) with ESMTPSA id 25065A084A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed,  6 Sep 2023 17:50:30 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kkk-web.de;
+ s=agenturserver;
+	t=1694015430;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type;
+	bh=EqoEz7n9W6QX2+v4CWr9+TFM+9Qbrg2rvQj8O/dSyMc=;
+	b=DoYXuGSv2IjOCQTK8bc+eAJRkg1vYr/dQ0WrEBICgccUZ7nraOAqLt3ndocZFs/EGY+Oki
+	nPrxOe6epmkMzVhri6VP9Bfl6WF08k8vSbDBbVSDlvjgtt+DTa2+IEGohXGxbdkvyE5AhF
+	ZGFjGucmRgAk+hwmOgn1apoUTydEhMw=
+Message-ID: <0cf2d2fa-4563-c662-1b7c-0052e399ff7f@kkk-web.de>
+Date: Wed, 6 Sep 2023 17:50:26 +0200
 MIME-Version: 1.0
-X-Received: by 2002:a63:6d0d:0:b0:565:d4f9:dc39 with SMTP id
- i13-20020a636d0d000000b00565d4f9dc39mr4218705pgc.9.1693190150989; Sun, 27 Aug
- 2023 19:35:50 -0700 (PDT)
-Date: Sun, 27 Aug 2023 19:35:50 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <0000000000007caf3b0603f28d71@google.com>
-Subject: [syzbot] [batman?] memory leak in skb_clone (2)
-From: syzbot <syzbot+92f9b5fba2df252a3569@syzkaller.appspotmail.com>
-To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net,
-	edumazet@google.com, kuba@kernel.org, linux-kernel@vger.kernel.org,
-	mareklindner@neomailbox.ch, netdev@vger.kernel.org, pabeni@redhat.com,
-	sven@narfation.org, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
-Message-ID-Hash: BKHLJLTEU2FUUVDRMKHMKCYI2UGMVX5S
-X-Message-ID-Hash: BKHLJLTEU2FUUVDRMKHMKCYI2UGMVX5S
-X-MailFrom: 
- 3BgjsZAkbAPMntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Content-Language: de-DE
+To: b.a.t.m.a.n@lists.open-mesh.org
+From: MK <mailing.m1@kkk-web.de>
+Subject: batman 2023.1 fails to compile with implicit func kstrtou64 on debian
+ 5.10.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Q6HsFAQqZJiIytZHPHIj1NDQ"
+X-purgate-original-type: clean
+X-purgate-type: clean
+X-purgate-Ad: Categorized by eleven eXpurgate (R) http://www.eleven.de
+X-purgate: This mail is considered clean (visit http://www.eleven.de for
+ further information)
+X-purgate: clean
+X-purgate-size: 2453
+X-purgate-ID: 155859::1694015430-168B949A-531680F8/0/0
+Message-ID-Hash: N5XDITGJ2W7EM5VAWLYNBRPRNYX4ZJIB
+X-Message-ID-Hash: N5XDITGJ2W7EM5VAWLYNBRPRNYX4ZJIB
+X-MailFrom: mailing.m1@kkk-web.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -107,7 +106,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BKHLJLTEU2FUUVDRMKHMKCYI2UGMVX5S/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/N5XDITGJ2W7EM5VAWLYNBRPRNYX4ZJIB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -116,115 +115,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hello,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Q6HsFAQqZJiIytZHPHIj1NDQ
+Content-Type: multipart/mixed; boundary="------------iseol4gjPbonbfAocj1OUsB8";
+ protected-headers="v1"
+From: MK <mailing.m1@kkk-web.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <0cf2d2fa-4563-c662-1b7c-0052e399ff7f@kkk-web.de>
+Subject: batman 2023.1 fails to compile with implicit func kstrtou64 on debian
+ 5.10.0
 
-syzbot found the following issue on:
+--------------iseol4gjPbonbfAocj1OUsB8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-HEAD commit:    a5e505a99ca7 Merge tag 'platform-drivers-x86-v6.5-5' of gi..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=15eea3e3a80000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=f3c65e06397a9d58
-dashboard link: https://syzkaller.appspot.com/bug?extid=92f9b5fba2df252a3569
-compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=13597f90680000
+SGkgbGlzdCENCg0KSSB0cmllZCB0byBjb21waWxlIGJhdG1hbi1hZHYtMjAyMy4xIGZvciBh
+IHN0YW5kYXJkIGRlYmlhbiBidWxsc2V5ZSANCmtlcm5lbCA1LjEwLjAtMjUgYnV0IGl0IGZh
+aWxzIHdpdGg6DQoNCmJhdG1hbi1hZHYvZ2F0ZXdheV9jb21tb24uYzo1NTo4OiBlcnJvcjog
+aW1wbGljaXQgZGVjbGFyYXRpb24gb2YgDQpmdW5jdGlvbiDigJhrc3RydG91NjTigJkgWy1X
+ZXJyb3I9aW1wbGljaXQtZnVuY3Rpb24tZGVjbGFyYXRpb25dDQogICAgNTUgfCAgcmV0ID0g
+a3N0cnRvdTY0KGJ1ZmYsIDEwLCAmbHRocm91Z2hwdXQpOw0KY2MxOiBzb21lIHdhcm5pbmdz
+IGJlaW5nIHRyZWF0ZWQgYXMgZXJyb3JzDQoNClRyaWVkIG1ha2UgQ0ZMQUdTPSItV25vLWVy
+cm9yPWltcGxpY2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uIiBidXQgdGhhdCANCmRvZXNuJ3Qg
+aGVscC4gU3VjY2Vzc2Z1bGx5IGNvbXBpbGVkIG9uIDUuMTUuMCAodWJ1bnR1IExUUykuDQoN
+CkFueSBpZGVhcyBvbiB0aGlzPw0KDQpNYXJ0aW4NCg0KDQoNCg0K
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/c534ce48946f/disk-a5e505a9.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/724bbdaa3992/vmlinux-a5e505a9.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/47fba0663891/bzImage-a5e505a9.xz
+--------------iseol4gjPbonbfAocj1OUsB8--
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+92f9b5fba2df252a3569@syzkaller.appspotmail.com
+--------------Q6HsFAQqZJiIytZHPHIj1NDQ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-2023/08/24 02:03:48 executed programs: 322
-2023/08/24 02:03:54 executed programs: 337
-BUG: memory leak
-unreferenced object 0xffff888120ea2600 (size 240):
-  comm "kworker/u4:5", pid 5210, jiffies 4295058872 (age 8.300s)
-  hex dump (first 32 bytes):
-    00 22 e3 20 81 88 ff ff 00 00 00 00 00 00 00 00  .". ............
-    00 80 ed 1c 81 88 ff ff 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff83e5e05a>] skb_clone+0xaa/0x190 net/core/skbuff.c:1860
-    [<ffffffff8499f31f>] batadv_iv_ogm_send_to_if net/batman-adv/bat_iv_ogm.c:387 [inline]
-    [<ffffffff8499f31f>] batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:420 [inline]
-    [<ffffffff8499f31f>] batadv_iv_send_outstanding_bat_ogm_packet+0x2ef/0x370 net/batman-adv/bat_iv_ogm.c:1700
-    [<ffffffff812b8d31>] process_one_work+0x2f1/0x640 kernel/workqueue.c:2600
-    [<ffffffff812b966c>] worker_thread+0x5c/0x5c0 kernel/workqueue.c:2751
-    [<ffffffff812c313b>] kthread+0x12b/0x170 kernel/kthread.c:389
-    [<ffffffff81140a5c>] ret_from_fork+0x2c/0x40 arch/x86/kernel/process.c:145
-    [<ffffffff81002be1>] ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304
+-----BEGIN PGP SIGNATURE-----
 
-BUG: memory leak
-unreferenced object 0xffff888120f36c00 (size 1024):
-  comm "kworker/u4:5", pid 5210, jiffies 4295058872 (age 8.300s)
-  hex dump (first 32 bytes):
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff81554a79>] __do_kmalloc_node mm/slab_common.c:984 [inline]
-    [<ffffffff81554a79>] __kmalloc_node_track_caller+0x49/0x140 mm/slab_common.c:1005
-    [<ffffffff83e54735>] kmalloc_reserve+0x95/0x180 net/core/skbuff.c:575
-    [<ffffffff83e5c6c8>] pskb_expand_head+0xd8/0x5f0 net/core/skbuff.c:2042
-    [<ffffffff849ccbef>] __skb_cow include/linux/skbuff.h:3571 [inline]
-    [<ffffffff849ccbef>] skb_cow_head include/linux/skbuff.h:3605 [inline]
-    [<ffffffff849ccbef>] batadv_skb_head_push+0x8f/0x110 net/batman-adv/soft-interface.c:72
-    [<ffffffff849ca643>] batadv_send_skb_packet+0x83/0x1c0 net/batman-adv/send.c:86
-    [<ffffffff8499f35a>] batadv_iv_ogm_send_to_if net/batman-adv/bat_iv_ogm.c:392 [inline]
-    [<ffffffff8499f35a>] batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:420 [inline]
-    [<ffffffff8499f35a>] batadv_iv_send_outstanding_bat_ogm_packet+0x32a/0x370 net/batman-adv/bat_iv_ogm.c:1700
-    [<ffffffff812b8d31>] process_one_work+0x2f1/0x640 kernel/workqueue.c:2600
-    [<ffffffff812b966c>] worker_thread+0x5c/0x5c0 kernel/workqueue.c:2751
-    [<ffffffff812c313b>] kthread+0x12b/0x170 kernel/kthread.c:389
-    [<ffffffff81140a5c>] ret_from_fork+0x2c/0x40 arch/x86/kernel/process.c:145
-    [<ffffffff81002be1>] ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304
+wsF5BAABCAAjFiEE9IPOuVyPsFfx2iJ9cNiJ0EN5ao8FAmT4n8IFAwAAAAAACgkQcNiJ0EN5ao+c
+vQ//WyxM5e8Ggr65UneXBvA84aUrQSrtn4t+INAqUIHbdXcPJwCaZyv2mZo5ej9KRHjW12VSh5GL
+rq4CGMvbVH2x5tOJdOGF0ReSBwBRmG22JINIEUGPPYXuljU5Nh5UYNLfP5VVsgGPnQ6Qh3ZYnQTr
+KPBRw3qW4WQtDcOjsmvUD1iGpV/fEVHE4Q7WOdz//GthsqFEu9s/d/x9VL0sk5LaZDaI21y+//gL
+0KFwSVbwKSyJTM7QauZvNPeRWY1VqlzP9y7RM+AwGzDGaU0j3dDUf88YaEGGews1w3S1Ols33nSE
+GFc2vZFncaF7L94hcR2MKptTkmQ5cSWSpBxTJK/wxHjmsKC7Z8icvTSr73hoviY6x83969nj6GEj
+cONEgESGrIKsNmUgVYOGKBMgQ24nIgGY/078Ezz1l1XTBO9Mbmc60bV+PZ8o7kqi2y9r522wnD0t
+RG6ibImkWbDfUQTSccoikOy/2sHl9ekQiK1LLD57v2oVVxvRL/0FuTgQh60rdSW2NnRFUvupr43s
+ILlH/xWK4Wvy1yqIojEqTmvEg5tJHBu4W9mlk8HTYHN8flCmPrf5GiS05OnMyV1OlFpe+J2EmHVM
+vVVgia4z8otRYu+AHnMV70hzdVHXvno0GqSWQSqCg0iYBlu+3fQO4F9gCr7UdgZqEa5TlLARu9sW
+/3s=
+=RNhg
+-----END PGP SIGNATURE-----
 
-BUG: memory leak
-unreferenced object 0xffff888120ea2000 (size 240):
-  comm "kworker/u4:5", pid 5210, jiffies 4295058872 (age 8.300s)
-  hex dump (first 32 bytes):
-    00 28 ea 20 81 88 ff ff 00 00 00 00 00 00 00 00  .(. ............
-    00 80 ec 1c 81 88 ff ff 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff83e5e05a>] skb_clone+0xaa/0x190 net/core/skbuff.c:1860
-    [<ffffffff83f88552>] netem_enqueue+0xc62/0x1430 net/sched/sch_netem.c:479
-    [<ffffffff83e80975>] dev_qdisc_enqueue+0x25/0xf0 net/core/dev.c:3732
-    [<ffffffff83e8b217>] __dev_xmit_skb net/core/dev.c:3821 [inline]
-    [<ffffffff83e8b217>] __dev_queue_xmit+0xdc7/0x17d0 net/core/dev.c:4169
-    [<ffffffff849ca710>] dev_queue_xmit include/linux/netdevice.h:3088 [inline]
-    [<ffffffff849ca710>] batadv_send_skb_packet+0x150/0x1c0 net/batman-adv/send.c:108
-    [<ffffffff8499f35a>] batadv_iv_ogm_send_to_if net/batman-adv/bat_iv_ogm.c:392 [inline]
-    [<ffffffff8499f35a>] batadv_iv_ogm_emit net/batman-adv/bat_iv_ogm.c:420 [inline]
-    [<ffffffff8499f35a>] batadv_iv_send_outstanding_bat_ogm_packet+0x32a/0x370 net/batman-adv/bat_iv_ogm.c:1700
-    [<ffffffff812b8d31>] process_one_work+0x2f1/0x640 kernel/workqueue.c:2600
-    [<ffffffff812b966c>] worker_thread+0x5c/0x5c0 kernel/workqueue.c:2751
-    [<ffffffff812c313b>] kthread+0x12b/0x170 kernel/kthread.c:389
-    [<ffffffff81140a5c>] ret_from_fork+0x2c/0x40 arch/x86/kernel/process.c:145
-    [<ffffffff81002be1>] ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304
-
-
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-
-If the bug is already fixed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
-
-If you want to overwrite bug's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the bug is a duplicate of another bug, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
+--------------Q6HsFAQqZJiIytZHPHIj1NDQ--
