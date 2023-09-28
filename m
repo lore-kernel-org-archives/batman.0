@@ -1,96 +1,89 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B4D6CE7A88
-	for <batman-adv@archiver.kernel.org>; Sun, 24 Sep 2023 10:48:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4A8BE732D8
+	for <batman@archiver.kernel.org>; Thu, 28 Sep 2023 13:51:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2855683424
-	for <batman-adv@archiver.kernel.org>; Sun, 24 Sep 2023 12:48:04 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E9CF08346C
+	for <batman@archiver.kernel.org>; Thu, 28 Sep 2023 15:51:05 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1695552484;
- b=nzT4KtCcnHMomhh7sHR8gb0dZDyqP+UrGGJAbCQJNO+Di+xtE6CoWjDUCmGktFA5wQYf0
- 6+DNJHkIfeGNbRWouqx7dFMA9ddIBct8+Cmdp0eO1BahtApoOdBW2lSsDrGdmBcBpOjPdnN
- hav1YB/CP8ozAJ7JS42aYJPzSWsH8Gg=
+ t=1695909065;
+ b=CQwLEBirBXvP2dJYqXkmopscv3FeccG3j0K2L0B1v3sR4PyuqxYyzVFGkId+ewaFvTpVF
+ O9ylapn8B+cjCQJqH6q9Mfm7clcpWIyApeZSzhzSM07iHPzyCdi5aqxlWpVo/xaGUG8sZ6I
+ lQYxG2XAejlHX5547sCY37t+8SS2U4g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1695552484; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1695909065; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=gizk12ouwe087JBHyZZ5ngnI8Z6KrN+ve/BJqlO87W8=;
- b=aR7Q/6Bl0CgTpWNwA41n9kQPC+mlvK74dwmq1/vOFIHpE8koFAL+ATQUrbNNfpXlJ+GoK
- pBF/IExDYPE+9baS81bsjrn9IuTdPQ3kPANO1hUY7peeIgNTXEKpm+ry/jIlYD6y12UzHu/
- K1Rf+ymi7WJnqaPrHzd+yh+2QVzsDPs=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=lASFs4zY0ymHcdby6OYbrSsD23GnpsgM/rWKz+9A7LQ=;
+ b=sy8NDXTxV3I1G1NT635SsKMheNxSuvhLnTAfk6dO8Xi4oITIL5P08oVE9zf1oEYe73SNB
+ na5WbYv2KSjDgaQFar5sVt1qZf/6+t6rcpn9fxgccwhn8Kt3FQo+ZYHAqwRySMuj5wJsdKu
+ HW/7GtvhHs4Ij7J3EI2mP79ODS/mmGE=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A6AF780EAA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 24 Sep 2023 12:47:44 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1695552464; a=rsa-sha256;
+  dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
+ dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+ policy.dmarc=quarantine
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
+ [217.70.183.197])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 865268015A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 28 Sep 2023 14:40:37 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1695904837; a=rsa-sha256;
 	cv=none;
-	b=bucOIdwAYg1kD22dL001+NNugary4u2a0yBU7TxdVdPrcE8kHE1QJtwbShxLSiR1ySs0ma
-	UCNzSGneie+Rl4OImPzqMosMfYpW6f+ySnPebqODcDee0rxXLrXbzTYsFI1yOwhpTpNXC3
-	ngO9/dIvyUczP5uJ/UFUOSAybn+p5ys=
+	b=E5cmC/qdiFAO9xQm+aQcQzckregP4DaAav9K2noAiWR2L4fWIwdCcVxlF/UPgu4Xb9PiLZ
+	1ODyTjc6icrqgeL9nNyyA6r1zRnR2DVHiOR6vXiUK6+qfcmS34mKC6k2XpjQpZqPAbvZoX
+	TmFjXQPTkfUItUlfKKVg+2VEw+62Pxs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=0CagPa9U;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of repk@triplefau.lt designates
+ 217.70.183.197 as permitted sender) smtp.mailfrom=repk@triplefau.lt
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1695552464;
+	s=20121; t=1695904837;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=gizk12ouwe087JBHyZZ5ngnI8Z6KrN+ve/BJqlO87W8=;
-	b=xspM2PovHlqo+2cQJOyqYjviPJkUJCSEOzy+4vkbT+6Ge2vn5AomId6EK78LbMEkYAgFpw
-	H4NXKSJHI/RZwq0OSNEF3gvND2DL8XBCCwPPwl15aWcr6c0kKpxHKoqQkE1f8g78xCqOdD
-	3ENZiWqMYpbRT3/gE2/yLaVJzGYy9SU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1695552464;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gizk12ouwe087JBHyZZ5ngnI8Z6KrN+ve/BJqlO87W8=;
-	b=0CagPa9UoGUrqejRCekJSWoGLfXOpL+DY3/ApyzR3H+KdOWYUmIdoHMUXc2asQUXlXo2Es
-	yLj+hwLIJuLoPPzTyDyn/MHso+/CbwzOJ8Gm9XHI35Df+T2+NOhXijI2/WkC6fwUy70kR/
-	Atvy0Pquj0qN4+QKL0/MwUplpRJeppc=
-From: Sven Eckelmann <sven@narfation.org>
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=lASFs4zY0ymHcdby6OYbrSsD23GnpsgM/rWKz+9A7LQ=;
+	b=mcsGyLb5JGu4wSfChO9eT5G2vXuBonZjDd4i5/cOxzCbmMDqYJeYhHjmOfLvahUn4cXQof
+	bAkEV2ublyOj6meIa7TD9ej0SHHHn7cDTyPPtnCUYUeCpZ3CYa2fC+2x90nEwPVcKGcGKT
+	bSX8TlpizNGEH+E6DITf4aYlZpoNi3Q=
+Received: by mail.gandi.net (Postfix) with ESMTPSA id D5EC81C0005;
+	Thu, 28 Sep 2023 12:40:36 +0000 (UTC)
+From: Remi Pommarel <repk@triplefau.lt>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: 
- Re: [PATCH v7 0/3] Implementation of a Stateless Multicast Packet Type
-Date: Sun, 24 Sep 2023 12:47:34 +0200
-Message-ID: <2193621.Icojqenx9y@sven-l14>
-In-Reply-To: <20230907010910.22427-1-linus.luessing@c0d3.blue>
-References: <20230907010910.22427-1-linus.luessing@c0d3.blue>
+Subject: [PATCH RFC 0/2] Better throughput estimation on half duplex
+ interfaces
+Date: Thu, 28 Sep 2023 14:39:34 +0200
+Message-Id: <cover.1695904299.git.repk@triplefau.lt>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart113064995.nniJfEyVGO";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: Q67AEORAZIRBIPHSGDIF7OSJVP3D3YBE
-X-Message-ID-Hash: Q67AEORAZIRBIPHSGDIF7OSJVP3D3YBE
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: repk@triplefau.lt
+X-MailFrom: repk@triplefau.lt
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-1
+Message-ID-Hash: FMBYOYOOUU7PTXUX2UVWJWCJQ4JORLK4
+X-Message-ID-Hash: FMBYOYOOUU7PTXUX2UVWJWCJQ4JORLK4
+X-Mailman-Approved-At: Thu, 28 Sep 2023 15:50:50 +0200
+CC: Remi Pommarel <repk@triplefau.lt>
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/Q67AEORAZIRBIPHSGDIF7OSJVP3D3YBE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FMBYOYOOUU7PTXUX2UVWJWCJQ4JORLK4/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -99,176 +92,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart113064995.nniJfEyVGO
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Date: Sun, 24 Sep 2023 12:47:34 +0200
-Message-ID: <2193621.Icojqenx9y@sven-l14>
-In-Reply-To: <20230907010910.22427-1-linus.luessing@c0d3.blue>
-References: <20230907010910.22427-1-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
+Currently BATMAN_V path throughput computation algorithm takes into account
+store & forward WiFi characteristics. When an originator forwards an OGM on the
+same interface it received it, the path throughput is divided by two.
 
-On Thursday, 7 September 2023 03:09:07 CEST Linus L=FCssing wrote:
-[...]
-> Changelog v7:
-> * PATCH 1/3:
->   * rebased to current main/master branch (resolved net/multicast/routing=
-=2Eh)
+Let's consider the topology below
 
-Are you trying to take over batman-adv and make it the *multicast* mesh=20
-protocol? :D
++-------+         +-------+         +-------+
+| Orig0 | <------ | Orig1 | <------ | Orig2 |
++-------+   T01   +-------+   T12   +-------+
 
->   * renamed batadv_mcast_forw_orig_to_neigh() to
->     batadv_orig_to_router() and moved it to originator.c, for
->     reuse in fragmentation.c
+Where Orig0's OGM is received on same WiFi (non full duplex) interface as the
+one used to forward it to Orig2. And where T01 is the estimated throughput
+for link between Orig0 and Orig1 and T12 is the one between Orig1 and Orig2.
+Let's note PT02 the B.A.T.M.A.N-Adv estimated throughput for the end-to-end
+path between Orig2 and Orig0.
 
-=46or this, you should also remove routing.h from fragmentation.c in patch =
-1.=20
-Same for multicast_forw.c
+In this case Orig0 broadcasts its own OGM initialized with
+BATADV_THROUGHPUT_MAX_VALUE. Orig1 receives it and compares it with the
+estimated link throughput T01. Thus Orig1 considers the path to reach Orig0 has
+an end-to-end throughput of T01, so far so good.
 
-I have already queued it up in linux-merge with these changes
+Then Orig1 first adapts the Orig0 OGM throughput to T01/2 then forwards it on
+same interface it received it. Orig2 receives it and first thing Orig2 does is
+checking if T12 is lower than the received OGM throughput (i.e. T01/2), and if
+that is the case T12 is considered to be the new end-to-end path throughput.
 
+The first issue I see here is that Orig2 does not know the path to reach Orig0
+has to get half duplex penalty because it is forwarded on same WiFi interface on
+Orig1, only Orig1 knows that. Thus if T12 is lower that T01/2, T12 will be
+chosen as the Orig2 to Orig0 path throughput (i.e PT02) and the half duplex
+penalty is lost.
 
-> * PATCH 3/3:
+The first patch of this series aims to fix that by adding a flag in OGM packets
+to inform Orig2 the path to reach Orig0 shares the same half duplex interface
+and that it has to apply the dividing by two penalty on its link throughput.
 
-@Simon, can you please also check the remaining code changes? To quickly=20
-identify modifications, you can use
+The other thing I think can be improved, is this dividing by 2 penalty. This
+penalty seems a bit off the expected estimation most of the time. The way I
+approach this half duplex penalty is by trying to compute the maximum number of
+bytes that can go from Orig0 to Orig2 passing through Orig1 in one second.
 
-    pipx install b4
-    # in you batman-adv repo
-    b4 diff -- 20230907010910.22427-2-linus.luessing@c0d3.blue
+And because of half duplex characteristic of WiFi you can't transfer bytes from
+Orig0 to Orig1 and Orig1 to Orig2 simultaneously. So at the end it comes down to
+finding the maximum number of bytes (x) that can go from Orig0 to Orig1 and then
+from Orig1 to reach Orig2 within one second as below:
 
->   * simplified batadv_mcast_forw_shrink_pack_dests():
->     moved parts to new sub function batadv_mcast_forw_shrink_fill(),
->     removed keeping track of filler over the whole function
->     (might be slower, as we might check+skip the same zero
->      MAC entry multiple times, for each slot, but a lot easier
->      to read - and we don't prioritize performance with this
->      patchset yet)
+x / T01 + x / T12 = TotalTripTime
 
+With x/T01 and x/T12 being the time x bytes takes to go from Orig0 to Orig1 and
+Orig1 to Orig2 respectfully.
 
-Independent of the outcome for this patchset, something like this would oft=
-en=20
-be implemented by starting the search on one side of an array and get the=20
-replacement from the other side of the array - and when start and end
-overlap then the algorithm stops. At least for me, it is easier to
-comprehend than some filler which needs to be pushed forward and is influen=
-ced=20
-by a variable which is (unexpectedly) modified inside a macro:
+So by solving the above for x with TotalTripTime being 1second:
+x = T01 * T12 / (T01 + T12)
 
-    #! /usr/bin/env python3
+Thus if T01 == T12 Orig1 takes the same time to receive bytes from Orig2 than to
+forward them to Orig1 then dividing by two makes sense.
 
-    from random import randint
+But if let says Orig1 forwards data to Orig0 twice as fast as it receives it
+from Orig2 (e.g. T12 = 3MB/s and T01 = 6MB/s), throughput can reach up to two
+third of T12 throughput (e.g. Orig2 sends 2 MB to Orig1 taking 2/3 of a second
+which is then forward to Orig0 taking the remaining 1/3 of a second reaching an
+overall throughput of 2MB/s).
 
+Reasoning by recurrence the following formula can be applied to find estimated
+path throughput for any half duplex chain between OrigX to OrigY through OrigZ:
 
-    # initialize test array
-    def random_array():
-        slots =3D []
-        for i in range(100):
-            slots.append(randint(0, 5))
+PTzx = PTyx * Tzy / (PTyx + Tzy)
 
-        return slots
+Where PTzx and PTyx are estimated throughput for end-to-end path between OrigZ
+and OrigX, and OrigY and OrigX respectively. And where Tzy is the estimated
+throughput for link between OrigZ and OrigY.
 
-
-    # searches from the end towards the empty slot for fillers (non-zero)
-    #
-    # returns a non-zero entry if return value > empty_slot
-    def find_filler(slots, empty_slot, end):
-        while end > empty_slot:
-            if slots[end] !=3D 0:
-                break
-
-            end -=3D 1
-
-        return end
+The second patch from this series moves from the divided by two forward penalty
+to the one above.
 
 
-    # searches from the front for empty entries and replaces them with
-    # non-empty entries from the end
-    #
-    # returns number of non-empty entries
-    def move_empty_to_end(slots):
-        non_empty =3D 0
-        start =3D 0
-        length =3D len(slots)
-        end =3D length - 1
+Remi Pommarel (2):
+  batman-adv: Keep half duplex penalty on OGM receiving side also
+  batman-adv: Better half duplex penalty estimation
 
-        # replace empty entries at the beginning with non-empty from end
-        while start < end:
-            # ignore non-empty entries at the start
-            if slots[start] !=3D 0:
-                start +=3D 1
-                non_empty +=3D 1
-                continue
+ include/uapi/linux/batadv_packet.h |  8 ++++++
+ net/batman-adv/bat_v_ogm.c         | 44 ++++++++++++++++++++++++++----
+ net/batman-adv/types.h             |  3 ++
+ 3 files changed, 49 insertions(+), 6 deletions(-)
 
-            # find replacement at end
-            new_end =3D find_filler(slots, start, end)
-            if new_end <=3D start:
-                # no replacement found
-                break
-
-            # move non-empty entry from end to start
-            slots[start] =3D slots[new_end]
-            end =3D new_end - 1
-            slots[new_end] =3D 0
-
-
-        # count remaining non-empty
-        for i in range(start, length):
-            if slots[i] =3D=3D 0:
-                break
-
-            non_empty +=3D 1
-
-        return non_empty
-       =20
-
-    slots =3D random_array()
-    count_non_empty =3D move_empty_to_end(slots)
-
-    # just to make sure that everything is empty
-    print(slots[count_non_empty:])
-
-    # memmove simulator :)
-    slots =3D slots[:count_non_empty]
-
-    # just to see the non-empty entries
-    print(slots)
-
-
-While the natural way would actually be to move non-empty entries to the en=
-d=20
-(and then only move the header), your implementation needs them at the star=
-t.=20
-So I did it similar in this PoC.
-
-Kind regards,
-	Sven
---nextPart113064995.nniJfEyVGO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmUQE8cACgkQXYcKB8Em
-e0ZBcxAAubkBY5SpWaAorbDA/iooStyoooiPip1ebznQxR8wmegWtbNYwbEti4by
-9upU0FsBR8SSNDsd1Lx/3uqBAcC73li1EDCFzq+DaBBL3E1UGCvK1XGm1OZ2sBrO
-LCn3cMzpHDlCNEyG5dfo2mBhqBqK92gll8UyeWrY6F8iD7Fi9bTMpsURZON3xJmK
-jfL/EMCeyHZvgT/yumxsaXIaLUPT/H88qDhopFrfiXxS0032JbV8ehpuA3g48FkF
-VhAU4LtyupLkxB0sI+omzs9LVBo/+qhkzpo1w+NewUf01EdfEz1Oc3XT0F748OCY
-pCGxGvGbU2pmj1qAxdhi6s6dpRG8jTtoIo490xKtWq2q9aO+8A4ywvda4sRjWJNm
-1CF7R/R0WCsyA7i42GQXXofy0unWtKDTCM3UrMpF1z0i37bsUQPnip147Z7vCTFp
-2Fln6SHTBFacmdfxAI/hjSCNlThP5K+vbKIrZIbyITqJj92Ky5IKqZEfRQnmielW
-Ob8FIsnGI5U7KQbPM5tk+MWFLoaw8ovq01wAWDkVTMEbFwDpcG5vNBtEMBT6ZwKp
-ZrE0mQ8E1fDHqB1ede3bzcpAL341ChGMmTVnOpAiFKjuTe4qW7iRBq5F+XP3Q1rD
-IQSLDdeHjGbpwzAoCze48xUUEXKOxHffbMs1poJyUjD/xJ+pY0U=
-=JWI6
------END PGP SIGNATURE-----
-
---nextPart113064995.nniJfEyVGO--
-
-
+-- 
+2.40.0
 
