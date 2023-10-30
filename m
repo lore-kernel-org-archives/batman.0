@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1FD4C4332F
-	for <batman@archiver.kernel.org>; Mon, 30 Oct 2023 14:59:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F11FC4332F
+	for <batman@archiver.kernel.org>; Mon, 30 Oct 2023 15:28:16 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C151280980
-	for <batman@archiver.kernel.org>; Mon, 30 Oct 2023 15:59:07 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4648B82ECC
+	for <batman@archiver.kernel.org>; Mon, 30 Oct 2023 16:28:14 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1698677947;
- b=xHgVoFY3CoXXdgDthotnKuoY34uUELoxR3qHCQ/JnAasoNNfzpPp3dpbplyZHKdYZugkY
- jzE2rvLJMm0rbsh3fE4BijeLk5qqtDdZlkKMFlL0mphk1g7CSDxTQZWATirPIMg9JwDAOhl
- KVDehyr2TRZIh4mBAwSso+J4hHNFIb4=
+ t=1698679694;
+ b=FrJIDbvYvR1tNcFGiWxKzKCVFq924rS2pY5VzZaJRRbPQcbDq8GR00JklWVLaxS6w5G2E
+ n5fjpdRXFrQqcPa0X3OPW15khd3QYtaNXWQtD2dn3tLNVjslMGTFElsoEV75PhgXULA6mYz
+ 7DUxNuMYLh9Kpbr789PE6A4+TJAUssQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1698677947; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1698679694; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=EhRLJhQU0qVDvcNeZwurq534dKNVbnrTsBa+TLytE9Q=;
- b=uAZU3IPRhNdH6ROAIQ50KMgFBxblEqG7WxerhN/+/btSkoMpf4yBF4gzXcNi14J/PG9U1
- C5DIWBPafGPpOTLHP9oRVocHywaoE4nh4njlsrbaz8AFqwG/dAu7AOy7+PrIg01huHUoIWF
- IiN22Rcw+MSxef2DUSRmwZJYlMZH/jA=
+ list-archive; bh=X7mlZOjbCntUhpYkXClNLB70GlWossq38yXxpwQz0Kc=;
+ b=BgaxSGCRjW4EBUpR8e2Fq+O2x+YWO6FIKwl82JkH1beOjMGyz8Bt7PNMdKO73TJL80KUB
+ WHkdioRjjxHVcKddntpbNYLGlYUNcmeoiRoRwPYOUAJZza+ie3QxCNct3+15/evumcl4bJu
+ uGRWOSJswDk/QhFEvJaPibwl780YwaI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -35,68 +35,68 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 103E580980
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 30 Oct 2023 15:59:02 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1698677943; a=rsa-sha256;
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id CD5F8802B8
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 30 Oct 2023 16:28:08 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1698679689; a=rsa-sha256;
 	cv=none;
-	b=pMfeKHVNWpsLRRlGKvuSnR/QoC4U3zKsArZUgjMtLJXk7FaTB++uRxfo2B85Ps3IwC/P+z
-	V7Mjvqd0W8h2fJy4h4DdjX2+rHwLFAvgnZi78OmEMu5POLOvCZaIXXMfoGEuM5OiBe0MLn
-	c9I0znb/IInevZwiWjWsAJMsmIPUL1E=
+	b=EH+OERk1su2gQ3x/8CZE0CN91/QrZmcpNoiJ4TRKKi4EfCJfgQ+Hj9wHZ6tPFXMbCcXP+/
+	4ju4BPi5Q6/05eh3dHgWAtPFfJNqz11ugFxIPlUOYWgaAo9t1c9rjZHX87NKfrwMCFpH3x
+	/blY1IdLWru8WdUIP564HhKwWj438Qk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="dYk/IUbT";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=s9XnzBmA;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1698677943;
+	s=20121; t=1698679689;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=EhRLJhQU0qVDvcNeZwurq534dKNVbnrTsBa+TLytE9Q=;
-	b=pLvUr3hr7/v5bUcRxDv8HStNmB5Eo1Uv9jH1CIfZ7xwtC2v53eu4wh1ym9K4nIy+MYSyij
-	Y5mi16fizx4CahtELvJMNLO4I0ziVA49SLncjQWCbz7pAMJqnnmHJRGlasV8Rb95Gc4s9K
-	Iwt+Q8vRG1ZwbDW4UUV4/+WZHwveWYw=
+	bh=X7mlZOjbCntUhpYkXClNLB70GlWossq38yXxpwQz0Kc=;
+	b=oLeQFN+vRKC8eaf7awqw8aJgfIxWwHAQ9L+UXZRvGE9d/CGUWMZb3J4KOUand8CQBF72vQ
+	v6Pg5hW7Y8O0l3MfvFRhMahTSL651QNYHWb29H1hbyF0kf0IYqGmWjb5/4Kp3CEfAQt7Oj
+	JSYIsVJEj6vqoVz/1qn/FD+pk3hQ0Uo=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1698677942;
+	s=20121; t=1698679688;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=EhRLJhQU0qVDvcNeZwurq534dKNVbnrTsBa+TLytE9Q=;
-	b=dYk/IUbTKB39pV2YeuTV0CUFDQ8EmIY6XZLh7z/SvR62XHB8VQwZiS4wLDPxlPWRAr72Rt
-	CH3DKquhu5/1HmifqCLPMVau4fKRyJHlAyzLdbzTEAmWUlpVd/x/0bACYKiOaPg9Wd8BN+
-	QRGSFYfuRFn+GUDU/iTDDFOeGlVT2y0=
+	bh=X7mlZOjbCntUhpYkXClNLB70GlWossq38yXxpwQz0Kc=;
+	b=s9XnzBmAIr2x44UcCl1MShYWrNdgPf7n/30lBtSPJaJVONlS53lwfvLSK6RIF1oUS62BqJ
+	RTtEOoHoiBwm2jJ8K/r8JL0yXRuhdh+0ugk0pHwXfSxoZlnhuoSrx//j4HC4eCP9Ga3KzN
+	YAmnB482eveokQi+cBzLct+D1B3/V3k=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 30 Oct 2023 15:58:35 +0100
-Subject: [PATCH] batman-adv: Switch to linux/sprintf.h
+Date: Mon, 30 Oct 2023 16:28:02 +0100
+Subject: [PATCH v2] batman-adv: Switch to linux/sprintf.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20231030-sprintf_header-v1-1-2730d63953de@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAJrEP2UC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI2NDA2MD3eKCosy8krT4jNTElNQiXRPzFDNTM2MzSxMzCyWgpoKi1LTMCrC
- B0bG1tQDITG9LYAAAAA==
+Message-Id: <20231030-sprintf_header-v2-1-a5b4041f55b4@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAILLP2UC/3WOywqDMBBFf0Vm3ZQ8NFZX/Y8iJTQTnU2USQgt4
+ r83dd/lOXAPd4eETJhgbHZgLJRojRX0pYHX4uKMgnxl0FIbJY0UaWOKOTwXdB5ZtL23nTV2aO0
+ N6mhjDPQ+g4+p8kIpr/w5+0X97N9UUUIJ3RvprRk64/EeHQeX66PryjNMx3F8Aal4heOwAAAA
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2879; i=sven@narfation.org;
- h=from:subject:message-id; bh=SZX7A4K1YbV1mF7j76E0TlUetR80iwDVKADQCcYd1Mk=;
- b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBlP8Sqh9wqd9qXnEFPN/byXkuXvhxz0BYjeiUOT
- d9dEGxV/nyJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZT/EqgAKCRBdhwoHwSZ7
- RiMoD/wMfXt//dWUEicMVJNvQIEd9wGmETE8AmrCBZJm1Yh5HK0Ram6qqvhuhLiQIhd4TJz1/Lj
- DCPl7FVUJB8T4E4dsdQOY8nXdVSbQ8aCnjffdn5PgDrHd/YQKqWx8Glsr41vB0qYI3S+jXLgmRu
- IyO+NyRWzlhaZxMii+PxAQPGIZUp7mLmcV4qJazx0vBdUZgZS4+8pxdJmlWgCdDdpDD5j+E+ySY
- qNsECAnjCPpVEBm0Kxqo9jC0SCcxZUFJAeoiTPL82f0GuhDGQyJcPlZBAMljipejuzjts3LwPWw
- u4HsaMNKROCb5J9e4HQnZpR9Rhgx98W6xRng5nVh4p0PpOc3bkiXhhaS/C1LIC2taHutjPxLo5R
- dfdEbOGGClsp5ZCYejK9og8xhAl8xnd1F0Aj4NSOQkWqQIC+dn+YjdHXcaMkpsLfsSdXvSLM6gp
- aozMTPqVtJ35KIkkyeqjzlgn0mPIyCMlNyP07uWTw5JeVjrapo6YNJD3pCinoumr+2ab3darFWh
- KnT0zKMsHR1yE6QbBlv3hDmqrfmk/6tt/ZF+skc1QuAbl8QO1TtQgmDo67rDgM5r+T8HjbWscd3
- k+cwkl+sP8PbkdYxqoeVSAUdB+M8ln8HiLtRZeIzwIyzN1rG8jzppx8kuQxzQq4XOvLwJz4KfgV
- dtCjj0AmO60FPNQ==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3874; i=sven@narfation.org;
+ h=from:subject:message-id; bh=i6e21iqYAadG67nVRfpEcJ5gNi8e/5IushVboRahhZY=;
+ b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBlP8uDXj64PwkZQjViawTBpCPjmt0JAvAQx3tK1
+ bHET/VA1i6JAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZT/LgwAKCRBdhwoHwSZ7
+ RqXUEAC/k6Ocy/YoN6gMB7Utmf4pdi7DpCWHKO5PTAUlefn9PNZ733NwiI8FXR0utf6deiVZMjJ
+ p8KCQF9Wu34hhbY4Fy0AqG4iCqxwVCZ0JQZYYxlWEGWBRwnpyRfUI0AQsz1f/noUSmfMRhSYl3/
+ rI5v5ikc3ZXvnQh5zJBVQb+xgOeOHEejUDS8vEItXCDqg/ipQQkSvNVzhHSQtxn8c5kiH4YVKxe
+ KG/lDLUXAhRogvqWACjKY5Z5vDs/XCpG6/8axXjHMWX13gVyTzoYI1sAmOhoLBJhoRdT4pXiXZu
+ XfmjhfiL2jqO5cmcyLGrupsL1M2K416RRtVstfiqqfxgy31aY4U8SIYTw43Yy9xB8PGY9tv9f0U
+ tPsRmd4rzk3WuWG8le2b9txW+xpFFrJkvImBfWIP2LJc9W4wAf3XgWdfCf0tbdymeb7nOCn/9ZN
+ cbD1WkClQytoR3eWtrsv/0dJYkXWgAG4GWhRQsETAfQdeOl5NGUP69yl+sas7MmxdGHNLrsW3zq
+ r6pzthf2jktTdPIeHNMMbaG55OrFlGzBTTHiUhZY/ii98Vhujj8r3TvnoeuJyO+bj/KjLZ0pKou
+ wLHd61dbJ0HMjNPfXLReQ+lCDU+bUra01lt22uTJL6xk5wmRnsyfyv09dlAF9Arl7nJQRVOA/QM
+ roeS1BQXq3jnnow==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: PWYGIB3HOAIYMLKZV2I4GLMHT7DHSSIF
-X-Message-ID-Hash: PWYGIB3HOAIYMLKZV2I4GLMHT7DHSSIF
+Message-ID-Hash: 3RW4LWGQQTMN2KZP2GCEAWTSAWKAONP7
+X-Message-ID-Hash: 3RW4LWGQQTMN2KZP2GCEAWTSAWKAONP7
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -110,7 +110,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PWYGIB3HOAIYMLKZV2I4GLMHT7DHSSIF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3RW4LWGQQTMN2KZP2GCEAWTSAWKAONP7/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -125,12 +125,43 @@ previously exposed via linux/kernel.h.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/gateway_client.c        | 2 +-
- net/batman-adv/main.c                  | 1 +
- net/batman-adv/multicast.c             | 2 +-
- 4 files changed, 4 insertions(+), 3 deletions(-)
+Changes in v2:
+- version for out-of-tree kernel with compat header
+- Link to v1: https://lore.kernel.org/r/20231030-sprintf_header-v1-1-2730d63953de@narfation.org
+---
+ compat-include/linux/sprintf.h         | 20 ++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.c |  2 +-
+ net/batman-adv/gateway_client.c        |  2 +-
+ net/batman-adv/main.c                  |  1 +
+ net/batman-adv/multicast.c             |  2 +-
+ 5 files changed, 24 insertions(+), 3 deletions(-)
 
+diff --git a/compat-include/linux/sprintf.h b/compat-include/linux/sprintf.h
+new file mode 100644
+index 00000000..d3823277
+--- /dev/null
++++ b/compat-include/linux/sprintf.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_SPRINTF_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_SPRINTF_H_
++
++#include <linux/version.h>
++#if LINUX_VERSION_IS_GEQ(6, 6, 0)
++#include_next <linux/sprintf.h>
++#else
++#include <linux/kernel.h>
++#endif
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_SPRINTF_H_ */
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
 index 37ce6cfb..5f46ca3d 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
