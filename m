@@ -4,86 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89D42C4706C
-	for <batman@archiver.kernel.org>; Tue, 16 Jan 2024 09:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA3FDC47422
+	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 05:22:35 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E3D4183DEE
-	for <batman@archiver.kernel.org>; Tue, 16 Jan 2024 10:48:13 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A8F6E81FC4
+	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 06:22:33 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1705398493;
- b=Psbf7KDjDGBTAmygw9DmId02ALm+5KlqcWuqBUchLtWXESYqSSTIxLhQbCoFBivhdEI5p
- f4p9IZXdxQDf/SeEnnyChvTjejXWwPSqF8lQk68Cvo0/LGTexQ+PQnXub4LgSNaTSBJ0jFR
- BzHmRzXsABOPTSUK3hpAG1FFOFRTsF4=
+ t=1705468953;
+ b=amPfNV6cdwc9PsSf/kEeSPO0eePYqA8OBW5MoZ43CuEmNhyofqf9rYQ/gI3iXVW8AmVZp
+ UTN0du2BO0dLqSrJS60UPwlqae9J7lYtvATeK3kweC+sfGIyeeHvYHBiK6FppUT6ITShox3
+ I0zXC5qCkJ+Qk2oI8fGsI8TVFFiZbAI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1705398493; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1705468953; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=/VCLSujzzlDwuQlHwmx12Nj9mX+R3Jv83uQp+uToPts=;
- b=2wXkBMEJJfP/KvbwTGgbXSDaNJD/kXjo47VsgEvp+OHKwYirg+w98RzHCTW7aZdQk0x5b
- PD3BF/ZxFYUlQvhHUJEgkLtILZZWLy1ieF3TqNXDkaANBkNxD92DXsnAEJXQXXlGGNvcKrv
- 8mlkGmK5pw56JmGX6yuQ6XNTxqfHxIo=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=bt6nCDQEYtubH19ySIEGkgYg6OFfwiamTbCvG0zzCu8=;
+ b=zcJG1+Wq6TaYyQwUO7DgGmMN3W/iQ78Ir1G04dj8jhD7l4YU561rOFJgIBM+sX1RB60yG
+ 96inPo2dQEtHj38HLa/VhOrqWkgyqkFnHNJgCsNZ/EUPb8J7Kuq7DHE9JNqJIurUIsdroKL
+ /eJnzKxmjMjwmfdGqhxWGejETfzyv0I=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 41A55810BA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 16 Jan 2024 10:48:07 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1705398487; a=rsa-sha256;
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de
+ [IPv6:2a01:4f8:c2c:665b::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id B885280C67
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 17 Jan 2024 06:22:24 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1705468945; a=rsa-sha256;
 	cv=none;
-	b=ihOUNO4M6IrA61d3hWoEptkgUAXptZTnoP3cOVq5XXUdZeUUXvSlkOhJim45KJgfTgy4qb
-	jSrGr+NtsIm4OO7mfv1Nviiz489ge5DxPH/XekWLqkOd2bq9hnCw0VNKzLecQmsxri9a97
-	UEEIp48Kz+UIFcglxfq+TP4KTGtmuX0=
+	b=t1d+kGoOZFAzQK+ork6qTeUYYzewK2BBlldAbe4bwsHHWwBO/tBIVHzI4I4AE0rtdaz30w
+	s1ObAcO0Wrg0z1IeGkoU7C5COwFdTZRGR9dbuVM3nTqzDC+HMVAOvOMsu6qIoBVi9aiJtA
+	+3l8Nj3SONg/cRAexADAOutzcYqXvDc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="E0X/tHWC";
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1705398487;
+	s=20121; t=1705468945;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=/VCLSujzzlDwuQlHwmx12Nj9mX+R3Jv83uQp+uToPts=;
-	b=BCRV74WObuYDKrQu27tEH4H/GhDcR43t4NIZd6S6pO2UJ3HqMBr8PxnlZQ5zfBFW20vJ8k
-	Wq3A2wAjG57hebxmMUySpfpHP4Nso51tizFRzoHB53ummUTdP7BEF6cLV8yaCQGdzzRn+l
-	VZRFiUEDO4YP9jHPdWElhbpOqCq6BMw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1705398486;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/VCLSujzzlDwuQlHwmx12Nj9mX+R3Jv83uQp+uToPts=;
-	b=E0X/tHWCKP+I7eyjg29dLJkauXq79JyGU0MK8In7XKzm4VDEmrdqTc7dxx6so8eYcL53gf
-	Nwhgz0OCj2RZ4EMqm4cBJVv+cwNETy7TDwSefwODFUXjgDw6u+HYRWMZ5BDqzU9veqE+FB
-	MnYtekoPtvzsXOZZa7VducunC5Fbg8s=
-From: Sven Eckelmann <sven@narfation.org>
-To: linus.luessing@c0d3.blue
-Cc: b.a.t.m.a.n@lists.open-mesh.org, clm@fb.com, davem@davemloft.net,
- dsterba@suse.com, edumazet@google.com, josef@toxicpanda.com, kuba@kernel.org,
- linux-btrfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org, pabeni@redhat.com,
- syzkaller-bugs@googlegroups.com,
- syzbot <syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com>
-Subject: Re: [syzbot] [btrfs?] memory leak in corrupted
-Date: Tue, 16 Jan 2024 10:48:03 +0100
-Message-ID: <23660052.EfDdHjke4D@ripper>
-In-Reply-To: <000000000000beadc4060f0cbc23@google.com>
-References: <000000000000beadc4060f0cbc23@google.com>
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=bt6nCDQEYtubH19ySIEGkgYg6OFfwiamTbCvG0zzCu8=;
+	b=I5T9vh1AEKB+AJOSF8so0czIFz1ewPLMz60B2vBrcAkOGDohYDQGIJk329TL1pnZ4tnIdO
+	qAJzg+0z1Zl51pJxWVMPJkkcGUO9SVwwJrvaTYir+O8g565yJ8OLJZlb3NPmWvEJmuiTrB
+	aP9W5YhdRO6LjVZ+et4O81KfQPHvV0E=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id AB44441066;
+	Wed, 17 Jan 2024 06:22:23 +0100 (CET)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>,
+	syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com
+Subject: [PATCH] batman-adv: mcast: fix memory leak on deleting a batman-adv
+ interface
+Date: Wed, 17 Jan 2024 06:22:20 +0100
+Message-ID: <20240117052221.25912-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9125406.EvYhyI6sBW";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: NQXUIV5KCH7C2XEVOO7BVYTPUEE7CP62
-X-Message-ID-Hash: NQXUIV5KCH7C2XEVOO7BVYTPUEE7CP62
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: SFNMYO3YKLSGIMYF6Y57JBRMNDU4GMFJ
+X-Message-ID-Hash: SFNMYO3YKLSGIMYF6Y57JBRMNDU4GMFJ
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -96,7 +85,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NQXUIV5KCH7C2XEVOO7BVYTPUEE7CP62/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SFNMYO3YKLSGIMYF6Y57JBRMNDU4GMFJ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -105,108 +94,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart9125406.EvYhyI6sBW
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: linus.luessing@c0d3.blue
-Subject: Re: [syzbot] [btrfs?] memory leak in corrupted
-Date: Tue, 16 Jan 2024 10:48:03 +0100
-Message-ID: <23660052.EfDdHjke4D@ripper>
-In-Reply-To: <000000000000beadc4060f0cbc23@google.com>
-References: <000000000000beadc4060f0cbc23@google.com>
-MIME-Version: 1.0
+The batman-adv multicast tracker TVLV handler is registered for the
+new batman-adv multicast packet type upon creating a batman-adv interface,
+but not unregistered again upon the interface's deletion, leading to a
+memory leak.
 
-@Linus, this looks like something for you.
+Fix this memory leak by calling the according TVLV handler unregister
+routine for the multicast tracker TVLV upon batman-adv interface
+deletion.
 
-On Tuesday, 16 January 2024 10:27:20 CET syzbot wrote:
-> syzbot found the following issue on:
-> 
-> HEAD commit:    052d534373b7 Merge tag 'exfat-for-6.8-rc1' of git://git.ke..
-> git tree:       upstream
-> console output: https://syzkaller.appspot.com/x/log.txt?x=14620debe80000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=a7031f9e71583b4a
-> dashboard link: https://syzkaller.appspot.com/bug?extid=ebe64cc5950868e77358
-> compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16a344c1e80000
-> 
-> Downloadable assets:
-> disk image: https://storage.googleapis.com/syzbot-assets/82a7201eef4c/disk-052d5343.raw.xz
-> vmlinux: https://storage.googleapis.com/syzbot-assets/ca12b4c31826/vmlinux-052d5343.xz
-> kernel image: https://storage.googleapis.com/syzbot-assets/3f07360ba5a8/bzImage-052d5343.xz
-> 
-> IMPORTANT: if you fix the issue, please add the following tag to the commit:
-> Reported-by: syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com
+Fixes: 8ed36122d709 ("batman-adv: mcast: implement multicast packet reception and forwarding")
+Reported-by: syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com
+Closes: https://lore.kernel.org/all/000000000000beadc4060f0cbc23@google.com/
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/multicast.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-The relevant line is the batadv_mcast_forw_tracker_tvlv_handler registration 
-in batadv_mcast_init() which was introduced in
-commit 07afe1ba288c ("batman-adv: mcast: implement multicast packet reception and forwarding")
-
-And I can't find the batadv_tvlv_handler_unregister for 
-BATADV_TVLV_MCAST_TRACKER in batadv_mcast_free()
-
-Kind regards,
-	Sven
-
-> 
-> BUG: memory leak
-> unreferenced object 0xffff88811c71a980 (size 64):
->   comm "syz-executor.7", pid 5063, jiffies 4294953937
->   hex dump (first 32 bytes):
->     00 00 00 00 00 00 00 00 20 8e 7e 1c 81 88 ff ff  ........ .~.....
->     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
->   backtrace (crc 9f8721dd):
->     [<ffffffff815f7d53>] kmemleak_alloc_recursive include/linux/kmemleak.h:42 [inline]
->     [<ffffffff815f7d53>] slab_post_alloc_hook mm/slub.c:3817 [inline]
->     [<ffffffff815f7d53>] slab_alloc_node mm/slub.c:3860 [inline]
->     [<ffffffff815f7d53>] kmalloc_trace+0x283/0x330 mm/slub.c:4007
->     [<ffffffff84aae617>] kmalloc include/linux/slab.h:590 [inline]
->     [<ffffffff84aae617>] kzalloc include/linux/slab.h:711 [inline]
->     [<ffffffff84aae617>] batadv_tvlv_handler_register+0xf7/0x2a0 net/batman-adv/tvlv.c:560
->     [<ffffffff84a8d09f>] batadv_mcast_init+0x4f/0xc0 net/batman-adv/multicast.c:1926
->     [<ffffffff84a895b9>] batadv_mesh_init+0x209/0x2f0 net/batman-adv/main.c:231
->     [<ffffffff84a9fa88>] batadv_softif_init_late+0x1f8/0x280 net/batman-adv/soft-interface.c:812
->     [<ffffffff83f48559>] register_netdevice+0x189/0xca0 net/core/dev.c:10188
->     [<ffffffff84a9f255>] batadv_softif_newlink+0x55/0x70 net/batman-adv/soft-interface.c:1088
->     [<ffffffff83f61dc0>] rtnl_newlink_create net/core/rtnetlink.c:3515 [inline]
->     [<ffffffff83f61dc0>] __rtnl_newlink+0xb10/0xec0 net/core/rtnetlink.c:3735
->     [<ffffffff83f621bc>] rtnl_newlink+0x4c/0x70 net/core/rtnetlink.c:3748
->     [<ffffffff83f5cd1f>] rtnetlink_rcv_msg+0x22f/0x5b0 net/core/rtnetlink.c:6615
->     [<ffffffff84093291>] netlink_rcv_skb+0x91/0x1d0 net/netlink/af_netlink.c:2543
->     [<ffffffff84092242>] netlink_unicast_kernel net/netlink/af_netlink.c:1341 [inline]
->     [<ffffffff84092242>] netlink_unicast+0x2c2/0x440 net/netlink/af_netlink.c:1367
->     [<ffffffff84092701>] netlink_sendmsg+0x341/0x690 net/netlink/af_netlink.c:1908
->     [<ffffffff83ef2912>] sock_sendmsg_nosec net/socket.c:730 [inline]
->     [<ffffffff83ef2912>] __sock_sendmsg+0x52/0xa0 net/socket.c:745
->     [<ffffffff83ef5af4>] __sys_sendto+0x164/0x1e0 net/socket.c:2191
->     [<ffffffff83ef5b98>] __do_sys_sendto net/socket.c:2203 [inline]
->     [<ffffffff83ef5b98>] __se_sys_sendto net/socket.c:2199 [inline]
->     [<ffffffff83ef5b98>] __x64_sys_sendto+0x28/0x30 net/socket.c:2199
-
-
---nextPart9125406.EvYhyI6sBW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmWmUNMACgkQXYcKB8Em
-e0ak3w//d9HRSZJiTWYrWkiOMLEoDd7oWa9shGcdm9qS+bmJ4RWkqyLQKWiLl6yz
-CcGxtbDBUXvVgMUHX9BuctKnigZ7VA+7wMY1ZLVE0KUPOlqkvlW9GvkOutwa2f1d
-hwFa2uPCSXqWbIaU6JjxNvHM0sEJou392MebhV5n9M9zJlS8/v5t7lwgKa3tnLL2
-vhyqSKKs7BESIvUhI399nPr2AfOhw+qqndV35B5gAJVeHC+iSWBycKolP/LstaJq
-Z7JE1eusP50i3vrSVIglwiefF7kUq1Y088F1nq2ommuVXFfPAxss5bwUupG7Jmtf
-gIYIslX/eLNpahJvVIKNTMPBjfcaeEbT8e87xIzhT1H4quv2oApKfWTM5u0XryDK
-29ICqroEH4DCv+gEYF4Miip40m982YtZlB1wnShFK3icFZaEGipgqxJ67/XJNkfP
-GXdNnzWlEl6PXsS388TYLkQlxWdFNsSM08IPZjolOEgIDhZaM3AUCDUe22BWiN5Z
-BdbeU3sWmiy3BaZ2fUh6M0Cawd1Oz4QneJl3rPce1jeDI4ee9CtTdgWd1/ziG8yH
-0QhMTljzGz5WEaPBT9L7PsKf33/s/IY1GwXzB/maObFi10G6nn+743btOlCodOb3
-i4lTc8Z3Vl+4CCl78CUfQemr/nd8irtzCJk/OJuUlOSmepgs+J4=
-=A35g
------END PGP SIGNATURE-----
-
---nextPart9125406.EvYhyI6sBW--
-
-
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index c8620905c2dc..38fab5e46ae2 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -2183,6 +2183,7 @@ void batadv_mcast_free(struct batadv_priv *bat_priv)
+ 	cancel_delayed_work_sync(&bat_priv->mcast.work);
+ 
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
++	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST_TRACKER, 1);
+ 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
+ 
+ 	/* safely calling outside of worker, as worker was canceled above */
+-- 
+2.43.0
 
