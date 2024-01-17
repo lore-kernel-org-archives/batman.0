@@ -4,83 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71C22C47258
-	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 09:31:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5D2CC47422
+	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 10:00:14 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B6393818CE
-	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 10:31:04 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2D02583E15
+	for <batman@archiver.kernel.org>; Wed, 17 Jan 2024 11:00:13 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1705483864;
- b=mnwK92n768FCl5ZKvu7UQxPbwqs5jPmWY1D92TFlTCXmeX4BdgNqrNgVpD3MFUwjrYXIJ
- 4VRFfPWuExN3CE/djoSt1+WSTgbWQlryH8H391GiTW8u2gN+qQLPwcQxNpA4D5ZzjPnl0Up
- DrEVBqHXo0/5xhmlCAv0xZBwNdMd8KM=
+ t=1705485613;
+ b=YkQaZZE33VwGcRRStyqVy/cUZqE1NJsg5B0ikmVDdazA5ZAAhDsYAvsBgA2sEkw/sAX/Z
+ UOY1YBf+B9kREejzGZB00XESUNpK0g0clns2fpSOqmqF2igDUsObve0+jDLqg+hwRwrJGUO
+ HtYYDi4TWSRpf1F3mctc+kLg1oEQTIk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1705483864; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1705485613; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Tk4LN5O9pnCWEgZ+hxmp9V07AVwi66XGTPjDMnz4TZI=;
- b=fQqQyVdUH7ta5iWAvCueQDeFSt9eP3iyvjJzq18GSkvc+/s+LV/Uk9V+X4JiadB3w0XXy
- +V107T4+PekrImdUjYhEFcTZe4qAzlZFEmq02pwwBt+dwxkqqtuSJ7sC8tInFYquLgrRpER
- UADIdVH63dDWdJ/V3r2HWT9GiI01s7E=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=yEWYXMygqwjqpXLX4r5FFUWm4Vr0B8II2TW/fN+KFgA=;
+ b=X5IqSKL40yY1tCdVds6TAHkuxxn4MkRws+7gqUbEmaInVUC7ld1dL8z5W202wZN56teMy
+ new3e3SpCiuDmNr5ilDbFYEMzRx2SJUrS+PgfDsAYg0yDMFZZ/XIxrvAPF2a6MNc9nrQkPi
+ ryQHjI+6tYHLSv9uK1RNc01vctECpig=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
+  dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
  policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 1829380138
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 17 Jan 2024 10:30:58 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1705483858; a=rsa-sha256;
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
+ dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
+ policy.dmarc=none
+Received: from mail-il1-f200.google.com (mail-il1-f200.google.com
+ [209.85.166.200])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 520F28043B
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 17 Jan 2024 11:00:07 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1705485607; a=rsa-sha256;
 	cv=none;
-	b=kg+NspxtGpAm8M2zxOMqqZzmKc1jHRlx0SZXnFzoomqg2nwDdZyFWmvGpVXH5E1amwkwIr
-	CVaTru/IGSMMk/70z1pcsr+JCl787VPIV+fhhdOyFvoHI5rmPsW8dnyN2SvXML4Kd3XGcP
-	LrLtXqdi4nykrs1ZVj6x9yFTp2vrIjQ=
+	b=mvbOqQJTIWZIvgv3/3zL5ZAF44pnVkMxmD6SsnW2Ty331Bzfm8uw2Ytx62v7IVrB+b1lgY
+	olP4K4bp3eYi+cYYFN2qxhMI09oNFE8aa6ms0V1OTKozbLrgTGekcfMFdZdEC3ApN1yzHz
+	oHmbPvbQ5PPJUjXQs0NbifLHN4b9BAY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=p5xUY96l;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+	dkim=none;
+	dmarc=fail reason="SPF not aligned (relaxed),
+ No valid DKIM" header.from=appspotmail.com (policy=none);
+	spf=pass (diktynna.open-mesh.org: domain of
+ 3JqWnZQkbAEMx34pfqqjwfuuni.lttlqjzxjwhtsyjsy.htr@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+ designates 209.85.166.200 as permitted sender)
+ smtp.mailfrom=3JqWnZQkbAEMx34pfqqjwfuuni.lttlqjzxjwhtsyjsy.htr@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1705483858;
+	s=20121; t=1705485607;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Tk4LN5O9pnCWEgZ+hxmp9V07AVwi66XGTPjDMnz4TZI=;
-	b=a5+Y3+TGifbhsUCfWeb9CCK7xKCKi8rWwzb3YShbAkIBHEjC/Mwh+lX5XB0J37W1jxEfQg
-	6S+oQUvBBOkSXnfFMK2BFKzgbubtIkYVuTHrSaTXKUo60Am2csKTPyq/3ILDFq3cO0bePy
-	Lhs0EzS74SjNj468QyF+nyCLJi0AjLI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1705483857;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Tk4LN5O9pnCWEgZ+hxmp9V07AVwi66XGTPjDMnz4TZI=;
-	b=p5xUY96lfFeFeJhxsbwHcRYD+mU0iiTWWayJr9+pflXvgduJMa0MUabV9ucUhctV0tnxyb
-	G/J88rnnDt+mJy6D4JcoB1fCb1Ylw/QqdCO+vd5NSlCRYzk6QrTGdqYMCc/pW4ORw7+Zn5
-	ypeyCcmwW36MTBpTR3Zu5AIR5LTx3To=
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, syzkaller-bugs@googlegroups.com,
- syzbot <syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com>
-Subject: Re: [syzbot] [btrfs?] memory leak in corrupted
-Date: Wed, 17 Jan 2024 10:30:55 +0100
-Message-ID: <5746181.DvuYhMxLoT@ripper>
-In-Reply-To: <000000000000beadc4060f0cbc23@google.com>
-References: <000000000000beadc4060f0cbc23@google.com>
+	 in-reply-to:in-reply-to; bh=yEWYXMygqwjqpXLX4r5FFUWm4Vr0B8II2TW/fN+KFgA=;
+	b=ysjwJ2ulYiABWxf2mobK6GOQl9N6oeUFRcaSoFB3VRnO39eYW3vIz2GtYJgbPLX5S6TPno
+	a9Tgu8OhVX4+m3tHO/FFtLFbQ2o56qU7KI0ECe/8h9skAn3WIP4hR+e2NTsrmK475CRnMS
+	btLQw3IqyhTzbJ9Su/y/qzvBY8l98bY=
+Received: by mail-il1-f200.google.com with SMTP id
+ e9e14a558f8ab-35fffb6fe5bso106899055ab.2
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Wed, 17 Jan 2024 02:00:07 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1705485606; x=1706090406;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=yEWYXMygqwjqpXLX4r5FFUWm4Vr0B8II2TW/fN+KFgA=;
+        b=leZxS1XyEgcNSdFFL/3se0QLE5iWSHxzQjCI0I0O/a+jDR3uL3kuPfv2Hjzmgz8KcW
+         vHCPzDDlUudpIIh23r81gx/QRLj0O23BtDpv1/6Rjqh+xJbXBB3GFO3TemKppw2oiDxS
+         RB8C4ehl7rw4DWQI/g1GlTw6qX9bkedsgAr0q042q1PfsMYRnIsS4QQDfrh14lIc67CL
+         inkhOFZ/WzHjReYtKSsQ9WPoe8t7Vtz9GR1gw2Pmit95S7O9CKgnKvxujThNUxia0dBg
+         NJcIZSARSV5FbnuT0ELHiq372l+yPgn2Pw6DdsolQDrIM5RNAITNXblXPpBZh5SCxmZ0
+         ra2Q==
+X-Gm-Message-State: AOJu0YxRUUnkcE6pPFBDkklHXC2gJooCPGijmoBhzpLX1u6g69sceAvm
+	aI8u4xWzOelVIsWn6XX278k6pIwfbtXX7wnrELLylWQDZpOxsUA=
+X-Google-Smtp-Source: 
+ AGHT+IFxzxlQiBQcX55AFmPxoteq4urJfMDjyvSOi68dybWh2/wMstcQoWDRkMhtdU1DXGkmkpRcVxbUE2YlVxE0/SEPmN1ghQFF
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6009036.lOV4Wx5bFT";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: EI2G4MN7GT2NWBYPHAS7KLXTAVJCN6WE
-X-Message-ID-Hash: EI2G4MN7GT2NWBYPHAS7KLXTAVJCN6WE
-X-MailFrom: sven@narfation.org
+X-Received: by 2002:a05:6e02:180d:b0:35f:9ada:73a8 with SMTP id
+ a13-20020a056e02180d00b0035f9ada73a8mr1265663ilv.2.1705485606163; Wed, 17 Jan
+ 2024 02:00:06 -0800 (PST)
+Date: Wed, 17 Jan 2024 02:00:06 -0800
+In-Reply-To: <5746181.DvuYhMxLoT@ripper>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <000000000000b9996f060f214f9f@google.com>
+Subject: Re: [syzbot] [btrfs?] memory leak in corrupted
+From: syzbot <syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com>
+To: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org, sven@narfation.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
+Message-ID-Hash: OTUBGKYA5KIAE2RTBAGUABDDD5CAKED3
+X-Message-ID-Hash: OTUBGKYA5KIAE2RTBAGUABDDD5CAKED3
+X-MailFrom: 
+ 3JqWnZQkbAEMx34pfqqjwfuuni.lttlqjzxjwhtsyjsy.htr@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -93,7 +107,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EI2G4MN7GT2NWBYPHAS7KLXTAVJCN6WE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OTUBGKYA5KIAE2RTBAGUABDDD5CAKED3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -102,66 +116,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart6009036.lOV4Wx5bFT
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [syzbot] [btrfs?] memory leak in corrupted
-Date: Wed, 17 Jan 2024 10:30:55 +0100
-Message-ID: <5746181.DvuYhMxLoT@ripper>
-In-Reply-To: <000000000000beadc4060f0cbc23@google.com>
-References: <000000000000beadc4060f0cbc23@google.com>
-MIME-Version: 1.0
+Hello,
 
-On Tuesday, 16 January 2024 10:27:20 CET syzbot wrote:
-> Hello,
-> 
-> syzbot found the following issue on:
-> 
-> HEAD commit:    052d534373b7 Merge tag 'exfat-for-6.8-rc1' of git://git.ke..
-> git tree:       upstream
-> console output: https://syzkaller.appspot.com/x/log.txt?x=14620debe80000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=a7031f9e71583b4a
-> dashboard link: https://syzkaller.appspot.com/bug?extid=ebe64cc5950868e77358
-> compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16a344c1e80000
-> 
-> Downloadable assets:
-> disk image: https://storage.googleapis.com/syzbot-assets/82a7201eef4c/disk-052d5343.raw.xz
-> vmlinux: https://storage.googleapis.com/syzbot-assets/ca12b4c31826/vmlinux-052d5343.xz
-> kernel image: https://storage.googleapis.com/syzbot-assets/3f07360ba5a8/bzImage-052d5343.xz
-> 
-> IMPORTANT: if you fix the issue, please add the following tag to the commit:
-> Reported-by: syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com
+syzbot has tested the proposed patch and the reproducer did not trigger any issue:
 
+Reported-and-tested-by: syzbot+ebe64cc5950868e77358@syzkaller.appspotmail.com
 
-#syz test git://git.open-mesh.org/linux-merge.git a67d6793286ffab46b72b1afff5fb1f0ca55f2e1
+Tested on:
 
-Kind regards,
-	Sven
---nextPart6009036.lOV4Wx5bFT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+commit:         a67d6793 batman-adv: mcast: fix memory leak on deletin..
+git tree:       git://git.open-mesh.org/linux-merge.git
+console output: https://syzkaller.appspot.com/x/log.txt?x=100a3dcde80000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=87c229fb8ad5e9a0
+dashboard link: https://syzkaller.appspot.com/bug?extid=ebe64cc5950868e77358
+compiler:       gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmWnnk8ACgkQXYcKB8Em
-e0bcbBAAr5gtssx/V1po0W1ajwPIxK80mbSHo+Ch0/ZBvbJGsOcFGc83+vFBoEj8
-2UE42Cqv/1PUM73gCOeyOItIBJ4Nr0FW7YmddfWORjvNpnG8s5v0Q5DAOpkTjGBq
-RewEg1uWVerXh9RS5k/V6W0ZRDnnZnqT6EqOm/zd04XRnihgTME1xF6zPwctkIrM
-2cudZhgkGDWKYI5GSPR5/hfkxXB/DK9tpS3LtJ73bSb+QJyd5WR/WPcPTY3+hpU+
-IW+cwtCYCxR0GzCAtBvFQDQ+XeKu78A26QbWTXCJ4tQn1KwRKh+VZIHS5oyAEKgc
-tdA6fmQioEpm4NZkpsRl1x09iR4xYeSn5oMR56XNrsxWhg7IhXL+HnHxMKP6oGOS
-GlG54yTgfIvUz3jzlJqTRP8s/OhDnYdhacRSSOFZ53lRlNIlL8SNROPiie5gLqKW
-gjkZagplFhLNf139twREGp5h8HE3VNuPb/2TFYClcSj/HTbVOKbyKD37JWuqlCi0
-eVO269tCpIYdUOwA/4kAwnQMeAXu1/rIO8GkCfgbYok94wuGqbNzslHUUC7JrEf+
-DkIeLCtnuvdo1AHt65r75hF+lQ7TSd4r4HD2j/Z2ssVvCVBiFJkCvvExh0Nz4FHr
-3kq4Q1cnTb+4evLeqpWyjvSKwp1+wmgrgwbYP/5B81aT0d3KMeE=
-=UkN8
------END PGP SIGNATURE-----
-
---nextPart6009036.lOV4Wx5bFT--
-
-
-
+Note: no patches were applied.
+Note: testing is done by a robot and is best-effort only.
