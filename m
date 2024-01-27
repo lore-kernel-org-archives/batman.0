@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AAD2C46CD2
-	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 12:50:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEB0FC46CD2
+	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 12:51:05 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C8DFD83E50
-	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 13:50:24 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5D02A83F26
+	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 13:51:04 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1706359824;
- b=DED44VrJH1Hd5yIC44bffA+4mwkIkyVVWicgeJpy+t35JJox/M0Yfed8LC7Cq/2LP2dXo
- H3P81U8xTOJf+VuAtzp6yV8asdYlGF2JLsMqv4sxTeUtCkNc4qIHJOL4gFPElnThHmXVvr0
- dUnr0Hnez/io7yO48r6fXNZ2DAnX6cU=
+ t=1706359864;
+ b=GOdU+lPmtDXYnfx2b8lG6oBzIgUN7Y2ECVOqV9PVcD+b5fEu5NJXjFSs/hx7ZPZDmBzJ9
+ RWrFdSo6lzB8W68gu5wsJ8KWMHLx+ddr9wsBCENQklL+fPT0kubQYAGqYyPB9zTE6yt2yBG
+ OS/K7kn2WO1w+T5opRskzJDqx2uXY9k=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1706359824; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1706359864; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=wSzVySyj5MVrQa+9NIfLshrjnwM1U+vSVnOLsdIn64k=;
- b=bLL2oqBEhl8bAGOQSjzLHpa2d12wnW2DQ5vtqCKWN0P177JUsxeS0b09KJ5sdIZkchKpH
- oCu+m49zJQaRrHCm+pT375lz0qmBiNkvrwIpf4Hl8CGvNykKL4+N9zoONEViic4s6LbXVi2
- ziHHLsYviA+j/cnbrKezZCcs1eQU0BQ=
+ list-archive; bh=VEKUmSptcAFbw63kMDxylosb6Nfy3BC46rmfCgFDenI=;
+ b=lRB8ihy99wU4tgQJJASlP0GPhj1YCFbWTKnehZ5T0dY4OeUv2xpahosxlIrGjK539t71p
+ mHPuadgcNG5myVT79W7w5SVHNKV2ahCu2uSGqQ7kIBeXPeLioK6aCUAWri2KoY/e/s3hQ4v
+ c6rpzKFVimemgrDcy+Jpn2+MbOl0hug=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -34,7 +34,7 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3135B83E50
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9493E83E50
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 27 Jan 2024 13:49:40 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1706359780;
@@ -42,62 +42,62 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=wSzVySyj5MVrQa+9NIfLshrjnwM1U+vSVnOLsdIn64k=;
-	b=2jeczrjsl+Lqm8aVyvbtOwYEHbpXc7+n7iBlqfkMEFVA4sZjnMci1dHMubRBD5hfQdJilz
-	TJ9HXHkHkuABb0Yz5CfRdlDk6/5yqi3lwxblKZEPq6aAxKmcP6YE7EHn3AumGdO+8bwDh0
-	dX2R0YStFPzBqgeQ9oZsiIJpE8viyS8=
+	bh=VEKUmSptcAFbw63kMDxylosb6Nfy3BC46rmfCgFDenI=;
+	b=jtU8Yj7lzNK/cz8YNzsNcMs/eVPP8cDFdebAdrkYqC5lGAvAXrQfz5XiqGy9CHrrSReOVI
+	hXLINVEYOr9CxkwUiicSkkdIsIJd43eH3ksqgTNp6YDNP3u0QMidYjJALpd35EIV/7UIxb
+	ylRV+XxlRjZrO74nj8f8C1ik9zIzERo=
 ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706359780; a=rsa-sha256;
 	cv=none;
-	b=AHHNHd/h3l6rMYgmqfuVOmyhWCDtowlYa9sQkM1vGn9DuH/sS3/OXy5Tb0VVmAe3+Bv8Rr
-	MhLtlCO286pzqKSifK2cMj2Hfan8l6hp8wIJIr4USGwb3ZfMC2hAv81QjnREyycA3d6zQm
-	B7ZhS3En7p0MLyaUonZYVQR1iIenzf8=
+	b=X8eEeHW3HQyyoV76fcz1285toUSL2xFUr1viAIMtjb0FEY99fSNK7rzZgpzu8J/33WYOjB
+	8fmUiD/gqpTtKwwB1PyuJ7hv8h9H0x4+A5C6JWFSUB3AaX3vbRqt6lvHBJ8+p1rle79yBj
+	c00M54ryrDH6k3mBDWDL6iQXHpbiPVY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="0NfnSFR/";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=kTh+VrRC;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1706359779;
+	s=20121; t=1706359780;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=wSzVySyj5MVrQa+9NIfLshrjnwM1U+vSVnOLsdIn64k=;
-	b=0NfnSFR/X3nVLYIm8F8EDm/0EScvt0mHdYjR30SRtfieSX2grNMe69hAjeAMv+fVTa5NSN
-	ja/ScoMR4tvm/n8/qPFsRu7EwzzKZ+DsCqdgZrHCujkrabZ0i+HST2zSOkRzdNm6EbZg/w
-	HN3q6vEOopq2rhujQsndHFa45GpEMCE=
+	bh=VEKUmSptcAFbw63kMDxylosb6Nfy3BC46rmfCgFDenI=;
+	b=kTh+VrRCyxtwLvZ11Tl+vGObNtsHMFsSM9072vWX/GmsnPI/weqa9P8Kx5H7tWNv7ZaB9/
+	kCeNEbgS9Gq/S/2kpCS8X1gUfRf/B7XJmXwz+WhW5d+99cspTBROLxTJZaEnxJpDGe2iiJ
+	VqkhdlwJLjWP0pYEBsFPqRHvvKZcDTA=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 27 Jan 2024 13:48:59 +0100
-Subject: [PATCH 1/6] batctl: tcpdump: Fix missing sanity check for
- batman-adv header
+Date: Sat, 27 Jan 2024 13:49:00 +0100
+Subject: [PATCH 2/6] batctl: tcpdump: Add missing throughput header length
+ check
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240127-tcpdump_fuzzing-v1-1-fbc1e1d3fec1@narfation.org>
+Message-Id: <20240127-tcpdump_fuzzing-v1-2-fbc1e1d3fec1@narfation.org>
 References: <20240127-tcpdump_fuzzing-v1-0-fbc1e1d3fec1@narfation.org>
 In-Reply-To: <20240127-tcpdump_fuzzing-v1-0-fbc1e1d3fec1@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1080; i=sven@narfation.org;
- h=from:subject:message-id; bh=tm0dZarkFxcq5htLQkTqldU8iV5feDLHFN35pR4XHYI=;
- b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBltPvg0Bx/jGJwk+Ho4iDqJC/7RABs6ZH9em6ce
- eq5OwUkwriJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZbT74AAKCRBdhwoHwSZ7
- RtqED/oDhyhBJjOV8536EyCrYQTuhwQ8AQq6ctC0BmcMOehYbF0SDtvX5nHJqTkdPNMghctjcm2
- 8N//5jTR0VeX9zXuNYFiBMHcZBNtVnxsBupR9fTzK5xSWYO9BGmcNRpeRPbF6EDQEZKhq7hH1zl
- A77xRs+IfOEMthnFYUIDcSyZcV0RMZ0C0TXyoHWYBTIua4y1hEdCIQACwVyPfGbtztZIbYncKtg
- o/faNKV+aBKNNWQkHqh7rFSMAepGvke7dPR9igvBEq/hG/UvNJnhfc5GDFKrvZgtMs4yXp/wZjv
- U/63o7RbmhiwSBE9hJGD8IFWf431ClUlBaDnTy3lgAMVABoZl6p99Q8x+iZN/Ed52avjVQR2vVF
- mdPqT4hwbnABukkuGEU4eDdMow2/sO4mnPA9FlHJIw//Tk8Em1QTQH1/oftU065Homrgmxv6cK0
- Rchf4AGWOoCzC0apC+X8NLLwfhesUVlOfu0jGoJs03nA7o2YAGIvlP+w/7Z3SJJFHi2BNKyhs1E
- 9nzQIOPSglgXsUDeeoX1GR4u5n85Y3QIqpVNK0RRk7cY3BqrMlCpZfAPmv6NSvLJlFRuwlKFYef
- yAQO+md17SVbzSpYegVOGGZIUu2crP8/AYS6CZTYdfsXnIF43udd3PT9oLE4RdelEAnIo2Ki2tO
- GSCmfLPqdKCMq+g==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1529; i=sven@narfation.org;
+ h=from:subject:message-id; bh=7wrGpjc1T1ftj6xlo9ovUP1bb+CCPI4G3XrkPhbuRoc=;
+ b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBltPvg3nRz4JX6GrZpFb2Rig/WIc/KKYh60LpMH
+ Kp8txXKLlyJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZbT74AAKCRBdhwoHwSZ7
+ RqOOD/4gXGXxuxH0bvQIvvt1g55kEEmSYGMeE3j5DL5ldlu06+3W/Fpy6FCd/iiAkQI8ciEpOKD
+ OaZ9gBSyamQwNiadjyLPX2MxY3PNPX1sDnOtaRZYIyXwazAvWpVth++nhNpGzizL5yJa3cTGZ+5
+ ag4wFQeoi4/VqKF12IcBOL+adC2el4SlCi869bLCk9VEpqdvWmPIGvYfgNWf3EiZ+sGAiOn8/HH
+ OXVvEoMBmxj7m96ceahyvQc1gYgWaY7HEMVKWAOKyJtbk0NTEjaZzbWjBZIRqNzoibGM5clqKKU
+ msh0OcQKUdhYDajtf05fLyKt2XD7c2LEnnYZi3y2DEtypeQgFXuH61i6Z4aaPwQwya8kTQ2/mQB
+ Rteu6BqkB7DpqZw3YYAVqjafdbkbiMy5lwkVfxS0zHubz7217SWdeW0OHeIYcYM/2c23h8b2Zxm
+ tCbTYyVyDTRo7hygVTJ9he5IT7R3L2RgbZsgp6XfDSaLZv4kdg1VpJuubzK/vHsHVrfNVfgaFwa
+ mpVhznunPB6UKvl2q19mwsUAKL74FUuOAuiNUZYiYsBdCK4IHAtg7pJtkgwTj6keDnPvHl9Qy8d
+ O4wB/mOsT3xsSoP+q1MSIigwjdsDX0STo47WL1WyM88fJVDQWeZV+/Ud4jRMrVBnytr65WZJYEK
+ 0nxDG400bfnVRHQ==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: LH7SFYHMKXFO6PM4MMBFL3Z2GVQPGFG6
-X-Message-ID-Hash: LH7SFYHMKXFO6PM4MMBFL3Z2GVQPGFG6
+Message-ID-Hash: JBSX6CDCJSYXKYSIM4YAICYHBOQRYNTS
+X-Message-ID-Hash: JBSX6CDCJSYXKYSIM4YAICYHBOQRYNTS
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -111,7 +111,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LH7SFYHMKXFO6PM4MMBFL3Z2GVQPGFG6/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JBSX6CDCJSYXKYSIM4YAICYHBOQRYNTS/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -120,32 +120,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-parse_eth_hdr() is assuming that every ETH_P_BATMAN ethernet packet has a
-valid, minimal batman-adv header (packet_type, version, ttl) attached. But
-it doesn't actually check if the received buffer has enough bytes to access
-the two bytes packet_type + version. So it is possible that it tries to
-read outside of the received data.
+dump_batman_icmp() is only doing a length check for the original ICMP
+packet length. But the throughput packet (which is also handled by this
+function) is accessed without doing an additional length check. So it is
+possible that it tries to read outside of the received data.
 
-Fixes: 3bdfc388e74b ("implement simple tcpdump, first only batman packets")
+Fixes: f109b3473f86 ("batctl: introduce throughput meter support")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- tcpdump.c | 3 +++
- 1 file changed, 3 insertions(+)
+ tcpdump.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/tcpdump.c b/tcpdump.c
-index d340af9..d15c32e 100644
+index d15c32e..9bb4b9e 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
-@@ -1167,6 +1167,9 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
- 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
- 		break;
- 	case ETH_P_BATMAN:
-+		/* check for batman-adv packet_type + version */
-+		LEN_CHECK(buff_len, sizeof(*eth_hdr) + 2, "BAT HEADER")
-+
- 		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
+@@ -911,7 +911,6 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
+ 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");
  
- 		if ((read_opt & COMPAT_FILTER) &&
+ 	icmp_packet = (struct batadv_icmp_packet *)(packet_buff + sizeof(struct ether_header));
+-	tp = (struct batadv_icmp_tp_packet *)icmp_packet;
+ 
+ 	if (!time_printed)
+ 		print_time();
+@@ -942,6 +941,10 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
+ 			(size_t)buff_len - sizeof(struct ether_header));
+ 		break;
+ 	case BATADV_TP:
++		LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(*tp), "BAT TP");
++
++		tp = (struct batadv_icmp_tp_packet *)icmp_packet;
++
+ 		printf("%s: ICMP TP type %s (%hhu), id %hhu, seq %u, ttl %2d, v %d, length %zu\n",
+ 		       name, tp->subtype == BATADV_TP_MSG ? "MSG" :
+ 			     tp->subtype == BATADV_TP_ACK ? "ACK" : "N/A",
 
 -- 
 2.39.2
