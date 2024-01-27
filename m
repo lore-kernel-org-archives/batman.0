@@ -4,82 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4042C46CD2
-	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 12:54:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 216C5C46CD2
+	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 17:50:47 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 41E6083EB8
-	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 13:54:36 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 72460810BA
+	for <batman@archiver.kernel.org>; Sat, 27 Jan 2024 18:50:46 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1706360076;
- b=nzEmC0gbQnevCMcw5dj93FPvl1eOhXrRukGUjc+Ot7iXRiQlt/eBN0eH+It5+bQkozwA5
- FDGTOL02Da+tOZMZKx9KDD7lSQ/dUPNqgFk5sgNpnGC/wgxDVEIwlxsgkH7aLJs6ASwTqed
- a+XISgxcwrxYo6DAYgLZ5UYHrRdVpLY=
+ t=1706377846;
+ b=VnHKdcKOKw660E7CvqtH1RziDTG6xkYyPqZ7tMi56oGssFHk2WV1i15co8DuPB63b1TBF
+ 8V7UXIDDvL6x8XB/ySgH06XaB3lsa0dZwD9rs3IA25AjKeYTRl6L91ajkU08x/qEKfTCAPH
+ 1FJ1TemVYwMGV0THn8z15P/6vcix1Js=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1706360076; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1706377846; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=jQEW3LmxljvRuNgpQg7zCR/oPRZG/vesSsOfbTpgldw=;
- b=uy71xSZn3cxc+fGg1RlO+rsg+62wNkZWMS5MbPuVxD2zAY4tTPdKynRFThoIlgmS72Noo
- 1bdLCHdeAU0g6QFO0I4BjfBWJ7o9krVbgEL261wdphEfULh0YWggy9/RIBeHAOFi2cZwLwd
- Cgi3U0M58Y2jmvOP5HxDK4M6e1wJPAE=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=sienYtyOe0bZowCYlw5iFSE3n+Ew2Psp8LZteTENY3g=;
+ b=hUvxzi+prgxes4di5thEp4t56zZ33Vi0/jYuImVfaEIaEuiJ2b6YMs7p2ZAP5DlBmhl3D
+ U7w36Ky0NoJRgydv6xTY22cU2q1LgKIZsozogb/9n/Z2DuvsC7xCJRqjAFcepCFHrTmXmZq
+ jvKDGU46kOgTx4eL4ynjuSyBZK5aczs=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id DAEA683F8B
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 27 Jan 2024 13:51:25 +0100 (CET)
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 22AEC80BF7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 27 Jan 2024 18:50:39 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1706359885;
+	s=20121; t=1706377839;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=jQEW3LmxljvRuNgpQg7zCR/oPRZG/vesSsOfbTpgldw=;
-	b=Fawtrc0Pzqvb5ixS0NYcoUZxryadVKyT+A2ciHLJlZ6P9HcmfKgH3QpVLu67I9I1s5ZTm6
-	uxS7ZwsGNjB/q0QbUYIXLwNlDcAxFQbFcmdfI9DhhBMXscfER+rcIGXwSaP3/fnjcknc9Z
-	hAyIzJp/4TmJRvZEpBfti5UvPQJG5Jw=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706359885; a=rsa-sha256;
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=sienYtyOe0bZowCYlw5iFSE3n+Ew2Psp8LZteTENY3g=;
+	b=pro03d6uiMsq3L39ZbfXLZy55I2sW+IXYtsuSBpxpajJqqAuRQSZyArv81k2XHM5KN23nn
+	VNU0WH4dlIlshDufe5xz5kfAN+1d6iss0aQI/rMZ4Hz1V/t8Mjf/dIi/bfwQPR+YRMIRYO
+	0T8JeodbJxtErjtF7I1q8/HIAI/u3VU=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706377839; a=rsa-sha256;
 	cv=none;
-	b=CzmnUjaiaQUmrcJiMz/TRDDk9rLmZ5t7rXm6prEVk3lVHydZ//B7ML9Nlaa3wJqZn5zl7P
-	PWI9DMoWSR6x8HVCj8EIi2JKb2gdARtNuazW9dYECdNugbtTaujLwFF0YJg6DjNIvK3dUE
-	SwxgGR/XCNOb1PaCrDHcnM6F3Qy/Je0=
+	b=hdxpF7k3FUeK2AeFwf2Um5amZJm3jhhN9K8IGOPosCQZAKofRsR9weW8f25gFRBzb17bGS
+	PLUGIGcTtaG5ILdIGgzvm2HwtvtoPhFotQqIOazdO+dPDfHhB4ZZlDV5zUntTQs9U27JFO
+	EpCFHBH6tJAaKpal4VoZTd2Pn6fW+ac=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="tg1n/FMv";
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1706359885;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jQEW3LmxljvRuNgpQg7zCR/oPRZG/vesSsOfbTpgldw=;
-	b=tg1n/FMvlH36glrUvhtZGPBzYwodUpXTGSK4aa+hqAFEsNS0aoyhEdnwwy11Yrdm6zmGtN
-	u9T9/w+0iWEUJBMjtfKtQl9P+C3ezzojJ3iFWUHxJwTghggA+eckmbCjMY682qNlFPZ8Xb
-	LJ93Af6Q42q2ermE+gNhiHKVVvt290Y=
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marco Dalla Torre <marco.dallato@gmail.com>
-Subject: Re: [PATCH 0/6] batctl: tcpdump: Fix problems detected during fuzzing
-Date: Sat, 27 Jan 2024 13:51:22 +0100
-Message-ID: <2716779.mvXUDI8C0e@sven-l14>
-In-Reply-To: <20240127-tcpdump_fuzzing-v1-0-fbc1e1d3fec1@narfation.org>
-References: <20240127-tcpdump_fuzzing-v1-0-fbc1e1d3fec1@narfation.org>
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue;
+	dmarc=none
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 7F18A40D6C;
+	Sat, 27 Jan 2024 18:50:35 +0100 (CET)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: netdev@vger.kernel.org
+Cc: bridge@lists.linux.dev,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	linux-kernel@vger.kernel.org,
+	Roopa Prabhu <roopa@nvidia.com>,
+	Nikolay Aleksandrov <razor@blackwall.org>,
+	"David S . Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	=?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH net v2] bridge: mcast: fix disabled snooping after long uptime
+Date: Sat, 27 Jan 2024 18:50:32 +0100
+Message-ID: <20240127175033.9640-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5749285.DvuYhMxLoT";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: WZZGEWVBWACFXBA2E4PD52YD65GXJMNC
-X-Message-ID-Hash: WZZGEWVBWACFXBA2E4PD52YD65GXJMNC
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: HUVVMISZQTFJIKJZKADKKCEGCSNOQKIS
+X-Message-ID-Hash: HUVVMISZQTFJIKJZKADKKCEGCSNOQKIS
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -92,7 +91,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WZZGEWVBWACFXBA2E4PD52YD65GXJMNC/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HUVVMISZQTFJIKJZKADKKCEGCSNOQKIS/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -101,124 +100,148 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart5749285.DvuYhMxLoT
-Content-Type: multipart/mixed; boundary="nextPart12368892.O9o76ZdvQC";
- protected-headers="v1"
-Content-Transfer-Encoding: 7Bit
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marco Dalla Torre <marco.dallato@gmail.com>
-Date: Sat, 27 Jan 2024 13:51:22 +0100
-Message-ID: <2716779.mvXUDI8C0e@sven-l14>
-References: <20240127-tcpdump_fuzzing-v1-0-fbc1e1d3fec1@narfation.org>
-MIME-Version: 1.0
+The original idea of the delay_time check was to not apply multicast
+snooping too early when an MLD querier appears. And to instead wait at
+least for MLD reports to arrive before switching from flooding to group
+based, MLD snooped forwarding, to avoid temporary packet loss.
 
-This is a multi-part message in MIME format.
+However in a batman-adv mesh network it was noticed that after 248 days of
+uptime 32bit MIPS based devices would start to signal that they had
+stopped applying multicast snooping due to missing queriers - even though
+they were the elected querier and still sending MLD queries themselves.
 
---nextPart12368892.O9o76ZdvQC
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+While time_is_before_jiffies() generally is safe against jiffies
+wrap-arounds, like the code comments in jiffies.h explain, it won't
+be able to track a difference larger than ULONG_MAX/2. With a 32bit
+large jiffies and one jiffies tick every 10ms (CONFIG_HZ=100) on these MIPS
+devices running OpenWrt this would result in a difference larger than
+ULONG_MAX/2 after 248 (= 2^32/100/60/60/24/2) days and
+time_is_before_jiffies() would then start to return false instead of
+true. Leading to multicast snooping not being applied to multicast
+packets anymore.
 
-On Saturday, 27 January 2024 13:48:58 CET Sven Eckelmann wrote:
-> While many parts of batctl are rather simple, tcpdump is one of the most
-> complex parts - which unfortunately is also dealing all the time
-> with potentially harmful input. It is therefore a good idea to perform
-> some tests to figure out how bad the current state of the code is. The
-> findings will be presented here - including some information how other
-> people can reproduce these problems.
+Fix this issue by using a proper timer_list object which won't have this
+ULONG_MAX/2 difference limitation.
 
-Attached are also the actual reproducers.
+Fixes: b00589af3b04 ("bridge: disable snooping if there is no querier")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+Changelog v2:
+* removed "inline" from br_multicast_query_delay_expired()
 
-Kind regards,
-	Sven
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment;
- filename="0001-parse_eth_hdr-missing-bat_hdr_len-check"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0001-parse_eth_hdr-missing-bat_hdr_len-check"
+ net/bridge/br_multicast.c | 20 +++++++++++++++-----
+ net/bridge/br_private.h   |  4 ++--
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
-rIZ0ATUnsIZ0CDmXQwVAAHQQ//////8CrIZ0AdMnrIZ0CDmXQwVAAHT///////8CxN6v/gRDBAO6
-3q8EQwU=
-
-
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment; filename="0002-dump_batman_icmp-tp_len_check"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0002-dump_batman_icmp-tp_len_check"
-
-Arrer/4BArrer/4DQwVDDzIPSkq6FbzQArrer/4DpgFa7A==
-
-
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment;
- filename="0003-dump_ip-missing-ihl-validation"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0003-dump_ip-missing-ihl-validation"
-
-ACHMtIIzrIZ0AdMgQwVCDzICACHMtIIzrIZ0AdMgBACq2W5fLXo+GEsB0yAIAAABCAAGBAACAarZ
-bl8tesCoAwI=
-
-
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment;
- filename="0004-dump_ipv6-neigh-advert-len_check"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0004-dump_ipv6-neigh-advert-len_check"
-
-MzMgAAD7Gj7uDJ9Dht17AAAAADI6YjIAAAAAAAAAAAD7Y2FsAAAhAAHADOgDAAIFAAAAAAAgiAAA
-gAAQAAE=
-
-
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment;
- filename="0005-dump_ipv6-neigh-solicit-len_check"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0005-dump_ipv6-neigh-solicit-len_check"
-
-////////Arrer/6Cht1gAAAAABA6//8CQwUEHTAHHP//AxQAAAAAAAAAAACdYACBgYeHh4eHh4eH
-h4eHAARD
-
-
---nextPart12368892.O9o76ZdvQC
-Content-Disposition: attachment; filename="0006-dump_ip-unreachable-len_check"
-Content-Transfer-Encoding: base64
-Content-Type: application/octet-stream;
- name="0006-dump_ip-unreachable-len_check"
-
-wYZ0AdP7AP+anG7wCABG9v9T6ABAAFMBVXQIOZcLAwMDAyMDAwMDAwMDAQAAWh2y6YMQht3/AAAA
-IAMDAwMDAwM6/xb/AwAAAAAAAAAAAAAAAACzf40=
-
-
---nextPart12368892.O9o76ZdvQC--
-
---nextPart5749285.DvuYhMxLoT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmW0/EoACgkQXYcKB8Em
-e0ZVdw//ao9wMPzt/1kxFCOu4EdUR5pNHwiG//BOc+DbEft6mmhzZZ9JfVdjEvcm
-66Dc/b7Ok023IPXE+D5AmhcnP/4s0dXS4maeSJ5YOIKScx3o1F5v/RkZOrYWs2xi
-xbfWTNViif0n58Gyd1irP8U6NjgX14aqi926olAtoE0IIKVup6s4w/swuOKOQUPr
-i0X3OPK12qcXbOzKNYR00dR44RLJwq7iXNX8M7HYOsdcFjcAs2Bajd1N0NVVfPH5
-gLFVuaZZtkkXHAW8Nf1SUN2HnX1TFXmyFVnPFO0gtX7kzLGbzsOaLkFvOqBVAq4Q
-kikI/ALFMAGoWnAJUly4pXMbxhD1s2bcXp7QN3Cn82X2UfH+LXni1J4wLvBLl9L9
-q5zSVzjHj9BXYZYyER/2cZqTVKPPrucgjKRvFEmeKdd5ONEl1JXB/JJGoC84hn+z
-KvpicV8MWtWCUiDQkDpiFIBgnJo0U5c+tXblSKz5OyJkJyvAtYbMVu/b7k4T8/bd
-wODy6FKXb37Qa5n07cWZ9VOenULo0hPRD+yaolHoVRoZshX9bwrQP6izcVMlMVAA
-AYE8zU9YEISxo1KPObZhcm7Z0e8ke/UbV+EySoTptidPHyi9GbsEChrWvTgrCnfa
-w76SE93VDzbdFY20E+g7K6pVaCUohrZ9tSuI3l5+B1itDzw3+c8=
-=+Fp4
------END PGP SIGNATURE-----
-
---nextPart5749285.DvuYhMxLoT--
-
-
+diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
+index d7d021af1029..2d7b73242958 100644
+--- a/net/bridge/br_multicast.c
++++ b/net/bridge/br_multicast.c
+@@ -1762,6 +1762,10 @@ static void br_ip6_multicast_querier_expired(struct timer_list *t)
+ }
+ #endif
+ 
++static void br_multicast_query_delay_expired(struct timer_list *t)
++{
++}
++
+ static void br_multicast_select_own_querier(struct net_bridge_mcast *brmctx,
+ 					    struct br_ip *ip,
+ 					    struct sk_buff *skb)
+@@ -3198,7 +3202,7 @@ br_multicast_update_query_timer(struct net_bridge_mcast *brmctx,
+ 				unsigned long max_delay)
+ {
+ 	if (!timer_pending(&query->timer))
+-		query->delay_time = jiffies + max_delay;
++		mod_timer(&query->delay_timer, jiffies + max_delay);
+ 
+ 	mod_timer(&query->timer, jiffies + brmctx->multicast_querier_interval);
+ }
+@@ -4041,13 +4045,11 @@ void br_multicast_ctx_init(struct net_bridge *br,
+ 	brmctx->multicast_querier_interval = 255 * HZ;
+ 	brmctx->multicast_membership_interval = 260 * HZ;
+ 
+-	brmctx->ip4_other_query.delay_time = 0;
+ 	brmctx->ip4_querier.port_ifidx = 0;
+ 	seqcount_spinlock_init(&brmctx->ip4_querier.seq, &br->multicast_lock);
+ 	brmctx->multicast_igmp_version = 2;
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	brmctx->multicast_mld_version = 1;
+-	brmctx->ip6_other_query.delay_time = 0;
+ 	brmctx->ip6_querier.port_ifidx = 0;
+ 	seqcount_spinlock_init(&brmctx->ip6_querier.seq, &br->multicast_lock);
+ #endif
+@@ -4056,6 +4058,8 @@ void br_multicast_ctx_init(struct net_bridge *br,
+ 		    br_ip4_multicast_local_router_expired, 0);
+ 	timer_setup(&brmctx->ip4_other_query.timer,
+ 		    br_ip4_multicast_querier_expired, 0);
++	timer_setup(&brmctx->ip4_other_query.delay_timer,
++		    br_multicast_query_delay_expired, 0);
+ 	timer_setup(&brmctx->ip4_own_query.timer,
+ 		    br_ip4_multicast_query_expired, 0);
+ #if IS_ENABLED(CONFIG_IPV6)
+@@ -4063,6 +4067,8 @@ void br_multicast_ctx_init(struct net_bridge *br,
+ 		    br_ip6_multicast_local_router_expired, 0);
+ 	timer_setup(&brmctx->ip6_other_query.timer,
+ 		    br_ip6_multicast_querier_expired, 0);
++	timer_setup(&brmctx->ip6_other_query.delay_timer,
++		    br_multicast_query_delay_expired, 0);
+ 	timer_setup(&brmctx->ip6_own_query.timer,
+ 		    br_ip6_multicast_query_expired, 0);
+ #endif
+@@ -4197,10 +4203,12 @@ static void __br_multicast_stop(struct net_bridge_mcast *brmctx)
+ {
+ 	del_timer_sync(&brmctx->ip4_mc_router_timer);
+ 	del_timer_sync(&brmctx->ip4_other_query.timer);
++	del_timer_sync(&brmctx->ip4_other_query.delay_timer);
+ 	del_timer_sync(&brmctx->ip4_own_query.timer);
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	del_timer_sync(&brmctx->ip6_mc_router_timer);
+ 	del_timer_sync(&brmctx->ip6_other_query.timer);
++	del_timer_sync(&brmctx->ip6_other_query.delay_timer);
+ 	del_timer_sync(&brmctx->ip6_own_query.timer);
+ #endif
+ }
+@@ -4643,13 +4651,15 @@ int br_multicast_set_querier(struct net_bridge_mcast *brmctx, unsigned long val)
+ 	max_delay = brmctx->multicast_query_response_interval;
+ 
+ 	if (!timer_pending(&brmctx->ip4_other_query.timer))
+-		brmctx->ip4_other_query.delay_time = jiffies + max_delay;
++		mod_timer(&brmctx->ip4_other_query.delay_timer,
++			  jiffies + max_delay);
+ 
+ 	br_multicast_start_querier(brmctx, &brmctx->ip4_own_query);
+ 
+ #if IS_ENABLED(CONFIG_IPV6)
+ 	if (!timer_pending(&brmctx->ip6_other_query.timer))
+-		brmctx->ip6_other_query.delay_time = jiffies + max_delay;
++		mod_timer(&brmctx->ip6_other_query.delay_timer,
++			  jiffies + max_delay);
+ 
+ 	br_multicast_start_querier(brmctx, &brmctx->ip6_own_query);
+ #endif
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index b0a92c344722..86ea5e6689b5 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -78,7 +78,7 @@ struct bridge_mcast_own_query {
+ /* other querier */
+ struct bridge_mcast_other_query {
+ 	struct timer_list		timer;
+-	unsigned long			delay_time;
++	struct timer_list		delay_timer;
+ };
+ 
+ /* selected querier */
+@@ -1159,7 +1159,7 @@ __br_multicast_querier_exists(struct net_bridge_mcast *brmctx,
+ 		own_querier_enabled = false;
+ 	}
+ 
+-	return time_is_before_jiffies(querier->delay_time) &&
++	return !timer_pending(&querier->delay_timer) &&
+ 	       (own_querier_enabled || timer_pending(&querier->timer));
+ }
+ 
+-- 
+2.43.0
 
