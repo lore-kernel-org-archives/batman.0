@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEA36C47DB3
-	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 20:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 368FEC47DB3
+	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 20:53:26 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id EB74C828CF
-	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 21:03:37 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 61114828CF
+	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 21:53:24 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1706558617;
- b=iVPno0vC19EA5wy9Bdr3bHgnVnWQg/u20lVcyWEAWG2AOknWOcD4+GW3x16mhXL5uCd68
- E86G5WFrqlGsiuR6Nx5EofiG2+vo35PBUWHEBRaLDhtOnQ4M5Tweg0HrD65mTY8Ln+CocdU
- st4aXGQBslHKylek/8duhraI/PyRfAM=
+ t=1706561604;
+ b=O3X1qiD1zpwIMoxwTqxbxp9lDYTKsc6n33EPJqrNsRt7CM7cdW0N4Aw3rBcmm6e1uOiRn
+ 9862VZfplUB09Enukb3uFrS9gEPLgsX+uVKY/mFB4WfzqzPwycIzZ5zu5Cd4hQ0ZBGjUaP1
+ nwZP/lanqWtFexdkx2fsqF2gUX73eF4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1706558617; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1706561604; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=iDC7Xap4Ui1ZBtPIINtgmdV6ni23mZyMeXB6CVkxSK0=;
- b=wOG7eVvhJP1uvVotnwL8f6QyBBNAeJX6/Uqa6GTPLLe3rB84ct6mJ7Lwac17p5/GJYpvS
- dOHRR7xEWf5zV5tMPfIQonvnHEY7mvwBI2voikcA1yEe2qvFnqpLlzR2iQ5S0joA4S3Q5T5
- 6rD+EGqvl/mnV9o6B2ghHCtLofIJVCE=
+ list-archive; bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
+ b=lQxX4Rw2KwbMhj5CystgfqwUi3wZ63Ed4ZMxXlP77K20vki4ybrsgCfAYoJd7C7mStAsm
+ qMU/f8A7flRxkOktSK70AUq3KQnPz3ClMAhz+zaSghvU04hjDuiNgfmPfyP+SjD3hnZ0mBG
+ s8dM2bUomb7Ikn9ypHw0X0/1X64CxLg=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,90 +32,90 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-yw1-x1129.google.com (mail-yw1-x1129.google.com
- [IPv6:2607:f8b0:4864:20::1129])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A9B4F81519
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 29 Jan 2024 21:03:33 +0100 (CET)
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com
+ [IPv6:2607:f8b0:4864:20::112d])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3AFF2815A4
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 29 Jan 2024 21:53:17 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1706558613;
+	s=20121; t=1706561597;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=iDC7Xap4Ui1ZBtPIINtgmdV6ni23mZyMeXB6CVkxSK0=;
-	b=3DiETejMQ/fqqYX2gE8Si4CKef0ihCu7a7GdkZYn5JbI+UixxWQNgjYDe20+te81E3SaS+
-	WRBvkTGbbe/3lvOXITUkEglJRJ58Bn4ktwCokIrg93c6UiS9Y+psJbvYniOjv9D8ARTGon
-	C7u1tlmO7ERAb7dtPbZY44w1EfY0xsc=
+	bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
+	b=BzY3Ux04gfHRLongdrsIX2eYG/uTQvouxNjH9OEbzuHJAyrw6QbMmDT/0u7vNwP/hKrsMX
+	wBgk46IYsaNHoRe6TqPCPzSnYVDpXEtvDp++K+C3h1CSyX28qweOlXq8sSZy0FRW7e9lU/
+	Y4GMPpTHOsU1EoAXKw674i5r/blvzUc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=jIWvR4h8;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=C65RZpGY;
 	spf=pass (diktynna.open-mesh.org: domain of doug.fajardo@gmail.com designates
- 2607:f8b0:4864:20::1129 as permitted sender)
+ 2607:f8b0:4864:20::112d as permitted sender)
  smtp.mailfrom=doug.fajardo@gmail.com;
 	dmarc=pass (policy=none) header.from=gmail.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706558613; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706561597; a=rsa-sha256;
 	cv=none;
-	b=T9dMsO2lL2ufwgAe3cfFC/Fzs+82eC412V5VNMGif/kU9AnNStbKzl0NfmIkuStxR8I09n
-	ZVaMY6zE4dmul3PodrcfXJAMCc+65dwNU6c9KgqTCS/Wn+fvpRZP/GlI4/HZK+FcrDA+Gc
-	UNzhz6YTUuN6FgHDQRnccJb/YYU52K4=
-Received: by mail-yw1-x1129.google.com with SMTP id
- 00721157ae682-5ffb07bed9bso27523407b3.0
+	b=p+gCq3u2pZDUP3zm56/gOg1TRLcndOyCZByk7uyPQSmL1b8frkMrrO+sTsReAP+vUidEL0
+	JVS2FWTQ14I4rVInIXeleWNmb0vSuGj0w9sV4ogK4WfJfKa13kWhSvBdLQjy2ob1z1MLHo
+	zEcQlQAkqGkQfhwlfs3tjZFip5kx61Q=
+Received: by mail-yw1-x112d.google.com with SMTP id
+ 00721157ae682-603c5d7997aso19754357b3.1
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 29 Jan 2024 12:03:33 -0800 (PST)
+ Mon, 29 Jan 2024 12:53:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1706558612; x=1707163412;
+        d=gmail.com; s=20230601; t=1706561596; x=1707166396;
  darn=lists.open-mesh.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=iDC7Xap4Ui1ZBtPIINtgmdV6ni23mZyMeXB6CVkxSK0=;
-        b=jIWvR4h8DffBO8D1BPLYkRPxYHbcvfh3IWiHctp5s6QdVI/VZyYUlJpRzPR4Zskvne
-         XIZaFVWsIQIZ5D3nGYCxuv3E1oZjWnM17qixSbdmlHOVS5kLZ6djaxejASwlNpHtLX1n
-         W9HfBGJ1MCKZuQIvVMl2tS2zkFX/pgRvENJlXPMNjufw2ht5biDAoxUw+2fg9aObv9CJ
-         bm0tbVlI7juGzGiOPsXU6lrrFlAN4mgdKPm4LXyW05mNslIj7rw65CtHEBS1448ygxEP
-         33RqXN1ZlY6P4aeD3USXUs3sdFDN//O5GSSJUHvgVFU6zk0eZ4GefDxXhD3MOwV62MK9
-         ezvg==
+        bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
+        b=C65RZpGYcpio4bRDV51aC0tIjw02d/HdXQ8iWlmgy+w9XxrpspinbMQQm0lBYDFfRj
+         YiYxOE5JlDqKHmCAvvZ/aCUNqJI6HYgDEJKPl5YE+NUlwAgiErK+i9nu65GyuBtDjBwA
+         PotQKW1EDEJLtk4bU6R458FzT2foMjtP1tbdWpL5zJONi+IGoxcYqDu38b+WZyROptd/
+         xnJfei9DP3z9DYeh+REiuNVbMh4m5sIL13LyWV82kLVF9ttPx6xQBS6TawCtNFTJzOaN
+         7PNvLeek/F0rSK6hf3OoFKwi6/qwbwW1D94r2UdkjMrBiFIKeyhZuSu7SjMof6ZQuD97
+         KSfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706558612; x=1707163412;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20230601; t=1706561596; x=1707166396;
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iDC7Xap4Ui1ZBtPIINtgmdV6ni23mZyMeXB6CVkxSK0=;
-        b=P7y0Lqyh3dq2PZu8/mml4m0zIYYTeno/EajtCD5FxQMMI3q335g91XpKPwB3YwBGsk
-         eomuLZVYCdeAcGwPLmndytCrEKBT1BedJefpFFEh6p97085aLdAhVJz6vKbIcra09zTi
-         1WiI1o6oMFUmCiAfBxEklcbsB4PnkCCfAtJv/49P2rpyTqp+woX40hLNoNtm3y+PlAKq
-         lxR7XikkRWQDqRlzGvVCU1EWdHQ/bVfq30/RRrDx7HWxBA9XMK3N5I7dmloZjvkRo6gu
-         //yqyi8swTdtojB0z3ClwGAJ6uZ+vQqiwZLMfkPFc4LcI/scqGaU152UJfR6j6HyQBAB
-         tJvw==
-X-Gm-Message-State: AOJu0Yw7rNFfcnBkkiM6Et9OBD8DhUStc4LuYy+xqaBjjmkPX4idYctd
-	v3PCOC9oTALSjRd3l8I3N/Qf+7mEp/wn6091D34awPoU+1zNIZPcHtEhsM8Fww8=
+        bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
+        b=QopYjfJRII9g2hbeYe+omE5UO2+VdlkY2m8ZBkxM67Eg+T2hYJ+jpLXxzdg1oT8Wzs
+         FsWlCdROoeVkCsImYk47mjTXstmcn7nRWjAKrLufk6rp8vqUXaRE9t7xtthXx4T/5stG
+         MjguIdrXecBMVEFD1c/3soyKQEj/OJtce3CD8guIGjaiV0HNE7KvgMcWCdqW+8cfwu4i
+         tZZxbzya+VHsutAH1xVpKLuSiv16WuGR/DVS3h5g8Ny/rgN4MWOYAzuAGUBXnjHGAuF+
+         x0fwiT3Cp4QZfT/sRZgi5ZOQyguI+2TDkzdlSPHTy3jB5eODG3F7pE72lKMRX/wVSYN3
+         Sm6A==
+X-Gm-Message-State: AOJu0YwGV/i977T73tqHIcqugj69JXAf2NfZDNz/aO7qZalPvQrTbZH1
+	KiwzBGKN1OJv0A9H1rbfJoY1Hj6Iw5EMBHbnPGRqGOOrmdbii/aKV0UyqpHG
 X-Google-Smtp-Source: 
- AGHT+IGit9KEAyRCfSFh5IspJy66Ll0Sgda6IVMtEDmRiJUDuZQOMeNQPs81bnUACVLwMb6SMOijag==
-X-Received: by 2002:a81:a801:0:b0:5ef:4a7d:2426 with SMTP id
- f1-20020a81a801000000b005ef4a7d2426mr4289428ywh.31.1706558612112;
-        Mon, 29 Jan 2024 12:03:32 -0800 (PST)
-Received: from ?IPV6:2601:589:4200:2a70:2556:ddea:9b4b:18f1?
- ([2601:589:4200:2a70:2556:ddea:9b4b:18f1])
+ AGHT+IGSxZGeuGVVJ5nPXc34zdJbtax89sJfHLy5Z83DJeMwG9SYkfFtOl15jG+1nTWZD/pzii67bQ==
+X-Received: by 2002:a81:4419:0:b0:602:cf62:6590 with SMTP id
+ r25-20020a814419000000b00602cf626590mr4094732ywa.34.1706561595865;
+        Mon, 29 Jan 2024 12:53:15 -0800 (PST)
+Received: from [10.0.0.59] (c-71-57-181-236.hsd1.fl.comcast.net.
+ [71.57.181.236])
         by smtp.gmail.com with ESMTPSA id
- x84-20020a0dd557000000b005ffa1fbfa7esm2655136ywd.101.2024.01.29.12.03.31
+ j131-20020a816e89000000b005ff6c19a15csm2732007ywc.98.2024.01.29.12.53.15
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 29 Jan 2024 12:03:31 -0800 (PST)
-Message-ID: <2fd7c965-3e7d-4919-9239-a64034f5dd21@gmail.com>
-Date: Mon, 29 Jan 2024 15:03:30 -0500
+        Mon, 29 Jan 2024 12:53:15 -0800 (PST)
+Message-ID: <70836e07-a1e8-46e3-8b57-f314bd63a1f2@gmail.com>
+Date: Mon, 29 Jan 2024 15:53:14 -0500
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: Problem starting A.L.F.R.E.D on batman-adv?
+Content-Language: en-US
+From: Doug <doug.fajardo@gmail.com>
 To: =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 References: <170648094014.1056.17522976996217024998@diktynna.open-mesh.org>
- <ZbcVQNKlNso0D9l9@sellars>
-Content-Language: en-US
-From: Doug Fajardo <doug.fajardo@gmail.com>
-In-Reply-To: <ZbcVQNKlNso0D9l9@sellars>
+ <ZbcVQNKlNso0D9l9@sellars> <2fd7c965-3e7d-4919-9239-a64034f5dd21@gmail.com>
+In-Reply-To: <2fd7c965-3e7d-4919-9239-a64034f5dd21@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: B3PZFEY2QMXLOT6B4HJUQMJEVFJRNE6D
-X-Message-ID-Hash: B3PZFEY2QMXLOT6B4HJUQMJEVFJRNE6D
+Message-ID-Hash: XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB
+X-Message-ID-Hash: XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB
 X-MailFrom: doug.fajardo@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -129,7 +129,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/B3PZFEY2QMXLOT6B4HJUQMJEVFJRNE6D/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -139,25 +139,34 @@ List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 
-On 1/28/24 22:02, Linus Lüssing wrote:
-> On Sun, Jan 28, 2024 at 10:29:00PM -0000, doug.fajardo@gmail.com wrote:
->> I cant seem to get A.L.F.R.E.D. to start:
->> doug@dougwork:~/sdshome/alfred$ sudo alfred -b bat0
->> Can't start server: interface missing
-> I think it's complaining because the "-i" parameter is missing.
-> Try using "alfread -i bat0" instead.
+On 1/29/24 15:03, Doug Fajardo wrote:
 >
-> Regards, Linus
+> On 1/28/24 22:02, Linus Lüssing wrote:
+>> On Sun, Jan 28, 2024 at 10:29:00PM -0000, doug.fajardo@gmail.com wrote:
+>>> I cant seem to get A.L.F.R.E.D. to start:
+>>> doug@dougwork:~/sdshome/alfred$ sudo alfred -b bat0
+>>> Can't start server: interface missing
+>> I think it's complaining because the "-i" parameter is missing.
+>> Try using "alfread -i bat0" instead.
+>>
+>> Regards, Linus
+>
+> Linus - Thanks for your quick response. I tried this,  but it didn't 
+> work... Response was:
+>
+>    doug@dougwork: sudo alfred -i bat0 -m
+>
+>    can't bind: Cannot assign requested address
+>
+>    Failed to open interfaces.
+>
+> *** Doug
+>
+Uh, never mind - I just realized I didn't assign an IP address to bat0 
+!  your solution worked.
 
-Linus - Thanks for your quick response. I tried this,  but it didn't 
-work... Response was:
 
-    doug@dougwork: sudo alfred -i bat0 -m
+Thanks!!!
 
-    can't bind: Cannot assign requested address
-
-    Failed to open interfaces.
-
-*** Doug
-
+*** Doug F.
 
