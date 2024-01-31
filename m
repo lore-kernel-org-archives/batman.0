@@ -4,132 +4,113 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 368FEC47DB3
-	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 20:53:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 889ADC47258
+	for <batman@archiver.kernel.org>; Wed, 31 Jan 2024 06:49:30 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 61114828CF
-	for <batman@archiver.kernel.org>; Mon, 29 Jan 2024 21:53:24 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id AC8DE83E97
+	for <batman@archiver.kernel.org>; Wed, 31 Jan 2024 07:49:28 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1706561604;
- b=O3X1qiD1zpwIMoxwTqxbxp9lDYTKsc6n33EPJqrNsRt7CM7cdW0N4Aw3rBcmm6e1uOiRn
- 9862VZfplUB09Enukb3uFrS9gEPLgsX+uVKY/mFB4WfzqzPwycIzZ5zu5Cd4hQ0ZBGjUaP1
- nwZP/lanqWtFexdkx2fsqF2gUX73eF4=
+ t=1706683768;
+ b=RpvqnwCpIbAX7ClaSK5n0055mXwbxNJPmg+vKw0DXkzl36T9rxqPC0p4KVVur6Zc8NOTT
+ IaBi4YL2Ybrc/+lx8yULeVTlCwnGsnl4hTPCMYbq9FVwGmthaCKJjLnZxnOieNF3yiFjAHa
+ 6NhsSw+HOgMB5GIm9azyQo8wkNLgHgM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1706561604; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1706683768; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
- b=lQxX4Rw2KwbMhj5CystgfqwUi3wZ63Ed4ZMxXlP77K20vki4ybrsgCfAYoJd7C7mStAsm
- qMU/f8A7flRxkOktSK70AUq3KQnPz3ClMAhz+zaSghvU04hjDuiNgfmPfyP+SjD3hnZ0mBG
- s8dM2bUomb7Ikn9ypHw0X0/1X64CxLg=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=kzaLHSj2Vu+4rLi2LY2wAXM1NnS9ogtnaKkVNPjQbEg=;
+ b=vQsT62MayQIOFysbJL0ZanVIdhUg8LiNAKBqhlunA1wAlQuLom8PTVsosABoP3Dnlgeti
+ g7u2fmbQmu4Kt3JZf6ZlLUtoR6FjAa4Gf6a3ItdhMRZJemcmIf6Dn/jACEwDVyCULGH+wja
+ 50o3d3AB74UMtTzWcsVtpOygBQz7+Co=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com
- [IPv6:2607:f8b0:4864:20::112d])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3AFF2815A4
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 29 Jan 2024 21:53:17 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 678BE80DE2
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 31 Jan 2024 03:40:28 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1706561597;
+	s=20121; t=1706668828;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
-	b=BzY3Ux04gfHRLongdrsIX2eYG/uTQvouxNjH9OEbzuHJAyrw6QbMmDT/0u7vNwP/hKrsMX
-	wBgk46IYsaNHoRe6TqPCPzSnYVDpXEtvDp++K+C3h1CSyX28qweOlXq8sSZy0FRW7e9lU/
-	Y4GMPpTHOsU1EoAXKw674i5r/blvzUc=
+	bh=kzaLHSj2Vu+4rLi2LY2wAXM1NnS9ogtnaKkVNPjQbEg=;
+	b=xl4lupbbeS2/YabVrhCb+u4imoVqlZr3xHywOHvud8e2/ck2VUvzTfPpMAhU11QxX/kCbH
+	1jZgLTy3cZ2dI3yDMikhfJwLSaM3girpoyv/oYJPv4aHrDsGSGlSstqeagHnC1U9yZujP5
+	ZkLvncAXIjnvpM+yGaXRzLix/lXTx84=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=C65RZpGY;
-	spf=pass (diktynna.open-mesh.org: domain of doug.fajardo@gmail.com designates
- 2607:f8b0:4864:20::112d as permitted sender)
- smtp.mailfrom=doug.fajardo@gmail.com;
-	dmarc=pass (policy=none) header.from=gmail.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706561597; a=rsa-sha256;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b="g6iY/pv9";
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
+ permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=none) header.from=kernel.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706668828; a=rsa-sha256;
 	cv=none;
-	b=p+gCq3u2pZDUP3zm56/gOg1TRLcndOyCZByk7uyPQSmL1b8frkMrrO+sTsReAP+vUidEL0
-	JVS2FWTQ14I4rVInIXeleWNmb0vSuGj0w9sV4ogK4WfJfKa13kWhSvBdLQjy2ob1z1MLHo
-	zEcQlQAkqGkQfhwlfs3tjZFip5kx61Q=
-Received: by mail-yw1-x112d.google.com with SMTP id
- 00721157ae682-603c5d7997aso19754357b3.1
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 29 Jan 2024 12:53:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1706561596; x=1707166396;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
-        b=C65RZpGYcpio4bRDV51aC0tIjw02d/HdXQ8iWlmgy+w9XxrpspinbMQQm0lBYDFfRj
-         YiYxOE5JlDqKHmCAvvZ/aCUNqJI6HYgDEJKPl5YE+NUlwAgiErK+i9nu65GyuBtDjBwA
-         PotQKW1EDEJLtk4bU6R458FzT2foMjtP1tbdWpL5zJONi+IGoxcYqDu38b+WZyROptd/
-         xnJfei9DP3z9DYeh+REiuNVbMh4m5sIL13LyWV82kLVF9ttPx6xQBS6TawCtNFTJzOaN
-         7PNvLeek/F0rSK6hf3OoFKwi6/qwbwW1D94r2UdkjMrBiFIKeyhZuSu7SjMof6ZQuD97
-         KSfA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706561596; x=1707166396;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=FqMMQHU4+t9DBVStojrhvzkVaD4RrxRtg9am1K3NZTI=;
-        b=QopYjfJRII9g2hbeYe+omE5UO2+VdlkY2m8ZBkxM67Eg+T2hYJ+jpLXxzdg1oT8Wzs
-         FsWlCdROoeVkCsImYk47mjTXstmcn7nRWjAKrLufk6rp8vqUXaRE9t7xtthXx4T/5stG
-         MjguIdrXecBMVEFD1c/3soyKQEj/OJtce3CD8guIGjaiV0HNE7KvgMcWCdqW+8cfwu4i
-         tZZxbzya+VHsutAH1xVpKLuSiv16WuGR/DVS3h5g8Ny/rgN4MWOYAzuAGUBXnjHGAuF+
-         x0fwiT3Cp4QZfT/sRZgi5ZOQyguI+2TDkzdlSPHTy3jB5eODG3F7pE72lKMRX/wVSYN3
-         Sm6A==
-X-Gm-Message-State: AOJu0YwGV/i977T73tqHIcqugj69JXAf2NfZDNz/aO7qZalPvQrTbZH1
-	KiwzBGKN1OJv0A9H1rbfJoY1Hj6Iw5EMBHbnPGRqGOOrmdbii/aKV0UyqpHG
-X-Google-Smtp-Source: 
- AGHT+IGSxZGeuGVVJ5nPXc34zdJbtax89sJfHLy5Z83DJeMwG9SYkfFtOl15jG+1nTWZD/pzii67bQ==
-X-Received: by 2002:a81:4419:0:b0:602:cf62:6590 with SMTP id
- r25-20020a814419000000b00602cf626590mr4094732ywa.34.1706561595865;
-        Mon, 29 Jan 2024 12:53:15 -0800 (PST)
-Received: from [10.0.0.59] (c-71-57-181-236.hsd1.fl.comcast.net.
- [71.57.181.236])
-        by smtp.gmail.com with ESMTPSA id
- j131-20020a816e89000000b005ff6c19a15csm2732007ywc.98.2024.01.29.12.53.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 29 Jan 2024 12:53:15 -0800 (PST)
-Message-ID: <70836e07-a1e8-46e3-8b57-f314bd63a1f2@gmail.com>
-Date: Mon, 29 Jan 2024 15:53:14 -0500
+	b=DtJCHJad0ejAtKZCwLcVGrRqPTs1Il4QQkFt7Psa5Hdl5B2p9RJpu/IPkuD/ccIM/oOoXW
+	MEUEK3wl1urZKqZEmqL3asiXPmvHe0CK+gFBSJihQVUkB1q7H/EgAvzVNYGvba3iovRBf7
+	tfvYOLBTXalbDrnRR/J5afzuC2/s4XM=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DBF5C61231;
+	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7E99AC43390;
+	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1706668826;
+	bh=ri+xtdqHDdAedu6sRg/n0UlatJBbNJKunWM840Atne4=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=g6iY/pv9E9iheFF3QaNJfoym3PlztBxYNWx1crzr5v6vk32yc9KKET2axhPJYpWOP
+	 4h4MYp0FlTHtGsgmkpTbxIYRnoVY+5gJ7kr9gdJoxke1MJdqlw1Roy5ev4ZWCriV3N
+	 P3+okxs7wbEmjbXIalOYHwCjkp3UER+pkll1gkfAsdSW2a0hgxjghlW7nyOzFQjhc2
+	 s/jHOmVaJqFOGdhlTFmxkhsJYHzmMKAZa8/p56Kke1VETRj7C0si6tUNniarNnVrUD
+	 W5p7mQaN96um2NhapXfN0Ki/9RABZuYylgPaOOExfgwMYmGA2NTX5qZN5h8mX6Lu+u
+	 BK4UsBS5WJT6w==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ 62EC6E3237E;
+	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Problem starting A.L.F.R.E.D on batman-adv?
-Content-Language: en-US
-From: Doug <doug.fajardo@gmail.com>
-To: =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-References: <170648094014.1056.17522976996217024998@diktynna.open-mesh.org>
- <ZbcVQNKlNso0D9l9@sellars> <2fd7c965-3e7d-4919-9239-a64034f5dd21@gmail.com>
-In-Reply-To: <2fd7c965-3e7d-4919-9239-a64034f5dd21@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB
-X-Message-ID-Hash: XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB
-X-MailFrom: doug.fajardo@gmail.com
+Subject: Re: [PATCH net v2] bridge: mcast: fix disabled snooping after long
+ uptime
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <170666882640.24091.16393026544437992064.git-patchwork-notify@kernel.org>
+Date: Wed, 31 Jan 2024 02:40:26 +0000
+References: <20240127175033.9640-1-linus.luessing@c0d3.blue>
+In-Reply-To: <20240127175033.9640-1-linus.luessing@c0d3.blue>
+To: 
+ =?utf-8?q?Linus_L=C3=BCssing_=3Clinus=2Eluessing=40c0d3=2Eblue=3E?=@ci.codeaurora.org
+Cc: netdev@vger.kernel.org, bridge@lists.linux.dev,
+ b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
+ roopa@nvidia.com, razor@blackwall.org, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: W27IEU6KL3HHDYHNMK6AVWCJAFWSYKKP
+X-Message-ID-Hash: W27IEU6KL3HHDYHNMK6AVWCJAFWSYKKP
+X-Mailman-Approved-At: Wed, 31 Jan 2024 07:49:22 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XPE6GYDTEUG6E6C7SUKITEAD52L6ZRCB/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5FVDP5T7GQSQNGWVFYJCIIBEZ6L4TI25/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -138,35 +119,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
+Hello:
 
-On 1/29/24 15:03, Doug Fajardo wrote:
->
-> On 1/28/24 22:02, Linus Lüssing wrote:
->> On Sun, Jan 28, 2024 at 10:29:00PM -0000, doug.fajardo@gmail.com wrote:
->>> I cant seem to get A.L.F.R.E.D. to start:
->>> doug@dougwork:~/sdshome/alfred$ sudo alfred -b bat0
->>> Can't start server: interface missing
->> I think it's complaining because the "-i" parameter is missing.
->> Try using "alfread -i bat0" instead.
->>
->> Regards, Linus
->
-> Linus - Thanks for your quick response. I tried this,  but it didn't 
-> work... Response was:
->
->    doug@dougwork: sudo alfred -i bat0 -m
->
->    can't bind: Cannot assign requested address
->
->    Failed to open interfaces.
->
-> *** Doug
->
-Uh, never mind - I just realized I didn't assign an IP address to bat0 
-!  your solution worked.
+This patch was applied to netdev/net.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
+On Sat, 27 Jan 2024 18:50:32 +0100 you wrote:
+> The original idea of the delay_time check was to not apply multicast
+> snooping too early when an MLD querier appears. And to instead wait at
+> least for MLD reports to arrive before switching from flooding to group
+> based, MLD snooped forwarding, to avoid temporary packet loss.
+> 
+> However in a batman-adv mesh network it was noticed that after 248 days of
+> uptime 32bit MIPS based devices would start to signal that they had
+> stopped applying multicast snooping due to missing queriers - even though
+> they were the elected querier and still sending MLD queries themselves.
+> 
+> [...]
 
-Thanks!!!
+Here is the summary with links:
+  - [net,v2] bridge: mcast: fix disabled snooping after long uptime
+    https://git.kernel.org/netdev/net/c/f5c3eb4b7251
 
-*** Doug F.
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
