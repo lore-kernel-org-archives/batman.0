@@ -4,113 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 889ADC47258
-	for <batman@archiver.kernel.org>; Wed, 31 Jan 2024 06:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97A57C47DDB
+	for <batman@archiver.kernel.org>; Thu,  1 Feb 2024 11:01:21 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AC8DE83E97
-	for <batman@archiver.kernel.org>; Wed, 31 Jan 2024 07:49:28 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B151C83C02
+	for <batman@archiver.kernel.org>; Thu,  1 Feb 2024 12:01:19 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1706683768;
- b=RpvqnwCpIbAX7ClaSK5n0055mXwbxNJPmg+vKw0DXkzl36T9rxqPC0p4KVVur6Zc8NOTT
- IaBi4YL2Ybrc/+lx8yULeVTlCwnGsnl4hTPCMYbq9FVwGmthaCKJjLnZxnOieNF3yiFjAHa
- 6NhsSw+HOgMB5GIm9azyQo8wkNLgHgM=
+ t=1706785279;
+ b=dMlyQ1HDUswezkjDRZiCg8E7773plbbL9//pgyidkTO6TZ85rCU9Yx3HsamhlVlqZq+XF
+ atRaP2KwOpqb/Sg/gI5hL+qZ9/UhVbfv8/5UsKOw46l8OeJQ0upp/yiiCVihy3oeMUWCVft
+ cfDZCMZ+N2wBrMi6cy/BGpFybQEJPw0=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1706683768; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1706785279; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=kzaLHSj2Vu+4rLi2LY2wAXM1NnS9ogtnaKkVNPjQbEg=;
- b=vQsT62MayQIOFysbJL0ZanVIdhUg8LiNAKBqhlunA1wAlQuLom8PTVsosABoP3Dnlgeti
- g7u2fmbQmu4Kt3JZf6ZlLUtoR6FjAa4Gf6a3ItdhMRZJemcmIf6Dn/jACEwDVyCULGH+wja
- 50o3d3AB74UMtTzWcsVtpOygBQz7+Co=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
+ list-archive; bh=PIu4b4ENaMqMljhtfG0Sexwhlq7vWijCXLA/jb9Tu6o=;
+ b=js7v0gqnP7VKiM3m3Jnu4SoHQHQtfoXBl9gUFESJ1OCCbKP4zyfomUJ9Q6tx/NOPpuGvO
+ cj1dpo3ohyswDliM8BL820FJiqLFp9tZqd1vkFJRkQemocxkdt/ZQj84OKknXmdFG5L9CsJ
+ huuNL87Lcz9lKPBHSuNDpVH032pLcEI=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=kernel.org
+  dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
  policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 678BE80DE2
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 31 Jan 2024 03:40:28 +0100 (CET)
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
+ dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
+ policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6CD4981A3E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu,  1 Feb 2024 12:01:15 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1706668828;
+	s=20121; t=1706785275;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=kzaLHSj2Vu+4rLi2LY2wAXM1NnS9ogtnaKkVNPjQbEg=;
-	b=xl4lupbbeS2/YabVrhCb+u4imoVqlZr3xHywOHvud8e2/ck2VUvzTfPpMAhU11QxX/kCbH
-	1jZgLTy3cZ2dI3yDMikhfJwLSaM3girpoyv/oYJPv4aHrDsGSGlSstqeagHnC1U9yZujP5
-	ZkLvncAXIjnvpM+yGaXRzLix/lXTx84=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=PIu4b4ENaMqMljhtfG0Sexwhlq7vWijCXLA/jb9Tu6o=;
+	b=ZmerPuRvN/1aTtoMWZaVTmItsUja7UeWmgRAZmgLQyPSN4cwOqa9WnllnGgRufYEoBbWcS
+	RqKlNCnk3rof4FBkTq6pN1yXUL1vqtnfWxUihOCkcqLuuyWeVcjlZ8S+I8EnnNUbXbHnuq
+	xykkapYYB3tXsKMtBbwCLw2rOVckzTE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b="g6iY/pv9";
-	spf=pass (diktynna.open-mesh.org: domain of
- patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
- permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
-	dmarc=pass (policy=none) header.from=kernel.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706668828; a=rsa-sha256;
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1706785275; a=rsa-sha256;
 	cv=none;
-	b=DtJCHJad0ejAtKZCwLcVGrRqPTs1Il4QQkFt7Psa5Hdl5B2p9RJpu/IPkuD/ccIM/oOoXW
-	MEUEK3wl1urZKqZEmqL3asiXPmvHe0CK+gFBSJihQVUkB1q7H/EgAvzVNYGvba3iovRBf7
-	tfvYOLBTXalbDrnRR/J5afzuC2/s4XM=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id DBF5C61231;
-	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7E99AC43390;
-	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1706668826;
-	bh=ri+xtdqHDdAedu6sRg/n0UlatJBbNJKunWM840Atne4=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=g6iY/pv9E9iheFF3QaNJfoym3PlztBxYNWx1crzr5v6vk32yc9KKET2axhPJYpWOP
-	 4h4MYp0FlTHtGsgmkpTbxIYRnoVY+5gJ7kr9gdJoxke1MJdqlw1Roy5ev4ZWCriV3N
-	 P3+okxs7wbEmjbXIalOYHwCjkp3UER+pkll1gkfAsdSW2a0hgxjghlW7nyOzFQjhc2
-	 s/jHOmVaJqFOGdhlTFmxkhsJYHzmMKAZa8/p56Kke1VETRj7C0si6tUNniarNnVrUD
-	 W5p7mQaN96um2NhapXfN0Ki/9RABZuYylgPaOOExfgwMYmGA2NTX5qZN5h8mX6Lu+u
-	 BK4UsBS5WJT6w==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
- (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
- 62EC6E3237E;
-	Wed, 31 Jan 2024 02:40:26 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	b=dGcQs5FxpIyGE68mZooyG+KvvB9L9jIKpJpW0AF14sqpr0Z7MW7sVgBY0VRhKGozZm96rc
+	JitUrrghSEvAxDAA5S6OXHlUoRNR8awPqcgFOOZ6e0XEuGJ6rNXl9JVEYuBOZDQ+IqK1qU
+	O5W3NlhYME+sjOPuUVZhJURnRX4oo5k=
+Received: from kero.packetmixer.de
+ (p200300c59712C7d8D89318FB9D63B559.dip0.t-ipconnect.de
+ [IPv6:2003:c5:9712:c7d8:d893:18fb:9d63:b559])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits)
+ server-digest SHA256)
+	(No client certificate requested)
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 1B9D7FA2D7;
+	Thu,  1 Feb 2024 12:01:15 +0100 (CET)
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: davem@davemloft.net,
+	kuba@kernel.org
+Cc: netdev@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH 0/2] pull request for net: batman-adv 2024-02-01
+Date: Thu,  1 Feb 2024 12:01:08 +0100
+Message-Id: <20240201110110.29129-1-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net v2] bridge: mcast: fix disabled snooping after long
- uptime
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <170666882640.24091.16393026544437992064.git-patchwork-notify@kernel.org>
-Date: Wed, 31 Jan 2024 02:40:26 +0000
-References: <20240127175033.9640-1-linus.luessing@c0d3.blue>
-In-Reply-To: <20240127175033.9640-1-linus.luessing@c0d3.blue>
-To: 
- =?utf-8?q?Linus_L=C3=BCssing_=3Clinus=2Eluessing=40c0d3=2Eblue=3E?=@ci.codeaurora.org
-Cc: netdev@vger.kernel.org, bridge@lists.linux.dev,
- b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
- roopa@nvidia.com, razor@blackwall.org, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com
-X-MailFrom: patchwork-bot+netdevbpf@kernel.org
-X-Mailman-Rule-Hits: nonmember-moderation
+Message-ID-Hash: XEQQBH4XG6ECDUA3ZV46KP2FV5SKIGWU
+X-Message-ID-Hash: XEQQBH4XG6ECDUA3ZV46KP2FV5SKIGWU
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: W27IEU6KL3HHDYHNMK6AVWCJAFWSYKKP
-X-Message-ID-Hash: W27IEU6KL3HHDYHNMK6AVWCJAFWSYKKP
-X-Mailman-Approved-At: Wed, 31 Jan 2024 07:49:22 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5FVDP5T7GQSQNGWVFYJCIIBEZ6L4TI25/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XEQQBH4XG6ECDUA3ZV46KP2FV5SKIGWU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -119,31 +103,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hello:
+Hi David, hi Jakub,
 
-This patch was applied to netdev/net.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+here are two bugfixes for batman-adv which we would like to have integrated into net.
 
-On Sat, 27 Jan 2024 18:50:32 +0100 you wrote:
-> The original idea of the delay_time check was to not apply multicast
-> snooping too early when an MLD querier appears. And to instead wait at
-> least for MLD reports to arrive before switching from flooding to group
-> based, MLD snooped forwarding, to avoid temporary packet loss.
-> 
-> However in a batman-adv mesh network it was noticed that after 248 days of
-> uptime 32bit MIPS based devices would start to signal that they had
-> stopped applying multicast snooping due to missing queriers - even though
-> they were the elected querier and still sending MLD queries themselves.
-> 
-> [...]
+Please pull or let me know of any problem!
 
-Here is the summary with links:
-  - [net,v2] bridge: mcast: fix disabled snooping after long uptime
-    https://git.kernel.org/netdev/net/c/f5c3eb4b7251
+Thank you,
+      Simon
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+The following changes since commit 6613476e225e090cc9aad49be7fa504e290dd33d:
 
+  Linux 6.8-rc1 (2024-01-21 14:11:32 -0800)
 
+are available in the Git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20240201
+
+for you to fetch changes up to 0a186b49bba596b81de5a686ce5bfc9cd48ab3ef:
+
+  batman-adv: mcast: fix memory leak on deleting a batman-adv interface (2024-01-27 09:13:39 +0100)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes:
+
+ - fix a timeout issue and a memory leak in batman-adv multicast,
+   by Linus Lüssing (2 patches)
+
+----------------------------------------------------------------
+Linus Lüssing (2):
+      batman-adv: mcast: fix mcast packet type counter on timeouted nodes
+      batman-adv: mcast: fix memory leak on deleting a batman-adv interface
+
+ net/batman-adv/multicast.c | 3 +++
+ 1 file changed, 3 insertions(+)
