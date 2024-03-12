@@ -1,114 +1,104 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E2ACC48297
-	for <batman-adv@archiver.kernel.org>; Mon, 12 Feb 2024 13:32:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D197DC54E5D
+	for <batman@archiver.kernel.org>; Tue, 12 Mar 2024 18:23:24 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 64CF08181A
-	for <batman-adv@archiver.kernel.org>; Mon, 12 Feb 2024 14:32:22 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 96B8C8199D
+	for <batman@archiver.kernel.org>; Tue, 12 Mar 2024 19:23:22 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1707744742;
- b=B8eXOEgJe6gaEJ7JliWvCNRTo8N5hsO5Oob1NhoRE1PlSb4Bu2yAjzDN09yii7XtSuyjY
- wRIEE/JBIl5qAkCFe4t1Nnqyr+vPuqKc5Iwfy2bkE7hfELHWUl92kqpvZ+7/EwektJOy0HP
- wWGLsTvCJgW1tEE8X+hPcPsFNrFZ1Zo=
+ t=1710267802;
+ b=QCYsqXfgg7Sq0lF86ERn5U16GYOHV8Qzc+ZzacQQZdKSPWCpyoiPtZ913FLW+Xr5k9C5o
+ jCIAM5CiUhz9vbMnTborIYyGNoosSqPFCbh9E3Z3WCu+D6d8pc2oWpgs3xIZTT9jWlGiKfB
+ Nz40E9lm1xfx/wya0/mPv/3gS8o6woA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1707744742; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1710267802; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=yp8aYGU4sAFMtZ7+4I4BJH7bdbpFxkMOY3DfGzS3ASo=;
- b=N0PRVVVq52nR3zJ3ECQG6znmqzBSlRKqysV8yDn0wCCAZGllnhnLcXrcP8puFVBjbY4wu
- uA0D7bb4ELZvEuFrt0mgWGUqNTPFKiZv5RRcQUAcAEtZJ/3cvNm05wN1AdxaAAd1XyJtT4m
- zin7AcSO978Mwu59XcLbPqC8jGJj2zg=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=o/jEyIn0N1qjBhCbDmOuWB1YSE6SbgxzJw3WAakd7MI=;
+ b=f1LY26H86y2eyAqcV+TVLW2xRGVxwNdUOzeYLOKXoU3Ks93xIKIYu5rV3GCUGF9o2LvvU
+ ysMfAjvkSFoZrlYxVF8QSH4iZ9B4Rgk7NK5H1taZJGGH2njQ7kH2oe2g3gE28pvOCxBEmNu
+ YGg88/FToeLFo/VV6pgfN2xwbIuVgqw=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=yandex.ru;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9C7FC8056F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 12 Feb 2024 14:32:19 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=yandex.ru policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=yandex.ru; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=yandex.ru policy.dmarc=none
+Received: from forward101a.mail.yandex.net (forward101a.mail.yandex.net
+ [178.154.239.84])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 15941804D1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 12 Mar 2024 19:18:19 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1707744739;
+	s=20121; t=1710267499;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=yp8aYGU4sAFMtZ7+4I4BJH7bdbpFxkMOY3DfGzS3ASo=;
-	b=TlEaF/AjgLKsdo/rdPXd643XUGWOidRdSrsgAThi90gTKJGIviF3QDoEBC7aR+d4D/hfxy
-	X57BO2RplJ4pQCjIbCY7zgXqamhiD9b+KPb1a2p3gVSjJ0Nu3Bf9D+m153MXG9wxoT8cEg
-	yu2HuluE55LQaRUYBk9RIW1RphM90Hg=
+	bh=o/jEyIn0N1qjBhCbDmOuWB1YSE6SbgxzJw3WAakd7MI=;
+	b=rBq0hHCfMsix7xJ6h7bjV5CDMrAdNPtETsfO0mdF/De2sNzd9TJg9YYsUE15M2EMa45a87
+	8nq/KHqjXK3WVPLMl3CEsjSX4FLE2SbyD23V5LFzZus/e/nlSLg8vtxJuNpzGWrmy4zwUh
+	r4BV70B90nJcwm9P+2xpTv9I4PZV5HY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="vlT/Hn6I";
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1707744739; a=rsa-sha256;
+	dkim=pass header.d=yandex.ru header.s=mail header.b=blukgp81;
+	spf=pass (diktynna.open-mesh.org: domain of dmantipov@yandex.ru designates
+ 178.154.239.84 as permitted sender) smtp.mailfrom=dmantipov@yandex.ru;
+	dmarc=pass (policy=none) header.from=yandex.ru
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1710267499; a=rsa-sha256;
 	cv=none;
-	b=xV47zUbU+W8Ga87xpEi+Y1gQ9VGHvGNaUWdMjAohG//oBOe+h/+GxRdIStzsC5SNwIu+fW
-	qo0Iab4ySNYmpcrC6bt+7L+8qxRHTYR6MPlthGggpt5/D2uDNNFiwmpsJfTB7wTxfU8kkb
-	z/C7vknAza1EvREcD7iKn/ILwrlgQ44=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1707744739;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=yp8aYGU4sAFMtZ7+4I4BJH7bdbpFxkMOY3DfGzS3ASo=;
-	b=vlT/Hn6IfoNtOmEAV1dByYpQS6768dGih3T8cWFWJrXPn78lPET971JipxB/zSH9RWfmXK
-	lRN+1D3BNXA5VoiL2L5wEKk4hWAOZXTPRsAukGGE5qOCSShRQTdbFq5VIqaAxJI7ptp1R7
-	AD3MiQSlKz4z0p9y71SRegmbXiII4/4=
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: [PATCH] batman-adv: Avoid infinite loop trying to resize local TT
-Date: Mon, 12 Feb 2024 14:32:13 +0100
-Message-Id: <20240212-infinite-tt-resize-v1-1-6644e31d2368@narfation.org>
-X-Mailer: git-send-email 2.39.2
+	b=Xem95YDnI3GwB/iK5cztvIW3BXB4wA/DM6gyK80UjpURPIO592axUEfjETLOWblVl2j9hZ
+	8NyoufrGc+4RL0DT/ZX/4P426rZUyHFCBkBqtuo/ft6n//2VMTWa+0y8KvfAQVUYA8X0Jo
+	2XuWKh8dglQEEP2toeVMC/fOb2Hl//E=
+Received: from mail-nwsmtp-smtp-production-main-67.vla.yp-c.yandex.net
+ (mail-nwsmtp-smtp-production-main-67.vla.yp-c.yandex.net
+ [IPv6:2a02:6b8:c15:2c95:0:640:f90:0])
+	by forward101a.mail.yandex.net (Yandex) with ESMTPS id 45AFD608F2;
+	Tue, 12 Mar 2024 21:18:18 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-67.vla.yp-c.yandex.net
+ (smtp/Yandex) with ESMTPSA id GIrKTj0ZpGk0-rcqrrxig;
+	Tue, 12 Mar 2024 21:18:17 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
+	t=1710267497; bh=o/jEyIn0N1qjBhCbDmOuWB1YSE6SbgxzJw3WAakd7MI=;
+	h=Message-ID:Date:Cc:Subject:To:From;
+	b=blukgp81coHZyPihJK8DJqeo+lDXjwExPsAJgZVcsvswHmF42KT9ZlMpZ1rE4Wg/5
+	 lNqgdiOcwhVQkDGWR4AGIRIWwvB2w6RxC3FTNZT9jg0jObQFGR4gimARlwz/c6oWig
+	 2PqFq2ygGitxF133F64HYtUQt69tMs9lzszovlcQ=
+From: Dmitry Antipov <dmantipov@yandex.ru>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>,
+	Jakub Kicinski <kuba@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	netdev@vger.kernel.org,
+	Dmitry Antipov <dmantipov@yandex.ru>
+Subject: [PATCH] batman-adv: prefer kfree_rcu() over call_rcu() with free-only
+ callbacks
+Date: Tue, 12 Mar 2024 21:16:28 +0300
+Message-ID: <20240312181628.2013091-1-dmantipov@yandex.ru>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2807; i=sven@narfation.org;
- h=from:subject:message-id; bh=uM3BdhC6In+fMPSg0jWd2BIKpNz/pOCD1gDhzSWJGlw=;
- b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBlyh23LKjCcpKVi/0s0/EVMY8mi/hZQrcexOBLc
- 3r2j9qEV7yJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZcodtwAKCRBdhwoHwSZ7
- Rn+vEACmAzNBM0ss95PnAkp2zGbQ/KAUUT3Vayv4U3kIR2J/EecyjX7PyxA8wpha1pm30p7JP1r
- XmzRuFNLlhe2NVYipNW7848TZ5jCsYpBxazOQOKDHg39JZa2DHsZbuzonV/raxPtNkTo+eVNifd
- 3e2s/TLxLcQTAvHbjNX1MzqH3y7LpIYvz1yo/2xNnSqb/XusrYLUmLE3ZiCjlCPrtab6oaxhRGA
- lEXtqa0ILUING8GGU8QjU2Knm2RsczMFwslRWmj1OrrLnvMCvIzF8CS003P6cDtAvmcA9n8iuny
- 2b54kzq7e8tpDuo1yJ8bvQ7g2MJklMiPmrXjszzR7HcCv/fogW/If4oaewQjAVzk0Zp3HPwtY7V
- BJWp634cQ5OFXc8tfZpOcwx2sMtKwjyHgjGybE0Z1bTudn37lhCbluV4JTv6vZcY7EDgFWA32ce
- mgHyrKFDIFYacOJUDQvNMMgiChlirEltuTkK3+BLC51c8UDrRuNtGoVGZXub3uHlpPlKWo749+N
- yoObBK2HMCkRy4oz5+gdM9Obc25D547P6vaimOfdYcDml6ZuI7ZiG6rP5tKOLXepgquXn59a+Mu
- znCdAXIjOrCDfDwQgvowpT6H8J8F68bFqptn0IS4d9BRRNqI+6K7x28hmcX/m11VjlefBjQlnta
- 9VBv4Yyi7/
- zvHww==
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: 5NIYEVSC5ZIKVMDYLP3NBNMS65IX5NFO
-X-Message-ID-Hash: 5NIYEVSC5ZIKVMDYLP3NBNMS65IX5NFO
-X-MailFrom: sven@narfation.org
+X-MailFrom: dmantipov@yandex.ru
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: XEZRCMXPV57SQEQ2P6PQJTSSL6CSBL5R
+X-Message-ID-Hash: XEZRCMXPV57SQEQ2P6PQJTSSL6CSBL5R
+X-Mailman-Approved-At: Tue, 12 Mar 2024 19:23:15 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5NIYEVSC5ZIKVMDYLP3NBNMS65IX5NFO/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XEZRCMXPV57SQEQ2P6PQJTSSL6CSBL5R/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -117,71 +107,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-If the MTU of one of an attached interface becomes too small to transmit
-the local translation table then it must be resized to fit inside all
-fragments (when enabled) or a single packet.
+Drop 'batadv_tt_local_entry_free_rcu()', 'batadv_tt_global_entry_free_rcu()'
+and 'batadv_tt_orig_list_entry_free_rcu()' in favor of 'kfree_rcu()' in
+'batadv_tt_local_entry_release()', 'batadv_tt_global_entry_release()' and
+'batadv_tt_orig_list_entry_release()', respectively.
 
-But if the MTU becomes too low to transmit even the header + the VLAN
-specific part then the resizing of the local TT will never succeed. This
-can for example happen when the usable space is 110 bytes and 11 VLANs are
-on top of batman-adv. In this case, at least 116 byte would be needed.
-There will just be an endless spam of
-
-   batman_adv: batadv0: Forced to purge local tt entries to fit new maximum fragment MTU (110)
-
-in the log but the function will never finish. Problem here is that the
-timeout will be halved all the time and will then stagnate at 0 and
-therefore never be able to reduce the table even more.
-
-There are other scenarios possible with a similar result. The number of
-BATADV_TT_CLIENT_NOPURGE entries in the local TT can for example be too
-high to fit inside a packet. Such a scenario can therefore happen also with
-only a single VLAN + 7 non-purgable addresses - requiring at least 120
-bytes.
-
-While this should be handled proactively when:
-
-* interface with too low MTU is added
-* VLAN is added
-* non-purgeable local mac is added
-* MTU of an attached interface is reduced
-* fragmentation setting gets disabled (which most likely requires dropping
-  attached interfaces)
-
-not all of these scenarios can be prevented because batman-adv is only
-consuming events without the the possibility to prevent these actions
-(non-purgable MAC address added, MTU of an attached interface is reduced).
-It is therefore necessary to also make sure that the code is able to handle
-also the situations when there were already incompatible system
-configuration are present.
-
-Cc:  <stable@vger.kernel.org>
-Fixes: f7f2fe494388 ("batman-adv: limit local translation table max size")
-Reported-by:  <syzbot+a6a4b5bb3da165594cff@syzkaller.appspotmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Dmitry Antipov <dmantipov@yandex.ru>
 ---
- net/batman-adv/translation-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/translation-table.c | 47 ++----------------------------
+ 1 file changed, 3 insertions(+), 44 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index b95c3676..2243cec1 100644
+index b95c36765d04..0555cb611489 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -3948,7 +3948,7 @@ void batadv_tt_local_resize_to_mtu(struct net_device *soft_iface)
+@@ -208,20 +208,6 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ 	return tt_global_entry;
+ }
  
- 	spin_lock_bh(&bat_priv->tt.commit_lock);
+-/**
+- * batadv_tt_local_entry_free_rcu() - free the tt_local_entry
+- * @rcu: rcu pointer of the tt_local_entry
+- */
+-static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
+-{
+-	struct batadv_tt_local_entry *tt_local_entry;
+-
+-	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
+-				      common.rcu);
+-
+-	kmem_cache_free(batadv_tl_cache, tt_local_entry);
+-}
+-
+ /**
+  * batadv_tt_local_entry_release() - release tt_local_entry from lists and queue
+  *  for free after rcu grace period
+@@ -236,7 +222,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
  
--	while (true) {
-+	while (timeout) {
- 		table_size = batadv_tt_local_table_transmit_size(bat_priv);
- 		if (packet_size_max >= table_size)
- 			break;
-
----
-base-commit: 7d30b5a06020e8c4e53968e4086a0fa6e9fdd947
-change-id: 20240212-infinite-tt-resize-285a0d33fff8
-
-Best regards,
+ 	batadv_softif_vlan_put(tt_local_entry->vlan);
+ 
+-	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
++	kfree_rcu(tt_local_entry, common.rcu);
+ }
+ 
+ /**
+@@ -254,20 +240,6 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
+ 		 batadv_tt_local_entry_release);
+ }
+ 
+-/**
+- * batadv_tt_global_entry_free_rcu() - free the tt_global_entry
+- * @rcu: rcu pointer of the tt_global_entry
+- */
+-static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
+-{
+-	struct batadv_tt_global_entry *tt_global_entry;
+-
+-	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
+-				       common.rcu);
+-
+-	kmem_cache_free(batadv_tg_cache, tt_global_entry);
+-}
+-
+ /**
+  * batadv_tt_global_entry_release() - release tt_global_entry from lists and
+  *  queue for free after rcu grace period
+@@ -282,7 +254,7 @@ void batadv_tt_global_entry_release(struct kref *ref)
+ 
+ 	batadv_tt_global_del_orig_list(tt_global_entry);
+ 
+-	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
++	kfree_rcu(tt_global_entry, common.rcu);
+ }
+ 
+ /**
+@@ -407,19 +379,6 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
+ 	batadv_tt_global_size_mod(orig_node, vid, -1);
+ }
+ 
+-/**
+- * batadv_tt_orig_list_entry_free_rcu() - free the orig_entry
+- * @rcu: rcu pointer of the orig_entry
+- */
+-static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+-{
+-	struct batadv_tt_orig_list_entry *orig_entry;
+-
+-	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+-
+-	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
+-}
+-
+ /**
+  * batadv_tt_orig_list_entry_release() - release tt orig entry from lists and
+  *  queue for free after rcu grace period
+@@ -433,7 +392,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
+ 				  refcount);
+ 
+ 	batadv_orig_node_put(orig_entry->orig_node);
+-	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
++	kfree_rcu(orig_entry, rcu);
+ }
+ 
+ /**
 -- 
-Sven Eckelmann <sven@narfation.org>
+2.44.0
 
