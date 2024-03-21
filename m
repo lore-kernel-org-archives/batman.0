@@ -4,135 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C08BC54E5D
-	for <batman@archiver.kernel.org>; Tue, 19 Mar 2024 14:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE916CD11DB
+	for <batman@archiver.kernel.org>; Thu, 21 Mar 2024 18:26:45 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C7D5481C9C
-	for <batman@archiver.kernel.org>; Tue, 19 Mar 2024 15:03:47 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 0A1EF81977
+	for <batman@archiver.kernel.org>; Thu, 21 Mar 2024 19:26:44 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1710857027;
- b=2L0/CJ4hxruDc5nzwDZUolFrAaXoFBxyswHCqSkQO2mvbN5tHVqVoDKXaBtcbxD07yAb7
- GaiY7ZFfL7zx69w78/I1XUb7Stz5VaZLWgVxUEzJtouiG74ELW405xTKkL5GrOI+Yh2EIZF
- zMqZHfWl4Ga7kYEK41jI6B3u7Han4r0=
+ t=1711045604;
+ b=rR7I3K9nDlIFxSa2G4fRt6U2GeIVfrPmu6P2Th0/DUHb47k9Dk18NGjlz1SxVn0coex6N
+ zOMV2P6jsybEVNqDJQGMhx7aFz2ZelqQcO/lwoRFD4ImuAHp9fg8DE4i5NFfg52EnQbp05a
+ RwZNHOZLKIv1lXPUDcHVVOBAVGA4+nk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1710857027; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1711045604; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=YRVBERukyS2wWGyjoD0/ZHq0bNlTnq8NUQZ+B3xdj80=;
- b=yO8sEj6IXF7+73LmJlx1utvWqjTx5YOVCZa/f9JgRODLCZpGG5UYRiXQ2BGGhzRfK9wBo
- nO4x259LiYNoBJVuYAuWFe+9AJdXQHTDn2qj16HJ3dE5UUkckSCe/2IzeYvhhSK/+vT8Xns
- x5tW5MaFwodI866FP747Gj3W8WXWIhs=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=google.com;
+ list-archive; bh=gGGGJ6hS+NX1gIEP6zG3HfxGpBxruXr4DhrSeWnJUq0=;
+ b=d4UviLCUCqiUaUNIOzgcbM81HSQeT9jRuZLG1VWxFUctKIGEY/1GFOlYNceNAImHbrrbG
+ zz9vq/SznaAybZQbx1runKjk8CkhmGduuM4xoVLqlsNHaUSm5CyQazq1ZoyCWVbs1zxU5ds
+ C2dSYsZ0vPye8gvF6nNJUjocYPJK+M8=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=google.com
- policy.dmarc=reject
-Authentication-Results: open-mesh.org; dkim=pass header.d=google.com;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=google.com policy.dmarc=reject
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
- [IPv6:2607:f8b0:4864:20::62b])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 8FE7380800
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 Mar 2024 14:31:49 +0100 (CET)
+  dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
+ dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
+ policy.dmarc=none
+Received: from mail-io1-f70.google.com (mail-io1-f70.google.com
+ [209.85.166.70])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 1E4E681208
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 21 Mar 2024 19:26:24 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1710855110;
+	s=20121; t=1711045584;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=YRVBERukyS2wWGyjoD0/ZHq0bNlTnq8NUQZ+B3xdj80=;
-	b=B5k+peX8RP0HR9FUrT3wM08+qKe4itjN3NWkpDyyR/7t3n5gHn5arwsN0sxjo0DsrRsDu2
-	hpUYRkm6QDEWKtNfvPTfFj9PotMtD5B+noCc0AEJB++M6dPETOL4RxaXuYiFSwSTtVbg+q
-	+hHK2UlG8b/TJnMVZtZPT/6ujQg0IH8=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1710855110; a=rsa-sha256;
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to; bh=gGGGJ6hS+NX1gIEP6zG3HfxGpBxruXr4DhrSeWnJUq0=;
+	b=0/wmejeWIXb6pwYIn6zIe3684vdixu8qJtmBcK1AQxJLTbRb4c7Ljqx32ODTc3BIj4iRyl
+	LncLornDHja+2Cu3+Udx+JVrvIyZzgiTkEX4xidNJx6Qhqynd/DELjDkJ4z8nFyOFO1I1z
+	Lh3zqI0vigCVXQA4us34Dx8ltKud8X0=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1711045584; a=rsa-sha256;
 	cv=none;
-	b=xfydgU9+aJodwsCnY5/wLC+IM+W4UGEaERILrctyGNNu4OZ7e8BHDGqOpFMQElCdev/Xub
-	HuwuGcU85nBVzCNTt4BYkr5+ZSesA/N06l/gyqTfgCRHkPrFp7qidBVF6MIuVGJNxg/xEB
-	MNz/6lh5L/5EWNW1T8T0OWaZVG2OGOA=
+	b=nS1cxj8dY9BAx/dBp1XBIV3w8xcHZxy3fiA3PWd8rKTUiHSoGCDYrVBYyESLT/yfRoMRH7
+	BU++L/P6H2+Efc/clUOnH04miydn7azLqHpVg47afEFP8xK+6+oaTmd8HI0ddTXp8Ny2CT
+	jUvHNjBVdw6PDseKM08LuZ1Ftw5UjS4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=google.com header.s=20230601 header.b=wMeXr+AD;
-	spf=pass (diktynna.open-mesh.org: domain of nogikh@google.com designates
- 2607:f8b0:4864:20::62b as permitted sender) smtp.mailfrom=nogikh@google.com;
-	dmarc=pass (policy=reject) header.from=google.com
-Received: by mail-pl1-x62b.google.com with SMTP id
- d9443c01a7336-1dee917abd5so152235ad.1
+	dkim=none;
+	dmarc=fail reason="SPF not aligned (relaxed),
+ No valid DKIM" header.from=appspotmail.com (policy=none);
+	spf=pass (diktynna.open-mesh.org: domain of
+ 3znv8ZQkbAO0hnoZPaaTgPeeXS.VddVaTjhTgRdciTci.Rdb@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+ designates 209.85.166.70 as permitted sender)
+ smtp.mailfrom=3znv8ZQkbAO0hnoZPaaTgPeeXS.VddVaTjhTgRdciTci.Rdb@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f70.google.com with SMTP id
+ ca18e2360f4ac-7cf179c3da4so134768039f.2
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Tue, 19 Mar 2024 06:31:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1710855108; x=1711459908;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YRVBERukyS2wWGyjoD0/ZHq0bNlTnq8NUQZ+B3xdj80=;
-        b=wMeXr+ADrizlwyhua7Y0+aPeEx96yCimYt1P8cVMczPAn4kIQ5x9J2bFm5SSW5xLxD
-         p88+rdFqWpcpi4j+rpAQMQU7OX9m5yDxtkQ73m6k3pOBNs1R2ivu2wKqhd30lHU77w26
-         iXCHzcsAfMcsZTbf1GMO878JwrzFP6Xajkb0Ytl7rJq0EU7HjS8UJosowgnI5B6fAwe8
-         SD2l9IteqGRiY+1csT3cKjkHFUW+/W6FWWOvinBnGgi0A387QQPZFVo6rNQdlefG/dvC
-         bVhJGytmMvG6Zr/iCShP2mhLFhm57gg9kzPul8F43eFQN3O6HSl/dF5Dk9GlT2zC63SX
-         Nzgw==
+ Thu, 21 Mar 2024 11:26:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710855108; x=1711459908;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YRVBERukyS2wWGyjoD0/ZHq0bNlTnq8NUQZ+B3xdj80=;
-        b=E8wULU4JzjVbAgon06MWxGPuWDgKenpm9h/T+CVzOeRLD/PNvr5soS96w0JEwYl45i
-         tIKRR+GdsaJ/Mo3Muc83EUnLqqRA8TO9XdStnHc+4vrtUIHWQUI1t2L6Twn7JXhhupyp
-         VBjxKcQfQ1tk6JT5TgmOGKfzhfmqOnWE5ZEzRA/Ed0ewOSyFSiVJdCZB25cC+EddTE7d
-         RRvES/q/tGDJXzDZ0ys+bR2bGmvXypb2nXlFPPLBKwR8hfhOPWfTwKPi6ooQNubCMNl3
-         RV+YU29sGbhTWB3uaUh1hLsGrG6WoeQ4eKdjBo83G4ngUSAelz8vExeH35/UIKD7qDiJ
-         4Oqg==
+        d=1e100.net; s=20230601; t=1711045583; x=1711650383;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=gGGGJ6hS+NX1gIEP6zG3HfxGpBxruXr4DhrSeWnJUq0=;
+        b=w/zrpILTXYWH4EfLBCGHkBA9rDjZ8E2++1FEK5UioDkeaudN+hIjrSRc4cEH0DMavJ
+         KSGXHYPC3zAr1AWBoshjLHtqGZdxjQe6nu+8DBjftzedQ56eVjAMrGCj0aDc4UdYlG7d
+         CbtIgoPjwF5J2El/jx8a+BJyTB+AQulZCMWkpm5XLZ1eLkFk+a5Cvc65B0PvJuUdSMQP
+         niB3ntgdyowYTKvGzvPxO44DKECaOwuG8rvsoQZY1HebSwguEhSDJeEUw2jJZCfoQNKq
+         sEhMgtImmNrk/FosVbghLs6EOogJc8QP+hvbonuqVxMfkLbrbb2aErNDPGb3Sm+JnoW7
+         IbQw==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWmIiJH8qKxsySrJqFAKXovIc/V2fVCDJVg8MpIru2IVmjaBFcx4l9U/sCZvNqThfEls1MTew2LSc/cdmawGGaSX6rwBDommOv0aCD8ZFMs
-X-Gm-Message-State: AOJu0YwfHCgF/Lcba7RNHhJoaoMyllYj4h/4+2A0vWgMXvu9YET8CCdj
-	KGXyMBdWXqb3Y+oB7wnUbPpo99gdjI0qyv6SrPYISAh0wnh7ZKYlbBLQJZSS27TQW1OPqHYxiUU
-	DGhxVybrEGF8Cbsow/TaVglCetCkONW2TiPaL
+ AJvYcCXOymjwBgUQTUKdF5dZv2bLQ+t2OSXUX5tFNStQzD1VVc639ZBMnAea+Xd7v4WJtmKl+dSx8lBUGaVMufYtfNSmG0U3FiOGZozd1OKnqY3o
+X-Gm-Message-State: AOJu0YxFksVFTvEQVUCXMtMks8VGNiVctDICAbGA5qXmgL8ywxP8JI3H
+	bXBsq0nVDKA1kY9wOn3HSK4u0wN8i6pgQY2d97kz9hYZ9VjKlpv5QMRCdXTSE8gstFaTbZl9ptK
+	Hd0VK/Fwehd0dWK/0e8SA1ZrrABo6HfN7D7ORXydjvzb3mWsEDx1kjhs=
 X-Google-Smtp-Source: 
- AGHT+IFNmXcGYu+lNSQ2iexTWqZe47HUoTeYhNiE93aW579mIfvRqJBheAkUJL1ix5bvm3wn2zyeJjyY46GinXgiC30=
-X-Received: by 2002:a17:903:2303:b0:1dd:65bd:69ec with SMTP id
- d3-20020a170903230300b001dd65bd69ecmr240302plh.20.1710855107477; Tue, 19 Mar
- 2024 06:31:47 -0700 (PDT)
+ AGHT+IEzP9RQul65NSXzneKuudOdALyA2dyeNUf+LKuf/Nf3oynssdZsGa0i02ku//6FChBjtl5SnfQsZDXJK5VBLP6v7KRISl4N
 MIME-Version: 1.0
-References: <000000000000901b1c0614010091@google.com>
- <2615678.iZASKD2KPV@ripper>
-In-Reply-To: <2615678.iZASKD2KPV@ripper>
-From: Aleksandr Nogikh <nogikh@google.com>
-Date: Tue, 19 Mar 2024 14:31:35 +0100
-Message-ID: 
- <CANp29Y7SuK8P8xHa6JzAzs_NxPUN9AvFTiKfMhgLy1POGBodwA@mail.gmail.com>
-Subject: Re: [syzbot] [batman?] [bpf?] possible deadlock in lock_timer_base
-To: Sven Eckelmann <sven@narfation.org>
-Cc: akpm@linux-foundation.org, andrii@kernel.org, ast@kernel.org,
-	b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, christian@brauner.io,
-	daniel@iogearbox.net, dvyukov@google.com, edumazet@google.com,
-	elver@google.com, glider@google.com, hdanton@sina.com, jakub@cloudflare.com,
-	jannh@google.com, john.fastabend@gmail.com, kasan-dev@googlegroups.com,
-	kuba@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	mareklindner@neomailbox.ch, mark.rutland@arm.com, netdev@vger.kernel.org,
-	pabeni@redhat.com, shakeelb@google.com, syzkaller-bugs@googlegroups.com,
-	syzbot <syzbot+8983d6d4f7df556be565@syzkaller.appspotmail.com>
+X-Received: by 2002:a05:6638:270b:b0:474:c3b5:a8b7 with SMTP id
+ m11-20020a056638270b00b00474c3b5a8b7mr238jav.6.1711045582799; Thu, 21 Mar
+ 2024 11:26:22 -0700 (PDT)
+Date: Thu, 21 Mar 2024 11:26:22 -0700
+In-Reply-To: <000000000000ae28ce06112cb52e@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000002854eb06142fd863@google.com>
+Subject: Re: [syzbot] [tipc?] [batman?] BUG: soft lockup in sys_sendmsg
+From: syzbot <syzbot+a6a4b5bb3da165594cff@syzkaller.appspotmail.com>
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net,
+	edumazet@google.com, jmaloy@redhat.com, kuba@kernel.org,
+	linux-kernel@vger.kernel.org, mareklindner@neomailbox.ch,
+	netdev@vger.kernel.org, pabeni@redhat.com, sven@narfation.org,
+	sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com,
+	tipc-discussion@lists.sourceforge.net, ying.xue@windriver.com
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-MailFrom: nogikh@google.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Message-ID-Hash: MDQMWZSI5AJSYXDIZS273AGHDLGPETDV
+X-Message-ID-Hash: MDQMWZSI5AJSYXDIZS273AGHDLGPETDV
+X-MailFrom: 
+ 3znv8ZQkbAO0hnoZPaaTgPeeXS.VddVaTjhTgRdciTci.Rdb@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: 7ATF2IBRIFQKRWYLGALD7O2DNWT32LP6
-X-Message-ID-Hash: 7ATF2IBRIFQKRWYLGALD7O2DNWT32LP6
-X-Mailman-Approved-At: Tue, 19 Mar 2024 15:03:31 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7ATF2IBRIFQKRWYLGALD7O2DNWT32LP6/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MDQMWZSI5AJSYXDIZS273AGHDLGPETDV/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -141,31 +123,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi Sven,
+syzbot has found a reproducer for the following issue on:
 
-On Tue, Mar 19, 2024 at 2:19=E2=80=AFPM Sven Eckelmann <sven@narfation.org>=
- wrote:
->
-> On Tuesday, 19 March 2024 11:33:17 CET syzbot wrote:
-> > syzbot has found a reproducer for the following issue on:
-> >
-< ... >
->
-> Sorry, this is a little bit off-topic. But how does sysbot figure out the
-> subsystems (like "[batman?]"). Because neither the reproducer nor the
-> backtrace nor the console output mention anything batman-adv related.
+HEAD commit:    707081b61156 Merge branch 'for-next/core', remote-tracking..
+git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-kernelci
+console output: https://syzkaller.appspot.com/x/log.txt?x=134d4fa5180000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=caeac3f3565b057a
+dashboard link: https://syzkaller.appspot.com/bug?extid=a6a4b5bb3da165594cff
+compiler:       Debian clang version 15.0.6, GNU ld (GNU Binutils for Debian) 2.40
+userspace arch: arm64
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=139a4c81180000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=108b0ac9180000
 
-Syzbot looks at several crash reports to determine the bug subsystems
-and in this case one of those crashes was pointing to
-net/batman-adv/multicast.c:
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/6cad68bf7532/disk-707081b6.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/1a27e5400778/vmlinux-707081b6.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/67dfc53755d0/Image-707081b6.gz.xz
 
-https://syzkaller.appspot.com/text?tag=3DCrashReport&x=3D15afccb3280000
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+a6a4b5bb3da165594cff@syzkaller.appspotmail.com
 
---=20
-Aleksandr
+watchdog: BUG: soft lockup - CPU#0 stuck for 27s! [syz-executor227:7772]
+Modules linked in:
+irq event stamp: 5373
+hardirqs last  enabled at (5372): [<ffff80008ad68de8>] __exit_to_kernel_mode arch/arm64/kernel/entry-common.c:85 [inline]
+hardirqs last  enabled at (5372): [<ffff80008ad68de8>] exit_to_kernel_mode+0xdc/0x10c arch/arm64/kernel/entry-common.c:95
+hardirqs last disabled at (5373): [<ffff80008ad66a78>] __el1_irq arch/arm64/kernel/entry-common.c:533 [inline]
+hardirqs last disabled at (5373): [<ffff80008ad66a78>] el1_interrupt+0x24/0x68 arch/arm64/kernel/entry-common.c:551
+softirqs last  enabled at (542): [<ffff800088e9a56c>] spin_unlock_bh include/linux/spinlock.h:396 [inline]
+softirqs last  enabled at (542): [<ffff800088e9a56c>] release_sock+0x154/0x1b8 net/core/sock.c:3547
+softirqs last disabled at (548): [<ffff800088eaf8bc>] spin_lock_bh include/linux/spinlock.h:356 [inline]
+softirqs last disabled at (548): [<ffff800088eaf8bc>] lock_sock_nested+0x74/0x11c net/core/sock.c:3526
+CPU: 0 PID: 7772 Comm: syz-executor227 Not tainted 6.8.0-rc7-syzkaller-g707081b61156 #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 02/29/2024
+pstate: 00400005 (nzcv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : queued_spin_lock_slowpath+0x15c/0xcf8 kernel/locking/qspinlock.c:383
+lr : queued_spin_lock_slowpath+0x168/0xcf8 kernel/locking/qspinlock.c:383
+sp : ffff800097ca76c0
+x29: ffff800097ca7760 x28: 1fffe00018e1be6b x27: 1ffff00012f94ee4
+x26: dfff800000000000 x25: 1fffe00018e1be6d x24: ffff800097ca76e0
+x23: ffff800097ca7720 x22: ffff700012f94edc x21: 0000000000000001
+x20: 0000000000000001 x19: ffff0000c70df358 x18: 0000000000000000
+x17: 0000000000000000 x16: ffff8000809fd934 x15: 0000000000000001
+x14: 1fffe00018e1be6b x13: 0000000000000000 x12: 0000000000000000
+x11: ffff600018e1be6c x10: 1fffe00018e1be6b x9 : 0000000000000000
+x8 : 0000000000000001 x7 : ffff800088eaf8bc x6 : 0000000000000000
+x5 : 0000000000000000 x4 : 0000000000000001 x3 : ffff80008ae5db50
+x2 : 0000000000000000 x1 : 0000000000000001 x0 : 0000000000000001
+Call trace:
+ __cmpwait_case_8 arch/arm64/include/asm/cmpxchg.h:229 [inline]
+ __cmpwait arch/arm64/include/asm/cmpxchg.h:257 [inline]
+ queued_spin_lock_slowpath+0x15c/0xcf8 kernel/locking/qspinlock.c:383
+ queued_spin_lock include/asm-generic/qspinlock.h:114 [inline]
+ do_raw_spin_lock+0x320/0x348 kernel/locking/spinlock_debug.c:116
+ __raw_spin_lock_bh include/linux/spinlock_api_smp.h:127 [inline]
+ _raw_spin_lock_bh+0x50/0x60 kernel/locking/spinlock.c:178
+ spin_lock_bh include/linux/spinlock.h:356 [inline]
+ lock_sock_nested+0x74/0x11c net/core/sock.c:3526
+ lock_sock include/net/sock.h:1691 [inline]
+ tipc_sendstream+0x50/0x84 net/tipc/socket.c:1550
+ sock_sendmsg_nosec net/socket.c:730 [inline]
+ __sock_sendmsg net/socket.c:745 [inline]
+ ____sys_sendmsg+0x56c/0x840 net/socket.c:2584
+ ___sys_sendmsg net/socket.c:2638 [inline]
+ __sys_sendmsg+0x26c/0x33c net/socket.c:2667
+ __do_sys_sendmsg net/socket.c:2676 [inline]
+ __se_sys_sendmsg net/socket.c:2674 [inline]
+ __arm64_sys_sendmsg+0x80/0x94 net/socket.c:2674
+ __invoke_syscall arch/arm64/kernel/syscall.c:34 [inline]
+ invoke_syscall+0x98/0x2b8 arch/arm64/kernel/syscall.c:48
+ el0_svc_common+0x130/0x23c arch/arm64/kernel/syscall.c:133
+ do_el0_svc+0x48/0x58 arch/arm64/kernel/syscall.c:152
+ el0_svc+0x54/0x168 arch/arm64/kernel/entry-common.c:712
+ el0t_64_sync_handler+0x84/0xfc arch/arm64/kernel/entry-common.c:730
+ el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598
 
->
-> Kind regards,
->         Sven
->
-> --
+
+---
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
