@@ -1,68 +1,182 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39820C4345F
-	for <batman-adv@archiver.kernel.org>; Thu, 18 Apr 2024 06:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC65AC4345F
+	for <batman@archiver.kernel.org>; Fri, 26 Apr 2024 19:17:25 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5AA6F81ED5
-	for <batman-adv@archiver.kernel.org>; Thu, 18 Apr 2024 08:52:36 +0200 (CEST)
-ARC-Seal: i=1; cv=none; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1713423156;
- b=1Zs7Cgw1KF9Z+VjTLJgyblpk8wDcIR0hQZNlrV0DQQez2f16hTeKycEu5nfkCfqq4+Ug3
- HiDcPeV+xBHUWdpwchLabYf2qJt1fVVDT9Jbx9UsLaWUCCoHpTX7PvqU/YPiO1Ii84HCJwu
- f0yKlNWaiKMGTKhh0Zs8Ayn9SrdUuRE=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1713423156; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C5C0781F3D
+	for <batman@archiver.kernel.org>; Fri, 26 Apr 2024 21:17:23 +0200 (CEST)
+ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1714159043;
+ b=fqyR2b8+sSkFNI5/KCgj88Boo/ZOeU4xvdFfajBec+6QxEI8HZmshVQnr2i9a0C6sbhzC
+ OLAmqe6ybCgOiaqxb+1e7zvqhc/YCnzkL8Zm+KDGVAUigRZ17DJ72jW8ge5PstzI6mrr72J
+ aWj+4pngPd3YiWm7T6qZTC73n4t9qOs=
+ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1714159043; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=daizx4jdWfFCPgHe5YpU/gBeWy/t5FTVBMlRElIuXTk=;
- b=BYYZ57z33Nu/3YHXsx7+nWaALdztN3utCVsyTgVPUVDZ191x6fJIVE+PLDEGPuuFxzYGV
- y9EDNs8bxUf2epwoovjFte1VlzSxfciNTKQ1RQaZUfNK1ZdltKqDtWre4lD0KMD3pTCMUK4
- oWdD3VeiXMdFrYNRIITxmm7BlT1wq0Q=
-ARC-Authentication-Results: i=1; open-mesh.org; dkim=fail;
-  arc=none (Message is not ARC signed);
-  dmarc=fail (Used From Domain Record) header.from=gmail.com
+ list-archive; bh=65Yc1y4uvrPYju/Iqust+aNE2j+zZuMT/pa+4v+q7BM=;
+ b=JxYJM0w1OR+vyVpxdsRmVcHsBTgqNf0beRuqAhbrthLL9J2qoS8l1ROwysRnXOWuTbdm9
+ 3uyep7aM1uo5VzgjBF+nmL9fLZ44f9pucU2B4xJyRAgwl2mosJj+60aXBNq5dawhAwMtkgk
+ sqENdDDjYk4aRZS4fWnI2WQ1Jfi3jKg=
+ARC-Authentication-Results: i=3; open-mesh.org;
+ dkim=pass header.d=outlook.com;
+  arc=pass;
+  dmarc=pass (Used From Domain Record) header.from=outlook.com
  policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=fail;
- arc=none (Message is not ARC signed);
- dmarc=fail (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id CA6A381A53
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 18 Apr 2024 08:52:16 +0200 (CEST)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+Authentication-Results: open-mesh.org; dkim=pass header.d=outlook.com;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=outlook.com policy.dmarc=quarantine
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-db3eur04olkn2052.outbound.protection.outlook.com [40.92.74.52])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 08E2980B3F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 26 Apr 2024 19:23:11 +0200 (CEST)
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1714152191;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=65Yc1y4uvrPYju/Iqust+aNE2j+zZuMT/pa+4v+q7BM=;
+	b=idstZuZWFEglcjfN9eD7HXmEs/dVmb09t751QhHvvgIfUtQTf/3vy4PjyG9kFRrA+h4tac
+	dFnv9uClxVD+hzFIPvZSW8qJuSRpEvIUOL8LfsGY5G7ohGcZYKRpsI4y9Iica1GDY6yKHh
+	t3gocHUa1826MCECnE4enjPxPG3waCo=
+ARC-Seal: i=2; s=20121; d=open-mesh.org; t=1714152191; a=rsa-sha256;
+	cv=pass;
+	b=EY/ByL+6acWtbN6ONARmj0JltgpTc6BxS975hvLLSQJeF6FdVZAlDPzG4/EaPVCBoPIfAG
+	BKQEnrCzd5QHzOeZ8mtQA+z1MBaUEt423HNfPHVdQi48IASMallKT/Vq1n+D3YwA9PCJ1b
+	N4t4AJ6XwPRmEZMUe+QmBpaf7X4+zL8=
+ARC-Authentication-Results: i=2;
+	diktynna.open-mesh.org;
+	dkim=pass header.d=outlook.com header.s=selector1 header.b=jaAhSWul;
+	spf=pass (diktynna.open-mesh.org: domain of erick.archer@outlook.com
+ designates 40.92.74.52 as permitted sender)
+ smtp.mailfrom=erick.archer@outlook.com;
+	arc=pass ("microsoft.com:s=arcselector9901:i=1");
+	dmarc=pass (policy=none) header.from=outlook.com
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jRptDGstk+NkpR/E8ENhw3olDLL4nWUtcdUcmJ+XNWT+7NuOJofqwfbRMW6rpisHBOgb9WXJ2+csx9AoDHOOjMTUcp/F6h8GsHzoh/249lt8lB7iP9QDVGiWNFVZcyQa5V4BeFArBAdKoPARTmHFtwRJsyRN4YZNyxR4jeyYSnZ2hhva4Tq+X9tIa6phEER9HHkuItT5SLkxhmnaf1AWac4loG1iMSghHBdyutGooDucMY8WTrV/UqEyd9ICUdOManIAvbV6zIMXhFjnsnlGCJ1BaGCp0rNh0OTmQYRVBD4MYCdEF+WxwwW1wOV1i5wVRNmaFP4Wxsc4gO7UDUbCLA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=65Yc1y4uvrPYju/Iqust+aNE2j+zZuMT/pa+4v+q7BM=;
+ b=Al69cfdscoPyFIa2ceiKbaKyA6JlToMAEav9gHlltapDENHEsacJU5hqT3ZUFSJlrFl43cL95qKoyietVQ7SM+c0sV6EZskSFmOwcGpbpsbwNCD9A+3rqduwWneB3Gdb2SjiRX+Se9bXfgmpHscqPSgu2FbGWGXlswv9yDapEc7dfirFXm8UOlmeWJwrTymyukjptTOI25dSDS4qpcKoIEHFX1k0pnmJP31W3bLQ/vXdrcK756GhiQrGVoEENkqcMDYGxBvLHORJfzuhMBogBMcddaqsl5+mWxGz4d7cyYuy86Na+4okws1aZFjf+IYEzInmyzVY81YCBYlDK+EGag==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=65Yc1y4uvrPYju/Iqust+aNE2j+zZuMT/pa+4v+q7BM=;
+ b=jaAhSWulP4JBxL4TfG3rMdBuXNES+7oZ75VeOpnsLySjhodA6brjqdJGhj9JWYBO0h/OAZKB+JPh9s2Ifdq4+9bJwxBJ+G0+8dVdEQfPZf5Rto8FO6ngpDPcxsZiAjlsTF4zco/4k7+8haE174y6T7DMULkG5WIG1I5j5NJTLScs4td6+3dFoo2VMzaOEiwTJRr2gf4zw9bWmegs4srlc+fn5ufDR5hgHzv393KLe/QGPo5LwjGr0tshEWY5Wgp21MZmxDTAHLGEQtNPw69jkPmj/FNcmstRE+idJy/eXCYKw2Zxhto2upZVsEkBfgVxBrCA1ZmqOoJAvtFu42DwlQ==
+Received: from AS8PR02MB7237.eurprd02.prod.outlook.com (2603:10a6:20b:3f1::10)
+ by PAXPR02MB7799.eurprd02.prod.outlook.com (2603:10a6:102:220::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7519.23; Fri, 26 Apr
+ 2024 17:23:09 +0000
+Received: from AS8PR02MB7237.eurprd02.prod.outlook.com
+ ([fe80::409b:1407:979b:f658]) by AS8PR02MB7237.eurprd02.prod.outlook.com
+ ([fe80::409b:1407:979b:f658%5]) with mapi id 15.20.7472.045; Fri, 26 Apr 2024
+ 17:23:09 +0000
+From: Erick Archer <erick.archer@outlook.com>
+To: Marek Lindner <mareklindner@neomailbox.ch>,
+	Simon Wunderlich <sw@simonwunderlich.de>,
+	Antonio Quartulli <a@unstable.cc>,
+	Sven Eckelmann <sven@narfation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Kees Cook <keescook@chromium.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Erick Archer <erick.archer@outlook.com>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: [PATCH v2] batman-adv: Add flex array to struct batadv_tvlv_tt_data
+Date: Fri, 26 Apr 2024 19:22:47 +0200
+Message-ID: 
+ <AS8PR02MB723756E3D1366C4E8FCD14BF8B162@AS8PR02MB7237.eurprd02.prod.outlook.com>
+X-Mailer: git-send-email 2.25.1
 Content-Transfer-Encoding: 8bit
-Subject: Menopausal Therapy Market Size, Regional Outlook,
- Competitive Landscape,
- Revenue Analysis & Forecast
-From: vandanaswarajmanturgekar@gmail.com
-To: b.a.t.m.a.n@lists.open-mesh.org
-Date: Thu, 18 Apr 2024 06:52:16 -0000
-Message-ID: <171342313681.1045.10530265416111643333@diktynna.open-mesh.org>
-User-Agent: HyperKitty on https://lists.open-mesh.org/
-Message-ID-Hash: JH376I34LMQQGWY3NXU5QKM4VI7P2NC3
-X-Message-ID-Hash: JH376I34LMQQGWY3NXU5QKM4VI7P2NC3
-X-MailFrom: vandanaswarajmanturgekar@gmail.com
+Content-Type: text/plain
+X-TMN: [ZKALE+CcnBE5Mjctco2WLv7KCWHKlbRr]
+X-ClientProxiedBy: MA3P292CA0010.ESPP292.PROD.OUTLOOK.COM
+ (2603:10a6:250:2c::12) To AS8PR02MB7237.eurprd02.prod.outlook.com
+ (2603:10a6:20b:3f1::10)
+X-Microsoft-Original-Message-ID: 
+ <20240426172247.17025-1-erick.archer@outlook.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS8PR02MB7237:EE_|PAXPR02MB7799:EE_
+X-MS-Office365-Filtering-Correlation-Id: a70a962e-1970-4ca3-e564-08dc66158a7b
+X-Microsoft-Antispam: 
+	BCL:0;ARA:14566002|461199019|1602099003|3412199016|440099019|1710799017;
+X-Microsoft-Antispam-Message-Info: 
+	frKMW5OtkMJkmDUhov9yQnSPB68OSXWcJNqkaSdNchpquIAIhhwslF16XhvjpLKyEhcsPoFw/cpAf7K0DWserM2TZK5DvVc0p+c7OpjC6oUZosX2AopVezfk8YEEwa2LQsNc/K+nqy0bDOoB5S7cY7ymjaYDzdMkLuaP3PHpstAFfkd8AWG9qF8VJtZ37ToUtqKKCgXz+MTdwX/R6FzA3g+n/051ZayFne0ZY6wWScdiPSkKSt6uzvxsBFmIQ37pojY1DiCTCtg/oE9GMSal51mAfN1+2p0Z4mtyyp+B3PtOxu3MBtRxkTRUzXG7V/3ALSV0SjBe8AdJk8LXklUM0k2+9+1EysPrNGMTx5DPKq35j8RWe8je+bq9GTNmfiqIk1ZrnmT+dvSkaOq3Bwx9+nDi2ZskXy8HnbX0cMDXoBzad2e+ySuLkpsw0DSMCOdaqdhbrXGvCfECti/E3e+9ofmucAbRykJ5KE1kQq5F9V+WYXhQZQ3s36LqapAGJPkjCiEwDMfuagpqC5rJmroyEYs2YQpdgyaCw860KYeel/sz0wLowPFb/R+zv7F93j4DsI4V3XbdsWP+1/q5WS4AuaQVPLSlxLRNPcBdsv3zYZZ3s0t1+0DsNFkFQ/38Wb1OUg72d8e8eMTsvi8kG3f/QkGSHv95TwFshaYaqXDek3Iprfsg8LqxDMp/gn4rBJ/O+z+fv30U6V52jxQ1Aa0GKw==
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	=?us-ascii?Q?5WxEpzbjp4OPiV8jHYWKKdMJS+qYF/M8OqXYS8CjsPtRkKE7ZE000+Ksjgn8?=
+ =?us-ascii?Q?GIXXWvUyNcQKOihiUqg34/zmrkYMSc+sqYNkgBmWiSvDC1iQoEcckg77MFrN?=
+ =?us-ascii?Q?2JJIqN9m1eW6DzOhBrNYsThgWM9Gc5SdGaRxtKaWWVU8i6fM+mwFmq+cLC6/?=
+ =?us-ascii?Q?sqqM9qwNB8pZI+mCvLzZo2sJYEWWkOjd61zYGuEFLsjgsiY6Qp04dpf7QpQo?=
+ =?us-ascii?Q?IYasBwSb5hVMP3Ivz2/AAvMjRGIvNjcQy2ntAC9b9S5n/f1izu78LU6Nb9v4?=
+ =?us-ascii?Q?Nd2OF66cWq9WbKTNc/RWZ2dQC1YzYsqfzvr8nH/6eU+RQujdNCy3yFOrubsp?=
+ =?us-ascii?Q?GogvZX3ggvdGiq7tdUFoszyRJX4hQG+h6Y3FNMFnFit9KLP7r7iJ9Mq1RA8J?=
+ =?us-ascii?Q?6tVpzqmZ511IlUk/ecV0Fjkyad9Gx4w06hySmWf9PbwsGkuDRIJnu2y+td7e?=
+ =?us-ascii?Q?rT7lnfZpSDdNL0X5zUp1rOFClD9b/8nH1qXUgoR8gnJeX5/9AmWtLZlAFhfl?=
+ =?us-ascii?Q?iOiFxcpyZysP93184pkLPNVKvVAMZWAJy0dKGsHADxJmoE1pDjZsL08QQ2iS?=
+ =?us-ascii?Q?QZXXzmSus5wm/CYqBeCRVLTcLQFpupK30hPD5U92GTBrqsTtpjDXbO2xvDh9?=
+ =?us-ascii?Q?Q7KIcnqjQQc9rKJCRG7F+61rRMSAGyreHHz+iIqzmLOhC1Pt9vmZtpyyNz1v?=
+ =?us-ascii?Q?npFxEQB/ZRzExRauj0tdBT6CBga5KtaoPVvLLClLBP0OZyHuXr+3OetpNV8O?=
+ =?us-ascii?Q?0h449B8VNm2hNCb55CeFEh9Y3J897G8qx4/LoO84+3GCgaIOyNXvDl4llqNb?=
+ =?us-ascii?Q?ZNzu7JIZf4bUsKdMFEXuI/El45c9b8ZBv1Qj0hJ0biyRIgMlIcWyaRi0o87L?=
+ =?us-ascii?Q?zL/LNwqW6amelzwfF+1/wf5zrfXFiCSl3tfWwV1290r4gBsKR2+mOhFaHO7L?=
+ =?us-ascii?Q?uNxCxSNKXl3qa0qJf4s9GKZNKUpzLlUzK/mmIAAs19K57qrSmoqxmaFieaJM?=
+ =?us-ascii?Q?HptCcF3dpGB0yL72WkzMKpllu8/X7hPIGqhRxzQQ7pOdcdXX2toVE4byEY0x?=
+ =?us-ascii?Q?a0u/8jUiMZR1gpFaFzZybquqNrRx9qeAPkHhS9bi2dpr18GnzGc+Izl/UYLL?=
+ =?us-ascii?Q?ApfQGJlXGIFAw9ImohcpRmQFU8Uzx5SkVywsQKtp+hl8oYcu2i4S0y4cf2AS?=
+ =?us-ascii?Q?UzyzjwB5YdfNgUl5HeBjNpRO+fXoDtEFcA+FII68EZzStc5NYIEkXVnReyjR?=
+ =?us-ascii?Q?mUmAQM7RSp7+tW9qSOHB?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 
+ a70a962e-1970-4ca3-e564-08dc66158a7b
+X-MS-Exchange-CrossTenant-AuthSource: AS8PR02MB7237.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Apr 2024 17:23:09.1555
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR02MB7799
+X-MailFrom: erick.archer@outlook.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: FDIYQL22UPJU5EZ2FRDJ7SFYZT66OHKU
+X-Message-ID-Hash: FDIYQL22UPJU5EZ2FRDJ7SFYZT66OHKU
+X-Mailman-Approved-At: Fri, 26 Apr 2024 21:17:20 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JH376I34LMQQGWY3NXU5QKM4VI7P2NC3/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CZ4QQJMF26QWVPIQBIEX7ZO2MA7IIKDK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -71,143 +185,400 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The global menopausal therapy market size was USD 16.10 Billion in 2022 and is expected to register a steady revenue CAGR of 5.3% during the forecast period, according to latest analysis by Emergen Research. Increasing prevalence of post-menopausal symptoms owing to shift towards a sedentary lifestyle and rising vasomotor and menopausal symptoms, such as night sweats and hot flashes, among women during menopausal transition are major factors driving market revenue growth. Menopause is a natural stage of aging, in which a woman's period and her ovaries cease to act reproductively. This usually happens between the age of 45 and 55. Average age in the UK is 51, however, one in every 100 women experiences menopause before the age of 40.
+The "struct batadv_tvlv_tt_data" uses a dynamically sized set of
+trailing elements. Specifically, it uses an array of structures of type
+"batadv_tvlv_tt_vlan_data". So, use the preferred way in the kernel
+declaring a flexible array [1].
 
-The Global Menopausal Therapy Market Research Report published by Emergen Research has been formulated by analysis of key business details and extensive geographical spread of the Menopausal Therapy industry. The study offers comprehensive coverage of the qualitative and quantitative analysis of the Menopausal Therapy market along with crucial statistical data about the Menopausal Therapy market. The research study provides historical data from 2017 to 2018 and offers accurate forecast estimation until 2027. The report also profiles established and emerging players of the market, covering the business overview, product portfolio, strategic alliances, and business expansion strategies.
+At the same time, prepare for the coming implementation by GCC and Clang
+of the __counted_by attribute. Flexible array members annotated with
+__counted_by can have their accesses bounds-checked at run-time via
+CONFIG_UBSAN_BOUNDS (for array indexing) and CONFIG_FORTIFY_SOURCE (for
+strcpy/memcpy-family functions). In this case, it is important to note
+that the attribute used is specifically __counted_by_be since variable
+"num_vlan" is of type __be16.
 
-Download Free Exclusive Sample PDF @ https://www.emergenresearch.com/request-sample/1676
+The order in which the structure batadv_tvlv_tt_data and the structure
+batadv_tvlv_tt_vlan_data are defined must be swap to avoid an incomplete
+type error.
 
-Key companies operating in the Menopausal Therapy market include:
+Also, avoid the open-coded arithmetic in memory allocator functions [2]
+using the "struct_size" macro and use the "flex_array_size" helper to
+clarify some calculations, when possible.
 
-Bayer AG, Theramex, AbbVie Inc., Abbott Laboratories, Pure Encapsulations, LLC, Rainbow Lights, Pfizer Inc., Eli Lily and  Company, Cipla Inc., and Amgen Inc.
+Moreover, the new structure member also allow us to avoid the open-coded
+arithmetic on pointers in some situations. Take advantage of this.
 
-Key market aspects studied in the report:
+This code was detected with the help of Coccinelle, and audited and
+modified manually.
 
-Market Scope: The report explains the scope of various commercial possibilities in the global Menopausal Therapy market over the upcoming years. The estimated revenue build-up over the forecast years has been included in the report. The report analyzes the key market segments and sub-segments and provides deep insights into the market to assist readers with the formulation of lucrative strategies for business expansion.
+Link: https://www.kernel.org/doc/html/next/process/deprecated.html#zero-length-and-one-element-arrays [1]
+Link: https://www.kernel.org/doc/html/next/process/deprecated.html#open-coded-arithmetic-in-allocator-arguments [2]
+Signed-off-by: Erick Archer <erick.archer@outlook.com>
+---
+Changes in v2:
+- Add the #include of <linux/overflow.h> for the "flex_array_size"
+  helper (Sven Eckelmann).
+- Add the "ntohs" function to the "flex_array_size" helper removed
+  by mistake during the conversion (Sven Eckelmann).
+- Add the "__counted_by_be" attribute.
 
-Key Benefits of the Report:
+Previous versions:
+v1 -> https://lore.kernel.org/linux-hardening/AS8PR02MB7237987BF9DFCA030B330F658B3E2@AS8PR02MB7237.eurprd02.prod.outlook.com/
 
-Comprehensive analysis of the competitive scenario and its changing dynamics
-Analytical data with detailed SWOT analysis and Porter’s Five Forces analysis
-In-depth 8-year analysis of the Global Menopausal Therapy Market
-Critical understanding of the key market segments
-Comprehensive analysis of the drivers, restraints, trends, and opportunities
-Detailed regional analysis and extensive company profiling
-Extensive assessment of current and emerging trends of the market
-For more informative information, please visit us @https://www.emergenresearch.com/industry-report/menopausal-therapy-market
+Hi,
 
-Menopausal Therapy Market Segmentation:
+In this version I have worked on the "sparse" warnings. The difference
+in "sparse" warnings before and after this patch is as follows:
 
-Product Outlook (Revenue, USD Billion; 2019-2032)
-Hormone Therapy
-Non-hormone Therapy
-Distribution Channel Outlook (Revenue, USD Billion; 2019-2032)
-Hospital Pharmacies
-Retail Pharmacies
-Online
-Regional Outlook (Revenue, USD Billion; 2019–2032)
-North America
-U.S.
-Canada
-Mexico
-Europe
-Germany
-France
-UK
-Italy
-Spain
-Benelux
-Rest of Europe
-Asia Pacific
-China
-India
-Japan
-South Korea
-Rest of APAC
-Latin America
-Brazil
-Rest of LATAM
-Middle East & Africa
-Saudi Arabia
-UAE
-South Africa
-Turkey
-Rest of Middle East & Africa
- 
+net/batman-adv/translation-table.c:534:21: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:819:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:819:25: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:819:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:819:25: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:819:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:898:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:898:25: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:898:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:898:25: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:898:25: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:2892:16: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:2892:16: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:2892:16: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:2892:16: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:2892:16: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:3338:21: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:3338:21: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3338:21: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:3338:21: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3338:21: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:3942:30: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3946:27: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3950:21: warning: expression using sizeof(void)
+net/batman-adv/translation-table.c:3986:30: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3990:27: warning: using sizeof on a flexible structure
+net/batman-adv/translation-table.c:3992:23: warning: expression using sizeof(void)
 
-Menopausal Therapy Market Segmentation by Regions:
+As far as I know, these warnings cannot be removed. However it can be
+safely ignored since:
 
-North America (U.S., Canada)
-Europe (U.K., Italy, Germany, France, Rest of EU)
-Asia Pacific (India, Japan, China, South Korea, Australia, Rest of APAC)
-Latin America (Chile, Brazil, Argentina, Rest of Latin America)
-Middle East Africa (Saudi Arabia, U.A.E., South Africa, Rest of MEA)
-Click here to Get customization @https://www.emergenresearch.com/request-for-customization/1676
+Case 1: Warning "using sizeof on a flexible structure"
 
-Thank you for reading the report. The report can be customized as per the requirements of the clients. For further information or query about customization, please reach out to us, and we will offer you the report best suited for your needs.
+The commit 1a88f2f24619 ("flex-array: warn when using sizeof() on a flexible array")
+in the sparse git repository says
 
-More Related Reports By Emergen Research
-Product Lifecycle Management Market
-https://www.emergenresearch.com/industry-report/product-lifecycle-management-market
+   Using sizeof() on a structure containing a flexible array
+   will ignore the 'flexible' part. This is maybe what is expected
+   but maybe not, so add an option -Wflexible-array-sizeof to
+   warn on such usage.
+
+In this patch we take care of using or ignoring the flexible part
+when necessary. Therefore, these warnings can be safely ignored.
+
+Case 2: Warning "expression using sizeof(void)"
+
+This warning is implied by the use of the "struct_size" helper and
+"flex_array_size" helper because they both use the "__is_constexpr"
+macro. And this macro is defined using "sizeof(void)".
+
+/*
+ * This returns a constant expression while determining if an argument is
+ * a constant expression, most importantly without evaluating the argument.
+ * Glory to Martin Uecker <Martin.Uecker@med.uni-goettingen.de>
+ *
+ * Details:
+ * - sizeof() return an integer constant expression, and does not evaluate
+ *   the value of its operand; it only examines the type of its operand.
+ * - The results of comparing two integer constant expressions is also
+ *   an integer constant expression.
+ * - The first literal "8" isn't important. It could be any literal value.
+ * - The second literal "8" is to avoid warnings about unaligned pointers;
+ *   this could otherwise just be "1".
+ * - (long)(x) is used to avoid warnings about 64-bit types on 32-bit
+ *   architectures.
+ * - The C Standard defines "null pointer constant", "(void *)0", as
+ *   distinct from other void pointers.
+ * - If (x) is an integer constant expression, then the "* 0l" resolves
+ *   it into an integer constant expression of value 0. Since it is cast to
+ *   "void *", this makes the second operand a null pointer constant.
+ * - If (x) is not an integer constant expression, then the second operand
+ *   resolves to a void pointer (but not a null pointer constant: the value
+ *   is not an integer constant 0).
+ * - The conditional operator's third operand, "(int *)8", is an object
+ *   pointer (to type "int").
+ * - The behavior (including the return type) of the conditional operator
+ *   ("operand1 ? operand2 : operand3") depends on the kind of expressions
+ *   given for the second and third operands. This is the central mechanism
+ *   of the macro:
+ *   - When one operand is a null pointer constant (i.e. when x is an integer
+ *     constant expression) and the other is an object pointer (i.e. our
+ *     third operand), the conditional operator returns the type of the
+ *     object pointer operand (i.e. "int *"). Here, within the sizeof(), we
+ *     would then get:
+ *       sizeof(*((int *)(...))  == sizeof(int)  == 4
+ *   - When one operand is a void pointer (i.e. when x is not an integer
+ *     constant expression) and the other is an object pointer (i.e. our
+ *     third operand), the conditional operator returns a "void *" type.
+ *     Here, within the sizeof(), we would then get:
+ *       sizeof(*((void *)(...)) == sizeof(void) == 1
+ * - The equality comparison to "sizeof(int)" therefore depends on (x):
+ *     sizeof(int) == sizeof(int)     (x) was a constant expression
+ *     sizeof(int) != sizeof(void)    (x) was not a constant expression
+ */
+#define __is_constexpr(x) \
+	(sizeof(int) == sizeof(*(8 ? ((void *)((long)(x) * 0l)) : (int *)8)))
+
+Therefore, these warnings can also be safely ignored.
 
 
-Micro Irrigation Systems Market
-https://www.emergenresearch.com/industry-report/micro-irrigation-systems-market
+The Coccinelle script used to detect this code pattern is the following:
 
+virtual report
 
-Malware Analysis Market
-https://www.emergenresearch.com/industry-report/malware-analysis-market
+@rule1@
+type t1;
+type t2;
+identifier i0;
+identifier i1;
+identifier i2;
+identifier ALLOC =~ "kmalloc|kzalloc|kmalloc_node|kzalloc_node|vmalloc|vzalloc|kvmalloc|kvzalloc";
+position p1;
+@@
 
+i0 = sizeof(t1) + sizeof(t2) * i1;
+...
+i2 = ALLOC@p1(..., i0, ...);
 
-Pet Clothing Market
-https://www.emergenresearch.com/industry-report/pet-clothing-market
+@script:python depends on report@
+p1 << rule1.p1;
+@@
 
+msg = "WARNING: verify allocation on line %s" % (p1[0].line)
+coccilib.report.print_report(p1[0],msg)
 
-Acne Treatment Market
-https://www.emergenresearch.com/industry-report/acne-treatment-market
+Regards,
+Erick
+---
+ include/uapi/linux/batadv_packet.h | 28 +++++++++--------
+ net/batman-adv/translation-table.c | 49 ++++++++++++------------------
+ 2 files changed, 35 insertions(+), 42 deletions(-)
 
+diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+index 6e25753015df..dfbe30536995 100644
+--- a/include/uapi/linux/batadv_packet.h
++++ b/include/uapi/linux/batadv_packet.h
+@@ -592,19 +592,6 @@ struct batadv_tvlv_gateway_data {
+ 	__be32 bandwidth_up;
+ };
+ 
+-/**
+- * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
+- * @flags: translation table flags (see batadv_tt_data_flags)
+- * @ttvn: translation table version number
+- * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
+- *  one batadv_tvlv_tt_vlan_data object per announced vlan
+- */
+-struct batadv_tvlv_tt_data {
+-	__u8   flags;
+-	__u8   ttvn;
+-	__be16 num_vlan;
+-};
+-
+ /**
+  * struct batadv_tvlv_tt_vlan_data - vlan specific tt data propagated through
+  *  the tt tvlv container
+@@ -618,6 +605,21 @@ struct batadv_tvlv_tt_vlan_data {
+ 	__u16  reserved;
+ };
+ 
++/**
++ * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
++ * @flags: translation table flags (see batadv_tt_data_flags)
++ * @ttvn: translation table version number
++ * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
++ *  one batadv_tvlv_tt_vlan_data object per announced vlan
++ * @vlan_data: array of batadv_tvlv_tt_vlan_data objects
++ */
++struct batadv_tvlv_tt_data {
++	__u8   flags;
++	__u8   ttvn;
++	__be16 num_vlan;
++	struct batadv_tvlv_tt_vlan_data vlan_data[] __counted_by_be(num_vlan);
++};
++
+ /**
+  * struct batadv_tvlv_tt_change - translation table diff data
+  * @flags: status indicators concerning the non-mesh client (see
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b21ff3c36b07..d66fd900181c 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -28,6 +28,7 @@
+ #include <linux/net.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
++#include <linux/overflow.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/skbuff.h>
+@@ -815,8 +816,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 		num_entries += atomic_read(&vlan->tt.num_entries);
+ 	}
+ 
+-	change_offset = sizeof(**tt_data);
+-	change_offset += num_vlan * sizeof(*tt_vlan);
++	change_offset = struct_size(*tt_data, vlan_data, num_vlan);
+ 
+ 	/* if tt_len is negative, allocate the space needed by the full table */
+ 	if (*tt_len < 0)
+@@ -835,7 +835,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	(*tt_data)->ttvn = atomic_read(&orig_node->last_ttvn);
+ 	(*tt_data)->num_vlan = htons(num_vlan);
+ 
+-	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
++	tt_vlan = (*tt_data)->vlan_data;
+ 	hlist_for_each_entry(vlan, &orig_node->vlan_list, list) {
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
+@@ -895,8 +895,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 		total_entries += vlan_entries;
+ 	}
+ 
+-	change_offset = sizeof(**tt_data);
+-	change_offset += num_vlan * sizeof(*tt_vlan);
++	change_offset = struct_size(*tt_data, vlan_data, num_vlan);
+ 
+ 	/* if tt_len is negative, allocate the space needed by the full table */
+ 	if (*tt_len < 0)
+@@ -915,7 +914,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
+ 	(*tt_data)->ttvn = atomic_read(&bat_priv->tt.vn);
+ 	(*tt_data)->num_vlan = htons(num_vlan);
+ 
+-	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
++	tt_vlan = (*tt_data)->vlan_data;
+ 	hlist_for_each_entry(vlan, &bat_priv->softif_vlan_list, list) {
+ 		vlan_entries = atomic_read(&vlan->tt.num_entries);
+ 		if (vlan_entries < 1)
+@@ -2875,7 +2874,6 @@ static bool batadv_send_tt_request(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_tvlv_tt_data *tvlv_tt_data = NULL;
+ 	struct batadv_tt_req_node *tt_req_node = NULL;
+-	struct batadv_tvlv_tt_vlan_data *tt_vlan_req;
+ 	struct batadv_hard_iface *primary_if;
+ 	bool ret = false;
+ 	int i, size;
+@@ -2891,7 +2889,7 @@ static bool batadv_send_tt_request(struct batadv_priv *bat_priv,
+ 	if (!tt_req_node)
+ 		goto out;
+ 
+-	size = sizeof(*tvlv_tt_data) + sizeof(*tt_vlan_req) * num_vlan;
++	size = struct_size(tvlv_tt_data, vlan_data, num_vlan);
+ 	tvlv_tt_data = kzalloc(size, GFP_ATOMIC);
+ 	if (!tvlv_tt_data)
+ 		goto out;
+@@ -2903,12 +2901,10 @@ static bool batadv_send_tt_request(struct batadv_priv *bat_priv,
+ 	/* send all the CRCs within the request. This is needed by intermediate
+ 	 * nodes to ensure they have the correct table before replying
+ 	 */
+-	tt_vlan_req = (struct batadv_tvlv_tt_vlan_data *)(tvlv_tt_data + 1);
+ 	for (i = 0; i < num_vlan; i++) {
+-		tt_vlan_req->vid = tt_vlan->vid;
+-		tt_vlan_req->crc = tt_vlan->crc;
++		tvlv_tt_data->vlan_data[i].vid = tt_vlan->vid;
++		tvlv_tt_data->vlan_data[i].crc = tt_vlan->crc;
+ 
+-		tt_vlan_req++;
+ 		tt_vlan++;
+ 	}
+ 
+@@ -2960,7 +2956,6 @@ static bool batadv_send_other_tt_response(struct batadv_priv *bat_priv,
+ 	struct batadv_orig_node *res_dst_orig_node = NULL;
+ 	struct batadv_tvlv_tt_change *tt_change;
+ 	struct batadv_tvlv_tt_data *tvlv_tt_data = NULL;
+-	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	bool ret = false, full_table;
+ 	u8 orig_ttvn, req_ttvn;
+ 	u16 tvlv_len;
+@@ -2983,10 +2978,9 @@ static bool batadv_send_other_tt_response(struct batadv_priv *bat_priv,
+ 	orig_ttvn = (u8)atomic_read(&req_dst_orig_node->last_ttvn);
+ 	req_ttvn = tt_data->ttvn;
+ 
+-	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(tt_data + 1);
+ 	/* this node doesn't have the requested data */
+ 	if (orig_ttvn != req_ttvn ||
+-	    !batadv_tt_global_check_crc(req_dst_orig_node, tt_vlan,
++	    !batadv_tt_global_check_crc(req_dst_orig_node, tt_data->vlan_data,
+ 					ntohs(tt_data->num_vlan)))
+ 		goto out;
+ 
+@@ -3329,7 +3323,6 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_tvlv_tt_change *tt_change;
+ 	u8 *tvlv_ptr = (u8 *)tt_data;
+-	u16 change_offset;
+ 
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Received TT_RESPONSE from %pM for ttvn %d t_size: %d [%c]\n",
+@@ -3342,10 +3335,7 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 
+ 	spin_lock_bh(&orig_node->tt_lock);
+ 
+-	change_offset = sizeof(struct batadv_tvlv_tt_vlan_data);
+-	change_offset *= ntohs(tt_data->num_vlan);
+-	change_offset += sizeof(*tt_data);
+-	tvlv_ptr += change_offset;
++	tvlv_ptr += struct_size(tt_data, vlan_data, ntohs(tt_data->num_vlan));
+ 
+ 	tt_change = (struct batadv_tvlv_tt_change *)tvlv_ptr;
+ 	if (tt_data->flags & BATADV_TT_FULL_TABLE) {
+@@ -3944,10 +3934,10 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					  u8 flags, void *tvlv_value,
+ 					  u16 tvlv_value_len)
+ {
+-	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	struct batadv_tvlv_tt_change *tt_change;
+ 	struct batadv_tvlv_tt_data *tt_data;
+ 	u16 num_entries, num_vlan;
++	size_t flex_size;
+ 
+ 	if (tvlv_value_len < sizeof(*tt_data))
+ 		return;
+@@ -3957,17 +3947,18 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 
+ 	num_vlan = ntohs(tt_data->num_vlan);
+ 
+-	if (tvlv_value_len < sizeof(*tt_vlan) * num_vlan)
++	flex_size = flex_array_size(tt_data, vlan_data, num_vlan);
++	if (tvlv_value_len < flex_size)
+ 		return;
+ 
+-	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(tt_data + 1);
+-	tt_change = (struct batadv_tvlv_tt_change *)(tt_vlan + num_vlan);
+-	tvlv_value_len -= sizeof(*tt_vlan) * num_vlan;
++	tt_change = (struct batadv_tvlv_tt_change *)(tt_data->vlan_data +
++						     num_vlan);
++	tvlv_value_len -= flex_size;
+ 
+ 	num_entries = batadv_tt_entries(tvlv_value_len);
+ 
+-	batadv_tt_update_orig(bat_priv, orig, tt_vlan, num_vlan, tt_change,
+-			      num_entries, tt_data->ttvn);
++	batadv_tt_update_orig(bat_priv, orig, tt_data->vlan_data, num_vlan,
++			      tt_change, num_entries, tt_data->ttvn);
+ }
+ 
+ /**
+@@ -3998,8 +3989,8 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
+ 	tt_data = tvlv_value;
+ 	tvlv_value_len -= sizeof(*tt_data);
+ 
+-	tt_vlan_len = sizeof(struct batadv_tvlv_tt_vlan_data);
+-	tt_vlan_len *= ntohs(tt_data->num_vlan);
++	tt_vlan_len = flex_array_size(tt_data, vlan_data,
++				      ntohs(tt_data->num_vlan));
+ 
+ 	if (tvlv_value_len < tt_vlan_len)
+ 		return NET_RX_SUCCESS;
+-- 
+2.25.1
 
-Hardware Security Modules Market
-https://www.emergenresearch.com/industry-report/hardware-security-modules-market
-
-
-Game Based Learning Market
-https://www.emergenresearch.com/industry-report/game-based-learning-market
-
-
-Cannabis Cultivation Market
-https://www.emergenresearch.com/industry-report/cannabis-cultivation-market
-
-
-Silica Gel Market
-https://www.emergenresearch.com/industry-report/silica-gel-market
-
-
-Electric Vehicle Car Polymers Market
-https://www.emergenresearch.com/industry-report/electric-vehicle-car-polymers-market
-
- 
-
-About Emergen Research
-
-Emergen Research is a market research and consulting company that provides syndicated research reports, customized research reports, and consulting services. Our solutions purely focus on your purpose to locate, target, and analyze consumer behavior shifts across demographics, across industries, and help clients make smarter business decisions. We offer market intelligence studies ensuring relevant and fact-based research across multiple industries, including Healthcare, Touch Points, Chemicals, Types, and Energy. We consistently update our research offerings to ensure our clients are aware of the latest trends existent in the market. Emergen Research has a strong base of experienced analysts from varied areas of expertise. Our industry experience and ability to develop a concrete solution to any research problems provides our clients with the ability to secure an edge over their respective competitors.
-
-Contact Us:
-
-Eric Lee
-
-Corporate Sales Specialist
-
-Emergen Research | Web: www.emergenresearch.com
-
-Direct Line: +1 (604) 757-9756
-
-E-mail: sales@emergenresearch.com
-
-Visit for More Insights: https://www.emergenresearch.com/insights
-
-Explore Our Custom Intelligence services | Growth Consulting Services
-
-Trending Titles: Saffron Market |Lithium Iron Phosphate Battery Market
-
-Latest Report:Eye Tracking Market |Wireless Connectivity Market
