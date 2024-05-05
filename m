@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EC3AC4345F
-	for <batman@archiver.kernel.org>; Sat,  4 May 2024 20:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43CC6C4345F
+	for <batman@archiver.kernel.org>; Sun,  5 May 2024 15:30:56 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4C9AB8212F
-	for <batman@archiver.kernel.org>; Sat,  4 May 2024 22:27:31 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 635E08217E
+	for <batman@archiver.kernel.org>; Sun,  5 May 2024 17:30:54 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1714854451;
- b=LM1ZzIj7Agjn278+/TuEU0SRmLpa0nfh0valtnthFzjJ9b6vXXEaVC+2YZ5uuGpbTV6ya
- BGGPlyq3ejYSOD4x5d8oOsYrTGj6EABBpkMtNjUhVCB0Homuw3oBH+x9j9WUM4NQmkmO5JD
- LCqnjghodFFCGBG9zxstQlgbe6mYg5Y=
+ t=1714923054;
+ b=ijzdZpMMXzoGouXdr5NukvTPth3LxZDHb/Lg3Vy29IYacFQu4tFrpqYBGTzMDw1yRvUcW
+ txwlC5vZl8caXdFkCs4TbqkdkyM4ujqW6dnleYjNUT1gT3vyUMpZOcHDj1KrIf0Syni7AsG
+ LpTqWmF+UeScS/WYE77D+fAO1ef1YnM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1714854451; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1714923054; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=HJ0IaHTE8eCZIg11ocZHzPe9V+KPhxnhC4Do3qvkE5M=;
- b=ZE0mGEG1Y9dPHSlBzlwHHk7O5d03D4pVJfj2wZ+Le0e5LzyA+7QcuyvbJ6gaLXnvy3W5X
- 34Jg9LxTrZYrwy2HknvgBbqmg3p4keZ98S7wcTUuOSPVvyttF4b47CirDcux6gegS30v+ND
- KoSm3gKhfY7uF4SAuLZdauhsvJdVQxI=
+ list-archive; bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
+ b=HbNdszL+HVswDo7zWADv/KXlVC8+YqPkiCRsSIm/z8ckD8H3I86it3I9LOgmoc7qhJPrR
+ Q6kIm8DR50vewY1VLE06eXEsUOkDF470W58lDub+vWT9jF/FM/DpSFdv2J/ExUMbBT62pTI
+ r4j9VEwfZy1gyjcIjgsG6VGGqgRcpJQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -34,84 +34,82 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 67F83819D5
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  4 May 2024 22:27:27 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 987258034F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  5 May 2024 17:22:14 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1714854447;
+	s=20121; t=1714922534;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=HJ0IaHTE8eCZIg11ocZHzPe9V+KPhxnhC4Do3qvkE5M=;
-	b=tisrA5btZItA55Vsc5iFDRf7NeWppGdBIvc+7GWDU53MDaHetn1YHfgxnv5OPy2tiONJRT
-	fBUZCeQfDoJDh1rptLeMIyUnhsc0U41MuYiKSW8+eGTqI4RxyTwcfUkx9zhCZDl1YiVrnV
-	F5+JZXGDBcvfT2VEtVnJFoOX7x1UkE8=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1714854447; a=rsa-sha256;
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
+	b=dCF9ExhaTGtMk6nvAQkgaKwLLdeVcwML5KMMeRbYmcSkVMYezDpXjaMFQ0K+g67nBV0/6Q
+	3BP7nP1ouu/2S84fXIyWY2Ah+PsuTGuKD0E1YPNYvpiYNDEQ+CW9TGGU7AffAVbXw/B4kh
+	RcZZa16W37S04BES0DBTEPv8tiS7oJE=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1714922534; a=rsa-sha256;
 	cv=none;
-	b=labZSbRaE8a5H1chc28bwVnacJDfhwGqoLDtuAT1F455O9YA5RCOSuBmFvd7rrDuLJUHCn
-	7C441wXD56CzGHHybKz+Czm6/rqng3PjAjkyUxdPHVOk+qy7wEpN5mt26ArAU1MivWjZz0
-	QawDxiV1QPi76ZZyyeXPcMevI4Nk8TA=
+	b=2oYBf1pgJezyJpgLTVBygHKtub6fTsUsyonHPzYTVIEinMLN58Yc269rOHW2Wm0XQC+7CM
+	n9IFmg0XgjrgR+tDvCafVjtTDXPUr+KKoe3T3yhj5hDzL8fJ8zPUntW6/ANcgdOspu6kHm
+	Q10hVjJGtVWhzw1BUhpeFoZuOTIXdPU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=un6X6VPY;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="KAyUL/Kh";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1714854446;
+	s=20121; t=1714922533;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=HJ0IaHTE8eCZIg11ocZHzPe9V+KPhxnhC4Do3qvkE5M=;
-	b=un6X6VPYwLusB0dOL/oManKJztgq6uaXlxlFO9Ip/R6UDxU/3jVtRAQvon7p+KOVeRbWo0
-	NFJxvfP4ZPsONybwREgOix6cLlzAKccHhrumcvFRFub9mD19C6wd8ELUkU2uemqaIVo16w
-	DJ1zTVKg9PO172YD1U/mzqoMfIZIykE=
+	 in-reply-to:in-reply-to:references:references;
+	bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
+	b=KAyUL/Kh/ITipKh9aVVkTMWPz7Nd3C6g1uWP3LQzc+Ugg0RkDLcTp5BaZlW7tvnajUwbGT
+	fc5XyLz2pBTbE/p+ach8JwkkrD8RdoNvXeNYre3fZ+CVLXmHjeRpqJSbT5FzEQqombC3SW
+	qLxsGVAYRKQffO5yBGIIHNz6IotbfnA=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 04 May 2024 22:27:21 +0200
-Subject: [PATCH] batman-adv: Don't accept TT entries for out-of-spec VIDs
+To: Erick Archer <erick.archer@outlook.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>,
+ Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Nathan Chancellor <nathan@kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>, Kees Cook <keescook@chromium.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Erick Archer <erick.archer@outlook.com>, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ linux-hardening@vger.kernel.org, llvm@lists.linux.dev,
+ Alexander Lobakin <aleksander.lobakin@intel.com>
+Subject: 
+ Re: [PATCH v3] batman-adv: Add flex array to struct batadv_tvlv_tt_data
+Date: Sun, 05 May 2024 17:22:10 +0200
+Message-ID: <9977759.T7Z3S40VBb@sven-l14>
+In-Reply-To: 
+ <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+References: 
+ <AS8PR02MB72371F89D188B047410B755E8B192@AS8PR02MB7237.eurprd02.prod.outlook.com>
+ <3932737.ElGaqSPkdT@sven-l14>
+ <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240504-vlan_check-v1-1-7577dd779198@narfation.org>
-X-B4-Tracking: v=1; b=H4sIACiaNmYC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDUwMT3bKcxLz45IzU5Gxdo2TLZENDM0MDo0RDJaCGgqLUtMwKsGHRsbW
- 1AHYeSvtcAAAA
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>,
- =?utf-8?q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>,
- Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2569; i=sven@narfation.org;
- h=from:subject:message-id; bh=b7T2sIEafFAlnHU8HLPFPptu692LI4GQbjzpUHt04Ms=;
- b=owEBbQKS/ZANAwAKAV2HCgfBJntGAcsmYgBmNpopjsTmGhHF6V3ggw5voUGJhpC+46a8mQsQx
- 4WN+sHfLFmJAjMEAAEKAB0WIQQXXSuHYSVz3OMy4AJdhwoHwSZ7RgUCZjaaKQAKCRBdhwoHwSZ7
- Rn3AD/9hDQgAUNxSe/SwVJ0Qp3Xnj4SKAc0sXiIfFHNDHAHXIcAzYWJG1INF8HT9SEXDAszx/O/
- Yc+k6+i0DW94VksVMpd3xhwrlSkQxMSUK0oIBN0/6liXPAJtrXUfKbb/KYaXbUtyxu64zjr7LVa
- 11U5hYCSIIhHyxjKbs6SRLABPdCsbI47c/OpytCROMfU13gccM6Etkdoq0HXKkfZWnUhJiq6SA3
- KxIVIEXi2C993onRzEJBGynvAWJ9cC2UbkhvQYnzwcfIakMkMQJoRfId7lTRtVnAGpd4chwF5Rr
- yLoxwx8CyULzHKaq+BJFAaNO0JLGZMJ33ndATSPnbX7DQ+kX4FW5oYvbugPiJ+wNW6PJ6qvdq4b
- 38ZKkgyA7BQxI2l/zi9G5p0ngeiNE5epFvSr2gaxRs4MNBeAY5S3nZlMDOckHQXwBwjvQ9SVjbg
- XoNDUKNAZJK27kDq7ChocQ0diuz8v16UCg8uKvQ3CCsNmLNbgFpxwHdayZb4eO/iGCtm/fWDdS7
- U0lkLQ8moRbT7I7IjS1WW2M7RUt2yyJRYCgt2KeCTwdnZ/xAqspLIU9IwDEpaKf+WmyHNLaRdIr
- icNSEYTKjoMmD9zlWc10r16GFl7z/7iXIsI5Wj2sbkonO65BE/p1BNcQfJuLFhKvLjP4aZFyLYB
- SzTEeLrZuDabNdg==
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: NG6O7VWWY5S7VRBXOF6RYAJC2SWNA6H7
-X-Message-ID-Hash: NG6O7VWWY5S7VRBXOF6RYAJC2SWNA6H7
+Content-Type: multipart/signed; boundary="nextPart12069128.nUPlyArG6x";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 X-MailFrom: sven@narfation.org
+X-Mailman-Rule-Hits: max-recipients
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
+ suspicious-header
+Message-ID-Hash: 3FFR5TVT7BT63D3AMOCMX75URQDRTTSP
+X-Message-ID-Hash: 3FFR5TVT7BT63D3AMOCMX75URQDRTTSP
+X-Mailman-Approved-At: Sun, 05 May 2024 17:30:51 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NG6O7VWWY5S7VRBXOF6RYAJC2SWNA6H7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3FFR5TVT7BT63D3AMOCMX75URQDRTTSP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -120,91 +118,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The internal handling of VLAN IDs in batman-adv is only specified for
-following encodings:
+--nextPart12069128.nUPlyArG6x
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Erick Archer <erick.archer@outlook.com>
+Date: Sun, 05 May 2024 17:22:10 +0200
+Message-ID: <9977759.T7Z3S40VBb@sven-l14>
+MIME-Version: 1.0
 
-* VLAN is used
-  - bit 15 is 1
-  - bit 11 - bit 0 is the VLAN ID (0-4095)
-  - remaining bits are 0
-* No VLAN is used
-  - bit 15 is 0
-  - remaining bits are 0
+On Saturday, 4 May 2024 19:08:39 CEST Erick Archer wrote:
+[...]
+> > Thanks for the updates. But I can't accept this at the moment because 
+> > __counted_by_be is used in an uapi header without it being defined
+> > include/uapi/linux/stddef.h (and this file is also not included in this 
+> > header).
+> > 
+> > See commit c8248faf3ca2 ("Compiler Attributes: counted_by: Adjust name and 
+> > identifier expansion") as an example for the similar __counted_by macro.
+> 
+> If I understand correctly, the following changes are also needed because
+> the annotated struct is defined in a "uapi" header. Sorry if it's a stupid
+> question, but I'm new to these topics.
 
-batman-adv was only preparing new translation table entries (based on its
-soft interface information) using this encoding format. But the receive
-path was never checking if entries in the roam or TT TVLVs were also
-following this encoding.
+No, it is absolutely no stupid question.
 
-It was therefore possible to create more than the expected maximum of 4096
-+ 1 entries in the originator VLAN list. Simply by setting the "remaining
-bits" to "random" values in corresponding TVLV.
+> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+> index 6e25753015df..41f39d7661c9 100644
+> --- a/include/uapi/linux/batadv_packet.h
+> +++ b/include/uapi/linux/batadv_packet.h
+> @@ -9,6 +9,7 @@
+> 
+>  #include <asm/byteorder.h>
+>  #include <linux/if_ether.h>
+> +#include <linux/stddef.h>
+>  #include <linux/types.h>
+> 
+>  /**
 
-Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/originator.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+This must definitely go into your "original" patch
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index ac74f6ea..8f6dd2c6 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -12,6 +12,7 @@
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-+#include <linux/if_vlan.h>
- #include <linux/jiffies.h>
- #include <linux/kref.h>
- #include <linux/list.h>
-@@ -131,6 +132,29 @@ batadv_orig_node_vlan_get(struct batadv_orig_node *orig_node,
- 	return vlan;
- }
- 
-+/**
-+ * batadv_vlan_id_valid() - check if vlan id is in valid batman-adv encoding
-+ * @vid: the VLAN identifier
-+ *
-+ * Return: true when either no vlan is set or if VLAN is in correct range,
-+ *  false otherwise
-+ */
-+static bool batadv_vlan_id_valid(unsigned short vid)
-+{
-+	unsigned short non_vlan = vid & ~(BATADV_VLAN_HAS_TAG | VLAN_VID_MASK);
-+
-+	if (vid == 0)
-+		return true;
-+
-+	if (!(vid & BATADV_VLAN_HAS_TAG))
-+		return false;
-+
-+	if (non_vlan)
-+		return false;
-+
-+	return true;
-+}
-+
- /**
-  * batadv_orig_node_vlan_new() - search and possibly create an orig_node_vlan
-  *  object
-@@ -149,6 +173,9 @@ batadv_orig_node_vlan_new(struct batadv_orig_node *orig_node,
- {
- 	struct batadv_orig_node_vlan *vlan;
- 
-+	if (!batadv_vlan_id_valid(vid))
-+		return NULL;
-+
- 	spin_lock_bh(&orig_node->vlan_list_lock);
- 
- 	/* first look if an object for this vid already exists */
+> diff --git a/include/uapi/linux/stddef.h b/include/uapi/linux/stddef.h
+> index 2ec6f35cda32..58154117d9b0 100644
+> --- a/include/uapi/linux/stddef.h
+> +++ b/include/uapi/linux/stddef.h
+> @@ -55,4 +55,12 @@
+>  #define __counted_by(m)
+>  #endif
+> 
+> +#ifndef __counted_by_le
+> +#define __counted_by_le(m)
+> +#endif
 
----
-base-commit: c14c19af09d593a8948dcfd4a75ad6eef943ae3e
-change-id: 20240504-vlan_check-2c9c116102a1
+If you want to add this (for completeness) then please put it in an extra 
+patch. It is simply not used by batman-adv and I would not be able to find any 
+justification why it should be part of the batman-adv patch.
 
-Best regards,
--- 
-Sven Eckelmann <sven@narfation.org>
+> +
+> +#ifndef __counted_by_be
+> +#define __counted_by_be(m)
+> +#endif
+> +
+
+This part can be either:
+
+* in the batman-adv patch
+* or together with the __counted_by_le change in an additional patch which is 
+  "in front" of the batman-adv patch (in the patch series).
+
+>From my perspective, it is for you to decide - but of course, other 
+maintainers might have a different opinion about it.
+
+>  #endif /* _UAPI_LINUX_STDDEF_H */
+> 
+> If this is the right path, can these changes be merged into a
+> single patch or is it better to add a previous patch to define
+> __counted_by{le,be}?
+
+I don't have a perfect answer here. See the comments above. The file 
+include/uapi/linux/stddef.h doesn't have a specific maintainer (according to 
+./scripts/get_maintainer.pl) - so it should be fine to get modified through 
+the net-next tree.
+
+But maybe Kees Cook has a different opinion about it. At least there are a lot 
+of Signed-off-bys for this file by Kees.
+
+Kind regards,
+	Sven
+--nextPart12069128.nUPlyArG6x
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmY3pCIACgkQXYcKB8Em
+e0ZBhg//Sno8piH1PoF7IE8mPDXalzTPEW5L8W1iX0gbkT0DRJF3ngI31P7iYtLA
+TeYbI1z3YeRD5hNU2J7stFiqwoNbt5wWDmCYNcPoFf5zdimr5XbQYB2CGOVM5hG8
+SexX9t6qndx3MWNj2f83XLfSIJh9Sn+B7mLEFixcsISX8CLAvQZfwkwjNpola13v
+OZm+qoUsCeocQb18bR/XUhqfra69fMN3KRKHSvRg82xZqCox86RP3nukgcNr7Aw0
+mY+RvmuEHzVQezgfkMs7Wz+uSJSGKyXuTSCnkdIhy62kSMIKv9TZhFeIwCQEDWVl
+oCBLAqKXjMPr8sldjBScwkMM9mRAlCUgqD3XlIbZ32y2zCJoX9LsyRD+K6frc2tr
+z0j/9xAfCrYJCvYhXuWFhqak3bc6owQ08NxB0A0ePx0bBCMiz34J3R55BBtGOaTL
+YrXXEuNV79Z3/bI9P/Yk7mRmfuotPYa3p1r4fizuQEYa5294xJUdQkMF6aeH/R1G
+YK3IFiRiLHi0rVu4BvdO3nsVJL2nqa1YZeSRtqFtsKhXb9wdQSxuqaJD7YgQm1T6
+taFnTfK+6v7DXgEvlEdtUMqiKZkZM/pBDJoCZpI+oJHjYii7s0BiaYoDWHRfBwTj
+szbiK24wF/bXmY20iarKe1I1VVaFlhg6N3PXgCWsLJYh6gATkVY=
+=H+es
+-----END PGP SIGNATURE-----
+
+--nextPart12069128.nUPlyArG6x--
+
+
 
