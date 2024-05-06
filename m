@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1862EC25B5F
-	for <batman@archiver.kernel.org>; Mon,  6 May 2024 17:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AB9C25B5F
+	for <batman@archiver.kernel.org>; Mon,  6 May 2024 17:35:02 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2D793825A4
-	for <batman@archiver.kernel.org>; Mon,  6 May 2024 19:34:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 10AF682815
+	for <batman@archiver.kernel.org>; Mon,  6 May 2024 19:35:01 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1715016860;
- b=gU0mPM8f7DKymaZdEmI/s1kLaYuRBhMBfwu2zwUeEIuXlAH8TJis4F+DFnJ5+qs+FD2cI
- 9+89hxLw0vRvgnEu44Iz5H4ck2JS9kdvdHnmARM/ipmZAzfufR2rRwBTqqpwykX8xS2h2NR
- I2jgT87fiDhVAwI94KH1Vc94XVmaGqM=
+ t=1715016901;
+ b=yPqSYrjdMetSZjIMzznmNsGo3SXFsC0CWrAsjhPzasVEW+plUGlfeMGgx9XQ0tifMdol9
+ 0tEkAB60/AM2NCIH637AVWU0uaLasAfzIkhv3mmwGadkAIaM91hJ3U8itv2Pyj5PhdRqWFw
+ WmGG7Jr7TZ9yy4XFBUN4n9bJyMNJfCE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1715016860; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1715016901; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
- b=bAI7b2mgjW5tlKi6mTpgdCprRCpn/WQRFrSKf8GnTGL9mfuY7qlm99qrGY8s7joqwzYpS
- VrRFFZ7vzhk8oLuoepd7mvuFBBy9JGTCsW7e9FkuA8g25DYOgTNZwlydl+kpxrqwJmyoaAd
- lr0NUYtYlbeGLthSBDCSnUusf3Z95io=
+ list-archive; bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
+ b=Y67FOB/utLOJ6TmDwKyoq8SYWkTSIGTFlHJpvEo6d6AItw4p2oNJYPNCLRpOg6w5gcYLT
+ 3+B0o+k/2EDZGmXHqUxkdTGR4/hbQefx33yCwc7PMX5bmQfZ3pOKu1c+QGioZLt7VhIHCH0
+ qM/8WfWePzkEleQt2hm6mylx+Rbr81I=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=chromium.org;
   arc=pass;
@@ -33,78 +33,78 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=chromium.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=chromium.org policy.dmarc=none
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
- [IPv6:2607:f8b0:4864:20::436])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id BA85180F1C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  6 May 2024 18:27:48 +0200 (CEST)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
+ [IPv6:2607:f8b0:4864:20::62a])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2499A81979
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  6 May 2024 18:29:45 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1715012868;
+	s=20121; t=1715012985;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
-	b=QxF6U6dSD4+wKy1e64ekh0ORCv12kPxy8EvixdAWnmIeogVH+OabC53fT7i6ZrzVUWBtCK
-	fH3Clxsyvp575UhEjLt+HJTem4LqoOV9fmno0laksD2ny7FnllRrk2/t483O70sks/I18R
-	LOQHH91bHdbzdO/oOcr6UmaH0m0B6Fs=
+	bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
+	b=wrz65ykZ9A2vcAIkryJ81TBilxmJ94JP3h9bXADBS4JjzTaUkRKrXy3uozCcHNxlzNzBzw
+	PU2RHgL8u083ftpxxNPypa5RQ+4pjD5rv6esUzDlQ/ETQKeegdVSXrblhivX8xwDheRaHw
+	1EnPmNztn2WquVzyw3hxoQEY8chylvM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=chromium.org header.s=google header.b=fUUfc8y3;
+	dkim=pass header.d=chromium.org header.s=google header.b=cHvFMbcg;
 	spf=pass (diktynna.open-mesh.org: domain of keescook@chromium.org designates
- 2607:f8b0:4864:20::436 as permitted sender)
+ 2607:f8b0:4864:20::62a as permitted sender)
  smtp.mailfrom=keescook@chromium.org;
 	dmarc=pass (policy=none) header.from=chromium.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1715012868; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1715012985; a=rsa-sha256;
 	cv=none;
-	b=lQEauEQeEo2vSB2cc5PkCrrRBrSWPezFa4qgK6jex8gvBHDOH3iRIwV3M2XNAu6E9bALlS
-	wTs7AC9EYpbzRSmqTis3svYCk9Q3VlkX6AH0Rzx0pmaiTB04F4lSv5Ns2IP1zhM3YkyaaS
-	x29nQSQEFIu5+Pve6/QjGgj6LgglCkM=
-Received: by mail-pf1-x436.google.com with SMTP id
- d2e1a72fcca58-6f4521ad6c0so1477743b3a.0
+	b=SqkmXKFb8/UpPai0TlFNET5/QeKZSG+bdTPDBDs0JvLnNT17nxEcFXgyBSdYo55LoDmQQ1
+	iqYD9TJQXhYFzbFfcZTX9kx0tgOdXnK0Yc3F9I6ghgC0lRfQkvX5EboAlsqLwkqtAY4rCo
+	Qp0HyLgcHcJDy8+2chCphCuABASXjBA=
+Received: by mail-pl1-x62a.google.com with SMTP id
+ d9443c01a7336-1e651a9f3ffso8913155ad.1
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 06 May 2024 09:27:48 -0700 (PDT)
+ Mon, 06 May 2024 09:29:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1715012867; x=1715617667;
+        d=chromium.org; s=google; t=1715012983; x=1715617783;
  darn=lists.open-mesh.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
-        b=fUUfc8y3ziA0IIa1ErFUvG6CJUdbQfQ1FrR3qgOaPs3noYKO9utvJyxaZSUGPg8Tw/
-         kOHnc02ZIL2e90CIhtTwELeQlQ6339GBRM5pVwe+z4hmgdZ/Fx/pc+DfnsPoznXalr59
-         fx9pZ1ggXwf7dLXHMlDH1ULLviDOjx0ZsE8T0=
+        bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
+        b=cHvFMbcgdwlHBOS/pP681Z5drQgcaiVLlGbyP1gQW4YmObTu/76fums3YOOQSAnumd
+         zcjaZFnajwxxxTxsR8O48WnYNAmcnfro4u0W7xjwzFdFBpqW6t0ZSrIqd4iO/wNT94V0
+         cEQ7qAVOFc7/XB9IV6wvd86ix9CM/LyrcuMjo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715012867; x=1715617667;
+        d=1e100.net; s=20230601; t=1715012983; x=1715617783;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
-        b=SvznFzQ3ieCknLV9j+PZRh/gIXzmcmplf3mnZ7irNkPvYWHklEHS8ZhYQKoR6yEydw
-         q+IAQwMegMfZCXVNAwrINvdY7bBQQcinXLdypx2GJ+E0aTGkAUPLxYUxxLTNhAE3qUry
-         tngZOv//zuGvugnec7lFW2pOdR/gKqUYG13Cn4Yka6hJBrZzDvxTXN5Rw17J8RdVWOmZ
-         8ZP4CMGQPYeb4AyGhGO8yTcN1XaIwKp/kmAhehnpx0mBsXGsI59AlGwEF1h1b+gt3uN7
-         bcWJuDHgcunlXRwGSfawgbZS/0zacSZy5c934Fr0pgErcgabFKBJ5CvYcCob0ixG8XAB
-         8R8A==
+        bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
+        b=htmVuiYk62RZonblRxnL2UEiEfDQXU0oC27Dpnj6xLwh3RAus5RcfzZx60gsEPHCxR
+         VBmmdX5LUd7IOtT5rOjM0yuupPcNAGjk39hsU+CrlFy/BoC2QEcJtvII4tLs5ZKCztzZ
+         I4e6Q8+XTANyiBLmoYNCCsqpS76FVu+QNAJ7y78Q16F9N+XTn9gzOhGjoxi0ONCT/LfP
+         z4d5ryA3Twmpi6d0nCISiAw0bbz2+fBuDEQiYYX2RSTKhoQ1II/qpsLU4RRVsTERRqsA
+         rLhxX4f8UCcAxdiWDqXMKT9gmlr9nV24V9eKbLMubL3gZgWRvzA62ihDzYsRxYk3gghW
+         SOTA==
 X-Forwarded-Encrypted: i=1;
- AJvYcCVDce4h8wp4mFdFXa1SmMHXAnB0vhAiUZ8xXUJSKij+0MmG+a4H9a9FfOxQLp0mO4uaAh/mpsvFSr9aQW55DxDIVyg9pnvb5eaZnzpZogX7
-X-Gm-Message-State: AOJu0YxOumTQcMKHlxMi7sF97ZYJ89aM/C+2GRxn/zLBTEk5d8sYEHqH
-	bkmVBlFzPHe0RDVl57GHEsP7Q1NS9Z0N5ROT3lF3uM7gTWh7ZQP8baqWRGXDMw==
+ AJvYcCUfaS4nG6ETzyhjAMomYhb+vf96k507kZ+Ex3g9/E6pjKhvDkfFen6kpSIHOjDIokWJcsy8h+SbEbZe3POie8BA+PfviOFqY4OPX4diZ6jg
+X-Gm-Message-State: AOJu0YzowIvP8E2zUYFcdzi8kgUnIpUXG8ib0HFCi9h8WppDA8Hzc056
+	xK0AcDNOmeTfzeiWvyrG5ATVW+P9QxFYXQR9m7sqrZ7A59YxslDXpN0Ov1STnw==
 X-Google-Smtp-Source: 
- AGHT+IFx5A8ojwQhkf5tzPyoBV+wXS8DrLII4KW7i+NfXJRNfcIe8ljx+OJPW04VragyCU8v5vFkvw==
-X-Received: by 2002:a05:6a00:2342:b0:6f3:ea4b:d1c1 with SMTP id
- j2-20020a056a00234200b006f3ea4bd1c1mr12045012pfj.1.1715012867078;
-        Mon, 06 May 2024 09:27:47 -0700 (PDT)
+ AGHT+IFbFO7WG3T0AZk4k9Vs5NN+nUuBbULzCcUX9OeVRvDR9+EhwfFkTTZglRWvChOo6sF8QSal5A==
+X-Received: by 2002:a17:902:c40c:b0:1eb:dae:bd98 with SMTP id
+ k12-20020a170902c40c00b001eb0daebd98mr13243215plk.51.1715012983437;
+        Mon, 06 May 2024 09:29:43 -0700 (PDT)
 Received: from www.outflux.net ([198.0.35.241])
         by smtp.gmail.com with ESMTPSA id
- ls30-20020a056a00741e00b006f4123491d2sm7951997pfb.108.2024.05.06.09.27.46
+ im16-20020a170902bb1000b001ed33493868sm6958248plb.243.2024.05.06.09.29.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 May 2024 09:27:46 -0700 (PDT)
-Date: Mon, 6 May 2024 09:27:46 -0700
+        Mon, 06 May 2024 09:29:43 -0700 (PDT)
+Date: Mon, 6 May 2024 09:29:42 -0700
 From: Kees Cook <keescook@chromium.org>
-To: Erick Archer <erick.archer@outlook.com>
-Cc: Sven Eckelmann <sven@narfation.org>,
+To: Sven Eckelmann <sven@narfation.org>
+Cc: Erick Archer <erick.archer@outlook.com>,
 	Marek Lindner <mareklindner@neomailbox.ch>,
 	Simon Wunderlich <sw@simonwunderlich.de>,
 	Antonio Quartulli <a@unstable.cc>,
-	"David S.  Miller" <davem@davemloft.net>,
+	"David S. Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@google.com>,
 	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
 	Nathan Chancellor <nathan@kernel.org>,
@@ -118,16 +118,16 @@ Cc: Sven Eckelmann <sven@narfation.org>,
 	Alexander Lobakin <aleksander.lobakin@intel.com>
 Subject: Re: [PATCH v3] batman-adv: Add flex array to struct
  batadv_tvlv_tt_data
-Message-ID: <202405060924.4001F77D@keescook>
+Message-ID: <202405060928.272B235@keescook>
 References: 
  <AS8PR02MB72371F89D188B047410B755E8B192@AS8PR02MB7237.eurprd02.prod.outlook.com>
  <3932737.ElGaqSPkdT@sven-l14>
  <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+ <9977759.T7Z3S40VBb@sven-l14>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: 
- <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+In-Reply-To: <9977759.T7Z3S40VBb@sven-l14>
 X-MailFrom: keescook@chromium.org
 X-Mailman-Rule-Hits: max-recipients
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
@@ -137,15 +137,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
  administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
  suspicious-header
-Message-ID-Hash: BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU
-X-Message-ID-Hash: BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU
+Message-ID-Hash: ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU
+X-Message-ID-Hash: ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU
 X-Mailman-Approved-At: Mon, 06 May 2024 19:33:55 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -154,88 +154,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sat, May 04, 2024 at 07:08:39PM +0200, Erick Archer wrote:
-> Hi Sven,
-> 
-> On Sat, May 04, 2024 at 11:35:38AM +0200, Sven Eckelmann wrote:
-> > On Wednesday, 1 May 2024 17:02:42 CEST Erick Archer wrote:
-> > > diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-> > > index 6e25753015df..dfbe30536995 100644
-> > > --- a/include/uapi/linux/batadv_packet.h
-> > > +++ b/include/uapi/linux/batadv_packet.h
-> > [...]
-> > > +/**
-> > > + * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
-> > > + * @flags: translation table flags (see batadv_tt_data_flags)
-> > > + * @ttvn: translation table version number
-> > > + * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
-> > > + *  one batadv_tvlv_tt_vlan_data object per announced vlan
-> > > + * @vlan_data: array of batadv_tvlv_tt_vlan_data objects
-> > > + */
-> > > +struct batadv_tvlv_tt_data {
-> > > +       __u8   flags;
-> > > +       __u8   ttvn;
-> > > +       __be16 num_vlan;
-> > > +       struct batadv_tvlv_tt_vlan_data vlan_data[] __counted_by_be(num_vlan);
-> > > +};
+On Sun, May 05, 2024 at 05:22:10PM +0200, Sven Eckelmann wrote:
+> On Saturday, 4 May 2024 19:08:39 CEST Erick Archer wrote:
+> [...]
+> > > Thanks for the updates. But I can't accept this at the moment because 
+> > > __counted_by_be is used in an uapi header without it being defined
+> > > include/uapi/linux/stddef.h (and this file is also not included in this 
+> > > header).
+> > > 
+> > > See commit c8248faf3ca2 ("Compiler Attributes: counted_by: Adjust name and 
+> > > identifier expansion") as an example for the similar __counted_by macro.
 > > 
-> > Thanks for the updates. But I can't accept this at the moment because 
-> > __counted_by_be is used in an uapi header without it being defined
-> > include/uapi/linux/stddef.h (and this file is also not included in this 
-> > header).
+> > If I understand correctly, the following changes are also needed because
+> > the annotated struct is defined in a "uapi" header. Sorry if it's a stupid
+> > question, but I'm new to these topics.
+> 
+> No, it is absolutely no stupid question.
+> 
+> > diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+> > index 6e25753015df..41f39d7661c9 100644
+> > --- a/include/uapi/linux/batadv_packet.h
+> > +++ b/include/uapi/linux/batadv_packet.h
+> > @@ -9,6 +9,7 @@
 > > 
-> > See commit c8248faf3ca2 ("Compiler Attributes: counted_by: Adjust name and 
-> > identifier expansion") as an example for the similar __counted_by macro.
+> >  #include <asm/byteorder.h>
+> >  #include <linux/if_ether.h>
+> > +#include <linux/stddef.h>
+> >  #include <linux/types.h>
+> > 
+> >  /**
 > 
-> If I understand correctly, the following changes are also needed because
-> the annotated struct is defined in a "uapi" header. Sorry if it's a stupid
-> question, but I'm new to these topics.
+> This must definitely go into your "original" patch
 > 
-> diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-> index 6e25753015df..41f39d7661c9 100644
-> --- a/include/uapi/linux/batadv_packet.h
-> +++ b/include/uapi/linux/batadv_packet.h
-> @@ -9,6 +9,7 @@
+> > diff --git a/include/uapi/linux/stddef.h b/include/uapi/linux/stddef.h
+> > index 2ec6f35cda32..58154117d9b0 100644
+> > --- a/include/uapi/linux/stddef.h
+> > +++ b/include/uapi/linux/stddef.h
+> > @@ -55,4 +55,12 @@
+> >  #define __counted_by(m)
+> >  #endif
+> > 
+> > +#ifndef __counted_by_le
+> > +#define __counted_by_le(m)
+> > +#endif
 > 
->  #include <asm/byteorder.h>
->  #include <linux/if_ether.h>
-> +#include <linux/stddef.h>
->  #include <linux/types.h>
+> If you want to add this (for completeness) then please put it in an extra 
+> patch. It is simply not used by batman-adv and I would not be able to find any 
+> justification why it should be part of the batman-adv patch.
 > 
->  /**
-> diff --git a/include/uapi/linux/stddef.h b/include/uapi/linux/stddef.h
-> index 2ec6f35cda32..58154117d9b0 100644
-> --- a/include/uapi/linux/stddef.h
-> +++ b/include/uapi/linux/stddef.h
-> @@ -55,4 +55,12 @@
->  #define __counted_by(m)
->  #endif
+> > +
+> > +#ifndef __counted_by_be
+> > +#define __counted_by_be(m)
+> > +#endif
+> > +
 > 
-> +#ifndef __counted_by_le
-> +#define __counted_by_le(m)
-> +#endif
-> +
-> +#ifndef __counted_by_be
-> +#define __counted_by_be(m)
-> +#endif
-> +
->  #endif /* _UAPI_LINUX_STDDEF_H */
+> This part can be either:
+> 
+> * in the batman-adv patch
+> * or together with the __counted_by_le change in an additional patch which is 
+>   "in front" of the batman-adv patch (in the patch series).
+> 
+> From my perspective, it is for you to decide - but of course, other 
+> maintainers might have a different opinion about it.
+> 
+> >  #endif /* _UAPI_LINUX_STDDEF_H */
+> > 
+> > If this is the right path, can these changes be merged into a
+> > single patch or is it better to add a previous patch to define
+> > __counted_by{le,be}?
+> 
+> I don't have a perfect answer here. See the comments above. The file 
+> include/uapi/linux/stddef.h doesn't have a specific maintainer (according to 
+> ./scripts/get_maintainer.pl) - so it should be fine to get modified through 
+> the net-next tree.
+> 
+> But maybe Kees Cook has a different opinion about it. At least there are a lot 
+> of Signed-off-bys for this file by Kees.
 
-Yup, this is needed for UAPI as you have it. Thanks! I should have noticed
-the need for this when I reviewed commit ca7e324e8ad3 ("compiler_types:
-add Endianness-dependent __counted_by_{le,be}").
-
-> If this is the right path, can these changes be merged into a
-> single patch or is it better to add a previous patch to define
-> __counted_by{le,be}?
-
-We're almost on top of the merge window, so how about this: send me a
-patch for just the UAPI addition, and I'll include it in this coming (next
-week expected) merge window. Once -rc2 is out, re-send this batman-adv
-patch since then netdev will be merged with -rc2 and the UAPI change
-will be there.
-
--Kees
+FWIW, I'm also fine with the UAPI going in via netdev. It's the most
+likely place to use the be/le variants. Is netdev still open for
+patches? Whatever the path, we should get it into this coming merge
+window so we can use it elsewhere too if we need it.
 
 -- 
 Kees Cook
