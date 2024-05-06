@@ -4,95 +4,131 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43CC6C4345F
-	for <batman@archiver.kernel.org>; Sun,  5 May 2024 15:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1862EC25B5F
+	for <batman@archiver.kernel.org>; Mon,  6 May 2024 17:34:21 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 635E08217E
-	for <batman@archiver.kernel.org>; Sun,  5 May 2024 17:30:54 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2D793825A4
+	for <batman@archiver.kernel.org>; Mon,  6 May 2024 19:34:20 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1714923054;
- b=ijzdZpMMXzoGouXdr5NukvTPth3LxZDHb/Lg3Vy29IYacFQu4tFrpqYBGTzMDw1yRvUcW
- txwlC5vZl8caXdFkCs4TbqkdkyM4ujqW6dnleYjNUT1gT3vyUMpZOcHDj1KrIf0Syni7AsG
- LpTqWmF+UeScS/WYE77D+fAO1ef1YnM=
+ t=1715016860;
+ b=gU0mPM8f7DKymaZdEmI/s1kLaYuRBhMBfwu2zwUeEIuXlAH8TJis4F+DFnJ5+qs+FD2cI
+ 9+89hxLw0vRvgnEu44Iz5H4ck2JS9kdvdHnmARM/ipmZAzfufR2rRwBTqqpwykX8xS2h2NR
+ I2jgT87fiDhVAwI94KH1Vc94XVmaGqM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1714923054; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1715016860; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
- b=HbNdszL+HVswDo7zWADv/KXlVC8+YqPkiCRsSIm/z8ckD8H3I86it3I9LOgmoc7qhJPrR
- Q6kIm8DR50vewY1VLE06eXEsUOkDF470W58lDub+vWT9jF/FM/DpSFdv2J/ExUMbBT62pTI
- r4j9VEwfZy1gyjcIjgsG6VGGqgRcpJQ=
+ list-archive; bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
+ b=bAI7b2mgjW5tlKi6mTpgdCprRCpn/WQRFrSKf8GnTGL9mfuY7qlm99qrGY8s7joqwzYpS
+ VrRFFZ7vzhk8oLuoepd7mvuFBBy9JGTCsW7e9FkuA8g25DYOgTNZwlydl+kpxrqwJmyoaAd
+ lr0NUYtYlbeGLthSBDCSnUusf3Z95io=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=chromium.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
+  dmarc=pass (Used From Domain Record) header.from=chromium.org
  policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+Authentication-Results: open-mesh.org; dkim=pass header.d=chromium.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 987258034F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  5 May 2024 17:22:14 +0200 (CEST)
+ dmarc=pass (Used From Domain Record) header.from=chromium.org policy.dmarc=none
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
+ [IPv6:2607:f8b0:4864:20::436])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id BA85180F1C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  6 May 2024 18:27:48 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1714922534;
+	s=20121; t=1715012868;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
-	b=dCF9ExhaTGtMk6nvAQkgaKwLLdeVcwML5KMMeRbYmcSkVMYezDpXjaMFQ0K+g67nBV0/6Q
-	3BP7nP1ouu/2S84fXIyWY2Ah+PsuTGuKD0E1YPNYvpiYNDEQ+CW9TGGU7AffAVbXw/B4kh
-	RcZZa16W37S04BES0DBTEPv8tiS7oJE=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1714922534; a=rsa-sha256;
-	cv=none;
-	b=2oYBf1pgJezyJpgLTVBygHKtub6fTsUsyonHPzYTVIEinMLN58Yc269rOHW2Wm0XQC+7CM
-	n9IFmg0XgjrgR+tDvCafVjtTDXPUr+KKoe3T3yhj5hDzL8fJ8zPUntW6/ANcgdOspu6kHm
-	Q10hVjJGtVWhzw1BUhpeFoZuOTIXdPU=
+	bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
+	b=QxF6U6dSD4+wKy1e64ekh0ORCv12kPxy8EvixdAWnmIeogVH+OabC53fT7i6ZrzVUWBtCK
+	fH3Clxsyvp575UhEjLt+HJTem4LqoOV9fmno0laksD2ny7FnllRrk2/t483O70sks/I18R
+	LOQHH91bHdbzdO/oOcr6UmaH0m0B6Fs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="KAyUL/Kh";
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1714922533;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xuJ4u/ouTOrJt02FpiNU5j5yMZJgY6im3scH4wwajxE=;
-	b=KAyUL/Kh/ITipKh9aVVkTMWPz7Nd3C6g1uWP3LQzc+Ugg0RkDLcTp5BaZlW7tvnajUwbGT
-	fc5XyLz2pBTbE/p+ach8JwkkrD8RdoNvXeNYre3fZ+CVLXmHjeRpqJSbT5FzEQqombC3SW
-	qLxsGVAYRKQffO5yBGIIHNz6IotbfnA=
-From: Sven Eckelmann <sven@narfation.org>
+	dkim=pass header.d=chromium.org header.s=google header.b=fUUfc8y3;
+	spf=pass (diktynna.open-mesh.org: domain of keescook@chromium.org designates
+ 2607:f8b0:4864:20::436 as permitted sender)
+ smtp.mailfrom=keescook@chromium.org;
+	dmarc=pass (policy=none) header.from=chromium.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1715012868; a=rsa-sha256;
+	cv=none;
+	b=lQEauEQeEo2vSB2cc5PkCrrRBrSWPezFa4qgK6jex8gvBHDOH3iRIwV3M2XNAu6E9bALlS
+	wTs7AC9EYpbzRSmqTis3svYCk9Q3VlkX6AH0Rzx0pmaiTB04F4lSv5Ns2IP1zhM3YkyaaS
+	x29nQSQEFIu5+Pve6/QjGgj6LgglCkM=
+Received: by mail-pf1-x436.google.com with SMTP id
+ d2e1a72fcca58-6f4521ad6c0so1477743b3a.0
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Mon, 06 May 2024 09:27:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1715012867; x=1715617667;
+ darn=lists.open-mesh.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
+        b=fUUfc8y3ziA0IIa1ErFUvG6CJUdbQfQ1FrR3qgOaPs3noYKO9utvJyxaZSUGPg8Tw/
+         kOHnc02ZIL2e90CIhtTwELeQlQ6339GBRM5pVwe+z4hmgdZ/Fx/pc+DfnsPoznXalr59
+         fx9pZ1ggXwf7dLXHMlDH1ULLviDOjx0ZsE8T0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1715012867; x=1715617667;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=odqzrPs//hj8WC38Rhd4Ch2SctDBzFte4EXtwtCBz3k=;
+        b=SvznFzQ3ieCknLV9j+PZRh/gIXzmcmplf3mnZ7irNkPvYWHklEHS8ZhYQKoR6yEydw
+         q+IAQwMegMfZCXVNAwrINvdY7bBQQcinXLdypx2GJ+E0aTGkAUPLxYUxxLTNhAE3qUry
+         tngZOv//zuGvugnec7lFW2pOdR/gKqUYG13Cn4Yka6hJBrZzDvxTXN5Rw17J8RdVWOmZ
+         8ZP4CMGQPYeb4AyGhGO8yTcN1XaIwKp/kmAhehnpx0mBsXGsI59AlGwEF1h1b+gt3uN7
+         bcWJuDHgcunlXRwGSfawgbZS/0zacSZy5c934Fr0pgErcgabFKBJ5CvYcCob0ixG8XAB
+         8R8A==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCVDce4h8wp4mFdFXa1SmMHXAnB0vhAiUZ8xXUJSKij+0MmG+a4H9a9FfOxQLp0mO4uaAh/mpsvFSr9aQW55DxDIVyg9pnvb5eaZnzpZogX7
+X-Gm-Message-State: AOJu0YxOumTQcMKHlxMi7sF97ZYJ89aM/C+2GRxn/zLBTEk5d8sYEHqH
+	bkmVBlFzPHe0RDVl57GHEsP7Q1NS9Z0N5ROT3lF3uM7gTWh7ZQP8baqWRGXDMw==
+X-Google-Smtp-Source: 
+ AGHT+IFx5A8ojwQhkf5tzPyoBV+wXS8DrLII4KW7i+NfXJRNfcIe8ljx+OJPW04VragyCU8v5vFkvw==
+X-Received: by 2002:a05:6a00:2342:b0:6f3:ea4b:d1c1 with SMTP id
+ j2-20020a056a00234200b006f3ea4bd1c1mr12045012pfj.1.1715012867078;
+        Mon, 06 May 2024 09:27:47 -0700 (PDT)
+Received: from www.outflux.net ([198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id
+ ls30-20020a056a00741e00b006f4123491d2sm7951997pfb.108.2024.05.06.09.27.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 May 2024 09:27:46 -0700 (PDT)
+Date: Mon, 6 May 2024 09:27:46 -0700
+From: Kees Cook <keescook@chromium.org>
 To: Erick Archer <erick.archer@outlook.com>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>,
- Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
- Justin Stitt <justinstitt@google.com>, Kees Cook <keescook@chromium.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Erick Archer <erick.archer@outlook.com>, b.a.t.m.a.n@lists.open-mesh.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linux-hardening@vger.kernel.org, llvm@lists.linux.dev,
- Alexander Lobakin <aleksander.lobakin@intel.com>
-Subject: 
- Re: [PATCH v3] batman-adv: Add flex array to struct batadv_tvlv_tt_data
-Date: Sun, 05 May 2024 17:22:10 +0200
-Message-ID: <9977759.T7Z3S40VBb@sven-l14>
-In-Reply-To: 
- <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+Cc: Sven Eckelmann <sven@narfation.org>,
+	Marek Lindner <mareklindner@neomailbox.ch>,
+	Simon Wunderlich <sw@simonwunderlich.de>,
+	Antonio Quartulli <a@unstable.cc>,
+	"David S.  Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org, linux-hardening@vger.kernel.org,
+	llvm@lists.linux.dev,
+	Alexander Lobakin <aleksander.lobakin@intel.com>
+Subject: Re: [PATCH v3] batman-adv: Add flex array to struct
+ batadv_tvlv_tt_data
+Message-ID: <202405060924.4001F77D@keescook>
 References: 
  <AS8PR02MB72371F89D188B047410B755E8B192@AS8PR02MB7237.eurprd02.prod.outlook.com>
  <3932737.ElGaqSPkdT@sven-l14>
  <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12069128.nUPlyArG6x";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: 
+ <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+X-MailFrom: keescook@chromium.org
 X-Mailman-Rule-Hits: max-recipients
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -101,15 +137,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
  administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
  suspicious-header
-Message-ID-Hash: 3FFR5TVT7BT63D3AMOCMX75URQDRTTSP
-X-Message-ID-Hash: 3FFR5TVT7BT63D3AMOCMX75URQDRTTSP
-X-Mailman-Approved-At: Sun, 05 May 2024 17:30:51 +0200
+Message-ID-Hash: BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU
+X-Message-ID-Hash: BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU
+X-Mailman-Approved-At: Mon, 06 May 2024 19:33:55 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3FFR5TVT7BT63D3AMOCMX75URQDRTTSP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BXHRPVLSCN2ACSZPQK2VFLASBMIQ5KMU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -118,17 +154,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart12069128.nUPlyArG6x
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Erick Archer <erick.archer@outlook.com>
-Date: Sun, 05 May 2024 17:22:10 +0200
-Message-ID: <9977759.T7Z3S40VBb@sven-l14>
-MIME-Version: 1.0
-
-On Saturday, 4 May 2024 19:08:39 CEST Erick Archer wrote:
-[...]
+On Sat, May 04, 2024 at 07:08:39PM +0200, Erick Archer wrote:
+> Hi Sven,
+> 
+> On Sat, May 04, 2024 at 11:35:38AM +0200, Sven Eckelmann wrote:
+> > On Wednesday, 1 May 2024 17:02:42 CEST Erick Archer wrote:
+> > > diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+> > > index 6e25753015df..dfbe30536995 100644
+> > > --- a/include/uapi/linux/batadv_packet.h
+> > > +++ b/include/uapi/linux/batadv_packet.h
+> > [...]
+> > > +/**
+> > > + * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
+> > > + * @flags: translation table flags (see batadv_tt_data_flags)
+> > > + * @ttvn: translation table version number
+> > > + * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
+> > > + *  one batadv_tvlv_tt_vlan_data object per announced vlan
+> > > + * @vlan_data: array of batadv_tvlv_tt_vlan_data objects
+> > > + */
+> > > +struct batadv_tvlv_tt_data {
+> > > +       __u8   flags;
+> > > +       __u8   ttvn;
+> > > +       __be16 num_vlan;
+> > > +       struct batadv_tvlv_tt_vlan_data vlan_data[] __counted_by_be(num_vlan);
+> > > +};
+> > 
 > > Thanks for the updates. But I can't accept this at the moment because 
 > > __counted_by_be is used in an uapi header without it being defined
 > > include/uapi/linux/stddef.h (and this file is also not included in this 
@@ -140,9 +190,7 @@ On Saturday, 4 May 2024 19:08:39 CEST Erick Archer wrote:
 > If I understand correctly, the following changes are also needed because
 > the annotated struct is defined in a "uapi" header. Sorry if it's a stupid
 > question, but I'm new to these topics.
-
-No, it is absolutely no stupid question.
-
+> 
 > diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
 > index 6e25753015df..41f39d7661c9 100644
 > --- a/include/uapi/linux/batadv_packet.h
@@ -155,9 +203,6 @@ No, it is absolutely no stupid question.
 >  #include <linux/types.h>
 > 
 >  /**
-
-This must definitely go into your "original" patch
-
 > diff --git a/include/uapi/linux/stddef.h b/include/uapi/linux/stddef.h
 > index 2ec6f35cda32..58154117d9b0 100644
 > --- a/include/uapi/linux/stddef.h
@@ -169,65 +214,28 @@ This must definitely go into your "original" patch
 > +#ifndef __counted_by_le
 > +#define __counted_by_le(m)
 > +#endif
-
-If you want to add this (for completeness) then please put it in an extra 
-patch. It is simply not used by batman-adv and I would not be able to find any 
-justification why it should be part of the batman-adv patch.
-
 > +
 > +#ifndef __counted_by_be
 > +#define __counted_by_be(m)
 > +#endif
 > +
-
-This part can be either:
-
-* in the batman-adv patch
-* or together with the __counted_by_le change in an additional patch which is 
-  "in front" of the batman-adv patch (in the patch series).
-
->From my perspective, it is for you to decide - but of course, other 
-maintainers might have a different opinion about it.
-
 >  #endif /* _UAPI_LINUX_STDDEF_H */
-> 
+
+Yup, this is needed for UAPI as you have it. Thanks! I should have noticed
+the need for this when I reviewed commit ca7e324e8ad3 ("compiler_types:
+add Endianness-dependent __counted_by_{le,be}").
+
 > If this is the right path, can these changes be merged into a
 > single patch or is it better to add a previous patch to define
 > __counted_by{le,be}?
 
-I don't have a perfect answer here. See the comments above. The file 
-include/uapi/linux/stddef.h doesn't have a specific maintainer (according to 
-./scripts/get_maintainer.pl) - so it should be fine to get modified through 
-the net-next tree.
+We're almost on top of the merge window, so how about this: send me a
+patch for just the UAPI addition, and I'll include it in this coming (next
+week expected) merge window. Once -rc2 is out, re-send this batman-adv
+patch since then netdev will be merged with -rc2 and the UAPI change
+will be there.
 
-But maybe Kees Cook has a different opinion about it. At least there are a lot 
-of Signed-off-bys for this file by Kees.
+-Kees
 
-Kind regards,
-	Sven
---nextPart12069128.nUPlyArG6x
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAmY3pCIACgkQXYcKB8Em
-e0ZBhg//Sno8piH1PoF7IE8mPDXalzTPEW5L8W1iX0gbkT0DRJF3ngI31P7iYtLA
-TeYbI1z3YeRD5hNU2J7stFiqwoNbt5wWDmCYNcPoFf5zdimr5XbQYB2CGOVM5hG8
-SexX9t6qndx3MWNj2f83XLfSIJh9Sn+B7mLEFixcsISX8CLAvQZfwkwjNpola13v
-OZm+qoUsCeocQb18bR/XUhqfra69fMN3KRKHSvRg82xZqCox86RP3nukgcNr7Aw0
-mY+RvmuEHzVQezgfkMs7Wz+uSJSGKyXuTSCnkdIhy62kSMIKv9TZhFeIwCQEDWVl
-oCBLAqKXjMPr8sldjBScwkMM9mRAlCUgqD3XlIbZ32y2zCJoX9LsyRD+K6frc2tr
-z0j/9xAfCrYJCvYhXuWFhqak3bc6owQ08NxB0A0ePx0bBCMiz34J3R55BBtGOaTL
-YrXXEuNV79Z3/bI9P/Yk7mRmfuotPYa3p1r4fizuQEYa5294xJUdQkMF6aeH/R1G
-YK3IFiRiLHi0rVu4BvdO3nsVJL2nqa1YZeSRtqFtsKhXb9wdQSxuqaJD7YgQm1T6
-taFnTfK+6v7DXgEvlEdtUMqiKZkZM/pBDJoCZpI+oJHjYii7s0BiaYoDWHRfBwTj
-szbiK24wF/bXmY20iarKe1I1VVaFlhg6N3PXgCWsLJYh6gATkVY=
-=H+es
------END PGP SIGNATURE-----
-
---nextPart12069128.nUPlyArG6x--
-
-
-
+-- 
+Kees Cook
