@@ -4,107 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AB9C25B5F
-	for <batman@archiver.kernel.org>; Mon,  6 May 2024 17:35:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25F58C10F1A
+	for <batman@archiver.kernel.org>; Thu,  9 May 2024 18:00:33 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 10AF682815
-	for <batman@archiver.kernel.org>; Mon,  6 May 2024 19:35:01 +0200 (CEST)
-ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1715016901;
- b=yPqSYrjdMetSZjIMzznmNsGo3SXFsC0CWrAsjhPzasVEW+plUGlfeMGgx9XQ0tifMdol9
- 0tEkAB60/AM2NCIH637AVWU0uaLasAfzIkhv3mmwGadkAIaM91hJ3U8itv2Pyj5PhdRqWFw
- WmGG7Jr7TZ9yy4XFBUN4n9bJyMNJfCE=
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1715016901; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7993E825FE
+	for <batman@archiver.kernel.org>; Thu,  9 May 2024 20:00:32 +0200 (CEST)
+ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1715277632;
+ b=mXo3NcqTf9KoyYBWjYsGC1qh57rLc1tLAuoSt6ocN7lrZd6Z0fmS6iBfgvUI0UJw5V/yO
+ xNJCm3/XXJF+6mSIc7LwAqDr2yuQF65As3LpH318dPM3S2v2lm5nNi1LlXQAx96/2IFSxSM
+ khETf9DZZ59JCnKUUNcHG9O52PoLWcU=
+ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1715277632; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
- b=Y67FOB/utLOJ6TmDwKyoq8SYWkTSIGTFlHJpvEo6d6AItw4p2oNJYPNCLRpOg6w5gcYLT
- 3+B0o+k/2EDZGmXHqUxkdTGR4/hbQefx33yCwc7PMX5bmQfZ3pOKu1c+QGioZLt7VhIHCH0
- qM/8WfWePzkEleQt2hm6mylx+Rbr81I=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=chromium.org;
+ list-archive; bh=rrsJRKTXIQk4+neYibaCVbd+r9P8rhMWu2sijpM1grQ=;
+ b=almWGJZ/c6qF728j2ivMnNVkGRJnEtWyat9pSy399MDxGH5ZtAcWi4GL2BcX091MEgHSx
+ 4PlKKcofpTLeb9cCrSMwYCLcSjaNhyTd3a0bg6aO9pHy06E3T3TWBVu4XUJtY4HXBk+Pbps
+ 5M8zN2WMevINxEutsfyC5w6IyIQHf+c=
+ARC-Authentication-Results: i=3; open-mesh.org;
+ dkim=pass header.d=outlook.com;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=chromium.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=chromium.org;
+  dmarc=pass (Used From Domain Record) header.from=outlook.com
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=outlook.com;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=chromium.org policy.dmarc=none
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com
- [IPv6:2607:f8b0:4864:20::62a])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2499A81979
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  6 May 2024 18:29:45 +0200 (CEST)
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1715012985;
+ dmarc=pass (Used From Domain Record) header.from=outlook.com policy.dmarc=quarantine
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-db3eur04olkn2109.outbound.protection.outlook.com [40.92.74.109])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3E85581B32
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu,  9 May 2024 19:17:58 +0200 (CEST)
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1715275078;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
-	b=wrz65ykZ9A2vcAIkryJ81TBilxmJ94JP3h9bXADBS4JjzTaUkRKrXy3uozCcHNxlzNzBzw
-	PU2RHgL8u083ftpxxNPypa5RQ+4pjD5rv6esUzDlQ/ETQKeegdVSXrblhivX8xwDheRaHw
-	1EnPmNztn2WquVzyw3hxoQEY8chylvM=
-ARC-Authentication-Results: i=1;
+	bh=rrsJRKTXIQk4+neYibaCVbd+r9P8rhMWu2sijpM1grQ=;
+	b=QbOI/zF+uLX+bt0mlu5cmhnV1axnWepre/3TSQIQnvnqG5o4xDABZyYsRebpXdJ732aNzu
+	ekXOdFHOtWS4zBNKV4hPTfkFXpTSJ9sBHzoLG0PjK9tCHtodjiaDl7IF9fYiCPxPP2S2o8
+	YJ0qKd3elLbaI3a8COuV3VL/CuHa6AY=
+ARC-Authentication-Results: i=2;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=chromium.org header.s=google header.b=cHvFMbcg;
-	spf=pass (diktynna.open-mesh.org: domain of keescook@chromium.org designates
- 2607:f8b0:4864:20::62a as permitted sender)
- smtp.mailfrom=keescook@chromium.org;
-	dmarc=pass (policy=none) header.from=chromium.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1715012985; a=rsa-sha256;
-	cv=none;
-	b=SqkmXKFb8/UpPai0TlFNET5/QeKZSG+bdTPDBDs0JvLnNT17nxEcFXgyBSdYo55LoDmQQ1
-	iqYD9TJQXhYFzbFfcZTX9kx0tgOdXnK0Yc3F9I6ghgC0lRfQkvX5EboAlsqLwkqtAY4rCo
-	Qp0HyLgcHcJDy8+2chCphCuABASXjBA=
-Received: by mail-pl1-x62a.google.com with SMTP id
- d9443c01a7336-1e651a9f3ffso8913155ad.1
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 06 May 2024 09:29:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1715012983; x=1715617783;
- darn=lists.open-mesh.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
-        b=cHvFMbcgdwlHBOS/pP681Z5drQgcaiVLlGbyP1gQW4YmObTu/76fums3YOOQSAnumd
-         zcjaZFnajwxxxTxsR8O48WnYNAmcnfro4u0W7xjwzFdFBpqW6t0ZSrIqd4iO/wNT94V0
-         cEQ7qAVOFc7/XB9IV6wvd86ix9CM/LyrcuMjo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715012983; x=1715617783;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4FGZV4xevlS61uYYoN9aqvtjUqiITrQIdhJ8KhnBQtc=;
-        b=htmVuiYk62RZonblRxnL2UEiEfDQXU0oC27Dpnj6xLwh3RAus5RcfzZx60gsEPHCxR
-         VBmmdX5LUd7IOtT5rOjM0yuupPcNAGjk39hsU+CrlFy/BoC2QEcJtvII4tLs5ZKCztzZ
-         I4e6Q8+XTANyiBLmoYNCCsqpS76FVu+QNAJ7y78Q16F9N+XTn9gzOhGjoxi0ONCT/LfP
-         z4d5ryA3Twmpi6d0nCISiAw0bbz2+fBuDEQiYYX2RSTKhoQ1II/qpsLU4RRVsTERRqsA
-         rLhxX4f8UCcAxdiWDqXMKT9gmlr9nV24V9eKbLMubL3gZgWRvzA62ihDzYsRxYk3gghW
-         SOTA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUfaS4nG6ETzyhjAMomYhb+vf96k507kZ+Ex3g9/E6pjKhvDkfFen6kpSIHOjDIokWJcsy8h+SbEbZe3POie8BA+PfviOFqY4OPX4diZ6jg
-X-Gm-Message-State: AOJu0YzowIvP8E2zUYFcdzi8kgUnIpUXG8ib0HFCi9h8WppDA8Hzc056
-	xK0AcDNOmeTfzeiWvyrG5ATVW+P9QxFYXQR9m7sqrZ7A59YxslDXpN0Ov1STnw==
-X-Google-Smtp-Source: 
- AGHT+IFbFO7WG3T0AZk4k9Vs5NN+nUuBbULzCcUX9OeVRvDR9+EhwfFkTTZglRWvChOo6sF8QSal5A==
-X-Received: by 2002:a17:902:c40c:b0:1eb:dae:bd98 with SMTP id
- k12-20020a170902c40c00b001eb0daebd98mr13243215plk.51.1715012983437;
-        Mon, 06 May 2024 09:29:43 -0700 (PDT)
-Received: from www.outflux.net ([198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id
- im16-20020a170902bb1000b001ed33493868sm6958248plb.243.2024.05.06.09.29.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 May 2024 09:29:43 -0700 (PDT)
-Date: Mon, 6 May 2024 09:29:42 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Sven Eckelmann <sven@narfation.org>
+	dkim=pass header.d=outlook.com header.s=selector1 header.b="ow6wK/3b";
+	spf=pass (diktynna.open-mesh.org: domain of erick.archer@outlook.com
+ designates 40.92.74.109 as permitted sender)
+ smtp.mailfrom=erick.archer@outlook.com;
+	dmarc=pass (policy=none) header.from=outlook.com;
+	arc=pass ("microsoft.com:s=arcselector9901:i=1")
+ARC-Seal: i=2; s=20121; d=open-mesh.org; t=1715275078; a=rsa-sha256;
+	cv=pass;
+	b=VlYz+qTomI9QZvprD1M4Jows3FYyXBDl66QLQs/fO10fBOM2adDxI6h8owKqWDC83nh6Yl
+	wz4yUHzmcN5vj+0FYQSSiXhXHHwS0Gt3GeSxOcaxcAhvyVENMERPjfI+BmL7X+fr5riDSS
+	laAU31cLoR2vAcOZ0BZg8AySXrciAyQ=
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=R7Ru4T1u+xt/fuDRIbOohlJgUOHx3yKoGpqpcZEB7iddWLn8LI6bmwcZNaA3QjwG5UZYzuijj0QF+rfLPgYjm0K3J3A36eyMXvTj12E7dab3n9IU68Bu4AeK7KUZ0f+N+/DcHYuxAZUicfnsT972ti8Qj+I90nuMAQRlAptfUlfZXw7LzaJdwH72qAt+JQYwkznEfljrqBJNJXUd7/TTt0nWQK/vmTMcPwbYnI4d+Avdbe3TyVXH9Sn7afGb3L3IGHM6KS6tOC4SRums9fRVOCT0gpSpJqu2HvrWoupmry8UK2AGMIjHjfhBxcTwhOKRRp0TIve4VJWD9rmFwyVQwQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=rrsJRKTXIQk4+neYibaCVbd+r9P8rhMWu2sijpM1grQ=;
+ b=WGa643n5TWrf1PMb3EXlUOGyNsVgZk0Hq9bXCgmspy4tU085r31w8mq+hvfuNa+uf/abcdEq/mnYcD05/aoBzAsBHQEBcC95iBuunymMf3wb+j8rAvvzJFkBIwJiNgH7QgAqq4Oev5dLyYIerJIC6HaFEI+6seYAOb9k4l3/gSnTQ5qk5viMdauZMDrtawMneGbYiDcz3VDyZJHkIJxbBJMptj/29k4K8fSX3E6HGY1Nj86/UbvvmbBDcRD/quB3hx3u4gbzxjT7ncm4wSUPb2dP3rtFXyGTi20S/+OZXjnsIjvbCiLPL1FF/hbxHqGDsceXTPvLIko936pcwVyHmA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rrsJRKTXIQk4+neYibaCVbd+r9P8rhMWu2sijpM1grQ=;
+ b=ow6wK/3bL59iEO3RnUpmTwGvwjhd1je6sWNos8KaZ90jbucHuNPc3GjQbujBBxRNGOo3OeEdczwCj+1UCM2sJAKgZoX0eWekVzkAxk/izUTYOlZk9Z0YYdt58fTXhsC9d6rqJawWQzy/CMCgbFZKNMjHoq5m3Vq6Cnmrx2D73rfBXR6UBZ8/fe9m06iThickZTWATOlpqFnaK1TL7w4zqLjbl3WdcfwJwogojqjWX/KXDoXR/D4YAuZQNhSQ6VkFxjRqTdQGqLdm2FCwNvLr6u+rA2v3+XCbpL5dyMU+jbRw79AlsBTHP5ON+tOOVQCPL6QoNi09aQdObiqYkdtN1g==
+Received: from AS8PR02MB7237.eurprd02.prod.outlook.com (2603:10a6:20b:3f1::10)
+ by DU5PR02MB10565.eurprd02.prod.outlook.com (2603:10a6:10:518::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7544.42; Thu, 9 May
+ 2024 17:17:56 +0000
+Received: from AS8PR02MB7237.eurprd02.prod.outlook.com
+ ([fe80::409b:1407:979b:f658]) by AS8PR02MB7237.eurprd02.prod.outlook.com
+ ([fe80::409b:1407:979b:f658%5]) with mapi id 15.20.7544.046; Thu, 9 May 2024
+ 17:17:56 +0000
+Date: Thu, 9 May 2024 19:17:44 +0200
+From: Erick Archer <erick.archer@outlook.com>
+To: Sven Eckelmann <sven@narfation.org>, Kees Cook <keescook@chromium.org>
 Cc: Erick Archer <erick.archer@outlook.com>,
 	Marek Lindner <mareklindner@neomailbox.ch>,
 	Simon Wunderlich <sw@simonwunderlich.de>,
 	Antonio Quartulli <a@unstable.cc>,
-	"David S. Miller" <davem@davemloft.net>,
+	"David S.  Miller" <davem@davemloft.net>,
 	Eric Dumazet <edumazet@google.com>,
 	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
 	Nathan Chancellor <nathan@kernel.org>,
@@ -118,34 +103,81 @@ Cc: Erick Archer <erick.archer@outlook.com>,
 	Alexander Lobakin <aleksander.lobakin@intel.com>
 Subject: Re: [PATCH v3] batman-adv: Add flex array to struct
  batadv_tvlv_tt_data
-Message-ID: <202405060928.272B235@keescook>
+Message-ID: 
+ <AS8PR02MB7237F77CAF0B49E99A10B9058BE62@AS8PR02MB7237.eurprd02.prod.outlook.com>
 References: 
  <AS8PR02MB72371F89D188B047410B755E8B192@AS8PR02MB7237.eurprd02.prod.outlook.com>
  <3932737.ElGaqSPkdT@sven-l14>
  <AS8PR02MB723738E5107C240933E4E0F28B1E2@AS8PR02MB7237.eurprd02.prod.outlook.com>
- <9977759.T7Z3S40VBb@sven-l14>
-MIME-Version: 1.0
+ <202405060924.4001F77D@keescook>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9977759.T7Z3S40VBb@sven-l14>
-X-MailFrom: keescook@chromium.org
-X-Mailman-Rule-Hits: max-recipients
+In-Reply-To: <202405060924.4001F77D@keescook>
+X-TMN: [6D+r2sXm6nW37D6JLqn/jgLKtGmx9LX1]
+X-ClientProxiedBy: MA2P292CA0010.ESPP292.PROD.OUTLOOK.COM (2603:10a6:250:1::9)
+ To AS8PR02MB7237.eurprd02.prod.outlook.com (2603:10a6:20b:3f1::10)
+X-Microsoft-Original-Message-ID: <20240509171744.GA10465@titan>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS8PR02MB7237:EE_|DU5PR02MB10565:EE_
+X-MS-Office365-Filtering-Correlation-Id: 70f64e4e-eeb2-45a9-c626-08dc704bf71e
+X-Microsoft-Antispam: 
+	BCL:0;ARA:14566002|461199019|440099019|3412199016|1710799017;
+X-Microsoft-Antispam-Message-Info: 
+	sqTg3ayHnzDvKIzSodDNsV70U/TMDC8gUwfsBwjDSoY9PartJlRp4WaiT/Ra8pV1CqvESsiNS/jBP21ZtsUYFiXUVfYxV1Up54QlqwdbeCbPCAiG1hZt8BLPmdddyRPJmbmWFH1wjwO7AyLu3NF4XTvu5foWTuBkTntXuwGuwRuN1eGZ3CI1b2swkrTQMEGXH91L2C/fGoq90tXHm6Y+9JKLfP1Je31uF8uNXA/Pz6Vv7Ryqi22bUW4tvzppQ8L1UK4Nj/nsj7ZSd/bf1/eno8E/C8f4D9KI2EKiuK/i4qE25Gs7CcU+IO2+SqGjkVOjM1k3SyYVjERZhyReXrGkzI7AuyvYVZEXzB8UNBYclJzoVwx2eatmDAaPmvPWPrD7l0CChsw7EDL0guC3M4ZLw8RhFJL/NoDy7zgYFOH3AkpEZXJc8DqZTcfmfOEvvi7D6Thta+vAZ0mWHHWb0Bh9Lz+e7vORoDGl0qkPJ5WjLvJOB+APnHmU8zWDpR3r4z/pEdT5afCZNcPCpLU3dVJi1zm3RxYL+zO1eBNyupxWkDxdo1fh9BkNaaubjo+rD36puQFsActn1qZRH7RYoR9mTyNN9+AbLfyWArBq0T5I144X8/C5MiHTYsB45BA1BllV
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	=?us-ascii?Q?3Eq0bKrl94SOmI8mPK1OVvgNB9sfTWBMm165Ms+Bwea0R84BRJ451XqhP7Vf?=
+ =?us-ascii?Q?dIThVdmAfc6h/PyxMAj/IWnu93CgWevLb3j5waqHL61lJd0xpuvIcNktcXUA?=
+ =?us-ascii?Q?6tFQnH5Mp77orNWaZMu1FZdZmLVs/upfVJy25uarmnkAu0l4ebug1J+cTY8i?=
+ =?us-ascii?Q?5qrEtX6W9XJHnOh9FH74sz8TG3DB53hdRnu79XoO5l5ozogMdTzFH2k6w20V?=
+ =?us-ascii?Q?Ua3MroX/aS6+sac+MOQ1diD3TBKIVb3oYdgzBnXdhpFvRXUQXtzaInNTCsgH?=
+ =?us-ascii?Q?34Z7vy+07x9uZ1q47zFf1NxRt+2WLayTI+MiEX3B9qdYoun1IPX2wksnKA83?=
+ =?us-ascii?Q?Y+Qu3WHtbyhNURr9lgrER+zx3GNhal55bDISfFR8o+F1krFC7WWh66R+W14C?=
+ =?us-ascii?Q?tTELiV5805lEC52+E4vtQ7S4XWYq6GBeS9oWsKOqFeWe5wwkLiBFHpA0v773?=
+ =?us-ascii?Q?dP6KaNiK5lEXnsZOyiZljePSFa5Qhn99znVffPeg8DtAs4OjIJdDFM1GCDXV?=
+ =?us-ascii?Q?zlGkUfh84LrZUcF+6dLE5jI5xnKPGrKPru7mzt7zJgpn3qIOIaSndC/QpbYx?=
+ =?us-ascii?Q?++/hl1xAOxqx8MSy7875hWfOyhLXSixBykwMGxqmOCwicHW3tcP0Ckr+JugQ?=
+ =?us-ascii?Q?CpwJOro2MuzgY/HNKfSv8TKzTHFUTJfZCFVYflIIpaIr63EChkfKP4yuUFO6?=
+ =?us-ascii?Q?4auAN++dqw38SPkhjxns+pb1zt3qXtG4u5sXKBK2R09i7axw2iSga+FfyX7a?=
+ =?us-ascii?Q?yfhRBW/vHVuy7mK8WDktiiMOQTCaW4m+h0DzTFVueDAvOKg1aWN8hg/ZKE0o?=
+ =?us-ascii?Q?dV6R9ywxDNZqu6KxnEfpQ4sd6QVDicoGVpa90xEqRi8fym5RqByNu2vVcGPu?=
+ =?us-ascii?Q?vp/ZAZj4r6rod58+K5JJbWpp0uNCdK7lKwCD4HzCNdTH4oWFfJRp519h9sFJ?=
+ =?us-ascii?Q?kow+VMi5xerWUbcOGeQEuMj0nOcuE14h8WZA/h8GoIob91VyaKMfgYw7AjNR?=
+ =?us-ascii?Q?4eq6pnhBQJ0X8Iui/qJWDCsAaUSy9TBLhBxCMLlFZ0crLocPyxjTAK2V6mSw?=
+ =?us-ascii?Q?OGaByK85Cgs//9PrVYvbbwG7TcwL6WAlBxWBZSM6TRIC7IcjT8DoWY48sKe5?=
+ =?us-ascii?Q?DRDegn2t4bN4JX0CKL60St+Iq0X5MJ4YevBTt0Ew33yV/85l96hcAofPqgrJ?=
+ =?us-ascii?Q?631NYsmIryt8pYpObk/dqxEYoGx04iXdoQOei5vpFBEJMj2kbCxSNmt20K5R?=
+ =?us-ascii?Q?k4zG4GzVDT3BEZI7TKJh?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 
+ 70f64e4e-eeb2-45a9-c626-08dc704bf71e
+X-MS-Exchange-CrossTenant-AuthSource: AS8PR02MB7237.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 May 2024 17:17:55.9135
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU5PR02MB10565
+X-MailFrom: erick.archer@outlook.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
- suspicious-header
-Message-ID-Hash: ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU
-X-Message-ID-Hash: ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU
-X-Mailman-Approved-At: Mon, 06 May 2024 19:33:55 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: IMVOUMZWRFLWIQ5QUA3Y7VWECVMXZC2W
+X-Message-ID-Hash: IMVOUMZWRFLWIQ5QUA3Y7VWECVMXZC2W
+X-Mailman-Approved-At: Thu, 09 May 2024 20:00:07 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ANHYCBM3Y2TZEGCF3VWN5TX7HTM4JJRU/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NZD4TGR4T3CF3HFJYKESDOVYUHQTXB53/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -154,87 +186,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sun, May 05, 2024 at 05:22:10PM +0200, Sven Eckelmann wrote:
-> On Saturday, 4 May 2024 19:08:39 CEST Erick Archer wrote:
-> [...]
-> > > Thanks for the updates. But I can't accept this at the moment because 
-> > > __counted_by_be is used in an uapi header without it being defined
-> > > include/uapi/linux/stddef.h (and this file is also not included in this 
-> > > header).
-> > > 
-> > > See commit c8248faf3ca2 ("Compiler Attributes: counted_by: Adjust name and 
-> > > identifier expansion") as an example for the similar __counted_by macro.
-> > 
-> > If I understand correctly, the following changes are also needed because
-> > the annotated struct is defined in a "uapi" header. Sorry if it's a stupid
-> > question, but I'm new to these topics.
+Hi Sven and Kees,
+First of all, thanks for the reviews, comments and advices.
+
+On Mon, May 06, 2024 at 09:27:46AM -0700, Kees Cook wrote:
+> On Sat, May 04, 2024 at 07:08:39PM +0200, Erick Archer wrote:
 > 
-> No, it is absolutely no stupid question.
-> 
-> > diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-> > index 6e25753015df..41f39d7661c9 100644
-> > --- a/include/uapi/linux/batadv_packet.h
-> > +++ b/include/uapi/linux/batadv_packet.h
-> > @@ -9,6 +9,7 @@
-> > 
-> >  #include <asm/byteorder.h>
-> >  #include <linux/if_ether.h>
-> > +#include <linux/stddef.h>
-> >  #include <linux/types.h>
-> > 
-> >  /**
-> 
-> This must definitely go into your "original" patch
-> 
-> > diff --git a/include/uapi/linux/stddef.h b/include/uapi/linux/stddef.h
-> > index 2ec6f35cda32..58154117d9b0 100644
-> > --- a/include/uapi/linux/stddef.h
-> > +++ b/include/uapi/linux/stddef.h
-> > @@ -55,4 +55,12 @@
-> >  #define __counted_by(m)
-> >  #endif
-> > 
-> > +#ifndef __counted_by_le
-> > +#define __counted_by_le(m)
-> > +#endif
-> 
-> If you want to add this (for completeness) then please put it in an extra 
-> patch. It is simply not used by batman-adv and I would not be able to find any 
-> justification why it should be part of the batman-adv patch.
-> 
-> > +
-> > +#ifndef __counted_by_be
-> > +#define __counted_by_be(m)
-> > +#endif
-> > +
-> 
-> This part can be either:
-> 
-> * in the batman-adv patch
-> * or together with the __counted_by_le change in an additional patch which is 
->   "in front" of the batman-adv patch (in the patch series).
-> 
-> From my perspective, it is for you to decide - but of course, other 
-> maintainers might have a different opinion about it.
-> 
-> >  #endif /* _UAPI_LINUX_STDDEF_H */
-> > 
 > > If this is the right path, can these changes be merged into a
 > > single patch or is it better to add a previous patch to define
 > > __counted_by{le,be}?
 > 
-> I don't have a perfect answer here. See the comments above. The file 
-> include/uapi/linux/stddef.h doesn't have a specific maintainer (according to 
-> ./scripts/get_maintainer.pl) - so it should be fine to get modified through 
-> the net-next tree.
+> We're almost on top of the merge window, so how about this: send me a
+> patch for just the UAPI addition, and I'll include it in this coming (next
+> week expected) merge window. Once -rc2 is out, re-send this batman-adv
+> patch since then netdev will be merged with -rc2 and the UAPI change
+> will be there.
 > 
-> But maybe Kees Cook has a different opinion about it. At least there are a lot 
-> of Signed-off-bys for this file by Kees.
+Ok, I will follow these steps. The patch for the UAPI addition has
+already been sent. When the -rc2 comes out, I will resend this
+patch.
 
-FWIW, I'm also fine with the UAPI going in via netdev. It's the most
-likely place to use the be/le variants. Is netdev still open for
-patches? Whatever the path, we should get it into this coming merge
-window so we can use it elsewhere too if we need it.
+Again, thanks,
+Erick
 
--- 
-Kees Cook
+> -Kees
+> 
+> -- 
+> Kees Cook
