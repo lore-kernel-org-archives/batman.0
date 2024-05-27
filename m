@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9B54C25B79
-	for <batman@archiver.kernel.org>; Mon, 27 May 2024 14:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C70C25B74
+	for <batman@archiver.kernel.org>; Mon, 27 May 2024 14:17:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2737E82C5C
-	for <batman@archiver.kernel.org>; Mon, 27 May 2024 16:16:25 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 223B182804
+	for <batman@archiver.kernel.org>; Mon, 27 May 2024 16:17:45 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1716819385;
- b=BLxWs4J3Cg193Mbuo7gjkt6BfQPJgk6uptbOB5gQxuor0/He+gpeKzC4iHRHW5FIu19RD
- XjUYk2j0wtRDUp51f09tIgmmGB0CUJ9Fcx7zbaf5EUj7D2K/Mn82OTLrrL191ymxQ1547H7
- C45nsc281gjE1ZHEObnjmltOcEIwVpA=
+ t=1716819465;
+ b=WrYRcDxnL6rvO53adHfSkbxggkJlZpJF6dMez+djojd85NhvUGxB/7jWQYOpBXchmPkxa
+ C6ljr6e6yln2El1RU6ANDzWeqrHLjBFZhlMOS8KOmbtHQetsTjeiZTBja/4uvozJbSrZshd
+ Hc0JLDHqV8c2W7X4lhWTbjIp+uS83Ms=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1716819385; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1716819465; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
  list-archive; bh=2yf6p9vLaynz6w/XYqUh9wrCLY9JP1x8aB5lpUVh1L4=;
- b=kuTu3sa4vL/NMo9efxRAC82/AYAsjr1ISy73haMYEgd9wnKb1PYbp1POEipPasUaPcRTk
- HQExQZF2iX6x3O2KpM8zXhOq+0Qo7GVTQd8Pr4XNLeJUmHKgQF7QriqOo42s94T2IAZNE4Y
- 0x+OKoithjem2gS/min8BnqDRe/ORDw=
+ b=ZugQ/uTOulYynZ6xfue98cqPexxQBy87y3EN9HdzvcJ8nkhNklSjLhUeCvWpjyS2gFfP7
+ UprERA/MpnbX8hjDpaxaL4UAhhixO7nWExesmZq/++rpAQNnSYMS0yk6G3afieLmXT+ok0v
+ 1S5vVmtruL3PNK3oyqJhcV+Jr9mRUtE=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=kernel.org
@@ -34,44 +34,44 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C98C2826CC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 27 May 2024 16:16:12 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6544382610
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 27 May 2024 16:17:32 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1716819373;
+	s=20121; t=1716819452;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
 	bh=2yf6p9vLaynz6w/XYqUh9wrCLY9JP1x8aB5lpUVh1L4=;
-	b=CZWHphVNW0flPPckQWWOj//XnOs7/tGye6neGVHUX7NFb/4TGcSljKklxmnm++OAPCHh62
-	21Gnr1C/egmkn7/wiGk87hRZHFN5m3G0m0dnFu0+05dTjaKiYCCJGioGHbXCNAowPKtBMl
-	j2Uv0/wVcjDZi987KUmOP+RCxBTck8A=
+	b=jdFET2xTqAkQIVMow6f7dA0F+oOay6bn3+mPmy3NbFxjoYfOv9cSkFosd7uE5Qh5fuu1Qs
+	fmib+3Jg2j2ZoLVQhyvWvJxb6FjcE7Td9rLdnpk0izC8SvSGjjYSMdYwoTzGHOox6Xi0+B
+	eOtGjZS6dWZVJRylFN/JFRT0hOjrRhM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=VGZGOCBb;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=gz8lD0eI;
 	spf=pass (diktynna.open-mesh.org: domain of sashal@kernel.org designates
  2604:1380:4641:c500::1 as permitted sender) smtp.mailfrom=sashal@kernel.org;
 	dmarc=pass (policy=none) header.from=kernel.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1716819373; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1716819452; a=rsa-sha256;
 	cv=none;
-	b=flNDrEoty2DcbYtGoiw+tPCbgL6DJ3oup/Fp0gixn8EPtrzzlRLvvmas/3U75+BJ5+2KJ3
-	qNEJpgLowKGR03DhU/2luSHbQ4V7oidQOfErx7jtwRaV/Jb+6lONAvv+EPtN8ss9i/eOqy
-	fH7jxfo68RDSUCftKzKM3znFHha9y3o=
+	b=3m3HnAZove18VeyMP6GN7P92Ar1utPIm+PDWTvzGbJ4EhtJaVKHYFn5yXWijDk0/HI8MQM
+	RyUmGzuEUu37ryWobyF3KGnb6mcsL3KJbyFOBLzo2Vx0s9f8dXC0655p0p6+nGzN4n+z/+
+	ZuWSsRI9Y6nBQerPwH9N56gRuRWPm6Y=
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 9474361880;
-	Mon, 27 May 2024 14:16:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BD6CC2BBFC;
-	Mon, 27 May 2024 14:16:09 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 44DEF61797;
+	Mon, 27 May 2024 14:17:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C3C9C2BBFC;
+	Mon, 27 May 2024 14:17:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716819371;
+	s=k20201202; t=1716819451;
 	bh=v6M8CO7PEhL/UHR2QpFMC/QHEo3h8hVpS5Rir9yqmw8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VGZGOCBbc4xp0oLPXySIbySlWRwyaGPCzVPNuGlDE6Xoip+G91yiW1Qt2Q5Pdtc+4
-	 DJR6aWuGdM/a4F4aYgnVpwGORWe31SH6XnFeJ6ps38Ziss5vF3GuuOCehp7hsoKetO
-	 +zIzqXmBCvb1aOFwDsnS+aKENF4wcolUhCA9uZbNugt6XUOEY3x/wgPOXwxTyfxafY
-	 uwvX2cOKzsuXFV3ikuZiktnZwKQaT+/CGY2hY5eK34o1PeCdpYR8mavGcjoY1KEEeA
-	 iDiivc1mNyKHlZ5MRWkQUtv/mceRO76S/tvWPJKzRIkd8Z75So7wvPemPeM0aYARnL
-	 bpjWiqu16iBcg==
+	b=gz8lD0eIgM6ZsFOSGJEOVo7UoR7B6YEy+TYRbinKC3pPMexFwsgVRlpJL67eiZpp9
+	 WQ3kvIHt4C0xiHXMPy4yqpXNTcO61vg+PbHag0JUGL3s4BlTStZRQsbs5aGpBDiWd3
+	 Ug42Rgml7EvaHZKZly9iEMWz/TfZuvlwL0v5NYh0Tf5NzwcJFcZ2NmVj7WUPkNNt0y
+	 IWFkjK/dUv8zAHDDo9KeIoLDOkk3h7wiguBWhvwbsY1506AtPR/6mZiYmtP52hyTZV
+	 +dn8Cq2eLiO+jaM4C9Cm5cAfQrcQTgjAQs5fi03ur7IBzJPwMsO2Agdt6NVMqh74LO
+	 53rFYrD+Ur0Pg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -86,20 +86,20 @@ Cc: Eric Dumazet <edumazet@google.com>,
 	pabeni@redhat.com,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	netdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.6 04/21] batman-adv: bypass empty buckets in
+Subject: [PATCH AUTOSEL 6.1 03/17] batman-adv: bypass empty buckets in
  batadv_purge_orig_ref()
-Date: Mon, 27 May 2024 10:15:15 -0400
-Message-ID: <20240527141551.3853516-4-sashal@kernel.org>
+Date: Mon, 27 May 2024 10:16:40 -0400
+Message-ID: <20240527141712.3853988-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240527141551.3853516-1-sashal@kernel.org>
-References: <20240527141551.3853516-1-sashal@kernel.org>
+In-Reply-To: <20240527141712.3853988-1-sashal@kernel.org>
+References: <20240527141712.3853988-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.6.32
+X-stable-base: Linux 6.1.92
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: LDS3HP55SY7YIEFFWM5JBWVVEQKZGCMH
-X-Message-ID-Hash: LDS3HP55SY7YIEFFWM5JBWVVEQKZGCMH
+Message-ID-Hash: ES53WPXLIWE723WFJLWTREGLU2NAHSDF
+X-Message-ID-Hash: ES53WPXLIWE723WFJLWTREGLU2NAHSDF
 X-MailFrom: sashal@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -113,7 +113,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LDS3HP55SY7YIEFFWM5JBWVVEQKZGCMH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ES53WPXLIWE723WFJLWTREGLU2NAHSDF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
