@@ -4,95 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD4EEC27C53
-	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 14:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AEF6C27C77
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 14:39:51 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DE66682F76
-	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 16:06:39 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C58058305C
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 16:39:49 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1718201199;
- b=BQXjQkftS1X+KzyAyNtnxLNhXVTFuP/+t2B6f7e3FdfYihEuv+ikQiZcAyvubG3dKKjUQ
- 4HNf9OOEEtGYs6V7DARaoGBt9/2S+uO15BJMOwwo3ERqqAEasAXa/VU+JCs79jPtA5OKs6L
- 3lKGnFFpC/nLCT5NUEHVa1yZ434lR4k=
+ t=1718203189;
+ b=c8V4xh032z944MzBPFgMcEgwdQyD0lUQR1txEB9+jWrv18Vs9E1GTxx+WlDFp4utX2nS9
+ VufKa87CcVMCUg+oFMIpUuZZyXaT2kif4AnMnVmznc2HXoLxuUGsU8kgKqDuq61a758pv68
+ lPZ0PIvvBVkwjObF/Yv9FMR2mafA3lo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1718201199; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1718203189; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=/FWmEs3RC4313XSTS9ZEbUhTlhafwHo/TzEyACbkcG4=;
- b=2v55yZKW8RrA+k8WD96e7DAcWb6TOGsNTXsNfzuFtElLNkrXU/xqCW5dKaNs/Xq9SVAEs
- H9lwPDHsttYfKgFf9cPKQwt8XrbQgBMmxQojf5j1GhetckPJa3EBO0ZmmayhBZM/iduvMUl
- jMLtrgjpqtE/W5XvVv6IkCDRqaaLSaU=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
+ list-archive; bh=GgzLVJieNlV+N7VHsXkfisxo5WwQ0apenTv7h9jCGxE=;
+ b=pUZCC4v/F/7GkY085hg/0BTgqUkzKCdUV7pp9zZyMJ9jwZz5KlAKuu5qRnMhcj9+xlCou
+ NMcwKMPl356E6+yk72wslKfiohiQoNFrn4HpGV+JsenQgU3EJYHvVAWN68ywYZ8OjLONv8r
+ ER8Ew+k5HgUWyOVEMLbIGTnTLXJ/yoU=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=kernel.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=none
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4225981003
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 12 Jun 2024 16:06:06 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1718201166; a=rsa-sha256;
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id AA10981B88
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 12 Jun 2024 16:39:17 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1718203157; a=rsa-sha256;
 	cv=none;
-	b=qkbdyCy3HCCePb0Xa+wZPlxONhm3SeRtDuDP/waIiyO7AkIdN/6AWDiAci2LyZtRumwttq
-	P7GmkbmsXm+t4xYD0sOzle4Sce8njFJfyuVrBdNMxB0MlJdn3YAEeO/V4cSDebhrEvFves
-	MxirI21Yq1kuRUm1lrCuEqMRXwh37Rc=
+	b=tNJXLXKc70ELsiPQuhHJrfs9I5v3VatS/oZfUQUKDlY4XV0k4cHtD2g5pH1mlJqfXc+BYo
+	ohg+miNBbh9691R7LQHBHppZKy+TmeFklZqjAdAwg1Ro8/BdRYDQb8HjsTLYYE6usb3uVJ
+	6hFvlxMI7a5TqeWTU1JWtjT3uEzJt0Y=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=hRBt3K6N;
-	dmarc=pass (policy=none) header.from=kernel.org;
-	spf=pass (diktynna.open-mesh.org: domain of
- "SRS0=Q+OH=NO=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org" designates
- 139.178.84.217 as permitted sender)
- smtp.mailfrom="SRS0=Q+OH=NO=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org"
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1718201166;
-	h=from:from:reply-to:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=/FWmEs3RC4313XSTS9ZEbUhTlhafwHo/TzEyACbkcG4=;
-	b=c9QCt41Ge/tPK1PORfkbDRlj1WBXZfMKx2CLDXU4jWvVwGb4YqxOK++T3pIRDsoYunM/9e
-	IzgkMBIR0zLpJVczln/PJus5h/eL2SsTBEuNymqLkbu+WSiKbIHE6v260We4DNi12AmSzV
-	UwiAQ55BQgcRHjnagGI31FfHbbjDSKE=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id F217F60C73;
-	Wed, 12 Jun 2024 14:06:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8305C116B1;
-	Wed, 12 Jun 2024 14:06:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718201164;
-	bh=4EwdYMam9qpFNx2B8KxrudsAPEza6j2OyNXkrsXDxY4=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-	b=hRBt3K6NDmhvm8HEzmgZ7wC5ZVyu9uCD5yUMv2oIhLz1KgosI+9SiiUlVmDELLxa3
-	 fTF0v+O3ExloUHwfv8CzM5HIUaqTLRE8W+rwuAe3q29DHaQJ6+k81MT81NUhqWEiw+
-	 SdYNSFMufCFtakC8fOXqU/qfgJuVAGWwdFo+nufh1DHWHszfLn6eNIV3A6R9XY/EUf
-	 OO92NIG+DeIL3XwmTgK6kBkCTKO1YIR2MzIzxgOmDp8V/mPzbplTAfXvBzUgZh5Whi
-	 atRgjDtqsNkvwkjp6iItp5qQAQRNw/M8HfIgBRYvkbUuu1egLcnmxLjUwTcfUMhxfc
-	 Rz+lcWmDM1XJw==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 4B8F9CE0886; Wed, 12 Jun 2024 07:06:04 -0700 (PDT)
-Date: Wed, 12 Jun 2024 07:06:04 -0700
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Linus =?iso-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+	s=20121; t=1718203157;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GgzLVJieNlV+N7VHsXkfisxo5WwQ0apenTv7h9jCGxE=;
+	b=qJVXgFPSj+bQs1gqt38l60jFy3Y4151D6U9RgRFLvKGmdEcidOdekTDK/WjMlqaZtkSIh5
+	JzdxgwQwUNF0ihpyP3cP0fJHC8Vn4bOFOdkvKs9FtHCfijWujSLg3yYiAMjfgHxfxIbugp
+	bvrn14J0YZt23SWtpLSU4rHuUua2B7c=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 357533EDE0;
+	Wed, 12 Jun 2024 16:39:11 +0200 (CEST)
+Date: Wed, 12 Jun 2024 16:39:15 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: "Paul E. McKenney" <paulmck@kernel.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Dmitry Antipov <dmantipov@yandex.ru>,
 	netdev@vger.kernel.org, rcu@vger.kernel.org
 Subject: Re: [PATCH] Revert "batman-adv: prefer kfree_rcu() over call_rcu()
  with free-only callbacks"
-Message-ID: <e36490a1-32af-4090-83a7-47563bce88bc@paulmck-laptop>
+Message-ID: <ZmmzE6Przj0pCHek@sellars>
 References: <20240612133357.2596-1-linus.luessing@c0d3.blue>
+ <e36490a1-32af-4090-83a7-47563bce88bc@paulmck-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240612133357.2596-1-linus.luessing@c0d3.blue>
-Message-ID-Hash: QZ4D3FCWHRO6CTBNJFFJTMBZBDUQ6B6J
-X-Message-ID-Hash: QZ4D3FCWHRO6CTBNJFFJTMBZBDUQ6B6J
-X-MailFrom: SRS0=Q+OH=NO=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org
+In-Reply-To: <e36490a1-32af-4090-83a7-47563bce88bc@paulmck-laptop>
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: AVTMRIM64CPBIAY5JBRVMT3B65KYQNV7
+X-Message-ID-Hash: AVTMRIM64CPBIAY5JBRVMT3B65KYQNV7
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,11 +83,10 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
-Reply-To: paulmck@kernel.org
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QZ4D3FCWHRO6CTBNJFFJTMBZBDUQ6B6J/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AVTMRIM64CPBIAY5JBRVMT3B65KYQNV7/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,251 +95,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Wed, Jun 12, 2024 at 03:33:57PM +0200, Linus Lüssing wrote:
-> This reverts commit cf9845d4566698731c23cd7a02db956706d058a1.
+On Wed, Jun 12, 2024 at 07:06:04AM -0700, Paul E. McKenney wrote:
+> Let me make sure that I understand...
 > 
-> This change seems to result in a memory leak / RCU race and the following
-> kernel splat when the batman-adv kernel module is unloaded:
+> You need rcu_barrier() to wait for any memory passed to kfree_rcu()
+> to actually be freed?  If so, please explain why you need this, as
+> in what bad thing happens if the actual kfree() happens later.
 > 
-> ```
-> [  112.208633] =============================================================================
-> [  112.210359] BUG batadv_tl_cache (Tainted: G           OE     ): Objects remaining in batadv_tl_cache on __kmem_cache_shutdown()
-> [  112.211943] -----------------------------------------------------------------------------
+> (I could imagine something involving OOM avoidance, but I need to
+> hear your code's needs rather than my imaginations.)
 > 
-> [  112.212517] Slab 0xffffe8afc0216d00 objects=16 used=1 fp=0xffff93f4085b4340 flags=0xfffffc0000a00(workingset|slab|node=0|zone=1|lastcpupid=0x1fffff)
-> [  112.212517] CPU: 1 PID: 776 Comm: rmmod Tainted: G           OE      6.8.12-amd64 #1  Debian 6.8.12-1
-> [  112.212517] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-> [  112.212517] Call Trace:
-> [  112.212517]  <TASK>
-> [  112.212517]  dump_stack_lvl+0x64/0x80
-> [  112.212517]  slab_err+0xe6/0x120
-> [  112.212517]  __kmem_cache_shutdown+0x160/0x2e0
-> [  112.212517]  kmem_cache_destroy+0x55/0x160
-> [  112.220849]  batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
-> [  112.220849]  __do_sys_delete_module+0x1d5/0x320
-> [  112.220849]  do_syscall_64+0x83/0x190
-> [  112.220849]  ? do_syscall_64+0x8f/0x190
-> [  112.220849]  ? exc_page_fault+0x7f/0x180
-> [  112.220849]  entry_SYSCALL_64_after_hwframe+0x78/0x80
-> [  112.224478] RIP: 0033:0x7f2ac8434977
-> [  112.224478] Code: 73 01 c3 48 8b 0d a9 94 0c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 79 94 0c 00 f7 d8 64 89 01 48
-> [  112.224478] RSP: 002b:00007ffe0adf6138 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
-> [  112.224478] RAX: ffffffffffffffda RBX: 000055db9018e770 RCX: 00007f2ac8434977
-> [  112.224478] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 000055db9018e7d8
-> [  112.224478] RBP: 0000000000000000 R08: 1999999999999999 R09: 0000000000000000
-> [  112.224478] R10: 00007f2ac84a6ac0 R11: 0000000000000206 R12: 00007ffe0adf6390
-> [  112.224478] R13: 000055db9018e770 R14: 000055db9018d2a0 R15: 0000000000000000
-> [  112.233961]  </TASK>
-> [  112.233961] Disabling lock debugging due to kernel taint
-> [  112.233961] Object 0xffff93f4085b4140 @offset=320
-> [  112.233961] Allocated in batadv_tt_local_add+0x297/0xa20 [batman_adv] age=15835 cpu=1 pid=755
-> [  112.233961]  batadv_tt_local_add+0x297/0xa20 [batman_adv]
-> [  112.233961]  batadv_interface_set_mac_addr+0xf6/0x120 [batman_adv]
-> [  112.233961]  dev_set_mac_address+0xde/0x140
-> [  112.233961]  dev_set_mac_address_user+0x30/0x50
-> [  112.233961]  do_setlink+0x261/0x12d0
-> [  112.233961]  rtnl_setlink+0x11f/0x1d0
-> [  112.233961]  rtnetlink_rcv_msg+0x152/0x3c0
-> [  112.241772]  netlink_rcv_skb+0x5b/0x110
-> [  112.241772]  netlink_unicast+0x1a6/0x290
-> [  112.241772]  netlink_sendmsg+0x223/0x490
-> [  112.241772]  __sys_sendto+0x1df/0x1f0
-> [  112.241772]  __x64_sys_sendto+0x24/0x30
-> [  112.241772]  do_syscall_64+0x83/0x190
-> [  112.241772]  entry_SYSCALL_64_after_hwframe+0x78/0x80
-> [  112.245994] ------------[ cut here ]------------
-> [  112.246650] kmem_cache_destroy batadv_tl_cache: Slab cache still has objects when called from batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
-> [  112.246668] WARNING: CPU: 1 PID: 776 at mm/slab_common.c:493 kmem_cache_destroy+0x14d/0x160
-> [  112.249584] Modules linked in: veth batman_adv(OE-) cfg80211 rfkill bridge stp llc libcrc32c crc32c_generic crc16 rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver binfmt_misc pcspkr button joydev evdev serio_raw loop dm_mod efi_pstore nfnetlink vsock_loopback vmw_vsock_virtio_transport_common vmw_vsock_vmci_transport vsock vmw_vmci qemu_fw_cfg ip_tables x_tables autofs4 nfsv3 nfs_acl nfs lockd grace sunrpc 9pnet_rdma rdma_cm iw_cm ib_cm ib_core configfs 9p netfs ata_generic ata_piix libata psmouse scsi_mod 9pnet_virtio i2c_piix4 9pnet e1000 scsi_common floppy crypto_simd cryptd
-> [  112.256555] CPU: 1 PID: 776 Comm: rmmod Tainted: G    B      OE      6.8.12-amd64 #1  Debian 6.8.12-1
-> [  112.258457] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-> [  112.260410] RIP: 0010:kmem_cache_destroy+0x14d/0x160
-> [  112.261687] Code: 00 eb be 5b 5d 41 5c 41 5d c3 cc cc cc cc 48 8b 53 60 48 8b 4c 24 20 48 c7 c6 60 d5 e3 98 48 c7 c7 b8 ec 2d 99 e8 43 0d d8 ff <0f> 0b e9 e2 fe ff ff c3 cc cc cc cc 0f 1f 80 00 00 00 00 90 90 90
-> [  112.265219] RSP: 0018:ffffb3b2806e7e48 EFLAGS: 00010282
-> [  112.266044] RAX: 0000000000000000 RBX: ffff93f4270a2640 RCX: 0000000000000027
-> [  112.267157] RDX: ffff93f43c521708 RSI: 0000000000000001 RDI: ffff93f43c521700
-> [  112.268268] RBP: 000055db9018e7d8 R08: 0000000000000000 R09: ffffb3b2806e7cd8
-> [  112.269418] R10: ffffb3b2806e7cd0 R11: 0000000000000003 R12: 0000000080012d00
-> [  112.270572] R13: ffffb3b2806e7f58 R14: 0000000000000000 R15: 0000000000000000
-> [  112.271699] FS:  00007f2ac8308440(0000) GS:ffff93f43c500000(0000) knlGS:0000000000000000
-> [  112.273001] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [  112.273923] CR2: 00005584ef830110 CR3: 000000000787c000 CR4: 00000000000006f0
-> [  112.275050] Call Trace:
-> [  112.275464]  <TASK>
-> [  112.275810]  ? kmem_cache_destroy+0x14d/0x160
-> [  112.276518]  ? __warn+0x81/0x130
-> [  112.277043]  ? kmem_cache_destroy+0x14d/0x160
-> [  112.277730]  ? report_bug+0x171/0x1a0
-> [  112.278315]  ? prb_read_valid+0x1b/0x30
-> [  112.278919]  ? handle_bug+0x3c/0x80
-> [  112.279467]  ? exc_invalid_op+0x17/0x70
-> [  112.280071]  ? asm_exc_invalid_op+0x1a/0x20
-> [  112.280741]  ? kmem_cache_destroy+0x14d/0x160
-> [  112.281603]  ? kmem_cache_destroy+0x14d/0x160
-> [  112.282489]  batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
-> [  112.283373]  __do_sys_delete_module+0x1d5/0x320
-> [  112.284080]  do_syscall_64+0x83/0x190
-> [  112.284696]  ? do_syscall_64+0x8f/0x190
-> [  112.285315]  ? exc_page_fault+0x7f/0x180
-> [  112.285970]  entry_SYSCALL_64_after_hwframe+0x78/0x80
-> [  112.286768] RIP: 0033:0x7f2ac8434977
-> [  112.287355] Code: 73 01 c3 48 8b 0d a9 94 0c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 79 94 0c 00 f7 d8 64 89 01 48
-> [  112.290282] RSP: 002b:00007ffe0adf6138 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
-> [  112.291465] RAX: ffffffffffffffda RBX: 000055db9018e770 RCX: 00007f2ac8434977
-> [  112.292595] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 000055db9018e7d8
-> [  112.293724] RBP: 0000000000000000 R08: 1999999999999999 R09: 0000000000000000
-> [  112.294863] R10: 00007f2ac84a6ac0 R11: 0000000000000206 R12: 00007ffe0adf6390
-> [  112.295982] R13: 000055db9018e770 R14: 000055db9018d2a0 R15: 0000000000000000
-> [  112.297103]  </TASK>
-> [  112.297465] ---[ end trace 0000000000000000 ]---
-> ```
-> 
-> So far, after some debugging, the actual cause for this could
-> not immediately be found within the batman-adv code.
-> Therefore reverting this for now until the underlying issue can be
-> found and better understood.
-> 
-> Some additional debugging information and discussions can be found
-> on our Redmine bugtracker, linked below.
-> 
-> Link: https://www.open-mesh.org/issues/428
-> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-> ---
-> Some help / guidance for further debugging from people more
-> knowledgeable in the RCU core internals would be appreciated.
-> 
-> Specifically why the rcu_barrier() call in batadv_exit() does not 
-> seem to catch the kfree_rcu() which the reverted patch was 
-> originally adding.
+> 							Thanx, Paul
 
-Let me make sure that I understand...
+We have allocated a kmem-cache for some objects, which are like
+batman-adv's version of a bridge's FDB entry.
 
-You need rcu_barrier() to wait for any memory passed to kfree_rcu()
-to actually be freed?  If so, please explain why you need this, as
-in what bad thing happens if the actual kfree() happens later.
+The very last thing we do before unloading the module is
+free'ing/destroying this kmem-cache with a call to
+kmem_cache_destroy().
 
-(I could imagine something involving OOM avoidance, but I need to
-hear your code's needs rather than my imaginations.)
+As far as I understand before calling kmem_cache_destroy()
+we need to ensure that all previously allocated objects on this
+kmem-cache were free'd. At least we get this kernel splat
+(from Slub?) otherwise. I'm not quite sure if any other bad things
+other than this noise in dmesg would occur though. Other than a
+stale, zero objects entry remaining in /proc/slabinfo maybe. Which
+gets duplicated everytime we repeat loading+unloading the module.
+At least these entries would be a memory leak I suppose?
 
-							Thanx, Paul
+```
+# after insmod/rmmod'ing batman-adv 6 times:
+$ cat /proc/slabinfo  | grep batadv_tl_cache
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
+```
 
->  compat.h                           |  8 -----
->  net/batman-adv/translation-table.c | 47 ++++++++++++++++++++++++++++--
->  2 files changed, 44 insertions(+), 11 deletions(-)
-> 
-> diff --git a/compat.h b/compat.h
-> index d823eeb7bc70..638bfc54f3d0 100644
-> --- a/compat.h
-> +++ b/compat.h
-> @@ -16,14 +16,6 @@
->  #include "compat-autoconf.h"
->  
->  
-> -#if LINUX_VERSION_IS_LESS(6, 4, 0)
-> -
-> -#if IS_ENABLED(CONFIG_SLOB)
-> -#error kfree_rcu for kmem_cache not supported when SLOB is enabled
-> -#endif
-> -
-> -#endif /* LINUX_VERSION_IS_LESS(6, 4, 0) */
-> -
->  #endif /* __KERNEL__ */
->  
->  #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-> index b21ff3c36b07..2243cec18ecc 100644
-> --- a/net/batman-adv/translation-table.c
-> +++ b/net/batman-adv/translation-table.c
-> @@ -208,6 +208,20 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
->  	return tt_global_entry;
->  }
->  
-> +/**
-> + * batadv_tt_local_entry_free_rcu() - free the tt_local_entry
-> + * @rcu: rcu pointer of the tt_local_entry
-> + */
-> +static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
-> +{
-> +	struct batadv_tt_local_entry *tt_local_entry;
-> +
-> +	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
-> +				      common.rcu);
-> +
-> +	kmem_cache_free(batadv_tl_cache, tt_local_entry);
-> +}
-> +
->  /**
->   * batadv_tt_local_entry_release() - release tt_local_entry from lists and queue
->   *  for free after rcu grace period
-> @@ -222,7 +236,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
->  
->  	batadv_softif_vlan_put(tt_local_entry->vlan);
->  
-> -	kfree_rcu(tt_local_entry, common.rcu);
-> +	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
->  }
->  
->  /**
-> @@ -240,6 +254,20 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
->  		 batadv_tt_local_entry_release);
->  }
->  
-> +/**
-> + * batadv_tt_global_entry_free_rcu() - free the tt_global_entry
-> + * @rcu: rcu pointer of the tt_global_entry
-> + */
-> +static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
-> +{
-> +	struct batadv_tt_global_entry *tt_global_entry;
-> +
-> +	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
-> +				       common.rcu);
-> +
-> +	kmem_cache_free(batadv_tg_cache, tt_global_entry);
-> +}
-> +
->  /**
->   * batadv_tt_global_entry_release() - release tt_global_entry from lists and
->   *  queue for free after rcu grace period
-> @@ -254,7 +282,7 @@ void batadv_tt_global_entry_release(struct kref *ref)
->  
->  	batadv_tt_global_del_orig_list(tt_global_entry);
->  
-> -	kfree_rcu(tt_global_entry, common.rcu);
-> +	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
->  }
->  
->  /**
-> @@ -379,6 +407,19 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
->  	batadv_tt_global_size_mod(orig_node, vid, -1);
->  }
->  
-> +/**
-> + * batadv_tt_orig_list_entry_free_rcu() - free the orig_entry
-> + * @rcu: rcu pointer of the orig_entry
-> + */
-> +static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
-> +{
-> +	struct batadv_tt_orig_list_entry *orig_entry;
-> +
-> +	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
-> +
-> +	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
-> +}
-> +
->  /**
->   * batadv_tt_orig_list_entry_release() - release tt orig entry from lists and
->   *  queue for free after rcu grace period
-> @@ -392,7 +433,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
->  				  refcount);
->  
->  	batadv_orig_node_put(orig_entry->orig_node);
-> -	kfree_rcu(orig_entry, rcu);
-> +	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
->  }
->  
->  /**
-> -- 
-> 2.45.1
-> 
-> 
+That's why we added this rcu_barrier() call on module
+shutdown in the batman-adv module __exit function right before the
+kmem_cache_destroy() calls. Hoping that this would wait for all
+call_rcu() / kfree_rcu() callbacks and their final kfree() to finish.
+This worked when we were using call_rcu() with our own callback
+with a kfree(). However for kfree_rcu() this somehow does not seem
+to be the case anymore (- or more likely I'm missing something else,
+some other bug within the batman-adv code?).
+
+Regards, Linus
