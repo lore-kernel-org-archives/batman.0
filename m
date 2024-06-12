@@ -4,137 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66504C27C53
-	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 18:24:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61B51C27C53
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 21:37:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id ACB7C8332C
-	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 20:24:18 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8578783B06
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 23:36:59 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1718216658;
- b=bOsiH7AloDpN+DSJYDdopjKGowXzHEwkl+q+xIOtrra9tabiTafUweokttOPFdF33sL/j
- sht+kKjTme8MfagsfC79NK1PnTL0eBRWDNnUukF8EP+edeOlPJkHIn8lHhg4rB2lj0x7HC5
- +3vIJK65AYFh+jO9tbiwG8GlO8V4Fn8=
+ t=1718228219;
+ b=ZrsKmfmXT7+IaaQ3ZadCv4eZ6ulAo/JCiFBgQ+SDKG1hXLz8J9RXlGUy4BKsdnlKzuZhX
+ v83kgEOfIYSwcjlf6NpHh/1oA2M4SdvOe63O/feU7FiHL6Om1ExyqWw9d51HpqZia9jCkvH
+ 9coy5J8xlUPlNwKGUppMDyvTUIZwhaQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1718216658; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1718228219; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=cjViDW1ofcPI9Q3XzCSNNVOySVpdiDhgF1rEIa0r7VA=;
- b=QXRy91ktMbOZydCI9xEtwq+l8itb7Fibtgv6hz+Y06KiFO+Jg1VuNvf8eMwZ4Vxt7IW/K
- QHLpVKHt8/fu5I+5EidAs8Ql6APaRuM5uuRApS/diY33Z37pCPHjOzW7eGbfwWM2+bJIZBV
- RLMfvcaDKQGJLOGHJZ1KSoNARP/hG88=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=HfPH0RKfXJQz1KEdv+17hpXr39Ln4EosVflULP2zg6Y=;
+ b=3Y6hI5IFqmECMxt/MU/WjTXBHnAMPLinos+kfXLzK8evy0JKZMt0uwzfhSJGRFRRgkNVx
+ NWqs7QuhrOtR0HuxMngcx7RXaskz2zhaYXNSGEMTwD5274qTQFreL/QDbKySV20oHLcL0fe
+ Gg9ZRXEq3OwVOrc/fJsgiAMCtwnGB40=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com
- [IPv6:2a00:1450:4864:20::131])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4C20B8015A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 12 Jun 2024 18:25:11 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1718209511; a=rsa-sha256;
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id F0D53827EA
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 12 Jun 2024 23:36:25 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1718228186; a=rsa-sha256;
 	cv=none;
-	b=iZ9kfug00nxiTB22yxV8TxU1gBpvFpr8S/WS+P8mpp7CXyiBSxX8dLQ/XkyePSPsJ1u4Ef
-	fxW/7uzseU4UhZ6wM22BLnHIvn9J6VY/jPl1Safm8IREjng+9FkGN7QlaPEkPgTL7Xo5S4
-	Q3cdoJW0HQ0JdlXOU5Bs02ecVDDkpKw=
+	b=r36XBt/nbHNnxj8nULolRZKlu/RcLCcqPTxpA00l+nQqi6wXaZOJHVNDZp1uUufgaXTnUG
+	RxJpSCmlrXhR004zJB06oVs5JNCiJ7OJkwDsfxGzeVlDKqSbPR60sLIqnX/jbht+RxQ+RK
+	ZnJcesgIrsBoIh8MqFynsGG9b8eTizs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=Sf53+hTp;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of urezki@gmail.com designates
- 2a00:1450:4864:20::131 as permitted sender) smtp.mailfrom=urezki@gmail.com
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1718209511;
+	s=20121; t=1718228186;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=cjViDW1ofcPI9Q3XzCSNNVOySVpdiDhgF1rEIa0r7VA=;
-	b=f9Zn/N6N8tDxq2q8xpKQc1YevTXB2i0ksrHvwdRb31hNblOogUsyfWyM/7YuuKh6I4mklu
-	niwSeu1higiW3mezCdOzqqm7SZC+yfjbsiEifu7P9dLxoLtQv2Y12+/FqRDDMQtI28fxjl
-	2KvcHwQAHEf0jBAoMl2OFWVK9udZl2s=
-Received: by mail-lf1-x131.google.com with SMTP id
- 2adb3069b0e04-52bd48cf36bso74365e87.3
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Wed, 12 Jun 2024 09:25:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1718209510; x=1718814310;
- darn=lists.open-mesh.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=cjViDW1ofcPI9Q3XzCSNNVOySVpdiDhgF1rEIa0r7VA=;
-        b=Sf53+hTpnJ0cJsRVSvn52YRaKTBWSqWc8H0gQoXmvM5EkmuYhV4Ruz8hTgGzQIP85a
-         zwooXRZCz0V7cFLWo4j5mMAdKs3722wjaabFTHBe3dpvHBNi14tmWydiW4cyJRyuMU1X
-         6WVdilqQJ21eXFMhMPPLHoGTi9HrIOPzAieGVyTIUy40Zex5HWnHxZISfKsTQfAlu96z
-         608dX5WIyjVLUZRrXB6GHIG+iaQayQVjyIkAcA3U/+hXK8ZFNuLrtMrcuAN+dGmbCi+l
-         OdcXJ01J4+s5azL2md8BR6r413elOaxW/qWr2MjtVZ/OKKwD03tD9xKBcbwWQ5wWiuGa
-         JrVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718209510; x=1718814310;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=cjViDW1ofcPI9Q3XzCSNNVOySVpdiDhgF1rEIa0r7VA=;
-        b=iyULZoygpbmCNrpf9YLSgvMbaA4D+1PBuTiW5snv6zwcGeMsx1nCg5LbwUe0kuCmJ7
-         MaoLtUkdu7uc76eGJTxxf3Nw3o1szA2U5nVLp8gXHvYTrNntJHWPqZ54N+DFfDelhz/5
-         TUiXaabAtSiNhuypxLPzZaG54NzesjP+7pb6uCrtCSdxoGOHA+JiBb9K3v/pfsY6eIHQ
-         5y/2uMDiNNRpHDRz31MbBTblQDD80cnPeT/VzVEyol0rUDH3E1veZ7JwCZdA/wfmQ9LB
-         z7pfWZAE9GxlKxP8JYdJln1YY05A9/f47p7wu8NfE2eudMtxSSPma0LTU2FU+f1Lslpo
-         y+4Q==
-X-Forwarded-Encrypted: i=1;
- AJvYcCW5IeBdh8BaF1rsAxVFaJ//7nWzuQXZhpGUTMU4TZQgYNf4fRcy0DZ2VtlB32WADt42D5qQCkvlAcHRfu678LpWYCrKGi90eQwSeWCijMpR
-X-Gm-Message-State: AOJu0YzoMCpSCSj2HGRWjide7b8HA3YPc5itQBfIKLG5uLB3kzlUR0oo
-	LVCreAQNnM6tC5wNtQ8yBIZj80TDGxHWrMMdLsgL2wZr7lNqdE+X
-X-Google-Smtp-Source: 
- AGHT+IHBg4ENXu6zKpZ4W+gE4pdn4C5m09sRJi6Bz+mwDKzOLfMiJn8NxGSpgfnMNC0+xPotL9oCnA==
-X-Received: by 2002:a05:6512:20c7:b0:52c:83c2:9670 with SMTP id
- 2adb3069b0e04-52c9a405bbcmr1175666e87.69.1718209510177;
-        Wed, 12 Jun 2024 09:25:10 -0700 (PDT)
-Received: from pc636 (host-90-233-193-23.mobileonline.telia.com.
- [90.233.193.23])
-        by smtp.gmail.com with ESMTPSA id
- 2adb3069b0e04-52c8a3be915sm1465837e87.289.2024.06.12.09.25.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Jun 2024 09:25:09 -0700 (PDT)
-From: Uladzislau Rezki <urezki@gmail.com>
-X-Google-Original-From: Uladzislau Rezki <urezki@pc636>
-Date: Wed, 12 Jun 2024 18:25:06 +0200
-To: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>,
-	Vlastimil Babka <vbabka@suse.cz>
-Cc: "Paul E. McKenney" <paulmck@kernel.org>,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	Dmitry Antipov <dmantipov@yandex.ru>, netdev@vger.kernel.org,
-	rcu@vger.kernel.org, Matthew Wilcox <willy@infradead.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] Revert "batman-adv: prefer kfree_rcu() over call_rcu()
- with free-only callbacks"
-Message-ID: <ZmnL4jkhJLIW924W@pc636>
-References: <20240612133357.2596-1-linus.luessing@c0d3.blue>
- <e36490a1-32af-4090-83a7-47563bce88bc@paulmck-laptop>
- <ZmmzE6Przj0pCHek@sellars>
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=HfPH0RKfXJQz1KEdv+17hpXr39Ln4EosVflULP2zg6Y=;
+	b=hGzpRgWTznjciPISwLsja5PUFLyX62DqZcvz4NeD8snDHSrZnHzw4oNWizAvHIScUaNpU7
+	xJVG7EWK/S+R2JEPlgKDIOg8qtoxumHJ+rdHzGFMb6jkfD6Elxtdn+KuVtPu0Cb2vuz/ay
+	AUi7FMEJqseYN2OtzZrBJ79q9sUFouM=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 5C5DC3EF21;
+	Wed, 12 Jun 2024 23:36:18 +0200 (CEST)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH] batman-adv: add dynamic, bridged-in TT VID detection support
+Date: Wed, 12 Jun 2024 23:36:19 +0200
+Message-ID: <20240612213620.4135-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.45.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZmmzE6Przj0pCHek@sellars>
-X-MailFrom: urezki@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: 7ERZKDMASORC2GREE5ULAOIJJYL7NT27
+X-Message-ID-Hash: 7ERZKDMASORC2GREE5ULAOIJJYL7NT27
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: AV5RG5E4YZHNPJ3MWGTFIYDU2GG7QK7Q
-X-Message-ID-Hash: AV5RG5E4YZHNPJ3MWGTFIYDU2GG7QK7Q
-X-Mailman-Approved-At: Wed, 12 Jun 2024 20:23:22 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AV5RG5E4YZHNPJ3MWGTFIYDU2GG7QK7Q/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7ERZKDMASORC2GREE5ULAOIJJYL7NT27/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -143,78 +91,381 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-+ Vlastimil Babka
-+ Matthew Wilcox
+So far, if we wanted bridge VLAN tagged frames into the mesh one would
+need to manually create an according VLAN interface on top of bat0
+first, to trigger batman-adv to create the according structures
+for a VID.
 
-> On Wed, Jun 12, 2024 at 07:06:04AM -0700, Paul E. McKenney wrote:
-> > Let me make sure that I understand...
-> > 
-> > You need rcu_barrier() to wait for any memory passed to kfree_rcu()
-> > to actually be freed?  If so, please explain why you need this, as
-> > in what bad thing happens if the actual kfree() happens later.
-> > 
-> > (I could imagine something involving OOM avoidance, but I need to
-> > hear your code's needs rather than my imaginations.)
-> > 
-> > 							Thanx, Paul
-> 
-> We have allocated a kmem-cache for some objects, which are like
-> batman-adv's version of a bridge's FDB entry.
-> 
-> The very last thing we do before unloading the module is
-> free'ing/destroying this kmem-cache with a call to
-> kmem_cache_destroy().
-> 
-> As far as I understand before calling kmem_cache_destroy()
-> we need to ensure that all previously allocated objects on this
-> kmem-cache were free'd. At least we get this kernel splat
-> (from Slub?) otherwise. I'm not quite sure if any other bad things
-> other than this noise in dmesg would occur though. Other than a
-> stale, zero objects entry remaining in /proc/slabinfo maybe. Which
-> gets duplicated everytime we repeat loading+unloading the module.
-> At least these entries would be a memory leak I suppose?
-> 
-> ```
-> # after insmod/rmmod'ing batman-adv 6 times:
-> $ cat /proc/slabinfo  | grep batadv_tl_cache
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> batadv_tl_cache        0     16    256   16    1 : tunables    0    0    0 : slabdata      1      1      0
-> ```
-> 
-> That's why we added this rcu_barrier() call on module
-> shutdown in the batman-adv module __exit function right before the
-> kmem_cache_destroy() calls. Hoping that this would wait for all
-> call_rcu() / kfree_rcu() callbacks and their final kfree() to finish.
-> This worked when we were using call_rcu() with our own callback
-> with a kfree(). However for kfree_rcu() this somehow does not seem
-> to be the case anymore (- or more likely I'm missing something else,
-> some other bug within the batman-adv code?).
-> 
-Some background:
+With this change the VLAN from bridged-in clients is now automatically
+detected and added to the translation table on the fly.
 
-Before kfree_rcu() could deal only with "internal system slab caches" which
-are static and live forever. After removing SLAB allocator it become possible
-to free a memory over RCU using kfree_rcu() without specifying a kmem-cache
-an object belongs to because two remaining allocators are capable of convert
-an object to its cache internally.
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/hard-interface.c    |   2 +-
+ net/batman-adv/multicast.c         |   8 +-
+ net/batman-adv/soft-interface.c    | 121 ++++++++++++++++-------------
+ net/batman-adv/soft-interface.h    |   6 +-
+ net/batman-adv/translation-table.c |  19 ++---
+ net/batman-adv/translation-table.h |   4 +-
+ 6 files changed, 88 insertions(+), 72 deletions(-)
 
-So, now, kfree_rcu() does not need to be aware of any cache and this is
-something new.
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 96a412beab2d..f5826dd8752c 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -946,7 +946,7 @@ static int batadv_hard_if_event_softif(unsigned long event,
+ 	switch (event) {
+ 	case NETDEV_REGISTER:
+ 		bat_priv = netdev_priv(net_dev);
+-		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
++		batadv_softif_create_vlan_own(bat_priv, BATADV_NO_FLAGS);
+ 		break;
+ 	}
+ 
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 38fab5e46ae2..61e765352e29 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -724,6 +724,7 @@ static void batadv_mcast_mla_tt_add(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
++	int ret;
+ 
+ 	if (!mcast_list)
+ 		return;
+@@ -733,9 +734,10 @@ static void batadv_mcast_mla_tt_add(struct batadv_priv *bat_priv,
+ 						  &bat_priv->mcast.mla_list))
+ 			continue;
+ 
+-		if (!batadv_tt_local_add(bat_priv->soft_iface,
+-					 mcast_entry->addr, BATADV_NO_FLAGS,
+-					 BATADV_NULL_IFINDEX, BATADV_NO_MARK))
++		ret = batadv_tt_local_add(bat_priv->soft_iface,
++					  mcast_entry->addr, BATADV_NO_FLAGS,
++					  BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++		if (ret <= 0)
+ 			continue;
+ 
+ 		hlist_del(&mcast_entry->list);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 30ecbc2ef1fd..fb647798e5c8 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -141,6 +141,10 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		/* we don't use this VID ourself, avoid adding us to it */
++		if (!batadv_is_my_client(bat_priv, old_addr, vlan->vid))
++			continue;
++
+ 		batadv_tt_local_remove(bat_priv, old_addr, vlan->vid,
+ 				       "mac address changed", false);
+ 		batadv_tt_local_add(dev, addr->sa_data, vlan->vid,
+@@ -549,13 +553,15 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_softif_create_vlan() - allocate the needed resources for a new vlan
++ * batadv_softif_create_vlan() - create a softif vlan struct
+  * @bat_priv: the bat priv with all the soft interface information
+  * @vid: the VLAN identifier
+  *
+- * Return: 0 on success, a negative error otherwise.
++ * Return: a pointer to the newly allocated softif vlan struct on success, NULL
++ * otherwise.
+  */
+-int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
++static struct batadv_softif_vlan *
++batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ {
+ 	struct batadv_softif_vlan *vlan;
+ 
+@@ -563,15 +569,14 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+-		batadv_softif_vlan_put(vlan);
+ 		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+-		return -EEXIST;
++		return vlan;
+ 	}
+ 
+ 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
+ 	if (!vlan) {
+ 		spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+-		return -ENOMEM;
++		return NULL;
+ 	}
+ 
+ 	vlan->bat_priv = bat_priv;
+@@ -584,34 +589,71 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+ 	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 
++	return vlan;
++}
++
++/**
++ * batadv_softif_vlan_get_or_create() - retrieve or create a softif vlan struct
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vid: the VLAN identifier
++ *
++ * Return: the softif vlan struct if found or created or NULL otherwise.
++ */
++struct batadv_softif_vlan *
++batadv_softif_vlan_get_or_create(struct batadv_priv *bat_priv,
++				 unsigned short vid)
++{
++	struct batadv_softif_vlan *vlan = batadv_softif_vlan_get(bat_priv, vid);
++
++	if (vlan)
++		return vlan;
++
++	return batadv_softif_create_vlan(bat_priv, vid);
++}
++
++/**
++ * batadv_softif_create_vlan_own() - add our own softif to the local TT
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vid: the VLAN identifier
++ *
++ * Adds the MAC address of our own soft interface with the given VLAN ID as
++ * a permanent local TT entry.
++ *
++ * Return: 0 on success, a negative error otherwise.
++ */
++int batadv_softif_create_vlan_own(struct batadv_priv *bat_priv,
++				  unsigned short vid)
++{
++	int ret;
++
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+-
+-	/* don't return reference to new softif_vlan */
+-	batadv_softif_vlan_put(vlan);
++	ret = batadv_tt_local_add(bat_priv->soft_iface,
++				  bat_priv->soft_iface->dev_addr, vid,
++				  BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++	if (ret < 0)
++		return ret;
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * batadv_softif_destroy_vlan() - remove and destroy a softif_vlan object
++ * batadv_softif_destroy_vlan_own() - remove our own softif from the local TT
+  * @bat_priv: the bat priv with all the soft interface information
+- * @vlan: the object to remove
++ * @vid: the VLAN identifier
++ *
++ * Removes the MAC address of our own soft interface with the given VLAN ID from
++ * the local TT.
+  */
+-static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
+-				       struct batadv_softif_vlan *vlan)
++static void batadv_softif_destroy_vlan_own(struct batadv_priv *bat_priv,
++					   unsigned short vid)
+ {
+ 	/* explicitly remove the associated TT local entry because it is marked
+ 	 * with the NOPURGE flag
+ 	 */
+-	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
+-			       vlan->vid, "vlan interface destroyed", false);
+-
+-	batadv_softif_vlan_put(vlan);
++	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr, vid,
++			       "vlan interface destroyed", false);
+ }
+ 
+ /**
+@@ -629,7 +671,6 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 				    unsigned short vid)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+-	struct batadv_softif_vlan *vlan;
+ 
+ 	/* only 802.1Q vlans are supported.
+ 	 * batman-adv does not know how to handle other types
+@@ -639,25 +680,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 
+ 	vid |= BATADV_VLAN_HAS_TAG;
+ 
+-	/* if a new vlan is getting created and it already exists, it means that
+-	 * it was not deleted yet. batadv_softif_vlan_get() increases the
+-	 * refcount in order to revive the object.
+-	 *
+-	 * if it does not exist then create it.
+-	 */
+-	vlan = batadv_softif_vlan_get(bat_priv, vid);
+-	if (!vlan)
+-		return batadv_softif_create_vlan(bat_priv, vid);
+-
+-	/* add a new TT local entry. This one will be marked with the NOPURGE
+-	 * flag. This must be added again, even if the vlan object already
+-	 * exists, because the entry was deleted by kill_vid()
+-	 */
+-	batadv_tt_local_add(bat_priv->soft_iface,
+-			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+-
+-	return 0;
++	return batadv_softif_create_vlan_own(bat_priv, vid);
+ }
+ 
+ /**
+@@ -676,7 +699,6 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 				     unsigned short vid)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+-	struct batadv_softif_vlan *vlan;
+ 
+ 	/* only 802.1Q vlans are supported. batman-adv does not know how to
+ 	 * handle other types
+@@ -684,15 +706,7 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 	if (proto != htons(ETH_P_8021Q))
+ 		return -EINVAL;
+ 
+-	vlan = batadv_softif_vlan_get(bat_priv, vid | BATADV_VLAN_HAS_TAG);
+-	if (!vlan)
+-		return -ENOENT;
+-
+-	batadv_softif_destroy_vlan(bat_priv, vlan);
+-
+-	/* finally free the vlan object */
+-	batadv_softif_vlan_put(vlan);
+-
++	batadv_softif_destroy_vlan_own(bat_priv, vid | BATADV_VLAN_HAS_TAG);
+ 	return 0;
+ }
+ 
+@@ -1099,7 +1113,6 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_hard_iface *hard_iface;
+-	struct batadv_softif_vlan *vlan;
+ 
+ 	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
+ 		if (hard_iface->soft_iface == soft_iface)
+@@ -1107,11 +1120,7 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ 	}
+ 
+ 	/* destroy the "untagged" VLAN */
+-	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
+-	if (vlan) {
+-		batadv_softif_destroy_vlan(bat_priv, vlan);
+-		batadv_softif_vlan_put(vlan);
+-	}
++	batadv_softif_destroy_vlan_own(bat_priv, BATADV_NO_FLAGS);
+ 
+ 	unregister_netdevice_queue(soft_iface, head);
+ }
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 9f2003f1a497..7050ccd304df 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -21,10 +21,14 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 			 struct batadv_orig_node *orig_node);
+ bool batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+-int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
++int batadv_softif_create_vlan_own(struct batadv_priv *bat_priv,
++				  unsigned short vid);
+ void batadv_softif_vlan_release(struct kref *ref);
+ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ 						  unsigned short vid);
++struct batadv_softif_vlan *
++batadv_softif_vlan_get_or_create(struct batadv_priv *bat_priv,
++				 unsigned short vid);
+ 
+ /**
+  * batadv_softif_vlan_put() - decrease the vlan object refcounter and
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b21ff3c36b07..ca74a46c1d93 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -591,8 +591,8 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
+  *
+  * Return: true if the client was successfully added, false otherwise.
+  */
+-bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+-			 unsigned short vid, int ifindex, u32 mark)
++int batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
++			unsigned short vid, int ifindex, u32 mark)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_tt_local_entry *tt_local;
+@@ -604,10 +604,10 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	struct hlist_head *head;
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+ 	int hash_added, table_size, packet_size_max;
+-	bool ret = false;
+ 	bool roamed_back = false;
+ 	u8 remote_flags;
+ 	u32 match_mark;
++	int ret = 0;
+ 
+ 	if (ifindex != BATADV_NULL_IFINDEX)
+ 		in_dev = dev_get_by_index(net, ifindex);
+@@ -658,21 +658,22 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 		net_ratelimited_function(batadv_info, soft_iface,
+ 					 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
+ 					 table_size, packet_size_max, addr);
++		ret = -E2BIG;
+ 		goto out;
+ 	}
+ 
+ 	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
+-	if (!tt_local)
++	if (!tt_local) {
++		ret = -ENOMEM;
+ 		goto out;
++	}
+ 
+ 	/* increase the refcounter of the related vlan */
+-	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	vlan = batadv_softif_vlan_get_or_create(bat_priv, vid);
+ 	if (!vlan) {
+-		net_ratelimited_function(batadv_info, soft_iface,
+-					 "adding TT local entry %pM to non-existent VLAN %d\n",
+-					 addr, batadv_print_vid(vid));
+ 		kmem_cache_free(batadv_tl_cache, tt_local);
+ 		tt_local = NULL;
++		ret = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+@@ -769,7 +770,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	if (remote_flags ^ (tt_local->common.flags & BATADV_TT_REMOTE_MASK))
+ 		batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
+ 
+-	ret = true;
++	ret = 1;
+ out:
+ 	batadv_hardif_put(in_hardif);
+ 	dev_put(in_dev);
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index d18740d9a22b..bbdda8488c14 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -16,8 +16,8 @@
+ #include <linux/types.h>
+ 
+ int batadv_tt_init(struct batadv_priv *bat_priv);
+-bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+-			 unsigned short vid, int ifindex, u32 mark);
++int batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
++			unsigned short vid, int ifindex, u32 mark);
+ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 			   const u8 *addr, unsigned short vid,
+ 			   const char *message, bool roaming);
+-- 
+2.45.1
 
-In your scenario the cache is destroyed and after that kfree_rcu()
-started to free objects into non-existing cache which is a problem.
-
-I have a question to Vlastimil. Is kmem_cached_destroy() removes the
-cache right away even though there are allocated objects which have
-not yet been freed? If so, is that possible to destroy the cache only
-when usage counter becomes zero? i.e. when all objects were returned
-back to the cache.
-
-Thank you!
-
---
-Uladzislau Rezki
