@@ -1,113 +1,92 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2941FC27C53
-	for <batman@archiver.kernel.org>; Fri,  7 Jun 2024 18:46:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79F3BC27C53
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 13:35:06 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5676A82E3E
-	for <batman@archiver.kernel.org>; Fri,  7 Jun 2024 20:46:17 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9793383159
+	for <batman-adv@archiver.kernel.org>; Wed, 12 Jun 2024 15:35:02 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1717785977;
- b=EdkCPzi79qguBrTm1UuzxK8tPVDLcHlWAL4ESbtcku7fCRxnDgncwbxgM+tgpsUwrkM9H
- lDjVfXmOPpV17mZuYeI3dUv4vx7PGQBE/s9iTxRhFr0yxnauLQxkGYbmB8NdACjVhwBEA5V
- HSWneaim21N7EK2psTMktJk/gegEYHg=
+ t=1718199302;
+ b=HFhg8ijLLY3di05NzsUA2n/MkspLgOH3eO0Z2/O+Rh3PfQ6b44IP0YJko+ux8kg35B77q
+ 14xQFNOuHRKQPYNy9k3OYDP9RTY4d7l74QB2dzUnthFHh2/ZZi6En8HXUi8PaPmU2GdEIwD
+ N2dtlUdoSZ+Zqmi+FvqsNDzUQ+/3HQI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1717785977; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1718199302; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=FFEyK0DY8IpFcUTkeSbNeWt4t8L56sLzjHekE18/ezc=;
- b=lGXf6UELR6D1yPAINnVDMYIa80Ap1D5RQmDhh5d7QZ5oULZxYsdi3Pt+n5opc/Rzz6piR
- djk9X9U2RfCZl/R7wPhfRb0yr5Apf/MGX4g/yeDBJoCJTm8cWDHgXswmnwSEDZDJPRrxTeh
- SteRHwneGK91zIfujcj/89nFNZrj4cA=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=rEO3gJc8rRY/BOlcM/rFXPSy5vXGU4T626jW6X1409w=;
+ b=BjZn8li5W6eW1ZrP9DI/5s/PdSxE1tF15MO0BgwryShiL0hf41E9V9i0TMN82WBSneVp8
+ HRCezw0u0F8/q8wqw4QanTLcs2WCCv1dQLP8N2eriZk5he3IbPPes4VEB6J/vGEvrDVcKD7
+ JGzHJ8HmIuMaJxDrFekPfQJ+U/Fb/UI=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C995E802EA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  7 Jun 2024 20:33:12 +0200 (CEST)
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1717785192;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=FFEyK0DY8IpFcUTkeSbNeWt4t8L56sLzjHekE18/ezc=;
-	b=DppmBvKOqzm/KE0LHJDo2smMuTxFlTgleeQdKowW6tGwiJJR4h63U+/cBVGavnkAwmpt+x
-	bkjeb/GTJOrWuKPQW7+xruxzWDDUofXMqZycAG28qcyZehv995A/YRXo+6vNSgNTKziORU
-	J1kVsji6+3wz7jWnJ8Q0h/zpF0sKkYg=
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7FA078212D
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 12 Jun 2024 15:34:28 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1718199268; a=rsa-sha256;
+	cv=none;
+	b=skLsk1ELEzTnBC6CtUzXMuiDe5tMdZT8VuIVMxU21R2dLre/J6/sOysJ70lTIIDVNq2aqL
+	OnYwraOMHWaxFltdd4zU88SfFjzdm9Vub+iLGkf9Svfsux6ShxSa1X1bD43eSAnRyRtoGn
+	HqnR+G08baPXkUw5F4ERgzbnXSDmKrs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=hZ136Q9m;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1717785192; a=rsa-sha256;
-	cv=none;
-	b=XQF6PDMez/lIiFacTP1zPMnopytngGdpKHkgau9aRcRNe9mLio8Ma/8nVZ647lXQULar0B
-	jLsxJYEQEtNx3dJ7lUYx1Cmkz/bzOo06z5TryjmIQd9vxkFtRTXa+8++6cLGCd2AbGR2Bh
-	q0hqtCsxiEAHXPBkrUaJL/Xp5U5yIyg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1717785191;
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1718199268;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=FFEyK0DY8IpFcUTkeSbNeWt4t8L56sLzjHekE18/ezc=;
-	b=hZ136Q9m/YuxRSuKeRtrrdjnpbDqDlC0VZr5Soq51LKx+eI2e74hXat/0nxoBYDWn65akr
-	9JrqnR8/r6RKuvbfjU7MwCkuPxL22cJWF1EIf5KXKiE+2Wcx+/VAd+Z3d4kuoUaaGPBGTX
-	Iz7VCRzkYMkgkzYT+01PwTc2tOqRbIs=
-From: Sven Eckelmann <sven@narfation.org>
-To: Marek Lindner <mareklindner@neomailbox.ch>,
- Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
- Justin Stitt <justinstitt@google.com>, Kees Cook <keescook@chromium.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Erick Archer <erick.archer@outlook.com>
-Cc: Erick Archer <erick.archer@outlook.com>, b.a.t.m.a.n@lists.open-mesh.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linux-hardening@vger.kernel.org, llvm@lists.linux.dev
-Subject: 
- Re: [PATCH v4] batman-adv: Add flex array to struct batadv_tvlv_tt_data
-Date: Fri, 07 Jun 2024 20:33:08 +0200
-Message-ID: <2529523.GKX7oQKdZx@ripper>
-In-Reply-To: 
- <AS8PR02MB7237205E3231CD335CB988648BFB2@AS8PR02MB7237.eurprd02.prod.outlook.com>
-References: 
- <AS8PR02MB7237205E3231CD335CB988648BFB2@AS8PR02MB7237.eurprd02.prod.outlook.com>
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=rEO3gJc8rRY/BOlcM/rFXPSy5vXGU4T626jW6X1409w=;
+	b=tw2EtWfjL5PE1mZcJhSaDMYEiNt3QCcWShf2W/+mdsGQNJNplreL0SjEWwPpltPupK0OoH
+	UDy96BhkXJYAmY39gk/SwI8/RK5kH1Kq3fRVCxzrLQXLm4dpcAaor2Na5bsOxFeBLliXDI
+	5IyqGYurcxIb7NTh2143C9BXXzO1nDg=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 595773EF21;
+	Wed, 12 Jun 2024 15:34:21 +0200 (CEST)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org,
+	Dmitry Antipov <dmantipov@yandex.ru>
+Cc: netdev@vger.kernel.org,
+	rcu@vger.kernel.org,
+	=?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH] Revert "batman-adv: prefer kfree_rcu() over call_rcu() with
+ free-only callbacks"
+Date: Wed, 12 Jun 2024 15:33:57 +0200
+Message-ID: <20240612133357.2596-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.45.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2954765.bcXerOTE6V";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-X-MailFrom: sven@narfation.org
-X-Mailman-Rule-Hits: max-recipients
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: UZNA5DZ6ESOJYEFXRIV3ZNZBK6A5Z3YF
+X-Message-ID-Hash: UZNA5DZ6ESOJYEFXRIV3ZNZBK6A5Z3YF
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
- suspicious-header
-Message-ID-Hash: VPZWK7FM2XQTQR77XJVT5TJWQOKLDQUZ
-X-Message-ID-Hash: VPZWK7FM2XQTQR77XJVT5TJWQOKLDQUZ
-X-Mailman-Approved-At: Fri, 07 Jun 2024 20:45:17 +0200
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VPZWK7FM2XQTQR77XJVT5TJWQOKLDQUZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/UZNA5DZ6ESOJYEFXRIV3ZNZBK6A5Z3YF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -116,38 +95,238 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart2954765.bcXerOTE6V
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 07 Jun 2024 20:33:08 +0200
-Message-ID: <2529523.GKX7oQKdZx@ripper>
-MIME-Version: 1.0
+This reverts commit cf9845d4566698731c23cd7a02db956706d058a1.
 
-On Friday, 7 June 2024 18:19:12 CEST Erick Archer wrote:
-> Hi,
-> 
-> As it was decided in version 3, I resend this path since -r2 has been
-> released. I hope that this time the patch can be applied ;)
+This change seems to result in a memory leak / RCU race and the following
+kernel splat when the batman-adv kernel module is unloaded:
 
-Thanks, applied.
+```
+[  112.208633] =============================================================================
+[  112.210359] BUG batadv_tl_cache (Tainted: G           OE     ): Objects remaining in batadv_tl_cache on __kmem_cache_shutdown()
+[  112.211943] -----------------------------------------------------------------------------
 
-Kind regards,
-	Sven
---nextPart2954765.bcXerOTE6V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+[  112.212517] Slab 0xffffe8afc0216d00 objects=16 used=1 fp=0xffff93f4085b4340 flags=0xfffffc0000a00(workingset|slab|node=0|zone=1|lastcpupid=0x1fffff)
+[  112.212517] CPU: 1 PID: 776 Comm: rmmod Tainted: G           OE      6.8.12-amd64 #1  Debian 6.8.12-1
+[  112.212517] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[  112.212517] Call Trace:
+[  112.212517]  <TASK>
+[  112.212517]  dump_stack_lvl+0x64/0x80
+[  112.212517]  slab_err+0xe6/0x120
+[  112.212517]  __kmem_cache_shutdown+0x160/0x2e0
+[  112.212517]  kmem_cache_destroy+0x55/0x160
+[  112.220849]  batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
+[  112.220849]  __do_sys_delete_module+0x1d5/0x320
+[  112.220849]  do_syscall_64+0x83/0x190
+[  112.220849]  ? do_syscall_64+0x8f/0x190
+[  112.220849]  ? exc_page_fault+0x7f/0x180
+[  112.220849]  entry_SYSCALL_64_after_hwframe+0x78/0x80
+[  112.224478] RIP: 0033:0x7f2ac8434977
+[  112.224478] Code: 73 01 c3 48 8b 0d a9 94 0c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 79 94 0c 00 f7 d8 64 89 01 48
+[  112.224478] RSP: 002b:00007ffe0adf6138 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+[  112.224478] RAX: ffffffffffffffda RBX: 000055db9018e770 RCX: 00007f2ac8434977
+[  112.224478] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 000055db9018e7d8
+[  112.224478] RBP: 0000000000000000 R08: 1999999999999999 R09: 0000000000000000
+[  112.224478] R10: 00007f2ac84a6ac0 R11: 0000000000000206 R12: 00007ffe0adf6390
+[  112.224478] R13: 000055db9018e770 R14: 000055db9018d2a0 R15: 0000000000000000
+[  112.233961]  </TASK>
+[  112.233961] Disabling lock debugging due to kernel taint
+[  112.233961] Object 0xffff93f4085b4140 @offset=320
+[  112.233961] Allocated in batadv_tt_local_add+0x297/0xa20 [batman_adv] age=15835 cpu=1 pid=755
+[  112.233961]  batadv_tt_local_add+0x297/0xa20 [batman_adv]
+[  112.233961]  batadv_interface_set_mac_addr+0xf6/0x120 [batman_adv]
+[  112.233961]  dev_set_mac_address+0xde/0x140
+[  112.233961]  dev_set_mac_address_user+0x30/0x50
+[  112.233961]  do_setlink+0x261/0x12d0
+[  112.233961]  rtnl_setlink+0x11f/0x1d0
+[  112.233961]  rtnetlink_rcv_msg+0x152/0x3c0
+[  112.241772]  netlink_rcv_skb+0x5b/0x110
+[  112.241772]  netlink_unicast+0x1a6/0x290
+[  112.241772]  netlink_sendmsg+0x223/0x490
+[  112.241772]  __sys_sendto+0x1df/0x1f0
+[  112.241772]  __x64_sys_sendto+0x24/0x30
+[  112.241772]  do_syscall_64+0x83/0x190
+[  112.241772]  entry_SYSCALL_64_after_hwframe+0x78/0x80
+[  112.245994] ------------[ cut here ]------------
+[  112.246650] kmem_cache_destroy batadv_tl_cache: Slab cache still has objects when called from batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
+[  112.246668] WARNING: CPU: 1 PID: 776 at mm/slab_common.c:493 kmem_cache_destroy+0x14d/0x160
+[  112.249584] Modules linked in: veth batman_adv(OE-) cfg80211 rfkill bridge stp llc libcrc32c crc32c_generic crc16 rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver binfmt_misc pcspkr button joydev evdev serio_raw loop dm_mod efi_pstore nfnetlink vsock_loopback vmw_vsock_virtio_transport_common vmw_vsock_vmci_transport vsock vmw_vmci qemu_fw_cfg ip_tables x_tables autofs4 nfsv3 nfs_acl nfs lockd grace sunrpc 9pnet_rdma rdma_cm iw_cm ib_cm ib_core configfs 9p netfs ata_generic ata_piix libata psmouse scsi_mod 9pnet_virtio i2c_piix4 9pnet e1000 scsi_common floppy crypto_simd cryptd
+[  112.256555] CPU: 1 PID: 776 Comm: rmmod Tainted: G    B      OE      6.8.12-amd64 #1  Debian 6.8.12-1
+[  112.258457] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[  112.260410] RIP: 0010:kmem_cache_destroy+0x14d/0x160
+[  112.261687] Code: 00 eb be 5b 5d 41 5c 41 5d c3 cc cc cc cc 48 8b 53 60 48 8b 4c 24 20 48 c7 c6 60 d5 e3 98 48 c7 c7 b8 ec 2d 99 e8 43 0d d8 ff <0f> 0b e9 e2 fe ff ff c3 cc cc cc cc 0f 1f 80 00 00 00 00 90 90 90
+[  112.265219] RSP: 0018:ffffb3b2806e7e48 EFLAGS: 00010282
+[  112.266044] RAX: 0000000000000000 RBX: ffff93f4270a2640 RCX: 0000000000000027
+[  112.267157] RDX: ffff93f43c521708 RSI: 0000000000000001 RDI: ffff93f43c521700
+[  112.268268] RBP: 000055db9018e7d8 R08: 0000000000000000 R09: ffffb3b2806e7cd8
+[  112.269418] R10: ffffb3b2806e7cd0 R11: 0000000000000003 R12: 0000000080012d00
+[  112.270572] R13: ffffb3b2806e7f58 R14: 0000000000000000 R15: 0000000000000000
+[  112.271699] FS:  00007f2ac8308440(0000) GS:ffff93f43c500000(0000) knlGS:0000000000000000
+[  112.273001] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  112.273923] CR2: 00005584ef830110 CR3: 000000000787c000 CR4: 00000000000006f0
+[  112.275050] Call Trace:
+[  112.275464]  <TASK>
+[  112.275810]  ? kmem_cache_destroy+0x14d/0x160
+[  112.276518]  ? __warn+0x81/0x130
+[  112.277043]  ? kmem_cache_destroy+0x14d/0x160
+[  112.277730]  ? report_bug+0x171/0x1a0
+[  112.278315]  ? prb_read_valid+0x1b/0x30
+[  112.278919]  ? handle_bug+0x3c/0x80
+[  112.279467]  ? exc_invalid_op+0x17/0x70
+[  112.280071]  ? asm_exc_invalid_op+0x1a/0x20
+[  112.280741]  ? kmem_cache_destroy+0x14d/0x160
+[  112.281603]  ? kmem_cache_destroy+0x14d/0x160
+[  112.282489]  batadv_tt_cache_destroy+0x15/0x60 [batman_adv]
+[  112.283373]  __do_sys_delete_module+0x1d5/0x320
+[  112.284080]  do_syscall_64+0x83/0x190
+[  112.284696]  ? do_syscall_64+0x8f/0x190
+[  112.285315]  ? exc_page_fault+0x7f/0x180
+[  112.285970]  entry_SYSCALL_64_after_hwframe+0x78/0x80
+[  112.286768] RIP: 0033:0x7f2ac8434977
+[  112.287355] Code: 73 01 c3 48 8b 0d a9 94 0c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 79 94 0c 00 f7 d8 64 89 01 48
+[  112.290282] RSP: 002b:00007ffe0adf6138 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+[  112.291465] RAX: ffffffffffffffda RBX: 000055db9018e770 RCX: 00007f2ac8434977
+[  112.292595] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 000055db9018e7d8
+[  112.293724] RBP: 0000000000000000 R08: 1999999999999999 R09: 0000000000000000
+[  112.294863] R10: 00007f2ac84a6ac0 R11: 0000000000000206 R12: 00007ffe0adf6390
+[  112.295982] R13: 000055db9018e770 R14: 000055db9018d2a0 R15: 0000000000000000
+[  112.297103]  </TASK>
+[  112.297465] ---[ end trace 0000000000000000 ]---
+```
 
------BEGIN PGP SIGNATURE-----
+So far, after some debugging, the actual cause for this could
+not immediately be found within the batman-adv code.
+Therefore reverting this for now until the underlying issue can be
+found and better understood.
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZmNSZAAKCRBND3cr0xT1
-y5B6AQCskTowCR93AUyerf8R+T/LbG434M61OZgxyimamI09YAD8CmdPzu35Sh+O
-P7MqIU9qdXBCNKqbNf8jYJhR8W44awE=
-=+VlR
------END PGP SIGNATURE-----
+Some additional debugging information and discussions can be found
+on our Redmine bugtracker, linked below.
 
---nextPart2954765.bcXerOTE6V--
+Link: https://www.open-mesh.org/issues/428
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+Some help / guidance for further debugging from people more
+knowledgeable in the RCU core internals would be appreciated.
 
+Specifically why the rcu_barrier() call in batadv_exit() does not 
+seem to catch the kfree_rcu() which the reverted patch was 
+originally adding.
 
+ compat.h                           |  8 -----
+ net/batman-adv/translation-table.c | 47 ++++++++++++++++++++++++++++--
+ 2 files changed, 44 insertions(+), 11 deletions(-)
+
+diff --git a/compat.h b/compat.h
+index d823eeb7bc70..638bfc54f3d0 100644
+--- a/compat.h
++++ b/compat.h
+@@ -16,14 +16,6 @@
+ #include "compat-autoconf.h"
+ 
+ 
+-#if LINUX_VERSION_IS_LESS(6, 4, 0)
+-
+-#if IS_ENABLED(CONFIG_SLOB)
+-#error kfree_rcu for kmem_cache not supported when SLOB is enabled
+-#endif
+-
+-#endif /* LINUX_VERSION_IS_LESS(6, 4, 0) */
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b21ff3c36b07..2243cec18ecc 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -208,6 +208,20 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ 	return tt_global_entry;
+ }
+ 
++/**
++ * batadv_tt_local_entry_free_rcu() - free the tt_local_entry
++ * @rcu: rcu pointer of the tt_local_entry
++ */
++static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_local_entry *tt_local_entry;
++
++	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
++				      common.rcu);
++
++	kmem_cache_free(batadv_tl_cache, tt_local_entry);
++}
++
+ /**
+  * batadv_tt_local_entry_release() - release tt_local_entry from lists and queue
+  *  for free after rcu grace period
+@@ -222,7 +236,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+ 
+ 	batadv_softif_vlan_put(tt_local_entry->vlan);
+ 
+-	kfree_rcu(tt_local_entry, common.rcu);
++	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
+ }
+ 
+ /**
+@@ -240,6 +254,20 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
+ 		 batadv_tt_local_entry_release);
+ }
+ 
++/**
++ * batadv_tt_global_entry_free_rcu() - free the tt_global_entry
++ * @rcu: rcu pointer of the tt_global_entry
++ */
++static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_global_entry *tt_global_entry;
++
++	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
++				       common.rcu);
++
++	kmem_cache_free(batadv_tg_cache, tt_global_entry);
++}
++
+ /**
+  * batadv_tt_global_entry_release() - release tt_global_entry from lists and
+  *  queue for free after rcu grace period
+@@ -254,7 +282,7 @@ void batadv_tt_global_entry_release(struct kref *ref)
+ 
+ 	batadv_tt_global_del_orig_list(tt_global_entry);
+ 
+-	kfree_rcu(tt_global_entry, common.rcu);
++	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
+ }
+ 
+ /**
+@@ -379,6 +407,19 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
+ 	batadv_tt_global_size_mod(orig_node, vid, -1);
+ }
+ 
++/**
++ * batadv_tt_orig_list_entry_free_rcu() - free the orig_entry
++ * @rcu: rcu pointer of the orig_entry
++ */
++static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_orig_list_entry *orig_entry;
++
++	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
++
++	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
++}
++
+ /**
+  * batadv_tt_orig_list_entry_release() - release tt orig entry from lists and
+  *  queue for free after rcu grace period
+@@ -392,7 +433,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
+ 				  refcount);
+ 
+ 	batadv_orig_node_put(orig_entry->orig_node);
+-	kfree_rcu(orig_entry, rcu);
++	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+ }
+ 
+ /**
+-- 
+2.45.1
 
