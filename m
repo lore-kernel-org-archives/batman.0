@@ -4,84 +4,114 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3151BECE582
-	for <batman@archiver.kernel.org>; Tue, 10 Sep 2024 08:45:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DF5DEDE9AB
+	for <batman@archiver.kernel.org>; Tue, 10 Sep 2024 19:05:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 9A40983D47
-	for <batman@archiver.kernel.org>; Tue, 10 Sep 2024 10:45:24 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C2B4183DF1
+	for <batman@archiver.kernel.org>; Tue, 10 Sep 2024 21:05:53 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1725957924;
- b=NpLAM31AT66hMEvjSUIxfaroERLjJR3EJzOV6Ci8z95r5bk2yDKJGuKnRtHQk6JsJHTZY
- ueBlzn57JIMynMv8HhlsheIyfAOcSD4SlS0o5Cpo8YKTzkw48CIuPc63oRyqP57mCo/7LGM
- eE8x9LsQ1HFYl24hQ6E0rZmdrwkOI6c=
+ t=1725995153;
+ b=fZC43gYcLjlfxV86tre/k54IOmiI4wjN7N5TPAN2D1tfQN/w6q6VQQCAy/D6IYyotZUIR
+ P39HYbrqVPlbHjmsNKTbFUZOj/rKjIH81voDbqbyyNYTYUZL/aMwWaCI8XlFyksxLEhZFD8
+ yoTxjbUP4V20RtLzK6R1+Kmu6/zgbKo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1725957924; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1725995153; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=RDpw8Mrtojim7AeOGFK4ZnmV3b1Yx2A1OkRzDldjOmw=;
- b=OIrFKIu+C74tUjbwKeLlqbvx5Wtq8S6Dejku/nni+Bol6M3NQToBBwOHbE5BbLu6r7q/X
- P2LYdT8oFp9Y9lKugKU7REioylk0vYZHVjPyY2X26CrypdOU/9+En1HRfw8lP/oUNORnUQD
- vH7lMpdjKJnde2VaPy+1W9Rz1gKsfZg=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=VyF1Axz3Qa6sl4mLPAhPrQYmrTs4J/PV8i8ji8rH024=;
+ b=MRt15Tj9XlC8OvZhhMqrbGfk0P+e+4em9v7RulXu7tTkftIwi2adUHaAW9wJX7JX/Ltai
+ 85DyPfuZPLYg1/F/KI0AOKtCE0qYGmoVwJxQoHHZMDgguxTtVWy1dSFwSdUSRtOzPvCffgs
+ 2xYOwfiLuSZhEfvAyxP/rblk9lkR8/A=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 00FED80401
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 10 Sep 2024 10:44:46 +0200 (CEST)
+  dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com
+ [IPv6:2607:f8b0:4864:20::112a])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2A06180401
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 10 Sep 2024 21:05:13 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1725957887;
+	s=20121; t=1725995113;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=RDpw8Mrtojim7AeOGFK4ZnmV3b1Yx2A1OkRzDldjOmw=;
-	b=Nko83+3+TANaAylagSDVtcXT1iSzeP71PFh2zrIVR8zFe5M0Hs+IQmGrTLotleSmRRIQ3L
-	d+idL7dXHj/wymYYQI5qJAGjAk1ls8A33Bgp4aDDUNgwDF6CQFISJJhMO9ecODda8hajlI
-	u6TbUaJ9/MwqCsBAdZFJHFyFlPQyqW0=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=VyF1Axz3Qa6sl4mLPAhPrQYmrTs4J/PV8i8ji8rH024=;
+	b=eSa+H4byjG63ySYH8ErMVNHstVFegScjYq9GOF01HoD0t5ktIrNqLrdN7MuKqsGse7osqM
+	4d5zUfH73R06/vce9xyZ5xd+nGpYUbEZullTlJz31bJEvCCmuLB7GG4K/bhWOp4EjNRmWU
+	fU3rDLfoNxInMxFfZrgnbXrs4ZYSqAY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=x7ZK53pc;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1725957887; a=rsa-sha256;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=TPTjkpUJ;
+	spf=pass (diktynna.open-mesh.org: domain of noahbpeterson1997@gmail.com
+ designates 2607:f8b0:4864:20::112a as permitted sender)
+ smtp.mailfrom=noahbpeterson1997@gmail.com;
+	dmarc=pass (policy=none) header.from=gmail.com
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1725995113; a=rsa-sha256;
 	cv=none;
-	b=0qjtkAYrIIlkXmEo66JJrhugIdZzXIQ87ZsvRXSL3RBYAtbFtH/cx6RmVNPk7tB7aHVnIM
-	6j7/71qdpwgftDDEgYPzGUe5mso4UwEhnwPdxhRY95f0JFeWAN5gGMixBHyoW4WmCAVMOm
-	YjgnJ2T9z+XfgKafnH6ERsL0TVSO31c=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1725957886;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RDpw8Mrtojim7AeOGFK4ZnmV3b1Yx2A1OkRzDldjOmw=;
-	b=x7ZK53pcDv1KVAvHPHm5RLPNUy/Lyd+KRwaVSKVYA8JHJiy5hkXyGZiqkheGGK7B4qBxa9
-	Ppgov2kC/H2PeDWUdcBh0v6K+xaokBR6aQae/1Nj5d0s0/PkyNxDxgUq8T0O1A9WPwCywd
-	rDeW9FPvnZ9S7tN5adNWv/kDDL7lmWY=
-From: Sven Eckelmann <sven@narfation.org>
-To: noahbpeterson1997@gmail.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: 
- Re: [PATCH v2] batctl: Dynamically select header format in
- netlink_print_neighbors
-Date: Tue, 10 Sep 2024 10:44:43 +0200
-Message-ID: <2622720.Lt9SDvczpP@ripper>
-In-Reply-To: <172593883400.1027.14861329029277869493@diktynna.open-mesh.org>
-References: <172593883400.1027.14861329029277869493@diktynna.open-mesh.org>
+	b=SBFhd0j+ANFF2rpPSaV1zRQy6YlGzUq7vgxZeKFFAMQqtUZrzZ+J5yYbIq45ssUE/eXb7j
+	qhpOKGRpKcv1vt3inL1Ffr3unu8zDqcankZ8pP4YlQJMPTrgaBPpSyuHZSzb7+3V/zpELZ
+	a6N0SsEkF77XvWJ0LZoxLkVbKtlq/Gw=
+Received: by mail-yw1-x112a.google.com with SMTP id
+ 00721157ae682-6db67400db4so33599807b3.1
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Tue, 10 Sep 2024 12:05:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1725995111; x=1726599911;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=VyF1Axz3Qa6sl4mLPAhPrQYmrTs4J/PV8i8ji8rH024=;
+        b=TPTjkpUJ7MkxLxythc/D3ADs0copcaCu6WL0ZDz4SFkqnyT2eHYf7glTdMVjTJhWKM
+         EYNiGc25u8QCWjk6kKVw2I5InU5MQn45Y9s5DjYyfCd4c3a3RRVr90wwukqAdeZuOyun
+         Mz+ktvypdUcVfl2o9FQ/KnDOzvvV1i6NhkUUt0hGjOUjEwErYnC1lQDAkFg1qZhFULK/
+         1IJir0gTyknwas2l5ar3wJthdKGpNjhcmv3VmACgqCgKyxi/Q8RnLG91G1byaMOroOTo
+         2VBkYBkGqCJVJgOsVWXffWUJ1rk4EguQgiz2QFRNtKoHiO5c/NfbzpQQxcqR5ZQ0ptxz
+         iECA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725995111; x=1726599911;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VyF1Axz3Qa6sl4mLPAhPrQYmrTs4J/PV8i8ji8rH024=;
+        b=HDU9m1eMgWvKtH0Y/p6EwTehAU0XDlA787ey8SCigSQ/BKQTLZB12MJD0RLJwEtROx
+         UmiHI2BZL31XwfvuKEfoTnjcAj6VkEijL/9+jiYcB9UBOGJewGd1dduBbndaZXxDgzWT
+         C29PjmxXD1Ws2llOmgeEgqgnMkSYy59nrJZPNIxL3AZ1sH9LYY0TKlCDzEuR62tJyayJ
+         05NyvTUaLURFnUJMSmGgHkOpalLhSyImdvSzlmtrAoBlDFdA+gs/X4O2zc+eKdKiU9Rh
+         Pa8DnSLxE4fTOmw93Ei2J09vMesCbvYmK2mzIQyAsDR+pxwByRhkTE/eme4QTYxhnRcc
+         jAHw==
+X-Gm-Message-State: AOJu0YwaHooxX7iIyO3/8yCP+SoPJ9IJKSz5Ej0OqQSF10D32r4RzOPv
+	05keHw95XxlVIDww1tDrXC+2E+ed+PENYS8vgZic0/zlYbDIQfcSmboY+9wjk8KbjQ==
+X-Google-Smtp-Source: 
+ AGHT+IEJKmKcABJX+VBG63ZnG+46Qja1gQbVsD3vd3sD0Zi2fY7MgMDhYEku5sS+do8MNSH9YUFajw==
+X-Received: by 2002:a05:690c:f01:b0:6b3:a6ff:76a7 with SMTP id
+ 00721157ae682-6db44a612ebmr200399207b3.0.1725995111375;
+        Tue, 10 Sep 2024 12:05:11 -0700 (PDT)
+Received: from localhost.localdomain
+ ([2800:860:71ac:81ad:39dd:aadf:88a2:f660])
+        by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-6db9642913dsm4027177b3.22.2024.09.10.12.05.10
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 10 Sep 2024 12:05:10 -0700 (PDT)
+From: Noah Peterson <noahbpeterson1997@gmail.com>
+X-Google-Original-From: Noah Peterson
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Noah Peterson <NoahBPeterson1997@gmail.com>,
+	Noah Peterson <noahbpeterson1997@gmail.com>
+Subject: [PATCH v3] alfred: add more verbose error message
+Date: Tue, 10 Sep 2024 13:05:04 -0600
+Message-Id: <20240910190504.12181-1-NoahBPeterson1997@gmail.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4373178.ejJDZkT8p0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 6KGWTEJJGQTLKOUY6U6ZKLK4KDNVMW6S
-X-Message-ID-Hash: 6KGWTEJJGQTLKOUY6U6ZKLK4KDNVMW6S
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: UK4EF33GQQ4NJVTSWGR5CC27WBB7OGZ5
+X-Message-ID-Hash: UK4EF33GQQ4NJVTSWGR5CC27WBB7OGZ5
+X-MailFrom: noahbpeterson1997@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -94,7 +124,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6KGWTEJJGQTLKOUY6U6ZKLK4KDNVMW6S/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/UK4EF33GQQ4NJVTSWGR5CC27WBB7OGZ5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -103,104 +133,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart4373178.ejJDZkT8p0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: noahbpeterson1997@gmail.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Date: Tue, 10 Sep 2024 10:44:43 +0200
-Message-ID: <2622720.Lt9SDvczpP@ripper>
-MIME-Version: 1.0
+From: Noah Peterson <NoahBPeterson1997@gmail.com>
 
-On Tuesday, 10 September 2024 05:27:14 CEST noahbpeterson1997@gmail.com wrote:
+There is an issue with some Linux distributions where network interfaces
+are up and active, but do not have the correct link-local address. This
+condition is now checked and output to stderr to better help users
+troubleshoot this issue.
 
-You must have a proper "From:" in your patch mail - not only your mail 
-address. And it should match your Signed-off-by line.
+Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
+---
+v3: Add changelog, change newlines, noted by Sven <sven@narfation.org>
+v2: Fixed IPv6 address string, noted by Sven <sven@narfation.org>
+---
+ netsock.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-> The netlink_print_neighbors() function previously used a static header format, which did not account for variations between the neighbor list output from different BATMAN routing algorithms (BATMAN_IV vs. BATMAN_V).
-> 
-> This patch introduces a dynamic header selection mechanism that adjusts the output format based on the active routing algorithm:
-> - For BATMAN_IV, the header is set to "IF             Neighbor              last-seen".
-> - For BATMAN_V, it changes to "         Neighbor   last-seen      speed           IF".
-
-Please don't use overlong lines in the commit message. We normally use the 75 
-chars per line limit from Linux's checkpatch.
-
-> 
-> This change ensures that the table header output in `batctl n` is accurate for both BATMAN routing algorithms.
-> Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
-
-Newline missing between your commit message and the Sob line.
-
-> ---
-
-Changelog for v2 is missing. You can use tools like b4 [1] to improve your 
-patch workflow.
-
->  neighbors.c | 22 +++++++++++++++++++++-
->  1 file changed, 21 insertions(+), 1 deletion(-)
-> diff --git a/neighbors.c b/neighbors.c
-> index 3102b0e..f34952b 100644
-> --- a/neighbors.c
-> +++ b/neighbors.c
-> @@ -6,6 +6,7 @@
->   * License-Filename: LICENSES/preferred/GPL-2.0
->   */
->  
-> +#include <errno.h>
->  #include <net/if.h>
->  #include <netinet/if_ether.h>
->  #include <netlink/netlink.h>
-> @@ -119,9 +120,28 @@ static int netlink_print_neighbors(struct state *state, char *orig_iface,
->  				   int read_opts, float orig_timeout,
->  				   float watch_interval)
->  {
-> +	char *header = NULL;
-> +	char *info_header;
-> +
-> +	/* only parse routing algorithm name */
-> +	last_err = -EINVAL;
-> +	info_header = netlink_get_info(state, BATADV_CMD_GET_ORIGINATORS, NULL);
-> +	free(info_header);
-> +
-> +	if (strlen(algo_name_buf) == 0)
-> +		return last_err;
-> +
-> +	if (!strcmp("BATMAN_IV", algo_name_buf))
-> +		header = "IF             Neighbor              last-seen\n";
-> +	if (!strcmp("BATMAN_V", algo_name_buf))
-> +		header = "         Neighbor   last-seen      speed           IF\n";
-> +
-> +	if (!header)
-> +		return -EINVAL;
-> +
->  	return netlink_print_common(state, orig_iface, read_opts,
->  				    orig_timeout, watch_interval,
-> -				    "IF             Neighbor              last-seen\n",
-> +				    header,
->  				    BATADV_CMD_GET_NEIGHBORS,
->  				    neighbors_callback);
->  }
-> 
-
-[1] https://b4.docs.kernel.org/
-
-
---nextPart4373178.ejJDZkT8p0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZuAG+wAKCRBND3cr0xT1
-y+bwAQCK70ZBIR/4yTNP8p6I+U5mYbCHybxWHv5EZgpO8KmohgEArjyK/Q8PpHVG
-ucEP4GyB+cYOWqsiLEX+HroSaRc8JwI=
-=wqhA
------END PGP SIGNATURE-----
-
---nextPart4373178.ejJDZkT8p0--
-
-
+diff --git a/netsock.c b/netsock.c
+index feed21d..95dbf5e 100644
+--- a/netsock.c
++++ b/netsock.c
+@@ -21,6 +21,7 @@
+ #include <sys/types.h>
+ #include <stdlib.h>
+ #include <sys/epoll.h>
++#include <arpa/inet.h>
+ #ifdef CONFIG_ALFRED_CAPABILITIES
+ #include <sys/capability.h>
+ #endif
+@@ -322,7 +323,19 @@ static int netsock_open(struct globals *globals, struct interface *interface)
+ 	enable_raw_bind_capability(0);
+ 
+ 	if (bind(sock, (struct sockaddr *)&sin6, sizeof(sin6)) < 0) {
+-		perror("can't bind");
++		char ipstr_buf[INET6_ADDRSTRLEN];
++		const char *ipstr;
++
++		ipstr = inet_ntop(AF_INET6, &interface->address.ipv6.s6_addr,
++				  ipstr_buf, INET6_ADDRSTRLEN);
++
++		if (errno == EADDRNOTAVAIL)
++			fprintf(stderr, "can't bind to interface %s; "
++				"expected ipv6 address not found: %s\n",
++				interface->interface,
++				ipstr);
++		else
++			perror("can't bind");
+ 		goto err;
+ 	}
+ 
+-- 
+2.39.3 (Apple Git-146)
 
