@@ -4,92 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2D69EE0211
-	for <batman@archiver.kernel.org>; Wed, 11 Sep 2024 07:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C515EEB591
+	for <batman@archiver.kernel.org>; Thu, 12 Sep 2024 11:08:43 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 299CA83F0C
-	for <batman@archiver.kernel.org>; Wed, 11 Sep 2024 09:33:59 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 65D1583E97
+	for <batman@archiver.kernel.org>; Thu, 12 Sep 2024 13:08:41 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1726040039;
- b=TN4yw/9uYi811VsdW35BHilss3MYC6PYaBLOQG9W70M5Om67lLngFf2yT4/Hl5qZmQEKy
- anMvagNobQJvp/Xl7jv5mrmbwXEo+TORKoluS/SxCQXlTkti5FisyKuCU9Dl/XBRmhr+428
- PLyb5s1wKB+cvt87pZBYLIdiz2jLZlA=
+ t=1726139321;
+ b=heW7CDzedeq6CSOkarR4Dva0CvuzIAF62C4IfzusRpxT45Fdh4th7UEpMau541UxZ0oNp
+ c7Apw3hfwLum5W6bw75kAgIlNmVWRExbF6X8KmmQpqd1nSe75zRQkXhPgjYu/2lxEhOx8CC
+ 08cyTs3q5wC1bpYM5e+1MeTmYZOl0Sw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1726040039; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1726139321; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=HoeL62Kx25xvyhdIjRpPTA3lL2OzazuPGd87A4NJfhM=;
- b=VFyqto6RRcV8HE7SUocDW4+Up447JZQDaF2U+xF2uChLuvjjXbw5LqvANFjg1v/HLgSYh
- 1XbYb3/HxWqnD0v/Q9VHRMf+N9hRUnTFpWYMN1FZuxcxMCds9WhVOnSwm7T0XVtQdsuEq5k
- heM3W/ZuYVZD+lMNeSVBD+jMmZ6EaA8=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=unstable.cc header.i=a@unstable.cc;
+ list-archive; bh=a2HUajqlOKVTY70qu1GuBGj1QouM8q4psI/BrM2TPYc=;
+ b=ig5bHq7z0mV4ZwQmAnLb4ya+Z+odDHa7iKQRw8HEG2pB70CG+U6z4AijoRy5Qs8bYSWq1
+ yZOak4GPUpyl0C4/As+QWxZQQw7nkvrGjw2JcXsxUYD7Gz+By5t3IgazRV3Gk/ax//GPWjW
+ PLhCbFLUnnqyfK4xGqh4UqupGa3wHcU=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
   dmarc=none
-Authentication-Results: open-mesh.org;
- dkim=pass header.d=unstable.cc header.i=a@unstable.cc; arc=pass; dmarc=none
-Received: from wilbur.contactoffice.com (wilbur.contactoffice.com
- [212.3.242.68])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0524D81FB4
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Sep 2024 09:33:22 +0200 (CEST)
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id CB100817E1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 12 Sep 2024 13:08:02 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1726040003;
+	s=20121; t=1726139282;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=HoeL62Kx25xvyhdIjRpPTA3lL2OzazuPGd87A4NJfhM=;
-	b=jYIIYlt0Yd78JE5108eDwbePX+78MxegszSdtN0QSe1WbtVor/VRSwkOXsuPMtXbrIzqGZ
-	fAJu/uxV2uMtY7h9w86yzBO7/e+YJgnnprRhQvdrQCLFVbv4RFByT36KrlMLjgonnFt3XQ
-	5Eenknsi0IoWiANFJ0BRAzUMnc99lS4=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=a2HUajqlOKVTY70qu1GuBGj1QouM8q4psI/BrM2TPYc=;
+	b=rrgQUG7xYDj9DQQ6S8q85B4cFseW+0J+hn+C8/yMwgL5LfMg6CylK1CxaDmzoSvdmLL+es
+	+52RKNideQlZPmH9+WHduPknJwXpAA2NJJ0FL3N9QwPO6tlgy52qngVHH8Qpx+GcFD/OYa
+	9IqALc+xx6xq6PSq1EPJ5jobFsSSFvU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=unstable.cc header.s=20220809-q8oc header.b=OCsWqnct;
-	spf=pass (diktynna.open-mesh.org: domain of a@unstable.cc designates
- 212.3.242.68 as permitted sender) smtp.mailfrom=a@unstable.cc;
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue;
 	dmarc=none
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1726040003; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1726139282; a=rsa-sha256;
 	cv=none;
-	b=zkjoPuO63lpavqjmhGPwbkywcChIEfP46yr+F65D4JYIz9/uIFQe6f1nASFofZVMkHXap8
-	JtL6JmlNzx+ZFNu8kRI9BF+l3/NLiUqOR/Ln++o80r0/NpZCOppihfHNXlYpfoQOT9+LD8
-	Fhnq7Lvvpirv9plmX2m8O95Ky5KlIGM=
-Received: from smtpauth2.co-bxl (smtpauth2.co-bxl [10.2.0.24])
-	by wilbur.contactoffice.com (Postfix) with ESMTP id 9BC17984;
-	Wed, 11 Sep 2024 09:33:22 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1726040002;
-	s=20220809-q8oc; d=unstable.cc; i=a@unstable.cc;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	bh=HoeL62Kx25xvyhdIjRpPTA3lL2OzazuPGd87A4NJfhM=;
-	b=OCsWqnctw+Ob3SkjnyBD/c7pplz4YAgvvZQEpfkDrKliSWrozF3SeHAjz9loBZ9q
-	m7eoU4x53GuQlSuMybcMCZAv6qJxKjkM5OlNGDQV4SqKRLSdZTEXoQbAKkzfZfqtWws
-	ROYDhKlGElAtMg0NOx/D2jb7afB7lt/g9NvlXndS4M8whHIfoZ+4bzbyQ9PUwBJVwL7
-	4OaInOzwYCSO8C+RPibKIbTrVGCvcO0Nqf0QJsPyegZvvVFQpYPiKLC66M5orOPhd1O
-	uImYF65ghZBdiKJXeqlAr2F349ZCu6gTqeX3JjJVRJhKBrVDWtA3psJQFClXbSwCffp
-	YtEPnFS7SQ==
-Received: by smtp.mailfence.com with ESMTPSA ;
- Wed, 11 Sep 2024 09:33:19 +0200 (CEST)
-Message-ID: <0f7c0a9f-6577-4d37-8ad3-2a6b1369b539@unstable.cc>
-Date: Wed, 11 Sep 2024 09:35:31 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 1/2] batman-adv: split DAT cache into DAT cache and DAT
- DHT
-To: =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>,
- b.a.t.m.a.n@lists.open-mesh.org
+	b=C7qsJVNtMcIhnYn4nwqdv90Tcb4ISvqNO+y5GJAzcHwlL+mf7oWzTEZDyLmSAN1IcdT+W1
+	4E7l7pYACvHkX/YYiJyimBqOQTQux6vElN3+HDr1t27ReWhZBOGdOUw1jHx+VoNvwCpAEz
+	tJ3J+DS3slCwqXYrAXjNshSEHCiAXQc=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 147383EEF2;
+	Thu, 12 Sep 2024 13:08:01 +0200 (CEST)
+Date: Thu, 12 Sep 2024 13:08:00 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: Antonio Quartulli <a@unstable.cc>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH v5 1/2] batman-adv: split DAT cache into DAT cache and
+ DAT DHT
+Message-ID: <ZuLLkEf15zZTN5xj@sellars>
 References: <20240911051259.23384-1-linus.luessing@c0d3.blue>
  <20240911051259.23384-2-linus.luessing@c0d3.blue>
-Content-Language: en-US
-From: Antonio Quartulli <a@unstable.cc>
-In-Reply-To: <20240911051259.23384-2-linus.luessing@c0d3.blue>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ContactOffice-Account: com:375058688
-Message-ID-Hash: GPBKAVDG5YMMHMVS7HRBVZWTPG56QNJQ
-X-Message-ID-Hash: GPBKAVDG5YMMHMVS7HRBVZWTPG56QNJQ
-X-MailFrom: a@unstable.cc
+ <0f7c0a9f-6577-4d37-8ad3-2a6b1369b539@unstable.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <0f7c0a9f-6577-4d37-8ad3-2a6b1369b539@unstable.cc>
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: LQ3CNYL6DMPMGIAT2D43O44PD3WGT73I
+X-Message-ID-Hash: LQ3CNYL6DMPMGIAT2D43O44PD3WGT73I
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +86,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GPBKAVDG5YMMHMVS7HRBVZWTPG56QNJQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LQ3CNYL6DMPMGIAT2D43O44PD3WGT73I/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,42 +95,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi Linus,
+Hi Antonio,
 
-On 11/09/2024 06:57, Linus Lüssing wrote:
-[...]
-> diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-> index 00840d5784fe..fe0b9b229bff 100644
-> --- a/net/batman-adv/types.h
-> +++ b/net/batman-adv/types.h
-> @@ -1231,8 +1231,11 @@ struct batadv_priv_dat {
->   	/** @addr: node DAT address */
->   	batadv_dat_addr_t addr;
->   
-> -	/** @hash: hashtable representing the local ARP cache */
-> -	struct batadv_hashtable *hash;
-> +	/** @cache_hash: hashtable representing the local ARP cache */
-> +	struct batadv_hashtable *cache_hash;
-> +
-> +	/** @dht_hash: hashtable representing the local DAT DHT */
-> +	struct batadv_hashtable *dht_hash;
+Thanks for the feedback!
 
-I haven't followed previous discussions, therefore my question may just 
-sound redundant, but if "cache_hash" is for ARP what is the "DAT DHT"? 
-(the A in DAT stands for ARP).
+> I haven't followed previous discussions, therefore my question may just
+> sound redundant, but if "cache_hash" is for ARP what is the "DAT DHT"? (the
+> A in DAT stands for ARP).
 
-Moreover, it seems with this approach you are converting the DAT concept 
-into something "type specific" - am I wrong?
+The dht_hash would just store what was pushed to it from remote nodes
+through the DAT DHT feature. So through a BATADV_P_DAT_DHT_PUT in
+a batman-adv unicast4addr packet.
 
-Is it truly required just to have a different timeout?
-Wouldn't a mark on entries be enough to instruct the subsystem about 
-what timeout value to use?
+And would only be used for responses to a BATADV_P_DAT_DHT_GET.
 
-Cheers,
+The cache_hash would store all the other cases. That is local
+additions learned through bat0. Or the responses this node got to
+a BATADV_P_DAT_DHT_GET.
 
->   
->   	/** @work: work queue callback item for cache purging */
->   	struct delayed_work work;
+> Moreover, it seems with this approach you are converting the DAT concept
+> into something "type specific" - am I wrong?
 
--- 
-Antonio Quartulli
+You mean to be able to use it for other types than ARP? Like the
+patchset we had for IPv6 a while ago? Hm, no, that at least wasn't
+the intention.
+
+> 
+> Is it truly required just to have a different timeout?
+> Wouldn't a mark on entries be enough to instruct the subsystem about what
+> timeout value to use?
+
+That would work, too, right. I just found a split simpler and less
+error-prone. With flags I'm always worried about missing potential
+race conditions when flipping it back and forth. Especially with
+the two different timeouts involved here.
+
+For instance if I had an entry through a remote node
+(BATADV_P_DAT_DHT_PUT) and therefore with a flag set. But now got an update for the same
+address/entry through bat0 (maybe the client device roamed to us?
+Or some collision / duplicate address usage?).
+Should I now always unset the flag? Or should I check if its remaining
+timeout is less than 5min and only if it is then unset the
+flag?
+
+Should a response to a BATADV_P_DAT_DHT_GET only be to an entry
+with the flag set? Or independent to what the flag is set to?
+
+.oO(Maybe a split could also be useful if one wanted to introduce
+individual limits for additions? Against remote attackers trying to
+DoS a node?)
+
+Let me know if you'd still prefer a flag instead of a separate
+hash table and I could change that.
+
+Regards, Linus
