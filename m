@@ -4,137 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E50C9CFC501
-	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 08:00:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C11CFC501
+	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 08:01:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id EF7FD83AF1
-	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 10:00:18 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id BDC4C83E68
+	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 10:01:07 +0200 (CEST)
 ARC-Seal: i=2; cv=fail; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1728892818;
- b=IQStKL6bgJpBeJ/K6imQt9/1dJeB43jS2H1UMTtoIwuMJoQXkci/KVP8vHFLoLZE+9YTa
- 60MMGOKHv4ad3R4nnwBtcm9wHyt3C6+NLB7cmK2klWQZHbH+ZYm5S/myzjQJdzG/bF4oliK
- Vn9mxmZfBaZX/84BuwhjibYhRXVpJ2Q=
+ t=1728892867;
+ b=lEALmBjeDeUuXcogpxcVA0TusAEmhoHwW/SqTqySxVEkDHQ+XU+pIEEYYG9NDj4yz8veq
+ RTseRzSPfIozGY7+bB0Ps0hObDHvDOQ7zkbtRl0BbdkFBGuAROTjV0wrn/UYHpTWpDxeHve
+ mXLzunvggsgC5QH7BYIyUARhV+GWPxQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1728892818; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1728892867; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
- b=YrTPWnAW4DdSC4pZoTNBQw+JnpTR8/XfekGJA9ueOvnU69O8H6Mz0tBFKGGpLgsql6Qkv
- WaesjUWN1so32o20sqCN+WBwpFvSwrtZHAvw/NwqJPCyGeLkfONqN0s3gM4ooE4qr96PgDE
- 8XGxCi8FBwy72GLQmHaY40Zi6SfOdf0=
+ list-archive; bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+ b=WN/EcQ1raURdLURQd3uTkT5TP9UeaK37XMR09d9xrABXeDkFXJhhZ3mO/7L1an3KbbPBw
+ NgarTIzNPt0sXXOBjnwpU3vrcjk47cQ/ZTPbYeY0VxEV3WOWHHj6xuC6rdCscrgWCzSGkG2
+ c+MAaqg8/UBDN+SX7VznUsgCtg0i5cQ=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=suse.cz;
   arc=fail (ARC-Seal[1] did not validate);
   dmarc=none
 Authentication-Results: open-mesh.org; dkim=pass header.d=suse.cz;
  arc=fail (ARC-Seal[1] did not validate); dmarc=none
-Received: from smtp-out1.suse.de (smtp-out1.suse.de
- [IPv6:2a07:de40:b251:101:10:150:64:1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4263D8174C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Oct 2024 09:19:58 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1728890398; a=rsa-sha256;
+Received: from smtp-out2.suse.de (smtp-out2.suse.de
+ [IPv6:2a07:de40:b251:101:10:150:64:2])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id B58418190E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Oct 2024 09:23:44 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1728890624; a=rsa-sha256;
 	cv=none;
-	b=PYhJGVVWlwtOk5sYome+OZjIko6kqwTahdVlZobf9YILw7fIslT+yzKollxN0RujVUFNr7
-	w5MWRLQNqTWTD4ZK9U8TirNRS0U7QNohOTRG85ENqhfOYOAPi5af0Lnv8PfNbVsEbxkAdY
-	xHE1IKtYqReXL8oIhm5DhGdG82z3xIg=
+	b=q5L9rL5cQss/y3RWh6IFB0Ave7f6UycThK8NEdZcWC0PxhswCBoQqFscHcWbDNfTXLpNq5
+	zoc6s9w7iwSzluSTbaGpb6hvSf8SSwBIgvxcz1ub6TSZaRtJjunSpYa+7qiIBF2HTZHrZj
+	sYbovqB+YOBB7WVM4g6N+vsbY9bEP1g=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=x+nCZsk9;
-	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=qrMeC+MC;
-	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=x+nCZsk9;
-	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=qrMeC+MC;
+	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=wmLzUqry;
+	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=8B2uogma;
+	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=QMCwjEci;
+	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=g8B+pbcD;
 	dmarc=none;
 	spf=pass (diktynna.open-mesh.org: domain of vbabka@suse.cz designates
- 2a07:de40:b251:101:10:150:64:1 as permitted sender)
+ 2a07:de40:b251:101:10:150:64:2 as permitted sender)
  smtp.mailfrom=vbabka@suse.cz
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1728890398;
+	s=20121; t=1728890624;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature:autocrypt:autocrypt;
-	bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
-	b=0juRoF3DqUpJ+K571y+7ap6eSFHwTckgswoPU2iHScM6PY45w24ruk3yTf9usOqtouBTuR
-	k2a8FjMs6XLhB02aCDdvJOkrym5JsZ/rPRPeNaHhqwroj3B2EYhG+Eqis+k+NOvLwVM/ay
-	I+mIdJ9JsFjTfXwuRMl3In7VsYkUGN4=
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+	b=EKsAglhN/rVF5vcCXWTDNRvkTaC7PQC64iRA2N/eZmRB2uZRpPvbLRepfW2L4aIWARujCT
+	7n8kfnbc2KCZ9BqCj7aqdHpjNU/vCcCKctjzL5Hovt6XxiBVWgQOmqgpLKRPxQ1jRvJoFN
+	jNlZIiYeiEPhF6KB/Gw5KxZ4TinL0Bc=
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org
+ [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id C07B121CEE;
-	Mon, 14 Oct 2024 07:19:57 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 7EC6F1FE70;
+	Mon, 14 Oct 2024 07:23:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz;
  s=susede2_rsa;
-	t=1728890397;
+	t=1728890623;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
-	b=x+nCZsk9FOoyy6MBBUL2LLpUghLUYuJpL0iDxWQKtbgGcAspy4DWj4olTQX8ZHipspU1a6
-	HmExvbxjZC6KTDesIDgWo8bqmJHjKPRWtkF04cZyShkvDnMgoR47jYkex4XjmojKhdcc6u
-	Pg37i0ArT4X8VwU5dZDyCmhmP8gswLQ=
+	bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+	b=wmLzUqryu3+nu0aNPmIgUdCxxlbRHOaCJJ4aW9nWIgcapbvVnW74biH9zM3YJkQMjKCHYB
+	hc1jUsv7hXESXivGqRZ4YAnjS5V/Le2fIhz5vODPPjWL4mSH9F9Wdct9PFP+LoIVPPmIEU
+	/SEV9LNH8H0kx2LuAVzK2bgIqUL6RkM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1728890397;
+	s=susede2_ed25519; t=1728890623;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
-	b=qrMeC+MCbZys1aF/YA1EAlHeGrsoPiY6fruN93+xSZZuAdYIZ6+m0Uid/Dm/LmgtY52jc/
-	nPTI7Iy9HPVsuXCQ==
+	bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+	b=8B2uogmaifx6kPuAsihSTzWy0QBrq+cF7POR+Pr/Cl9ueWu9m2t9MzfV8wTlTjwt9DYtxg
+	sSnJ+OXT/eVGeaCw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz;
  s=susede2_rsa;
-	t=1728890397;
+	t=1728890622;
  h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
-	b=x+nCZsk9FOoyy6MBBUL2LLpUghLUYuJpL0iDxWQKtbgGcAspy4DWj4olTQX8ZHipspU1a6
-	HmExvbxjZC6KTDesIDgWo8bqmJHjKPRWtkF04cZyShkvDnMgoR47jYkex4XjmojKhdcc6u
-	Pg37i0ArT4X8VwU5dZDyCmhmP8gswLQ=
+	bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+	b=QMCwjEciPq5R0jBPJdRjEpJ/csX3Q7YjoU/85baaqJoQCCcmQ0mE+g4DNyqQvkBpBQ4cmG
+	Ml2ePeKj68qciYOP27ynh5aZSl7EtTm9pXwu9rHzPt9G40DOf0ahiGhog737qaPxm6fGp2
+	AdrsH/opBXRhTcPxhY2gy2rpTxCWnwo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1728890397;
+	s=susede2_ed25519; t=1728890622;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c9HtDPVEhyEiwvhPRAQhllba1vhnHYnXgL7E/p/tRxM=;
-	b=qrMeC+MCbZys1aF/YA1EAlHeGrsoPiY6fruN93+xSZZuAdYIZ6+m0Uid/Dm/LmgtY52jc/
-	nPTI7Iy9HPVsuXCQ==
+	bh=nTA5yF9Sm4WYFWyv5NEJ9W7uWongasQxrKyS3T0wnGY=;
+	b=g8B+pbcDY+qZRoZvnqEkFaX+4cXbtvavIpxDcqX/yUW2vdAoQAO0k1koTozPbfxsP0I1Yr
+	cpc3DFoYSX+4TRCw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A5BEC13A51;
-	Mon, 14 Oct 2024 07:19:57 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4D5BD13A51;
+	Mon, 14 Oct 2024 07:23:42 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id akUPKB3GDGdNWwAAD6G6ig
-	(envelope-from <vbabka@suse.cz>); Mon, 14 Oct 2024 07:19:57 +0000
-Message-ID: <cb49d58e-6221-4117-b0b6-bd8ded715749@suse.cz>
-Date: Mon, 14 Oct 2024 09:19:57 +0200
+	id m4WMEv7GDGeZXAAAD6G6ig
+	(envelope-from <vbabka@suse.cz>); Mon, 14 Oct 2024 07:23:42 +0000
+Message-ID: <9312d41b-9d84-4ff1-a33c-e4c2b496bd10@suse.cz>
+Date: Mon, 14 Oct 2024 09:23:41 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/17] batman-adv: replace call_rcu by kfree_rcu for
- simple kmem_cache_free callback
+Subject: Re: [PATCH 00/17] replace call_rcu by kfree_rcu for simple
+ kmem_cache_free callback
 Content-Language: en-US
-To: Julia Lawall <julia.lawall@inria.fr>, Sven Eckelmann <sven@narfation.org>
-Cc: linus.luessing@c0d3.blue, Marek Lindner <mareklindner@neomailbox.ch>,
- kernel-janitors@vger.kernel.org, paulmck@kernel.org,
- Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@inria.fr>, linux-nfs@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, paulmck@kernel.org,
+ Tom Talpey <tom@talpey.com>, Dai Ngo <Dai.Ngo@oracle.com>,
+ Olga Kornievskaia <okorniev@redhat.com>, Neil Brown <neilb@suse.de>,
+ linux-can@vger.kernel.org, bridge@lists.linux.dev,
+ b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
+ wireguard@lists.zx2c4.com, netdev@vger.kernel.org, ecryptfs@vger.kernel.org,
+ linux-block@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ netfilter-devel@vger.kernel.org, coreteam@netfilter.org
 References: <20241013201704.49576-1-Julia.Lawall@inria.fr>
- <20241013201704.49576-7-Julia.Lawall@inria.fr> <6091264.lOV4Wx5bFT@ripper>
- <f343355b-eda9-8527-ee2c-60f1e44e6e0@inria.fr>
 From: Vlastimil Babka <vbabka@suse.cz>
 Autocrypt: addr=vbabka@suse.cz; keydata=
  xsFNBFZdmxYBEADsw/SiUSjB0dM+vSh95UkgcHjzEVBlby/Fg+g42O7LAEkCYXi/vvq31JTB
@@ -175,28 +178,41 @@ Autocrypt: addr=vbabka@suse.cz; keydata=
  w9XOLH1IIWh7RURU7G1iOfEfmImFeC3cbbS73LQEFGe1urxvIH5K/7vX+FkNcr9ujwWuPE9b
  1C2o4i/yZPLXIVy387EjA6GZMqvQUFuSTs/GeBcv0NjIQi8867H3uLjz+mQy63fAitsDwLmR
  EP+ylKVEKb0Q2A==
-In-Reply-To: <f343355b-eda9-8527-ee2c-60f1e44e6e0@inria.fr>
+In-Reply-To: <20241013201704.49576-1-Julia.Lawall@inria.fr>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
+X-Rspamd-Queue-Id: 7EC6F1FE70
+X-Spamd-Result: default: False [-4.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	RCVD_TLS_ALL(0.00)[];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
 	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[24];
 	FUZZY_BLOCKED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,kernel.org,talpey.com,oracle.com,redhat.com,suse.de,lists.linux.dev,lists.open-mesh.org,lists.zx2c4.com,gmail.com,csgroup.eu,linux.ibm.com,lists.ozlabs.org,netfilter.org];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	DKIM_TRACE(0.00)[suse.cz:+];
+	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.cz:email,suse.cz:dkim,suse.cz:mid]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 X-MailFrom: vbabka@suse.cz
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
@@ -204,15 +220,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: WZFZEM3S37OOV4PHUAA7HHE6Z6GJQO7F
-X-Message-ID-Hash: WZFZEM3S37OOV4PHUAA7HHE6Z6GJQO7F
+Message-ID-Hash: A4FH6NAOLHITGTDLEIE7QH4GMGGDJH6O
+X-Message-ID-Hash: A4FH6NAOLHITGTDLEIE7QH4GMGGDJH6O
 X-Mailman-Approved-At: Mon, 14 Oct 2024 10:00:14 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WZFZEM3S37OOV4PHUAA7HHE6Z6GJQO7F/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/A4FH6NAOLHITGTDLEIE7QH4GMGGDJH6O/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -221,39 +237,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On 10/14/24 09:08, Julia Lawall wrote:
+On 10/13/24 22:16, Julia Lawall wrote:
+> Since SLOB was removed and since
+> commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier() from kmem_cache_destroy()"),
+> it is not necessary to use call_rcu when the callback only performs
+> kmem_cache_free. Use kfree_rcu() directly.
 > 
-> 
-> On Mon, 14 Oct 2024, Sven Eckelmann wrote:
-> 
->> On Sunday, 13 October 2024 22:16:53 CEST Julia Lawall wrote:
->> > Since SLOB was removed and since
->> > commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier() from kmem_cache_destroy()"),
->> > it is not necessary to use call_rcu when the callback only performs
->> > kmem_cache_free. Use kfree_rcu() directly.
->> >
->> > The changes were made using Coccinelle.
->> >
->> > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
->> >
->> > ---
->> >  net/batman-adv/translation-table.c |   47 ++-----------------------------------
->> >  1 file changed, 3 insertions(+), 44 deletions(-)
->>
->>
->> This was tried and we noticed that it is not safe [1]. So, I would get
->> confirmation that commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier()
->> from kmem_cache_destroy()") is fixing the problem which we had at that time.
->> The commit message sounds like it but I just want to be sure.
-> 
-> Thanks for the feedback. I think that Vlastimil Babka can help with that.
+> The changes were done using the following Coccinelle semantic patch.
+> This semantic patch is designed to ignore cases where the callback
+> function is used in another way.
 
-Hi, yeah the batman-adv issue was how we learned about the problem and the
-series of commits leading to and including 6c6c47b063b5 was done exactly to
-address the kmem_cache_destroy() on module unload issue, and unblock the
-conversion to kfree_rcu().
+Thanks, LGTM!
 
-Thanks, Vlastimil
+For the series:
 
-> julia
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 
