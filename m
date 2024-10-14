@@ -4,122 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB083CF2590
-	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 06:58:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1D93CFC501
+	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 07:03:45 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1A1DA83F4A
-	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 08:58:26 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2100482544
+	for <batman@archiver.kernel.org>; Mon, 14 Oct 2024 09:03:44 +0200 (CEST)
 ARC-Seal: i=2; cv=fail; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1728889106;
- b=WAAQWeW3krCc7JdjC3P2vxi/FJaoNjwZnub/WmM870Gjx1sgksI/xnxE7LKGug4vQ/F8m
- GZMvWV/mHDB0lN08IfsDX7GH+yl9kLncgzNsHkpkuOXZrgUY6jCHtY3/U3o1LRBATY0Tgq7
- IdzsPme3jqEwkb7j5rAUqsTjaS8col8=
+ t=1728889424;
+ b=A2f4fN9g8GQuff8DixyN2oDrIv4V8b5AyeJuw4GoIE+NZEiLnutXQVGpnVa26gxu5hC4g
+ ZzY30+p+qQGZzn+VS1BtbgQeRZtmENB47lHnfVcgSSRfztR/1QuC9G0kRFsn4y7mn7gYDSL
+ zgKOCU0qBzyvKEUhB3fUQy96eQMXh1I=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1728889106; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1728889424; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=YqtDK7QfopzOi6b82zo9ZPxlNTmjGRKlUMjxc3XnxKQ=;
- b=hhNlxYXJIJXrWz6KWPb6qMJS7CHG90UfB01PH9CMPSPfwTQHOl+EyQwjonRj8Xhl+QdbA
- 9VdyHWCMGYOjZ4sEV3GijDiwZv5x1jqoTEGFK9x9gED0ks+8se59hXH6uqAEmKQr4HLefw9
- SHmuFX/3NcFuZR03X78bOvSXhtUp2Jg=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
+ list-archive; bh=httTAT48fu+3mO0g6dqX16B/PSb/AZaAB5kFQ49ZHpw=;
+ b=zW8C/O25LBzeKEvwqcM07ulbVgVJij/rkPqU0j7lU0CFHR6U8WbKvBwZC+uDb/sidvJLt
+ AmiJFNVcD7YUzLtL5k/B3joVRqGhW61qwqIlyJjXfUDu8UTSHCdUdRSrFnz2MQSJjXZ5DnF
+ cB4WARmR2v+s75GRAhVH4+oiVwtsEnE=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=fail (ARC-Seal[1] did not validate);
-  dmarc=pass (Used From Domain Record) header.from=kernel.org
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=fail (ARC-Seal[1] did not validate);
- dmarc=pass (Used From Domain Record) header.from=kernel.org
- policy.dmarc=quarantine
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 176AF80150
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Oct 2024 02:31:31 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1728865892; a=rsa-sha256;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 133BC8174C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Oct 2024 09:03:40 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1728889421; a=rsa-sha256;
 	cv=none;
-	b=JyB//zwNuPTktRHvhBCoIVMNoS43pK7l7xO0rYkUL5v9AMKZJyqtWY8C4hb1zrjcocQtmY
-	04CssmV072N8F9ELaKPiXRZJs5wxMSALGOISPrbw5R0C63HNc3hE2JKvPh5RSos6ueotps
-	pmGDcVO7YQpImPyrfev8Qv6B6WtU9So=
+	b=XevQCHUByBMClz3dJnIKOfaOo7UTdLL0R9LE1GAdxfCm205Z1P/vEm+o8VJw4ywVUdY57w
+	dcr8nYqY2NnejpfzaRgydHzzjZ0yPtvbDyQobxKJUhfXCoC3zZtqxlVDM3Mgjl3WT0B9kw
+	h/ctw578zqfBMPyJEiS+nbGW7XD/inA=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=r9YqRKuw;
-	dmarc=pass (policy=quarantine) header.from=kernel.org;
-	spf=pass (diktynna.open-mesh.org: domain of
- "SRS0=BO0x=RK=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org" designates
- 147.75.193.91 as permitted sender)
- smtp.mailfrom="SRS0=BO0x=RK=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org"
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Xe54NCsc;
+	dmarc=pass (policy=none) header.from=narfation.org;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1728865892;
-	h=from:from:reply-to:reply-to:subject:subject:date:date:
-	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-	 content-type:content-type:in-reply-to:in-reply-to:
-	 references:references:dkim-signature;
-	bh=YqtDK7QfopzOi6b82zo9ZPxlNTmjGRKlUMjxc3XnxKQ=;
-	b=EtB5L9gYM2GJhjC1CHGlVl9wNipP/6mSPVRu5m3EC9MioB4fCEbW36RSC1RWKr/lMFJRN9
-	TyDHBXyUyxWW3N8sdxmn+gz3XhhVLtcLqLo4zmNDy4xGxhcRtWDIBoSz5mp3OB0PP59RMZ
-	UWrlvQ+bcDb2p6FmL487UZ2aLMMRoho=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id C8AA7A4089B;
-	Mon, 14 Oct 2024 00:31:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E461C4CEC5;
-	Mon, 14 Oct 2024 00:31:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728865890;
-	bh=XvIpO0hMtyh3Po24emY82DbVHrbP5ytugA80vx/L/C4=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-	b=r9YqRKuw96RsL0f2maCvk78OVekNkjc1FC0l5peRj1xFsFUp+Wk6XpDbm8K/I8Dat
-	 NtYj6Bt7tAjktwuIEYkK2pE6Nlz6suRz3IANFU3iMXWxI7B7SBdTbd2IFcE2RMqhNe
-	 Gzl7d51zCrp3PEv9lrIW1gc/wLVjkJdAhHf/b8suVLDK9/64J6axNZwU42guB6nhKd
-	 Bi+uaQAfSmkkbJhfVBfu3ahXZQy9cxY9cRnT2opvnrVBsZZFVpqu2kKlHbRWIQ75Yc
-	 VF5aZimutRyJow22wfPFMyDIphrxGhIuf1iV5oDIrKq8jmbchhfe2c3wMu4V4yxCL9
-	 zZuh3mAA+h63Q==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 043ABCE0D17; Sun, 13 Oct 2024 17:31:30 -0700 (PDT)
-Date: Sun, 13 Oct 2024 17:31:30 -0700
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Julia Lawall <Julia.Lawall@inria.fr>
-Cc: linux-nfs@vger.kernel.org, kernel-janitors@vger.kernel.org,
-	vbabka@suse.cz, Tom Talpey <tom@talpey.com>,
-	Dai Ngo <Dai.Ngo@oracle.com>,
-	Olga Kornievskaia <okorniev@redhat.com>, Neil Brown <neilb@suse.de>,
-	linux-can@vger.kernel.org, bridge@lists.linux.dev,
-	b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org,
-	wireguard@lists.zx2c4.com, netdev@vger.kernel.org,
-	ecryptfs@vger.kernel.org, linux-block@vger.kernel.org,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [PATCH 00/17] replace call_rcu by kfree_rcu for simple
+	s=20121; t=1728889421;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=httTAT48fu+3mO0g6dqX16B/PSb/AZaAB5kFQ49ZHpw=;
+	b=uUlavU1+Ya+N/G9lNSzE1OTUDd4zFHE9RpifOMfzkVV4GwQ8AQgobSZTAH1sMA6+hrR9A/
+	RQhrdnQOqIMxbHa785qiwMRbTqjro5Q4qko9OiRkJagMDpHKENr2gsvZASZQzI+rp8mgQv
+	zmvtgSOhzZyFtaLrRZcVZZOPjHKYieE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1728889420;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=httTAT48fu+3mO0g6dqX16B/PSb/AZaAB5kFQ49ZHpw=;
+	b=Xe54NCscJgu36LAoRk5nICKys82aNg3+GsjFGnInFdAafoHCnhLMlKiQlH9O9rDNupMsmm
+	/gCyhwOm/RbFmKrvS8PEkAkjJHf6xiJMhZO9BSLdAZ/l8T36cBzyTFNdE+PqZhdfV+RWWB
+	5M1lZzm3KwY8vIO/cfRIt4BhpcJeJdI=
+From: Sven Eckelmann <sven@narfation.org>
+To: Julia Lawall <Julia.Lawall@inria.fr>, vbabka@suse.cz,
+ linus.luessing@c0d3.blue
+Cc: Marek Lindner <mareklindner@neomailbox.ch>,
+ kernel-janitors@vger.kernel.org, paulmck@kernel.org,
+ Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: 
+ Re: [PATCH 06/17] batman-adv: replace call_rcu by kfree_rcu for simple
  kmem_cache_free callback
-Message-ID: <47a98e77-8bbf-48d7-bb52-50e85a5336a0@paulmck-laptop>
-References: <20241013201704.49576-1-Julia.Lawall@inria.fr>
+Date: Mon, 14 Oct 2024 09:03:30 +0200
+Message-ID: <6091264.lOV4Wx5bFT@ripper>
+In-Reply-To: <20241013201704.49576-7-Julia.Lawall@inria.fr>
+References: 
+ <20241013201704.49576-1-Julia.Lawall@inria.fr>
+ <20241013201704.49576-7-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241013201704.49576-1-Julia.Lawall@inria.fr>
-X-MailFrom: SRS0=BO0x=RK=paulmck-ThinkPad-P17-Gen-1.home=paulmck@kernel.org
-X-Mailman-Rule-Hits: max-recipients
+Content-Type: multipart/signed; boundary="nextPart4957463.31r3eYUQgx";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: W6DAGSGAN3PXO274RTV22T7ISTCX26QB
+X-Message-ID-Hash: W6DAGSGAN3PXO274RTV22T7ISTCX26QB
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-size; news-moderation; no-subject; digests;
- suspicious-header
-Message-ID-Hash: ZCUYYB2N4MRQ4E576OUXY337GDKG424D
-X-Message-ID-Hash: ZCUYYB2N4MRQ4E576OUXY337GDKG424D
-X-Mailman-Approved-At: Mon, 14 Oct 2024 08:56:06 +0200
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
-Reply-To: paulmck@kernel.org
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZCUYYB2N4MRQ4E576OUXY337GDKG424D/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/W6DAGSGAN3PXO274RTV22T7ISTCX26QB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -128,134 +112,152 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sun, Oct 13, 2024 at 10:16:47PM +0200, Julia Lawall wrote:
+--nextPart4957463.31r3eYUQgx
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 Oct 2024 09:03:30 +0200
+Message-ID: <6091264.lOV4Wx5bFT@ripper>
+In-Reply-To: <20241013201704.49576-7-Julia.Lawall@inria.fr>
+MIME-Version: 1.0
+
+On Sunday, 13 October 2024 22:16:53 CEST Julia Lawall wrote:
 > Since SLOB was removed and since
 > commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier() from kmem_cache_destroy()"),
 > it is not necessary to use call_rcu when the callback only performs
 > kmem_cache_free. Use kfree_rcu() directly.
 > 
-> The changes were done using the following Coccinelle semantic patch.
-> This semantic patch is designed to ignore cases where the callback
-> function is used in another way.
-
-For the series:
-
-Acked-by: Paul E. McKenney <paulmck@kernel.org>
-
-> // <smpl>
-> #spatch --all-includes --include-headers
+> The changes were made using Coccinelle.
 > 
-> @r@
-> expression e;
-> local idexpression e2;
-> identifier cb,f,g;
-> position p;
-> @@
-> 
-> (
-> call_rcu(...,e2)
-> |
-> call_rcu(&e->f,cb@p)
-> |
-> call_rcu(&e->f.g,cb@p)
-> )
-> 
-> @r1@
-> type T,T1;
-> identifier x,r.cb;
-> @@
-> 
->  cb(...) {
-> (
->    kmem_cache_free(...);
-> |
->    T x = ...;
->    kmem_cache_free(...,(T1)x);
-> |
->    T x;
->    x = ...;
->    kmem_cache_free(...,(T1)x);
-> )
->  }
-> 
-> @s depends on r1@
-> position p != r.p;
-> identifier r.cb;
-> @@
-> 
->  cb@p
-> 
-> @script:ocaml@
-> cb << r.cb;
-> p << s.p;
-> @@
-> 
-> Printf.eprintf "Other use of %s at %s:%d\n" cb (List.hd p).file (List.hd p).line
-> 
-> @depends on r1 && !s@
-> expression e;
-> identifier r.cb,f,g;
-> position r.p;
-> @@
-> 
-> (
-> - call_rcu(&e->f,cb@p)
-> + kfree_rcu(e,f)
-> |
-> - call_rcu(&e->f.g,cb@p)
-> + kfree_rcu(e,f.g)
-> )
-> 
-> @r1a depends on !s@
-> type T,T1;
-> identifier x,r.cb;
-> @@
-> 
-> - cb(...) {
-> (
-> -  kmem_cache_free(...);
-> |
-> -  T x = ...;
-> -  kmem_cache_free(...,(T1)x);
-> |
-> -  T x;
-> -  x = ...;
-> -  kmem_cache_free(...,(T1)x);
-> )
-> - }
-> 
-> @r2 depends on !r1@
-> identifier r.cb;
-> @@
-> 
-> cb(...) {
->  ...
-> }
-> 
-> @script:ocaml depends on !r1 && !r2@
-> cb << r.cb;
-> @@
-> 
-> Printf.eprintf "need definition for %s\n" cb
-> // </smpl>
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 > 
 > ---
+>  net/batman-adv/translation-table.c |   47 ++-----------------------------------
+>  1 file changed, 3 insertions(+), 44 deletions(-)
+
+
+This was tried and we noticed that it is not safe [1]. So, I would get 
+confirmation that commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier() 
+from kmem_cache_destroy()") is fixing the problem which we had at that time. 
+The commit message sounds like it but I just want to be sure.
+
+Kind regards,
+	Sven
+
+[1] https://lore.kernel.org/r/20240612133357.2596-1-linus.luessing@c0d3.blue
+
 > 
->  arch/powerpc/kvm/book3s_mmu_hpte.c  |    8 ------
->  block/blk-ioc.c                     |    9 ------
->  drivers/net/wireguard/allowedips.c  |    9 +-----
->  fs/ecryptfs/dentry.c                |    8 ------
->  fs/nfsd/nfs4state.c                 |    9 ------
->  kernel/time/posix-timers.c          |    9 ------
->  net/batman-adv/translation-table.c  |   47 ++----------------------------------
->  net/bridge/br_fdb.c                 |    9 ------
->  net/can/gw.c                        |   13 ++-------
->  net/ipv4/fib_trie.c                 |    8 ------
->  net/ipv4/inetpeer.c                 |    9 +-----
->  net/ipv6/ip6_fib.c                  |    9 ------
->  net/ipv6/xfrm6_tunnel.c             |    8 ------
->  net/kcm/kcmsock.c                   |   10 -------
->  net/netfilter/nf_conncount.c        |   10 -------
->  net/netfilter/nf_conntrack_expect.c |   10 -------
->  net/netfilter/xt_hashlimit.c        |    9 ------
->  17 files changed, 23 insertions(+), 171 deletions(-)
+> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+> index 2243cec18ecc..b21ff3c36b07 100644
+> --- a/net/batman-adv/translation-table.c
+> +++ b/net/batman-adv/translation-table.c
+> @@ -208,20 +208,6 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+>  	return tt_global_entry;
+>  }
+>  
+> -/**
+> - * batadv_tt_local_entry_free_rcu() - free the tt_local_entry
+> - * @rcu: rcu pointer of the tt_local_entry
+> - */
+> -static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
+> -{
+> -	struct batadv_tt_local_entry *tt_local_entry;
+> -
+> -	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
+> -				      common.rcu);
+> -
+> -	kmem_cache_free(batadv_tl_cache, tt_local_entry);
+> -}
+> -
+>  /**
+>   * batadv_tt_local_entry_release() - release tt_local_entry from lists and queue
+>   *  for free after rcu grace period
+> @@ -236,7 +222,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+>  
+>  	batadv_softif_vlan_put(tt_local_entry->vlan);
+>  
+> -	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
+> +	kfree_rcu(tt_local_entry, common.rcu);
+>  }
+>  
+>  /**
+> @@ -254,20 +240,6 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
+>  		 batadv_tt_local_entry_release);
+>  }
+>  
+> -/**
+> - * batadv_tt_global_entry_free_rcu() - free the tt_global_entry
+> - * @rcu: rcu pointer of the tt_global_entry
+> - */
+> -static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
+> -{
+> -	struct batadv_tt_global_entry *tt_global_entry;
+> -
+> -	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
+> -				       common.rcu);
+> -
+> -	kmem_cache_free(batadv_tg_cache, tt_global_entry);
+> -}
+> -
+>  /**
+>   * batadv_tt_global_entry_release() - release tt_global_entry from lists and
+>   *  queue for free after rcu grace period
+> @@ -282,7 +254,7 @@ void batadv_tt_global_entry_release(struct kref *ref)
+>  
+>  	batadv_tt_global_del_orig_list(tt_global_entry);
+>  
+> -	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
+> +	kfree_rcu(tt_global_entry, common.rcu);
+>  }
+>  
+>  /**
+> @@ -407,19 +379,6 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
+>  	batadv_tt_global_size_mod(orig_node, vid, -1);
+>  }
+>  
+> -/**
+> - * batadv_tt_orig_list_entry_free_rcu() - free the orig_entry
+> - * @rcu: rcu pointer of the orig_entry
+> - */
+> -static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+> -{
+> -	struct batadv_tt_orig_list_entry *orig_entry;
+> -
+> -	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
+> -
+> -	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
+> -}
+> -
+>  /**
+>   * batadv_tt_orig_list_entry_release() - release tt orig entry from lists and
+>   *  queue for free after rcu grace period
+> @@ -433,7 +392,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
+>  				  refcount);
+>  
+>  	batadv_orig_node_put(orig_entry->orig_node);
+> -	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+> +	kfree_rcu(orig_entry, rcu);
+>  }
+>  
+>  /**
+> 
+> 
+
+
+--nextPart4957463.31r3eYUQgx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZwzCQwAKCRBND3cr0xT1
+y7i+AQDVLdYz744YITcGjxNtokduQbc/TMXye8cDpvnUIRqeswEA3w/Kg7zDNvz2
+rI43KEYfCJOuJv0+vY4mZmhJob37RQw=
+=/WZq
+-----END PGP SIGNATURE-----
+
+--nextPart4957463.31r3eYUQgx--
+
+
+
