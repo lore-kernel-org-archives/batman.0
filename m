@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42ABFE6F08E
-	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 22:05:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 343BAE6F08E
+	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 22:06:30 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5B4B083D15
-	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 23:05:46 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7000F83E74
+	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 23:06:28 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1730498746;
- b=RcG5Xk2QLTiyegtmDRdbCN4b5qrvyYgPDfdhQmYWGDvVDr+lsRZey3ESxSqagHqZx7OvE
- BOUvSZHAjWSA9yFzyYHC2xaxD4m1d+gK3EcPJisr3pGZEHD2kz+KW+QsN0Ba+1TVOY4g/3q
- yEYDDhDzhxDOmLWaabReSfQeRANvqaY=
+ t=1730498788;
+ b=0mywEa3Abkr/5mrgzJQUTVj8uODN4lEgMGkctfFhmB+LwWhpmRPbkS2/jFJuBGhw77rEG
+ CGBuXri2ZCL03DYVp7yTlzYG2OARTQFpavXmDhuM3Kuzvl2adrGtIwATgjTh9XHYMrqIw6Z
+ yHy9g6Xn6vFhryGHUbEm8q6lj4D3mfQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1730498746; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1730498788; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=1kWelsFdkXy272TEXnZ9Uc/lMGvEi+JsOPmDSHUal+U=;
- b=q4zwAoIbXb/iacrNqTCMVhWnsSv6BKkKkhVn0WSFnyDD/Y5i7eEvUAPzakAaD0yvqBKrS
- nZywr6PCCz70EP9gUwKS4CCM/rvWKBoWAxgZa49Cqz1PnbxYHYxz41uQYXgnc9z3dGVXm3T
- i1ofVDk53OVvHoBoqGj6i8GLQJ91yoM=
+ list-archive; bh=u6z1fpT89DJv+WCGgPTmM9WnXFPOlNs13l5DouQ0kuU=;
+ b=shiOGudDldqxNduCLzFe+L7WEJysO9IYWSyc59+9ADsZvsn2XK2e2oxFqO8C8bpiqxQlf
+ 0Syof3i/9iLv2o7sO7pmW6Aaj7mIa+NBKMDkWiJGzpX6SDrr8kKrjwDnOjIVRb3miNDtqBU
+ eFpl5aaXNwK1lUB//yBpzCokX7eJ5Hg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=fail header.d=smtpservice.net;
   arc=pass;
@@ -34,78 +34,82 @@ Authentication-Results: open-mesh.org; dkim=fail header.d=smtpservice.net;
  arc=pass;
  dmarc=fail (Used From Domain Record) header.from=triplefau.lt policy.dmarc=quarantine
 Received: from e2i340.smtp2go.com (e2i340.smtp2go.com [103.2.141.84])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3184A80EAD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  1 Nov 2024 23:05:40 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 80A858176B
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  1 Nov 2024 23:05:41 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1730498741;
+	s=20121; t=1730498742;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=1kWelsFdkXy272TEXnZ9Uc/lMGvEi+JsOPmDSHUal+U=;
-	b=DijM9jM5X6C2IIaZv3C/Eoc/j/54siFsqvCftXD8yEbfiN0uT/BmG/9rFCI4jt6JevKFXL
-	9bG0X5HbADYGu3uP5HP96snrVJRWBh7FwI/AzMO1Avlfvomr7I+GoUsgwUux9F2wknV2cw
-	EmIQ8SnIcF9t8Yc3/YS69aDx0DyPpQk=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1730498741; a=rsa-sha256;
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=u6z1fpT89DJv+WCGgPTmM9WnXFPOlNs13l5DouQ0kuU=;
+	b=X4FlJ2kiW0XP5zJGy8jPuaMbjMQjuhQiFqEMsmgRjq+EKM+q2U9CIXxbZe9W0PcnmCG9L1
+	NwWh/h+zHOFP5ACG0qvDfEgdEE0AsWRW0NQ2lRLKbPCVdyTz5UVJP3If7MUMgTUD1ev9QA
+	VBhhfeQg4O8htIgUsLOU3M2+dXmKJbA=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1730498742; a=rsa-sha256;
 	cv=none;
-	b=TiocBisNLyr/Y7VDou9r/g5W6RCI3yxKEeDENZerwvqA+Vn2wvq7eKnDi7uuPp4k/vF0Tc
-	MVEYoAJ6/g0DjEnax6SXwxC84OwjXtkeeakB7QKJhNjDrygPInOb3v22EfUwYwhzKXK52l
-	mOKW7O8WOfi7nCQT/eVOpmdHj6Zrbkc=
+	b=dHvXXUBvDkopRbMEC2kBEI/6Y+WzFjPXHM2ojU62pyv3ec8qp+BHEbXoXEpJDOFKtHSc5y
+	MWe7zf1tT6WhGukMEwHNcIg35LLJDSQixWbT3/EYuogmHt33USQzgECTccb6LdF5JVxHBy
+	ku4/t9RjGvZ/QAsJmI8jgMdeqGqsX6A=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none ("invalid DKIM record") header.d=smtpservice.net
- header.s=maxzs0.a1-4.dyn header.b=Ld4RdbK5;
-	dkim=pass header.d=triplefau.lt header.s=s510616 header.b=OcIQ1Nft;
+ header.s=maxzs0.a1-4.dyn header.b=Pzz57RzQ;
+	dkim=pass header.d=triplefau.lt header.s=s510616 header.b=O+vsLc+u;
 	spf=pass (diktynna.open-mesh.org: domain of
- "bT.7op6ls2kew402q6=sis6xigyx40d=z1ngjpcreens81@em510616.triplefau.lt"
+ "bT.gd4j7je6im3lkx3=qcvergyup0pc=xe1qo0c7976jge@em510616.triplefau.lt"
  designates 103.2.141.84 as permitted sender)
- smtp.mailfrom="bT.7op6ls2kew402q6=sis6xigyx40d=z1ngjpcreens81@em510616.triplefau.lt";
+ smtp.mailfrom="bT.gd4j7je6im3lkx3=qcvergyup0pc=xe1qo0c7976jge@em510616.triplefau.lt";
 	dmarc=pass (policy=quarantine) header.from=triplefau.lt
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=smtpservice.net; s=maxzs0.a1-4.dyn; x=1730499640; h=Feedback-ID:
+	d=smtpservice.net; s=maxzs0.a1-4.dyn; x=1730499641; h=Feedback-ID:
 	X-Smtpcorp-Track:Message-Id:Date:Subject:To:From:Reply-To:Sender:
 	List-Unsubscribe:List-Unsubscribe-Post;
-	bh=1kWelsFdkXy272TEXnZ9Uc/lMGvEi+JsOPmDSHUal+U=; b=Ld4RdbK52ZVReqHuNSb/V+4FHD
-	o7RirBsgdKBp44NsEnHnIXAsnpXNBph2N14H8xkod1jlmTOP8qxjKaC0sDh5Lu7Tsbmy3H3M4OgE+
-	NEOin8LTUc/BC0aZJSW4ZR4ELUq8uo4o6lAhrvuLE5vl4bAKFTRjypTqlk8ZortPhh0K9mvhuE6Pa
-	/MgyxvJ8d9HBdxM20Mfe+ZJvuLO09s9fpSJOibbdXgcz239sEik6daHccYjmcyaLaKrHNVYVlWpu2
-	Z5DYM3tF7Nrk9UzHOLvOEFosBmGD1nkbsCA6BqLlkwWH+QzjVECeOO4E+RZDoxo9jXz9uUS34qcKw
-	8yu8fwpg==;
+	bh=u6z1fpT89DJv+WCGgPTmM9WnXFPOlNs13l5DouQ0kuU=; b=Pzz57RzQnna/jZ1xvxfzSCTIKz
+	OQ/xtHfixKFdiCVno1+ynYSWjYqxWtuqmKcJoreO5HeV0ZZ4W4aWCDp20DrkZ2RqZBnXoNpSH1WZ9
+	se6A5ErlTzIiReMX4s30K9xAABqHBIiwUS2Rr+5YdmAh4+pSLfIkfCtvPs1bnxcH2l65mxu3KiUVi
+	J8y9lHSJypEGHVI025+5FMg+tZS6vIz24drqY2wCxVAOpeXrRSN2/VW8V6CWziX7C153bZ6GbTzV5
+	bX5ukOKasWLhFVE3xqA/4/5UVtgDD3PhXwPEUm/jul15bkezujFYrYc7AJ7sXl+WQlVoukxKrGyu2
+	/i6jjdIw==;
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=triplefau.lt;
- i=@triplefau.lt; q=dns/txt; s=s510616; t=1730498740; h=from : subject
+ i=@triplefau.lt; q=dns/txt; s=s510616; t=1730498741; h=from : subject
  : to : message-id : date;
- bh=1kWelsFdkXy272TEXnZ9Uc/lMGvEi+JsOPmDSHUal+U=;
- b=OcIQ1NftSqUrNokFhid853ucWZwxsSCyh5LrX7a/28i5tsR9vET8YH39cMi1cgsmb/r97
- ucW0XUeAksX/4GJEdIfiuKGnEBxqlp8XejK4XEX1jPgSMNB2kZSqh0qQVN5kosxUZmaY/Rj
- RzcIkUChP8PrZT8woPjDzVh9ae2pOcwVoUxJHcGdLnZg7RSYxu2Vnx1byHgK3QxtkRpnZ+5
- FeYPURlQfVjVI/EpQxaJ6/xESZUiJe9Sg/UoEUwZHabSl+foBcv3uHnCCLeDksh9MfJD+kS
- U9vcA9H/GYua00InVDjUFyQXxCP8HuNCcgN/vFO4qyaWIu3FkqIPxCYl60IQ==
-Received: from [10.176.58.103] (helo=SmtpCorp) by smtpcorp.com with esmtpsa
+ bh=u6z1fpT89DJv+WCGgPTmM9WnXFPOlNs13l5DouQ0kuU=;
+ b=O+vsLc+uePYsxRhM5chOWdScMNTHEFFJNOCUckjocff7wCq1oeoA6xFHakwaCQwUbaxc3
+ HWrzHOrqX/EXCFInYxn3rrwwcifUcB/jMHhJg0Kf6Z7e8z3hb9qs9ISacigVaDS+WKbfokk
+ qxWER96/ri+hEqsFWg1IBYJEE2UULs0APBJ58JE78LVUtezcoborsRk+FmeMFAOw6GQULHJ
+ ayG3Bef1efeJwIZXKWu2p5X73a8cC7RgK1nRso0VtQog6BABKNmYc8yQlZSOsfiMv0JuINm
+ BHGY8jyWg8V22PK0q0cRrLLrvOrdy27BOSzLWnoJTYCmQN7K7ANWQ+MwumZA==
+Received: from [10.139.162.187] (helo=SmtpCorp) by smtpcorp.com with esmtpsa
  (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
  (Exim 4.94.2-S2G) (envelope-from <repk@triplefau.lt>)
- id 1t6zly-TRk4fn-Pv; Fri, 01 Nov 2024 22:05:38 +0000
+ id 1t6zm0-TRk4ix-5M; Fri, 01 Nov 2024 22:05:40 +0000
 Received: from [10.12.239.196] (helo=localhost) by smtpcorp.com with esmtpsa
  (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
  (Exim 4.97.1-S2G) (envelope-from <repk@triplefau.lt>)
- id 1t6zly-4o5NDgrqMyO-qkcA; Fri, 01 Nov 2024 22:05:38 +0000
+ id 1t6zlz-4o5NDgrjB2u-nxSx; Fri, 01 Nov 2024 22:05:39 +0000
 From: Remi Pommarel <repk@triplefau.lt>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>,
  Simon Wunderlich <sw@simonwunderlich.de>,
  Sven Eckelmann <sven@narfation.org>, Remi Pommarel <repk@triplefau.lt>
-Subject: [RFC PATCH 0/4] batman-adv: TT change events fixes and improvements
-Date: Fri,  1 Nov 2024 23:04:58 +0100
-Message-Id: <cover.1730497875.git.repk@triplefau.lt>
+Subject: [RFC PATCH 1/4] batman-adv: Do not send uninitialized TT changes
+Date: Fri,  1 Nov 2024 23:04:59 +0100
+Message-Id: 
+ <fbc17f32703930e711353d82146a916106acd2f1.1730497875.git.repk@triplefau.lt>
 X-Mailer: git-send-email 2.40.0
+In-Reply-To: <cover.1730497875.git.repk@triplefau.lt>
+References: <cover.1730497875.git.repk@triplefau.lt>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Smtpcorp-Track: kkj9Ei0zHxj3.y5e_IodCTGoD.yqiYmArUefw
-Feedback-ID: 510616m:510616apGKSTK:510616srgApmtrw_
+X-Smtpcorp-Track: RLBjiffkR9U1.wuq7D_IO-IM9.qPcCFwZ05i_
+Feedback-ID: 510616m:510616apGKSTK:510616sEG0V39Zeo
 X-Report-Abuse: Please forward a copy of this message, including all headers,
  to <abuse-report@smtp2go.com>
-Message-ID-Hash: 4OYSAT3LCCDK5B6GB2564HZN2R7APCCV
-X-Message-ID-Hash: 4OYSAT3LCCDK5B6GB2564HZN2R7APCCV
+Message-ID-Hash: YRZVZADUOHDBY2FMMQLHAFB4KEOZDSMK
+X-Message-ID-Hash: YRZVZADUOHDBY2FMMQLHAFB4KEOZDSMK
 X-MailFrom: 
- bT.7op6ls2kew402q6=sis6xigyx40d=z1ngjpcreens81@em510616.triplefau.lt
+ bT.gd4j7je6im3lkx3=qcvergyup0pc=xe1qo0c7976jge@em510616.triplefau.lt
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -118,7 +122,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4OYSAT3LCCDK5B6GB2564HZN2R7APCCV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/YRZVZADUOHDBY2FMMQLHAFB4KEOZDSMK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -127,40 +131,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The first two patches are actual fixes.
+The number of TT changes can be less than initially expected in
+batadv_tt_tvlv_container_update() (changes can be removed by
+batadv_tt_local_event() in ADD+DEL sequence between reading
+tt_diff_entries_num and actually iterating the change list under lock).
 
-The first one tries to avoid sending uninitialized data that could be
-interpreted as invalid TT change events in both TT request and OGM.
-Following invalid entries could be seen when that happen with batctl o:
+Thus tt_diff_len could be bigger than the actual changes size that need
+to be sent. Because batadv_send_my_tt_response sends the whole
+packet, uninitialized data can be interpreted as TT changes on other
+nodes leading to weird TT global entries on those nodes such as:
 
  * 00:00:00:00:00:00   -1 [....] (  0) 88:12:4e:ad:7e:ba (179) (0x45845380)
  * 00:00:00:00:78:79 4092 [.W..] (  0) 88:12:4e:ad:7e:3c (145) (0x8ebadb8b)
 
-The second one fixes an issue that happened when a TT change event list
-is too big for the MTU, the list was never actually sent nor free and
-continued to grow indefinitely from this point. That also caused the
-OGM TTVN to increase at each OGM interval without any changes being ever
-visible to other nodes. This ever growing TT change event list could be
-observed by looking at /sys/kernel/slab/batadv_tt_change_cache/objects
-that sometimes showed unusal high value even after issuing a memcache
-shrink.
+All of the above also applies to OGM tvlv container buffer's tvlv_len.
 
-The next two patches are potential slight improvements. While patch 3
-is mainly cosmetic (having negative tt.local_changes value is not
-exactly an issue), patch 4 is here to keep the TT changes list as short
-as possible.
+Remove the extra allocated space to avoid sending uninitialized TT
+changes in batadv_send_my_tt_response() and batadv_v_ogm_send_softif().
 
-Remi Pommarel (4):
-  batman-adv: Do not send uninitialized TT changes
-  batman-adv: Do not let TT changes list grows indefinitely
-  batman-adv: Remove atomic usage for tt.local_changes
-  batman-adv: Don't keep redundant TT change events
+Fixes: e1bf0c14096f ("batman-adv: tvlv - convert tt data sent within OGMs")
+Signed-off-by: Remi Pommarel <repk@triplefau.lt>
+---
+ net/batman-adv/translation-table.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
- net/batman-adv/soft-interface.c    |  2 +-
- net/batman-adv/translation-table.c | 48 +++++++++++++++++++-----------
- net/batman-adv/types.h             |  4 +--
- 3 files changed, 34 insertions(+), 20 deletions(-)
-
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2243cec18ecc..f0590f9bc2b1 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -990,6 +990,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	int tt_diff_len, tt_change_len = 0;
+ 	int tt_diff_entries_num = 0;
+ 	int tt_diff_entries_count = 0;
++	size_t tt_extra_len = 0;
+ 	u16 tvlv_len;
+ 
+ 	tt_diff_entries_num = atomic_read(&bat_priv->tt.local_changes);
+@@ -1027,6 +1028,9 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
+ 
++	tt_extra_len = batadv_tt_len(tt_diff_entries_num -
++				     tt_diff_entries_count);
++
+ 	/* Keep the buffer for possible tt_request */
+ 	spin_lock_bh(&bat_priv->tt.last_changeset_lock);
+ 	kfree(bat_priv->tt.last_changeset);
+@@ -1035,6 +1039,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	tt_change_len = batadv_tt_len(tt_diff_entries_count);
+ 	/* check whether this new OGM has no changes due to size problems */
+ 	if (tt_diff_entries_count > 0) {
++		tt_diff_len -= tt_extra_len;
+ 		/* if kmalloc() fails we will reply with the full table
+ 		 * instead of providing the diff
+ 		 */
+@@ -1047,6 +1052,8 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt.last_changeset_lock);
+ 
++	/* Remove extra packet space for OGM */
++	tvlv_len -= tt_extra_len;
+ container_register:
+ 	batadv_tvlv_container_register(bat_priv, BATADV_TVLV_TT, 1, tt_data,
+ 				       tvlv_len);
 -- 
 2.40.0
 
