@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1C4DD41C3F
-	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 13:00:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9126D41C3E
+	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 13:01:35 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 19A5D83B82
-	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 14:00:48 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5705983F24
+	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 14:01:34 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1731502848;
- b=YANTBI4RHwBg661azQJViCrgLolJqVElBp2DOdSeNkUbbfOy4fIPIqe3PJW3v8jVrecgh
- /dh/8X/mwAeHezbI8OfQPgBr27Voj6om38Ev8aiqWzUDRq+8wmKAhwMM3V4FQBnqkK/+/sk
- X+bB/Tjy2cvq9QBPFoDHDBj1VFs4mL4=
+ t=1731502894;
+ b=0WI3Ehg5EBqAGtJskhWHvmITVvz7XwCUztfhhP/nN5cPVBrATvrcxwsmoKcnxawxUCevR
+ Q9m2wMqsWUkQjQptrArHJm4nqvcGUm8Ak20HNZvtmL2Po5yEOT/CQ0Nw0bEfxxTZizUjSYK
+ tji5R1Bu5z0KqF8L0hjz2dGXgnnvZMI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1731502848; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1731502894; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
- b=HlU0bkww3XSID+P8m1nYaiPlXB6ctXnfsEVnW9m48pwTihrFaXUEfo74uaBBUDBNpReo9
- 52cRIfYgaHdgFh0gepJV/J81qzkyoU0TbCQuwTHtiOE+V+FUxb2/kJW8W0EKTLAEnFzsSqo
- n6HBmbh9TwHhI4h0ndVTKPMctYy65S4=
+ list-archive; bh=9sIZI/WV8nhbNfyJEUDND2yz+m6sbgKmtk/cQXv5cxc=;
+ b=U6f0bs6I3xEY5WOTBB4Yig53f6ZoWOg1gxS13vZNgp8lRL5hx90l6rzGoD6QVkNg03FMV
+ WA3EASi9tg5u//Ym/AvYW/2Kk1CuwyCzB2J+ylYmMdgpEEFU5VY3BKrjymPbvSjEgFyNm5v
+ oIVurffDaHpvrso3kjhE6YZXahyTqgc=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,72 +32,75 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com
- [IPv6:2607:f8b0:4864:20::52a])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3220D825C9
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 13 Nov 2024 13:57:38 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731502658; a=rsa-sha256;
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
+ [IPv6:2607:f8b0:4864:20::102f])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 5F01C82841
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 13 Nov 2024 13:57:46 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731502666; a=rsa-sha256;
 	cv=none;
-	b=DCiT0d+JNkleGf481q6dIQjf1xLUCg8fQAWfw9oL3WMYocqn8YcUq6PQd25B8RvewOU2A7
-	qvqGZYQnrFpBV37WOldVUF2gnVPkQCtKEVdgK3x5oipni07jnXvlrjJ6iXewmT9+D6WMRT
-	w+TBXuAQTCILgTe8pXzLCskKWTqjh6c=
+	b=AD9xsVZjyDyDrKbLqvxI12ku5aorEm1RCviR9uCbaetPmrt5odU4Jjo1/MooM2AAz1kiSL
+	8qRZd3wlJpIDUrY/ShjL5yIToNUDTRATmR1+y24q6CBGDcvokjPum5InX7jTe6VeZxfuwv
+	T6JWCzcBlUGmblxuRe4JmZKQHBd2A1A=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=OsUw9JT+;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b="DIW/gVc1";
 	dmarc=pass (policy=none) header.from=gmail.com;
 	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2607:f8b0:4864:20::52a as permitted sender) smtp.mailfrom=shaw.leon@gmail.com
+ 2607:f8b0:4864:20::102f as permitted sender)
+ smtp.mailfrom=shaw.leon@gmail.com
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1731502658;
+	s=20121; t=1731502666;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
-	b=rAT6RZ08O152HtCccAwaS4Ueu1TQDa91/2h4dUnwTbnaly2GTDlcSs2M5hjuX50UdeCQf6
-	jdChWoi4iIU0pvCeAoEeYFnTLp/K5HkOGjh6Uhgi5xpVgeI9ylLOZxANHxKKkAzTVE2D0V
-	kkGBCTjw34/yBYqLnws9qPmNS885kkY=
-Received: by mail-pg1-x52a.google.com with SMTP id
- 41be03b00d2f7-7ea7ad1e01fso535476a12.0
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=9sIZI/WV8nhbNfyJEUDND2yz+m6sbgKmtk/cQXv5cxc=;
+	b=mlg7GEXGokrrrliSXJRo679yoecewTnCQvohrN9YkUtosQn+fVTzc7jdNI5whJ0uVh3eDA
+	dKwlb7mNTXKfp3YSQv3ZMd0QDGY0vPMoJ6JnVamJmhc47rfE/q1GWvvHWlTzb5O+B6+3vi
+	8AOQtAIgO3+dktJ5pAnkaHQrsbT3wq0=
+Received: by mail-pj1-x102f.google.com with SMTP id
+ 98e67ed59e1d1-2e31af47681so5514815a91.2
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Wed, 13 Nov 2024 04:57:38 -0800 (PST)
+ Wed, 13 Nov 2024 04:57:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1731502656; x=1732107456;
+        d=gmail.com; s=20230601; t=1731502665; x=1732107465;
  darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
-        b=OsUw9JT+YCgR19G6R+69y1HMoiVby3RXAOwyRIGfNgRcTxYRCIGcTIBrOgb+5C9U4L
-         nUq63ZYyrJWmvUDekuS7Ffe2ur9tMyyXmyI5//HQ8aFHLUXX+gSIIieiNpn8ljHuFyJs
-         CAoOlhTwWC1jfn4DQ9NDqD3h/evlbgW54FzqhnBImId71D2fCV9C1W5lM5x1LoKLHJLh
-         RC+q8w9i/jjjFHbgze7L8K+isQmW7pHfkmJUBTUkDd9jn17VR/44wRVT4AsGjaRnR00X
-         trMX14hMQz9uxfiD9vizR9KAbBAgYNTrGFXxSwUxypKK0cyGccIiYbQVNkWUurXONwN4
-         Em0Q==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9sIZI/WV8nhbNfyJEUDND2yz+m6sbgKmtk/cQXv5cxc=;
+        b=DIW/gVc13h9zEPVPqjnzo6yMvCa1Btp7rvxmLtaeAgFpUySuZkWkuBV4+fbUKqgWMr
+         v26fUgNQqWG3wj5RFW7VVtTjZnFXxVWLMJFwuioOCDw78WYHvYPOhhhf51IE7goy0Qfq
+         B79qcQwM1l7JUNSgzleszap8Vk/EQZGTJbimmRAAwPb2PNqXGlxKXepZQKZ1AVAskkXp
+         gs4sq1LrnK9XmXU721ajbI9rJ5Sm1tAJMtKRLs2xat9Vu7LI9Hg1ClZ4HtudRONVsp83
+         pjPkF965EoMKa/pu1XI+PG0Hzs0QuydXo+lcxKi3Ix8hawDNENh1kz1QJdY4IEHj/9W1
+         eKLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731502656; x=1732107456;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
-        b=iSGnDNc0z/co3zG6ksCHQa5eIyPB1mg5jUz3UZ1PsPmWGBGm79rPQuy66GHo4nKE4f
-         +an88NPxYIHO/nOPC0BM7DLI8YfyEeQVV0dI4gqIHthL5HAO/OV8baOq2XvnqVhK/oSV
-         3sj6fJA/5TS0wJsraMdUz8TrJE+O8mUKDo9OIE9OWMYbEhBuO5KlAEVivQ0Ivxy384Rm
-         /ep+XLAYOVibaINmxUJ3NIg7J871GLOOQbdYHJRnkN22PhUJYtfm87V5X47IMvAuMoPN
-         4tirG8Q7FeJ7i6ZYJ+B2fwIOAqitkBaCq61PeK74ZR4Gi/yQwOFhoye6/utNWPq4RoVX
-         VUGg==
+        d=1e100.net; s=20230601; t=1731502665; x=1732107465;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9sIZI/WV8nhbNfyJEUDND2yz+m6sbgKmtk/cQXv5cxc=;
+        b=mDlYVMvWx3MobJTBQewJDVCTbPOuMnxYJkEfU7daPEDLsXwlQxftzhlN1+SRNy/z4c
+         aqfxohjGU6NYHRmzpO4u7ULN6T1ZpGC4j20rcqN/AXUEzOUbPiGS+eHtQpEegdjIFKi6
+         PN3HfE5Cu/5FlXMcPtBcWjxCPdTvmTMgfNJNtOMSeKlyDbQOYcpJFriYd84KcuPbncJ4
+         kJ2BEqdzuk0t+dh8kKMxRW3ay0byF7jCN2guzC5UonOdeGbZYkibSflmol7RFXs4H53z
+         sFBY5sBHX05Uwg7iXpAHn5vRQZfyIlKdh/TKnUhVfW9h4UICwbwyNskRjaSGDsX1lUv/
+         FAlQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCXkyPT1pYkM+eUt2DhrzjsRjr4DWizGm/MXUdxi7NPkhF/zuZ+PRDbBAXKE2M0dGhB8yhSCnWJgQ/qB2Q==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YwGKoAaTAeEqavc4YRnzVtNcVFlw6B2E8Bqdqu13i30Qo8uh3kU
-	gNePgl1nHkVSMrbt1iTMlIutilNTLLxRBQiKUPjDt1XxK9cr9UpV
+ AJvYcCWOTtw1ZUvbxkE55f/etXxupRQZX2R6aDEg2EJGn/i+xt91ftKxINDAb0H4bolwwQPNrUXPkK2Nlqm/JA==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YxGsEQ+S+OT5Qov0A2kjKYVX10xK+c65ZQbCXeC2cIrpOtKbOWO
+	hPiIPng6+e+sT5FLTNBAy01f99JD61qYVD3soE3aDdyDkqSAfoje
 X-Google-Smtp-Source: 
- AGHT+IG1llNssb9d3itpdlPx9GEqMX+Zp38UcErZg9PjxNGttUHCL6O3wsgZQ/zCnjJA57EpkRZP1g==
-X-Received: by 2002:a17:90b:2789:b0:2e2:bb32:73e7 with SMTP id
- 98e67ed59e1d1-2e9b1f844damr30704968a91.15.1731502656393;
-        Wed, 13 Nov 2024 04:57:36 -0800 (PST)
+ AGHT+IFBBLW/otzoU3VQWNkQ98rdfNz5WHNkXJFNuYVXzuqAWCzWf4F656wLCdVO3Ph+9deaw1I3JA==
+X-Received: by 2002:a17:90b:48c8:b0:2e2:c40c:6e8a with SMTP id
+ 98e67ed59e1d1-2e9f2d5da7amr2684315a91.26.1731502664731;
+        Wed, 13 Nov 2024 04:57:44 -0800 (PST)
 Received: from nova-ws.. ([103.167.140.11])
         by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-2e9f3f8ed0esm1398632a91.40.2024.11.13.04.57.27
+ 98e67ed59e1d1-2e9f3f8ed0esm1398632a91.40.2024.11.13.04.57.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Nov 2024 04:57:35 -0800 (PST)
+        Wed, 13 Nov 2024 04:57:44 -0800 (PST)
 From: Xiao Liang <shaw.leon@gmail.com>
 To: netdev@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
@@ -125,11 +128,13 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	bridge@lists.linux.dev,
 	linux-wpan@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v3 0/6] net: Improve netns handling in RTNL and
- ip_tunnel
-Date: Wed, 13 Nov 2024 20:57:09 +0800
-Message-ID: <20241113125715.150201-1-shaw.leon@gmail.com>
+Subject: [PATCH net-next v3 1/6] Revert "tools/net/ynl: improve async
+ notification handling"
+Date: Wed, 13 Nov 2024 20:57:10 +0800
+Message-ID: <20241113125715.150201-2-shaw.leon@gmail.com>
 X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241113125715.150201-1-shaw.leon@gmail.com>
+References: <20241113125715.150201-1-shaw.leon@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-MailFrom: shaw.leon@gmail.com
@@ -139,15 +144,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA
-X-Message-ID-Hash: GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA
+Message-ID-Hash: VHJ6GZOJD2INDEBBGTEJEG6FAHU32HKE
+X-Message-ID-Hash: VHJ6GZOJD2INDEBBGTEJEG6FAHU32HKE
 X-Mailman-Approved-At: Wed, 13 Nov 2024 14:00:42 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VHJ6GZOJD2INDEBBGTEJEG6FAHU32HKE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -156,105 +161,143 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-This patch series includes some netns-related improvements and fixes for
-RTNL and ip_tunnel, to make link creation more intuitive:
+From: Donald Hunter <donald.hunter@gmail.com>
 
- - Creating link in another net namespace doesn't conflict with link names
-   in current one.
- - Refector rtnetlink link creation. Create link in target namespace
-   directly. Pass both source and link netns to drivers via newlink()
-   callback.
+This reverts commit 1bf70e6c3a5346966c25e0a1ff492945b25d3f80.
 
-So that
+This modification to check_ntf() is being reverted so that its behaviour
+remains equivalent to ynl_ntf_check() in the C YNL. Instead a new
+poll_ntf() will be added in a separate patch.
 
-  # ip link add netns ns1 link-netns ns2 tun0 type gre ...
-
-will create tun0 in ns1, rather than create it in ns2 and move to ns1.
-And don't conflict with another interface named "tun0" in current netns.
-
-Patch 1 from Donald is included just as a dependency.
-
+Signed-off-by: Donald Hunter <donald.hunter@gmail.com>
 ---
+ tools/net/ynl/cli.py     | 10 +++-----
+ tools/net/ynl/lib/ynl.py | 49 ++++++++++++++++------------------------
+ 2 files changed, 23 insertions(+), 36 deletions(-)
 
-v3:
- - Drop "netns_atomic" flag and module parameter. Add netns parameter to
-   newlink() instead, and convert drivers accordingly.
- - Move python NetNSEnter helper to net selftest lib.
-
-v2:
- link: https://lore.kernel.org/all/20241107133004.7469-1-shaw.leon@gmail.com/
- - Check NLM_F_EXCL to ensure only link creation is affected.
- - Add self tests for link name/ifindex conflict and notifications
-   in different netns.
- - Changes in dummy driver and ynl in order to add the test case.
-
-v1:
- link: https://lore.kernel.org/all/20241023023146.372653-1-shaw.leon@gmail.com/
-
-
-Donald Hunter (1):
-  Revert "tools/net/ynl: improve async notification handling"
-
-Xiao Liang (5):
-  net: ip_tunnel: Build flow in underlay net namespace
-  rtnetlink: Lookup device in target netns when creating link
-  rtnetlink: Decouple net namespaces in rtnl_newlink_create()
-  selftests: net: Add python context manager for netns entering
-  selftests: net: Add two test cases for link netns
-
- drivers/infiniband/ulp/ipoib/ipoib_netlink.c  |  6 ++-
- drivers/net/amt.c                             |  6 +--
- drivers/net/bareudp.c                         |  4 +-
- drivers/net/bonding/bond_netlink.c            |  3 +-
- drivers/net/can/dev/netlink.c                 |  2 +-
- drivers/net/can/vxcan.c                       |  4 +-
- .../ethernet/qualcomm/rmnet/rmnet_config.c    |  5 +-
- drivers/net/geneve.c                          |  4 +-
- drivers/net/gtp.c                             |  4 +-
- drivers/net/ipvlan/ipvlan.h                   |  2 +-
- drivers/net/ipvlan/ipvlan_main.c              |  5 +-
- drivers/net/ipvlan/ipvtap.c                   |  4 +-
- drivers/net/macsec.c                          |  5 +-
- drivers/net/macvlan.c                         |  5 +-
- drivers/net/macvtap.c                         |  5 +-
- drivers/net/netkit.c                          |  4 +-
- drivers/net/pfcp.c                            |  4 +-
- drivers/net/ppp/ppp_generic.c                 |  4 +-
- drivers/net/team/team_core.c                  |  2 +-
- drivers/net/veth.c                            |  4 +-
- drivers/net/vrf.c                             |  2 +-
- drivers/net/vxlan/vxlan_core.c                |  4 +-
- drivers/net/wireguard/device.c                |  4 +-
- drivers/net/wireless/virtual/virt_wifi.c      |  5 +-
- drivers/net/wwan/wwan_core.c                  |  6 ++-
- include/net/ip_tunnels.h                      |  5 +-
- include/net/rtnetlink.h                       | 22 ++++++++-
- net/8021q/vlan_netlink.c                      |  5 +-
- net/batman-adv/soft-interface.c               |  5 +-
- net/bridge/br_netlink.c                       |  2 +-
- net/caif/chnl_net.c                           |  2 +-
- net/core/rtnetlink.c                          | 25 ++++++----
- net/hsr/hsr_netlink.c                         |  8 +--
- net/ieee802154/6lowpan/core.c                 |  5 +-
- net/ipv4/ip_gre.c                             | 13 +++--
- net/ipv4/ip_tunnel.c                          | 16 +++---
- net/ipv4/ip_vti.c                             |  5 +-
- net/ipv4/ipip.c                               |  5 +-
- net/ipv6/ip6_gre.c                            | 17 ++++---
- net/ipv6/ip6_tunnel.c                         | 11 ++---
- net/ipv6/ip6_vti.c                            | 11 ++---
- net/ipv6/sit.c                                | 11 ++---
- net/xfrm/xfrm_interface_core.c                | 13 +++--
- tools/net/ynl/cli.py                          | 10 ++--
- tools/net/ynl/lib/ynl.py                      | 49 ++++++++-----------
- tools/testing/selftests/net/Makefile          |  1 +
- .../testing/selftests/net/lib/py/__init__.py  |  2 +-
- tools/testing/selftests/net/lib/py/netns.py   | 18 +++++++
- tools/testing/selftests/net/netns-name.sh     | 10 ++++
- tools/testing/selftests/net/netns_atomic.py   | 38 ++++++++++++++
- 50 files changed, 255 insertions(+), 157 deletions(-)
- create mode 100755 tools/testing/selftests/net/netns_atomic.py
-
+diff --git a/tools/net/ynl/cli.py b/tools/net/ynl/cli.py
+index 9e95016b85b3..b8481f401376 100755
+--- a/tools/net/ynl/cli.py
++++ b/tools/net/ynl/cli.py
+@@ -5,7 +5,6 @@ import argparse
+ import json
+ import pprint
+ import time
+-import signal
+ 
+ from lib import YnlFamily, Netlink, NlError
+ 
+@@ -18,8 +17,6 @@ class YnlEncoder(json.JSONEncoder):
+             return list(obj)
+         return json.JSONEncoder.default(self, obj)
+ 
+-def handle_timeout(sig, frame):
+-    exit(0)
+ 
+ def main():
+     description = """
+@@ -84,8 +81,7 @@ def main():
+         ynl.ntf_subscribe(args.ntf)
+ 
+     if args.sleep:
+-        signal.signal(signal.SIGALRM, handle_timeout)
+-        signal.alarm(args.sleep)
++        time.sleep(args.sleep)
+ 
+     if args.list_ops:
+         for op_name, op in ynl.ops.items():
+@@ -110,8 +106,8 @@ def main():
+         exit(1)
+ 
+     if args.ntf:
+-        for msg in ynl.check_ntf():
+-            output(msg)
++        ynl.check_ntf()
++        output(ynl.async_msg_queue)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tools/net/ynl/lib/ynl.py b/tools/net/ynl/lib/ynl.py
+index 92f85698c50e..c22c22bf2cb7 100644
+--- a/tools/net/ynl/lib/ynl.py
++++ b/tools/net/ynl/lib/ynl.py
+@@ -12,8 +12,6 @@ import sys
+ import yaml
+ import ipaddress
+ import uuid
+-import queue
+-import time
+ 
+ from .nlspec import SpecFamily
+ 
+@@ -491,7 +489,7 @@ class YnlFamily(SpecFamily):
+         self.sock.setsockopt(Netlink.SOL_NETLINK, Netlink.NETLINK_GET_STRICT_CHK, 1)
+ 
+         self.async_msg_ids = set()
+-        self.async_msg_queue = queue.Queue()
++        self.async_msg_queue = []
+ 
+         for msg in self.msgs.values():
+             if msg.is_async:
+@@ -905,39 +903,32 @@ class YnlFamily(SpecFamily):
+ 
+         msg['name'] = op['name']
+         msg['msg'] = attrs
+-        self.async_msg_queue.put(msg)
++        self.async_msg_queue.append(msg)
+ 
+-    def check_ntf(self, interval=0.1):
++    def check_ntf(self):
+         while True:
+             try:
+                 reply = self.sock.recv(self._recv_size, socket.MSG_DONTWAIT)
+-                nms = NlMsgs(reply)
+-                self._recv_dbg_print(reply, nms)
+-                for nl_msg in nms:
+-                    if nl_msg.error:
+-                        print("Netlink error in ntf!?", os.strerror(-nl_msg.error))
+-                        print(nl_msg)
+-                        continue
+-                    if nl_msg.done:
+-                        print("Netlink done while checking for ntf!?")
+-                        continue
++            except BlockingIOError:
++                return
+ 
+-                    decoded = self.nlproto.decode(self, nl_msg, None)
+-                    if decoded.cmd() not in self.async_msg_ids:
+-                        print("Unexpected msg id while checking for ntf", decoded)
+-                        continue
++            nms = NlMsgs(reply)
++            self._recv_dbg_print(reply, nms)
++            for nl_msg in nms:
++                if nl_msg.error:
++                    print("Netlink error in ntf!?", os.strerror(-nl_msg.error))
++                    print(nl_msg)
++                    continue
++                if nl_msg.done:
++                    print("Netlink done while checking for ntf!?")
++                    continue
+ 
+-                    self.handle_ntf(decoded)
+-            except BlockingIOError:
+-                pass
++                decoded = self.nlproto.decode(self, nl_msg, None)
++                if decoded.cmd() not in self.async_msg_ids:
++                    print("Unexpected msg id done while checking for ntf", decoded)
++                    continue
+ 
+-            try:
+-                yield self.async_msg_queue.get_nowait()
+-            except queue.Empty:
+-                try:
+-                    time.sleep(interval)
+-                except KeyboardInterrupt:
+-                    return
++                self.handle_ntf(decoded)
+ 
+     def operation_do_attributes(self, name):
+       """
 -- 
 2.47.0
 
