@@ -4,125 +4,150 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BDAFE6F08E
-	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 22:08:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1C4DD41C3F
+	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 13:00:49 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B871583D3D
-	for <batman@archiver.kernel.org>; Fri,  1 Nov 2024 23:08:54 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 19A5D83B82
+	for <batman@archiver.kernel.org>; Wed, 13 Nov 2024 14:00:48 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1730498934;
- b=L3pIzqpLTOrv/WhCYRMkgVUzSnwpTJnQ+nS+Dpc6neHbB9Skq0woogGqURcj9fUoM/3r8
- T1Ul7UoGPEBR6blB6J88UbqcYQ8MV5LEjZhX73VqS2mo7KqfiBNR+wNHHKxKDVAYQydbd+r
- QKExsWJ4/h9bQ6fT3Hx8TcipPUvCxRE=
+ t=1731502848;
+ b=YANTBI4RHwBg661azQJViCrgLolJqVElBp2DOdSeNkUbbfOy4fIPIqe3PJW3v8jVrecgh
+ /dh/8X/mwAeHezbI8OfQPgBr27Voj6om38Ev8aiqWzUDRq+8wmKAhwMM3V4FQBnqkK/+/sk
+ X+bB/Tjy2cvq9QBPFoDHDBj1VFs4mL4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1730498934; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1731502848; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=vdM5SRDDmui8Is1rfSkI506zj3M7HuysI6wgSRgy7+g=;
- b=0+SOoxxyFvt8ChqHvwIB39HbpMjctU6U9pBwvwaQofYWHo4iaLeck8FfP8JAF3MG4SzIJ
- DE3FOrYuA3N/t3aVR+EzJwRkkqe/FIcW2H/yHRCiDC3240tguLAqXHudRAAaxoegA3GAygM
- ytTyiiPJn5GP1ZN3sJZbbsrUXSyzNz4=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=fail header.d=smtpservice.net;
+ list-archive; bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
+ b=HlU0bkww3XSID+P8m1nYaiPlXB6ctXnfsEVnW9m48pwTihrFaXUEfo74uaBBUDBNpReo9
+ 52cRIfYgaHdgFh0gepJV/J81qzkyoU0TbCQuwTHtiOE+V+FUxb2/kJW8W0EKTLAEnFzsSqo
+ n6HBmbh9TwHhI4h0ndVTKPMctYy65S4=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
-  dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=fail header.d=smtpservice.net;
- arc=pass;
- dmarc=fail (Used From Domain Record) header.from=triplefau.lt policy.dmarc=quarantine
-Received: from e2i340.smtp2go.com (e2i340.smtp2go.com [103.2.141.84])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B53E483CA0
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  1 Nov 2024 23:05:45 +0100 (CET)
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1730498745;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=vdM5SRDDmui8Is1rfSkI506zj3M7HuysI6wgSRgy7+g=;
-	b=3xfb3eUNbW4qlEA7+LAZUaQ2zzGvNWtlQbOcAKNUZgFkb9f5YG5zwgagsvyNXgVmPOV3e/
-	4jUIZN//uipGepqtgD5+04Tew/bM2y2ym8uLGWucc4or3x21T/61U2tlCotw9GonJQM10Q
-	yBaj+amCBCHIOFkR+fLq45NdeK5qL9s=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1730498745; a=rsa-sha256;
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com
+ [IPv6:2607:f8b0:4864:20::52a])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3220D825C9
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 13 Nov 2024 13:57:38 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731502658; a=rsa-sha256;
 	cv=none;
-	b=eCzTLjrRKnZSVHR8FFDuGdUmWF4pENd5mqGD+3POXWnLcoqoFx2xY7/gVxOyjGoYxumyYN
-	2XU2654sp9Qi+YMcUcTZ1z4zzp1Eyezbcp+JG2TlYG2TPZWyH5xYsjYJdc1NpeVxEojTck
-	n4KV3irCU/onxolIXecpR300qQoOHwg=
+	b=DCiT0d+JNkleGf481q6dIQjf1xLUCg8fQAWfw9oL3WMYocqn8YcUq6PQd25B8RvewOU2A7
+	qvqGZYQnrFpBV37WOldVUF2gnVPkQCtKEVdgK3x5oipni07jnXvlrjJ6iXewmT9+D6WMRT
+	w+TBXuAQTCILgTe8pXzLCskKWTqjh6c=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none ("invalid DKIM record") header.d=smtpservice.net
- header.s=maxzs0.a1-4.dyn header.b=Ke0PcaDP;
-	dkim=pass header.d=triplefau.lt header.s=s510616 header.b=Pwv0id0I;
-	spf=pass (diktynna.open-mesh.org: domain of
- "bT.aimj6c956hqfv69=j6um73nqh2sb=1kb40e8homs1e1@em510616.triplefau.lt"
- designates 103.2.141.84 as permitted sender)
- smtp.mailfrom="bT.aimj6c956hqfv69=j6um73nqh2sb=1kb40e8homs1e1@em510616.triplefau.lt";
-	dmarc=pass (policy=quarantine) header.from=triplefau.lt
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=smtpservice.net; s=maxzs0.a1-4.dyn; x=1730499645; h=Feedback-ID:
-	X-Smtpcorp-Track:Message-Id:Date:Subject:To:From:Reply-To:Sender:
-	List-Unsubscribe:List-Unsubscribe-Post;
-	bh=vdM5SRDDmui8Is1rfSkI506zj3M7HuysI6wgSRgy7+g=; b=Ke0PcaDPFTOFvSXkV6Y5nrS0LS
-	bW3NlfZZxLPmr50Z353er0JLOEd7KTnc3lMoabEEGI1eP6Gb35x8DknGrta4+2sLfDQ0gTxtFLh22
-	/VNDDbTQqWYFdZ1w2viGgomGXqHttHg1+Taw7b58VDSq7fe3hkA/syhVI9A+G/Lj9DS1fqIeY5amd
-	xrpMVDXJl5auJpcC4W2qggzwvvaHaP/BQl20foZdX+y7cNbBDi+FchghHvvt+vXH/g2/XJ+WBUP4g
-	OGMTZhV+8LlSsqYOxbPv9ddG4RhfU0+vD6rTYI/2dpAQr8eJYPDBVZSSS7l4Rctan0BATrudMNelg
-	kSjhPcBg==;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=triplefau.lt;
- i=@triplefau.lt; q=dns/txt; s=s510616; t=1730498745; h=from : subject
- : to : message-id : date;
- bh=vdM5SRDDmui8Is1rfSkI506zj3M7HuysI6wgSRgy7+g=;
- b=Pwv0id0ItEQmdBKDGDE8TRKCUNk8sX54+9XDLQMmq5hrFRM8rT44xUcO+vS/rrZPY2tSo
- SGByi/VSBUETVNN7iIkxjqFwlFvCs2sTaJYa0s5pN445AKwPDm1kNiL0ZnF09I1MYh64J77
- 0llWotx652Kz/noSXx/EbA0DepD8Z4nQV1NAo+CKm/KvRD0MS8wal2C3OT3q59hzHx46nXD
- vJpzfP1HPwvR/mrHDVrsvYZUqJ0qpjbD02c1jbujLmpG0gLBm68Bdggfx4SyL3yLWH9PgB8
- B8Pbj0WisVT61/qMLRPNToVQkMsRcTzOA8BGFVzKl9wpNrd0aPwjjQAVHCiQ==
-Received: from [10.172.233.45] (helo=SmtpCorp) by smtpcorp.com with esmtpsa
- (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.94.2-S2G) (envelope-from <repk@triplefau.lt>)
- id 1t6zm5-TRk4zb-4Q; Fri, 01 Nov 2024 22:05:45 +0000
-Received: from [10.12.239.196] (helo=localhost) by smtpcorp.com with esmtpsa
- (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.97.1-S2G) (envelope-from <repk@triplefau.lt>)
- id 1t6zm4-AIkwcC8uxyx-KEad; Fri, 01 Nov 2024 22:05:44 +0000
-From: Remi Pommarel <repk@triplefau.lt>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>,
- Simon Wunderlich <sw@simonwunderlich.de>,
- Sven Eckelmann <sven@narfation.org>, Remi Pommarel <repk@triplefau.lt>
-Subject: [RFC PATCH 4/4] batman-adv: Don't keep redundant TT change events
-Date: Fri,  1 Nov 2024 23:05:02 +0100
-Message-Id: 
- <ff9117253ce8e46744a459502a00ed607b86ce90.1730497875.git.repk@triplefau.lt>
-X-Mailer: git-send-email 2.40.0
-In-Reply-To: <cover.1730497875.git.repk@triplefau.lt>
-References: <cover.1730497875.git.repk@triplefau.lt>
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=OsUw9JT+;
+	dmarc=pass (policy=none) header.from=gmail.com;
+	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
+ 2607:f8b0:4864:20::52a as permitted sender) smtp.mailfrom=shaw.leon@gmail.com
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1731502658;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
+	b=rAT6RZ08O152HtCccAwaS4Ueu1TQDa91/2h4dUnwTbnaly2GTDlcSs2M5hjuX50UdeCQf6
+	jdChWoi4iIU0pvCeAoEeYFnTLp/K5HkOGjh6Uhgi5xpVgeI9ylLOZxANHxKKkAzTVE2D0V
+	kkGBCTjw34/yBYqLnws9qPmNS885kkY=
+Received: by mail-pg1-x52a.google.com with SMTP id
+ 41be03b00d2f7-7ea7ad1e01fso535476a12.0
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Wed, 13 Nov 2024 04:57:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1731502656; x=1732107456;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
+        b=OsUw9JT+YCgR19G6R+69y1HMoiVby3RXAOwyRIGfNgRcTxYRCIGcTIBrOgb+5C9U4L
+         nUq63ZYyrJWmvUDekuS7Ffe2ur9tMyyXmyI5//HQ8aFHLUXX+gSIIieiNpn8ljHuFyJs
+         CAoOlhTwWC1jfn4DQ9NDqD3h/evlbgW54FzqhnBImId71D2fCV9C1W5lM5x1LoKLHJLh
+         RC+q8w9i/jjjFHbgze7L8K+isQmW7pHfkmJUBTUkDd9jn17VR/44wRVT4AsGjaRnR00X
+         trMX14hMQz9uxfiD9vizR9KAbBAgYNTrGFXxSwUxypKK0cyGccIiYbQVNkWUurXONwN4
+         Em0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1731502656; x=1732107456;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=16RIG7XtmkaIMsGLfFdWcl8EYTUAA5lDQMgC+uoAVXA=;
+        b=iSGnDNc0z/co3zG6ksCHQa5eIyPB1mg5jUz3UZ1PsPmWGBGm79rPQuy66GHo4nKE4f
+         +an88NPxYIHO/nOPC0BM7DLI8YfyEeQVV0dI4gqIHthL5HAO/OV8baOq2XvnqVhK/oSV
+         3sj6fJA/5TS0wJsraMdUz8TrJE+O8mUKDo9OIE9OWMYbEhBuO5KlAEVivQ0Ivxy384Rm
+         /ep+XLAYOVibaINmxUJ3NIg7J871GLOOQbdYHJRnkN22PhUJYtfm87V5X47IMvAuMoPN
+         4tirG8Q7FeJ7i6ZYJ+B2fwIOAqitkBaCq61PeK74ZR4Gi/yQwOFhoye6/utNWPq4RoVX
+         VUGg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCXkyPT1pYkM+eUt2DhrzjsRjr4DWizGm/MXUdxi7NPkhF/zuZ+PRDbBAXKE2M0dGhB8yhSCnWJgQ/qB2Q==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YwGKoAaTAeEqavc4YRnzVtNcVFlw6B2E8Bqdqu13i30Qo8uh3kU
+	gNePgl1nHkVSMrbt1iTMlIutilNTLLxRBQiKUPjDt1XxK9cr9UpV
+X-Google-Smtp-Source: 
+ AGHT+IG1llNssb9d3itpdlPx9GEqMX+Zp38UcErZg9PjxNGttUHCL6O3wsgZQ/zCnjJA57EpkRZP1g==
+X-Received: by 2002:a17:90b:2789:b0:2e2:bb32:73e7 with SMTP id
+ 98e67ed59e1d1-2e9b1f844damr30704968a91.15.1731502656393;
+        Wed, 13 Nov 2024 04:57:36 -0800 (PST)
+Received: from nova-ws.. ([103.167.140.11])
+        by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-2e9f3f8ed0esm1398632a91.40.2024.11.13.04.57.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Nov 2024 04:57:35 -0800 (PST)
+From: Xiao Liang <shaw.leon@gmail.com>
+To: netdev@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Kuniyuki Iwashima <kuniyu@amazon.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Donald Hunter <donald.hunter@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+	David Ahern <dsahern@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Ido Schimmel <idosch@nvidia.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Simon Horman <horms@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Hangbin Liu <liuhangbin@gmail.com>,
+	linux-rdma@vger.kernel.org,
+	linux-can@vger.kernel.org,
+	osmocom-net-gprs@lists.osmocom.org,
+	bpf@vger.kernel.org,
+	linux-ppp@vger.kernel.org,
+	wireguard@lists.zx2c4.com,
+	linux-wireless@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	bridge@lists.linux.dev,
+	linux-wpan@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH net-next v3 0/6] net: Improve netns handling in RTNL and
+ ip_tunnel
+Date: Wed, 13 Nov 2024 20:57:09 +0800
+Message-ID: <20241113125715.150201-1-shaw.leon@gmail.com>
+X-Mailer: git-send-email 2.47.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Smtpcorp-Track: _u5XGM-cfz03.qkK9GQGsPJkD.6elkYwBhQYh
-Feedback-ID: 510616m:510616apGKSTK:510616say1Vf6Ye2
-X-Report-Abuse: Please forward a copy of this message, including all headers,
- to <abuse-report@smtp2go.com>
-Message-ID-Hash: HGNXTWVZMEGO66WNQ36MOAK5JED4LZJK
-X-Message-ID-Hash: HGNXTWVZMEGO66WNQ36MOAK5JED4LZJK
-X-MailFrom: 
- bT.aimj6c956hqfv69=j6um73nqh2sb=1kb40e8homs1e1@em510616.triplefau.lt
+X-MailFrom: shaw.leon@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA
+X-Message-ID-Hash: GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA
+X-Mailman-Approved-At: Wed, 13 Nov 2024 14:00:42 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HGNXTWVZMEGO66WNQ36MOAK5JED4LZJK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GNVBFC5C7QIVWOHZMBDCET2XY3GMBQMA/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -131,43 +156,105 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-When adding a local TT twice within the same OGM interval (e.g. happens
-when flag get updated), the flags of the first TT change entry is updated
-with the second one and both change events is added to the change list.
-This leads to having the same ADD change entry twice. Similarly a
-DEL+DEL scenario is also creating twice the same event.
+This patch series includes some netns-related improvements and fixes for
+RTNL and ip_tunnel, to make link creation more intuitive:
 
-Deduplicate ADD+ADD or DEL+DEL scenarios to reduce the TT change events
-that need to be sent in both OGM and TT response.
+ - Creating link in another net namespace doesn't conflict with link names
+   in current one.
+ - Refector rtnetlink link creation. Create link in target namespace
+   directly. Pass both source and link netns to drivers via newlink()
+   callback.
 
-Signed-off-by: Remi Pommarel <repk@triplefau.lt>
+So that
+
+  # ip link add netns ns1 link-netns ns2 tun0 type gre ...
+
+will create tun0 in ns1, rather than create it in ns2 and move to ns1.
+And don't conflict with another interface named "tun0" in current netns.
+
+Patch 1 from Donald is included just as a dependency.
+
 ---
- net/batman-adv/translation-table.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a22029511eb2..01fc19803304 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -500,14 +500,17 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 		/* this is a second add in the same originator interval. It
- 		 * means that flags have been changed: update them!
- 		 */
--		if (!del_op_requested && !del_op_entry)
-+		if (del_op_requested == del_op_entry) {
- 			entry->change.flags = flags;
-+			goto discard;
-+		}
- 
- 		continue;
- del:
- 		list_del(&entry->list);
- 		kmem_cache_free(batadv_tt_change_cache, entry);
- 		bat_priv->tt.local_changes--;
-+discard:
- 		kmem_cache_free(batadv_tt_change_cache, tt_change_node);
- 		goto unlock;
- 	}
+v3:
+ - Drop "netns_atomic" flag and module parameter. Add netns parameter to
+   newlink() instead, and convert drivers accordingly.
+ - Move python NetNSEnter helper to net selftest lib.
+
+v2:
+ link: https://lore.kernel.org/all/20241107133004.7469-1-shaw.leon@gmail.com/
+ - Check NLM_F_EXCL to ensure only link creation is affected.
+ - Add self tests for link name/ifindex conflict and notifications
+   in different netns.
+ - Changes in dummy driver and ynl in order to add the test case.
+
+v1:
+ link: https://lore.kernel.org/all/20241023023146.372653-1-shaw.leon@gmail.com/
+
+
+Donald Hunter (1):
+  Revert "tools/net/ynl: improve async notification handling"
+
+Xiao Liang (5):
+  net: ip_tunnel: Build flow in underlay net namespace
+  rtnetlink: Lookup device in target netns when creating link
+  rtnetlink: Decouple net namespaces in rtnl_newlink_create()
+  selftests: net: Add python context manager for netns entering
+  selftests: net: Add two test cases for link netns
+
+ drivers/infiniband/ulp/ipoib/ipoib_netlink.c  |  6 ++-
+ drivers/net/amt.c                             |  6 +--
+ drivers/net/bareudp.c                         |  4 +-
+ drivers/net/bonding/bond_netlink.c            |  3 +-
+ drivers/net/can/dev/netlink.c                 |  2 +-
+ drivers/net/can/vxcan.c                       |  4 +-
+ .../ethernet/qualcomm/rmnet/rmnet_config.c    |  5 +-
+ drivers/net/geneve.c                          |  4 +-
+ drivers/net/gtp.c                             |  4 +-
+ drivers/net/ipvlan/ipvlan.h                   |  2 +-
+ drivers/net/ipvlan/ipvlan_main.c              |  5 +-
+ drivers/net/ipvlan/ipvtap.c                   |  4 +-
+ drivers/net/macsec.c                          |  5 +-
+ drivers/net/macvlan.c                         |  5 +-
+ drivers/net/macvtap.c                         |  5 +-
+ drivers/net/netkit.c                          |  4 +-
+ drivers/net/pfcp.c                            |  4 +-
+ drivers/net/ppp/ppp_generic.c                 |  4 +-
+ drivers/net/team/team_core.c                  |  2 +-
+ drivers/net/veth.c                            |  4 +-
+ drivers/net/vrf.c                             |  2 +-
+ drivers/net/vxlan/vxlan_core.c                |  4 +-
+ drivers/net/wireguard/device.c                |  4 +-
+ drivers/net/wireless/virtual/virt_wifi.c      |  5 +-
+ drivers/net/wwan/wwan_core.c                  |  6 ++-
+ include/net/ip_tunnels.h                      |  5 +-
+ include/net/rtnetlink.h                       | 22 ++++++++-
+ net/8021q/vlan_netlink.c                      |  5 +-
+ net/batman-adv/soft-interface.c               |  5 +-
+ net/bridge/br_netlink.c                       |  2 +-
+ net/caif/chnl_net.c                           |  2 +-
+ net/core/rtnetlink.c                          | 25 ++++++----
+ net/hsr/hsr_netlink.c                         |  8 +--
+ net/ieee802154/6lowpan/core.c                 |  5 +-
+ net/ipv4/ip_gre.c                             | 13 +++--
+ net/ipv4/ip_tunnel.c                          | 16 +++---
+ net/ipv4/ip_vti.c                             |  5 +-
+ net/ipv4/ipip.c                               |  5 +-
+ net/ipv6/ip6_gre.c                            | 17 ++++---
+ net/ipv6/ip6_tunnel.c                         | 11 ++---
+ net/ipv6/ip6_vti.c                            | 11 ++---
+ net/ipv6/sit.c                                | 11 ++---
+ net/xfrm/xfrm_interface_core.c                | 13 +++--
+ tools/net/ynl/cli.py                          | 10 ++--
+ tools/net/ynl/lib/ynl.py                      | 49 ++++++++-----------
+ tools/testing/selftests/net/Makefile          |  1 +
+ .../testing/selftests/net/lib/py/__init__.py  |  2 +-
+ tools/testing/selftests/net/lib/py/netns.py   | 18 +++++++
+ tools/testing/selftests/net/netns-name.sh     | 10 ++++
+ tools/testing/selftests/net/netns_atomic.py   | 38 ++++++++++++++
+ 50 files changed, 255 insertions(+), 157 deletions(-)
+ create mode 100755 tools/testing/selftests/net/netns_atomic.py
+
 -- 
-2.40.0
+2.47.0
 
