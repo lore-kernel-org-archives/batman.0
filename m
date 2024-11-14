@@ -4,120 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C213D68B2C
-	for <batman@archiver.kernel.org>; Thu, 14 Nov 2024 14:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B57ED6A221
+	for <batman@archiver.kernel.org>; Thu, 14 Nov 2024 18:06:11 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8F6D581EEC
-	for <batman@archiver.kernel.org>; Thu, 14 Nov 2024 15:53:19 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 76B1E83CA9
+	for <batman@archiver.kernel.org>; Thu, 14 Nov 2024 19:06:10 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1731595999;
- b=Fii55Aun2oFd2qNz3rpKYWl68AqjoV+DvEs1Ai6cdhd9CdHlNRhRqa1CV2MhufzIoKfNJ
- MBkoeG7FT7yLzQwFDgEypmzCLhBieUMX0291jjdkPTRbQcXG+H3q9NNtcQh4ow/NNl9Xb+m
- QNocXcRU42PVYhSlQArGAL3SwyKyr3Q=
+ t=1731607570;
+ b=W3yBxge6j/gasYzgZnZ3UBHfDUaLlu51qmVhslnXxr5ix2RVx+2nmMjoKhvkIe+RU8FOr
+ RtB8RX3AzZ4yzEvYd2T5XX1CRo8EcWhmzNk9uRJij/Vg15IC0jFO3U+ubDZwQOoB//Zkv1s
+ DuGIL5KGhwopdQ+UZ/EtxG4J/cvPIHY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1731595999; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1731607570; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=J48HS1d8KeZCjuoBdiy9PjzRDvYtPJwFq/h/AQ2DrtU=;
- b=WmupufI0jWBwE1NQyS+HN11UZ79RHUvItgDg6i54za1ZMzHy1avGjyzt1tuRyZpCBwhtu
- KZn1nVsAYnuln6k9Wrxe1ZsjyfUH0/TnvAkceeYd7gk2VBh/Y8OcusfRsL2tzDDB8IMAy3m
- kEsQY2bNQeODHzfp4Uvl4S1h3eKgdrM=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=9TdbLtUZrOhEER6T2wRe2qOs3Mv6gRj5mw3IHl6hFIM=;
+ b=nw1uok+KJh08Ke/3dHx/689O+vCMKjayvRURIysNldVyI6dazD4hBysA1x4Dv6FfPIrQY
+ aB4ZbG4clFtPjcZBeIFWQw+nJ5VW19m7E1Cgay5pY5wrjHD5EmDIoMvc5Mf9SszKiXhGGdY
+ 75xALGvH2a21XhJbuOldOd7x8mRqgTs=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com
- [IPv6:2a00:1450:4864:20::42c])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id CABA980855
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 14 Nov 2024 15:53:12 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731595993; a=rsa-sha256;
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de
+ [IPv6:2a01:4f8:c2c:665b::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 163DB81D61
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 14 Nov 2024 19:06:03 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731607564; a=rsa-sha256;
 	cv=none;
-	b=IbxF+X09shfoT9KdLgpuG7lOXBfuui13N0aU1/PAEcVVmf+COHNiOxjMgx1PkouML5ZKHy
-	WGSItl46cfPjNMzFSngnQVeeDEZZw/HXbrbFVa1dQAVE2bKlMV/g5FQv3ExcnrAZrHb6V4
-	p2UYl8TqY+mR56NFZ4fJzOZB7KUO3F8=
+	b=sVLm4+G7Gag349TEUlcItbNE8xKmMC+fCCO6tb/psjjPBUesON71IxcLSPdAzv9a8Xbz82
+	7LpRXoM99LHFitQMlTsomoYIiuqHIsWthwjaFIboRgne5kowMB+rQ/WlX8n6tsG6NTiECk
+	4gyDbXrxvtbNMrMZYr8ljYStU3G4nvo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b="mw/Rh97y";
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of nico.escande@gmail.com designates
- 2a00:1450:4864:20::42c as permitted sender)
- smtp.mailfrom=nico.escande@gmail.com
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1731595993;
+	s=20121; t=1731607564;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=J48HS1d8KeZCjuoBdiy9PjzRDvYtPJwFq/h/AQ2DrtU=;
-	b=yuyCQbyPE2Lep/QdGcZuVcIwLFP2I/hhGHo5gF0QXWhdYyhd8eG1qGaCNOZtoXgJaukyDP
-	evjdAUpRP0eCjloem8GpKvKfNiKUpYHmARzfBJ9r+1ghfC2cgtIgmZRKv6YQegZJh+VDsx
-	WAI65uXRttgiys3uANxoXIZ/FKa4vnY=
-Received: by mail-wr1-x42c.google.com with SMTP id
- ffacd0b85a97d-3821c5f6eb1so411151f8f.3
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Thu, 14 Nov 2024 06:53:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1731595992; x=1732200792;
- darn=lists.open-mesh.org;
-        h=in-reply-to:references:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=J48HS1d8KeZCjuoBdiy9PjzRDvYtPJwFq/h/AQ2DrtU=;
-        b=mw/Rh97yasNK2CVO/sTgbAjeEBh0fAMqkA3N7WAJDdod/zkhObs6bbSAXqFJEqcZlf
-         m/3Cm+2sdDsAoSBNBXJ0/NV9wWDK7/KqIWJrWNzVCucQT36qHSJcToMpi/ABNKY9gXL8
-         urxGtwJ3z9xCHmNsy4CRG6yf/9R0et8Z9OVt5nW+P0DcwSbOyMkmyO/7PYT0fh5Wsf6q
-         rEsNWIMJMLP+ChHxaXJmBKDbZ84rfXJN/Czm0cPvQ6mODTNfL/Ek1ylMVYTiFJ27jeZx
-         A2/jPXnluKyYQ/PS7i1ZSKYFcEs2JHLFxGAPbyXHOUWswRjeEWDXrkZgyVF+wA7D67YW
-         Bbng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731595992; x=1732200792;
-        h=in-reply-to:references:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=J48HS1d8KeZCjuoBdiy9PjzRDvYtPJwFq/h/AQ2DrtU=;
-        b=AdPfkgGNwzHcFHFp2oIoYEHRmEM+lGV4cogJceqYauotfJ/+/sCj3zbnELXoSfCCXX
-         7loi/OQcLVxmyLbs9EsImAu4y/T63s800unU5QIz3fuWwkx82VXXsw4Hsr7Ily1YvqVs
-         TgVnx5i80wKO0k8q5u4NUzlRcLATBP6FvkCvzPOZT8WUZgAKgoraX6F24VEMghbgFq1U
-         6ZwOKbQzbaCYVPPJ4Wtz8sK5vXOIpMnKpC8xjh1TwXo4QBrxJzNPMedLMNSED/2udJnp
-         qR33BgPuc6q74tuQOadqB2CO5qfB/26WZDW+KqGqmdY3kSN7lB3laa9oQOFmtxpG9mzh
-         qvlg==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXZUO5PtzcbyN/gRek9cefzrS7J73WymPnW05KU9s9hyhN5AD9LzuuzVFwUkawLkwFs8iKq6WPEgMAAwg==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YwFnHrk1DlASGWUuJM7feoJW6TRiKjSDqjYeAQmnYguzQkNV357
-	oNR+GVB3PPoTiTzL1J6IyJc83WeEyFEv+pNS9LG/aMjssf4sXs4a
-X-Google-Smtp-Source: 
- AGHT+IHLUMin8esN0Xh9ZuL9hmZ6mTXOqZZq3JY6uKg5t9OBStqfqrwqk6RjYuJ3tP4ABoRdUgk71g==
-X-Received: by 2002:a05:6000:2d11:b0:381:f443:21e9 with SMTP id
- ffacd0b85a97d-381f4432614mr14013195f8f.0.1731595992028;
-        Thu, 14 Nov 2024 06:53:12 -0800 (PST)
-Received: from localhost (freebox.vlq16.iliad.fr. [213.36.7.13])
-        by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-3821ae3102asm1676272f8f.93.2024.11.14.06.53.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 Nov 2024 06:53:11 -0800 (PST)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 14 Nov 2024 15:53:11 +0100
-Message-Id: <D5LZJSJADA7Y.35OPLU5VTB46Y@gmail.com>
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=9TdbLtUZrOhEER6T2wRe2qOs3Mv6gRj5mw3IHl6hFIM=;
+	b=EDs8+rtECLmpBcQ2yA3tZbFodgR1rk9ctD3z3/+6DfR48zZOoPoofKcKKKzbli04OFVEFi
+	A5p5zxeT3beYTs7HaoUIQUSnadWuDW5toDnbVh9YmNvvO3fc9P25Fw/0GUzqff+5/Yno2q
+	0SaywooQWUcka85prh1Uedb4xWed5Vc=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 2882A54223C;
+	Thu, 14 Nov 2024 19:06:02 +0100 (CET)
+Date: Thu, 14 Nov 2024 19:06:01 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: Nicolas Escande <nico.escande@gmail.com>
+Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 Subject: Re: [PATCH v2] batman-adv: add dynamic, bridged-in TT VID detection
  support
-From: "Nicolas Escande" <nico.escande@gmail.com>
-To: "Sven Eckelmann" <sven@narfation.org>, <linus.luessing@c0d3.blue>,
- <b.a.t.m.a.n@lists.open-mesh.org>
-X-Mailer: aerc 0.18.2-0-ge037c095a049
+Message-ID: <ZzY8CdiUV_sYsHul@sellars>
 References: <D5LY6JQJT9NV.2MI0DB2CLTO6D@gmail.com>
  <6100761.lOV4Wx5bFT@ripper>
-In-Reply-To: <6100761.lOV4Wx5bFT@ripper>
-Message-ID-Hash: MMRS5GDFDYOVE5QK3KQFW6PBD55MVXNF
-X-Message-ID-Hash: MMRS5GDFDYOVE5QK3KQFW6PBD55MVXNF
-X-MailFrom: nico.escande@gmail.com
+ <D5LZJSJADA7Y.35OPLU5VTB46Y@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <D5LZJSJADA7Y.35OPLU5VTB46Y@gmail.com>
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: ZJ67UHSSITHEJ23OLPPCDS5FS5M73XKY
+X-Message-ID-Hash: ZJ67UHSSITHEJ23OLPPCDS5FS5M73XKY
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -130,7 +87,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MMRS5GDFDYOVE5QK3KQFW6PBD55MVXNF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZJ67UHSSITHEJ23OLPPCDS5FS5M73XKY/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -139,66 +96,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Thu Nov 14, 2024 at 2:58 PM CET, Sven Eckelmann wrote:
-> On Thursday, 14 November 2024 14:48:52 CET Nicolas Escande wrote:
-> > Hi there,
-> >=20
-> > We've been running this for a few time and it's very usefull. So is the=
-re any
-> > news on merging this into the kernel ? Or is the BLA thing blocking ?
->
-> I am not in favour of changing the behavior of batman-adv. Now everyone c=
-an=20
-> increase the number of managed VLANs without any control by the node admi=
-n.
-Well ok but but it makes configuration so much easier in a setup where we h=
-ave
-many vlan that I still find this usefull.
->
-> And as Linus wrote, it also shows odd behaviors. And Antonio also didn't =
-write=20
-> his opinion here. I have therefore downgraded it from PATCH to RFC (inste=
-ad of=20
-> simply rejecting it).
-This is about the BLA behaviour ? On a setup that doesn't use BLA like mine=
- it
-makes things so much easier to configure that I still find this patch usefu=
-ll :)
->
-> [...]
-> > Or maybe I missed something ?
-> > =20
-> > ---
-> >  net/batman-adv/soft-interface.c | 1 -
-> >  1 file changed, 1 deletion(-)
-> >=20
-> > diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-inte=
-rface.c
-> > index b61f35918b5d..d7de54734725 100644
-> > --- a/net/batman-adv/soft-interface.c
-> > +++ b/net/batman-adv/soft-interface.c
-> > @@ -599,7 +599,6 @@ batadv_softif_create_vlan(struct batadv_priv *bat_p=
-riv, unsigned short vid)
-> > =20
-> >  	atomic_set(&vlan->ap_isolation, 0);
-> > =20
-> > -	kref_get(&vlan->refcount);
-> >  	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
-> >  	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
-> > =20
-> >=20
->
-> This ref is for the VLAN list entry (just one line below the kref_get).
-> This patch is therefore definitely wrong.
+Hi Nicolas,
 
-That's the part I have trouble understanding, we keep 1 ref for the list, 1=
- ref
-per TT entry using this vlan. And on interface deletion, we clear the TT ta=
-bles
-(so we go back to a refcount of 1 for the global list), but I don't see whe=
-re we
-clear the list itself ?
->
-> Kind regards,
-> 	Sven
+Many thanks for your feedback!
 
+On Thu, Nov 14, 2024 at 03:53:11PM +0100, Nicolas Escande wrote:
+> On Thu Nov 14, 2024 at 2:58 PM CET, Sven Eckelmann wrote:
+> > On Thursday, 14 November 2024 14:48:52 CET Nicolas Escande wrote:
+> > > Hi there,
+> > > 
+> > > We've been running this for a few time and it's very usefull. So is there any
+> > > news on merging this into the kernel ? Or is the BLA thing blocking ?
+
+Yes, I think this is at least one of the blocking issues. I didn't
+quite get my head fully wrapped around the BLA code yet.
+(Any help/guidance still appreciated :D. BLA is the one code part,
+other than network coding, that I haven't really looked into and digested
+so far. And what clashes right now is a specific internal that
+isn't fully documented on the BLA wiki pages, unless I overlooked
+it?)
+
+> >
+> > I am not in favour of changing the behavior of batman-adv. Now everyone can 
+> > increase the number of managed VLANs without any control by the node admin.
+
+Valid concern. Especially as each added VLAN is quite costly for
+an OGM at the moment. A VLAN with one MAC address adds 12 bytes to
+a 24 bytes base OGM IV length (excluding ethernet header and other
+TVLVs).
+
+However in a way for non-VLAN TT entries this is also partially a concern,
+right? Someone could also flood source MAC addresses in an uncontrolled
+way, too. (Though would likely have to actively keep roaming to create a
+constant extra overhead.)
+
+Maybe it would make sense to check how the Linux bridge approaches
+this?
+
+It seems there is an admin configurable limit of
+BR_MULTICAST_DEFAULT_HASH_MAX = 4096 entries for the MDB
+(multicast MAC addresses).
+And a configurable fdb_max_learned (disabled by default, for
+backwards compatibility reasons according to bdb4dfda3b) for the
+FDB (unicast MAC addresse).
+Thirdly, it seems 4096 VLANs are allowed (VLAN_N_VID), the maximum
+amount. Though this one does not seem configurable.
+
+Would it maybe make sense to have a knob and by default set the
+limit to 8 or 16 VLANs? A default which could maybe be increased if the
+OGM size was decoupled from the amount of VLANs in the future?
+
+---
+
+The two reasons I would like to have a dynamic VLAN feature,
+especially for wireless community mesh networks:
+
+Allow a group of people to setup and use their own address space
+when the centrally managed, default one does not match their
+needs. -> decentralization
+
+Allow to get rid of the unused VID=0 and VID=1 entries by default,
+only dynamically learn them, to typically reduce the OGM overhead
+by at least 2*12 bytes. To partially mitigate the overhead regression
+we introduced by adding TT in compat 15.
+
+---
+
+Just my overall, conceptual thoughts on this feature. Will look into the
+refcount issue later, thanks for reporting!
+
+Regards, Linus
