@@ -4,137 +4,114 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1121D6DDDB
-	for <batman@archiver.kernel.org>; Fri, 15 Nov 2024 07:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F62CD68BE4
+	for <batman@archiver.kernel.org>; Sat, 16 Nov 2024 07:15:22 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 20A4A836DE
-	for <batman@archiver.kernel.org>; Fri, 15 Nov 2024 08:19:12 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9375B8151F
+	for <batman@archiver.kernel.org>; Sat, 16 Nov 2024 08:15:20 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1731655152;
- b=IBY2+7Drt0bDk2u7RVPSqjr3CxB2YIRI+CUmxeEcAil+UF8vmurnSMoGm7qaO7dkZZG1i
- b8yV2pzF+CrEU/Zw/XcPJNv5TdwY9XDHCHvb/aeRPnXnWIl+7wfxOignIsi+H5d7pXAr3EO
- HIz1Hk/XHzFt3IkM5Zf/PtU0Fq2MW74=
+ t=1731741320;
+ b=eIA0d/IpyCjPTu28eKjf00+bZQmdstD5HABUTD3japwn+eDMGZWWYCdPyqBG3STn0frdI
+ xDutv7iYb4rVjqqQd2In3vPZ0m4XSP76ENCYVt78otNuerohfFNrFWnRXBKH5b4FA1JB6EH
+ nHnubw9SYn1I/o+FFKjbSZjOeSos9iI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1731655152; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1731741320; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ZiF3FgqNJA4tZDa0J2g8epdxrSCCmBW2k+8rzqXZnfk=;
- b=cXKl7A4UHsLz0PNlZdaY36ZdhqFIT13ddianvifUJxemvGKjo61AGfPG9FwdKn8A7wLyU
- ZaqAcd3yN/9gEilhPoh6Y3CV3m6KXvA5xavJQCLag0lBYxACSmAlkq6mOhvG6QGPthKeh4l
- DPY50meq4t0Wox5993N/hJ9fvvHEwA8=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=CioXGk5O9hbiOt8YrCbWfTRXjcMFFUolPHaEC8cfUhA=;
+ b=Be8XS2r1l8nM/BPKXqLXWtjPeWeKiuRnNXe/yTTV2qVQjE+LwtExgXPue6JBebc0ktfhJ
+ 1tY2Cxk7c7zeOfxX746Pjl2Yq9kR970n+PnlnS/iAr1elUg01RvPJROhgL85LCjrXY6Wl4y
+ Tink4DxyPfEzQqRmHJE1yI0saFxzGiU=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
  policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com
- [IPv6:2607:f8b0:4864:20::62d])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 64691817B5
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 Nov 2024 06:03:33 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731647013; a=rsa-sha256;
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0149D80B7C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 16 Nov 2024 00:35:29 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1731713730; a=rsa-sha256;
 	cv=none;
-	b=CvJf0+ASsSxBzRNJyLrNGAFRDcTmbPwtEcxitD+5gre339CaSgc+giNrfGplOkGgnpVmyt
-	mjdGpTyc6dDSKgY1sN2yHYES/nfb2GYCH2mSsFhedWmohJtTYEVVGfPx33ScsNlHuWdmEt
-	S1K+xJj58KNUaoVrsvy8DXRhMUwhdv0=
+	b=VO8aVvIUodUeuvw+sy7sNByK5/uUfm6rkI8VMIZI8coamhRweW8drqi8trhwacSWrRayHR
+	GF+91zxyN46ykpkOctpHjiUACmsjORO3GAlKQRVrEgmAj5Wp/0KkOhP9uBz3SfwFXiEYH7
+	Cj3R2IQUUllhIZf/kRMBqfmpimQijz8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=cXftwG7p;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of dheeraj.linuxdev@gmail.com
- designates 2607:f8b0:4864:20::62d as permitted sender)
- smtp.mailfrom=dheeraj.linuxdev@gmail.com
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=SWd4Fyxc;
+	dmarc=pass (policy=quarantine) header.from=kernel.org;
+	spf=pass (diktynna.open-mesh.org: domain of kuba@kernel.org designates
+ 147.75.193.91 as permitted sender) smtp.mailfrom=kuba@kernel.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1731647013;
+	s=20121; t=1731713730;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=ZiF3FgqNJA4tZDa0J2g8epdxrSCCmBW2k+8rzqXZnfk=;
-	b=hT1G0xNLAfF/dZB6nAL9TruLpMmojldrRn7b0396fns4bZZDGe2011nZf57+vxiKPD3u3b
-	yIZSRr5dFTfw7zUh7ihFEaVIRtGDobT7ZmH0dTBqA/FLgBuI1uBNKIXRf60yEmSrUIOmrT
-	SXrLT2IBmYzvJwBw+LzY/be6MVNkjqA=
-Received: by mail-pl1-x62d.google.com with SMTP id
- d9443c01a7336-2114214c63eso12746015ad.3
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Thu, 14 Nov 2024 21:03:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1731647012; x=1732251812;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZiF3FgqNJA4tZDa0J2g8epdxrSCCmBW2k+8rzqXZnfk=;
-        b=cXftwG7pmvEcVTTV/4cMjuJoUJW3qj9YYg4XtY242aOiurA1pL7hp0PvmchW2XKx7/
-         8eMtAtAXRsKzEdyWZxVzAy5qFxbQTy5u4z85yq3BHwK1nSC5Xu+j5TrSJkWtOBfAyA5M
-         ppMyntbs6eJGaYQvfQTyN0UpR0M32oNHgJjZn9b0iil2IKdfS0uL2TeogcrgVWk++60Z
-         DKT/CdqHz+/XNehlJlq6AOdesjEis00BGZvqlrnMD7qg5K23MEttmixacJUEb1ueUzGl
-         rYo8oHZ683BPI5lC/sWwfqOLnu/8tGDE9U4iUI991H3PWaN1p1z0rpm4pbBtK5C6yc3l
-         RtjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731647012; x=1732251812;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZiF3FgqNJA4tZDa0J2g8epdxrSCCmBW2k+8rzqXZnfk=;
-        b=jgAmct3DJzAyINucT5zSHCr7dK3WzxE/EI5QElrKS9gyhEInAtf4nRlSsn12vw/sDN
-         Eps7+ZThRIgsoiaJW0UnHDv5IT/bGtr42eqDjrw9GknG319fI3xnBzUwjHbOuYpFftrW
-         F2vRP5TWIYrkGVBjoS7bE8gBz5xwIQRrHcAS1TwESgay6SpVGoB5fz8IqN4aD+WYQ73v
-         KVvx1Y+WgHxMfxlfPvmzQlSasAVJoisVeG4XcBnT2COQVC35bObUyrsFE2wqbawvh7wk
-         A3RrcvFP3A5OR0Gy6ea1x2eETCQkYJ9vo2mBKPrqK3V0d+em+xR2sJ5JJcs3NMdelKZ+
-         XqYQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUXOtiZ9h8Sv6S+4Q6o4G4/8pe4Gy+thyjWgnbR4xmOnfvIifSnnxFoWlhbmBukiQWuOqBwOXnZBCSW7w==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0Yxg3iE1ZiBOsM4eiacELxaSUSg6OSLilkNgCxWUMlFkuKGzm5wO
-	/BHnF0l1udoN7Z9ggw/0aKAFDkkqM/2PHtcrvkG/L/MwMjM6DK2awJh2mHDj
-X-Google-Smtp-Source: 
- AGHT+IF5BHuijPtl48H//iBsTd5HSy6KmsItjpyh0p28m6AERbvt7GJ/T2MK2aMn16UtOQM0C/bEew==
-X-Received: by 2002:a17:903:285:b0:20c:c1bc:2253 with SMTP id
- d9443c01a7336-211d0d861c9mr22855985ad.32.1731646691860;
-        Thu, 14 Nov 2024 20:58:11 -0800 (PST)
-Received: from HOME-PC ([223.185.134.27])
-        by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-211d0f47cbfsm4542935ad.217.2024.11.14.20.58.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Nov 2024 20:58:11 -0800 (PST)
-From: Dheeraj Reddy Jonnalagadda <dheeraj.linuxdev@gmail.com>
-To: mareklindner@neomailbox.ch,
-	sw@simonwunderlich.de,
-	a@unstable.cc,
-	sven@narfation.org
-Cc: davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	horms@kernel.org,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Dheeraj Reddy Jonnalagadda <dheeraj.linuxdev@gmail.com>
-Subject: [PATCH-net] batman-adv: Fix "Arguments in wrong order" issue
-Date: Fri, 15 Nov 2024 10:26:37 +0530
-Message-Id: <20241115045637.15481-1-dheeraj.linuxdev@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=CioXGk5O9hbiOt8YrCbWfTRXjcMFFUolPHaEC8cfUhA=;
+	b=acnqOtsTWKdYS0RoL7SrqLHqsKTUrrZSU81AMwsq0uJB+XVzL5Q4wQ+htORJmU5q/1nv9R
+	EhGkBu0msgkcCJFoBjTbSzh/d4DoB3X6HY9VsQLC4tdQwGz9QH3+RsVjTzNQILguKoKw34
+	Lqp0Yi2SfiULwwJOic3cuPEvPWR3zZ4=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id B8971A42810;
+	Fri, 15 Nov 2024 23:33:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 018E7C4CECF;
+	Fri, 15 Nov 2024 23:35:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731713727;
+	bh=+0nSqXJMNPJie6Agi0DCflpUksVQqJLNIcznPm67J68=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=SWd4Fyxcy6vkPAs/DoAyKv+eu9nnqiy9VDr1E7w6DAOPjGk3sTNyu3CQVJ1ftQ1Vl
+	 KQx7V76ZwBrflcMdU07dZ08pvCiVuMniy4GhDYMkJ/3vahjg0pawSvaX+3JhHfGywU
+	 5B5tE+7wI6tq8XfAriVL28lj/YBhGHcMmGeFVzCIrjSd9YzsgSS8omaH0MLx3DWaMn
+	 /8V/Hup5AfF5QtyTL3sde4ia3ZIuFa+PC0Cl0GrtcqcB8u0C+PbGN/aNnGXfwN1oRZ
+	 wKyFrTPI/2pLhWCxOGsAbPXDBSZL+32gxSUIudNzbcxe8lV0SDX6LcluNtG1LiyPmb
+	 wMVTTXTFPHQrg==
+Date: Fri, 15 Nov 2024 15:35:26 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Xiao Liang <shaw.leon@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kselftest@vger.kernel.org, Kuniyuki
+ Iwashima <kuniyu@amazon.com>, Donald Hunter <donald.hunter@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, David Ahern <dsahern@kernel.org>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Ido
+ Schimmel <idosch@nvidia.com>, Andrew Lunn <andrew+netdev@lunn.ch>, Simon
+ Horman <horms@kernel.org>, Shuah Khan <shuah@kernel.org>, Jiri Pirko
+ <jiri@resnulli.us>, Hangbin Liu <liuhangbin@gmail.com>,
+ linux-rdma@vger.kernel.org, linux-can@vger.kernel.org,
+ osmocom-net-gprs@lists.osmocom.org, bpf@vger.kernel.org,
+ linux-ppp@vger.kernel.org, wireguard@lists.zx2c4.com,
+ linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ bridge@lists.linux.dev, linux-wpan@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net-next v3 4/6] rtnetlink: Decouple net namespaces in
+ rtnl_newlink_create()
+Message-ID: <20241115153526.3582ebcd@kernel.org>
+In-Reply-To: <20241113125715.150201-5-shaw.leon@gmail.com>
+References: <20241113125715.150201-1-shaw.leon@gmail.com>
+	<20241113125715.150201-5-shaw.leon@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-MailFrom: dheeraj.linuxdev@gmail.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-MailFrom: kuba@kernel.org
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: VHEN4EBVKCHZ7IBPTDMQLR657TLRZUBI
-X-Message-ID-Hash: VHEN4EBVKCHZ7IBPTDMQLR657TLRZUBI
-X-Mailman-Approved-At: Fri, 15 Nov 2024 08:19:06 +0100
+Message-ID-Hash: CGO6HDOT52HDYBBYWZFPBD54BDAFOOLF
+X-Message-ID-Hash: CGO6HDOT52HDYBBYWZFPBD54BDAFOOLF
+X-Mailman-Approved-At: Sat, 16 Nov 2024 08:15:14 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VHEN4EBVKCHZ7IBPTDMQLR657TLRZUBI/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CGO6HDOT52HDYBBYWZFPBD54BDAFOOLF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -143,27 +120,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-This commit fixes an "Arguments in wrong order" issue detected by
-Coverity (CID 1376875).
+On Wed, 13 Nov 2024 20:57:13 +0800 Xiao Liang wrote:
+> +/**
+> + *	struct rtnl_link_nets - net namespace context of newlink.
+> + *
+> + *	@src_net: Source netns of rtnetlink socket
+> + *	@link_net: Link netns by IFLA_LINK_NETNSID, NULL if not specified.
+> + */
+> +struct rtnl_link_nets {
+> +	struct net *src_net;
+> +	struct net *link_net;
+> +};
 
-Signed-off-by: Dheeraj Reddy Jonnalagadda <dheeraj.linuxdev@gmail.com>
----
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Let's not limit ourselves to passing just netns via this struct.
+Let's call it rtnl_newlink_args or params.
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 801eff8a40e5..781a5118d441 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1195,7 +1195,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 			goto out;
- 		}
- 
--		skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
-+		skb_new = batadv_dat_arp_create_reply(bat_priv, ip_src, ip_dst,
- 						      dat_entry->mac_addr,
- 						      hw_src, vid);
- 		if (!skb_new)
+The first patch of the series got merged independently so you'll
+need to respin.
 -- 
-2.34.1
-
+pw-bot: cr
