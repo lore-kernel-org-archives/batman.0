@@ -4,84 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19598D743C6
-	for <batman-adv@archiver.kernel.org>; Wed, 20 Nov 2024 19:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80550D743D0
+	for <batman-adv@archiver.kernel.org>; Wed, 20 Nov 2024 19:56:20 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 760BA83F8C
-	for <batman-adv@archiver.kernel.org>; Wed, 20 Nov 2024 20:46:32 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 005A184029
+	for <batman-adv@archiver.kernel.org>; Wed, 20 Nov 2024 20:56:19 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1732131992;
- b=BKAfQv0hXvMLH+7Q5hpJJPH9Q+6sppcgGTULPdSPYIPNmEy0F7suTneVK3q44B2ewdzhA
- 60rACafzQG8WOaJPuCrniS2wkwa8hqYBZ6Uc1JGUGKjsj/5o/b4I+Oct+69JAlm/n8bWHVL
- 3szAcA4IQI48Glw625m0BCCCZAKOOx0=
+ t=1732132578;
+ b=rLHunc5t3Z2e04sIYFdwTr+4jpTGmz8shXx6X4txWonqRr0YwhOJYp53iAzs+ea2X1nGD
+ BfMqrrbdhCcdegldhjDr6/sCl8UtPkNBlpLO3GUPAWxgXtI8FC1/5X44XH7K0DMAEINAJES
+ 7jnXZiMn3s8yJeabPoOyMp2BdXqg/eY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1732131992; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1732132578; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=7SScqA2cST7Tm3Lj+CmQdR13kOKzXfmzixAgtZi1AKY=;
- b=khdbNVos6J/WBR3N37yi2L/9hR0+88gIQjletdCssUtZaJZuZ2SsWjnjrLlcsL254j6TF
- RcmrfWZWTwkW9cjaEc32wTR5QakqOe3QzsymjxbjxmuuQ9HHSpCqlTEO19WtCJj8j4TdukR
- RNBHE8rZV4VSaf+l+jLdIO+PcY7P6pw=
+ list-archive; bh=uTiafzdZIJKg1i7uCkZnqY6R2u3aRQIP06xAsYRf9aY=;
+ b=Q3RPnMDcCx4Cy2OqT2Z02VOSI+p9VNK2ldD7k383b6s46mzSh0TWqkFeDeCm5/ratvDgp
+ aIeWp7q8inzrSLfkWOuJ0tDPoSZ7f/JIwIn4/sQYN1zzUSW0yFTI0Aagj+QYKHZvLBT/Hu2
+ ae+k63JAWPFTLnnbwC64cAp1xLfO6Y8=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=fail header.d=smtpservice.net;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+  dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=fail header.d=smtpservice.net;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 25B2C80855
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 20 Nov 2024 20:46:19 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732131979; a=rsa-sha256;
+ dmarc=fail (Used From Domain Record) header.from=triplefau.lt policy.dmarc=quarantine
+Received: from e2i340.smtp2go.com (e2i340.smtp2go.com [103.2.141.84])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E53A981F63
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 20 Nov 2024 20:56:06 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732132567; a=rsa-sha256;
 	cv=none;
-	b=lGyv1DNhNKGKL4Es8tlmcB/N53PZzo7TVPHQhjc4SO5hp+hBsL14Ns3YPr2RKIRcucRyyR
-	WE+SCOhjOm9H4U0yT5oq9VlHBvOM2+Ar26H0JQlcvX4nnnCUe4wa2pnOHtokhBd5kdoz/C
-	R3OOKXXjfRmSVeCCEWqitnMdDRrdjp0=
+	b=TLqxcsm151G2cluZIyVEgtzBOdPstQJtDjQOgdDmDD1+mtTxkxxfFIcE0Sf/mtz3bt8w3B
+	zVYTBFADChLHG+K2z5fZJj8zHc+8PB1Bc6KxcTSq8nkYYYtaPkrcn2DL+JsK9kXeWMq8IQ
+	g70rCA+2T/Y4hCCa+uPCUs8mPILBAzg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=kfJ3M0XJ;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+	dkim=none ("invalid DKIM record") header.d=smtpservice.net
+ header.s=maxzs0.a1-4.dyn header.b=Dua5KGQs;
+	dkim=pass header.d=triplefau.lt header.s=s510616 header.b=dTICgTVX;
+	dmarc=pass (policy=quarantine) header.from=triplefau.lt;
+	spf=pass (diktynna.open-mesh.org: domain of
+ "bT.wh49m9zi5lt3293=adqisscduwqe=sdiumpy8488tff@em510616.triplefau.lt"
+ designates 103.2.141.84 as permitted sender)
+ smtp.mailfrom="bT.wh49m9zi5lt3293=adqisscduwqe=sdiumpy8488tff@em510616.triplefau.lt"
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1732131979;
+	s=20121; t=1732132567;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=7SScqA2cST7Tm3Lj+CmQdR13kOKzXfmzixAgtZi1AKY=;
-	b=lJKsNryhXMBWJPKrWnlz4hLdUMGyrcnjk/ZLBeFbRohk3XL5SbKj/66swhJ3Y8H65uhx10
-	Hhe1/uz2QcbRJBruvXrZUgmqc5XQIw7NqTQS0HxYmrXhi6ZFSOsNv2k1cJzgHqbfGO+kgy
-	BA8ZkKm+QbfjZ1sc8KPuBk/7fO76Txk=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1732131977;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7SScqA2cST7Tm3Lj+CmQdR13kOKzXfmzixAgtZi1AKY=;
-	b=kfJ3M0XJMJ5PEocUJOU7iFAyX4EMBJIdoxwJaaI7S+zlgOYPh5Uptf7JD/hDs0esECqpYe
-	e2TnLDwHQEoNbXUz+psnjb2EtEg/kjfr+VMpg6nsIwJXdqWEEVSS8v2/qomUxxd1nxTHp5
-	oAdGaBvmfGI3he6bEE2j2ZV1YnJb7N0=
-From: Sven Eckelmann <sven@narfation.org>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Remi Pommarel <repk@triplefau.lt>,
+	bh=uTiafzdZIJKg1i7uCkZnqY6R2u3aRQIP06xAsYRf9aY=;
+	b=jxfQhkaFgbZdm22OlRsThzUz0sW3DuhBBGLnZ9qQ/uU4NZeti8MuPrx68CwrYHyUZW/ke4
+	T9mKEqeaPuIi9cSP3n+fzTtiEtAvtcOm54xkZO6Oudv7msbhEhhCK04DwMdtm45ueZnsZ+
+	TFdxVDa8Qqti6YgnPJuobHS+IP33BZQ=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=smtpservice.net; s=maxzs0.a1-4.dyn; x=1732133466; h=Feedback-ID:
+	X-Smtpcorp-Track:Message-ID:Subject:To:From:Date:Reply-To:Sender:
+	List-Unsubscribe:List-Unsubscribe-Post;
+	bh=uTiafzdZIJKg1i7uCkZnqY6R2u3aRQIP06xAsYRf9aY=; b=Dua5KGQsBvp2x1FojyTOxKZ9xC
+	Nobv58ETro/to/pRxbwUfP+NE9XHpYt22bf4d4KWBCVaq7Y+q68gbJtt0ycqzJSOcfUrjUssqs3vZ
+	9+ws5k/UhhqXBj+a1Imyt3CkWXj9mivWYxheNrZk44ppjUtQ4IGsOnPD1ZZ7LGcC6ADo9NiAQXj/q
+	5aebWffJWkz9nwUr9YH/cu4M94SWtZeIAvQvrj8xfLyXx8z8vRQtGrlr8TedG73fiNZ1CAnF9fcBp
+	7jBzpYrIkJtxvVSogaWinIvIx8pg2sWjU2HJAYwdP2v9HtXLUqRNYtH1PFjJpQ38y8w2jZVrVSVhE
+	ctGTGXrw==;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=triplefau.lt;
+ i=@triplefau.lt; q=dns/txt; s=s510616; t=1732132566; h=from : subject
+ : to : message-id : date;
+ bh=uTiafzdZIJKg1i7uCkZnqY6R2u3aRQIP06xAsYRf9aY=;
+ b=dTICgTVXxKhWzXS1ja1UDCt7CUvHTqY8sbgIOgo/cQVLUe6BcxcjYgy/QAHB/Er5ne3uu
+ nPREcXhM4Wn7A2RgtqqaxmvF+86HDbs3ikV3ZCyEqSeYBWIV6FC/aqNUxtWgVRVCDiIsLIF
+ ihYzb7gd1otEGslzBXLK718wk4Tj0dPr6PbxXFCV4DYq4mtCOYMEhWPsodCKCtGXAHeFx5g
+ wFRgULydu0yDtfov9l3gbRNGBbhvW1MthetDOUj3TJftf/Y5bHJo/LGupPCWWGcaO+avyOh
+ fm0Z7bW8mzEd19B8dMFzZfZwJoiqF4sO18a076Cdjp6z9RU0GvmEjmPhiOeQ==
+Received: from [10.172.233.45] (helo=SmtpCorp) by smtpcorp.com with esmtpsa
+ (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+ (Exim 4.94.2-S2G) (envelope-from <repk@triplefau.lt>)
+ id 1tDqnr-TRjyyv-GA; Wed, 20 Nov 2024 19:55:55 +0000
+Received: from [10.12.239.196] (helo=localhost) by smtpcorp.com with esmtpsa
+ (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+ (Exim 4.97.1-S2G) (envelope-from <repk@triplefau.lt>)
+ id 1tDqnr-AIkwcC8tK4u-HlAA; Wed, 20 Nov 2024 19:55:55 +0000
+Date: Wed, 20 Nov 2024 20:54:49 +0100
+From: Remi Pommarel <repk@triplefau.lt>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: Antonio Quartulli <a@unstable.cc>, b.a.t.m.a.n@lists.open-mesh.org,
  Marek Lindner <mareklindner@neomailbox.ch>,
- Simon Wunderlich <sw@simonwunderlich.de>, Remi Pommarel <repk@triplefau.lt>
-Subject: 
- Re: [PATCH v3 0/5] batman-adv: TT change events fixes and improvements
-Date: Wed, 20 Nov 2024 20:46:12 +0100
-Message-ID: <4969949.GXAFRqVoOG@sven-l14>
-In-Reply-To: <cover.1732124716.git.repk@triplefau.lt>
+ Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: [PATCH v3 0/5] batman-adv: TT change events fixes and
+ improvements
+Message-ID: <Zz4-ief3zxThRJGm@pilgrim>
 References: <cover.1732124716.git.repk@triplefau.lt>
+ <4969949.GXAFRqVoOG@sven-l14>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1936453.tdWV9SEqCh";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: BDAM3DMI7XUYD3XLJIGLU2TW55ATCNIB
-X-Message-ID-Hash: BDAM3DMI7XUYD3XLJIGLU2TW55ATCNIB
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4969949.GXAFRqVoOG@sven-l14>
+X-Smtpcorp-Track: McJrNLJg9Gfw.M9wCOKiZ3Wfs.02kvkAWy9un
+Feedback-ID: 510616m:510616apGKSTK:510616s6mRG49i8X
+X-Report-Abuse: Please forward a copy of this message, including all headers,
+ to <abuse-report@smtp2go.com>
+Message-ID-Hash: E35QUZ2NMK5MGRW5HW36R7MTSUIJDME5
+X-Message-ID-Hash: E35QUZ2NMK5MGRW5HW36R7MTSUIJDME5
+X-MailFrom: 
+ bT.wh49m9zi5lt3293=adqisscduwqe=sdiumpy8488tff@em510616.triplefau.lt
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -94,7 +122,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BDAM3DMI7XUYD3XLJIGLU2TW55ATCNIB/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/E35QUZ2NMK5MGRW5HW36R7MTSUIJDME5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -103,45 +131,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart1936453.tdWV9SEqCh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 20 Nov 2024 20:46:12 +0100
-Message-ID: <4969949.GXAFRqVoOG@sven-l14>
-In-Reply-To: <cover.1732124716.git.repk@triplefau.lt>
-References: <cover.1732124716.git.repk@triplefau.lt>
-MIME-Version: 1.0
-
-On Wednesday, 20 November 2024 18:47:13 CET Remi Pommarel wrote:
-> The first three patches are actual fixes.
-[...]
+On Wed, Nov 20, 2024 at 08:46:12PM +0100, Sven Eckelmann wrote:
+> On Wednesday, 20 November 2024 18:47:13 CET Remi Pommarel wrote:
+> > The first three patches are actual fixes.
+> [...]
+> > 
+> > V3:
+> >   - Fix commit message wording
+> >   - Update outdated comments
 > 
-> V3:
->   - Fix commit message wording
->   - Update outdated comments
+> Antonio, can you please review the patches? It is important that we get the 
+> first three out early (to avoid merge conflicts when sending the second part). 
+> So maybe you can have at least a look at the first three.
 
-Antonio, can you please review the patches? It is important that we get the 
-first three out early (to avoid merge conflicts when sending the second part). 
-So maybe you can have at least a look at the first three.
+If it is more convenient for you, I sure can split the serie in two ?
 
-Kind regards,
-	Sven
---nextPart1936453.tdWV9SEqCh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Also just saw that I forgot to remove the "a" from "a creating" in the
+commit log, sorry about that. Do you need re-spin for that ?
 
------BEGIN PGP SIGNATURE-----
+Thanks,
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZz48hAAKCRBND3cr0xT1
-y85lAQCXoHNCiKBwOgQzavFTAC/Czg1SS+RAM7bPyOMqj/9MGwD+NdV8jB3+gDva
-Msih2710jJoiqlv+whkLwJpw+O2H2QY=
-=y1hY
------END PGP SIGNATURE-----
-
---nextPart1936453.tdWV9SEqCh--
-
-
-
+-- 
+Remi
