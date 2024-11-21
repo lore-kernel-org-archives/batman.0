@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 493C8D75BD7
-	for <batman-adv@archiver.kernel.org>; Thu, 21 Nov 2024 08:43:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77525D75BD8
+	for <batman-adv@archiver.kernel.org>; Thu, 21 Nov 2024 09:04:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 603F58421F
-	for <batman-adv@archiver.kernel.org>; Thu, 21 Nov 2024 09:43:18 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C18CB83BCA
+	for <batman-adv@archiver.kernel.org>; Thu, 21 Nov 2024 10:04:36 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1732178598;
- b=gkZ/J4/JuLKIkC9srSDM1lkS1Y+g+dEp4GwZWvPAiWuYcUEvTxBPLLzc5jgk4rdj1s2fM
- Z+l6gdrLtUHUHhUB687aBnrFIrLNHKDYW1LdjY5HscPpVj3c+pV7J8gh1JJSkPbWgqI3p2n
- Jy71Zpt6mZgO9xXo5DI9WPG7aRM/y7I=
+ t=1732179876;
+ b=D2UFHclxU0EB8mJ02g1JJeQs1OyUQgUhjfeiyB3ovSzbiXZlrOHlWZ9PANUnQoE+paXli
+ +lK8LTDwUI0LwJTr7Bj/R+XENoNewsfaRH9wWQT46WOFvxwifuNRBLTvuMGlEwp/3XTNqXX
+ fHNwYPTa/VEsk6cnDmc1Ps3vU89OvW4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1732178598; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1732179876; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=9PIUovPQ3Qpu40g5idgy+YBrHwRiF0tBOcReMK6auKw=;
- b=KiOZzsfsdWsH313rJqJg3d1ZQRiuT6atgL8Qm4y7OZP8l9KLLf13yw3suFsEtifawGXMW
- +KfmttwsNlvKrHCBTuRwKSc0cnLIufIZ1jpofDrARGvI+rjwQ3o9uA4kG0Fy64PnH4mZoE3
- U6V2QnGwnMtp7r4KVqTTO+5qKu3ZmS8=
+ list-archive; bh=jIJyztn42BBs/G9RbqUaM2ai3o0sgYKtAlB1gJm0+5A=;
+ b=yBFSYv5SJ+NgjDyDF0ZyV8CRoGzUjkYiRkfHlOHu+ATPkyzZCUplEDWBB2ai2/iwf2Fuh
+ ZmdKgYCAH/PzufDGq6+a/2khh98FOCcMsGXOZoep0lxFKftPJ8YNmc1BmMlKzecanNgTA4s
+ cgj0nluXlwWTudqXu+RSF0whPBkGDp8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -33,57 +33,57 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 38B978158D
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 21 Nov 2024 09:43:06 +0100 (CET)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732178586; a=rsa-sha256;
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0F8E982600
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 21 Nov 2024 10:04:23 +0100 (CET)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732179863; a=rsa-sha256;
 	cv=none;
-	b=lTiAhIfOluExetFoIQ1OraCmY2TvoNToQkfgRli+M93uvD7WKOcl2tSIw7M9uLMfx3E6Al
-	3i9+h/TrWLotGox5i1UPQW3Cqp34mmqnye3mUCGD9puUV0Y9m5Xp+ioHBoKcvlVysMl2mQ
-	EMk0VVzRRalGhi3ZnJuabQxtF5X9778=
+	b=olK2oLee4GipGcW3HJ1txHmHgVk5z2p40F0d9bkyygpgFeL73XU54+661IvehC8xXfefqb
+	5PC1c6VAJ1T6ujZfnHVLKlflNRAZsa3rs2veyLEPQzB7UiKnZ3r6fwClbDHo5UjL1thGjB
+	6iwM6okA/uyV6UPWzEJm8kioMcnJTXY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=tn8zHUQ3;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=qvbi9kdL;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1732178586;
+	s=20121; t=1732179863;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=9PIUovPQ3Qpu40g5idgy+YBrHwRiF0tBOcReMK6auKw=;
-	b=LrWjYse+bNJYObZQ6MScAaDcxG+H7CCwGVFVcS2ivXpSaQQlKPqsgpXLMN9uko3FbSSf/A
-	MEzx2qSWS5y+w2fdgEiCjRQ5ARUbrCObtyG0AWHuK8DZ/K4A+g79hEuxdlzXTwePRIUkR0
-	erybWyMHNZx6jGR2FKOh/rtNnt6pCMc=
+	bh=jIJyztn42BBs/G9RbqUaM2ai3o0sgYKtAlB1gJm0+5A=;
+	b=4KGbzeE6RC7sOcD8IUhhRqd8fDUIMycQSinBLl1tbbGRpNcxcXKz4/Ob0NkqE2lTFjk/fl
+	DEFGzuucYIWiJDMSBR2wN9kbLHtB1S90PNrcRFWgqHO/dsxtM41gTtaR05SO6WZhfScqz9
+	IgKy279b6D/CUhYkp0q1C6uVMqxiKek=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1732178584;
+	s=20121; t=1732179858;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9PIUovPQ3Qpu40g5idgy+YBrHwRiF0tBOcReMK6auKw=;
-	b=tn8zHUQ3lUI7jcdlR54iENkP4h42j6lN5xBp+SMovO0xbWbBNqMNga5p09xRzRhVrBM79T
-	pDHzdJi1YbNyw95G2xwNR40uBZcnlPFj5TqZ0wZmLdIjfO8M2pszJ5gQ8fiGeuOg6MCq10
-	MQhVgeC5nJgTUyZeC4lnwb22QIGII0s=
+	bh=jIJyztn42BBs/G9RbqUaM2ai3o0sgYKtAlB1gJm0+5A=;
+	b=qvbi9kdL33caACEtwZ62V0XoASjo0kzyy/u7/dh2QSYPHE36fkkvCigTOL59UuC0aVxBO/
+	66TF2TMBYiL78mYc0M5D9Hm6u6+o/iPLbWZFdk5yb0w6404kzJjsodexUfWIFkfyfaBBFW
+	Ke3le2f260V8PdpSJJU3P3Tsu15ENnA=
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org, Remi Pommarel <repk@triplefau.lt>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>,
  Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>,
  Remi Pommarel <repk@triplefau.lt>
-Subject: Re: [PATCH v3 5/5] batman-adv: Don't keep redundant TT change events
-Date: Thu, 21 Nov 2024 09:43:01 +0100
-Message-ID: <2485257.jE0xQCEvom@ripper>
+Subject: 
+ Re: [PATCH v3 4/5] batman-adv: Remove atomic usage for tt.local_changes
+Date: Thu, 21 Nov 2024 10:04:15 +0100
+Message-ID: <9417646.rMLUfLXkoz@ripper>
 In-Reply-To: 
- <71e47271e530851861441f55d102e55a7e5d1fc8.1732124716.git.repk@triplefau.lt>
+ <8f60847b19a3646e13fd9eaa13cf8bca488b45f9.1732124716.git.repk@triplefau.lt>
 References: 
  <cover.1732124716.git.repk@triplefau.lt>
- <71e47271e530851861441f55d102e55a7e5d1fc8.1732124716.git.repk@triplefau.lt>
+ <8f60847b19a3646e13fd9eaa13cf8bca488b45f9.1732124716.git.repk@triplefau.lt>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2412775.NG923GbCHz";
+Content-Type: multipart/signed; boundary="nextPart3124670.CbtlEUcBR6";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: XZEI3QOAUT57SLGGISDGM3OJT2OUFWUF
-X-Message-ID-Hash: XZEI3QOAUT57SLGGISDGM3OJT2OUFWUF
+Message-ID-Hash: WTJPLMO34XEOVNLVZ4X5SCKBLLO45FFK
+X-Message-ID-Hash: WTJPLMO34XEOVNLVZ4X5SCKBLLO45FFK
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -97,7 +97,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XZEI3QOAUT57SLGGISDGM3OJT2OUFWUF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WTJPLMO34XEOVNLVZ4X5SCKBLLO45FFK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -106,99 +106,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart2412775.NG923GbCHz
+--nextPart3124670.CbtlEUcBR6
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org, Remi Pommarel <repk@triplefau.lt>
-Date: Thu, 21 Nov 2024 09:43:01 +0100
-Message-ID: <2485257.jE0xQCEvom@ripper>
+Date: Thu, 21 Nov 2024 10:04:15 +0100
+Message-ID: <9417646.rMLUfLXkoz@ripper>
 MIME-Version: 1.0
 
-On Wednesday, 20 November 2024 18:47:18 CET Remi Pommarel wrote:
-> -               /* this is a second add in the same originator interval. It
-> -                * means that flags have been changed: update them!
-> +               /* this is a second add or del in the same originator interval.
-> +                * It could mean that flags have been changed (e.g. double
-> +                * add): update them
->                  */
-> -               if (!del_op_requested && !del_op_entry)
-> +               if (del_op_requested == del_op_entry) {
->                         entry->change.flags = flags;
-> +                       goto discard;
-> +               }
->  
->                 continue;
+On Wednesday, 20 November 2024 18:47:17 CET Remi Pommarel wrote:
+> The tt.local_changes atomic is either written with tt.changes_list_lock
+> or close to it (see batadv_tt_local_event()). Thus the performance gain
+> using an atomic was limited (or because of atomic_read() impact even
+> negative). Using atomic also comes with the need to be wary of potential
+> negative tt.local_changes value.
+> 
+> Simplify the tt.local_changes usage by removing the atomic property and
+> modifying it only with tt.changes_list_lock held.
 
->From logic perspective, the check would be irrelevant - and the continue never happens.
-
-
-    if (!del_op_requested && del_op_entry)
-    	goto del;
-    if (del_op_requested && !del_op_entry)
-    	goto del;
-
-
-Implies that del_op_requested == del_op_entry. So the check wouldn't make too 
-much sense. Maybe we should clean up this logic further:
-
-
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 437c4edd..b349851b 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -484,18 +484,7 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 		if (!batadv_compare_eth(entry->change.addr, common->addr))
- 			continue;
- 
--		/* DEL+ADD in the same orig interval have no effect and can be
--		 * removed to avoid silly behaviour on the receiver side. The
--		 * other way around (ADD+DEL) can happen in case of roaming of
--		 * a client still in the NEW state. Roaming of NEW clients is
--		 * now possible due to automatically recognition of "temporary"
--		 * clients
--		 */
- 		del_op_entry = entry->change.flags & BATADV_TT_CLIENT_DEL;
--		if (!del_op_requested && del_op_entry)
--			goto del;
--		if (del_op_requested && !del_op_entry)
--			goto del;
- 
- 		/* this is a second add or del in the same originator interval.
- 		 * It could mean that flags have been changed (e.g. double
-@@ -506,8 +495,13 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 			goto discard;
- 		}
- 
--		continue;
--del:
-+		/* DEL+ADD in the same orig interval have no effect and can be
-+		 * removed to avoid silly behaviour on the receiver side. The
-+		 * other way around (ADD+DEL) can happen in case of roaming of
-+		 * a client still in the NEW state. Roaming of NEW clients is
-+		 * now possible due to automatically recognition of "temporary"
-+		 * clients
-+		 */
- 		list_del(&entry->list);
- 		kmem_cache_free(batadv_tt_change_cache, entry);
- 		bat_priv->tt.local_changes--;
+The overall change assumes that the compiler never splits writes (store 
+tearing) [1]. Of course, writes are protected against each other using locks. 
+But the reader is no longer protected from partial writes. I haven't checked 
+whether store fusing might be a problem.
 
 Kind regards,
 	Sven
---nextPart2412775.NG923GbCHz
+
+[1] https://www.kernel.org/doc/html/latest/core-api/wrappers/memory-barriers.html
+
+[...]
+> @@ -783,13 +783,13 @@ static int batadv_softif_init_late(struct net_device *dev)
+>  	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
+>  	atomic_set(&bat_priv->bcast_seqno, 1);
+>  	atomic_set(&bat_priv->tt.vn, 0);
+> -	atomic_set(&bat_priv->tt.local_changes, 0);
+>  	atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
+>  #ifdef CONFIG_BATMAN_ADV_BLA
+>  	atomic_set(&bat_priv->bla.num_requests, 0);
+>  #endif
+>  	atomic_set(&bat_priv->tp_num, 0);
+>  
+> +	bat_priv->tt.local_changes = 0;
+
+Would need WRITE_ONCE (just to be consistent)
+
+[...]
+> @@ -508,21 +507,17 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
+>  del:
+>  		list_del(&entry->list);
+>  		kmem_cache_free(batadv_tt_change_cache, entry);
+> +		bat_priv->tt.local_changes--;
+>  		kmem_cache_free(batadv_tt_change_cache, tt_change_node);
+> -		event_removed = true;
+>  		goto unlock;
+>  	}
+>  
+>  	/* track the change in the OGMinterval list */
+>  	list_add_tail(&tt_change_node->list, &bat_priv->tt.changes_list);
+> +	bat_priv->tt.local_changes++;
+
+Needs more complex constructs with WRITE_ONCE or 
+__sync_add_and_fetch/__sync_sub_and_fetch (which were handled before inside 
+atomic_inc). The latter are not used that often in the kernel, so I wouldn't
+want to introduce them in the batman-adv module.
+
+> @@ -1022,7 +1017,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+>  	tt_data->flags = BATADV_TT_OGM_DIFF;
+>  
+>  	spin_lock_bh(&bat_priv->tt.changes_list_lock);
+> -	atomic_set(&bat_priv->tt.local_changes, 0);
+> +	bat_priv->tt.local_changes = 0;
+>  
+>  	list_for_each_entry_safe(entry, safe, &bat_priv->tt.changes_list,
+>  				 list) {
+
+Would need WRITE_ONCE
+
+> @@ -1438,7 +1433,7 @@ static void batadv_tt_changes_list_free(struct batadv_priv *bat_priv)
+>  		kmem_cache_free(batadv_tt_change_cache, entry);
+>  	}
+>  
+> -	atomic_set(&bat_priv->tt.local_changes, 0);
+> +	bat_priv->tt.local_changes = 0;
+>  	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
+>  }
+
+Would need WRITE_ONCE 
+
+Kind regards,
+	Sven
+--nextPart3124670.CbtlEUcBR6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZz7ylQAKCRBND3cr0xT1
-ywk3AQD/fuF98/QwiVq//zB+SJcfKzkkSVlLor7T1YxeJvbw6QD8DZRrkavLjKfI
-npDLicYE8SUjt80qPqkHAgoq3M7JBQM=
-=9eZX
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZz73jwAKCRBND3cr0xT1
+yx2NAP4mtaY+na08C40ihsndpGmuBAbivQ/9d4IQwJaJ/5ymLQD+IHxPX11MSYA6
+LOo/KbmkmoiB3fJZS6jzsggro50uHw8=
+=p6R7
 -----END PGP SIGNATURE-----
 
---nextPart2412775.NG923GbCHz--
+--nextPart3124670.CbtlEUcBR6--
 
 
 
