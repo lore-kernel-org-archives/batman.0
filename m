@@ -1,79 +1,73 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 360C8D729F3
-	for <batman@archiver.kernel.org>; Fri, 29 Nov 2024 17:57:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 234D4D735EA
+	for <batman-adv@archiver.kernel.org>; Sat, 30 Nov 2024 01:00:15 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3A81183F1D
-	for <batman@archiver.kernel.org>; Fri, 29 Nov 2024 18:57:37 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3C49E83F63
+	for <batman-adv@archiver.kernel.org>; Sat, 30 Nov 2024 02:00:14 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1732903057;
- b=uwHWo8eBJjIz8XN/E58UwVISRltwFR3txMSXPQLmX3UanAlIXlBIq6TX2rMAgVb+yFl7k
- i5f4nkf5DhhJ1499g2auk6pTn0EXGOOOxM/7SWriujA2V/r9EZOwoGa8KqCrp6mXwOc29w4
- j6VVfutjeM/AWdXYn2wENO3lFX0EpXM=
+ t=1732928414;
+ b=e9FPNNmsLiNSbQl22SRUeYAbEtARY+OQSebBLTIX+YI8JAlXa9/rcoro8fzQO4jtypF1L
+ dsos1jIxj3ZycyHTwv3+zw3Nkup/PfXi5js6aE8FDTXzNriKj9eb5NI/GEnx8zgliYzSCKO
+ UXpNqxubfVqmkg79F7mQfwRN5Ky8uYA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1732903057; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1732928414; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=hs2ezfK/XgaqGoCDH48V/aqaxHrbl3HitmxGe9sH+dk=;
- b=llCMIXJhRki77GZl/DYeVM0AzRkaKhVr5tbJ7OXsvGz3ppM7U/LRFmvk6wwyY7Udi1va4
- I9JJxywRVYzwbdCnhOScVEPxa8TMyJYDSmmjQ+hBeOAunbNgU3dwQB+0+esmWIV/VUOGjFA
- sA63ctYurr+5Z+3CtWhfb4fd/ORex1I=
+ list-archive; bh=0ai5kI/yCIPHDkTfuL9qciClavDOPYsRLUwEncdss3c=;
+ b=vKeZTRFj4+U8D2bKpENenzSAQVC8ug8n2FFFoqfV/GFrBRsbCIg+jbQA2NUpfm0bRGdwq
+ r3kVdJYM9AvRSL+WTTgY7P7+AEQkvJ7OIwRUSitJCzNAxIhHrF9UKj2fWrhenR64PZuPQ+2
+ gTHvVE5zzaCzT5fk8AqzCyoporuDLJE=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
   dmarc=none
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from mail.aperture-lab.de (mail.aperture-lab.de
- [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C6DBC80855
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 29 Nov 2024 18:57:17 +0100 (CET)
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id DDD3F8148C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 30 Nov 2024 01:59:46 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1732903037;
+	s=20121; t=1732928387;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hs2ezfK/XgaqGoCDH48V/aqaxHrbl3HitmxGe9sH+dk=;
-	b=XJRqf4Z26YuuCk4jAACZ6Zv5RVHbeR/9nUsf9d9O7mSJxhCrA1wH9RrGYHBvvww8q4jlgY
-	bOe9LSudswEeH2yEkw8FntZ/44grmJ68WeGDSFl+wsJ2oZyoSqRa3i149OmNsRITLp7EI8
-	TFBLKA3i3xQ3ZoS3dzJa3eUbt2XoeAU=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732903037; a=rsa-sha256;
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=0ai5kI/yCIPHDkTfuL9qciClavDOPYsRLUwEncdss3c=;
+	b=hISseW+jBHen3YzNQJyMsoejB/LAmjIkFi6wqK/lcqzITrL9W78vBidMISH7LwucUekrCx
+	VZCwducKH8yf5Wu6NVEEuXx051pjgP7Ky872Sx/QOeiR9DHoWxlMySbV5k/RsZU8TTMsUu
+	trp7L4aZmiV/C5CtR6sA9yQfr8lb8Mg=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1732928387; a=rsa-sha256;
 	cv=none;
-	b=JZXSSIxGG65xL0vNn0D9im2BmtlJ4rGL041fJQE3seK6/Bx5mNP/U9Irq+lIHO90C5Hue8
-	XvEK0lt9fvzCdAfc72hEUS0OZUWGmwxE83RhZVLhZG46RsU5/gEmtBiHQkLymrGqXQb64c
-	1QrRFTpof5l1N//mU2zdtu8vposbjps=
+	b=kBKRmCRsc5nNihypq1vHZL6u7Stix/EL9hSWiAGfReIMw+Jc6OsLZrhyH7BYHpo1Pf2o3Q
+	45aB10APUpLHO1drRsa1r6KmLBiqjfT29WBlplIbT4A6I5Ch+8yNlcyG1Wu/XS/HNDGmd6
+	jooX89RM+YPmHrqmPEPhPqZmyS1kY9c=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
 	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
- designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ designates 116.203.183.178 as permitted sender)
  smtp.mailfrom=linus.luessing@c0d3.blue;
 	dmarc=none
 Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id A8A6F541152;
-	Fri, 29 Nov 2024 18:57:16 +0100 (CET)
-Date: Fri, 29 Nov 2024 18:57:15 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH v5 1/2] batman-adv: split DAT cache into DAT cache and
- DAT DHT
-Message-ID: <Z0oAeys-9NFCDzhP@sellars>
-References: <20240911051259.23384-1-linus.luessing@c0d3.blue>
- <20240911051259.23384-2-linus.luessing@c0d3.blue>
- <878c7f2c-ea78-4f40-b20e-9698c77f887d@unstable.cc>
+ with ESMTPSA id 8A0A6541152
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 30 Nov 2024 01:59:45 +0100 (CET)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Subject: [PATCH v7 0/3] batman-adv: increase DAT DHT timeout
+Date: Sat, 30 Nov 2024 00:46:31 +0100
+Message-ID: <20241130005942.24497-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.45.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <878c7f2c-ea78-4f40-b20e-9698c77f887d@unstable.cc>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: A4ITN34MT7KJKTJ3L3XEFD7LEZEKGVU4
-X-Message-ID-Hash: A4ITN34MT7KJKTJ3L3XEFD7LEZEKGVU4
+Message-ID-Hash: VUJJSMQEVAJWFLAE2J4WMQNKJJAUZ26V
+X-Message-ID-Hash: VUJJSMQEVAJWFLAE2J4WMQNKJJAUZ26V
 X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -87,7 +81,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/A4ITN34MT7KJKTJ3L3XEFD7LEZEKGVU4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VUJJSMQEVAJWFLAE2J4WMQNKJJAUZ26V/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -96,101 +90,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Sorry, had overlooked the inline comments in the code. Replies
-follow below.
+This patchset increases the DAT DHT timeout to reduce the amount 
+of broadcasted ARP Replies.
+
+To increase the timeout only for DAT DHT entries added via DHT-PUT but
+not for any other entry in the DAT cache the DAT cache and DAT DHT
+concepts are split into two separate hash tables (PATCH 2/3).
+
+PATCH 3/3 then increases the timeout for DAT DHT entries from 5 to
+30 minutes.
 
 
-On Mon, Oct 28, 2024 at 02:25:36PM +0100, Antonio Quartulli wrote:
-> [...]
-> > +/**
-> > + * batadv_dat_get_softif() - get the soft interface from a netlink callback
-> > + * @cb: callback structure containing arguments
-> > + *
-> > + * Return: The soft interface on success or an error pointer otherwise.
-> > + */
-> > +static struct net_device *batadv_dat_get_softif(struct netlink_callback *cb)
-> > +{
-> > +	struct net *net = sock_net(cb->skb->sk);
-> > +	struct net_device *soft_iface;
-> > +	int ifindex;
-> > +
-> > +	ifindex = batadv_netlink_get_ifindex(cb->nlh,
-> > +					     BATADV_ATTR_MESH_IFINDEX);
-> > +	if (!ifindex)
-> > +		return ERR_PTR(-EINVAL);
-> > +
-> > +	soft_iface = dev_get_by_index(net, ifindex);
-> > +	if (!soft_iface)
-> > +		return ERR_PTR(-ENODEV);
-> > +
-> > +	if (!batadv_softif_is_valid(soft_iface)) {
-> > +		dev_put(soft_iface);
-> > +		return ERR_PTR(-ENODEV);
-> > +	}
-> > +
-> > +	return soft_iface;
-> > +}
-> 
-> I don't think this function is DAT specific at all.
-> Moreover, the very same code (which I think you are re-using here) appears
-> in batadv_netlink_dump_hardif().
-> 
-> I think it'd make more sense to factor it out and create a helper out of it
-> (place it in netlink.c?). This way we avoid code duplication.
-> 
-> [I might be wrong but 90% of the work already is in
-> batadv_get_softif_from_info()]
-
-Good idea, will do in v7! There are actually many more places that
-have basically the same code... :D.
+The motivation for this patchset is based on the observations made here:
+https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
 
 
-> I can see that most of the code in this patch is about handling two tables
-> (in a generic fashion) instead of one.
-> 
-> One functional change I am seeing is also that before this patch batman-adv
-> would store/cache any ARP information coming from the mesh.
-> While now this happens only for the DHT PUT. Am I right?
+In tests this year at Freifunk Lübeck with ~180 mesh nodes and Gluon
+this reduced the ARP broadcast overhead, measured over 7 days, as
+follows:
 
-Partially. For the DAT Cache part, it should be the same. In the
-batadv_dat_snoop_incoming_* functions we still add to the DAT
-cache table like we did before, unless I'm missing something.
+- Total:           6677.66 bits/s -> 677.26 bits/s => -89.86%
+                   11.92 pkts/s   -> 1.21 pkts/s   => -89.85%
 
+  - from gateways: 5618.02 bits/s -> 212.28        => -96.22%
+                   10.03 pkts/s   -> 0.38 pkts/s   => -96.21%
 
-For the new DAT DHT part, correct, there are the following cases
-where we don't update this anymore (immediately):
+Also see graphics and a few more test details here:
+- https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping#Result-2
 
-* incoming ARP request: we don't add/update the ARP source to DAT DHT
-* incoming ARP reply: we only add/update the ARP source+destination
-  to DAT DHT if it was via a DHT PUT
-* incoming DHCP ACK: we don't add/update to DAT DHT
+These patches (v5) have been applied in this mesh network without issues
+for 3 months now.
 
-However these packets must have come from somewhere. So their
-originator should have sent a DHT PUT, too? If they arrive a bit
-later, shouldn't be an issue as these packets at least updated the
-DHT Cache.
+Regards,
+Linus
 
-If the according DHT PUT got lost on the way and we didn't have
-these entries in our DHT yet, shouldn't be an issue as we have two
-more DAT DHT candidates.
+---
 
-The only case where I could see it making a (small?) difference in practice
-is if a DHT PUT got lost and it would have changed the MAC address
-for the DAT DHT entry. But I'm not sure if that would justify
-extra lines of code right now? (For that use-case we should
-probably also have a majority vote of DAT_CACHE_REPLY from DAT
-candidates, instead of updating our DAT cache with the first reply we get
-- but we didn't do that so far either, for simplicity's sake.)
+Changelog v7:
+- adding PATCH 1/3 to add the batadv_netlink_get_softif() wrapper to
+  reduce the amount of duplicate code, both in the current code base
+  but also for the next PATCH 2/3
 
-> 
-> If that's the case, it means we may issue more DHT_GETs (and possibly ARP
-> requests) because we lost a chance to cache a bit more that what the DHT
-> stores. Does it make sense?
+Changelog v6:
+- removed renaming+deprecation of BATADV_P_DAT_CACHE_REPLY in PATCH 1/2
+- small commit message rewording in PATCH 1/2
 
-I don't think we would issue more DHT_GETs, as we at least update
-the DAT cache table like we did before. And only if we don't have
-an entry in the DAT Cache then we would trigger DHT_GETs?
+Changelog v5:
+- rebased to current main branch
+  -> removed now obsolete debugfs code
 
-Hope that makes sense?
+Changelog v4:
+- rebased to: acfc9a214d01695
+  ("batman-adv: genetlink: make policy common to family")
 
-Regards, Linus
+Changelog v3:
+
+formerly:
+ "batman-adv: Increase purge timeout on DAT DHT candidates"
+ https://patchwork.open-mesh.org/patch/17728/
+- fixed the potential jiffies overflow and jiffies initialization
+  issues by replacing the last_dht_update timeout variable with
+  a split of DAT cache and DAT DHT into two separate hash tables
+  -> instead of maintaining two timeouts in one DAT entry two DAT
+     entries are created and maintained in their respective DAT
+     cache and DAT DHT hash tables
+
+Changelog v2:
+
+formerly:
+ "batman-adv: Increase DHCP snooped DAT entry purge timeout in DHT"
+ (https://patchwork.open-mesh.org/patch/17364/)
+- removed the extended timeouts flag in the DHT-PUT messages introduced
+  in v1 again
+- removed DHCP dependency
