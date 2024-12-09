@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1260EE7717D
-	for <batman@archiver.kernel.org>; Mon,  9 Dec 2024 16:48:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C053E7717D
+	for <batman@archiver.kernel.org>; Mon,  9 Dec 2024 16:48:47 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3CDFC83F04
-	for <batman@archiver.kernel.org>; Mon,  9 Dec 2024 17:48:01 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7B44F83FB1
+	for <batman@archiver.kernel.org>; Mon,  9 Dec 2024 17:48:45 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1733762881;
- b=GHu6CbMg//1M0vSP3k7xZQoR4RdbBTVbKYd53KXneGyybBgKYufCCHHwq2kIafu/VTneF
- J3ZG5rFqzCNq3mGKCTidQkWaASGFUnwjndkVLFls1n6zqhcAeOAtTm0QGmdNx5+dYaq8Dur
- bEU8HqBUC/4E/DmxKN47+kWnsIRonnE=
+ t=1733762925;
+ b=mezACcZ8jl2Kz2G1PsZxx5mfWyH2HIE+dpkbiGOm7u713mIpGSQi9IOCAc9cIlSJbcVUw
+ 8TzIwzwfUjuPshgy8PPgVNTH+qkkSSdLozHzygLU8pI7CRcDJJ6HEl6rzjVfIv3buU7R/kE
+ hee9XwRCdMmq0/1eD1RjtqnvODrG+cE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1733762881; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1733762925; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=OAhPp2pGpsvDTqVI2eQ221kABd4Y8/kh7k1mWyeQzTw=;
- b=yq2bnwrGL7ZBFDI3x8LmoofQ6MABTGFTI6UP0iDYWw6uakx/iGchOv4oNj6X38/iurB/7
- CUDNcnSHK1+PtKFSc2Ujl6WtJkGiFmYHi1HwM59uWc8+aKUXN3DTvG1AJEcO+pV6bbTfXgh
- Vl/pXByHA8SiNJI47Lxj1MbDSYCk7sg=
+ list-archive; bh=93uG6ogDA0suRI92nCq7Qt11rTzcUQ+bpSh6BVGj6ZI=;
+ b=sC+/mVfHo1SZXppN9RO63PaApq7F8GsQpHR9koJPhN4vV8nU/WwK6ncWncEtu8Oe9cnr7
+ bWReTes/9d0S7UhjxbIb022q+rXoAF3vyEmYeNOGupSXYXkowLBIENvUh5UiBosUe1Qikx+
+ 5Ae648ViIRay6UZHmhpqUbX91We35pM=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,77 +32,79 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
- [IPv6:2607:f8b0:4864:20::62e])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2065780262
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  9 Dec 2024 15:02:30 +0100 (CET)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com
+ [IPv6:2607:f8b0:4864:20::629])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0559B82F27
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  9 Dec 2024 15:02:38 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1733752950;
+	s=20121; t=1733752959;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=OAhPp2pGpsvDTqVI2eQ221kABd4Y8/kh7k1mWyeQzTw=;
-	b=i99jm8Ds72y+w+VxHu8ZdpuMUHZemtXKDgp5FSZkqEUYpUz9g5I4xoNBNAEVAMrudhw6a8
-	UgqrqjkyH2Q3ik+2yPlzc4Ax4j0jVC2vfFxLrINL1rOj0FO9BolTXQBejEC0CF61HAwOyJ
-	U6op/8A70tCWvdZm8pLDgwtGeViiHPw=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1733752950; a=rsa-sha256;
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=93uG6ogDA0suRI92nCq7Qt11rTzcUQ+bpSh6BVGj6ZI=;
+	b=eVY7i8cyft3SPFjI4xfUUg274SeMvPrIruq4Do4OEUuWrBLiwzNuWLda3beN6lusLoisX+
+	wOGJ9jWi6LNreL+6tAXk53N2TZNYeWMrt8obxiL4DPMXCdMjP26OdHLXpPeyH+Y8Iz2aTc
+	rXm22QeLBFVisdfMYkZ4XyTySuPvYnM=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1733752959; a=rsa-sha256;
 	cv=none;
-	b=A5e2ohSiKxhiyNmBwKA1t6TbCQqx0KDp48SJpMhKZrvNmIgruFD8jflCSEDh5aTBGV7fXk
-	pJJgKhvbisbF/pGzidnqhMKksQVnhgcSIG0ZCUpokEHv3vza/YaoTnbYXyqybpiO8i25Ds
-	UN6p4IrBgwde/Fh42zewIGVJ+RbmXFU=
+	b=SBRmsCsCmyV2+bfbkbn4Z6WEe3E+1QF6NQi3zSJm8P0R0ABe7TGh0WClO8HiZbOr0LD0zy
+	oYY71W8cr43OvN0xdbul4ieqMXpZuk8EQot9xzGDkaO3hKw34o4D5ofJMm719ARADe/Xsu
+	/hAtRLyj886xhD/ohKDkO6o14O6Byhk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=hodHT4DQ;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=JR7I++ZT;
 	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2607:f8b0:4864:20::62e as permitted sender)
+ 2607:f8b0:4864:20::629 as permitted sender)
  smtp.mailfrom=shaw.leon@gmail.com;
 	dmarc=pass (policy=none) header.from=gmail.com
-Received: by mail-pl1-x62e.google.com with SMTP id
- d9443c01a7336-2165448243fso9430885ad.1
+Received: by mail-pl1-x629.google.com with SMTP id
+ d9443c01a7336-2163bd70069so13581815ad.0
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 09 Dec 2024 06:02:29 -0800 (PST)
+ Mon, 09 Dec 2024 06:02:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1733752948; x=1734357748;
+        d=gmail.com; s=20230601; t=1733752957; x=1734357757;
  darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=OAhPp2pGpsvDTqVI2eQ221kABd4Y8/kh7k1mWyeQzTw=;
-        b=hodHT4DQbztXO7LrI/5AG4lda0vdKf1h3YkAg8oMVViC/5VZ6x1lAnL8k4RLkjlCnQ
-         eXES5XvxF1DKynH2moc3OwX6WeTlwJupIAb/MVHC4a2YQb1jFz0aOijl21aYLzRzOEmj
-         MX78gpQS3mvEM2KB8jHgF89pdWuMY/PdRdv8iWQnJmYQt2uP+Jwehkvu38uIUa2CWDhG
-         e8rqLXnIiEU2yGhp+jsdxjNXvSSsZ8HmGYHUhScUe82pgqOiU4H+YQsm4RcRmLhtFlbQ
-         6J2PfVJbee+spwQSjIWRavSu4zDH9FfloWNpl7kDNNXTLcqoRvjooTj2Q4MBppZgsUGh
-         g7xQ==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=93uG6ogDA0suRI92nCq7Qt11rTzcUQ+bpSh6BVGj6ZI=;
+        b=JR7I++ZTNh2rYVaN3sTPkRFVD2vCtCOK2UgjYrXdu+dS6cxPv1EwJJoEO48DUw+MqC
+         WsYHMC8F0CkiT1DVw9mbgrWARib6wQ/YY2EPEhR9PTa4TWYgMea6edL48m8N5/c397/H
+         t//u3faNGFQxG8/CYfndAeT253peTSwmKcm/97JVpSxlxeTWLUJAk1aeYhiIwExC7vrt
+         XtLuY2XmCE4HiIHEd7l7/OrCddu8kHNa+Luq7LvtKJSeQfkvAmvt9FeWkvbZjraNbfSI
+         cVxLVq+jLkobcKz0mp6lCzoap/DNk5XuF1F3xshe1y35xcMCFK2rSwUNa5w6Zl1eAQhN
+         uASA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733752948; x=1734357748;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=OAhPp2pGpsvDTqVI2eQ221kABd4Y8/kh7k1mWyeQzTw=;
-        b=hMr6QkJ9h8fHcduObDUG9KVn+7SivAq9jWgZ+H6kNOd/q0kzjdCUf7nGLY7V+H5lQ6
-         UlnZpUHAXPCIJTGKzckfavlbpwLUunNwHPk3bLM7jrdjYjZFNnqx+evA+uYinKgtdFFw
-         MJO77WkitRb5AHG2pdgaB48U4NDfM0lkqWKVafdBzrsSI51jwWWNZyRYTRVByEI5uQtU
-         TtWo37HWGmiH0ZsIJEMURW7oIwTLogHr9xcNZJyF5JhZakDbcQ7j9misd40Nk5kBHWiu
-         wa/6Nd4lMZFn6tqVHGQ++ZiP6NhoirSBcMOOTIR4Xhn/FCmyvxD/ZaZxLmJkRr5F54vc
-         r1MQ==
+        d=1e100.net; s=20230601; t=1733752957; x=1734357757;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=93uG6ogDA0suRI92nCq7Qt11rTzcUQ+bpSh6BVGj6ZI=;
+        b=KM76j0WGwwJQ7V8bQzRq8y5U/mbpqQlRUApzD/oNPpBd1C+zEMaAP81ioa/zXIM5fV
+         UfQ7qRc7CSslhoR/Z9t/8mjexYtMAWH7pP78hw9fegsf4IH6V8EuhHDI58XXVWIQKjbE
+         FEcopAeCVaJ8ExyA+zmQBDkEDCkqbLtOcxIW/fA1bUkuPXF4+R9IDCMpYQIDDXLzAa65
+         PPppyUYs98HqJY2SyiaGz+6naQGc777pAovkfUlmSCVXbE4pmQoxSgsRxSOD0jgTy+a6
+         K7Bf1wny6Qlhx36JantJldtVjJcGj7Tl9G+LxwbYaJ0TX2Ggo6P8uFTrdUBD5o+L2J5R
+         jjPQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCW0tOsWAAWmS5sgw6qQTOuxFOYne3Oqo4+KEYGgSU98BZ4qZhUUmVwNa+gK8AFZAU9ABNHCp5GWWGTaMQ==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YzpXS7gH3svcSixhgLxJcpqXCyyVVx154Q0sO+UbuzIXqpR0bHt
-	8UrMyLN1GknDWNF40zqsKTqvATuaPKEVK4AJA1QLFzDdDSjLprWh
-X-Gm-Gg: ASbGncu5s/2C7uufsayPk+Z+DF/ORiFfHc4XH90HXwsPnfNL4V+NUgc5eklVEoFNE0c
-	lK6uCZpeJnNgKrViqxmDjxJ5jYXMMQQG0Xsy/5eYsoHi7fZxjQszlfQisQqi02Uxk9XyufnkCRH
-	W2JjMWWOcHRawLwpQ+fg0FfebOYc7y6LOcZHPijjp2DD+kIKpemQ0Xnhut8Zs1v6M4Gr++25ZYz
-	z8rlXLV86x/XQ/ZbW7R4/U1DAddKeBlohMFbtTmiMs72xw=
+ AJvYcCVh+qCUEO32ye7a4qvAaWmjAy/D9MqJ2ZLtDDXOwEBneEquoKe4kl19n1IezTc9qySZA6CHCHaiyDKUPg==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YwW3cEriYsCzTVkzjBdAvdhU2nWnq4perE3luqxiOxNc0eYyt1x
+	qt5Zh4UBzob7WdvETKdzz1P3fO4AvaqWZlT2AXDGcDxTQWXaE8sX
+X-Gm-Gg: ASbGncsvNzs/yaqc5UccwrK25aU1LcEXd4Aritb8bnIgzRGSiz2ribdZPgBW+bVh7Ps
+	MC1rJfF/1Ce7niB3zrHRKeeTsd2LIBuyvNmsvwXo/3DuA3A4XS6gbKdOJmI7w3WauW0GboW2tRB
+	qfqtYuSgQ16qF1rfP8ZRxjDYmCcK0saZvkTWB7jW55LWrxu1ICsFX27b8up30aa1XfLRhFsYfve
+	/3bNuDScoMrLkkI9jJXc9h0U06EWrsWzYAZ2iO+MD6FLjU=
 X-Google-Smtp-Source: 
- AGHT+IEziqjANISe8V7T1b1Vo9dS8nge43qoErTxjCtNhfTplDp9qnHGPIzO4tjQCtyFccSJFTBRCw==
-X-Received: by 2002:a17:902:e74f:b0:216:4122:925f with SMTP id
- d9443c01a7336-21641229442mr90363145ad.14.1733752948110;
-        Mon, 09 Dec 2024 06:02:28 -0800 (PST)
+ AGHT+IEJ2QVBGY2MGcE4mBFIU/c+dzWKa28cbDvoqfUFybFT/JmX0nfLyJJqRhwpUbbXsTp1UoSovg==
+X-Received: by 2002:a17:902:cf08:b0:205:6a9b:7e3e with SMTP id
+ d9443c01a7336-2166a0b59acmr8694095ad.56.1733752957447;
+        Mon, 09 Dec 2024 06:02:37 -0800 (PST)
 Received: from nova-ws.. ([103.167.140.11])
         by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-216221db645sm49605645ad.46.2024.12.09.06.02.18
+ d9443c01a7336-216221db645sm49605645ad.46.2024.12.09.06.02.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Dec 2024 06:02:26 -0800 (PST)
+        Mon, 09 Dec 2024 06:02:36 -0800 (PST)
 From: Xiao Liang <shaw.leon@gmail.com>
 To: netdev@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
@@ -130,11 +132,13 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	bridge@lists.linux.dev,
 	linux-wpan@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v5 0/5] net: Improve netns handling in RTNL and
- ip_tunnel
-Date: Mon,  9 Dec 2024 22:01:46 +0800
-Message-ID: <20241209140151.231257-1-shaw.leon@gmail.com>
+Subject: [PATCH net-next v5 1/5] net: ip_tunnel: Build flow in underlay net
+ namespace
+Date: Mon,  9 Dec 2024 22:01:47 +0800
+Message-ID: <20241209140151.231257-2-shaw.leon@gmail.com>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241209140151.231257-1-shaw.leon@gmail.com>
+References: <20241209140151.231257-1-shaw.leon@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-MailFrom: shaw.leon@gmail.com
@@ -144,15 +148,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: SPH2LXMIJ6YCOWXYSLAKGAX4AZKUCIY4
-X-Message-ID-Hash: SPH2LXMIJ6YCOWXYSLAKGAX4AZKUCIY4
+Message-ID-Hash: 77L5J4PDMXETNFWNOPIVSO35I3TPDNAH
+X-Message-ID-Hash: 77L5J4PDMXETNFWNOPIVSO35I3TPDNAH
 X-Mailman-Approved-At: Mon, 09 Dec 2024 17:47:40 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SPH2LXMIJ6YCOWXYSLAKGAX4AZKUCIY4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/77L5J4PDMXETNFWNOPIVSO35I3TPDNAH/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -161,108 +165,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-This patch series includes some netns-related improvements and fixes for
-RTNL and ip_tunnel, to make link creation more intuitive:
+Build IPv4 flow in underlay net namespace, where encapsulated packets
+are routed.
 
- - Creating link in another net namespace doesn't conflict with link names
-   in current one.
- - Refector rtnetlink link creation. Create link in target namespace
-   directly. Pass both source and link netns to drivers via newlink()
-   callback.
-
-So that
-
-  # ip link add netns ns1 link-netns ns2 tun0 type gre ...
-
-will create tun0 in ns1, rather than create it in ns2 and move to ns1.
-And don't conflict with another interface named "tun0" in current netns.
-
+Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
 ---
+ net/ipv4/ip_tunnel.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v5:
- - Fix function doc in batman-adv.
- - Include peer_net in rtnl newlink parameters.
-
-v4:
- link: https://lore.kernel.org/all/20241118143244.1773-1-shaw.leon@gmail.com/
- - Pack newlink() parameters to a single struct.
- - Use ynl async_msg_queue.empty() in selftest.
-
-v3:
- link: https://lore.kernel.org/all/20241113125715.150201-1-shaw.leon@gmail.com/
- - Drop "netns_atomic" flag and module parameter. Add netns parameter to
-   newlink() instead, and convert drivers accordingly.
- - Move python NetNSEnter helper to net selftest lib.
-
-v2:
- link: https://lore.kernel.org/all/20241107133004.7469-1-shaw.leon@gmail.com/
- - Check NLM_F_EXCL to ensure only link creation is affected.
- - Add self tests for link name/ifindex conflict and notifications
-   in different netns.
- - Changes in dummy driver and ynl in order to add the test case.
-
-v1:
- link: https://lore.kernel.org/all/20241023023146.372653-1-shaw.leon@gmail.com/
-
-
-Xiao Liang (5):
-  net: ip_tunnel: Build flow in underlay net namespace
-  rtnetlink: Lookup device in target netns when creating link
-  rtnetlink: Decouple net namespaces in rtnl_newlink_create()
-  selftests: net: Add python context manager for netns entering
-  selftests: net: Add two test cases for link netns
-
- drivers/infiniband/ulp/ipoib/ipoib_netlink.c  | 11 +++--
- drivers/net/amt.c                             | 13 +++---
- drivers/net/bareudp.c                         | 11 +++--
- drivers/net/bonding/bond_netlink.c            |  8 ++--
- drivers/net/can/dev/netlink.c                 |  4 +-
- drivers/net/can/vxcan.c                       |  9 ++--
- .../ethernet/qualcomm/rmnet/rmnet_config.c    | 11 +++--
- drivers/net/geneve.c                          | 11 +++--
- drivers/net/gtp.c                             |  9 ++--
- drivers/net/ipvlan/ipvlan.h                   |  4 +-
- drivers/net/ipvlan/ipvlan_main.c              | 11 +++--
- drivers/net/ipvlan/ipvtap.c                   |  7 ++-
- drivers/net/macsec.c                          | 11 +++--
- drivers/net/macvlan.c                         |  8 ++--
- drivers/net/macvtap.c                         |  8 ++--
- drivers/net/netkit.c                          |  9 ++--
- drivers/net/pfcp.c                            |  8 ++--
- drivers/net/ppp/ppp_generic.c                 | 10 +++--
- drivers/net/team/team_core.c                  |  7 +--
- drivers/net/veth.c                            |  9 ++--
- drivers/net/vrf.c                             |  7 +--
- drivers/net/vxlan/vxlan_core.c                | 11 +++--
- drivers/net/wireguard/device.c                |  8 ++--
- drivers/net/wireless/virtual/virt_wifi.c      | 10 +++--
- drivers/net/wwan/wwan_core.c                  | 15 +++++--
- include/net/ip_tunnels.h                      |  5 ++-
- include/net/rtnetlink.h                       | 44 ++++++++++++++++---
- net/8021q/vlan_netlink.c                      | 11 +++--
- net/batman-adv/soft-interface.c               | 12 ++---
- net/bridge/br_netlink.c                       |  8 ++--
- net/caif/chnl_net.c                           |  6 +--
- net/core/rtnetlink.c                          | 35 ++++++++-------
- net/hsr/hsr_netlink.c                         | 14 +++---
- net/ieee802154/6lowpan/core.c                 |  9 ++--
- net/ipv4/ip_gre.c                             | 27 ++++++++----
- net/ipv4/ip_tunnel.c                          | 16 ++++---
- net/ipv4/ip_vti.c                             | 10 +++--
- net/ipv4/ipip.c                               | 10 +++--
- net/ipv6/ip6_gre.c                            | 28 +++++++-----
- net/ipv6/ip6_tunnel.c                         | 16 +++----
- net/ipv6/ip6_vti.c                            | 15 +++----
- net/ipv6/sit.c                                | 16 +++----
- net/xfrm/xfrm_interface_core.c                | 14 +++---
- tools/testing/selftests/net/Makefile          |  1 +
- .../testing/selftests/net/lib/py/__init__.py  |  2 +-
- tools/testing/selftests/net/lib/py/netns.py   | 18 ++++++++
- tools/testing/selftests/net/netns-name.sh     | 10 +++++
- tools/testing/selftests/net/netns_atomic.py   | 39 ++++++++++++++++
- 48 files changed, 385 insertions(+), 211 deletions(-)
- create mode 100755 tools/testing/selftests/net/netns_atomic.py
-
+diff --git a/net/ipv4/ip_tunnel.c b/net/ipv4/ip_tunnel.c
+index 25505f9b724c..09b73acf037a 100644
+--- a/net/ipv4/ip_tunnel.c
++++ b/net/ipv4/ip_tunnel.c
+@@ -294,7 +294,7 @@ static int ip_tunnel_bind_dev(struct net_device *dev)
+ 
+ 		ip_tunnel_init_flow(&fl4, iph->protocol, iph->daddr,
+ 				    iph->saddr, tunnel->parms.o_key,
+-				    iph->tos & INET_DSCP_MASK, dev_net(dev),
++				    iph->tos & INET_DSCP_MASK, tunnel->net,
+ 				    tunnel->parms.link, tunnel->fwmark, 0, 0);
+ 		rt = ip_route_output_key(tunnel->net, &fl4);
+ 
+@@ -611,7 +611,7 @@ void ip_md_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
+ 	}
+ 	ip_tunnel_init_flow(&fl4, proto, key->u.ipv4.dst, key->u.ipv4.src,
+ 			    tunnel_id_to_key32(key->tun_id),
+-			    tos & INET_DSCP_MASK, dev_net(dev), 0, skb->mark,
++			    tos & INET_DSCP_MASK, tunnel->net, 0, skb->mark,
+ 			    skb_get_hash(skb), key->flow_flags);
+ 
+ 	if (!tunnel_hlen)
+@@ -774,7 +774,7 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
+ 
+ 	ip_tunnel_init_flow(&fl4, protocol, dst, tnl_params->saddr,
+ 			    tunnel->parms.o_key, tos & INET_DSCP_MASK,
+-			    dev_net(dev), READ_ONCE(tunnel->parms.link),
++			    tunnel->net, READ_ONCE(tunnel->parms.link),
+ 			    tunnel->fwmark, skb_get_hash(skb), 0);
+ 
+ 	if (ip_tunnel_encap(skb, &tunnel->encap, &protocol, &fl4) < 0)
 -- 
 2.47.1
 
