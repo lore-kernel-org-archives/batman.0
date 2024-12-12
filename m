@@ -4,100 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB0D8E7717F
-	for <batman@archiver.kernel.org>; Tue, 10 Dec 2024 13:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A0F6E7717F
+	for <batman@archiver.kernel.org>; Thu, 12 Dec 2024 05:55:13 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 21C3E8425F
-	for <batman@archiver.kernel.org>; Tue, 10 Dec 2024 14:53:06 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 732B883F69
+	for <batman@archiver.kernel.org>; Thu, 12 Dec 2024 06:55:11 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1733838786;
- b=ks0whAxX9tMNNFd93r05oujPcErVoH6XBtH5PSXIl09PWwSHwVwpecf5FWlDAvy35Nwp2
- uyztQcSU9XWcBdr1vpNBLNJlTIuj1Y5I1gnxebqzN4dYaFbF+riH52YvEqKcu2hNjvP1LFJ
- jKTfadpMByD6RyRqjbxsQ4LLKmUWCu8=
+ t=1733982911;
+ b=oQkcg1IkHX90OGfQodxm7bCNtvMI1nNxwoAo1r7LG6f2KPAw4iOQJRQdEhYOlpby5zkuf
+ P+vNoe2RBIJbKmUglGSahCW9V0ROgcxWOzz8NgHUr4Oc+w0KOWKNdipULjAqvz0D6Fchg0b
+ HXgmV2YiYISZpmRzrvJk4NwIOfma4iM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1733838786; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1733982911; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=zZ5IDc89SYiR3pegOw1AVdcD+9Qgm26XqbnDWBZTMXg=;
- b=JTv+687qTjRSOO+v/xwcXYhWBkFWiwvVzMvroezIzG5O+xexa5EwS06WqmgUGKJCYl7xA
- GiNRI1QFtEvbLAacr89g5Zb6v+0UDvZ1l3W+G1iras3JoAdG0ABnn924X8tjz/VARJdw2XT
- sSVKyaL8kWcrS5S5YYE2gecXW3vKX8s=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
+ list-archive; bh=U/5WTQAFI3Z/3cqbTt7/4y+azRGyvJ5M59NygskFYLs=;
+ b=n+aCMmcrdui72YPJEfdRORdAvEx5DlpaEg3QG5ktuoSrlILtrCZr+IZPFxVwno0IAPO7I
+ PImlYl2LwKa/wGATO7xWugiY91YFuTFwFLDNWS368KsiY8sfKOGLTu9rQb38SxvZMPp8v4c
+ S1ejppIWdAanz8sVjJytiuOM4HhRT+8=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
- policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C5D4680F5C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 10 Dec 2024 14:50:30 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from nyc.source.kernel.org (nyc.source.kernel.org
+ [IPv6:2604:1380:45d1:ec00::3])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7DB2581CDD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 12 Dec 2024 05:40:17 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1733838630;
+	s=20121; t=1733978418;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zZ5IDc89SYiR3pegOw1AVdcD+9Qgm26XqbnDWBZTMXg=;
-	b=orXP/n6X9XiEt7xh1IbkbQ24n+TMxLk+UGUYovCtNvi6zSrDtSIm03KDx3wEHXpYY7PYxE
-	RRW63YqHvxTHliH0XTW0NyxWtTx2COHoGFZLTvbSZROGGoPmiFsz91JQJtOgH+x+Jq0QAR
-	ax2rFQHlgJkyMbCiSBKRABeY314CSG4=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1733838630; a=rsa-sha256;
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=U/5WTQAFI3Z/3cqbTt7/4y+azRGyvJ5M59NygskFYLs=;
+	b=d1rPriBLPwPJd9xhBQGP3ex2IjEnssM2sBtgQRo4afhb0dE7Z7+gZFmed+1jTpJZIQ3l4V
+	+SotpMvqXIbXWqaq56jZ6tO4QaGDzIIymsjKI9Dp/0T2d9KVYkXX7Zy9HjeUcbQiOX/eF6
+	Hs0H5NbWOQ4MYSKNio4+o1nVcKhItYE=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1733978418; a=rsa-sha256;
 	cv=none;
-	b=IUGyD+oVJEdYfmSXxrYEW409Yq19edPVjNdWW/C/QTqGicQO2vRA2XQay2nMQzfUBmMD/9
-	lNKk0lJ5z2PHHDTxBxyyPvOT+vgLfjvWC2zVPZr00qbVsbE8IE6Qs2o57x9ArB9/20xBDq
-	rhZmMYyad6+eP2mfvB31pxF1XTQPxdE=
+	b=YQ/s/uumMKp38KON19gQmOR5kkpKlSatfAfYfwXqBRfn42/9e+yjE/bI0bu6COyC7xjjDh
+	AJAw3HAhHpolLytoGW5ycKJ7CO2Ly2GWkmcwuhq9hNQqe77SugQFmEnYOEAxjaL0nqOiB5
+	g7I4kufWU/Q4xThWEPSTOJ1A+Zlokho=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-Received: from kero.packetmixer.de
- (p200300c5971B44D83038c7ecb8e2ed5C.dip0.t-ipconnect.de
- [IPv6:2003:c5:971b:44d8:3038:c7ec:b8e2:ed5c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits)
- server-digest SHA256)
-	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 484E4FA184;
-	Tue, 10 Dec 2024 14:50:30 +0100 (CET)
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: davem@davemloft.net,
-	kuba@kernel.org
-Cc: netdev@vger.kernel.org,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	Remi Pommarel <repk@triplefau.lt>,
-	Antonio Quartulli <Antonio@mandelbit.com>,
-	Sven Eckelmann <sven@narfation.org>,
-	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 3/3] batman-adv: Do not let TT changes list grows indefinitely
-Date: Tue, 10 Dec 2024 14:50:24 +0100
-Message-Id: <20241210135024.39068-4-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20241210135024.39068-1-sw@simonwunderlich.de>
-References: <20241210135024.39068-1-sw@simonwunderlich.de>
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=UvfSK8BP;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2604:1380:45d1:ec00::3 as
+ permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id B11ABA42162;
+	Thu, 12 Dec 2024 04:38:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A06B3C4CECE;
+	Thu, 12 Dec 2024 04:40:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733978415;
+	bh=ZRjTd5l33pCCxwOixjMB1aMT5fgo66B6Y8yswTCODqI=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=UvfSK8BPsogRainCffLv8M0TdfvAaRbHE4zNKZb8Ll5NZf/8dMObxL5Lhd4/a9TcE
+	 VHxUDf/fBWdFyzvwE4YrM9u20Ivt2q338lkZZK+mfShQD3KrldHvxYVCcvbm769PuQ
+	 0hLDoyTf5ovkvLy0ytVs6bTvbO5QLx50emAagTCVzAZOAaoSWPlEEbtJD2APHg6OoJ
+	 W25/pzI5Y8BV82vDOM0p/54gbNSK9bQiD0q7guZiiESg7suoP3rk80Er3xhl+R/cuN
+	 +ODPrObK1ZuzEJaGposXWNrZz8W5uRVHYwE4IhfaQdiebnRCeGTGKrPGD5v1eWsdro
+	 mss5zKcK1HcmA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ EAF12380A959;
+	Thu, 12 Dec 2024 04:40:32 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: C4S5MS3WDN4FJM4E7CZDI4AIGJU2DK2Y
-X-Message-ID-Hash: C4S5MS3WDN4FJM4E7CZDI4AIGJU2DK2Y
-X-MailFrom: sw@simonwunderlich.de
+Subject: Re: [PATCH 1/3] batman-adv: Do not send uninitialized TT changes
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <173397843176.1849456.10690571665535440668.git-patchwork-notify@kernel.org>
+Date: Thu, 12 Dec 2024 04:40:31 +0000
+References: <20241210135024.39068-2-sw@simonwunderlich.de>
+In-Reply-To: <20241210135024.39068-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, repk@triplefau.lt, sven@narfation.org
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: OOVFDSUM2WWGUWX4G5LVNPGNXW6ETPJ5
+X-Message-ID-Hash: OOVFDSUM2WWGUWX4G5LVNPGNXW6ETPJ5
+X-Mailman-Approved-At: Thu, 12 Dec 2024 06:54:49 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/C4S5MS3WDN4FJM4E7CZDI4AIGJU2DK2Y/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MDNZDHVU2OQ7RKA724EDAA2A3KAUOTOA/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -106,72 +114,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Remi Pommarel <repk@triplefau.lt>
+Hello:
 
-When TT changes list is too big to fit in packet due to MTU size, an
-empty OGM is sent expected other node to send TT request to get the
-changes. The issue is that tt.last_changeset was not built thus the
-originator was responding with previous changes to those TT requests
-(see batadv_send_my_tt_response). Also the changes list was never
-cleaned up effectively never ending growing from this point onwards,
-repeatedly sending the same TT response changes over and over, and
-creating a new empty OGM every OGM interval expecting for the local
-changes to be purged.
+This series was applied to netdev/net.git (main)
+by Simon Wunderlich <sw@simonwunderlich.de>:
 
-When there is more TT changes that can fit in packet, drop all changes,
-send empty OGM and wait for TT request so we can respond with a full
-table instead.
+On Tue, 10 Dec 2024 14:50:22 +0100 you wrote:
+> From: Remi Pommarel <repk@triplefau.lt>
+> 
+> The number of TT changes can be less than initially expected in
+> batadv_tt_tvlv_container_update() (changes can be removed by
+> batadv_tt_local_event() in ADD+DEL sequence between reading
+> tt_diff_entries_num and actually iterating the change list under lock).
+> 
+> [...]
 
-Fixes: e1bf0c14096f ("batman-adv: tvlv - convert tt data sent within OGMs")
-Signed-off-by: Remi Pommarel <repk@triplefau.lt>
-Acked-by: Antonio Quartulli <Antonio@mandelbit.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/translation-table.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Here is the summary with links:
+  - [1/3] batman-adv: Do not send uninitialized TT changes
+    https://git.kernel.org/netdev/net/c/f2f7358c3890
+  - [2/3] batman-adv: Remove uninitialized data in full table TT response
+    https://git.kernel.org/netdev/net/c/8038806db64d
+  - [3/3] batman-adv: Do not let TT changes list grows indefinitely
+    https://git.kernel.org/netdev/net/c/fff8f17c1a6f
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index f5201738628c..760d51fdbdf6 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -948,6 +948,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
- 	int tt_diff_len, tt_change_len = 0;
- 	int tt_diff_entries_num = 0;
- 	int tt_diff_entries_count = 0;
-+	bool drop_changes = false;
- 	size_t tt_extra_len = 0;
- 	u16 tvlv_len;
- 
-@@ -955,10 +956,17 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
- 	tt_diff_len = batadv_tt_len(tt_diff_entries_num);
- 
- 	/* if we have too many changes for one packet don't send any
--	 * and wait for the tt table request which will be fragmented
-+	 * and wait for the tt table request so we can reply with the full
-+	 * (fragmented) table.
-+	 *
-+	 * The local change history should still be cleaned up so the next
-+	 * TT round can start again with a clean state.
- 	 */
--	if (tt_diff_len > bat_priv->soft_iface->mtu)
-+	if (tt_diff_len > bat_priv->soft_iface->mtu) {
- 		tt_diff_len = 0;
-+		tt_diff_entries_num = 0;
-+		drop_changes = true;
-+	}
- 
- 	tvlv_len = batadv_tt_prepare_tvlv_local_data(bat_priv, &tt_data,
- 						     &tt_change, &tt_diff_len);
-@@ -967,7 +975,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
- 
- 	tt_data->flags = BATADV_TT_OGM_DIFF;
- 
--	if (tt_diff_len == 0)
-+	if (!drop_changes && tt_diff_len == 0)
- 		goto container_register;
- 
- 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
+You are awesome, thank you!
 -- 
-2.39.5
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
