@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCE4DE77184
-	for <batman@archiver.kernel.org>; Thu, 19 Dec 2024 08:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9F54E7718B
+	for <batman@archiver.kernel.org>; Wed, 25 Dec 2024 03:27:58 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 06DF583F9F
-	for <batman@archiver.kernel.org>; Thu, 19 Dec 2024 09:20:39 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E17D183F27
+	for <batman@archiver.kernel.org>; Wed, 25 Dec 2024 04:27:56 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1734596439;
- b=ExyOnKsc9yujU+FL9m2pW6O3tjf+wAy1KIYqUOldfwsFce5LdkoZcWePxdVf+bKDXNqAP
- oQXrDjRZwc4v4GzdCnHWykfIAFIKPgFDC1vxaZEc9+zLLv40zJhVskT/SykU/tZiWZ5MYjv
- sMj3P7eyGkKriQUru2WO6HtlfbhZhIk=
+ t=1735097276;
+ b=V/M33UG5pOYEGu/9TW1peZ/94ZbYkmHHeayqi1stjQIcoroC1JsN15e2Rf6MIfxA2jQIf
+ jtoBKHlAxmIE7fVyUDQvVgRtatOcNf86LEYwYUQxrcaFYJuJSELiQKcv4Xi9sDl+OzwmzQG
+ ZO7MntVbdIutZRWAuBaKnBca82mjMs8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1734596439; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1735097276; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ZfCpfOoSh8ogvEFAzzK5Sh/fDzaPC/IoHjTWRLgy2Xc=;
- b=rkHWfj2q/sAZwI5XhcStVaFVB+SpI+wXvKSu6ah9Z/3PMJmY78HjqBANaM6vpkkpKH+C2
- jt1Q0hHBYr2ZQUJQGypDf7D8L2liwkwaTrwegLTlP2j/hIx5aPwpa0jLa6wjSK6V7XvokhE
- Y2JyhSfjpHETYwMLXDHtjfc34DpUrsg=
+ list-archive; bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
+ b=FvkrLHtEw6WWWa/NuMj+XOhHCi/sF4t1WN3ZyQOFYJiLp7tgjVftaU7llYE6TfINpEBIU
+ 1C1S/+O4iphxkthlW1gSM5pIr5dMiMeEmaHvpVAycOP6WUB3L77mBBHP/PpAZW6p/X3xnnJ
+ Syx8XngKXcLhIvutfaYGYmpNHwCU+Zw=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,117 +32,103 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com
- [IPv6:2a00:1450:4864:20::32f])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 34C5781CBF
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 19 Dec 2024 06:54:42 +0100 (CET)
+Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com
+ [IPv6:2607:f8b0:4864:20::b32])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A3F9A819B8
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 25 Dec 2024 04:27:33 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1734587682;
+	s=20121; t=1735097253;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ZfCpfOoSh8ogvEFAzzK5Sh/fDzaPC/IoHjTWRLgy2Xc=;
-	b=cC7fRU5j8HXJQjJ7rL1tO8GYh5tTpMcsyit7KxG8yX8uqEZ4psC50/pa4+HI5XPIDT/v0P
-	PDsCLVFYWjkXu9jSqjclxF9MKYES7x2S9z6pmXlAaXrklM5+QE7khJll67NaewHIQriHxW
-	558IWwySkJh4zFfjVAbr32huv5BR9Fo=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1734587682; a=rsa-sha256;
-	cv=none;
-	b=IKVqY1VsTCWigl0a+ZMI4QPLPxKK0whiDUC444BsqQwgPyy7oM9DvYBuEOn6SNUcfvLVZe
-	xsXRX1KENP2pE2rU0Lu0fiphw39xSAvtyyrLvGtXz+F+xT2xNy3OiAH4x2bRJ9NUwhw1Nc
-	gpEhDUwPhmjACcwkTgNsBTVPprBywto=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
+	b=UHSJfWDnXKMga8ZvrIBpJGAis826K3yDNftz1+thE4xOdRZoWUie0U5HcO+VXbdbk/WegY
+	ARzPvS14xESYFGXpO14VODb7eZ1s4tBuGk5Pyqg0cgwqpRELcgk5K8ADiqKlvcw5ImYrP3
+	fiEUj/1OkQGvHRAxC6Z/SOa+3SsIHHU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=FFTs7tZt;
-	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2a00:1450:4864:20::32f as permitted sender)
- smtp.mailfrom=shaw.leon@gmail.com;
-	dmarc=pass (policy=none) header.from=gmail.com
-Received: by mail-wm1-x32f.google.com with SMTP id
- 5b1f17b1804b1-436202dd7f6so4487345e9.0
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=m1UTZYSi;
+	dmarc=pass (policy=none) header.from=gmail.com;
+	spf=pass (diktynna.open-mesh.org: domain of noahbpeterson1997@gmail.com
+ designates 2607:f8b0:4864:20::b32 as permitted sender)
+ smtp.mailfrom=noahbpeterson1997@gmail.com
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735097253; a=rsa-sha256;
+	cv=none;
+	b=fGc1cztVtIVnK4EC4Wndoxzhy7qe+Wt380Z8Oqyy0PUasOZnQKRr0Vog8q7YKr8kLNWC0F
+	Z0t6dx+I4DlFFEcrvek07RhwvDv+z0HKbI9+hewbfO41qTiX6SLj3y/QtCePlW+GqNVJhc
+	TPetH8PMKQLyYw/5v2OfpPO1QFA5qCY=
+Received: by mail-yb1-xb32.google.com with SMTP id
+ 3f1490d57ef6-e3a1cfeb711so4388648276.0
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Wed, 18 Dec 2024 21:54:42 -0800 (PST)
+ Tue, 24 Dec 2024 19:27:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1734587681; x=1735192481;
+        d=gmail.com; s=20230601; t=1735097252; x=1735702052;
  darn=lists.open-mesh.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZfCpfOoSh8ogvEFAzzK5Sh/fDzaPC/IoHjTWRLgy2Xc=;
-        b=FFTs7tZtSWnXNeSEPBs+mWVWeuUQ6quypiJRy0Hy6bWcXmEjWNTuogcwDVpnAk/sSV
-         QwoYVKFOtNhHaxsGsz1iYG0kuvkACKfzafEXDioIfnA94pO//t+UJRQFsxLqqbHK7mY2
-         WeGaGG6soXGtQAcHMYNBAH+eQfC7GGurD5jMSgaTENVVLlXeX9nhw8wFqx/rnNrL6+ss
-         Ax6d5ovcYET2iMQ3eCgPddwmckP4/w88hve96V68NZJ875FJ0MKDPGheJ4d2SZcGneOG
-         A/0v/BBr/7ilIU4F0P6FPQ/j6kZmYrXvAj5kOpNehtGp79WwmQvG44TI0x1IpJ3lhoJ0
-         1cDQ==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
+        b=m1UTZYSiMWlEE547kbDCRyKgxOltChqB2LlLhcUNbASm2vqiC4cCC6gEMrZKk0N9Gp
+         lK9ITOhnajsqzD8wnQBmjtYtDuAlvWl5nNAAKQSB40yhAsWpsSmGcVcZhQ2M9IzZrFSU
+         Fmi/cmah5kzpm+1pl8gtnL0wH5Nivpo4pKrEuXKRAqZqZ1inWEj7mJz8LZyyLoE1gjkz
+         TPCtb+TT2dYXzO7OrRWlIkDhlBNNZ0q/TFr7gSu6/LIN20JQ947Q1oCatvHyB9l/cRtr
+         g18dMTPOBRTRhwMkP9dHZb5+A0m7/LPjT/pSwasWXhq+Ynr+JBIz7hiYMtMimDA1rK+0
+         Fxog==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734587681; x=1735192481;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZfCpfOoSh8ogvEFAzzK5Sh/fDzaPC/IoHjTWRLgy2Xc=;
-        b=RjRnUtkMGi+28SyEO9g+FBAFnAIOhM0iAVGch+TFntU9rUooxV2oB6nQx0rjOSew6p
-         GI8pa9MiiLXTue2WBsRSB5wwNsOiBsvQeI2PIIPohRCx7XOeAk+pv0EsYSBdp6LM5uJL
-         QwAAzLRSFQuI+1jhTNcAaqWTtFIB4FB6mx3fPEAB/Lyo+dhndBPFPXupBYkJOvUceQFh
-         5ifAKm8MO4gR+pkWvJg+NzGH+cVk4z7Bi6fJpCg/5QUs21s/cD3tbgo6F/xcjoHpALDf
-         VQnRp5ZtIMsVFJAShrc/TH5Ly7B81D0F5Xp0XVKilkUhZuId3A7UObrst+LLOWxK5way
-         dhCg==
-X-Forwarded-Encrypted: i=1;
- AJvYcCWmX0U+bcfR5SNcvAliq0KY3mDUzLaBE8I1dCnT7X0+YQB2ttv1qI+jRI2ieLyn0LHlkhQmroCnOOghYA==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0Yyq2hzVOpEr2jfJR46799Wk6IDCHUtvQlDackxeNizJzAgC7MLw
-	sbwqbYEsw60jgCw920maHxEcwEJ4Q9bFJIXcYZPqYC5hUl0Ef19cHJ61o4xF0AE8MN9xBKE5ePJ
-	Ce0j8ua85+W9cDolu7rpKeoTus6M=
-X-Gm-Gg: ASbGncssRDCI2xBMoyAIDCyhGwuN9zWOVTNXJE4UDmnoV0PrEwBNrr5aBH56Bgbra4A
-	ILb4+lfNOODVgWtBoUI/xVGhopeBv3SqSql+L
+        d=1e100.net; s=20230601; t=1735097252; x=1735702052;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
+        b=b76DmOnn4gAB9w4t73DF0JnuTdUsG/hzCrRf2jCxHvu/0zfjuqGTiUcVwoo24EhEn8
+         guM8Ioh7sD/qq1ns/QWTSeP3cFLa7neav0l2QKet1ub4gt7rnCPcXHBQO0JX80u+vFXn
+         NwSaIJ/iHMLplL9X3NDfKBGj/VqcypHAoV8R01GmnCMxwELgSL6XuzYz1kjccBsVOTA+
+         Wz0SUAG3UrgUunB69DI+6yN8q7wL+CH2dtkXUfjIF2KsipUpdq47U1i92QuIV1dmMv+b
+         D2+o6o8XD74b4O5UvEMSfP2IJvaFZCgT9M4gL2nDtJJw4fviQx7XJ/CANZyb0ObVVdug
+         Lnhw==
+X-Gm-Message-State: AOJu0Yz4gt0YmfxzR9LtUbsvKJOkB16r7qUvPDR661Z1grhbbc5yFAUt
+	86CJDjeIZrQLt5+IsHxv15dda7jr1ucBwpMcAwUbu8b0eRZJ7pDEI7SaTiEA1G4=
+X-Gm-Gg: ASbGncsfaBhwq4yNQKWDaQlpZJgDYz6Rz7+Glxx4Q+iXg9FkkEi+5cXAkHtFONAQ0zR
+	6syihJB4mTJrUY/wERUHuWyvjAD3RGwdK3y/9NekvFuglDD2x1eOUgBnBREJ5+J7WABBpBOiORQ
+	AHkWJj9NMA3eThazAYvcTPqwJ2QRAmg0N0OuboIphVKUrWVYnDWqJ6kbaMcm0JMjksd2vP0waRY
+	/aozg+U9yQ5GQCXzln8HssEiHraVW6SNo6ZgmTlewb9wiFxh2esD6ohaeN6DMINUNDUzBJ1gus8
+	DoZaxm3D6B14
 X-Google-Smtp-Source: 
- AGHT+IFXswhNY3wf74HiVRQ6mWtI+LQ0dYPzH2WDbrTkg0k3vCjw9PHsmFSj9uux2yKPzKWzDIYRJF3gX8R2i5iXHRM=
-X-Received: by 2002:a05:600c:4ed2:b0:434:f7ea:fb44 with SMTP id
- 5b1f17b1804b1-4365535c6a3mr52447275e9.14.1734587681279; Wed, 18 Dec 2024
- 21:54:41 -0800 (PST)
+ AGHT+IHwRC9Gm3D+0q71uhZgu5OG3zbuALxFWIkhU3KV1aM5HRjWUSfR8PpmhmHsZStV5leW4uRQPw==
+X-Received: by 2002:a05:690c:c1e:b0:6ef:522a:1c41 with SMTP id
+ 00721157ae682-6f3f811073emr148407677b3.13.1735097251632;
+        Tue, 24 Dec 2024 19:27:31 -0800 (PST)
+Received: from localhost.localdomain ([24.143.14.92])
+        by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-6f3e77ed619sm31817877b3.86.2024.12.24.19.27.29
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 24 Dec 2024 19:27:30 -0800 (PST)
+From: Noah Peterson <noahbpeterson1997@gmail.com>
+X-Google-Original-From: Noah Peterson <NoahBPeterson1997@gmail.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Noah Peterson <NoahBPeterson1997@gmail.com>,
+	Noah Peterson <noahbpeterson1997@gmail.com>
+Subject: [PATCH v2] batctl: ping: Add subsecond precision to ping interval
+Date: Tue, 24 Dec 2024 21:27:24 -0600
+Message-Id: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 MIME-Version: 1.0
-References: <20241218130909.2173-1-shaw.leon@gmail.com>
- <20241218130909.2173-12-shaw.leon@gmail.com>
- <20241218153759.672b7014@kernel.org>
-In-Reply-To: <20241218153759.672b7014@kernel.org>
-From: Xiao Liang <shaw.leon@gmail.com>
-Date: Thu, 19 Dec 2024 13:54:03 +0800
-Message-ID: 
- <CABAhCORszq9ao3OCVW-1EBsxsnLxbQ096eV+cbs12Es2HvCgUA@mail.gmail.com>
-Subject: Re: [PATCH net-next v6 11/11] selftests: net: Add test cases for link
- and peer netns
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: netdev@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	Kuniyuki Iwashima <kuniyu@amazon.com>,
- Donald Hunter <donald.hunter@gmail.com>,
-	Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-	David Ahern <dsahern@kernel.org>, Eric Dumazet <edumazet@google.com>,
-	Ido Schimmel <idosch@nvidia.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
-	Simon Horman <horms@kernel.org>, Shuah Khan <shuah@kernel.org>,
- Jiri Pirko <jiri@resnulli.us>,
-	Hangbin Liu <liuhangbin@gmail.com>, linux-rdma@vger.kernel.org,
-	linux-can@vger.kernel.org, osmocom-net-gprs@lists.osmocom.org,
-	bpf@vger.kernel.org, linux-ppp@vger.kernel.org, wireguard@lists.zx2c4.com,
-	linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
-	bridge@lists.linux.dev, linux-wpan@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-MailFrom: shaw.leon@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE
+X-Message-ID-Hash: G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE
+X-MailFrom: noahbpeterson1997@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: E62QVSRAUXOYFKEWYK7HN4TS3POFYFTV
-X-Message-ID-Hash: E62QVSRAUXOYFKEWYK7HN4TS3POFYFTV
-X-Mailman-Approved-At: Thu, 19 Dec 2024 09:20:18 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/E62QVSRAUXOYFKEWYK7HN4TS3POFYFTV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -151,29 +137,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Thu, Dec 19, 2024 at 7:38=E2=80=AFAM Jakub Kicinski <kuba@kernel.org> wr=
-ote:
->
-> On Wed, 18 Dec 2024 21:09:09 +0800 Xiao Liang wrote:
-> >  - Add test for creating link in another netns when a link of the same
-> >    name and ifindex exists in current netns.
-> >  - Add test to verify that link is created in target netns directly -
-> >    no link new/del events should be generated in link netns or current
-> >    netns.
-> >  - Add test cases to verify that link-netns is set as expected for
-> >    various drivers and combination of namespace-related parameters.
->
-> Nice work!
->
-> You need to make sure all the drivers the test is using are enabled by
-> the selftest kernel config: tools/testing/selftests/net/config
->
-> This may be helpful:
-> https://github.com/linux-netdev/nipa/wiki/How-to-run-netdev-selftests-CI-=
-style#how-to-build
+Modify the batctl ping utility to accept both integer and floating-point
+values for the interval between sending pings. This enhancement allows
+specifying intervals with subsecond precision.
 
-Thanks for pointing it out. And vng is really cool. I will add
-the missing config in the next version.
+For example:
+`sudo batctl ping aa:bb:cc:dd:ee:ff -i 0.5`
 
-> --
-> pw-bot: cr
+Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
+---
+v2: Fixing use-after-free, adding a missing header file, noted by Sven
+<sven@narfation.org>
+---
+ ping.c | 27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/ping.c b/ping.c
+index 52bce4d..a69b6ac 100644
+--- a/ping.c
++++ b/ping.c
+@@ -21,6 +21,7 @@
+ #include <stdint.h>
+ #include <sys/select.h>
+ #include <sys/time.h>
++#include <time.h>
+ #include <netinet/if_ether.h>
+ 
+ #include "batadv_packet_compat.h"
+@@ -65,14 +66,15 @@ static int ping(struct state *state, int argc, char **argv)
+ 	struct bat_host *bat_host, *rr_host;
+ 	ssize_t read_len;
+ 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
+-	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
++	int loop_count = -1, timeout = 1, rr = 0, i;
+ 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
+-	char *dst_string, *mac_string, *rr_string;
+-	double time_delta;
++	char *dst_string, *mac_string, *rr_string, *end = NULL;
++	double time_delta, ping_interval, integral_part, fractional_part = 0.0;
+ 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+ 	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
+ 	size_t packet_len;
+ 	int disable_translate_mac = 0;
++	struct timespec loop_interval = {0, 0};
+ 
+ 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
+ 		switch (optchar) {
+@@ -86,9 +88,17 @@ static int ping(struct state *state, int argc, char **argv)
+ 			ping_usage();
+ 			return EXIT_SUCCESS;
+ 		case 'i':
+-			loop_interval = strtol(optarg, NULL , 10);
+-			if (loop_interval < 1)
+-				loop_interval = 1;
++			errno = 0;
++			ping_interval = strtod(optarg, &end);
++			if (errno) {
++				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
++				goto out;
++			} else {
++				ping_interval = fmax(ping_interval, 0.001);
++			}
++			fractional_part = modf(ping_interval, &integral_part);
++			loop_interval.tv_sec = (time_t)integral_part;
++			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
+ 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+ 			break;
+ 		case 't':
+@@ -285,9 +295,8 @@ static int ping(struct state *state, int argc, char **argv)
+ 		/* skip last sleep in case no more packets will be sent out */
+ 		if (loop_count == 0)
+ 			continue;
+-
+-		if (loop_interval > 0)
+-			sleep(loop_interval);
++		if (loop_interval.tv_sec > 0 || loop_interval.tv_nsec > 0)
++			nanosleep(&loop_interval, NULL);
+ 		else if ((tv.tv_sec != 0) || (tv.tv_usec != 0))
+ 			select(0, NULL, NULL, NULL, &tv);
+ 	}
+-- 
+2.39.5 (Apple Git-154)
+
