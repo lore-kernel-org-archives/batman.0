@@ -4,131 +4,116 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9F54E7718B
-	for <batman@archiver.kernel.org>; Wed, 25 Dec 2024 03:27:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C2E7E7718B
+	for <batman@archiver.kernel.org>; Fri, 27 Dec 2024 17:58:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E17D183F27
-	for <batman@archiver.kernel.org>; Wed, 25 Dec 2024 04:27:56 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 66C6783F42
+	for <batman@archiver.kernel.org>; Fri, 27 Dec 2024 18:58:27 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1735097276;
- b=V/M33UG5pOYEGu/9TW1peZ/94ZbYkmHHeayqi1stjQIcoroC1JsN15e2Rf6MIfxA2jQIf
- jtoBKHlAxmIE7fVyUDQvVgRtatOcNf86LEYwYUQxrcaFYJuJSELiQKcv4Xi9sDl+OzwmzQG
- ZO7MntVbdIutZRWAuBaKnBca82mjMs8=
+ t=1735322307;
+ b=nyT/Bk0N57oVLTf7zICuimgbPuILZoMr7DFIoNqvD3T/U9A0AhzzGStOUYYiVftwOJho9
+ s2qTZ6S3E2gTs7hLLAMwUgSgjIRkmluI7+OAsbNEPj0H3DEU7FxflXDTnoUmm0mwSOAOT6F
+ P09ke4EhCHOrTLKLI8BwptWOV+SzrUY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1735097276; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1735322307; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
- b=FvkrLHtEw6WWWa/NuMj+XOhHCi/sF4t1WN3ZyQOFYJiLp7tgjVftaU7llYE6TfINpEBIU
- 1C1S/+O4iphxkthlW1gSM5pIr5dMiMeEmaHvpVAycOP6WUB3L77mBBHP/PpAZW6p/X3xnnJ
- Syx8XngKXcLhIvutfaYGYmpNHwCU+Zw=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=zY1Qv49/YjhwfFJsnewNGfwpGQgEovIc//G1ODeOx+k=;
+ b=SWysiz3LLqOK0xLsLSN3Av7ylxsi735rpWdTTe6GUv9kc0jcFavQuPCav/dTBycM+XBhZ
+ rYP7cSYc5k3x0EaMi570cV7wYfUjFwocXVAz2Y9/PgGfjwMXIxoFZGlDZPzeR4mxRy0g92N
+ NO1/MuqDcZ797e6Eu2580Vjr+xAoLks=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=mailbox.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com
- [IPv6:2607:f8b0:4864:20::b32])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A3F9A819B8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 25 Dec 2024 04:27:33 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=mailbox.org
+ policy.dmarc=reject
+Authentication-Results: open-mesh.org; dkim=pass header.d=mailbox.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=mailbox.org policy.dmarc=reject
+Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 25BA380853
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 27 Dec 2024 10:19:24 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1735097253;
+	s=20121; t=1735291164;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
-	b=UHSJfWDnXKMga8ZvrIBpJGAis826K3yDNftz1+thE4xOdRZoWUie0U5HcO+VXbdbk/WegY
-	ARzPvS14xESYFGXpO14VODb7eZ1s4tBuGk5Pyqg0cgwqpRELcgk5K8ADiqKlvcw5ImYrP3
-	fiEUj/1OkQGvHRAxC6Z/SOa+3SsIHHU=
+	bh=zY1Qv49/YjhwfFJsnewNGfwpGQgEovIc//G1ODeOx+k=;
+	b=zmOLtugaXatpO9kr1EciwDYofSnxlhJ6JwROC0cIo942/oaou91adBycKM41ipt8HEHBHs
+	mr4vvHaLU3wXEzFnSHAw0sJCzS39uOprcAqyngr7v4m6gpvIW9PeSavkR3DaYiuRMRB+EB
+	pmio3QbKnyIIqlENVOCxMQwpSw32qXo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=m1UTZYSi;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of noahbpeterson1997@gmail.com
- designates 2607:f8b0:4864:20::b32 as permitted sender)
- smtp.mailfrom=noahbpeterson1997@gmail.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735097253; a=rsa-sha256;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b="vA7T/cf3";
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=CG0zZZDf;
+	dmarc=pass (policy=reject) header.from=mailbox.org;
+	spf=pass (diktynna.open-mesh.org: domain of marek.lindner@mailbox.org
+ designates 80.241.56.151 as permitted sender)
+ smtp.mailfrom=marek.lindner@mailbox.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735291164; a=rsa-sha256;
 	cv=none;
-	b=fGc1cztVtIVnK4EC4Wndoxzhy7qe+Wt380Z8Oqyy0PUasOZnQKRr0Vog8q7YKr8kLNWC0F
-	Z0t6dx+I4DlFFEcrvek07RhwvDv+z0HKbI9+hewbfO41qTiX6SLj3y/QtCePlW+GqNVJhc
-	TPetH8PMKQLyYw/5v2OfpPO1QFA5qCY=
-Received: by mail-yb1-xb32.google.com with SMTP id
- 3f1490d57ef6-e3a1cfeb711so4388648276.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Tue, 24 Dec 2024 19:27:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1735097252; x=1735702052;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
-        b=m1UTZYSiMWlEE547kbDCRyKgxOltChqB2LlLhcUNbASm2vqiC4cCC6gEMrZKk0N9Gp
-         lK9ITOhnajsqzD8wnQBmjtYtDuAlvWl5nNAAKQSB40yhAsWpsSmGcVcZhQ2M9IzZrFSU
-         Fmi/cmah5kzpm+1pl8gtnL0wH5Nivpo4pKrEuXKRAqZqZ1inWEj7mJz8LZyyLoE1gjkz
-         TPCtb+TT2dYXzO7OrRWlIkDhlBNNZ0q/TFr7gSu6/LIN20JQ947Q1oCatvHyB9l/cRtr
-         g18dMTPOBRTRhwMkP9dHZb5+A0m7/LPjT/pSwasWXhq+Ynr+JBIz7hiYMtMimDA1rK+0
-         Fxog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735097252; x=1735702052;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=NvgZ92FSdkcPJBwYWIjRdNT6UkBT6gK6Zc4RTsuFvkw=;
-        b=b76DmOnn4gAB9w4t73DF0JnuTdUsG/hzCrRf2jCxHvu/0zfjuqGTiUcVwoo24EhEn8
-         guM8Ioh7sD/qq1ns/QWTSeP3cFLa7neav0l2QKet1ub4gt7rnCPcXHBQO0JX80u+vFXn
-         NwSaIJ/iHMLplL9X3NDfKBGj/VqcypHAoV8R01GmnCMxwELgSL6XuzYz1kjccBsVOTA+
-         Wz0SUAG3UrgUunB69DI+6yN8q7wL+CH2dtkXUfjIF2KsipUpdq47U1i92QuIV1dmMv+b
-         D2+o6o8XD74b4O5UvEMSfP2IJvaFZCgT9M4gL2nDtJJw4fviQx7XJ/CANZyb0ObVVdug
-         Lnhw==
-X-Gm-Message-State: AOJu0Yz4gt0YmfxzR9LtUbsvKJOkB16r7qUvPDR661Z1grhbbc5yFAUt
-	86CJDjeIZrQLt5+IsHxv15dda7jr1ucBwpMcAwUbu8b0eRZJ7pDEI7SaTiEA1G4=
-X-Gm-Gg: ASbGncsfaBhwq4yNQKWDaQlpZJgDYz6Rz7+Glxx4Q+iXg9FkkEi+5cXAkHtFONAQ0zR
-	6syihJB4mTJrUY/wERUHuWyvjAD3RGwdK3y/9NekvFuglDD2x1eOUgBnBREJ5+J7WABBpBOiORQ
-	AHkWJj9NMA3eThazAYvcTPqwJ2QRAmg0N0OuboIphVKUrWVYnDWqJ6kbaMcm0JMjksd2vP0waRY
-	/aozg+U9yQ5GQCXzln8HssEiHraVW6SNo6ZgmTlewb9wiFxh2esD6ohaeN6DMINUNDUzBJ1gus8
-	DoZaxm3D6B14
-X-Google-Smtp-Source: 
- AGHT+IHwRC9Gm3D+0q71uhZgu5OG3zbuALxFWIkhU3KV1aM5HRjWUSfR8PpmhmHsZStV5leW4uRQPw==
-X-Received: by 2002:a05:690c:c1e:b0:6ef:522a:1c41 with SMTP id
- 00721157ae682-6f3f811073emr148407677b3.13.1735097251632;
-        Tue, 24 Dec 2024 19:27:31 -0800 (PST)
-Received: from localhost.localdomain ([24.143.14.92])
-        by smtp.gmail.com with ESMTPSA id
- 00721157ae682-6f3e77ed619sm31817877b3.86.2024.12.24.19.27.29
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 24 Dec 2024 19:27:30 -0800 (PST)
-From: Noah Peterson <noahbpeterson1997@gmail.com>
-X-Google-Original-From: Noah Peterson <NoahBPeterson1997@gmail.com>
+	b=WRfMC5F2FQthwH3GazJOtxSdmwha8Gq+0eYauXNmn8aMudLT+QjH70cMzDpX2GmQuFGTR0
+	vw+3FjrOpdrCwmJX/oy1fUzrazeB6mBqxL+NN+NDMONQHCVtaZBw3LfXDpotpJ8ELresJf
+	5Kj9DJtSywd5mScEwha+uFp6KpLTr3s=
+Received: from smtp1.mailbox.org (smtp1.mailbox.org
+ [IPv6:2001:67c:2050:b231:465::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4YKKgv5LJYz9snt
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 27 Dec 2024 10:19:23 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
+ s=mail20150812;
+	t=1735291163;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=zY1Qv49/YjhwfFJsnewNGfwpGQgEovIc//G1ODeOx+k=;
+	b=vA7T/cf3oYgHFMcmJquG68eRmi+D8qjSnWaGb0TY+fxNwPOBYkrUiz3TCXaCOX8LIgpeIv
+	CQpHKCbpnsO9UBEVRSuT+5/qcl3wpOBhMBiRnZeTdUq2vPtJzw2x8xM2gZEoj/2RB9wBx9
+	W7VmthZj50/ZhI3yo2T3TvpTW19rUYC3twpxGv54N0Gh3xds8Ljwo1gDngS3gpWarHc78M
+	k0/RGHt/rL/cJItRfyxsEqiRr42pnomj1wzCAxKrubQ6AlTmH/dK4qkiEJzdVnhL36vfce
+	Jsepa/YqLQg0ZjzCp9uaFsUVH0TA3HYLLHEEfv5+qNT1F0YkHdl9luUlRrhjjw==
+From: Marek Lindner <marek.lindner@mailbox.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
+ s=mail20150812;
+	t=1735291161;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=zY1Qv49/YjhwfFJsnewNGfwpGQgEovIc//G1ODeOx+k=;
+	b=CG0zZZDfd9z0FooxsMP8jl/gaNW/9cPprxYWWRcfmA+oC1QXBlEK9sFPJM24JSj3cDrnyh
+	qcalH4E3PjCrnsCviJBPYbtfaQobMesoNcT3SQfyfLDkadoAmP7+E0LAvnYdDTo7COdSRq
+	wDREC5U6tJ2ks3UINla2duuhwhX9mkeTY3jXQ/KXrgM81G/kcueNp4vJgnCM7qPsk9ubN7
+	fyPC4brmvsEGGcOGRYfFr0be2gS8zUnL/ydwR1516Q4AXph7iOuz0bVRON55sipM3UnCIp
+	4M+CyKmG3zW2FQlpQ5sFKalmFH/dOEOuTZfyIsey+DBqDwq9olJ1eubbPS/UnQ==
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Noah Peterson <NoahBPeterson1997@gmail.com>,
-	Noah Peterson <noahbpeterson1997@gmail.com>
-Subject: [PATCH v2] batctl: ping: Add subsecond precision to ping interval
-Date: Tue, 24 Dec 2024 21:27:24 -0600
-Message-Id: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+Cc: Marek Lindner <marek.lindner@mailbox.org>
+Subject: [PATCH] MAINTAINERS: update email address of Marek Linnder
+Date: Fri, 27 Dec 2024 10:19:12 +0100
+Message-ID: <20241227091912.2528930-1-marek.lindner@mailbox.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE
-X-Message-ID-Hash: G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE
-X-MailFrom: noahbpeterson1997@gmail.com
+X-MBO-RS-ID: eb4871a083140b27915
+X-MBO-RS-META: y4w5tpbfrw3goyq6og8psog39ucbqn85
+X-Rspamd-Queue-Id: 4YKKgv5LJYz9snt
+X-MailFrom: marek.lindner@mailbox.org
+X-Mailman-Rule-Hits: member-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
- loop; banned-address; member-moderation;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ loop; banned-address
+Message-ID-Hash: G3V5QO3SHU4WZRRM4XYTDM3J7YJHRHMC
+X-Message-ID-Hash: G3V5QO3SHU4WZRRM4XYTDM3J7YJHRHMC
+X-Mailman-Approved-At: Fri, 27 Dec 2024 18:58:07 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G3XE2YX62YS7NZGL6KGZQ4BMAOJWIAEE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G3V5QO3SHU4WZRRM4XYTDM3J7YJHRHMC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -137,85 +122,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Modify the batctl ping utility to accept both integer and floating-point
-values for the interval between sending pings. This enhancement allows
-specifying intervals with subsecond precision.
-
-For example:
-`sudo batctl ping aa:bb:cc:dd:ee:ff -i 0.5`
-
-Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
+Signed-off-by: Marek Lindner <marek.lindner@mailbox.org>
 ---
-v2: Fixing use-after-free, adding a missing header file, noted by Sven
-<sven@narfation.org>
----
- ping.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+ MAINTAINERS           | 2 +-
+ net/batman-adv/main.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/ping.c b/ping.c
-index 52bce4d..a69b6ac 100644
---- a/ping.c
-+++ b/ping.c
-@@ -21,6 +21,7 @@
- #include <stdint.h>
- #include <sys/select.h>
- #include <sys/time.h>
-+#include <time.h>
- #include <netinet/if_ether.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1120a7d8..9ea7a1e4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1,5 +1,5 @@
+ BATMAN ADVANCED
+-M:	Marek Lindner <mareklindner@neomailbox.ch>
++M:	Marek Lindner <marek.lindner@mailbox.org>
+ M:	Simon Wunderlich <sw@simonwunderlich.de>
+ M:	Antonio Quartulli <a@unstable.cc>
+ M:	Sven Eckelmann <sven@narfation.org>
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 7d0e25ce..276e9421 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -7,7 +7,7 @@
+ #ifndef _NET_BATMAN_ADV_MAIN_H_
+ #define _NET_BATMAN_ADV_MAIN_H_
  
- #include "batadv_packet_compat.h"
-@@ -65,14 +66,15 @@ static int ping(struct state *state, int argc, char **argv)
- 	struct bat_host *bat_host, *rr_host;
- 	ssize_t read_len;
- 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
--	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
-+	int loop_count = -1, timeout = 1, rr = 0, i;
- 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
--	char *dst_string, *mac_string, *rr_string;
--	double time_delta;
-+	char *dst_string, *mac_string, *rr_string, *end = NULL;
-+	double time_delta, ping_interval, integral_part, fractional_part = 0.0;
- 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
- 	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
- 	size_t packet_len;
- 	int disable_translate_mac = 0;
-+	struct timespec loop_interval = {0, 0};
- 
- 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
- 		switch (optchar) {
-@@ -86,9 +88,17 @@ static int ping(struct state *state, int argc, char **argv)
- 			ping_usage();
- 			return EXIT_SUCCESS;
- 		case 'i':
--			loop_interval = strtol(optarg, NULL , 10);
--			if (loop_interval < 1)
--				loop_interval = 1;
-+			errno = 0;
-+			ping_interval = strtod(optarg, &end);
-+			if (errno) {
-+				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
-+				goto out;
-+			} else {
-+				ping_interval = fmax(ping_interval, 0.001);
-+			}
-+			fractional_part = modf(ping_interval, &integral_part);
-+			loop_interval.tv_sec = (time_t)integral_part;
-+			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
- 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
- 			break;
- 		case 't':
-@@ -285,9 +295,8 @@ static int ping(struct state *state, int argc, char **argv)
- 		/* skip last sleep in case no more packets will be sent out */
- 		if (loop_count == 0)
- 			continue;
--
--		if (loop_interval > 0)
--			sleep(loop_interval);
-+		if (loop_interval.tv_sec > 0 || loop_interval.tv_nsec > 0)
-+			nanosleep(&loop_interval, NULL);
- 		else if ((tv.tv_sec != 0) || (tv.tv_usec != 0))
- 			select(0, NULL, NULL, NULL, &tv);
- 	}
+-#define BATADV_DRIVER_AUTHOR "Marek Lindner <mareklindner@neomailbox.ch>, " \
++#define BATADV_DRIVER_AUTHOR "Marek Lindner <marek.lindner@mailbox.org>, " \
+ 			     "Simon Wunderlich <sw@simonwunderlich.de>"
+ #define BATADV_DRIVER_DESC   "B.A.T.M.A.N. advanced"
+ #define BATADV_DRIVER_DEVICE "batman-adv"
 -- 
-2.39.5 (Apple Git-154)
+2.45.2
 
