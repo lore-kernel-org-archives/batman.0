@@ -4,158 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7C04E77188
-	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 13:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80359E77188
+	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 21:30:04 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 73B1984036
-	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 14:24:44 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id AC99D840CF
+	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 22:30:02 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1735997084;
- b=sByLDNZcZKmmLVBq15hP0NaHQ6UGe96LHVuLf2RL3XjN5osOa7XmkVJNgoXx0B9f9O5eR
- aHjYXrMMXL2tAYN6zgdM2JuaCq5ziljdV750NIid5WQIPnooArEs9uut4dTm70XZ3CqZNdb
- zG5kyVLe5HbO7n65gX9MxjmFL5UsyE4=
+ t=1736026202;
+ b=cgnpyDPN5fvi927sxgj4EmR8LyYt8igyyISzmVq7vZS0TH7qYw7hSnUTU6Gsj0zy5xZ2F
+ dbqdGe6S/V7iz1pbrr9Te73HM925yAA7KtXyTlOWaLO8TNESXV7teuv870ewM8m1/fX9X+0
+ C+4PEKf762kbE6nnlGM1Lx1lAH0dTsY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1735997084; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736026202; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
- b=A+dWlC4X23sqPcIb9gRm/TUQgBKa7sls2TeJMny9K+99uw8llKvkq5klcekwjGqkcLLep
- XbYAoR2+L9MRaTLkd6we/Hm/d7GAAHRY0Yjd1usx2CrRPEoXRbADuHqOYSpc5sJI093K/Zl
- gWOuRt6xBfPDKLQtcO2T5gbZA/zkdzk=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=3g2q2c459RmDRPVGc6D6mH+KUBjAwUaKqj0qf5Og/eM=;
+ b=ugni0h/AtHUDsBhF3tLUahTjkcabAPjRvsA0qOH8nzFALVsum7iU+wvOIXex+xk+DQcKD
+ EB2m2CawCJVThym/I1mSLdU4wl4LP3R6o8fp49xyJY+SWh/TcjWQ0wAP7SHMHV1+yMljGzC
+ L9DI8wZPyR01VEl0RsF36YD0haoAECg=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
- [IPv6:2607:f8b0:4864:20::636])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D364283FCC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  4 Jan 2025 13:59:16 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A500C83F00
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  4 Jan 2025 22:29:46 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1735995557;
+	s=20121; t=1736026187;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
-	b=z7qFIniN+YTno43bNDjgM9sohVqA+W2FKNfSshe3yVeP4z+5zQeXZrguYiBOmVLYGhMM/e
-	tMQITWKhMnYnl7kXwzPdm/A6b4e7PkSs8jZ12OVEFnGrH+4CRQ3W0/YAq9tZidLXfH5tK9
-	tcYxlIaSSJCMObGMhHitDUd06gI3Fic=
+	bh=3g2q2c459RmDRPVGc6D6mH+KUBjAwUaKqj0qf5Og/eM=;
+	b=kqd87qJjfVyUNAWdY751R/7rc1ZJ/u7wYwuik6qTP6uI06QLcqQXzTgne55aVjUNzLVPjQ
+	mq57tlwZT2zz8hWfnkbyxuVspwA/fjWUkDZ5hetoddpCQxhfmyqFKAHkcG99NgxWzkZWg9
+	gs9312gbGcoADWEcttogsE2yKeM9RjE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=jhg5Hbc3;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2607:f8b0:4864:20::636 as permitted sender) smtp.mailfrom=shaw.leon@gmail.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735995557; a=rsa-sha256;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=ny2p43qZ;
+	dmarc=pass (policy=none) header.from=narfation.org;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736026187; a=rsa-sha256;
 	cv=none;
-	b=3ckLUkQsFjsK9ULHqQqVWl6A7vJ0p1AbI0Ns8ZFY9hlX683K5oDbTPNRT5lYk5I5JctD5c
-	+2nrbOHfXaZMHk9Dp+kAIvSQ3c+wME8pvBZLdmCt9JtFakbDTf/QGu6bS2ntlVn2yGzQHa
-	vVZChuvJ+3JseGIxnKT4m6M0sBSuNAY=
-Received: by mail-pl1-x636.google.com with SMTP id
- d9443c01a7336-21649a7bcdcso178346505ad.1
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Sat, 04 Jan 2025 04:59:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1735995555; x=1736600355;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
-        b=jhg5Hbc3yGGHk+3lyzBSA6u1Vagsy0gn+MayQVfPM5IOYXUvGAdxZp/KDfz9/hTTUc
-         wzmAiXW1bKms1IZl26PPOL0oM7qj1bp4f0AKCh9c3g+wA/wUieoHT3jRoLDWQKfGN7gh
-         W1fAk1vxIGQa/C/OdQWuUTzFeSPYEf+bcVE6jRB+mmrUPtX5aP20SGHVaKvA0dDfNBQh
-         KoQWyXDrdTjgCCydcSXUXYbBjtdRncnjR4qtTax+52HQNbXlqtlrQErnFhTA8R2MgEHF
-         bF1gop1ad6wBGPANds9LPuIqcEb5T+zLh6Sx8pJsoENOjXaKI3oImUIWjYoL8/+YVkRw
-         bb0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735995555; x=1736600355;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
-        b=S8NGOekcRlLs0WY/9Sf2U7eRXd16fJShqmQERMCQADB219fJI12q5V1lvTsDOOuMMF
-         3CdqiuGUiUr1Uqs+a4ogwDYj9c0jDGluexcS8lrRFq/QeX1lBKZTmNGdWazxHzSqX6Py
-         OYlw1WmkBOMfBp/JJXAinPTMDIUmM2O2grVAjv0kZzVXxdpZEgDKM/hNEJGFv0NlhuT7
-         sv9nWvz74sWAVUpe6e3TwSudQnQthsbOOAxX7inWpVb9VvkWa0vv90SJiLiXwtc2LMcS
-         iCMPIoStdlzVtz6AtIj+E7YDJEaLfIcWyR/LU9+fCHdqSqr1CJPLmczszI70yT38aNQ9
-         +9EQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCWCCjPUAmWqYmfxBmiLbGZRpLt27oNH6B1mRM1tLhH7q5s+UQQCZ2NS9Z+4AQOsM8KfNBZqfkLg0JpiSQ==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YzCDAlcJLGle3QNI40PpiBDtuqF1b6YoFNKbWZYiKZa9/Tc0OTv
-	XpMv9C6gKHYVzun7Mg27DNhH2YB67p5EiNso2ZOavBRK53y01dsB
-X-Gm-Gg: ASbGncsZWDuSA5zxbakh76qkjqtoXZv3s6Pj3iT0Sjrngt/4LV6L9RAc7lmTabYrLAp
-	MIpIBSMdF2LhyYVh+XXbUyyDQVyPxnS51BmtkoslzF1UW5wlq7n5bLkfSZqbCbJFwcAU63maZir
-	GKAKzavugugAP6mv7r96AIBQZup0rIn4NDiEhs1J4MduzRQNkO3Fg8Vp00VCWjJuapbqi/z7cfG
-	8V3wOyZAtVafb30cc79BeRiiMBz32txQCFsTS7pmC9vqE4=
-X-Google-Smtp-Source: 
- AGHT+IEUXpwO+l/hEGdKf9OR2BDjiiFxnC7t4NGPTcXQ7io7HhNpF9KYbA9KthQzQ0Wr8hVvBSWkSg==
-X-Received: by 2002:a05:6a21:1519:b0:1e1:cdff:5f18 with SMTP id
- adf61e73a8af0-1e5e044ef7fmr72396060637.4.1735995555179;
-        Sat, 04 Jan 2025 04:59:15 -0800 (PST)
-Received: from ws.. ([103.167.140.11])
-        by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-72aad830349sm27761344b3a.47.2025.01.04.04.59.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Jan 2025 04:59:14 -0800 (PST)
-From: Xiao Liang <shaw.leon@gmail.com>
-To: netdev@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	Kuniyuki Iwashima <kuniyu@amazon.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Donald Hunter <donald.hunter@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	David Ahern <dsahern@kernel.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Ido Schimmel <idosch@nvidia.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Simon Horman <horms@kernel.org>,
-	Shuah Khan <shuah@kernel.org>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Hangbin Liu <liuhangbin@gmail.com>,
-	linux-rdma@vger.kernel.org,
-	linux-can@vger.kernel.org,
-	osmocom-net-gprs@lists.osmocom.org,
-	bpf@vger.kernel.org,
-	linux-ppp@vger.kernel.org,
-	wireguard@lists.zx2c4.com,
-	linux-wireless@vger.kernel.org,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	bridge@lists.linux.dev,
-	linux-wpan@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v7 11/11] selftests: net: Add test cases for link and
- peer netns
-Date: Sat,  4 Jan 2025 20:57:32 +0800
-Message-ID: <20250104125732.17335-12-shaw.leon@gmail.com>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20250104125732.17335-1-shaw.leon@gmail.com>
-References: <20250104125732.17335-1-shaw.leon@gmail.com>
+	b=chIGfUrEwcveiEItxYI2MGz9BDx1uL84fT6bEJb2aUJn2UAefi7ZEDWjWpkIZh527ObP7j
+	+RsFzVkJ2hNxV4i69dZkHvvKjhT96bJzTwfuHA1M3t+4ppc05+Vy44RjAOqovuAbkAKftX
+	YAueSxNaHVQKXV9ND61k+2tv96pyQtU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1736026185;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=3g2q2c459RmDRPVGc6D6mH+KUBjAwUaKqj0qf5Og/eM=;
+	b=ny2p43qZO9WgCmBA/QP5A9yvEjtFXGelacvlnDeUTu+u2KAQPoBqUlMCRLLB5sVcvIu6qt
+	I4QK1+BSEClc+iiBm6HrSlyLperbkjVLcbmIVdhrE+eLEbWJBWvoJ2UBO1EdHWZjj5vspv
+	ZHfLRnL80UQec4BtqkVOT0G2bV1OLec=
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Subject: 
+ Re: [PATCH v7 1/3] batman-adv: netlink: reduce duplicate code by returning
+ interfaces
+Date: Sat, 04 Jan 2025 22:29:38 +0100
+Message-ID: <2132627.atdPhlSkOF@sven-l14>
+In-Reply-To: <20241130005942.24497-2-linus.luessing@c0d3.blue>
+References: 
+ <20241130005942.24497-1-linus.luessing@c0d3.blue>
+ <20241130005942.24497-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-MailFrom: shaw.leon@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: multipart/signed; boundary="nextPart47173437.fMDQidcC6G";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: BR2GNI6NEB5KIO3Z45IZ2VHY3P4UGSRF
+X-Message-ID-Hash: BR2GNI6NEB5KIO3Z45IZ2VHY3P4UGSRF
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: 26WUTXUOA6YWTLEIN2PPAFFJE6AS7OMB
-X-Message-ID-Hash: 26WUTXUOA6YWTLEIN2PPAFFJE6AS7OMB
-X-Mailman-Approved-At: Sat, 04 Jan 2025 14:17:52 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/26WUTXUOA6YWTLEIN2PPAFFJE6AS7OMB/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BR2GNI6NEB5KIO3Z45IZ2VHY3P4UGSRF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -164,216 +105,448 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
- - Add test for creating link in another netns when a link of the same
-   name and ifindex exists in current netns.
- - Add test to verify that link is created in target netns directly -
-   no link new/del events should be generated in link netns or current
-   netns.
- - Add test cases to verify that link-netns is set as expected for
-   various drivers and combination of namespace-related parameters.
+--nextPart47173437.fMDQidcC6G
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Date: Sat, 04 Jan 2025 22:29:38 +0100
+Message-ID: <2132627.atdPhlSkOF@sven-l14>
+In-Reply-To: <20241130005942.24497-2-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
 
-Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
----
- tools/testing/selftests/net/Makefile      |   1 +
- tools/testing/selftests/net/config        |   5 +
- tools/testing/selftests/net/link_netns.py | 141 ++++++++++++++++++++++
- tools/testing/selftests/net/netns-name.sh |  10 ++
- 4 files changed, 157 insertions(+)
- create mode 100755 tools/testing/selftests/net/link_netns.py
+On Saturday, 30 November 2024 00:46:32 GMT+1 Linus L=C3=BCssing wrote:
+[...]
+> @@ -2233,25 +2233,16 @@ int batadv_bla_claim_dump(struct sk_buff *msg, st=
+ruct netlink_callback *cb)
+>  {
+>  	struct batadv_hard_iface *primary_if =3D NULL;
+>  	int portid =3D NETLINK_CB(cb->skb).portid;
+> -	struct net *net =3D sock_net(cb->skb->sk);
+>  	struct net_device *soft_iface;
+>  	struct batadv_hashtable *hash;
+>  	struct batadv_priv *bat_priv;
+>  	int bucket =3D cb->args[0];
+>  	int idx =3D cb->args[1];
+> -	int ifindex;
+>  	int ret =3D 0;
+> =20
+> -	ifindex =3D batadv_netlink_get_ifindex(cb->nlh,
+> -					     BATADV_ATTR_MESH_IFINDEX);
+> -	if (!ifindex)
+> -		return -EINVAL;
+> -
+> -	soft_iface =3D dev_get_by_index(net, ifindex);
+> -	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
+> -		ret =3D -ENODEV;
+> -		goto out;
+> -	}
+> +	soft_iface =3D batadv_netlink_get_softif(cb);
+> +	if (IS_ERR(soft_iface))
+> +		return PTR_ERR(soft_iface);
 
-diff --git a/tools/testing/selftests/net/Makefile b/tools/testing/selftests/net/Makefile
-index 73ee88d6b043..df07a38f884f 100644
---- a/tools/testing/selftests/net/Makefile
-+++ b/tools/testing/selftests/net/Makefile
-@@ -35,6 +35,7 @@ TEST_PROGS += cmsg_so_mark.sh
- TEST_PROGS += cmsg_so_priority.sh
- TEST_PROGS += cmsg_time.sh cmsg_ipv6.sh
- TEST_PROGS += netns-name.sh
-+TEST_PROGS += link_netns.py
- TEST_PROGS += nl_netdev.py
- TEST_PROGS += srv6_end_dt46_l3vpn_test.sh
- TEST_PROGS += srv6_end_dt4_l3vpn_test.sh
-diff --git a/tools/testing/selftests/net/config b/tools/testing/selftests/net/config
-index 5b9baf708950..ab55270669ec 100644
---- a/tools/testing/selftests/net/config
-+++ b/tools/testing/selftests/net/config
-@@ -107,3 +107,8 @@ CONFIG_XFRM_INTERFACE=m
- CONFIG_XFRM_USER=m
- CONFIG_IP_NF_MATCH_RPFILTER=m
- CONFIG_IP6_NF_MATCH_RPFILTER=m
-+CONFIG_IPVLAN=m
-+CONFIG_CAN=m
-+CONFIG_CAN_DEV=m
-+CONFIG_CAN_VXCAN=m
-+CONFIG_NETKIT=y
-diff --git a/tools/testing/selftests/net/link_netns.py b/tools/testing/selftests/net/link_netns.py
-new file mode 100755
-index 000000000000..aab043c59d69
---- /dev/null
-+++ b/tools/testing/selftests/net/link_netns.py
-@@ -0,0 +1,141 @@
-+#!/usr/bin/env python3
-+# SPDX-License-Identifier: GPL-2.0
-+
-+import time
-+
-+from lib.py import ksft_run, ksft_exit, ksft_true
-+from lib.py import ip
-+from lib.py import NetNS, NetNSEnter
-+from lib.py import RtnlFamily
-+
-+
-+LINK_NETNSID = 100
-+
-+
-+def test_event() -> None:
-+    with NetNS() as ns1, NetNS() as ns2:
-+        with NetNSEnter(str(ns2)):
-+            rtnl = RtnlFamily()
-+
-+        rtnl.ntf_subscribe("rtnlgrp-link")
-+
-+        ip(f"netns set {ns2} {LINK_NETNSID}", ns=str(ns1))
-+        ip(f"link add netns {ns1} link-netnsid {LINK_NETNSID} dummy1 type dummy")
-+        ip(f"link add netns {ns1} dummy2 type dummy", ns=str(ns2))
-+
-+        ip("link del dummy1", ns=str(ns1))
-+        ip("link del dummy2", ns=str(ns1))
-+
-+        time.sleep(1)
-+        rtnl.check_ntf()
-+        ksft_true(rtnl.async_msg_queue.empty(),
-+                  "Received unexpected link notification")
-+
-+
-+def validate_link_netns(netns, ifname, link_netnsid) -> bool:
-+    link_info = ip(f"-d link show dev {ifname}", ns=netns, json=True)
-+    if not link_info:
-+        return False
-+    return link_info[0].get("link_netnsid") == link_netnsid
-+
-+
-+def test_link_net() -> None:
-+    configs = [
-+        # type, common args, type args, fallback to dev_net
-+        ("ipvlan", "link dummy1", "", False),
-+        ("macsec", "link dummy1", "", False),
-+        ("macvlan", "link dummy1", "", False),
-+        ("macvtap", "link dummy1", "", False),
-+        ("vlan", "link dummy1", "id 100", False),
-+        ("gre", "", "local 192.0.2.1", True),
-+        ("vti", "", "local 192.0.2.1", True),
-+        ("ipip", "", "local 192.0.2.1", True),
-+        ("ip6gre", "", "local 2001:db8::1", True),
-+        ("ip6tnl", "", "local 2001:db8::1", True),
-+        ("vti6", "", "local 2001:db8::1", True),
-+        ("sit", "", "local 192.0.2.1", True),
-+        ("xfrm", "", "if_id 1", True),
-+    ]
-+
-+    with NetNS() as ns1, NetNS() as ns2, NetNS() as ns3:
-+        net1, net2, net3 = str(ns1), str(ns2), str(ns3)
-+
-+        # prepare link netnsid  and a dummy link needed by certain drivers
-+        ip(f"netns set {net3} {LINK_NETNSID}", ns=str(net2))
-+        ip("link add dummy1 type dummy", ns=net3)
-+
-+        cases = [
-+            # source, "netns", "link-netns", expected link-netns
-+            (net3, None, None, None, None),
-+            (net3, net2, None, None, LINK_NETNSID),
-+            (net2, None, net3, LINK_NETNSID, LINK_NETNSID),
-+            (net1, net2, net3, LINK_NETNSID, LINK_NETNSID),
-+        ]
-+
-+        for src_net, netns, link_netns, exp1, exp2 in cases:
-+            tgt_net = netns or src_net
-+            for typ, cargs, targs, fb_dev_net in configs:
-+                cmd = "link add"
-+                if netns:
-+                    cmd += f" netns {netns}"
-+                if link_netns:
-+                    cmd += f" link-netns {link_netns}"
-+                cmd += f" {cargs} foo type {typ} {targs}"
-+                ip(cmd, ns=src_net)
-+                if fb_dev_net:
-+                    ksft_true(validate_link_netns(tgt_net, "foo", exp1),
-+                              f"{typ} link_netns validation failed")
-+                else:
-+                    ksft_true(validate_link_netns(tgt_net, "foo", exp2),
-+                              f"{typ} link_netns validation failed")
-+                ip(f"link del foo", ns=tgt_net)
-+
-+
-+def test_peer_net() -> None:
-+    types = [
-+        "vxcan",
-+        "netkit",
-+        "veth",
-+    ]
-+
-+    with NetNS() as ns1, NetNS() as ns2, NetNS() as ns3, NetNS() as ns4:
-+        net1, net2, net3, net4 = str(ns1), str(ns2), str(ns3), str(ns4)
-+
-+        ip(f"netns set {net3} {LINK_NETNSID}", ns=str(net2))
-+
-+        cases = [
-+            # source, "netns", "link-netns", "peer netns", expected
-+            (net1, None, None, None, None),
-+            (net1, net2, None, None, None),
-+            (net2, None, net3, None, LINK_NETNSID),
-+            (net1, net2, net3, None, None),
-+            (net2, None, None, net3, LINK_NETNSID),
-+            (net1, net2, None, net3, LINK_NETNSID),
-+            (net2, None, net2, net3, LINK_NETNSID),
-+            (net1, net2, net4, net3, LINK_NETNSID),
-+        ]
-+
-+        for src_net, netns, link_netns, peer_netns, exp in cases:
-+            tgt_net = netns or src_net
-+            for typ in types:
-+                cmd = "link add"
-+                if netns:
-+                    cmd += f" netns {netns}"
-+                if link_netns:
-+                    cmd += f" link-netns {link_netns}"
-+                cmd += f" foo type {typ}"
-+                if peer_netns:
-+                    cmd += f" peer netns {peer_netns}"
-+                ip(cmd, ns=src_net)
-+                ksft_true(validate_link_netns(tgt_net, "foo", exp),
-+                          f"{typ} peer_netns validation failed")
-+                ip(f"link del foo", ns=tgt_net)
-+
-+
-+def main() -> None:
-+    ksft_run([test_event, test_link_net, test_peer_net])
-+    ksft_exit()
-+
-+
-+if __name__ == "__main__":
-+    main()
-diff --git a/tools/testing/selftests/net/netns-name.sh b/tools/testing/selftests/net/netns-name.sh
-index 6974474c26f3..0be1905d1f2f 100755
---- a/tools/testing/selftests/net/netns-name.sh
-+++ b/tools/testing/selftests/net/netns-name.sh
-@@ -78,6 +78,16 @@ ip -netns $NS link show dev $ALT_NAME 2> /dev/null &&
-     fail "Can still find alt-name after move"
- ip -netns $test_ns link del $DEV || fail
- 
-+#
-+# Test no conflict of the same name/ifindex in different netns
-+#
-+ip -netns $NS link add name $DEV index 100 type dummy || fail
-+ip -netns $NS link add netns $test_ns name $DEV index 100 type dummy ||
-+    fail "Can create in netns without moving"
-+ip -netns $test_ns link show dev $DEV >> /dev/null || fail "Device not found"
-+ip -netns $NS link del $DEV || fail
-+ip -netns $test_ns link del $DEV || fail
-+
- echo -ne "$(basename $0) \t\t\t\t"
- if [ $RET_CODE -eq 0 ]; then
-     echo "[  OK  ]"
--- 
-2.47.1
+
+
+To use these helpers, you need to "#include <linux/err.h>" in various files=
+=2E=20
+There are also other changes needed. Here an overview:
+
+    diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/br=
+idge_loop_avoidance.c
+    index c38a1ac9..fa8a8246 100644
+    --- a/net/batman-adv/bridge_loop_avoidance.c
+    +++ b/net/batman-adv/bridge_loop_avoidance.c
+    @@ -12,6 +12,7 @@
+     #include <linux/compiler.h>
+     #include <linux/container_of.h>
+     #include <linux/crc16.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -38,7 +39,6 @@
+     #include <net/arp.h>
+     #include <net/genetlink.h>
+     #include <net/netlink.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batadv_packet.h>
+     #include <uapi/linux/batman_adv.h>
+    =20
+    @@ -47,7 +47,6 @@
+     #include "log.h"
+     #include "netlink.h"
+     #include "originator.h"
+    -#include "soft-interface.h"
+     #include "translation-table.h"
+    =20
+     static const u8 batadv_announce_mac[4] =3D {0x43, 0x05, 0x43, 0x05};
+    diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/di=
+stributed-arp-table.c
+    index 67bb3b17..ff660758 100644
+    --- a/net/batman-adv/distributed-arp-table.c
+    +++ b/net/batman-adv/distributed-arp-table.c
+    @@ -11,6 +11,7 @@
+     #include <linux/bitops.h>
+     #include <linux/byteorder/generic.h>
+     #include <linux/container_of.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -36,7 +37,6 @@
+     #include <net/arp.h>
+     #include <net/genetlink.h>
+     #include <net/netlink.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batman_adv.h>
+    =20
+     #include "bridge_loop_avoidance.h"
+    @@ -46,7 +46,6 @@
+     #include "netlink.h"
+     #include "originator.h"
+     #include "send.h"
+    -#include "soft-interface.h"
+     #include "translation-table.h"
+     #include "tvlv.h"
+    =20
+    diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_c=
+lient.c
+    index dc57b54b..8afdc711 100644
+    --- a/net/batman-adv/gateway_client.c
+    +++ b/net/batman-adv/gateway_client.c
+    @@ -10,6 +10,7 @@
+     #include <linux/atomic.h>
+     #include <linux/byteorder/generic.h>
+     #include <linux/container_of.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -31,7 +32,6 @@
+     #include <linux/sprintf.h>
+     #include <linux/stddef.h>
+     #include <linux/udp.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batadv_packet.h>
+     #include <uapi/linux/batman_adv.h>
+    =20
+    @@ -40,7 +40,6 @@
+     #include "netlink.h"
+     #include "originator.h"
+     #include "routing.h"
+    -#include "soft-interface.h"
+     #include "translation-table.h"
+    =20
+     /* These are the offsets of the "hw type" and "hw address length" in t=
+he dhcp
+    diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+    index 17b302db..5b13010d 100644
+    --- a/net/batman-adv/multicast.c
+    +++ b/net/batman-adv/multicast.c
+    @@ -12,6 +12,7 @@
+     #include <linux/bug.h>
+     #include <linux/byteorder/generic.h>
+     #include <linux/container_of.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -46,7 +47,6 @@
+     #include <net/ip.h>
+     #include <net/ipv6.h>
+     #include <net/netlink.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batadv_packet.h>
+     #include <uapi/linux/batman_adv.h>
+    =20
+    @@ -56,7 +56,6 @@
+     #include "log.h"
+     #include "netlink.h"
+     #include "send.h"
+    -#include "soft-interface.h"
+     #include "translation-table.h"
+     #include "tvlv.h"
+    =20
+    diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+    index 145eb110..972003d3 100644
+    --- a/net/batman-adv/originator.c
+    +++ b/net/batman-adv/originator.c
+    @@ -9,6 +9,7 @@
+    =20
+     #include <linux/atomic.h>
+     #include <linux/container_of.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -26,9 +27,7 @@
+     #include <linux/spinlock.h>
+     #include <linux/stddef.h>
+     #include <linux/workqueue.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batadv_packet.h>
+    -#include <uapi/linux/batman_adv.h>
+    =20
+     #include "bat_algo.h"
+     #include "distributed-arp-table.h"
+    @@ -41,7 +40,6 @@
+     #include "netlink.h"
+     #include "network-coding.h"
+     #include "routing.h"
+    -#include "soft-interface.h"
+     #include "translation-table.h"
+    =20
+     /* hash class keys */
+    diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/transl=
+ation-table.c
+    index d464569e..a7680858 100644
+    --- a/net/batman-adv/translation-table.c
+    +++ b/net/batman-adv/translation-table.c
+    @@ -15,6 +15,7 @@
+     #include <linux/compiler.h>
+     #include <linux/container_of.h>
+     #include <linux/crc32c.h>
+    +#include <linux/err.h>
+     #include <linux/errno.h>
+     #include <linux/etherdevice.h>
+     #include <linux/gfp.h>
+    @@ -39,7 +40,6 @@
+     #include <linux/workqueue.h>
+     #include <net/genetlink.h>
+     #include <net/netlink.h>
+    -#include <net/sock.h>
+     #include <uapi/linux/batadv_packet.h>
+     #include <uapi/linux/batman_adv.h>
+
+
+[...]
+> @@ -1150,23 +1137,17 @@ static int batadv_netlink_set_vlan(struct sk_buff=
+ *skb, struct genl_info *info)
+>  }
+> =20
+>  /**
+> - * batadv_get_softif_from_info() - Retrieve soft interface from genl att=
+ributes
+> + * batadv_netlink_get_softif_from_info() - Retrieve soft interface from =
+ifindex
+>   * @net: the applicable net namespace
+> - * @info: receiver information
+> + * @ifindex: index of the soft interface
+>   *
+>   * Return: Pointer to soft interface (with increased refcnt) on success,=
+ error
+>   *  pointer on error
+>   */
+>  static struct net_device *
+> -batadv_get_softif_from_info(struct net *net, struct genl_info *info)
+> +batadv_netlink_get_softif_from_ifindex(struct net *net, int ifindex)
+
+I think you wanted to document batadv_netlink_get_softif_from_ifindex here =
+and=20
+not batadv_netlink_get_softif_from_info
+
+[...]
+> @@ -1184,28 +1165,61 @@ batadv_get_softif_from_info(struct net *net, stru=
+ct genl_info *info)
+>  }
+> =20
+>  /**
+> - * batadv_get_hardif_from_info() - Retrieve hardif from genl attributes
+> - * @bat_priv: the bat priv with all the soft interface information
+> + * batadv_get_softif_from_info() - Retrieve soft interface from genl att=
+ributes
+>   * @net: the applicable net namespace
+>   * @info: receiver information
+>   *
+> + * Return: Pointer to soft interface (with increased refcnt) on success,=
+ error
+> + *  pointer on error
+> + */
+> +static struct net_device *
+> +batadv_netlink_get_softif_from_info(struct net *net, struct genl_info *i=
+nfo)
+
+I think you wanted to document batadv_netlink_get_softif_from_info here and=
+=20
+not batadv_get_softif_from_info
+
+[...]
+> +/**
+> + * batadv_netlink_get_hardif_from_info() - Retrieve hard interface from =
+ifindex
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @net: the applicable net namespace
+> + * @ifindex: index of the hard interface
+> + *
+>   * Return: Pointer to hard interface (with increased refcnt) on success,=
+ error
+>   *  pointer on error
+>   */
+>  static struct batadv_hard_iface *
+> -batadv_get_hardif_from_info(struct batadv_priv *bat_priv, struct net *ne=
+t,
+> -			    struct genl_info *info)
+> +batadv_netlink_get_hardif_from_ifindex(struct batadv_priv *bat_priv,
+> +				       struct net *net, int ifindex)
+>  {
+
+I think you wanted to document batadv_netlink_get_hardif_from_ifindex here =
+and=20
+not batadv_netlink_get_hardif_from_info
+
+[...]
+> @@ -1229,6 +1243,51 @@ batadv_get_hardif_from_info(struct batadv_priv *ba=
+t_priv, struct net *net,
+>  	return ERR_PTR(-EINVAL);
+>  }
+> =20
+> +/**
+> + * batadv_get_hardif_from_info() - Retrieve hardif from genl attributes
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @net: the applicable net namespace
+> + * @info: receiver information
+> + *
+> + * Return: Pointer to hard interface (with increased refcnt) on success,=
+ error
+> + *  pointer on error
+> + */
+> +static struct batadv_hard_iface *
+> +batadv_netlink_get_hardif_from_info(struct batadv_priv *bat_priv,
+> +				    struct net *net, struct genl_info *info)
+
+I think you wanted to document batadv_netlink_get_hardif_from_info here and=
+=20
+not batadv_get_hardif_from_info
+
+[...]
+> diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+> index 8f6dd2c6ee41..9ee9655d9bea 100644
+> --- a/net/batman-adv/originator.c
+> +++ b/net/batman-adv/originator.c
+> @@ -755,24 +755,15 @@ batadv_neigh_node_get_or_create(struct batadv_orig_=
+node *orig_node,
+>   */
+>  int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callbac=
+k *cb)
+>  {
+> -	struct net *net =3D sock_net(cb->skb->sk);
+>  	struct net_device *soft_iface;
+> -	struct net_device *hard_iface =3D NULL;
+> -	struct batadv_hard_iface *hardif =3D BATADV_IF_DEFAULT;
+> +	struct batadv_hard_iface *hard_iface;
+
+hard_iface is no longer initialized but you will use it after a goto (see=20
+below).
+
+>  	struct batadv_priv *bat_priv;
+>  	struct batadv_hard_iface *primary_if =3D NULL;
+>  	int ret;
+> -	int ifindex, hard_ifindex;
+> =20
+> -	ifindex =3D batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDE=
+X);
+> -	if (!ifindex)
+> -		return -EINVAL;
+> -
+> -	soft_iface =3D dev_get_by_index(net, ifindex);
+> -	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
+> -		ret =3D -ENODEV;
+> -		goto out;
+> -	}
+> +	soft_iface =3D batadv_netlink_get_softif(cb);
+> +	if (IS_ERR(soft_iface))
+> +		return PTR_ERR(soft_iface);
+> =20
+>  	bat_priv =3D netdev_priv(soft_iface);
+> =20
+> @@ -782,22 +773,14 @@ int batadv_hardif_neigh_dump(struct sk_buff *msg, s=
+truct netlink_callback *cb)
+>  		goto out;
+>  	}
+
+The goto here seems to be rather problematic... see below for more details
+
+> =20
+> -	hard_ifindex =3D batadv_netlink_get_ifindex(cb->nlh,
+> -						  BATADV_ATTR_HARD_IFINDEX);
+> -	if (hard_ifindex) {
+> -		hard_iface =3D dev_get_by_index(net, hard_ifindex);
+> -		if (hard_iface)
+> -			hardif =3D batadv_hardif_get_by_netdev(hard_iface);
+> -
+> -		if (!hardif) {
+> -			ret =3D -ENODEV;
+> +	hard_iface =3D batadv_netlink_get_hardif(bat_priv, cb);
+> +	if (IS_ERR(hard_iface)) {
+> +		if (PTR_ERR(hard_iface) !=3D -ENONET) {
+> +			ret =3D PTR_ERR(hard_iface);
+>  			goto out;
+>  		}
+> =20
+> -		if (hardif->soft_iface !=3D soft_iface) {
+> -			ret =3D -ENOENT;
+> -			goto out;
+> -		}
+> +		hard_iface =3D BATADV_IF_DEFAULT;
+>  	}
+> =20
+>  	if (!bat_priv->algo_ops->neigh.dump) {
+> @@ -805,13 +788,12 @@ int batadv_hardif_neigh_dump(struct sk_buff *msg, s=
+truct netlink_callback *cb)
+>  		goto out;
+>  	}
+> =20
+> -	bat_priv->algo_ops->neigh.dump(msg, cb, bat_priv, hardif);
+> +	bat_priv->algo_ops->neigh.dump(msg, cb, bat_priv, hard_iface);
+> =20
+>  	ret =3D msg->len;
+> =20
+>   out:
+> -	batadv_hardif_put(hardif);
+> -	dev_put(hard_iface);
+> +	batadv_hardif_put(hard_iface);
+>  	batadv_hardif_put(primary_if);
+>  	dev_put(soft_iface);
+
+
+You will now give batadv_hardif_put an unitialized value for hard_iface whe=
+n=20
+following goto is used:
+
+
+[...]
+	primary_if =3D batadv_primary_if_get_selected(bat_priv);
+	if (!primary_if || primary_if->if_status !=3D BATADV_IF_ACTIVE) {
+		ret =3D -ENOENT;
+		goto out;
+	}
+
+	hard_iface =3D batadv_netlink_get_hardif(bat_priv, cb);
+[...]
+
+This is also the reason why a non-descriptive, single return goto labels=20
+should be avoided [1].
+
+Kind regards,
+	Sven
+
+[1] https://www.kernel.org/doc/html/v6.12/process/coding-style.html#central=
+ized-exiting-of-functions
+--nextPart47173437.fMDQidcC6G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ3moQwAKCRBND3cr0xT1
+y/a+AP9a1k7mEVpj8nFbzffTxk/+995+dxY4Oow2EN1Q8+nRAAEApt+SdVUjUWuQ
+XDRmxpI0xz1CSiN4mBRJ6/ApxXN95g8=
+=6LpA
+-----END PGP SIGNATURE-----
+
+--nextPart47173437.fMDQidcC6G--
+
+
 
