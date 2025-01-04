@@ -4,82 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AF6BE77188
-	for <batman@archiver.kernel.org>; Tue, 31 Dec 2024 10:09:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3680E77188
+	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 01:28:22 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0C94783F6D
-	for <batman@archiver.kernel.org>; Tue, 31 Dec 2024 11:09:21 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 58D3183F98
+	for <batman@archiver.kernel.org>; Sat,  4 Jan 2025 02:28:20 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1735639761;
- b=3p+knVp/HNNnX9Kxi/1wC/HcMN8akLNzQBgzDlJCkstKdfz9uLvN2RR2tValoEG0hkP7e
- uDu/rhN/H9t/jo6mL25BaBPgR+OYZqF+GTAyupeUc23oEE3vWWHbQ9lt4k+P0bje8hnNpOJ
- mfkpLDpqjfZypU9qHJyhTa7Lxg/0phc=
+ t=1735954100;
+ b=3hRZnT7nTCFy4l/W3SygPpHkNWCWJg71lnA/B3IRYw2XJlK576ZXkXGxU+WfDoMIOpon2
+ DVedPla1pjaJT8eJbo0hYtWnqX4zqq1jy+Aoq/+bdQR4dLzB9sUMwGhizJ4CgfrDCEQR2/e
+ /rC9Sf0kEkBdFyR92bEnMfABbi/e1S0=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1735639761; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1735954100; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=upgbQ/wtK5DfvcZNP4GQxa4I5LKAJWgqHkQ2M+3VYGE=;
- b=snTRzJfoUmHnJ8hdFiOBSPBVXO97s6FOBu205t3drPJOAwtvjgH079VXybXR9DJN62j3B
- T5P7GphMoLBWKDL6wuNmohfV1TlShAbo6QY9LIRSeVZoIkcSjJ+o6TGUf0rhFlM68eLsXqu
- d0t0O6AxWoCuAEU3OQlmVPK+VcVPGPU=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=thbhgAHpm+/8igOJzq3J35wotoai9NmsI9Um0UXnCLM=;
+ b=IDvx11FEfOVr6uFokx3zMz6W5p+r4RCGmh/mn1cUa34RCN67JlfhK8vtYQEB6edNqbPa4
+ 05s7coS3KqQlSgJ0jcKdpxqh9dk9acrnjK07Cz7okcurBbjyPQq7aoYiOzl6ASG+Z8u5eLx
+ WzCVSAvhEiNz0SXtHstztyVdkSArTds=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id EA03C82F33
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 31 Dec 2024 11:09:03 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-vs1-xe2f.google.com (mail-vs1-xe2f.google.com
+ [IPv6:2607:f8b0:4864:20::e2f])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7E20781663
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  4 Jan 2025 02:28:00 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1735639744;
+	s=20121; t=1735954080;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=upgbQ/wtK5DfvcZNP4GQxa4I5LKAJWgqHkQ2M+3VYGE=;
-	b=ifIGQVxw7stW/e4wVtOV4pkYqA/MCdHiUqIfD5v7ZnNnwnu8f+iq6sQKUqKFX+x47f+0hl
-	6fMD7HGz03tNg8XFTzm4Wvs1IWLKJMHvvhGjKONjNXiN6ct1cXulNQTrOhepOqe9hir8wU
-	Tyu72uDpBQVm5kxqApagQH2Xc4HxP0s=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=thbhgAHpm+/8igOJzq3J35wotoai9NmsI9Um0UXnCLM=;
+	b=bKN52GwCRZvqXcALH80SppVlhprDjXsTqFjg37bRx7op5vRdYyMYsuTTTH7P2IIVGHj4/n
+	c4Q1YAt20Hc2Ao3GWrNmCc9IKCt9Su8LT/On3OLXSadwh5LAQDNrXq0NKzHwa4YJ2jAov/
+	736c95rZsKiO7TeuywEx3o49xbj1ETM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="HA/woGb2";
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735639744; a=rsa-sha256;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b="e/25Jzm6";
+	dmarc=pass (policy=none) header.from=gmail.com;
+	spf=pass (diktynna.open-mesh.org: domain of noahbpeterson1997@gmail.com
+ designates 2607:f8b0:4864:20::e2f as permitted sender)
+ smtp.mailfrom=noahbpeterson1997@gmail.com
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1735954080; a=rsa-sha256;
 	cv=none;
-	b=pyzlshYDtoFxrZbQ++aluQ6hAAh0vjZV7QuKXH/zrN3XR2zhscZgM3FVxc4Mi/QjqUej1y
-	xnX7SWrjrDsdszC6/DRshbnGnB5CH5DjsiEuhmvGtEWVT+wLWb+PHd00G9Ld1fqLNGnMFR
-	XzKzRFUl+4Up7VSNEr0908wFLn1j5s8=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1735639743;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=upgbQ/wtK5DfvcZNP4GQxa4I5LKAJWgqHkQ2M+3VYGE=;
-	b=HA/woGb2Y7AS0D6hsaEjp2zJIek3qudcqEGwJCQ1ACU+M8yLwGW/WYO7iDcuOR7Wqrp/Gm
-	slquvpbVm3PYGYkda6UbBotCAap2oD/J6eAX08QvDSViLR2Nr4zAA/i4lsLPg+4Kk4RxRm
-	kwknhHe27vUXqMjrazaQCtc0qXPSDtk=
-From: Sven Eckelmann <sven@narfation.org>
+	b=2dl9jXmu5gDdYe7wBsnxRR3f+MNn0nFYqzPV0p/Vde3YVACTdgXAw3YyhiY3lFL32+UPCT
+	I456C6UIYuoS2PURRsEvesT7CY1h0dSvd5cC02XnieOVbHnMKiyH/h5SLZDrY6ezeL8HIU
+	q8fVSEo81BHMi4WbT3xDVc/rPeneROI=
+Received: by mail-vs1-xe2f.google.com with SMTP id
+ ada2fe7eead31-4afd56903b7so3224480137.1
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Fri, 03 Jan 2025 17:28:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1735954079; x=1736558879;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=thbhgAHpm+/8igOJzq3J35wotoai9NmsI9Um0UXnCLM=;
+        b=e/25Jzm6USyOlr4uFMy0oKnApV4J9gaLgvN20JfBxl35QxotX6uMDbGVDfyl4rmS/n
+         SqoL3z+5DSXPksdcd2pUsgc0qxKnW/VSVriks4O7TX3++nKSDJ2qunpWIWWY179G0qxA
+         caJJDW4VYWAxs3mc7g93N46UVQwCc4NyDukY/PzAEtOfpECrX09EX49o9JXJfX6P5UZi
+         /OlfrMbUq+CZEYaFoZ8GtvgX1cf1TsAPNQYdK6IoMMhnwhATFoKfxt55SA8SLvhZNOPS
+         4JdlxyuHSq+vAtMlVyT2if5xuWluUzc9NJFCLumj9TIIv1C1gW7aRndauF2Yd2Uc0a1J
+         dizQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1735954079; x=1736558879;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=thbhgAHpm+/8igOJzq3J35wotoai9NmsI9Um0UXnCLM=;
+        b=HswBvx38ek0LIdoRHkgnuACfJQi1snlxsjwqqS9CzbALelchgPDkDh82zFdL/Pd1dI
+         ctuajVA1EjyzvVySqRNGV8MMyXPQqetDFwUa7kSQ3gliBfbdszn7DlGOXWX0BJGVQzrm
+         rl7s1En4QcA20ypEhNYk3tmovekuVjPYmraPNaFyj6psIZ4/udyAg0FPxdl7rqylupzA
+         JhbkwEjgr+fW7snsmYjmjm21G0NOmtUJbc3H+eOinJV476eB4+Uw8W2dpvb7lklQ3En8
+         cJoFgmSgSqU5w4WVBlnjbcKKdG8jHAsOAVVx+JeUeAZz9kGsADGVLLtXBVQYywAVoE1n
+         9TMw==
+X-Gm-Message-State: AOJu0Yzw1LjwR8p8jdGbo8qVepAz8RkuVLrF30MEb7fzZbc4AD2NZSce
+	RUPheAmupQESoYZs7l2qEl2nmldkHMlf44kwMEMkltn9A7Thh0PRJa0e7Qgy
+X-Gm-Gg: ASbGncu2CWxOp4y5bV19lFj6aVIOEnFL2fX79J6PQygi5p96s/jF3HwA/FFl1wFkw9d
+	+olzAAJvYlxgudc7l0cMaQLZRtkiq35lvGtuniL0chUW5289Bch4Hrb5tWCMzaAF88KR6nArZJT
+	TTNowsXLLeo2X3a8yd64nVrvKt7d29iUN/m2UuYX13GJwLovXzs3p4iNTxu0i5Ema6gsQwmg+o6
+	MPq8zGFvF3qYCb7/FBET0JEw2s+RAt/8jxo/NUOgXIHaU7jpGrtIylOLB1XxvbVZr+HOh9U8H2n
+	R1poHSlHslfrh126OQ==
+X-Google-Smtp-Source: 
+ AGHT+IFOLkQIOQUzk1X9nWVW5MHvFQPHJCa9bmzhIuFRykLulG7QQrfoq5p0ivrezS4giY3CcgFH7A==
+X-Received: by 2002:a05:6102:548f:b0:4b1:1a11:95f8 with SMTP id
+ ada2fe7eead31-4b2cc3785ccmr43666381137.11.1735954078821;
+        Fri, 03 Jan 2025 17:27:58 -0800 (PST)
+Received: from localhost.localdomain ([190.113.102.112])
+        by smtp.gmail.com with ESMTPSA id
+ ada2fe7eead31-4b2bfa8d62fsm6010894137.22.2025.01.03.17.27.56
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Fri, 03 Jan 2025 17:27:57 -0800 (PST)
+From: Noah Peterson <noahbpeterson1997@gmail.com>
+X-Google-Original-From: Noah Peterson <NoahBPeterson1997@gmail.com>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Noah Peterson <NoahBPeterson1997@gmail.com>
-Subject: Re: [PATCH v2] batctl: ping: Add subsecond precision to ping interval
-Date: Tue, 31 Dec 2024 11:08:59 +0100
-Message-ID: <3856697.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
-References: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
+Cc: Noah Peterson <NoahBPeterson1997@gmail.com>,
+	Noah Peterson <noahbpeterson1997@gmail.com>
+Subject: [PATCH] batctl: ping: Add subsecond precision to ping interval
+Date: Fri,  3 Jan 2025 19:27:50 -0600
+Message-Id: <20250104012750.52056-1-NoahBPeterson1997@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3609184.iIbC2pHGDl";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: TFKZO7RZBYUSNM6HXXLBSUTLRF2KASZR
-X-Message-ID-Hash: TFKZO7RZBYUSNM6HXXLBSUTLRF2KASZR
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: ONYLCJUI6BYEJV5UVR7QCWYL44BME6Q7
+X-Message-ID-Hash: ONYLCJUI6BYEJV5UVR7QCWYL44BME6Q7
+X-MailFrom: noahbpeterson1997@gmail.com
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -92,7 +128,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TFKZO7RZBYUSNM6HXXLBSUTLRF2KASZR/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ONYLCJUI6BYEJV5UVR7QCWYL44BME6Q7/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -101,195 +137,89 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3609184.iIbC2pHGDl
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Noah Peterson <NoahBPeterson1997@gmail.com>
-Date: Tue, 31 Dec 2024 11:08:59 +0100
-Message-ID: <3856697.kQq0lBPeGt@sven-l14>
-In-Reply-To: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
-References: <20241225032724.29814-1-NoahBPeterson1997@gmail.com>
-MIME-Version: 1.0
+Modify the batctl ping utility to accept both integer and floating-point
+values for the interval between sending pings. This enhancement allows
+specifying intervals with subsecond precision.
 
-On Wednesday, 25 December 2024 04:27:24 GMT+1 Noah Peterson wrote:
-> Modify the batctl ping utility to accept both integer and floating-point
-> values for the interval between sending pings. This enhancement allows
-> specifying intervals with subsecond precision.
->=20
-> For example:
-> `sudo batctl ping aa:bb:cc:dd:ee:ff -i 0.5`
->=20
-> Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
-> ---
-> v2: Fixing use-after-free, adding a missing header file, noted by Sven
-> <sven@narfation.org>
+For example:
+`sudo batctl ping aa:bb:cc:dd:ee:ff -i 0.5`
 
-This patch doesn't apply:
+Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
+---
+v3: Rebasing on latest commit, reformatting code based on comments by Sven
+<sven@narfation.org>
+v2: Fixing use-after-free, adding a missing header file, noted by Sven
+<sven@narfation.org>
+---
+ ping.c | 27 ++++++++++++++++++++-------
+ 1 file changed, 20 insertions(+), 7 deletions(-)
 
-$ git rev-parse HEAD
-60ff59118fd7f007adae1cc77ce9b268e3c977ce
-
-$ b4 shazam -s 20241225032724.29814-1-NoahBPeterson1997@gmail.com
-Grabbing thread from lore.kernel.org/all/20241225032724.29814-1-NoahBPeters=
-on1997@gmail.com/t.mbox.gz
-Checking for newer revisions
-Grabbing search results from lore.kernel.org
-Analyzing 1 messages in the thread
-Looking for additional code-review trailers on lore.kernel.org
-Analyzing 0 code-review messages
-Checking attestation on all messages, may take a moment...
-=2D--
-  =E2=9C=93 [PATCH v2] batctl: ping: Add subsecond precision to ping interv=
-al
-    + Signed-off-by: Sven Eckelmann <sven@narfation.org>
-  ---
-  =E2=9C=93 Signed: DKIM/gmail.com
-=2D--
-Total patches: 1
-=2D--
-Applying: batctl: ping: Add subsecond precision to ping interval
-Patch failed at 0001 batctl: ping: Add subsecond precision to ping interval
-error: patch failed: ping.c:65
-error: ping.c: patch does not apply
-hint: Use 'git am --show-current-patch=3Ddiff' to see the failed patch
-hint: When you have resolved this problem, run "git am --continue".
-hint: If you prefer to skip this patch, run "git am --skip" instead.
-hint: To restore the original branch and stop patching, run "git am --abort=
-".
-hint: Disable this message with "git config advice.mergeConflict false"
-
-
-
-$ patch -p1 -i .git/rebase-apply/patch                                     =
-     =20
-patching file ping.c
-Hunk #1 succeeded at 19 (offset -2 lines).
-Hunk #2 FAILED at 66.
-Hunk #3 FAILED at 87.
-Hunk #4 succeeded at 302 (offset 16 lines).
-2 out of 4 hunks FAILED -- saving rejects to file ping.c.rej
-
-
-$ cat ping.c.rej
-=2D-- ping.c
-+++ ping.c
-@@ -66,14 +67,15 @@ static int ping(struct state *state, int argc, char **a=
-rgv)
-        struct bat_host *bat_host, *rr_host;
-        ssize_t read_len;
-        int ret =3D EXIT_FAILURE, res, optchar, found_args =3D 1;
-=2D       int loop_count =3D -1, loop_interval =3D 0, timeout =3D 1, rr =3D=
- 0, i;
-+       int loop_count =3D -1, timeout =3D 1, rr =3D 0, i;
-        unsigned int seq_counter =3D 0, packets_out =3D 0, packets_in =3D 0=
-, packets_loss;
-=2D       char *dst_string, *mac_string, *rr_string;
-=2D       double time_delta;
-+       char *dst_string, *mac_string, *rr_string, *end =3D NULL;
-+       double time_delta, ping_interval, integral_part, fractional_part =
-=3D 0.0;
-        float min =3D 0.0, max =3D 0.0, avg =3D 0.0, mdev =3D 0.0;
-        uint8_t last_rr_cur =3D 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
-        size_t packet_len;
-        int disable_translate_mac =3D 0;
-+       struct timespec loop_interval =3D {0, 0};
-=20
-        while ((optchar =3D getopt(argc, argv, "hc:i:t:RT")) !=3D -1) {
-                switch (optchar) {
-@@ -87,9 +89,17 @@ static int ping(struct state *state, int argc, char **ar=
-gv)
-                        ping_usage();
-                        return EXIT_SUCCESS;
-                case 'i':
-=2D                       loop_interval =3D strtol(optarg, NULL , 10);
-=2D                       if (loop_interval < 1)
-=2D                               loop_interval =3D 1;
-+                       errno =3D 0;
-+                       ping_interval =3D strtod(optarg, &end);
-+                       if (errno) {
-+                               fprintf(stderr, "Error - invalid ping inter=
-val '%s'\n", optarg);
-+                               goto out;
-+                       } else {
-+                               ping_interval =3D fmax(ping_interval, 0.001=
-);
-+                       }
-+                       fractional_part =3D modf(ping_interval, &integral_p=
-art);
-+                       loop_interval.tv_sec =3D (time_t)integral_part;
-+                       loop_interval.tv_nsec =3D (long)(fractional_part * =
-1000000000l);
-                        found_args +=3D ((*((char*)(optarg - 1)) =3D=3D opt=
-char ) ? 1 : 2);
-                        break;
-                case 't'
-
-
-It looks like you're changes were based on a version of batctl which was fr=
-om=20
-2024-10-19 or older.
-
-
-> ---
->  ping.c | 27 ++++++++++++++++++---------
->  1 file changed, 18 insertions(+), 9 deletions(-)
->=20
-> diff --git a/ping.c b/ping.c
-> index 52bce4d..a69b6ac 100644
-> --- a/ping.c
-> +++ b/ping.c
-> @@ -21,6 +21,7 @@
->  #include <stdint.h>
->  #include <sys/select.h>
->  #include <sys/time.h>
-> +#include <time.h>
->  #include <netinet/if_ether.h>
-> =20
->  #include "batadv_packet_compat.h"
-> @@ -65,14 +66,15 @@ static int ping(struct state *state, int argc, char *=
-*argv)
->  	struct bat_host *bat_host, *rr_host;
->  	ssize_t read_len;
->  	int ret =3D EXIT_FAILURE, res, optchar, found_args =3D 1;
-> -	int loop_count =3D -1, loop_interval =3D 0, timeout =3D 1, rr =3D 0, i;
-> +	int loop_count =3D -1, timeout =3D 1, rr =3D 0, i;
->  	unsigned int seq_counter =3D 0, packets_out =3D 0, packets_in =3D 0, pa=
-ckets_loss;
-> -	char *dst_string, *mac_string, *rr_string;
-> -	double time_delta;
-> +	char *dst_string, *mac_string, *rr_string, *end =3D NULL;
-> +	double time_delta, ping_interval, integral_part, fractional_part =3D 0.=
-0;
->  	float min =3D 0.0, max =3D 0.0, avg =3D 0.0, mdev =3D 0.0;
->  	uint8_t last_rr_cur =3D 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
->  	size_t packet_len;
->  	int disable_translate_mac =3D 0;
-> +	struct timespec loop_interval =3D {0, 0};
-
-This is one of the reasons why your patch doesn't apply. When you rebase it=
- on=20
-the newest version, please try to use the reverse X-mas tree order and avoi=
-d=20
-multiple declarations per line.
-
-Kind regards,
-	Sven
---nextPart3609184.iIbC2pHGDl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ3PCuwAKCRBND3cr0xT1
-y70YAP4lCgB7+PhFvTgzRGXHVN48HMaqWvkYcKOaCZE8Bj27ygD8CeidXf2cU5Am
-OrgZn9MrCccOJTrW2AkGOuVhLtUtDgg=
-=On8v
------END PGP SIGNATURE-----
-
---nextPart3609184.iIbC2pHGDl--
-
-
+diff --git a/ping.c b/ping.c
+index 52bce4d..9142a5a 100644
+--- a/ping.c
++++ b/ping.c
+@@ -21,6 +21,7 @@
+ #include <stdint.h>
+ #include <sys/select.h>
+ #include <sys/time.h>
++#include <time.h>
+ #include <netinet/if_ether.h>
+ 
+ #include "batadv_packet_compat.h"
+@@ -65,14 +66,19 @@ static int ping(struct state *state, int argc, char **argv)
+ 	struct bat_host *bat_host, *rr_host;
+ 	ssize_t read_len;
+ 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
+-	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
++	int loop_count = -1, timeout = 1, rr = 0, i;
+ 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
+ 	char *dst_string, *mac_string, *rr_string;
++	char *end = NULL;
+ 	double time_delta;
++	double ping_interval = 0.0;
++	double integral_part = 0.0;
++	double fractional_part = 0.0;
+ 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+ 	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
+ 	size_t packet_len;
+ 	int disable_translate_mac = 0;
++	struct timespec loop_interval = {0, 0};
+ 
+ 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
+ 		switch (optchar) {
+@@ -86,9 +92,17 @@ static int ping(struct state *state, int argc, char **argv)
+ 			ping_usage();
+ 			return EXIT_SUCCESS;
+ 		case 'i':
+-			loop_interval = strtol(optarg, NULL , 10);
+-			if (loop_interval < 1)
+-				loop_interval = 1;
++			errno = 0;
++			ping_interval = strtod(optarg, &end);
++			if (errno) {
++				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
++				goto out;
++			} else {
++				ping_interval = fmax(ping_interval, 0.001);
++			}
++			fractional_part = modf(ping_interval, &integral_part);
++			loop_interval.tv_sec = (time_t)integral_part;
++			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
+ 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+ 			break;
+ 		case 't':
+@@ -285,9 +299,8 @@ static int ping(struct state *state, int argc, char **argv)
+ 		/* skip last sleep in case no more packets will be sent out */
+ 		if (loop_count == 0)
+ 			continue;
+-
+-		if (loop_interval > 0)
+-			sleep(loop_interval);
++		if (loop_interval.tv_sec > 0 || loop_interval.tv_nsec > 0)
++			nanosleep(&loop_interval, NULL);
+ 		else if ((tv.tv_sec != 0) || (tv.tv_usec != 0))
+ 			select(0, NULL, NULL, NULL, &tv);
+ 	}
+-- 
+2.39.5 (Apple Git-154)
 
