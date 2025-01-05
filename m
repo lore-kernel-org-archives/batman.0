@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AE21E77197
-	for <batman@archiver.kernel.org>; Sun,  5 Jan 2025 07:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BED93E77197
+	for <batman@archiver.kernel.org>; Sun,  5 Jan 2025 08:04:23 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2FA7384092
-	for <batman@archiver.kernel.org>; Sun,  5 Jan 2025 08:13:14 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 173F3840F0
+	for <batman@archiver.kernel.org>; Sun,  5 Jan 2025 09:04:22 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1736061194;
- b=YBnna0MeBoTP6wZ8JugAwa0KgjLThJvPucyhtBzkOJnub061tg1s1PLXAqLSrpyGnko0h
- h9+Gubd0CfQ9POzfm6GbFon9V4BTwP4NGrNdlIniaMcffOKSdsRICses2K+ALrhsiSPIFDV
- PfpUvZapz88Cq0HAiO8rHUjcUUre1Lw=
+ t=1736064262;
+ b=VBO66jxfHECkIPSu9GjHb7dTm+XQkAtuH/vCFGGSH5YU8pzlAp9wFuTV1iEOXVgT/EZi2
+ vha0FiIMvObtoqZHveqcXRVjbk6so/aiJb1zrEvvfaBBRV50L10SDIATCdj9LSV+/3S8ctB
+ 7oZEm0VSmohlwoyVOYgy/So+FrPk20E=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1736061194; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736064262; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Wt3o4O604bKA4p6AOS0R1b+WDuSo3BO+Dl+7OGmYEKI=;
- b=X7AYEf+0exkpHfGEQcKBrwdHYqYLaikMTstH5OslalQHTktGSqV0UMN12emxe/uLxdNrO
- OSZ0d3bT1QguzY9XuqCfiW6u2ux80ZYKw6r6sLBCWIJHoeFtZSkbgfbcMorK/mpC7S24KQq
- 6uj2/nvGUSpIIt0vzIQVP7KvR5c9ASs=
+ list-archive; bh=rta9JDQ8iy0WLtrFKdcQRJBc5KTdaAkBQA58hKdzb+Q=;
+ b=oSq4530A09r1+lP0aSy2oL0YGoF5bb4jmxuvVU2oq+L2BDw3017q0uMoA6Ujw8QD2P2oL
+ veVz2o4BDYTUrk6AGJjVYxuMZpa+tryBc9M5qXaAlFuMPOVTxofECQ7qC/EJMsRL4LOgtRO
+ LIKvhoQcZGwfgyZn+e4MpLeQ/rBrgM4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -35,53 +35,54 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9511B81B0F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  5 Jan 2025 08:12:58 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6A41781027
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  5 Jan 2025 09:04:07 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1736061179;
+	s=20121; t=1736064247;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Wt3o4O604bKA4p6AOS0R1b+WDuSo3BO+Dl+7OGmYEKI=;
-	b=YL1JHRkVmwx9WJwjLlzLUOO5xpfvScS/Aj3M0SMSb1fEusD+oYdgy+gKkhBsBpTBvjLaqf
-	4giKXivBqWcYBO6zxBDEIp/nNRxZy/unjJg+P+ED22Zux4NyeyY5YQUgFwwTB1cZUEOkHS
-	IDUE8ZhRU26eiU8SORylHDigciKjwuw=
+	bh=rta9JDQ8iy0WLtrFKdcQRJBc5KTdaAkBQA58hKdzb+Q=;
+	b=uL1taYQ527jb+YNyXYghyvRXeCbhatKS3UcC3HSo7aO1Wm6jcEzUNKyL8AMy/lZpa6hZFq
+	QhvOM+QZTYDlVUYzHSiDa5LiailyPBbxyXPnpw9oGGLUNTxcd2Ioh95BZfBbPCzRBW+sC1
+	O4Z+/QUqUEfiBFAiYZdjgPzxLNWMxME=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="q5H/zVvq";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xPwmB7f+;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736061179; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736064247; a=rsa-sha256;
 	cv=none;
-	b=OZo6VSiqAarBN9UrrqSbdcEaSem3jXz6YSCLNkyQsPtleqOM/p0fQcQYbWxcYkKz+SBUiX
-	HXkfaL9SX26yI97KwaTVPhAOXdcNJG880WKqPJHTf+uLCS+vOre6a53/GooJvFYxCdR2EI
-	HQpW9KbtptGbJHMwk76Q19euee7odLI=
+	b=yH2c3PvtoLG0Y67vkoyF5nG3HofaV989P+4mU1lbl1jdPmCFeGOXRh0vn64+aoarXPMCHy
+	v8S1BwYdpJ/uWQym6EPB2kJdqJzOhuB16TnYWRpyGO0dUtKt/ldS3bcRB3u/uHWItvVXJu
+	GsV5n448t2YOfezs5FmcwK3LWx/Ywgs=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1736061177;
+	s=20121; t=1736064246;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Wt3o4O604bKA4p6AOS0R1b+WDuSo3BO+Dl+7OGmYEKI=;
-	b=q5H/zVvqxrbe/XyrvvR84pYjrSmDQo5u3qJK/lG4qrkfdKCFbeUwl2Ud1L1mZC432HawVd
-	VC1Mni9DfVq0ap1YOtimP8+9pAcjRWbh4F926XN90Dsabafqh3JEsrMNbh0ZUyQ/+w/Axx
-	5yJTpEbz2znWyQfuhQtklC3U40sLpA0=
+	bh=rta9JDQ8iy0WLtrFKdcQRJBc5KTdaAkBQA58hKdzb+Q=;
+	b=xPwmB7f+/3Ex5L0ySSzg9EnNo22x9yDmGKzImisv1AuS4ChZCqSRgEf/3eRaDFY6KPSvi0
+	u6vZeLtzxLF6cicZ0eZ/ZUScnWNYp4wbX9RksqAFF+xcSPMuKCa5bQMgNW0f143sflFQ/c
+	D5e/cIm2gdG+loyURHOEG9eM6lV5uSs=
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Noah Peterson <NoahBPeterson1997@gmail.com>
+Cc: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
 Subject: 
- Re: [PATCH v5 1/1] batctl: ping: Add subsecond precision to ping interval
-Date: Sun, 05 Jan 2025 08:12:50 +0100
-Message-ID: <2668360.NG923GbCHz@sven-l14>
-In-Reply-To: <20250105000908.66343-2-NoahBPeterson1997@gmail.com>
+ Re: [PATCH v3 2/3] batman-adv: limit number of learned VLANs from bridged-in
+ clients
+Date: Sun, 05 Jan 2025 09:04:00 +0100
+Message-ID: <15617211.tv2OnDr8pf@sven-l14>
+In-Reply-To: <20241202053511.326-3-linus.luessing@c0d3.blue>
 References: 
- <20250105000908.66343-1-NoahBPeterson1997@gmail.com>
- <20250105000908.66343-2-NoahBPeterson1997@gmail.com>
+ <20241202053511.326-1-linus.luessing@c0d3.blue>
+ <20241202053511.326-3-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart868284398.0ifERbkFSE";
+Content-Type: multipart/signed; boundary="nextPart4519325.1IzOArtZ34";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 5CBFHV5YDYD567J24Q6L6BPGH7NFEHQP
-X-Message-ID-Hash: 5CBFHV5YDYD567J24Q6L6BPGH7NFEHQP
+Message-ID-Hash: XWV7H77BBXRHGHMRIGJMND2EBZ5S3LLO
+X-Message-ID-Hash: XWV7H77BBXRHGHMRIGJMND2EBZ5S3LLO
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -95,7 +96,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5CBFHV5YDYD567J24Q6L6BPGH7NFEHQP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XWV7H77BBXRHGHMRIGJMND2EBZ5S3LLO/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -104,50 +105,96 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart868284398.0ifERbkFSE
-Content-Transfer-Encoding: 7Bit
+--nextPart4519325.1IzOArtZ34
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Noah Peterson <NoahBPeterson1997@gmail.com>
-Date: Sun, 05 Jan 2025 08:12:50 +0100
-Message-ID: <2668360.NG923GbCHz@sven-l14>
-In-Reply-To: <20250105000908.66343-2-NoahBPeterson1997@gmail.com>
+Cc: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Date: Sun, 05 Jan 2025 09:04:00 +0100
+Message-ID: <15617211.tv2OnDr8pf@sven-l14>
+In-Reply-To: <20241202053511.326-3-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 
-On Sunday, 5 January 2025 01:09:08 GMT+1 Noah Peterson wrote:
-[...]
->v5: Fixing whitespace misalignment,
-[...]
-> @@ -330,7 +343,7 @@ static int ping(struct state *state, int argc, char **argv)
->         printf("%u packets transmitted, %u received, %u%% packet loss\n",
->                packets_out, packets_in, packets_loss);
->         printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
-> -              min, avg, max, mdev);
-> +               min, avg, max, mdev);
->  
->         if (packets_in)
->                 ret = EXIT_SUCCESS;
+On Monday, 2 December 2024 06:05:21 GMT+1 Linus L=C3=BCssing wrote:
+> +       vlan_dyn_max =3D bat_priv->softif_vlan_dyn_max;
+> +       vlan_dyn_count =3D bat_priv->softif_vlan_dyn_count;
+> +
+> +       if (vid & BATADV_VLAN_HAS_TAG && !own &&
+> +           vlan_dyn_max <=3D vlan_dyn_count) {
+> +               spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+> +
+> +               net_ratelimited_function(batadv_info, bat_priv->soft_ifac=
+e,
+> +                                        "not adding VLAN %d, already lea=
+rned %hu VID(s)\n",
+> +                                        batadv_print_vid(vid), vlan_dyn_=
+max);
+> +               return NULL;
+> +       }
+> +
 
-Ehm.....
+net_ratelimited_function requires "#include <linux/net.h>" in soft-interfac=
+e.c
 
+> @@ -561,8 +562,9 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(str=
+uct batadv_priv *bat_priv,
+>   * otherwise.
+>   */
+>  static struct batadv_softif_vlan *
+> -batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short v=
+id)
+> +batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short v=
+id, bool own)
+>  {
+> +       unsigned short vlan_dyn_max, vlan_dyn_count;
+>         struct batadv_softif_vlan *vlan;
+> =20
+>         spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+
+Missing kernel-doc for new parameter "own"
+
+
+> @@ -597,20 +615,21 @@ batadv_softif_create_vlan(struct batadv_priv *bat_p=
+riv, unsigned short vid)
+>  /**
+>   * batadv_softif_vlan_get_or_create() - retrieve or create a softif vlan=
+ struct
+>   * @bat_priv: the bat priv with all the soft interface information
+> + * @addr: the mac address of the client to add
+>   * @vid: the VLAN identifier
+>   *
+>   * Return: the softif vlan struct if found or created or NULL otherwise.
+>   */
+>  struct batadv_softif_vlan *
+> -batadv_softif_vlan_get_or_create(struct batadv_priv *bat_priv,
+> -                                unsigned short vid)
+> +batadv_softif_vlan_get_or_create(struct batadv_priv *bat_priv, const u8 =
+*addr,
+> +                                unsigned short vid, bool own)
+
+
+kernel-doc for addr was added but not for new parameter "own"
+
+
+Btw. the first patch also doesn't apply at the moment.
 
 Kind regards,
 	Sven
---nextPart868284398.0ifERbkFSE
+--nextPart4519325.1IzOArtZ34
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ3ow8gAKCRBND3cr0xT1
-yxLuAP0flevnegONszC544TKucQk6xb4td6tORHYFhLur/AkxAD/SIUxQVOXQMSm
-Ew7rR489etLKxDYyGOBykeqeJ1YITg4=
-=uOkP
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ3o88AAKCRBND3cr0xT1
+yxyzAP9Pkhab8T/tkW2m0Zo9yryBMVo9yMBceu3M/k1s8t9GkAEA6O50frAz/+bP
+8kKuMJu/5pVByf1LEb358X3dNSr9Nwc=
+=jXzG
 -----END PGP SIGNATURE-----
 
---nextPart868284398.0ifERbkFSE--
+--nextPart4519325.1IzOArtZ34--
 
 
 
