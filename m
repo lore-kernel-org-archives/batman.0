@@ -4,122 +4,130 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5F9CE77188
-	for <batman@archiver.kernel.org>; Mon,  6 Jan 2025 13:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F46E77197
+	for <batman@archiver.kernel.org>; Tue,  7 Jan 2025 09:26:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1502B83F88
-	for <batman@archiver.kernel.org>; Mon,  6 Jan 2025 14:52:36 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E607D83F66
+	for <batman@archiver.kernel.org>; Tue,  7 Jan 2025 10:26:44 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1736171556;
- b=PrTnCI88RQaovIpViKCmEiIq2jhTjmr6+C/v4+2+cGm6hIffwa1JfPKjE8MwCITRwHl6B
- cLvsx7/29w8NZKIfx8OBHNJgswcV8v0Z4BeIkKkprouVL7kDN7QdXmVdgF8lGwE6MI/foAh
- NvtMiTztLVwdFGMb5V5fkqFUNTc3YYc=
+ t=1736242004;
+ b=mdZsZleUrgNdIaoIdgMZQ/+g+R86sUhNHCvSfCA8HgfSDGLmbZO/uFop4LLcYKUF3lzzq
+ +kElSzUNrxVZXv70ZnYGAeuHdM0aJJK58oLpTt+LN2pJQdr18+srSERYSIrR3MDPy2hUXbA
+ SaW7tIaYy4xgAB0kwq3m13P0oeQqcjg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1736171556; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736242004; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fq12ErXZJDe4DTnUSzakPIkj8Y8HYTjh69RuupMaUl4=;
- b=wmvRTfcB8p7NczmMYL1VzrPnXmE5yTo1Yu6POkMQDdxCGF23YmPbH98IvL6oGBNqkY5ZT
- CGf0mUXpZJZ/vCwG02zmwP4l963ver9OmP+e3B7RbJmD6DQxKtG5u4tkJM0sL2HZX7orqnH
- 4EnkKPv4mXENZbEMlJss/yUyYORQhp4=
+ list-archive; bh=SC1mbAev+9sK6OCOjA6+EkRnZ+bYlCkoq+asNgcdmS4=;
+ b=ITSqPND3tuSx2XLFsy2OS9e7hZCgb6cl7nhZ1wQ8EXp/u9E/tr7ZXyQoGkUOYyN9EIf5R
+ dTLeOrUTSI7knkwuefm7mo9n6OeOIMYGD+lpQjBOVgNMap02u0VhblJp8VGWLfi6QG/QgL9
+ uGeH3SwllDpUN3/AjSTTqf2OR01R3EA=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=smtpservice.net header.i=@smtpservice.net;
+ dkim=pass header.d=amazon.com header.i=@amazon.com;
   arc=pass;
-  dmarc=fail (Used From Domain Record) header.from=triplefau.lt
- policy.dmarc=quarantine
+  dmarc=none
 Authentication-Results: open-mesh.org;
- dkim=pass header.d=smtpservice.net header.i=@smtpservice.net; arc=pass;
- dmarc=fail (Used From Domain Record) header.from=triplefau.lt
- policy.dmarc=quarantine
-Received: from e3i165.smtp2go.com (e3i165.smtp2go.com [158.120.84.165])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 677EE81534
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  6 Jan 2025 14:52:17 +0100 (CET)
+ dkim=pass header.d=amazon.com header.i=@amazon.com; arc=pass; dmarc=none
+Received: from smtp-fw-80008.amazon.com (smtp-fw-80008.amazon.com
+ [99.78.197.219])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6773281027
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue,  7 Jan 2025 09:57:32 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1736171537;
+	s=20121; t=1736240252;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=fq12ErXZJDe4DTnUSzakPIkj8Y8HYTjh69RuupMaUl4=;
-	b=vzrclIUk/mHkteDzAC0EKGTgAuqUM4KMJwGIIm8Y/fLppLFQdd0nN9bb7ppALNZiBRoE9w
-	VRr5hSrqJR9VDfyvHtiiS59VMGZPnb4ZG7ck42U3ehVemAX2aC3dcZ4f6PNrtdJyVOg4d5
-	DzNA02fMmn5pXrrWJnBO6M/kjqiEMQg=
+	bh=SC1mbAev+9sK6OCOjA6+EkRnZ+bYlCkoq+asNgcdmS4=;
+	b=t9DnqmxbHbIVLXvXHr19D4mAgvfSjjDUEGFhFhs08JFUP1XPXWiwwi53+0w8tLFaiRCP5F
+	YYUQsRE/sBxZNv624qi0JHU4vkx2batfC9hKcQeeWkFj/KmoJnszc/ZOXC2tGd5m9I8D1S
+	w3viiuBxOqh51+e+YqImybX6y+jR0h0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=smtpservice.net header.s=a1-4 header.b=mU4LkLmF;
-	dkim=pass header.d=triplefau.lt header.s=s510616 header.b="njzAAam/";
-	dmarc=pass (policy=quarantine) header.from=triplefau.lt;
+	dkim=pass header.d=amazon.com header.s=amazon201209 header.b=WD19+kMK;
+	dmarc=pass (policy=quarantine) header.from=amazon.com;
 	spf=pass (diktynna.open-mesh.org: domain of
- "bounce.58veepawbj5elm0=vpdq683serjh=99rr9othi7h4zq@em510616.triplefau.lt"
- designates 158.120.84.165 as permitted sender)
- smtp.mailfrom="bounce.58veepawbj5elm0=vpdq683serjh=99rr9othi7h4zq@em510616.triplefau.lt"
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736171537; a=rsa-sha256;
+ "prvs=09534159b=kuniyu@amazon.co.jp" designates 99.78.197.219 as permitted
+ sender) smtp.mailfrom="prvs=09534159b=kuniyu@amazon.co.jp"
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736240252; a=rsa-sha256;
 	cv=none;
-	b=dWFyrx+vXWwE4DWuigSwUHIPh++3dKwxlSa7H+CcAKpTnFu0QnJQn5IqDDWY+4gA/zDCm4
-	hsJqAWqwWJ8bj6qIovV7tkElzfjISX0BTUOeTUioi/qaqOeeat5i3htIdb8EOX3RvcAFXV
-	Kih6jQQYXZEaYZjcBEav15AgV77NhXU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smtpservice.net;
- i=@smtpservice.net; q=dns/txt; s=a1-4; t=1736171536; h=feedback-id :
- x-smtpcorp-track : date : message-id : to : subject : from : reply-to
- : sender : list-unsubscribe : list-unsubscribe-post;
- bh=fq12ErXZJDe4DTnUSzakPIkj8Y8HYTjh69RuupMaUl4=;
- b=mU4LkLmFFZGfGXl+Td8hVANVjm6noVOw44Laq2A75W25lK8NIqkvn0e5EeaIoHsbhWWjZ
- XlAKLHISYZgHMnQ2rbMBclm7SVqmc+pBodjP89KndG8I5Wpdk06TFP/FUba9XOj+CNAT83K
- KegYfWAw83FxfOh2yKTZ2IdBmyeY7iUv+6WLmqQumEURiILMQ+krbx8pcd736jUofjxMxCU
- Rdyjf5EfYzcakqj5lGKffBBQPlhh77ALJIC92WBR7zNjqb4DGzBBxRjAnLMhjRCOY45LsNG
- 02AAgNe0OEHqqiNGLqaKU8mVliYTuH95Bcoz1CV+6b36TXV26TsZ7xc/Oe2w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=triplefau.lt;
- i=@triplefau.lt; q=dns/txt; s=s510616; t=1736171536; h=from : subject
- : to : message-id : date;
- bh=fq12ErXZJDe4DTnUSzakPIkj8Y8HYTjh69RuupMaUl4=;
- b=njzAAam/KEb3tpZiSOOZpaFDGvgCB9KyM6jwv2U+4NiIevbNxHbEtjdRp8IRsoZx1Ckvk
- I+MIIzPSLCojk+r0gNMvcGp8UX4a0X1EEBW0kR8yu6+tjZaloNdTQT3LwEqCfS0XEuLcL7q
- dEnWr4SdPVoHobUIEvBi+H3NvjwP9LcvUIw4DUTkijMMXBAAhmyRPICM0AKJqSFQulH7d98
- iL00aZkAHNxao0K66DUY/dE4wdSqHtlUArSBygyRFKtmOQpZCX6wDhsjeSAf+PYfRz6dof1
- vl17eBSVCGBmIS1muRmLYsXn0nUHZ7xtsFO8TGgdGNh9YkOgNvU95Epvk5hw==
-Received: from [10.12.239.196] (helo=localhost)
-	by smtpcorp.com with esmtpsa
- (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.97.1-S2G)
-	(envelope-from <repk@triplefau.lt>)
-	id 1tUnWg-4o5NDgrrCc5-sIks;
-	Mon, 06 Jan 2025 13:52:14 +0000
-Date: Mon, 6 Jan 2025 14:49:23 +0100
-From: Remi Pommarel <repk@triplefau.lt>
-To: Noah Peterson <noahbpeterson1997@gmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH v5 1/1] batctl: ping: Add subsecond precision to ping
- interval
-Message-ID: <Z3vfYxPPM79TO3gB@pilgrim>
-References: <20250105000908.66343-1-NoahBPeterson1997@gmail.com>
- <20250105000908.66343-2-NoahBPeterson1997@gmail.com>
+	b=q/1vkwCe+wtXZMouuxxAGpshaFGNbil7xyMdtRkLjqYKToFfJq18nKYhvdeo3ribUNCRNu
+	1wGcTQQRS08IWsgdZAFTu9IFL85G3dma+hK6x6D8GDfskJV4PDYS8vmgtjR592PtuBzhLQ
+	b1NqmAb9NCRu9pA7aUBAnhnSAOTWkig=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1736240252; x=1767776252;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=SC1mbAev+9sK6OCOjA6+EkRnZ+bYlCkoq+asNgcdmS4=;
+  b=WD19+kMKP+r0ih161fnWXds8J9q1QJXRC0p2nQXSUSwR2cSKH8+KbuVy
+   W5HVJPELDa+nEwncyvBwlCAR4wOL/So0faP9XD5kTHZvBSI8vH6f6hVmI
+   McLr2Amjo+XVDVuokj2DR1F0vJHMcBcZQoIEgpFXjnc0TtkUH9mq8wIhy
+   k=;
+X-IronPort-AV: E=Sophos;i="6.12,295,1728950400";
+   d="scan'208";a="159523600"
+Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO
+ smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
+  by smtp-border-fw-80008.pdx80.corp.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2025 08:57:29 +0000
+Received: from EX19MTAUWC002.ant.amazon.com [10.0.38.20:39955]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.36.119:2525]
+ with esmtp (Farcaster)
+ id 9f3ed6e6-aeb4-4841-95ac-539e22d429cf; Tue, 7 Jan 2025 08:57:29 +0000 (UTC)
+X-Farcaster-Flow-ID: 9f3ed6e6-aeb4-4841-95ac-539e22d429cf
+Received: from EX19D004ANA001.ant.amazon.com (10.37.240.138) by
+ EX19MTAUWC002.ant.amazon.com (10.250.64.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.39;
+ Tue, 7 Jan 2025 08:57:28 +0000
+Received: from 6c7e67c6786f.amazon.com (10.118.249.113) by
+ EX19D004ANA001.ant.amazon.com (10.37.240.138) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.39;
+ Tue, 7 Jan 2025 08:57:07 +0000
+From: Kuniyuki Iwashima <kuniyu@amazon.com>
+To: <shaw.leon@gmail.com>
+CC: <andrew+netdev@lunn.ch>, <b.a.t.m.a.n@lists.open-mesh.org>,
+	<bpf@vger.kernel.org>, <bridge@lists.linux.dev>, <davem@davemloft.net>,
+	<donald.hunter@gmail.com>, <dsahern@kernel.org>, <edumazet@google.com>,
+	<horms@kernel.org>, <idosch@nvidia.com>, <jiri@resnulli.us>,
+	<kuba@kernel.org>, <kuniyu@amazon.com>, <linux-can@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-kselftest@vger.kernel.org>,
+	<linux-ppp@vger.kernel.org>, <linux-rdma@vger.kernel.org>,
+	<linux-wireless@vger.kernel.org>, <linux-wpan@vger.kernel.org>,
+	<liuhangbin@gmail.com>, <netdev@vger.kernel.org>,
+	<osmocom-net-gprs@lists.osmocom.org>, <pabeni@redhat.com>,
+	<shuah@kernel.org>, <wireguard@lists.zx2c4.com>
+Subject: Re: [PATCH net-next v7 00/11] net: Improve netns handling in
+ rtnetlink
+Date: Tue, 7 Jan 2025 17:56:46 +0900
+Message-ID: <20250107085646.42302-1-kuniyu@amazon.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20250104125732.17335-1-shaw.leon@gmail.com>
+References: <20250104125732.17335-1-shaw.leon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250105000908.66343-2-NoahBPeterson1997@gmail.com>
-X-Report-Abuse: Please forward a copy of this message, including all headers,
- to <abuse-report@smtp2go.com>
-Feedback-ID: 510616m:510616apGKSTK:510616sMMagZk8xg
-X-smtpcorp-track: 4NANqkkOQPHt.FSfzQZXJI7u6.x7tD1gwSyFM
-Message-ID-Hash: BKCXHBBKRYPV26THOHR4L5VZJK3V7RPP
-X-Message-ID-Hash: BKCXHBBKRYPV26THOHR4L5VZJK3V7RPP
-X-MailFrom: 
- bounce.58veepawbj5elm0=vpdq683serjh=99rr9othi7h4zq@em510616.triplefau.lt
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.118.249.113]
+X-ClientProxiedBy: EX19D031UWA001.ant.amazon.com (10.13.139.88) To
+ EX19D004ANA001.ant.amazon.com (10.37.240.138)
+X-MailFrom: prvs=09534159b=kuniyu@amazon.co.jp
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: TU5R4BFWEUDWMGONAGFAO3HZ5VTVTPMM
+X-Message-ID-Hash: TU5R4BFWEUDWMGONAGFAO3HZ5VTVTPMM
+X-Mailman-Approved-At: Tue, 07 Jan 2025 10:26:22 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BKCXHBBKRYPV26THOHR4L5VZJK3V7RPP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TU5R4BFWEUDWMGONAGFAO3HZ5VTVTPMM/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -128,94 +136,285 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi,
-
-On Sat, Jan 04, 2025 at 06:09:08PM -0600, Noah Peterson wrote:
-> Modify the batctl ping utility to accept both integer and floating-point
-> values for the interval between sending pings. This enhancement allows
-> specifying intervals with subsecond precision.
+From: Xiao Liang <shaw.leon@gmail.com>
+Date: Sat,  4 Jan 2025 20:57:21 +0800
+> This patch series includes some netns-related improvements and fixes for
+> rtnetlink, to make link creation more intuitive:
 > 
-> For example:
-> `sudo batctl ping aa:bb:cc:dd:ee:ff -i 0.5`
+>  1) Creating link in another net namespace doesn't conflict with link
+>     names in current one.
+>  2) Refector rtnetlink link creation. Create link in target namespace
+>     directly.
 > 
-> Signed-off-by: Noah Peterson <noahbpeterson1997@gmail.com>
-> ---
-> v5: Fixing whitespace misalignment, correcting changelogs, removing old
-> variable declaration, as noted by Sven <sven@narfation.org>
-> v4: Rebasing on latest commit, reformatting into reverse X-mas tree order based
-> on feedback from Sven <sven@narfation.org>
-> v3: Reformatting code based on comments by Sven
-> <sven@narfation.org>
-> v2: Fixing use-after-free, adding a missing header file, noted by Sven
-> <sven@narfation.org>
-> ---
->  ping.c | 27 ++++++++++++++++++++-------
->  1 file changed, 20 insertions(+), 7 deletions(-)
+> So that
 > 
-> diff --git a/ping.c b/ping.c
-> index 14d9c21..6fd11b2 100644
-> --- a/ping.c
-> +++ b/ping.c
-> @@ -19,6 +19,7 @@
->  #include <stdint.h>
->  #include <sys/select.h>
->  #include <sys/time.h>
-> +#include <time.h>
->  #include <netinet/if_ether.h>
->  
->  #include "batadv_packet_compat.h"
-> @@ -58,18 +59,21 @@ static int ping(struct state *state, int argc, char **argv)
->  	struct batadv_icmp_packet_rr icmp_packet_out;
->  	struct batadv_icmp_packet_rr icmp_packet_in;
->  	uint8_t last_rr[BATADV_RR_LEN][ETH_ALEN];
-> +	struct timespec loop_interval = {0, 0};
->  	struct ether_addr *dst_mac = NULL;
->  	struct ether_addr *rr_mac = NULL;
->  	int disable_translate_mac = 0;
-> +	double fractional_part = 0.0;
->  	unsigned int seq_counter = 0;
->  	unsigned int packets_out = 0;
->  	unsigned int packets_in = 0;
-> +	double ping_interval = 0.0;
-> +	double integral_part = 0.0;
->  	unsigned int packets_loss;
->  	struct bat_host *bat_host;
->  	struct bat_host *rr_host;
->  	uint8_t last_rr_cur = 0;
->  	int ret = EXIT_FAILURE;
-> -	int loop_interval = 0;
->  	int loop_count = -1;
->  	int found_args = 1;
->  	size_t packet_len;
-> @@ -86,6 +90,7 @@ static int ping(struct state *state, int argc, char **argv)
->  	int timeout = 1;
->  	int optchar;
->  	int rr = 0;
-> +	char *end;
->  	int res;
->  	int i;
->  
-> @@ -101,9 +106,17 @@ static int ping(struct state *state, int argc, char **argv)
->  			ping_usage();
->  			return EXIT_SUCCESS;
->  		case 'i':
-> -			loop_interval = strtol(optarg, NULL, 10);
-> -			if (loop_interval < 1)
-> -				loop_interval = 1;
-> +			errno = 0;
-> +			ping_interval = strtod(optarg, &end);
-> +			if (errno) {
-> +				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
-> +				goto out;
-> +			} else {
-> +				ping_interval = fmax(ping_interval, 0.001);
-> +			}
+>   # ip link add netns ns1 link-netns ns2 tun0 type gre ...
+> 
+> will create tun0 in ns1, rather than create it in ns2 and move to ns1.
+> And don't conflict with another interface named "tun0" in current netns.
+> 
+> Patch 01 serves for 1) to avoids link name conflict in different netns.
+> 
+> To achieve 2), there're mainly 3 steps:
+> 
+>  - Patch 02 packs newlink() parameters into a struct, including
+>    the original "src_net" along with more netns context. No semantic
+>    changes are introduced.
+>  - Patch 03 ~ 07 converts device drivers to use the explicit netns
+>    extracted from params.
+>  - Patch 08 ~ 09 removes the old netns parameter, and converts
+>    rtnetlink to create device in target netns directly.
+> 
+> Patch 10 ~ 11 adds some tests for link name and link netns.
+> 
+> 
+> BTW please note there're some issues found in current code:
+> 
+> - In amt_newlink() drivers/net/amt.c:
+> 
+>     amt->net = net;
+>     ...
+>     amt->stream_dev = dev_get_by_index(net, ...
+> 
+>   Uses net, but amt_lookup_upper_dev() only searches in dev_net.
+>   So the AMT device may not be properly deleted if it's in a different
+>   netns from lower dev.
 
-If you are going to floor to 1 millisecond anyway why didn't you use
-msleep() (or fsleep() if you needed precision) then ? This would avoid
-the conversion to timespec and hence the use of modf().
+I think you are right, and the upper device will be leaked
+and UAF will happen.
 
-Regards,
+amt must manage a list linked to a lower dev.
 
--- 
-Remi
+Given no one has reported the issue, another option would be
+drop cross netns support in a short period.
+
+---8<---
+diff --git a/drivers/net/amt.c b/drivers/net/amt.c
+index 98c6205ed19f..d39a5fe17a6f 100644
+--- a/drivers/net/amt.c
++++ b/drivers/net/amt.c
+@@ -3168,6 +3168,12 @@ static int amt_newlink(struct net *net, struct net_device *dev,
+ 	struct amt_dev *amt = netdev_priv(dev);
+ 	int err = -EINVAL;
+ 
++	if (!net_eq(net, dev_net(dev))) {
++		NL_SET_ERR_MSG_ATTR(extack, tb[IFLA_TARGET_NETNSID],
++				    "Can't find stream device in a different netns");
++		return err;
++	}
++
+ 	amt->net = net;
+ 	amt->mode = nla_get_u32(data[IFLA_AMT_MODE]);
+ 
+---8<---
+
+
+> 
+> - In gtp_newlink() in drivers/net/gtp.c:
+> 
+>     gtp->net = src_net;
+>     ...
+>     gn = net_generic(dev_net(dev), gtp_net_id);
+>     list_add_rcu(&gtp->list, &gn->gtp_dev_list);
+> 
+>   Uses src_net, but priv is linked to list in dev_net. So it may not be
+>   properly deleted on removal of link netns.
+
+The device is linked to a list in the same netns, so the
+device will not be leaked.  See gtp_net_exit_batch_rtnl().
+
+Rather, the problem is the udp tunnel socket netns could be
+freed earlier than the dev netns.
+
+---8<---
+# ip netns add test
+# ip netns attach root 1
+# ip -n test link add netns root name gtp0 type gtp role sgsn
+# ip netns del test
+[  125.828205] ref_tracker: net notrefcnt@0000000061c9afc0 has 1/2 users at
+[  125.828205]      sk_alloc+0x7c8/0x8c0
+[  125.828205]      inet_create+0x284/0xd70
+[  125.828205]      __sock_create+0x23b/0x6a0
+[  125.828205]      udp_sock_create4+0x94/0x3f0
+[  125.828205]      gtp_create_sock+0x286/0x340
+[  125.828205]      gtp_create_sockets+0x43/0x110
+[  125.828205]      gtp_newlink+0x775/0x1070
+[  125.828205]      rtnl_newlink+0xa7f/0x19e0
+[  125.828205]      rtnetlink_rcv_msg+0x71b/0xc10
+[  125.828205]      netlink_rcv_skb+0x12b/0x360
+[  125.828205]      netlink_unicast+0x446/0x710
+[  125.828205]      netlink_sendmsg+0x73a/0xbf0
+[  125.828205]      ____sys_sendmsg+0x89d/0xb00
+[  125.828205]      ___sys_sendmsg+0xe9/0x170
+[  125.828205]      __sys_sendmsg+0x104/0x190
+[  125.828205]      do_syscall_64+0xc1/0x1d0
+[  125.828205] 
+[  125.833135] ref_tracker: net notrefcnt@0000000061c9afc0 has 1/2 users at
+[  125.833135]      sk_alloc+0x7c8/0x8c0
+[  125.833135]      inet_create+0x284/0xd70
+[  125.833135]      __sock_create+0x23b/0x6a0
+[  125.833135]      udp_sock_create4+0x94/0x3f0
+[  125.833135]      gtp_create_sock+0x286/0x340
+[  125.833135]      gtp_create_sockets+0x21/0x110
+[  125.833135]      gtp_newlink+0x775/0x1070
+[  125.833135]      rtnl_newlink+0xa7f/0x19e0
+[  125.833135]      rtnetlink_rcv_msg+0x71b/0xc10
+[  125.833135]      netlink_rcv_skb+0x12b/0x360
+[  125.833135]      netlink_unicast+0x446/0x710
+[  125.833135]      netlink_sendmsg+0x73a/0xbf0
+[  125.833135]      ____sys_sendmsg+0x89d/0xb00
+[  125.833135]      ___sys_sendmsg+0xe9/0x170
+[  125.833135]      __sys_sendmsg+0x104/0x190
+[  125.833135]      do_syscall_64+0xc1/0x1d0
+[  125.833135] 
+[  125.837998] ------------[ cut here ]------------
+[  125.838345] WARNING: CPU: 0 PID: 11 at lib/ref_tracker.c:179 ref_tracker_dir_exit+0x26c/0x520
+[  125.838906] Modules linked in:
+[  125.839130] CPU: 0 UID: 0 PID: 11 Comm: kworker/u16:0 Not tainted 6.13.0-rc5-00150-gc707e6e25dde #188
+[  125.839734] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014
+[  125.840497] Workqueue: netns cleanup_net
+[  125.840773] RIP: 0010:ref_tracker_dir_exit+0x26c/0x520
+[  125.841128] Code: 00 00 00 fc ff df 4d 8b 26 49 bd 00 01 00 00 00 00 ad de 4c 39 f5 0f 85 df 00 00 00 48 8b 74 24 08 48 89 df e8 a5 cc 12 02 90 <0f> 0b 90 48 8d 6b 44 be 04 00 00 00 48 89 ef e8 80 de 67 ff 48 89
+[  125.842364] RSP: 0018:ff11000007f3fb60 EFLAGS: 00010286
+[  125.842714] RAX: 0000000000004337 RBX: ff1100000d231aa0 RCX: 1ffffffff0e40d5c
+[  125.843195] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff8423ee3c
+[  125.843664] RBP: ff1100000d231af0 R08: 0000000000000001 R09: fffffbfff0e397ae
+[  125.844142] R10: 0000000000000001 R11: 0000000000036001 R12: ff1100000d231af0
+[  125.844606] R13: dead000000000100 R14: ff1100000d231af0 R15: dffffc0000000000
+[  125.845067] FS:  0000000000000000(0000) GS:ff1100006ce00000(0000) knlGS:0000000000000000
+[  125.845596] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  125.845984] CR2: 0000564cbf104000 CR3: 000000000ef44001 CR4: 0000000000771ef0
+[  125.846480] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  125.846958] DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400
+[  125.847450] PKRU: 55555554
+[  125.847634] Call Trace:
+[  125.847800]  <TASK>
+[  125.847946]  ? __warn+0xcc/0x2d0
+[  125.848177]  ? ref_tracker_dir_exit+0x26c/0x520
+[  125.848485]  ? report_bug+0x28c/0x2d0
+[  125.848742]  ? handle_bug+0x54/0xa0
+[  125.848982]  ? exc_invalid_op+0x18/0x50
+[  125.849252]  ? asm_exc_invalid_op+0x1a/0x20
+[  125.849537]  ? _raw_spin_unlock_irqrestore+0x2c/0x50
+[  125.849865]  ? ref_tracker_dir_exit+0x26c/0x520
+[  125.850174]  ? __pfx_ref_tracker_dir_exit+0x10/0x10
+[  125.850510]  ? kfree+0x1cf/0x3e0
+[  125.850740]  net_free+0x5d/0x90
+[  125.850962]  cleanup_net+0x685/0x8e0
+[  125.851226]  ? __pfx_cleanup_net+0x10/0x10
+[  125.851514]  process_one_work+0x7d4/0x16f0
+[  125.851795]  ? __pfx_lock_acquire+0x10/0x10
+[  125.852072]  ? __pfx_process_one_work+0x10/0x10
+[  125.852396]  ? assign_work+0x167/0x240
+[  125.852653]  ? lock_is_held_type+0x9e/0x120
+[  125.852931]  worker_thread+0x54c/0xca0
+[  125.853193]  ? __pfx_worker_thread+0x10/0x10
+[  125.853485]  kthread+0x249/0x300
+[  125.853709]  ? __pfx_kthread+0x10/0x10
+[  125.853966]  ret_from_fork+0x2c/0x70
+[  125.854229]  ? __pfx_kthread+0x10/0x10
+[  125.854480]  ret_from_fork_asm+0x1a/0x30
+[  125.854746]  </TASK>
+[  125.854897] irq event stamp: 17849
+[  125.855138] hardirqs last  enabled at (17883): [<ffffffff812dc6ad>] __up_console_sem+0x4d/0x60
+[  125.855714] hardirqs last disabled at (17892): [<ffffffff812dc692>] __up_console_sem+0x32/0x60
+[  125.856315] softirqs last  enabled at (17878): [<ffffffff8117d603>] handle_softirqs+0x4f3/0x750
+[  125.856908] softirqs last disabled at (17857): [<ffffffff8117d9e4>] __irq_exit_rcu+0xc4/0x100
+[  125.857492] ---[ end trace 0000000000000000 ]---
+---8<---
+
+We can fix this by linking the dev to the socket's netns and
+clean them up in __net_exit hook as done in bareudp and geneve.
+
+---8<---
+diff --git a/drivers/net/gtp.c b/drivers/net/gtp.c
+index 89a996ad8cd0..77638a815873 100644
+--- a/drivers/net/gtp.c
++++ b/drivers/net/gtp.c
+@@ -70,6 +70,7 @@ struct pdp_ctx {
+ /* One instance of the GTP device. */
+ struct gtp_dev {
+ 	struct list_head	list;
++	struct list_head	sock_list;
+ 
+ 	struct sock		*sk0;
+ 	struct sock		*sk1u;
+@@ -102,6 +103,7 @@ static unsigned int gtp_net_id __read_mostly;
+ 
+ struct gtp_net {
+ 	struct list_head gtp_dev_list;
++	struct list_head gtp_sock_list;
+ };
+ 
+ static u32 gtp_h_initval;
+@@ -1526,6 +1528,10 @@ static int gtp_newlink(struct net *src_net, struct net_device *dev,
+ 
+ 	gn = net_generic(dev_net(dev), gtp_net_id);
+ 	list_add_rcu(&gtp->list, &gn->gtp_dev_list);
++
++	gn = net_generic(src_net, gtp_net_id);
++	list_add(&gtp->sock_list, &gn->gtp_sock_list);
++
+ 	dev->priv_destructor = gtp_destructor;
+ 
+ 	netdev_dbg(dev, "registered new GTP interface\n");
+@@ -1552,6 +1558,7 @@ static void gtp_dellink(struct net_device *dev, struct list_head *head)
+ 			pdp_context_delete(pctx);
+ 
+ 	list_del_rcu(&gtp->list);
++	list_del(&gtp->sock_list);
+ 	unregister_netdevice_queue(dev, head);
+ }
+ 
+@@ -2465,6 +2472,8 @@ static int __net_init gtp_net_init(struct net *net)
+ 	struct gtp_net *gn = net_generic(net, gtp_net_id);
+ 
+ 	INIT_LIST_HEAD(&gn->gtp_dev_list);
++	INIT_LIST_HEAD(&gn->gtp_sock_list);
++
+ 	return 0;
+ }
+ 
+@@ -2475,9 +2484,12 @@ static void __net_exit gtp_net_exit_batch_rtnl(struct list_head *net_list,
+ 
+ 	list_for_each_entry(net, net_list, exit_list) {
+ 		struct gtp_net *gn = net_generic(net, gtp_net_id);
+-		struct gtp_dev *gtp;
++		struct gtp_dev *gtp, *next;
++
++		list_for_each_entry_safe(gtp, next, &gn->gtp_dev_list, list)
++			gtp_dellink(gtp->dev, dev_to_kill);
+ 
+-		list_for_each_entry(gtp, &gn->gtp_dev_list, list)
++		list_for_each_entry_safe(gtp, next, &gn->gtp_sock_list, sock_list)
+ 			gtp_dellink(gtp->dev, dev_to_kill);
+ 	}
+ }
+---8<---
+
+
+> 
+> - In pfcp_newlink() in drivers/net/pfcp.c:
+> 
+>     pfcp->net = net;
+>     ...
+>     pn = net_generic(dev_net(dev), pfcp_net_id);
+>     list_add_rcu(&pfcp->list, &pn->pfcp_dev_list);
+> 
+>   Same as above.
+
+I haven't tested pfcp but it seems to have the same problem.
+
+I'll post patches for gtp and pfcp.
+
+
+> 
+> - In lowpan_newlink() in net/ieee802154/6lowpan/core.c:
+> 
+>     wdev = dev_get_by_index(dev_net(ldev), nla_get_u32(tb[IFLA_LINK]));
+> 
+>   Looks for IFLA_LINK in dev_net, but in theory the ifindex is defined
+>   in link netns.
+
+I guess you mean the ifindex is defined in src_net instead.
+Not sure if it's too late to change the behaviour.
