@@ -4,116 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13A1DE7719D
-	for <batman@archiver.kernel.org>; Fri, 10 Jan 2025 09:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93759E77188
+	for <batman@archiver.kernel.org>; Fri, 10 Jan 2025 13:13:49 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 40D5C83FEB
-	for <batman@archiver.kernel.org>; Fri, 10 Jan 2025 10:02:51 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E48758402F
+	for <batman@archiver.kernel.org>; Fri, 10 Jan 2025 14:13:47 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1736499771;
- b=MP1rx8Z0fQTKPEsRCMFv6wu0/IZCCisRiNMgY166gPhH3aDMJ6f4hCnqNXlTxCw0HN+Bu
- yMZfyDz6DVGvfTKow6VeDY7Xbbp/hP56jQyfGYezwdz+13w1L1sYlbExk9Ez8uF8JdOn7sT
- 3wtT8JZh23JX8uuxlu04+hYlT0aByxw=
+ t=1736514827;
+ b=XfbOpBsgTthN74Eqz4+m7p+VHZ8lP8o+Ja+xmGpV54OjUs6rJsP2KHo1fG/91RoLzlvp8
+ jZDSMdGwtyGwz+Waob+4lOtaUBcMkc9S8679zoikB3zhxK1ujlbXS2TBWF1DsJNnoQd6tQC
+ KFMuZzFoqJOYimIEz6On4V6TWx9l7V4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1736499771; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736514827; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=YqQZ6NTB044RS07QcQFC6ePNntljXlc6ixqpUpsQyIA=;
- b=CQp00mmBwj87DfLygCQpl6ZQUBPVC8xRgtwmOb8xn9HbngwN9RSBwohca0T0Qxte77AFh
- Mt60YIoLsYzutgzNsUyGahy7m6jGyIwqW0i0orhDcwzDntlqLaYHTEDOqSk68rFFOYVSbus
- p/2z+KCsOtmsi7INWHSe1+3apNV0Jgg=
+ list-archive; bh=+gNhOeuaAcLJWDO/umj751oX3HH7FwRtfMOB76qyaOk=;
+ b=EzvM1Gkkkffb0Q+PNaNSwMj7rIwCFIxdtlvLSL3Uqh1LN9jOVHJC5IiWjzcCbnXYxYt0l
+ 1MYhLrS48hUBqn+qCk08vVyP0mZtw058D9ZbwLTKdU/T4y/KrD708QjEk6lBkZKKzvGhtfX
+ 6JDJA2aEWYbgHcs+yjQ+dN5JPPF+K3Y=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com;
+ dkim=pass header.d=smtpservice.net header.i=@smtpservice.net;
   arc=pass;
-  dmarc=none
+  dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+ policy.dmarc=quarantine
 Authentication-Results: open-mesh.org;
- dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com; arc=pass;
- dmarc=none
-Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com
- [IPv6:2607:f8b0:4864:20::b35])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9831C81242
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 10 Jan 2025 10:02:31 +0100 (CET)
+ dkim=pass header.d=smtpservice.net header.i=@smtpservice.net; arc=pass;
+ dmarc=fail (Used From Domain Record) header.from=triplefau.lt
+ policy.dmarc=quarantine
+Received: from e3i103.smtp2go.com (e3i103.smtp2go.com [158.120.84.103])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4542A8191B
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 10 Jan 2025 14:13:24 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1736499751;
+	s=20121; t=1736514804;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=YqQZ6NTB044RS07QcQFC6ePNntljXlc6ixqpUpsQyIA=;
-	b=aQ6zCYmaB+38RUoDFSCpnoHvD6ZMZLYvAOi9K5uu0txilC3XhRq59rvxghQoUGkLFikDlV
-	ObwS4vVPK8ve+JNo88Is9tITJ2HsWUDdDprDeI7pDuRi6Tqr07OE5kYlRe3+jKCmLaEu2N
-	mZdoA71mzfPKxspxq7oCgT/7odh+8lQ=
+	bh=+gNhOeuaAcLJWDO/umj751oX3HH7FwRtfMOB76qyaOk=;
+	b=ww5lrisFsvntA/cz8yp9Vi2YJArssK0toVjWwBN+87z4+SfwuB0ye4CvQBysuZzS/PWQ0Q
+	0yrUSHFDyc3MhxVm3fhaEy0HEAY+BYvtxm991L7eyuUcUEb1bQOIDC1DsoYDEysyE9KmLS
+	JQ5/dfsOgDNanTqY3B4Ibn1nXEryRi0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com
- header.s=20230601 header.b=HF5bvtyt;
-	dmarc=none;
-	spf=none (diktynna.open-mesh.org: domain of andrew@andrewstrohman.com has no
- SPF policy when checking 2607:f8b0:4864:20::b35)
- smtp.mailfrom=andrew@andrewstrohman.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736499751; a=rsa-sha256;
+	dkim=pass header.d=smtpservice.net header.s=a1-4 header.b=ssjENbBZ;
+	dkim=pass header.d=triplefau.lt header.s=s510616 header.b=XGlz9+y5;
+	dmarc=pass (policy=quarantine) header.from=triplefau.lt;
+	spf=pass (diktynna.open-mesh.org: domain of
+ "bounce.d5172b2l2u78xm3=ngfyabipiq85=kklzctj36fwc0w@em510616.triplefau.lt"
+ designates 158.120.84.103 as permitted sender)
+ smtp.mailfrom="bounce.d5172b2l2u78xm3=ngfyabipiq85=kklzctj36fwc0w@em510616.triplefau.lt"
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736514804; a=rsa-sha256;
 	cv=none;
-	b=mF+LM5hs2XtJG2g/RS45HwvyWJiXkBGQ1rRSZ+IkLyT9O567gXh+W4jI6ZlJahrsbUNUH8
-	A6Jc8DPE3Db+Qcs/D6GqfoYEeJWSad/T76iTZyVy3WRtV5WcGQvTfcjgPALK69/iTCUTX3
-	vmmKp+gZ0vZrGY9Jinu+8QAelCfV23s=
-Received: by mail-yb1-xb35.google.com with SMTP id
- 3f1490d57ef6-e3c9ec344efso2846637276.2
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Fri, 10 Jan 2025 01:02:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=andrewstrohman-com.20230601.gappssmtp.com; s=20230601; t=1736499750;
- x=1737104550; darn=lists.open-mesh.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=YqQZ6NTB044RS07QcQFC6ePNntljXlc6ixqpUpsQyIA=;
-        b=HF5bvtytCLuRNveGlpnAqqM1Xcxu9nFA0yQqirdFhUtyk9+8ZseuUhGz8OmYZo0RXX
-         JpGIWqJAwuWUGKc4HCZSFoy9hiO22rqAANGYucMHDoehoHF+B2UOj3sTtdrgK6b7aA/r
-         wKlN4Ycp4ed/BuRVv3IyFOPGx22wF0ElmffkI8KMjV+zXLn2HHzFBLi/Px+/ZJ1F9pcy
-         ffZmE8qvDd/EgYN6X0NG317FTf3QvajnkppXhSeyScdB8jB0WjCD+fqnWZ9mmSDt1Wc1
-         1NaqioaDfdAltfl56X1nAEm/aUr4SGW2z9qtS+oZYjBr0dmHHEPe/gpHAcxI6d8TJsWr
-         8zgA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736499750; x=1737104550;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=YqQZ6NTB044RS07QcQFC6ePNntljXlc6ixqpUpsQyIA=;
-        b=aDSrXCWyYZfRlUXWk1EvR7mSZExQWkGMFPobp5tiTubbQMw9nA15Djh64p7Sz6tYYc
-         seQFCO7A/Ry5If6GRIuD1q+r7vziBnVcuKtTapo0MUH+y7h0JkaXN6aJlmW9/0ss7ctM
-         6uJAjujuBFSrvsU75XyBxkTplGuraxtfDoYZgNs4TIKaurvPU0znLpG7SJ9c7RLC6eCw
-         iTEavwfwOrU9jvCX/DWU+/leUjWANe9xxeOS6S8EZhd+Yd5MvIFsLLsLGB3431Pmx3zC
-         +2+IU2uvUKaeTBF1RflWnJoTqsaQzV39Dt4b3aMvu8I090JSPXyEsQPQyzwbjY5/ibt6
-         qrPA==
-X-Gm-Message-State: AOJu0Yx7Iyhq3qVHbV1pixRG6F86VlhtvWtiWP9zTYIT65Nnt3llUqIU
-	oCA7wImUZ1wYFS37h3rklS/L9/WQleb8LokEbFgDhRE5lqom49NExLsc6EcJuk5nbQwHKRkIRmf
-	rztZGXBX+ihAb0+2CiG/rgC+/0POPujfb9W646IxbRS/Q6fcdvM4=
-X-Gm-Gg: ASbGncugNS4K2j27GaG66dZvjmETjNSpiH4mzrYvzfuVYF/ZBmg8dyqIdxHZK/QyCSY
-	XGoX6f5py7mzlXA50oyYQlm0vEc6o7jLIxiQRxw==
-X-Google-Smtp-Source: 
- AGHT+IH6WBx/idA4E2ROuVNVBtqgZM6aoT7CvuuQGTgR6MBxPvNL6AfUxdzA/ojQCH9Jp9yxJ7YK14TS+pkNY90Vn/A=
-X-Received: by 2002:a05:6902:1581:b0:e4b:6ef6:e7bf with SMTP id
- 3f1490d57ef6-e54ee20d5b9mr7631537276.32.1736499750229; Fri, 10 Jan 2025
- 01:02:30 -0800 (PST)
-MIME-Version: 1.0
+	b=dxY3nCO+itsJasZQrgiH7lYW3mamvD/yW/Da7V0nEhrJ49Z/HZedUWGmiihXGbCQdXHfMg
+	zYdTgoxtw/fWMqDYFs4NTJJFOdvgULBfSEVSHaKBENEsxyRV2YiXVVFKVSOo2JZx2pWesk
+	UEc7WU6a5wQSdT0aKRHafA3VeXDBtGs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smtpservice.net;
+ i=@smtpservice.net; q=dns/txt; s=a1-4; t=1736514803; h=feedback-id :
+ x-smtpcorp-track : date : message-id : to : subject : from : reply-to
+ : sender : list-unsubscribe : list-unsubscribe-post;
+ bh=+gNhOeuaAcLJWDO/umj751oX3HH7FwRtfMOB76qyaOk=;
+ b=ssjENbBZhWG+Y1oC3s6C2yA4t8/DVzW1IGCQOk7Z7N85RN04rkfINQRcaUAlkffbF/Ir2
+ obido4toh/POSZrJAilb5hWh1MZIbWX66BqYOrS5ozluLDXt0LH0sjHKS51DLfCcwyzfDAM
+ nFMjQ9+OVnV1s7flzn0ZC+CXhfE/W10ESYHZZ5fw0gn2o4obzbHDNFDzPJI5+xSnQKHA2U1
+ n/Nn5kLT0iqTbOU7rPXQWvXoUdM1cl4sOPIocVte8tx+R3j/3UMGkAv3WKIo3/B9102Yg+8
+ d3ir+fltvgIc399AnX3bNNxNLbMBdY1tTisp71APXNomE8/mBayk0VUzG8WQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=triplefau.lt;
+ i=@triplefau.lt; q=dns/txt; s=s510616; t=1736514803; h=from : subject
+ : to : message-id : date;
+ bh=+gNhOeuaAcLJWDO/umj751oX3HH7FwRtfMOB76qyaOk=;
+ b=XGlz9+y5g+C3/+C3Hdz1Pwf2bnO37Zb4CGdB2wgofTOMT9CskmlgarAzoyjA6EIC9u1Yp
+ J9PUgK1nw6l5vqZHcesFeis9ndYWbeWEadHfMRAosQxQdlb3EkmgN2iZym2htb1QMXWawqb
+ SoS7ZqD0xFNCDyP6PbWKQldc5pEWiLeSJI71Kn+v1ZrG7IHfwUCt4GhqtvjdVbNAWk2Zo4h
+ CFsqg4XVOxzRaRYMf/XMpNa6Xksh9cs0Q7Xj7jRyk3qT2TIZv5Q0eKfNpH4D5auEWyuz/mi
+ C0K6JwBmFfHcqNKvPnxzuk9bhayKcIX4dpB8OZ+4ZJ5M3D32feBdwnRruqsQ==
+Received: from [10.12.239.196] (helo=localhost)
+	by smtpcorp.com with esmtpsa
+ (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.97.1-S2G)
+	(envelope-from <repk@triplefau.lt>)
+	id 1tWEpG-4o5NDgruDdO-lJzI;
+	Fri, 10 Jan 2025 13:13:22 +0000
+Date: Fri, 10 Jan 2025 14:10:21 +0100
+From: Remi Pommarel <repk@triplefau.lt>
+To: Andrew Strohman <andrew@andrewstrohman.com>
+Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH] batman-adv: fix panic during interface removal
+Message-ID: <Z4EcPQOMU1BUtO07@pilgrim>
 References: <20250109022756.1138030-1-andrew@andrewstrohman.com>
  <1882889.atdPhlSkOF@ripper>
  <CAA8ajJkhd=CaNoqZ+juKHh8PV975s_vEfLU4xLfwn-Yj+caEPg@mail.gmail.com>
  <5533653.Sb9uPGUboI@ripper>
-In-Reply-To: <5533653.Sb9uPGUboI@ripper>
-From: Andrew Strohman <andrew@andrewstrohman.com>
-Date: Fri, 10 Jan 2025 01:02:19 -0800
-X-Gm-Features: AbW1kvbc4rkOonfphm7JoVr12BoixxElD1ceNflg25lJqd4Sk3ZIMmPrjR8NgQw
-Message-ID: 
  <CAA8ajJnVQWO3fhLAjQtEfjEVReY7x-==TEkhrKQKZMrVJms44w@mail.gmail.com>
-Subject: Re: [PATCH] batman-adv: fix panic during interface removal
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID-Hash: OQ6Z5C3WCJMR4ULBWJQJGDC42V4JO7LC
-X-Message-ID-Hash: OQ6Z5C3WCJMR4ULBWJQJGDC42V4JO7LC
-X-MailFrom: andrew@andrewstrohman.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: 
+ <CAA8ajJnVQWO3fhLAjQtEfjEVReY7x-==TEkhrKQKZMrVJms44w@mail.gmail.com>
+X-Report-Abuse: Please forward a copy of this message, including all headers,
+ to <abuse-report@smtp2go.com>
+Feedback-ID: 510616m:510616apGKSTK:510616sRUWXvn-j-
+X-smtpcorp-track: PHdAnW-j5yS5.Z9h_cZmu0ob-.IiV8lAgVDr_
+Message-ID-Hash: HM3PT3Z4R57F5BPVGYCYFXDTR7RDXXFE
+X-Message-ID-Hash: HM3PT3Z4R57F5BPVGYCYFXDTR7RDXXFE
+X-MailFrom: 
+ bounce.d5172b2l2u78xm3=ngfyabipiq85=kklzctj36fwc0w@em510616.triplefau.lt
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -126,7 +122,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OQ6Z5C3WCJMR4ULBWJQJGDC42V4JO7LC/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HM3PT3Z4R57F5BPVGYCYFXDTR7RDXXFE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -135,47 +131,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-> I would prefer when you would call cancel_work_sync when metric stuff should
-> be stopped. I was expecting to see this somewhere around
-> batadv_v_elp_iface_disable after the cancel_work_sync but it seems like it is
-> missing there (or in a similar place)
->
+Hi Andrew,
 
-I tried this:
+On Fri, Jan 10, 2025 at 01:02:19AM -0800, Andrew Strohman wrote:
+> > I would prefer when you would call cancel_work_sync when metric stuff should
+> > be stopped. I was expecting to see this somewhere around
+> > batadv_v_elp_iface_disable after the cancel_work_sync but it seems like it is
+> > missing there (or in a similar place)
+> >
+> 
+> I tried this:
+> 
+> diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+> index 1d704574..b35ded79 100644
+> --- a/net/batman-adv/bat_v_elp.c
+> +++ b/net/batman-adv/bat_v_elp.c
+> @@ -387,8 +387,20 @@ int batadv_v_elp_iface_enable(struct
+> batadv_hard_iface *hard_iface)
+>   */
+>  void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
+>  {
+> +       struct batadv_hardif_neigh_node *hardif_neigh;
+> +
+>         cancel_delayed_work_sync(&hard_iface->bat_v.elp_wq);
+> 
+> +       rcu_read_lock();
+> +       hlist_for_each_entry_rcu(hardif_neigh,
+> +                                &hard_iface->neigh_list, list) {
+> +               if (!kref_get_unless_zero(&hardif_neigh->refcount))
+> +                       continue;
+> +               cancel_work_sync(&hardif_neigh->bat_v.metric_work);
+> +               batadv_hardif_neigh_put(hardif_neigh);
+> +       }
+> +       rcu_read_unlock();
+> +
+>         dev_kfree_skb(hard_iface->bat_v.elp_skb);
+>         hard_iface->bat_v.elp_skb = NULL;
+>  }
+> 
+> But it seems to cause a hang on reboot every once in a while. When the hang
+> happens, I'm not able to trigger sysrq over serial.
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 1d704574..b35ded79 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -387,8 +387,20 @@ int batadv_v_elp_iface_enable(struct
-batadv_hard_iface *hard_iface)
-  */
- void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
- {
-+       struct batadv_hardif_neigh_node *hardif_neigh;
-+
-        cancel_delayed_work_sync(&hard_iface->bat_v.elp_wq);
+Quickly looking at that I think that metric_work may need to sleep so
+calling cancel_work_sync() on this work does not seem safe while in rcu
+protected context.
 
-+       rcu_read_lock();
-+       hlist_for_each_entry_rcu(hardif_neigh,
-+                                &hard_iface->neigh_list, list) {
-+               if (!kref_get_unless_zero(&hardif_neigh->refcount))
-+                       continue;
-+               cancel_work_sync(&hardif_neigh->bat_v.metric_work);
-+               batadv_hardif_neigh_put(hardif_neigh);
-+       }
-+       rcu_read_unlock();
-+
-        dev_kfree_skb(hard_iface->bat_v.elp_skb);
-        hard_iface->bat_v.elp_skb = NULL;
- }
+I would try to frame the cancel_work_sync() call with
+rcu_read_unlock()/rcu_read_lock() as below:
 
-But it seems to cause a hang on reboot every once in a while. When the hang
-happens, I'm not able to trigger sysrq over serial.
+  rcu_read_unlock();
+  cancel_work_sync(...);
+  rcu_read_lock();
+  batadv_hardif_neigh_put(...);
 
-I can try kgdb, but that requires sysrq to work, so I'm not sure how
-I can gain control after the machine becomes unresponsive.
+But be careful as batadv_hardif_neigh_put() could modify the list you
+are currently traversing. At first glance it seems safe to realease
+rcu read constraint to call cancel_work_sync() as long as you take it
+back before calling batadv_hardif_neigh_put(), but this could need more
+though on that.
 
-I'm not sure why there isn't a watchdog bite when this happens.
-
-Andy
+-- 
+Remi
