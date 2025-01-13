@@ -1,136 +1,159 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A0C3E7719E
-	for <batman@archiver.kernel.org>; Mon, 13 Jan 2025 07:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0044C02180
+	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 15:22:04 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 21EA483FEC
-	for <batman@archiver.kernel.org>; Mon, 13 Jan 2025 08:35:38 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C8167834A8
+	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 16:22:02 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1736753738;
- b=TxszhTsRzw4AarCjv0h6j/t8KwFpFnw5ArDraEWb6ghx+3xlw/Zvw6x3BuGlJr10xC3q9
- bGCqkYtgL2DfGCdEb0WSdp++oP7WnGSO8AmVUbnHNsT9OG0fYmK0etfUelWJb2oLXOxPIEc
- Z6Yg6Hwv0jZURCK/zy/V89BLMpoimAo=
+ t=1736781722;
+ b=r9Jar5rPzxGMMPpP4yx1zS6goemamchqvS+1TBzwCY1wUQc28Z0u7tE/Es9I0yl+Op0ww
+ 9OBERFxrpsEeuo/G1FzqaigCmXVjccoxukwjYfRGg/GvcbDvFqVzstrcz9OXzd+HgByXzAK
+ at3uVqWHV1JeXCOqjxhuPtgluJ9ehh4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1736753738; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736781722; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ITF2strdj9Y684Qqm+UHAd3Wa5VlD0YwF9xm3pQKmc0=;
- b=WgBiM3x6FCJPdYPKxLjGT7GMH2kJ5uH9fN2n583UaBlslJBx9j6Irp2m1NgeSUD1HRDRe
- iL2r2nxx+izJbp0VAFSSHNCRrMTwB+b6FnE2ylnorSs4yfh0L5gi9Kh3BrNDv5X2acZEebH
- Q5AGCjL2z/lkEufVG6kWnwxPr1zwTx4=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com;
+ list-archive; bh=1beorUTBDb9d2ovAB2s5mK/OAF8szMbbImDZC22QQM8=;
+ b=4HR5/TMp1Pv8+8fPQ4gJd3UKse/t/bXGj4h/7Gs22M7HTrhOhrygXkqrkfXvCYnfPtQh1
+ d62rpaeHY0yVDWA5stZDOYVy0Xp8b+K1iX0VeORIMLdaRKbDCFSApei3s+I+9GVhUyZHvos
+ hyr4tdkNgf2ilcipq2N7OEVpXWuPvQo=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
-  dmarc=none
-Authentication-Results: open-mesh.org;
- dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com; arc=pass;
- dmarc=none
-Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com
- [IPv6:2607:f8b0:4864:20::b2d])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7C76581B6A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 13 Jan 2025 08:35:18 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
+ [IPv6:2607:f8b0:4864:20::635])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id BB29481027
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 13 Jan 2025 15:37:39 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1736753718;
+	s=20121; t=1736779060;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ITF2strdj9Y684Qqm+UHAd3Wa5VlD0YwF9xm3pQKmc0=;
-	b=i1J6off7ynVfAPEc/rY6FbBza6LuuyCbSGseHImXsgyU/y3t7ZCaXFbhmPiEFzXvN4qfnJ
-	qVggzcyze2KTyp/v8I+9mU6ijOxs9Su38fWjqx4U+bBXO+eNTjZlZgNwasDsGx0bwiDFYU
-	7o0FnZWVzdSqhTfEnd5Bdv+9+GlDHO0=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=1beorUTBDb9d2ovAB2s5mK/OAF8szMbbImDZC22QQM8=;
+	b=mz460oZuzuAYaBqR150IUKqlcm6mc94pwbRbiegaylcSIcZiWsKvex6w8fMmL0K3KhGNsn
+	lazHE04polXZvZy9k2f/bX13VAKk7052IKkQlZv1/kidEmwHF5qu22D8NtNGWKOFgMqr1o
+	rytRjN1U6jgTy4i9ydRFHOA2HGr0784=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=andrewstrohman-com.20230601.gappssmtp.com
- header.s=20230601 header.b=by1Yq+XB;
-	dmarc=none;
-	spf=none (diktynna.open-mesh.org: domain of andrew@andrewstrohman.com has no
- SPF policy when checking 2607:f8b0:4864:20::b2d)
- smtp.mailfrom=andrew@andrewstrohman.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736753718; a=rsa-sha256;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=TfagiTFh;
+	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
+ 2607:f8b0:4864:20::635 as permitted sender)
+ smtp.mailfrom=shaw.leon@gmail.com;
+	dmarc=pass (policy=none) header.from=gmail.com
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736779060; a=rsa-sha256;
 	cv=none;
-	b=jZLKkUVGF5sTdV9HAZzR6oGOQKc/S2Zxt+OYy69bPmNboT36RJtLUXDNEbIjo0wZYLsFFr
-	1XAdqg2WE4iboeRV0Bed+jxEngqKQiNJDwoYoSpgSzncWAx8jpQCduj4A98I91Ni6+rtWH
-	9E+zghAtSG8naa2vFJlEcdA2FN8o0kE=
-Received: by mail-yb1-xb2d.google.com with SMTP id
- 3f1490d57ef6-e39779a268bso5819959276.1
+	b=rpzWgwcgoymr51NziS8kAOPzoThvicztWhCrtxah8tLZShrUn7r7Ck8MHEW5w8pwOiMi2c
+	b5usi7lca3Lzvv12NfKjstWLy8FCHGpM2B1sjkIScqC/RanNOuE+kkDrLxIuZjqsyhxxBb
+	idVt/AAlSkeLns8AfiMWpjbVecPmdy4=
+Received: by mail-pl1-x635.google.com with SMTP id
+ d9443c01a7336-2166360285dso75900955ad.1
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Sun, 12 Jan 2025 23:35:18 -0800 (PST)
+ Mon, 13 Jan 2025 06:37:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=andrewstrohman-com.20230601.gappssmtp.com; s=20230601; t=1736753717;
- x=1737358517; darn=lists.open-mesh.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ITF2strdj9Y684Qqm+UHAd3Wa5VlD0YwF9xm3pQKmc0=;
-        b=by1Yq+XBBJLD32ygWwOTkQAjiD2QvG38dXVLbK4ZjXk9YO5bHO8dVOuOzHCZ31lpeu
-         BMhPLw442mV9vNUBh9bHKSeXBc9GZPaD6dAPVxMVbgozKulT9yeRZOblkgfcu6QEcA63
-         up+f+jzTrRndBmxWFdOeEElN9Ki9qxKadkcEoYvKNfzUEQx6u67dbkuIKChqo623zNP3
-         ceSbC6BbX/u+FGKneSj+U+Y/LXAbXI4hiXK/Ts5AhPj0ongQgeZCqGr3++Avu3945BMT
-         ZFDHAyNMrg7HCbTR+rGVQEtr6Ps8Sg23mgD07bv5EUfS1LYKQ79IwSPNiOARMTE6DuV8
-         lNjQ==
+        d=gmail.com; s=20230601; t=1736779058; x=1737383858;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1beorUTBDb9d2ovAB2s5mK/OAF8szMbbImDZC22QQM8=;
+        b=TfagiTFhr64NKt4dxZuZ6xxXrKSRbwnMU9X+aZOBtntUBwS2SnHpZL+Pq45AtfEGCt
+         FXVzM/Vj3YGi4zIEpG8krXjrnZKxk4siQOzpzHrtpF+pNrLCngxy5dtbQMDqKtVojy3p
+         2rzk1oMlC6e4qeuUlKYUJ6cJyhx8VcYloCv+rQXudzVbHXn7RB8ybFr9BYABDPWo/XeJ
+         Gthv5U/cIwm152a3DALGtUzIt4gN+qpDMZzdNKdaQlTJtUdBh7BUVmuslo7ugNQVzt5M
+         6Dlb6v9QjoU/atp2aPoxY/FNCtbCBeiW5P8Kvrt+CrTTqHi3GcgqOJ/hP+5yOY12tYHO
+         KttA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736753717; x=1737358517;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1736779058; x=1737383858;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ITF2strdj9Y684Qqm+UHAd3Wa5VlD0YwF9xm3pQKmc0=;
-        b=BQVba2ZTwh6if+w4t0UY/Cymjim+O7TftpW8AwRcarUATaocSSJ0YiBCIOmHfI5MWb
-         6c6GpTQyL5FfpuZ6K/vGmDui6sa/2oJ//y72XauTQ70VVDKbrRf56d4l4lcY3jgtHoBz
-         vuCBPO8vq4+mefqUxfcXIlW16u29XThQ4Gug8cbMJjea4y1hrl7o9GmLAAY1P8OtiRbB
-         jyGHlFr5XWRyLYqmYrRqIzCSgSimsge+u6fEQw7jLMaxtuOUVV7gqtciVxzXSQbN5w2J
-         y+yOlU7eeGTaagSVgnMRYjI6fVbKcXoIMK/WDLjTGftXcZ9uoAPqtpA7aSSW6OMQ5xi0
-         eACA==
+        bh=1beorUTBDb9d2ovAB2s5mK/OAF8szMbbImDZC22QQM8=;
+        b=AStdnwz2+cxnu/1JRyCajN0/cFYQ94Vm2B2X7wT9treWQRWu9owY8B/t2FabSiRZ8n
+         edN4h1FkyG/ujBFhHui4Vgg4RIHkabOgPk75lcQAwqxV10TbBt/I6DqiqJvMk7AyfywB
+         0czIbDt/YQf0CchXd+WCKNx8KHqUHs311A8GWaqU8wB/dpYrMldtDmfR0KHTVYuGmgR/
+         C+PooIf5HRVB3AoKpdwchC4+VD04QIPh04z9B0Da8MORSbpHp7fBo6o6GgXR0Qhblh2y
+         AY9q9v8WgpDcHIHSTjodb8dPI13Ue7DF4gzMsUWr+UNpFpqL0BrW3YqaZRDSbN9jasBS
+         QQUw==
 X-Forwarded-Encrypted: i=1;
- AJvYcCXwgq9Wa9mdyuPu961/LGDxEncAwjjYTMFUWG8655BbWs42uxR8zRwGJqQ1MSxcBYnXKq0OV0lBp+Kznw==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0Ywb9sJ6trt2D4HRJ+ZaGGLkyzOYRqoJ3avP/1pA3aZcjtks/im8
-	cIEHCcS2G0rVdvrbfpkpR9d/Ejd1KDqGAMl5AMbVLP0/QsOODI+8Nz7illG39eGvzRuwu28Zv0H
-	L0AWLF21YKt0Vysx2JcObRnTVfF7jXibLuyLnqIL7uJo6wo7Nmhw=
-X-Gm-Gg: ASbGncskKYYHM6MVgXvUGZUlPRdT651u4ZlkpJZOTYj/2WexMjeCM0nrdSRQinPhNQa
-	2yyqqGQkyApqEnvbjPsIR/VCdqsU/uNGNU2OphQ==
+ AJvYcCUVDXaONmCqd45z2ERC+nlT03MV5knAi/CwBcnE7m+s59/uX9J0F3PIJMIxua8AnGf9ditaz8OuvbCAgg==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YyiIU7+VbeYtRvdvZh5gRWFn7KXDnc6CcOMQ7Z810IG56fe1cqB
+	ej6V4HAqrTrpQUYklF2Xgx97iGM2z0Bz+3OYr2xDN2LRbGZw9Jru
+X-Gm-Gg: ASbGnculoHCknhtHamUlC/e8l7dc0Xlh3PoIJDz0O7CxvYlOr9eRIMp40lCD8OswjQu
+	X+7zRO0MvbYe4VeAhlT0jewBCwikE3pRNtPyPlX9EZrQYXIkH6Imk0dmWoQIO6SH9+P14haUvyN
+	FyLdujyTEQucg9gADm2Bsb0CoOQcFXC31gdIoU42VFHBM7Nm8HBVZVRhzIOTQPVZDglI+0LRjA0
+	Lvqx1RkkOy2FvxrCRAE4NU08cmgjUiIWk8EwPCKbwHG27k=
 X-Google-Smtp-Source: 
- AGHT+IG5Pi04XDhL3GNGT0wXGGQhziDaM8X+fx8/lWujz9bFIC6KPRmCTUli2BIMAtqFEHYm4go6l55hGT72hZgL27c=
-X-Received: by 2002:a25:2d23:0:b0:e57:3165:296a with SMTP id
- 3f1490d57ef6-e5731652b53mr6601404276.22.1736753717055; Sun, 12 Jan 2025
- 23:35:17 -0800 (PST)
+ AGHT+IF50iamtynxwVleVNAyS8mxO44RNkBtHV9bN/5WAHxvooRDGqm4UnZoDFbT5fV4mFafHkIg+Q==
+X-Received: by 2002:a17:903:1206:b0:216:59ed:1ab0 with SMTP id
+ d9443c01a7336-21a83f5d8c3mr269255565ad.27.1736779057926;
+        Mon, 13 Jan 2025 06:37:37 -0800 (PST)
+Received: from ws.. ([103.167.140.11])
+        by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-21a9f155e00sm54328715ad.103.2025.01.13.06.37.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jan 2025 06:37:37 -0800 (PST)
+From: Xiao Liang <shaw.leon@gmail.com>
+To: netdev@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Kuniyuki Iwashima <kuniyu@amazon.com>,
+	Jakub Kicinski <kuba@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+	David Ahern <dsahern@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Simon Horman <horms@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
+	Donald Hunter <donald.hunter@gmail.com>,
+	Alexander Aring <alex.aring@gmail.com>,
+	Stefan Schmidt <stefan@datenfreihafen.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Steffen Klassert <steffen.klassert@secunet.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-rdma@vger.kernel.org,
+	linux-can@vger.kernel.org,
+	osmocom-net-gprs@lists.osmocom.org,
+	bpf@vger.kernel.org,
+	linux-ppp@vger.kernel.org,
+	wireguard@lists.zx2c4.com,
+	linux-wireless@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	bridge@lists.linux.dev,
+	linux-wpan@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH net-next v8 00/11] net: Improve netns handling in rtnetlink
+Date: Mon, 13 Jan 2025 22:37:08 +0800
+Message-ID: <20250113143719.7948-1-shaw.leon@gmail.com>
+X-Mailer: git-send-email 2.47.1
 MIME-Version: 1.0
-References: <20250109022756.1138030-1-andrew@andrewstrohman.com>
- <1882889.atdPhlSkOF@ripper>
- <CAA8ajJkhd=CaNoqZ+juKHh8PV975s_vEfLU4xLfwn-Yj+caEPg@mail.gmail.com>
- <5533653.Sb9uPGUboI@ripper>
- <CAA8ajJnVQWO3fhLAjQtEfjEVReY7x-==TEkhrKQKZMrVJms44w@mail.gmail.com>
- <Z4EcPQOMU1BUtO07@pilgrim>
-In-Reply-To: <Z4EcPQOMU1BUtO07@pilgrim>
-From: Andrew Strohman <andrew@andrewstrohman.com>
-Date: Sun, 12 Jan 2025 23:35:05 -0800
-X-Gm-Features: AbW1kvYqnZzy2mSCr6FiOwLwkRyebsgYpE4Hs3hcie5Pbz5fD9jVqw8GQACtmAw
-Message-ID: 
- <CAA8ajJ=etpv--YNTww2uuYvNnoe2tCSNqas2cVLdZodHnqZb_g@mail.gmail.com>
-Subject: Re: [PATCH] batman-adv: fix panic during interface removal
-To: Remi Pommarel <repk@triplefau.lt>
-Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID-Hash: IJCAWOC5BV52SMWELKDAG46GUNMDWOTA
-X-Message-ID-Hash: IJCAWOC5BV52SMWELKDAG46GUNMDWOTA
-X-MailFrom: andrew@andrewstrohman.com
+Content-Transfer-Encoding: 8bit
+X-MailFrom: shaw.leon@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
+Message-ID-Hash: QA64FJUJ7W4Y7UGGCX2O7CP3P55XELGW
+X-Message-ID-Hash: QA64FJUJ7W4Y7UGGCX2O7CP3P55XELGW
+X-Mailman-Approved-At: Mon, 13 Jan 2025 16:21:55 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/IJCAWOC5BV52SMWELKDAG46GUNMDWOTA/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QA64FJUJ7W4Y7UGGCX2O7CP3P55XELGW/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -139,79 +162,190 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi Remi,
+This patch series includes some netns-related improvements and fixes for
+rtnetlink, to make link creation more intuitive:
 
- Thanks for your thoughts.
+ 1) Creating link in another net namespace doesn't conflict with link
+    names in current one.
+ 2) Refector rtnetlink link creation. Create link in target namespace
+    directly.
 
-> Quickly looking at that I think that metric_work may need to sleep so
-> calling cancel_work_sync() on this work does not seem safe while in rcu
-> protected context.
+So that
 
-Thanks, you're right. I'm not supposed to call cancel_work_sync() unless
-it's OK to sleep.
+  # ip link add netns ns1 link-netns ns2 tun0 type gre ...
 
+will create tun0 in ns1, rather than create it in ns2 and move to ns1.
+And don't conflict with another interface named "tun0" in current netns.
 
-> I would try to frame the cancel_work_sync() call with
-> rcu_read_unlock()/rcu_read_lock() as below:
->
->   rcu_read_unlock();
->   cancel_work_sync(...);
->   rcu_read_lock();
->   batadv_hardif_neigh_put(...);
+Patch 01 serves for 1) to avoids link name conflict in different netns.
 
+To achieve 2), there're mainly 3 steps:
 
-Despite the necessity to not sleep while in the RCU read side
-critical section, this was not the cause of the hang.
+ - Patch 02 packs newlink() parameters into a struct, including
+   the original "src_net" along with more netns context. No semantic
+   changes are introduced.
+ - Patch 03 ~ 07 converts device drivers to use the explicit netns
+   extracted from params.
+ - Patch 08 ~ 09 removes the old netns parameter, and converts
+   rtnetlink to create device in target netns directly.
 
-I enabled hung task detection and was able see the call
-stacks of all the tasks during the hang, which made the
-issue clear.  batadv_v_elp_iface_disable() is called with
-the RTNL lock held (via setlink). Calling cancel_work_sync()
-will wait on batadv_v_elp_throughput_metric_update()
-to complete, but batadv_v_elp_throughput_metric_update()
-calls batadv_v_elp_get_throughput(), which acquires
-the RTNL lock. So this is why I have deadlock: the work
-cannot move forward until the RTNL is released, but the
-caller of cancel_work_sync() holds the lock and won't release
-it until the work finishes.
-
-Sven, does this change your opinion about how this
-issue should be handled? I'm not sure yet if it's safe
-to temporarily release RTNL lock during the
-duration of the cancel_work_sync() call.
+Patch 10 ~ 11 adds some tests for link name and link netns.
 
 
-> But be careful as batadv_hardif_neigh_put() could modify the list you
-> are currently traversing.
+BTW please note there're some issues found in current code:
 
-Yes, batadv_hardif_neigh_put() can cause the reference count to go to zero.
-If so, batadv_hardif_neigh_release() will be called, but it frees the
-memory allocated for the neighbor with kfree_rcu(). Since the suggestion
-was to acquire the RCU read lock before calling batadv_hardif_neigh_put,
-I don't anticipate a use-after-free outcome.
+- In amt_newlink() drivers/net/amt.c:
 
-> At first glance it seems safe to realease
-> rcu read constraint to call cancel_work_sync() as long as you take it
-> back before calling batadv_hardif_neigh_put(), but this could need more
-> though on that.
+    amt->net = net;
+    ...
+    amt->stream_dev = dev_get_by_index(net, ...
 
-Do you happen to know where I can find an example of this usage
-pattern?
+  Uses net, but amt_lookup_upper_dev() only searches in dev_net.
+  So the AMT device may not be properly deleted if it's in a different
+  netns from lower dev.
 
-I wonder if unlocking and then re-locking will invalidate this [1]
-guarantee:
+- In gtp_newlink() in drivers/net/gtp.c:
 
-"The reader is guaranteed to see all of the elements which were
-added to the list before they acquired the rcu_read_lock() and are
-still on the list when they drop the rcu_read_unlock()."
+    gtp->net = src_net;
+    ...
+    gn = net_generic(dev_net(dev), gtp_net_id);
+    list_add_rcu(&gtp->list, &gn->gtp_dev_list);
 
->From testing, I don't see any issue when trying your suggestion,
-but it would be reassuring to see an example of this elsewhere
-in the code.
+  Uses src_net, but priv is linked to list in dev_net. So it may not be
+  properly deleted on removal of link netns.
+
+- In pfcp_newlink() in drivers/net/pfcp.c:
+
+    pfcp->net = net;
+    ...
+    pn = net_generic(dev_net(dev), pfcp_net_id);
+    list_add_rcu(&pfcp->list, &pn->pfcp_dev_list);
+
+  Same as above.
+
+- In lowpan_newlink() in net/ieee802154/6lowpan/core.c:
+
+    wdev = dev_get_by_index(dev_net(ldev), nla_get_u32(tb[IFLA_LINK]));
+
+  Looks for IFLA_LINK in dev_net, but in theory the ifindex is defined
+  in link netns.
 
 
-[1] https://docs.kernel.org/RCU/listRCU.html
+Kuniyuki has a patchset to address the issues of gtp and pfcp:
+https://lore.kernel.org/netdev/20250110014754.33847-1-kuniyu@amazon.com/
 
-Thanks,
+---
 
-Andy
+v8:
+ - Move dev and ext_ack out from param struct.
+ - Validate link_net and dev_net are identical for 6lowpan.
+
+v7:
+ link: https://lore.kernel.org/all/20250104125732.17335-1-shaw.leon@gmail.com/
+ - Add selftest kconfig.
+ - Remove a duplicated test of ip6gre.
+
+v6:
+ link: https://lore.kernel.org/all/20241218130909.2173-1-shaw.leon@gmail.com/
+ - Split prototype, driver and rtnetlink changes.
+ - Add more tests for link netns.
+ - Fix IPv6 tunnel net overwriten in ndo_init().
+ - Reorder variable declarations.
+ - Exclude a ip_tunnel-specific patch.
+
+v5:
+ link: https://lore.kernel.org/all/20241209140151.231257-1-shaw.leon@gmail.com/
+ - Fix function doc in batman-adv.
+ - Include peer_net in rtnl newlink parameters.
+
+v4:
+ link: https://lore.kernel.org/all/20241118143244.1773-1-shaw.leon@gmail.com/
+ - Pack newlink() parameters to a single struct.
+ - Use ynl async_msg_queue.empty() in selftest.
+
+v3:
+ link: https://lore.kernel.org/all/20241113125715.150201-1-shaw.leon@gmail.com/
+ - Drop "netns_atomic" flag and module parameter. Add netns parameter to
+   newlink() instead, and convert drivers accordingly.
+ - Move python NetNSEnter helper to net selftest lib.
+
+v2:
+ link: https://lore.kernel.org/all/20241107133004.7469-1-shaw.leon@gmail.com/
+ - Check NLM_F_EXCL to ensure only link creation is affected.
+ - Add self tests for link name/ifindex conflict and notifications
+   in different netns.
+ - Changes in dummy driver and ynl in order to add the test case.
+
+v1:
+ link: https://lore.kernel.org/all/20241023023146.372653-1-shaw.leon@gmail.com/
+
+
+
+Xiao Liang (11):
+  rtnetlink: Lookup device in target netns when creating link
+  rtnetlink: Pack newlink() params into struct
+  net: Use link netns in newlink() of rtnl_link_ops
+  ieee802154: 6lowpan: Validate link netns in newlink() of rtnl_link_ops
+  net: ip_tunnel: Use link netns in newlink() of rtnl_link_ops
+  net: ipv6: Use link netns in newlink() of rtnl_link_ops
+  net: xfrm: Use link netns in newlink() of rtnl_link_ops
+  rtnetlink: Remove "net" from newlink params
+  rtnetlink: Create link directly in target net namespace
+  selftests: net: Add python context manager for netns entering
+  selftests: net: Add test cases for link and peer netns
+
+ drivers/infiniband/ulp/ipoib/ipoib_netlink.c  |   9 +-
+ drivers/net/amt.c                             |  11 +-
+ drivers/net/bareudp.c                         |   9 +-
+ drivers/net/bonding/bond_netlink.c            |   6 +-
+ drivers/net/can/dev/netlink.c                 |   4 +-
+ drivers/net/can/vxcan.c                       |   7 +-
+ .../ethernet/qualcomm/rmnet/rmnet_config.c    |   9 +-
+ drivers/net/geneve.c                          |   9 +-
+ drivers/net/gtp.c                             |   8 +-
+ drivers/net/ipvlan/ipvlan.h                   |   3 +-
+ drivers/net/ipvlan/ipvlan_main.c              |   8 +-
+ drivers/net/ipvlan/ipvtap.c                   |   6 +-
+ drivers/net/macsec.c                          |   9 +-
+ drivers/net/macvlan.c                         |   7 +-
+ drivers/net/macvtap.c                         |   7 +-
+ drivers/net/netkit.c                          |   7 +-
+ drivers/net/pfcp.c                            |   7 +-
+ drivers/net/ppp/ppp_generic.c                 |   9 +-
+ drivers/net/team/team_core.c                  |   6 +-
+ drivers/net/veth.c                            |   7 +-
+ drivers/net/vrf.c                             |   5 +-
+ drivers/net/vxlan/vxlan_core.c                |   9 +-
+ drivers/net/wireguard/device.c                |   7 +-
+ drivers/net/wireless/virtual/virt_wifi.c      |   8 +-
+ drivers/net/wwan/wwan_core.c                  |  16 +-
+ include/net/ip_tunnels.h                      |   5 +-
+ include/net/rtnetlink.h                       |  40 ++++-
+ net/8021q/vlan_netlink.c                      |   9 +-
+ net/batman-adv/soft-interface.c               |   9 +-
+ net/bridge/br_netlink.c                       |   6 +-
+ net/caif/chnl_net.c                           |   5 +-
+ net/core/rtnetlink.c                          |  33 ++--
+ net/hsr/hsr_netlink.c                         |  12 +-
+ net/ieee802154/6lowpan/core.c                 |   7 +-
+ net/ipv4/ip_gre.c                             |  24 ++-
+ net/ipv4/ip_tunnel.c                          |  10 +-
+ net/ipv4/ip_vti.c                             |   9 +-
+ net/ipv4/ipip.c                               |   9 +-
+ net/ipv6/ip6_gre.c                            |  30 ++--
+ net/ipv6/ip6_tunnel.c                         |  19 ++-
+ net/ipv6/ip6_vti.c                            |  15 +-
+ net/ipv6/sit.c                                |  17 ++-
+ net/xfrm/xfrm_interface_core.c                |  15 +-
+ tools/testing/selftests/net/Makefile          |   1 +
+ tools/testing/selftests/net/config            |   5 +
+ .../testing/selftests/net/lib/py/__init__.py  |   2 +-
+ tools/testing/selftests/net/lib/py/netns.py   |  18 +++
+ tools/testing/selftests/net/link_netns.py     | 141 ++++++++++++++++++
+ tools/testing/selftests/net/netns-name.sh     |  10 ++
+ 49 files changed, 479 insertions(+), 165 deletions(-)
+ create mode 100755 tools/testing/selftests/net/link_netns.py
+
+-- 
+2.47.1
+
