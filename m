@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13E49C02183
-	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 15:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDB4BC02183
+	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 15:30:48 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 689FA83C51
-	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 16:30:01 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5BFDA84259
+	for <batman-adv@archiver.kernel.org>; Mon, 13 Jan 2025 16:30:47 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1736782201;
- b=J1rG8A7AFM704AAhy27bA4B1AWbn6Poi9KKxEDpazzvL9/44Rj/YtJelCEzJUIyG4ei9l
- kpOkM7UE1Y6Od30ey/sHcnkAL3IwaGmbolMJ1H6TgFEulzLQT6Pedn//PlNM8OAhUlxtOCA
- mlb5n9hokbug1Y61H64cy98VAycJTC4=
+ t=1736782247;
+ b=2lJvN2AT7+Som86LYb2uxG6I1cBE4zzSXHvtrCeIMRkaTtAgjDwusJg6o9Z1oRPbySCSE
+ pPUJdknYJ0vWos9BfhO9Qg/n/GdF6XEmotcYF2RQYOpRYHGxdxj6W+moKqXLk5dFGMAdyTj
+ spigQCi/yFTmTHlufKqm5dBdtZLRW+U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1736782201; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1736782247; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=f/aVoxIsj2NaHZxO0wthneclpZNQFTaEi7bz2gcdad0=;
- b=KaFYOLmZ8j3TWGp+SUhfmMjm0erANwwVSe6eOd5LKWbPEXlESgoK2LUXZf6QdeQ0PdxTM
- p5SoB7/lIqGDA+k46Z0kjKbGDqFlAkN9TQM2SYp5+pGQKhU1C9AjjtDGznYBPrBgUZ5hyC5
- HkOu7NZyjv15aSobMESUNCCE2pNDY04=
+ list-archive; bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
+ b=uahl5VrpenAFHHByJi9Zgx84hBWQ1RA4XFh/HyyvTvjQ7HOO2mQiDQcIykIrND/S7uk+H
+ OB+GbR3A8d2EJ+iyO2eyUKgEshQD/HY513QIHqZbn7c46c4h1d013TiwTOeYsEMEO4gx2+C
+ EyI4nQu9ydD3eYxayxGlKcg9f5PHx68=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,79 +32,79 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com
- [IPv6:2607:f8b0:4864:20::633])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 1951B81AD7
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 13 Jan 2025 15:39:06 +0100 (CET)
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id BC99881F23
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 13 Jan 2025 15:39:14 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1736779146;
+	s=20121; t=1736779154;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=f/aVoxIsj2NaHZxO0wthneclpZNQFTaEi7bz2gcdad0=;
-	b=ZTd8LOUgR9itkNFHv/m6Nju+SoHMnbe+R47LFxg1x6yq7SzqUWHOqrzSFeL1CjKK+TbEwq
-	mHssLcqgaxrEfWlcak9m16Fb11S/U1+1RauPMDBUVcLVKlMRZjL9XdmR1+C8skGqCBbh/E
-	dKgYxADCpvLS124ogMzbYsc0XtDGbG8=
+	bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
+	b=cMcF5aX33et/RBeQGdWxAq0uc1j5ElUadSD94XVNvjjoMXd3hdEFfRaF86gp8Y+fq8hXR+
+	dOUD74dlXjDa0ms0dD1WqXjw3MKBsfTInEQuj/PGQD8UE9Bz1q16m66xDk31IhDvrxkW4n
+	Z/C0fdLZOQ9HQAN8f/vvXFMzGsoXrYM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=mWK9trvf;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b=YzizAL9I;
 	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2607:f8b0:4864:20::633 as permitted sender)
+ 2607:f8b0:4864:20::632 as permitted sender)
  smtp.mailfrom=shaw.leon@gmail.com;
 	dmarc=pass (policy=none) header.from=gmail.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736779146; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1736779154; a=rsa-sha256;
 	cv=none;
-	b=Vm+CBtS4R3PszkfXJ7LukTam8x7a3pOK4VnlKxVhXN1iQw/2PlEfbdH5pBrKrqRSMWU0P2
-	KQ/CfsxpT3oqOi1FNPBTzFxUTwZ6trPflNpfNXxHvHNPaD8/GxiBh/Y5rzUpbDNChMZxrD
-	If8YYgbYb4/1mvc6p5Vi/UJKMAAVf4U=
-Received: by mail-pl1-x633.google.com with SMTP id
- d9443c01a7336-21634338cfdso59145365ad.2
+	b=m2/JZ6bPlPnWWVlEyaTB7DWANlQYuOvpqJxZj0jjUP5IdugBmtmeHA2qt1xrcVHEtO3e0Z
+	+pdcp4Cw/PQ9r0NluRfAq+bwQMOMagoZmuR7RhtRmo74qj3n6TTUGQsPXzMcLR5iFKFK31
+	leUoS/WB8ebkgE18UHJvns+9ABjFCf0=
+Received: by mail-pl1-x632.google.com with SMTP id
+ d9443c01a7336-21636268e43so101789785ad.2
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 13 Jan 2025 06:39:06 -0800 (PST)
+ Mon, 13 Jan 2025 06:39:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1736779144; x=1737383944;
+        d=gmail.com; s=20230601; t=1736779153; x=1737383953;
  darn=lists.open-mesh.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=f/aVoxIsj2NaHZxO0wthneclpZNQFTaEi7bz2gcdad0=;
-        b=mWK9trvfg0LchzT1PdcZZmgYQ7D9PqNnbuMgUHIvqvJ0HtZdwuA8JqUJg/Nunmgzn9
-         zergjnldV215gjuaNgOP0mqJLRTStmYDl6xP7LsxnZDZaQQI7PAumQQcaXZS7QBOR7hT
-         FTZPALztDNttbuqhsD1IA4Y0ZHEI3ftQpD6B2tIt8LDcMOI02KlqVrlbWCUy6oFBcXFL
-         fU9YJmeox9/AdB6CmzGTiVceHCklHHJOmcVvyu3zDRoHjiW6KSpcntGMwifxbNuwFU/1
-         ncK7t7kfTB3RQRjXkSULvtFUrZPpC19JXLEU+0UueZF5hWXMWmShsE8JP1GhW+ykyg39
-         x5+A==
+        bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
+        b=YzizAL9I7KrvMWXrTQtGCs65Sh1E5ntolwzsKSjqgIympv5ga7PgeiGFEUXeUbLwsL
+         BuMwBfv/3E3h+5QobDfJbRIFWUpuyNrrom5W+paNvpgvBgPjILC2ehUKizHwjVShF+mJ
+         XDPzqfIfDuFOQ8bQ0r8xZLC788raYkjrg6uv4LxLZdWW7emFB7qftBVzWYHprpZuWvc1
+         nqu8b58PG3FdBXpqR98AJrSNhUklnzURVd+b5vpv6svcKp4DzDu20bokHZnFLFCA9o1l
+         uwdI1Bfyp7sGdV6naGBVzMzJKlxAr4fP91/YI2vQlLI+0g+FEbaokIdtgw2e8HYspG5j
+         ZvrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736779144; x=1737383944;
+        d=1e100.net; s=20230601; t=1736779153; x=1737383953;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=f/aVoxIsj2NaHZxO0wthneclpZNQFTaEi7bz2gcdad0=;
-        b=FsX8Sfj+5MtokdxX8bdvCgl7LfS9UzSxZWreH2m8x1FYT2aEtWoCJQ/gBQWXozdKM3
-         e9qnejNxHrS7kGmA5sm8sA9ZCTxUvxeXYBWF1GcPUB48QYh3rrLTixLFx/UfPC6NRHHE
-         k7R6M/yQyGgjfQwDl44H6hF4QBgB6SjboqAFXIqEp1OO7UWuRq18IUVFJy3M4IiXJ4z/
-         RyNebgmscQMI5Zq83qwssNFDHZTz8/FkkB+prx/Naj9QMJ/gdJBna3UXi7mVVSYAADFw
-         HxJyYJqKWzsp+CM3Kv0vTuhmK8ywrm7qYjJ+WNZSJn/IN4NvQKUfAouwxZoT5qGrsWKp
-         apcg==
+        bh=R0TVXDX/Oq9IB0mhgmi61TXIFVtPNPu1PWKjPd5bzuM=;
+        b=lXuNk2TUL/R0VC01tU6iJNrDh2yEtH9BpU3JV20orDV25RVBH6HySQuBgROq6LmwVf
+         6R8gHAJKSckKvC9hUh4qx6gCaK9ADJLcfvI6NTEFcqXsSCHSlBXYIFKEjgfzOo2iHfqw
+         1eLW5lNeG/eBNrlrXGsO5EyXtlcvgz95o19IOK8tit5DHAkjTqkqE1h7x/5zm1IQdTrq
+         yesFnm+HMlHmOL1eWUqLDh7ZFYeAxg10lfUdpXV6fy4WfurWzyz+zwbD4V7tN2ouAYnf
+         6OS4fvN9XSDM+k2wrTryGhJ4USpeKyxCNofngOQdghePHzzJCFQM6Ttx81Fff6OZVUJ8
+         vyHA==
 X-Forwarded-Encrypted: i=1;
- AJvYcCVQwXzAuo2CmceANmrZ7l4Z/pTYAXa6W1cDJZl7jeX2RtUstrQ6Kf0S0mMw7s7XuCA1JayEch2gNlEScg==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YymaEB7WoOrzMvjqThGXUhtKo+PQBjim+AiMZcMRtg2zLoTO0gE
-	fwNCoF6lAhYKBgO6PRkOjVFm+QrwvUZK3C13udN2vMI1eqQIuowW
-X-Gm-Gg: ASbGncvwraolNmLkmX6rvHvUiuvYs+qG3WMfacuZhZCUz7319FVdxuLEE6MUFsom1FP
-	e+Bo4dUDtGpRxzgJcSr0YB8dWvt7TUEbqyKjaKXeiCGHuco/9DEtGeNCR9sYdWTlsbqTaGOsAA9
-	86SmG7MOrQADlHxkqMvu775w/IJV1lBAnEuUA/kstV151cz+Q0J5/IH/zWeWpsz1AskKrabILxm
-	m5ArtALGvbxHuPWTmis8xzM1DT95janTN3WdmUMNl0yQWQ=
+ AJvYcCVvhPCr4qBqK6IAEMj2WEmA193qCpH5yOib/fm+WZIs6wCoHC/YRMOH9hBoHCUQTWsYF5bg6c+pwqmLfA==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YyyT3lsiCyFDJz3RkRD4jXFxUy1jWE2gOUlXwIgoye/RYuSmj83
+	m+0CkvLOow3bNDcGu3SCyUYtGnuaY2UPMqL2D0TJgHOgg+95JxFu
+X-Gm-Gg: ASbGnctaa/9MTFj30r3/iukwcbn5tYf6CbY6IBAgTaLs22h+vieh3XFpje1NBDLIjys
+	IxA33N7KWLsWAtumhiVL6MO5W8nMQnyKgbMaHJMhkPYgi5PrQm+sLDr0TKdTTW+te5GFD+8U2Jn
+	UVhlOm3EuBuIpy6yAzuMTqX7MfSojLHBCCv2kWyKEUEN4oWKfHXTa2SoRPRuX3/nXqXB1YBBTlc
+	5uoUmecinIdDCrTukzHS7HEdas3Woc5al3NVjQVmkOYGW0=
 X-Google-Smtp-Source: 
- AGHT+IEL9Q/TeE8X83a4D73J5c4BnqISbL2nsMzkDnt4Xq2JHmNtTfGl7cYLX08uLNv4xfpjIcH6KQ==
-X-Received: by 2002:a17:902:f685:b0:216:5002:7341 with SMTP id
- d9443c01a7336-21a83fde2bcmr322676685ad.44.1736779144551;
-        Mon, 13 Jan 2025 06:39:04 -0800 (PST)
+ AGHT+IFt4cEJz+p42bYm31EfJt3Zb0JLb+qW+6vXHsT58zE4AWUF4ed/u79zsBlznytyW2KBQMyVfw==
+X-Received: by 2002:a17:902:d511:b0:215:6489:cfbf with SMTP id
+ d9443c01a7336-21a83f48cc0mr313835205ad.11.1736779153175;
+        Mon, 13 Jan 2025 06:39:13 -0800 (PST)
 Received: from ws.. ([103.167.140.11])
         by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-21a9f155e00sm54328715ad.103.2025.01.13.06.38.56
+ d9443c01a7336-21a9f155e00sm54328715ad.103.2025.01.13.06.39.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jan 2025 06:39:04 -0800 (PST)
+        Mon, 13 Jan 2025 06:39:12 -0800 (PST)
 From: Xiao Liang <shaw.leon@gmail.com>
 To: netdev@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
@@ -134,10 +134,10 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	bridge@lists.linux.dev,
 	linux-wpan@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v8 10/11] selftests: net: Add python context manager
- for netns entering
-Date: Mon, 13 Jan 2025 22:37:18 +0800
-Message-ID: <20250113143719.7948-11-shaw.leon@gmail.com>
+Subject: [PATCH net-next v8 11/11] selftests: net: Add test cases for link and
+ peer netns
+Date: Mon, 13 Jan 2025 22:37:19 +0800
+Message-ID: <20250113143719.7948-12-shaw.leon@gmail.com>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20250113143719.7948-1-shaw.leon@gmail.com>
 References: <20250113143719.7948-1-shaw.leon@gmail.com>
@@ -150,15 +150,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: D2QFU7N5Q7K2U4YPFMWKFNB4QB2NKPQ2
-X-Message-ID-Hash: D2QFU7N5Q7K2U4YPFMWKFNB4QB2NKPQ2
+Message-ID-Hash: SANS2QAUDK6LHD7SICXGNU2DHPCR2FST
+X-Message-ID-Hash: SANS2QAUDK6LHD7SICXGNU2DHPCR2FST
 X-Mailman-Approved-At: Mon, 13 Jan 2025 16:21:58 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/D2QFU7N5Q7K2U4YPFMWKFNB4QB2NKPQ2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SANS2QAUDK6LHD7SICXGNU2DHPCR2FST/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -167,69 +167,216 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Change netns of current thread and switch back on context exit.
-For example:
-
-    with NetNSEnter("ns1"):
-        ip("link add dummy0 type dummy")
-
-The command be executed in netns "ns1".
+ - Add test for creating link in another netns when a link of the same
+   name and ifindex exists in current netns.
+ - Add test to verify that link is created in target netns directly -
+   no link new/del events should be generated in link netns or current
+   netns.
+ - Add test cases to verify that link-netns is set as expected for
+   various drivers and combination of namespace-related parameters.
 
 Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
 ---
- tools/testing/selftests/net/lib/py/__init__.py |  2 +-
- tools/testing/selftests/net/lib/py/netns.py    | 18 ++++++++++++++++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ tools/testing/selftests/net/Makefile      |   1 +
+ tools/testing/selftests/net/config        |   5 +
+ tools/testing/selftests/net/link_netns.py | 141 ++++++++++++++++++++++
+ tools/testing/selftests/net/netns-name.sh |  10 ++
+ 4 files changed, 157 insertions(+)
+ create mode 100755 tools/testing/selftests/net/link_netns.py
 
-diff --git a/tools/testing/selftests/net/lib/py/__init__.py b/tools/testing/selftests/net/lib/py/__init__.py
-index 54d8f5eba810..e2d6c7b63019 100644
---- a/tools/testing/selftests/net/lib/py/__init__.py
-+++ b/tools/testing/selftests/net/lib/py/__init__.py
-@@ -2,7 +2,7 @@
- 
- from .consts import KSRC
- from .ksft import *
--from .netns import NetNS
-+from .netns import NetNS, NetNSEnter
- from .nsim import *
- from .utils import *
- from .ynl import NlError, YnlFamily, EthtoolFamily, NetdevFamily, RtnlFamily
-diff --git a/tools/testing/selftests/net/lib/py/netns.py b/tools/testing/selftests/net/lib/py/netns.py
-index ecff85f9074f..8e9317044eef 100644
---- a/tools/testing/selftests/net/lib/py/netns.py
-+++ b/tools/testing/selftests/net/lib/py/netns.py
-@@ -1,9 +1,12 @@
- # SPDX-License-Identifier: GPL-2.0
- 
- from .utils import ip
-+import ctypes
- import random
- import string
- 
-+libc = ctypes.cdll.LoadLibrary('libc.so.6')
+diff --git a/tools/testing/selftests/net/Makefile b/tools/testing/selftests/net/Makefile
+index 73ee88d6b043..df07a38f884f 100644
+--- a/tools/testing/selftests/net/Makefile
++++ b/tools/testing/selftests/net/Makefile
+@@ -35,6 +35,7 @@ TEST_PROGS += cmsg_so_mark.sh
+ TEST_PROGS += cmsg_so_priority.sh
+ TEST_PROGS += cmsg_time.sh cmsg_ipv6.sh
+ TEST_PROGS += netns-name.sh
++TEST_PROGS += link_netns.py
+ TEST_PROGS += nl_netdev.py
+ TEST_PROGS += srv6_end_dt46_l3vpn_test.sh
+ TEST_PROGS += srv6_end_dt4_l3vpn_test.sh
+diff --git a/tools/testing/selftests/net/config b/tools/testing/selftests/net/config
+index 5b9baf708950..ab55270669ec 100644
+--- a/tools/testing/selftests/net/config
++++ b/tools/testing/selftests/net/config
+@@ -107,3 +107,8 @@ CONFIG_XFRM_INTERFACE=m
+ CONFIG_XFRM_USER=m
+ CONFIG_IP_NF_MATCH_RPFILTER=m
+ CONFIG_IP6_NF_MATCH_RPFILTER=m
++CONFIG_IPVLAN=m
++CONFIG_CAN=m
++CONFIG_CAN_DEV=m
++CONFIG_CAN_VXCAN=m
++CONFIG_NETKIT=y
+diff --git a/tools/testing/selftests/net/link_netns.py b/tools/testing/selftests/net/link_netns.py
+new file mode 100755
+index 000000000000..aab043c59d69
+--- /dev/null
++++ b/tools/testing/selftests/net/link_netns.py
+@@ -0,0 +1,141 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: GPL-2.0
 +
++import time
++
++from lib.py import ksft_run, ksft_exit, ksft_true
++from lib.py import ip
++from lib.py import NetNS, NetNSEnter
++from lib.py import RtnlFamily
++
++
++LINK_NETNSID = 100
++
++
++def test_event() -> None:
++    with NetNS() as ns1, NetNS() as ns2:
++        with NetNSEnter(str(ns2)):
++            rtnl = RtnlFamily()
++
++        rtnl.ntf_subscribe("rtnlgrp-link")
++
++        ip(f"netns set {ns2} {LINK_NETNSID}", ns=str(ns1))
++        ip(f"link add netns {ns1} link-netnsid {LINK_NETNSID} dummy1 type dummy")
++        ip(f"link add netns {ns1} dummy2 type dummy", ns=str(ns2))
++
++        ip("link del dummy1", ns=str(ns1))
++        ip("link del dummy2", ns=str(ns1))
++
++        time.sleep(1)
++        rtnl.check_ntf()
++        ksft_true(rtnl.async_msg_queue.empty(),
++                  "Received unexpected link notification")
++
++
++def validate_link_netns(netns, ifname, link_netnsid) -> bool:
++    link_info = ip(f"-d link show dev {ifname}", ns=netns, json=True)
++    if not link_info:
++        return False
++    return link_info[0].get("link_netnsid") == link_netnsid
++
++
++def test_link_net() -> None:
++    configs = [
++        # type, common args, type args, fallback to dev_net
++        ("ipvlan", "link dummy1", "", False),
++        ("macsec", "link dummy1", "", False),
++        ("macvlan", "link dummy1", "", False),
++        ("macvtap", "link dummy1", "", False),
++        ("vlan", "link dummy1", "id 100", False),
++        ("gre", "", "local 192.0.2.1", True),
++        ("vti", "", "local 192.0.2.1", True),
++        ("ipip", "", "local 192.0.2.1", True),
++        ("ip6gre", "", "local 2001:db8::1", True),
++        ("ip6tnl", "", "local 2001:db8::1", True),
++        ("vti6", "", "local 2001:db8::1", True),
++        ("sit", "", "local 192.0.2.1", True),
++        ("xfrm", "", "if_id 1", True),
++    ]
++
++    with NetNS() as ns1, NetNS() as ns2, NetNS() as ns3:
++        net1, net2, net3 = str(ns1), str(ns2), str(ns3)
++
++        # prepare link netnsid  and a dummy link needed by certain drivers
++        ip(f"netns set {net3} {LINK_NETNSID}", ns=str(net2))
++        ip("link add dummy1 type dummy", ns=net3)
++
++        cases = [
++            # source, "netns", "link-netns", expected link-netns
++            (net3, None, None, None, None),
++            (net3, net2, None, None, LINK_NETNSID),
++            (net2, None, net3, LINK_NETNSID, LINK_NETNSID),
++            (net1, net2, net3, LINK_NETNSID, LINK_NETNSID),
++        ]
++
++        for src_net, netns, link_netns, exp1, exp2 in cases:
++            tgt_net = netns or src_net
++            for typ, cargs, targs, fb_dev_net in configs:
++                cmd = "link add"
++                if netns:
++                    cmd += f" netns {netns}"
++                if link_netns:
++                    cmd += f" link-netns {link_netns}"
++                cmd += f" {cargs} foo type {typ} {targs}"
++                ip(cmd, ns=src_net)
++                if fb_dev_net:
++                    ksft_true(validate_link_netns(tgt_net, "foo", exp1),
++                              f"{typ} link_netns validation failed")
++                else:
++                    ksft_true(validate_link_netns(tgt_net, "foo", exp2),
++                              f"{typ} link_netns validation failed")
++                ip(f"link del foo", ns=tgt_net)
++
++
++def test_peer_net() -> None:
++    types = [
++        "vxcan",
++        "netkit",
++        "veth",
++    ]
++
++    with NetNS() as ns1, NetNS() as ns2, NetNS() as ns3, NetNS() as ns4:
++        net1, net2, net3, net4 = str(ns1), str(ns2), str(ns3), str(ns4)
++
++        ip(f"netns set {net3} {LINK_NETNSID}", ns=str(net2))
++
++        cases = [
++            # source, "netns", "link-netns", "peer netns", expected
++            (net1, None, None, None, None),
++            (net1, net2, None, None, None),
++            (net2, None, net3, None, LINK_NETNSID),
++            (net1, net2, net3, None, None),
++            (net2, None, None, net3, LINK_NETNSID),
++            (net1, net2, None, net3, LINK_NETNSID),
++            (net2, None, net2, net3, LINK_NETNSID),
++            (net1, net2, net4, net3, LINK_NETNSID),
++        ]
++
++        for src_net, netns, link_netns, peer_netns, exp in cases:
++            tgt_net = netns or src_net
++            for typ in types:
++                cmd = "link add"
++                if netns:
++                    cmd += f" netns {netns}"
++                if link_netns:
++                    cmd += f" link-netns {link_netns}"
++                cmd += f" foo type {typ}"
++                if peer_netns:
++                    cmd += f" peer netns {peer_netns}"
++                ip(cmd, ns=src_net)
++                ksft_true(validate_link_netns(tgt_net, "foo", exp),
++                          f"{typ} peer_netns validation failed")
++                ip(f"link del foo", ns=tgt_net)
++
++
++def main() -> None:
++    ksft_run([test_event, test_link_net, test_peer_net])
++    ksft_exit()
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/tools/testing/selftests/net/netns-name.sh b/tools/testing/selftests/net/netns-name.sh
+index 6974474c26f3..0be1905d1f2f 100755
+--- a/tools/testing/selftests/net/netns-name.sh
++++ b/tools/testing/selftests/net/netns-name.sh
+@@ -78,6 +78,16 @@ ip -netns $NS link show dev $ALT_NAME 2> /dev/null &&
+     fail "Can still find alt-name after move"
+ ip -netns $test_ns link del $DEV || fail
  
- class NetNS:
-     def __init__(self, name=None):
-@@ -29,3 +32,18 @@ class NetNS:
- 
-     def __repr__(self):
-         return f"NetNS({self.name})"
++#
++# Test no conflict of the same name/ifindex in different netns
++#
++ip -netns $NS link add name $DEV index 100 type dummy || fail
++ip -netns $NS link add netns $test_ns name $DEV index 100 type dummy ||
++    fail "Can create in netns without moving"
++ip -netns $test_ns link show dev $DEV >> /dev/null || fail "Device not found"
++ip -netns $NS link del $DEV || fail
++ip -netns $test_ns link del $DEV || fail
 +
-+
-+class NetNSEnter:
-+    def __init__(self, ns_name):
-+        self.ns_path = f"/run/netns/{ns_name}"
-+
-+    def __enter__(self):
-+        self.saved = open("/proc/thread-self/ns/net")
-+        with open(self.ns_path) as ns_file:
-+            libc.setns(ns_file.fileno(), 0)
-+        return self
-+
-+    def __exit__(self, exc_type, exc_value, traceback):
-+        libc.setns(self.saved.fileno(), 0)
-+        self.saved.close()
+ echo -ne "$(basename $0) \t\t\t\t"
+ if [ $RET_CODE -eq 0 ]; then
+     echo "[  OK  ]"
 -- 
 2.47.1
 
