@@ -4,90 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B0A5C02183
-	for <batman-adv@archiver.kernel.org>; Fri, 17 Jan 2025 12:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33D2EC02185
+	for <batman-adv@archiver.kernel.org>; Sat, 18 Jan 2025 00:36:00 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 9E93A845CF
-	for <batman-adv@archiver.kernel.org>; Fri, 17 Jan 2025 13:47:17 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 596E583FA5
+	for <batman-adv@archiver.kernel.org>; Sat, 18 Jan 2025 01:35:58 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1737118037;
- b=4A2QRHrK2A9AwTsXiH+iaueJsPleabisUOZoyZQA8u25dvd/MvTYtBu6CuO+LcGY0yT+J
- 9vJq5PlK+U1DLKTtk1HIA3QRLMi5mWdmwCCxu0WHKRFn0tjU7XHKtHZfwY+iotP6+VENvJc
- MPDvpV1P8rBV2dzw/ADHEmhtxYRIxcQ=
+ t=1737160558;
+ b=r7XAtSgFPnDAypl8YKjUrPqgyMRn5YxsFpD2a8ShR3vdCiolaPxas4fkF0VBYIpSaoeVK
+ p5dV71EAUHA558C9rpfhWyWCtkz0sE6t46mSVnvFyOVUP2skM/X1rw6Bi/L/ti1e9G4GVq7
+ v2sGCk4cEACRDxtJTu2dklmNi5jTnMs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1737118037; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1737160558; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fDG3r4sEzVI0L0zxbBtIfKw1lsmHGr9sbuChTf8sgFQ=;
- b=No07CTBpwii6MfZvOmUthnjhcqQyZ7RqeAGAITIqKfSBWFeoO4g5um5+xvAwFFl2lcV7D
- aC8VqlvEthW83vkR3QR2gHGKl6NvBSH/iYwP86PRRTM7UTM1fJtRNCwmso0WovmHvfI0X3f
- P1hkD9iUrz5dEk+6B5tfYAr3eLFj/UY=
+ list-archive; bh=DaXWjsqbiKUu8jydLbLlt/YcrxoQwKZmYPJYG9zpsSs=;
+ b=Fs+s1uzaGHvJvo4R5pyvaZF47EnZxKcbUvBQR8xAii8XJqq6HLiiKcSky4mCr2vvkoJnQ
+ WtinAIZUQMimKcodUPtqDzA123MHfTMskQKwJ3QNBNaHAn9zKRRW9eqc0jkI0Sa6nLaS78f
+ qJGiibQoDgGJiAPCM2/1oA91eWTsun8=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
- policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 223B08422A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 17 Jan 2025 13:39:48 +0100 (CET)
+  dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de
+ [IPv6:2a01:4f8:c2c:665b::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4152280651
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 18 Jan 2025 01:35:45 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1737117588;
+	s=20121; t=1737160545;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fDG3r4sEzVI0L0zxbBtIfKw1lsmHGr9sbuChTf8sgFQ=;
-	b=kW+D4FgjDhtevz/11bNBTG/aJXdxFcODL2/KOILsDLAwJ52cuhQuM+B5dfJfATIa3DxXNI
-	pXLV40JDm22w7ymEgzW4Hkj7kNncwPYMDM14LAqkcL47LqCtBr+uPtwIC4rsL9nKE+zOyo
-	LVQhA4lQsjeKnUeaqVog/YQKRqmVDWc=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=DaXWjsqbiKUu8jydLbLlt/YcrxoQwKZmYPJYG9zpsSs=;
+	b=meG4wv4spisl+ZdmadbVekBriXvY6pBbz/MdEtMbKYAWDid86TQa2wZcpzRgjDwe80xiNh
+	tKkZQU18iFppS58/fuR9ejCl7YNb9T+Krchhq5kMERv/oMkMipVdM2b5GdUSgoIN+28OGg
+	S4Wx5sMG9QzBFEP3qb+krf8HmvQgDdg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1737117588; a=rsa-sha256;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue;
+	dmarc=none
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1737160545; a=rsa-sha256;
 	cv=none;
-	b=lEPmL27alCgDgiS01w1hjjLSoX8SX6s0mbQ+Wr0jGaOfAYouTZHPm/plJE88dDXVtQefG0
-	TAFlGZMnYnIpGujUn+StgDzdzFnh95HiFzASS/t0fHx/4UEv3gISguXYNUC0DTnzymM7Wp
-	3hHu4k36R9YS7a6HNQ2yqJVBmnxINGg=
-Received: from kero.packetmixer.de
- (p200300C5973c90D8A96Dd71A2E03F697.dip0.t-ipconnect.de
- [IPv6:2003:c5:973c:90d8:a96d:d71a:2e03:f697])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits)
- server-digest SHA256)
-	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id B098CFA367;
-	Fri, 17 Jan 2025 13:39:47 +0100 (CET)
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: kuba@kernel.org,
-	davem@davemloft.net
-Cc: netdev@vger.kernel.org,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	=?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>,
-	Sven Eckelmann <sven@narfation.org>,
-	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH 10/10] batman-adv: netlink: reduce duplicate code by returning
- interfaces
-Date: Fri, 17 Jan 2025 13:39:10 +0100
-Message-Id: <20250117123910.219278-11-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250117123910.219278-1-sw@simonwunderlich.de>
-References: <20250117123910.219278-1-sw@simonwunderlich.de>
+	b=tdUg/HNQ3othpfddAzHMWWsagD/SApEN4mTa6r0ni92sMxv/H3Z4FawQkKtDcWUCHlgh4c
+	8RTqkgbgTH1VaAW2+TqS+2d8G02Yi8L6U9l8Z6N13+BmJH5Ld8SmUkl+2d408wSDnw1OOm
+	WSyIQDoMYWXzdxJ1xc8hLFVBQ3XICUk=
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 21C19540DDE;
+	Sat, 18 Jan 2025 01:35:44 +0100 (CET)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Ren=C3=A9=20Treffer?= <treffer@measite.de>,
+	=?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [PATCH RFC] batman-adv: BATMAN V: use/prefer 11s airtime link metric
+Date: Sat, 18 Jan 2025 01:35:27 +0100
+Message-ID: <20250118003528.6843-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.45.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: HXJPFNUAIU5JD5DRB2GUD6QTR37JTL57
-X-Message-ID-Hash: HXJPFNUAIU5JD5DRB2GUD6QTR37JTL57
-X-MailFrom: sw@simonwunderlich.de
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: 4XO5HGZLSVDKEKVEYR6VRZPCQSR5R3YB
+X-Message-ID-Hash: 4XO5HGZLSVDKEKVEYR6VRZPCQSR5R3YB
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -100,7 +84,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HXJPFNUAIU5JD5DRB2GUD6QTR37JTL57/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4XO5HGZLSVDKEKVEYR6VRZPCQSR5R3YB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -109,818 +93,99 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+With an 11s interface and HWMP then this keeps track of a throughput
+estimation internally already, as specified by 802.11-2020, section 14.9.2.
+The HWMP code even makes use of the Minstrel provided expected throughput
+if available and is therefore very close to this expected throughput value,
+except the specification adds some constant penalty for:
+"Channel access overhead (in μs), which includes frame headers,
+training sequences, access protocol frames, etc."
 
-Reduce duplicate code by using netlink helpers which return the
-soft/hard interface directly. Instead of returning an interface index
-which we are typically not interested in.
+When no expected throughput is available then HWMP keeps track of the
+average packet delivery error rate and average phy rate to calculate its
+own expected throughput value.
+
+So the 11s airtime link metric should be a slightly better estimate than
+the expected throughput provided by Minstrel. And should be significantly
+better than our raw PHY rate divided by 3 guestimate fallback.
+
+Therefore this should significantly improve the accuracy for BATMAN V
+when using drivers like ath10k/ath11k/ath12k/mt76 which all do not
+implement/export an expected throughput information.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c |  33 ++----
- net/batman-adv/distributed-arp-table.c |  18 +--
- net/batman-adv/gateway_client.c        |  18 +--
- net/batman-adv/multicast.c             |  17 +--
- net/batman-adv/netlink.c               | 146 +++++++++++++++++--------
- net/batman-adv/netlink.h               |   5 +-
- net/batman-adv/originator.c            | 116 +++++++-------------
- net/batman-adv/translation-table.c     |  30 ++---
- 8 files changed, 174 insertions(+), 209 deletions(-)
+RFC because:
+* only tested in a VM with mac80211_hwsim, checked that the value
+  from sinfo.airtime_link_metric is used and that
+  "batctl o"/"batctl n" still (nearly) matches the "expected throughput"
+  in "iw dev wlan0 station dump"
+* still needs testing / verification on real devices
+* I'm a bit confused about the extra "* 100" I had to apply to make the
+  values match, not quite sure where that comes from?
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 449faf5a5487..8c814f790d17 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -12,6 +12,7 @@
- #include <linux/compiler.h>
- #include <linux/container_of.h>
- #include <linux/crc16.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -38,7 +39,6 @@
- #include <net/arp.h>
- #include <net/genetlink.h>
- #include <net/netlink.h>
--#include <net/sock.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
-@@ -47,7 +47,6 @@
- #include "log.h"
- #include "netlink.h"
- #include "originator.h"
--#include "soft-interface.h"
- #include "translation-table.h"
- 
- static const u8 batadv_announce_mac[4] = {0x43, 0x05, 0x43, 0x05};
-@@ -2233,25 +2232,16 @@ int batadv_bla_claim_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
- 	struct batadv_hard_iface *primary_if = NULL;
- 	int portid = NETLINK_CB(cb->skb).portid;
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_hashtable *hash;
- 	struct batadv_priv *bat_priv;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
--	int ifindex;
- 	int ret = 0;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh,
--					     BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 	hash = bat_priv->bla.claim_hash;
-@@ -2403,25 +2393,16 @@ int batadv_bla_backbone_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
- 	struct batadv_hard_iface *primary_if = NULL;
- 	int portid = NETLINK_CB(cb->skb).portid;
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_hashtable *hash;
- 	struct batadv_priv *bat_priv;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
--	int ifindex;
- 	int ret = 0;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh,
--					     BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 	hash = bat_priv->bla.backbone_hash;
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 48b72c2be098..e5a07152d4ec 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -11,6 +11,7 @@
- #include <linux/bitops.h>
- #include <linux/byteorder/generic.h>
- #include <linux/container_of.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -36,7 +37,6 @@
- #include <net/arp.h>
- #include <net/genetlink.h>
- #include <net/netlink.h>
--#include <net/sock.h>
- #include <uapi/linux/batman_adv.h>
- 
- #include "bridge_loop_avoidance.h"
-@@ -46,7 +46,6 @@
- #include "netlink.h"
- #include "originator.h"
- #include "send.h"
--#include "soft-interface.h"
- #include "translation-table.h"
- #include "tvlv.h"
- 
-@@ -937,25 +936,16 @@ int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
- 	struct batadv_hard_iface *primary_if = NULL;
- 	int portid = NETLINK_CB(cb->skb).portid;
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_hashtable *hash;
- 	struct batadv_priv *bat_priv;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
--	int ifindex;
- 	int ret = 0;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh,
--					     BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 	hash = bat_priv->dat.hash;
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 0ddd8b4b3f4c..f68e34ed1f62 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -10,6 +10,7 @@
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
- #include <linux/container_of.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -31,7 +32,6 @@
- #include <linux/sprintf.h>
- #include <linux/stddef.h>
- #include <linux/udp.h>
--#include <net/sock.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
-@@ -40,7 +40,6 @@
- #include "netlink.h"
- #include "originator.h"
- #include "routing.h"
--#include "soft-interface.h"
- #include "translation-table.h"
- 
- /* These are the offsets of the "hw type" and "hw address length" in the dhcp
-@@ -502,22 +501,13 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
- int batadv_gw_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
- 	struct batadv_hard_iface *primary_if = NULL;
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
--	int ifindex;
- 	int ret;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh,
--					     BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 14088c4ff2f6..d95c418484fa 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -12,6 +12,7 @@
- #include <linux/bug.h>
- #include <linux/byteorder/generic.h>
- #include <linux/container_of.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -46,7 +47,6 @@
- #include <net/ip.h>
- #include <net/ipv6.h>
- #include <net/netlink.h>
--#include <net/sock.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
-@@ -56,7 +56,6 @@
- #include "log.h"
- #include "netlink.h"
- #include "send.h"
--#include "soft-interface.h"
- #include "translation-table.h"
- #include "tvlv.h"
- 
-@@ -2104,21 +2103,13 @@ batadv_mcast_netlink_get_primary(struct netlink_callback *cb,
- 				 struct batadv_hard_iface **primary_if)
- {
- 	struct batadv_hard_iface *hard_iface = NULL;
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
--	int ifindex;
- 	int ret = 0;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 9362cd9d6f3d..eefba5600ded 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -158,8 +158,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
-  *
-  * Return: interface index, or 0.
-  */
--int
--batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype)
-+static int batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype)
- {
- 	struct nlattr *attr = nlmsg_find_attr(nlh, GENL_HDRLEN, attrtype);
- 
-@@ -881,14 +880,14 @@ static int batadv_netlink_notify_hardif(struct batadv_priv *bat_priv,
- }
- 
- /**
-- * batadv_netlink_get_hardif() - Get hardif attributes
-+ * batadv_netlink_cmd_get_hardif() - Get hardif attributes
-  * @skb: Netlink message with request data
-  * @info: receiver information
-  *
-  * Return: 0 on success or negative error number in case of failure
-  */
--static int batadv_netlink_get_hardif(struct sk_buff *skb,
--				     struct genl_info *info)
-+static int batadv_netlink_cmd_get_hardif(struct sk_buff *skb,
-+					 struct genl_info *info)
- {
- 	struct batadv_hard_iface *hard_iface = info->user_ptr[1];
- 	struct batadv_priv *bat_priv = info->user_ptr[0];
-@@ -964,28 +963,16 @@ static int batadv_netlink_set_hardif(struct sk_buff *skb,
- static int
- batadv_netlink_dump_hardif(struct sk_buff *msg, struct netlink_callback *cb)
- {
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_hard_iface *hard_iface;
- 	struct batadv_priv *bat_priv;
--	int ifindex;
- 	int portid = NETLINK_CB(cb->skb).portid;
- 	int skip = cb->args[0];
- 	int i = 0;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh,
--					     BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface)
--		return -ENODEV;
--
--	if (!batadv_softif_is_valid(soft_iface)) {
--		dev_put(soft_iface);
--		return -ENODEV;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 
-@@ -1150,23 +1137,17 @@ static int batadv_netlink_set_vlan(struct sk_buff *skb, struct genl_info *info)
- }
- 
- /**
-- * batadv_get_softif_from_info() - Retrieve soft interface from genl attributes
-+ * batadv_netlink_get_softif_from_ifindex() - Get soft-iface from ifindex
-  * @net: the applicable net namespace
-- * @info: receiver information
-+ * @ifindex: index of the soft interface
-  *
-  * Return: Pointer to soft interface (with increased refcnt) on success, error
-  *  pointer on error
-  */
- static struct net_device *
--batadv_get_softif_from_info(struct net *net, struct genl_info *info)
-+batadv_netlink_get_softif_from_ifindex(struct net *net, int ifindex)
- {
- 	struct net_device *soft_iface;
--	int ifindex;
--
--	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
--		return ERR_PTR(-EINVAL);
--
--	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
- 
- 	soft_iface = dev_get_by_index(net, ifindex);
- 	if (!soft_iface)
-@@ -1184,28 +1165,61 @@ batadv_get_softif_from_info(struct net *net, struct genl_info *info)
- }
- 
- /**
-- * batadv_get_hardif_from_info() - Retrieve hardif from genl attributes
-- * @bat_priv: the bat priv with all the soft interface information
-+ * batadv_netlink_get_softif_from_info() - Get soft-iface from genl attributes
-  * @net: the applicable net namespace
-  * @info: receiver information
-  *
-+ * Return: Pointer to soft interface (with increased refcnt) on success, error
-+ *  pointer on error
-+ */
-+static struct net_device *
-+batadv_netlink_get_softif_from_info(struct net *net, struct genl_info *info)
-+{
-+	int ifindex;
-+
-+	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
-+		return ERR_PTR(-EINVAL);
-+
-+	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
-+
-+	return batadv_netlink_get_softif_from_ifindex(net, ifindex);
-+}
-+
-+/**
-+ * batadv_netlink_get_softif() - Retrieve soft interface from netlink callback
-+ * @cb: callback structure containing arguments
-+ *
-+ * Return: Pointer to soft interface (with increased refcnt) on success, error
-+ *  pointer on error
-+ */
-+struct net_device *batadv_netlink_get_softif(struct netlink_callback *cb)
-+{
-+	int ifindex = batadv_netlink_get_ifindex(cb->nlh,
-+						 BATADV_ATTR_MESH_IFINDEX);
-+	if (!ifindex)
-+		return ERR_PTR(-ENONET);
-+
-+	return batadv_netlink_get_softif_from_ifindex(sock_net(cb->skb->sk),
-+						      ifindex);
-+}
-+
-+/**
-+ * batadv_netlink_get_hardif_from_ifindex() - Get hard-iface from ifindex
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @net: the applicable net namespace
-+ * @ifindex: index of the hard interface
-+ *
-  * Return: Pointer to hard interface (with increased refcnt) on success, error
-  *  pointer on error
-  */
- static struct batadv_hard_iface *
--batadv_get_hardif_from_info(struct batadv_priv *bat_priv, struct net *net,
--			    struct genl_info *info)
-+batadv_netlink_get_hardif_from_ifindex(struct batadv_priv *bat_priv,
-+				       struct net *net, int ifindex)
- {
- 	struct batadv_hard_iface *hard_iface;
- 	struct net_device *hard_dev;
--	unsigned int hardif_index;
--
--	if (!info->attrs[BATADV_ATTR_HARD_IFINDEX])
--		return ERR_PTR(-EINVAL);
--
--	hardif_index = nla_get_u32(info->attrs[BATADV_ATTR_HARD_IFINDEX]);
- 
--	hard_dev = dev_get_by_index(net, hardif_index);
-+	hard_dev = dev_get_by_index(net, ifindex);
- 	if (!hard_dev)
- 		return ERR_PTR(-ENODEV);
- 
-@@ -1229,6 +1243,51 @@ batadv_get_hardif_from_info(struct batadv_priv *bat_priv, struct net *net,
- 	return ERR_PTR(-EINVAL);
+ net/batman-adv/bat_v_elp.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 1d704574e6bf..014489f7f947 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -18,6 +18,7 @@
+ #include <linux/if_ether.h>
+ #include <linux/jiffies.h>
+ #include <linux/kref.h>
++#include <linux/limits.h>
+ #include <linux/minmax.h>
+ #include <linux/netdevice.h>
+ #include <linux/nl80211.h>
+@@ -56,6 +57,25 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
+ 			   msecs_to_jiffies(msecs));
  }
  
 +/**
-+ * batadv_netlink_get_hardif_from_info() - Get hard-iface from genl attributes
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @net: the applicable net namespace
-+ * @info: receiver information
++ * batadv_v_elp_get_throughput_from_11s() - get the throughput from 11s link
++ * @airtime: airtime link metric to a neighbor from an 11s link
 + *
-+ * Return: Pointer to hard interface (with increased refcnt) on success, error
-+ *  pointer on error
++ * Return: The throughput towards the given neighbour in multiples of 100kpbs
++ *         (a value of '1' equals 0.1Mbps, '10' equals 1Mbps, etc).
 + */
-+static struct batadv_hard_iface *
-+batadv_netlink_get_hardif_from_info(struct batadv_priv *bat_priv,
-+				    struct net *net, struct genl_info *info)
++static u32 batadv_v_elp_get_throughput_from_11s(u32 airtime)
 +{
-+	int ifindex;
++	const int tu_to_airtime_unit = 100;
++	const int test_frame_len = 8192;
++	const int tu_to_us = 1024;
 +
-+	if (!info->attrs[BATADV_ATTR_HARD_IFINDEX])
-+		return ERR_PTR(-EINVAL);
++	if (!airtime)
++		return U32_MAX;
 +
-+	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_HARD_IFINDEX]);
-+
-+	return batadv_netlink_get_hardif_from_ifindex(bat_priv, net, ifindex);
-+}
-+
-+/**
-+ * batadv_netlink_get_hardif() - Retrieve hard interface from netlink callback
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @cb: callback structure containing arguments
-+ *
-+ * Return: Pointer to hard interface (with increased refcnt) on success, error
-+ *  pointer on error
-+ */
-+struct batadv_hard_iface *
-+batadv_netlink_get_hardif(struct batadv_priv *bat_priv,
-+			  struct netlink_callback *cb)
-+{
-+	int ifindex = batadv_netlink_get_ifindex(cb->nlh,
-+						 BATADV_ATTR_HARD_IFINDEX);
-+	if (!ifindex)
-+		return ERR_PTR(-ENONET);
-+
-+	return batadv_netlink_get_hardif_from_ifindex(bat_priv,
-+						      sock_net(cb->skb->sk),
-+						      ifindex);
++	return test_frame_len * 100 * tu_to_airtime_unit / (airtime * tu_to_us);
 +}
 +
  /**
-  * batadv_get_vlan_from_info() - Retrieve vlan from genl attributes
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1288,7 +1347,7 @@ static int batadv_pre_doit(const struct genl_split_ops *ops,
- 		return -EINVAL;
- 
- 	if (ops->internal_flags & BATADV_FLAG_NEED_MESH) {
--		soft_iface = batadv_get_softif_from_info(net, info);
-+		soft_iface = batadv_netlink_get_softif_from_info(net, info);
- 		if (IS_ERR(soft_iface))
- 			return PTR_ERR(soft_iface);
- 
-@@ -1297,7 +1356,8 @@ static int batadv_pre_doit(const struct genl_split_ops *ops,
- 	}
- 
- 	if (ops->internal_flags & BATADV_FLAG_NEED_HARDIF) {
--		hard_iface = batadv_get_hardif_from_info(bat_priv, net, info);
-+		hard_iface = batadv_netlink_get_hardif_from_info(bat_priv, net,
-+								 info);
- 		if (IS_ERR(hard_iface)) {
- 			ret = PTR_ERR(hard_iface);
- 			goto err_put_softif;
-@@ -1390,7 +1450,7 @@ static const struct genl_small_ops batadv_netlink_ops[] = {
- 		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
- 		/* can be retrieved by unprivileged users */
- 		.dumpit = batadv_netlink_dump_hardif,
--		.doit = batadv_netlink_get_hardif,
-+		.doit = batadv_netlink_cmd_get_hardif,
- 		.internal_flags = BATADV_FLAG_NEED_MESH |
- 				  BATADV_FLAG_NEED_HARDIF,
- 	},
-diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
-index 876d2806a67d..2097c2ae98f1 100644
---- a/net/batman-adv/netlink.h
-+++ b/net/batman-adv/netlink.h
-@@ -15,7 +15,10 @@
- 
- void batadv_netlink_register(void);
- void batadv_netlink_unregister(void);
--int batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype);
-+struct net_device *batadv_netlink_get_softif(struct netlink_callback *cb);
-+struct batadv_hard_iface *
-+batadv_netlink_get_hardif(struct batadv_priv *bat_priv,
-+			  struct netlink_callback *cb);
- 
- int batadv_netlink_tpmeter_notify(struct batadv_priv *bat_priv, const u8 *dst,
- 				  u8 result, u32 test_time, u64 total_bytes,
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 8f6dd2c6ee41..bcc2e20e0cd6 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -9,6 +9,7 @@
- 
- #include <linux/atomic.h>
- #include <linux/container_of.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -26,9 +27,7 @@
- #include <linux/spinlock.h>
- #include <linux/stddef.h>
- #include <linux/workqueue.h>
--#include <net/sock.h>
- #include <uapi/linux/batadv_packet.h>
--#include <uapi/linux/batman_adv.h>
- 
- #include "bat_algo.h"
- #include "distributed-arp-table.h"
-@@ -41,7 +40,6 @@
- #include "netlink.h"
- #include "network-coding.h"
- #include "routing.h"
--#include "soft-interface.h"
- #include "translation-table.h"
- 
- /* hash class keys */
-@@ -755,64 +753,48 @@ batadv_neigh_node_get_or_create(struct batadv_orig_node *orig_node,
-  */
- int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
--	struct net *net = sock_net(cb->skb->sk);
-+	struct batadv_hard_iface *primary_if, *hard_iface;
- 	struct net_device *soft_iface;
--	struct net_device *hard_iface = NULL;
--	struct batadv_hard_iface *hardif = BATADV_IF_DEFAULT;
- 	struct batadv_priv *bat_priv;
--	struct batadv_hard_iface *primary_if = NULL;
+  * batadv_v_elp_get_throughput() - get the throughput towards a neighbour
+  * @neigh: the neighbour for which the throughput has to be obtained
+@@ -69,7 +89,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 	struct ethtool_link_ksettings link_settings;
+ 	struct net_device *real_netdev;
+ 	struct station_info sinfo;
+-	u32 throughput;
++	u32 throughput, airtime;
  	int ret;
--	int ifindex, hard_ifindex;
  
--	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
+ 	/* if the user specified a customised value for this interface, then
+@@ -109,6 +129,11 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 		if (ret)
+ 			goto default_throughput;
  
- 	bat_priv = netdev_priv(soft_iface);
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = -ENOENT;
--		goto out;
-+		goto out_put_soft_iface;
- 	}
- 
--	hard_ifindex = batadv_netlink_get_ifindex(cb->nlh,
--						  BATADV_ATTR_HARD_IFINDEX);
--	if (hard_ifindex) {
--		hard_iface = dev_get_by_index(net, hard_ifindex);
--		if (hard_iface)
--			hardif = batadv_hardif_get_by_netdev(hard_iface);
--
--		if (!hardif) {
--			ret = -ENODEV;
--			goto out;
--		}
--
--		if (hardif->soft_iface != soft_iface) {
--			ret = -ENOENT;
--			goto out;
--		}
-+	hard_iface = batadv_netlink_get_hardif(bat_priv, cb);
-+	if (IS_ERR(hard_iface) && PTR_ERR(hard_iface) != -ENONET) {
-+		ret = PTR_ERR(hard_iface);
-+		goto out_put_primary_if;
-+	} else if (IS_ERR(hard_iface)) {
-+		/* => PTR_ERR(hard_iface) == -ENONET
-+		 * => no hard-iface given, ok
-+		 */
-+		hard_iface = BATADV_IF_DEFAULT;
- 	}
- 
- 	if (!bat_priv->algo_ops->neigh.dump) {
- 		ret = -EOPNOTSUPP;
--		goto out;
-+		goto out_put_hard_iface;
- 	}
- 
--	bat_priv->algo_ops->neigh.dump(msg, cb, bat_priv, hardif);
-+	bat_priv->algo_ops->neigh.dump(msg, cb, bat_priv, hard_iface);
- 
- 	ret = msg->len;
- 
-- out:
--	batadv_hardif_put(hardif);
--	dev_put(hard_iface);
-+out_put_hard_iface:
-+	batadv_hardif_put(hard_iface);
-+out_put_primary_if:
- 	batadv_hardif_put(primary_if);
-+out_put_soft_iface:
- 	dev_put(soft_iface);
- 
- 	return ret;
-@@ -1342,64 +1324,48 @@ static void batadv_purge_orig(struct work_struct *work)
-  */
- int batadv_orig_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
--	struct net *net = sock_net(cb->skb->sk);
-+	struct batadv_hard_iface *primary_if, *hard_iface;
- 	struct net_device *soft_iface;
--	struct net_device *hard_iface = NULL;
--	struct batadv_hard_iface *hardif = BATADV_IF_DEFAULT;
- 	struct batadv_priv *bat_priv;
--	struct batadv_hard_iface *primary_if = NULL;
- 	int ret;
--	int ifindex, hard_ifindex;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = -ENOENT;
--		goto out;
-+		goto out_put_soft_iface;
- 	}
- 
--	hard_ifindex = batadv_netlink_get_ifindex(cb->nlh,
--						  BATADV_ATTR_HARD_IFINDEX);
--	if (hard_ifindex) {
--		hard_iface = dev_get_by_index(net, hard_ifindex);
--		if (hard_iface)
--			hardif = batadv_hardif_get_by_netdev(hard_iface);
--
--		if (!hardif) {
--			ret = -ENODEV;
--			goto out;
--		}
--
--		if (hardif->soft_iface != soft_iface) {
--			ret = -ENOENT;
--			goto out;
--		}
-+	hard_iface = batadv_netlink_get_hardif(bat_priv, cb);
-+	if (IS_ERR(hard_iface) && PTR_ERR(hard_iface) != -ENONET) {
-+		ret = PTR_ERR(hard_iface);
-+		goto out_put_primary_if;
-+	} else if (IS_ERR(hard_iface)) {
-+		/* => PTR_ERR(hard_iface) == -ENONET
-+		 * => no hard-iface given, ok
-+		 */
-+		hard_iface = BATADV_IF_DEFAULT;
- 	}
- 
- 	if (!bat_priv->algo_ops->orig.dump) {
- 		ret = -EOPNOTSUPP;
--		goto out;
-+		goto out_put_hard_iface;
- 	}
- 
--	bat_priv->algo_ops->orig.dump(msg, cb, bat_priv, hardif);
-+	bat_priv->algo_ops->orig.dump(msg, cb, bat_priv, hard_iface);
- 
- 	ret = msg->len;
- 
-- out:
--	batadv_hardif_put(hardif);
--	dev_put(hard_iface);
-+out_put_hard_iface:
-+	batadv_hardif_put(hard_iface);
-+out_put_primary_if:
- 	batadv_hardif_put(primary_if);
-+out_put_soft_iface:
- 	dev_put(soft_iface);
- 
- 	return ret;
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 76d5517bb507..2bc3407f38b2 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -15,6 +15,7 @@
- #include <linux/compiler.h>
- #include <linux/container_of.h>
- #include <linux/crc32c.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/gfp.h>
-@@ -39,7 +40,6 @@
- #include <linux/workqueue.h>
- #include <net/genetlink.h>
- #include <net/netlink.h>
--#include <net/sock.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
- 
-@@ -1115,26 +1115,18 @@ batadv_tt_local_dump_bucket(struct sk_buff *msg, u32 portid,
-  */
- int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_hashtable *hash;
- 	int ret;
--	int ifindex;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
- 	int portid = NETLINK_CB(cb->skb).portid;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
- 
-@@ -1890,28 +1882,20 @@ batadv_tt_global_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-  */
- int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb)
- {
--	struct net *net = sock_net(cb->skb->sk);
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_hashtable *hash;
- 	struct hlist_head *head;
- 	int ret;
--	int ifindex;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
- 	int sub = cb->args[2];
- 	int portid = NETLINK_CB(cb->skb).portid;
- 
--	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
--	if (!ifindex)
--		return -EINVAL;
--
--	soft_iface = dev_get_by_index(net, ifindex);
--	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	soft_iface = batadv_netlink_get_softif(cb);
-+	if (IS_ERR(soft_iface))
-+		return PTR_ERR(soft_iface);
- 
- 	bat_priv = netdev_priv(soft_iface);
++		if (sinfo.filled & BIT(NL80211_STA_INFO_AIRTIME_LINK_METRIC)) {
++			airtime = sinfo.airtime_link_metric;
++			return batadv_v_elp_get_throughput_from_11s(airtime);
++		}
++
+ 		if (sinfo.filled & BIT(NL80211_STA_INFO_EXPECTED_THROUGHPUT))
+ 			return sinfo.expected_throughput / 100;
  
 -- 
-2.39.5
+2.47.1
 
