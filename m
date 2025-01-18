@@ -1,30 +1,30 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B7E7C02187
-	for <batman-adv@archiver.kernel.org>; Sat, 18 Jan 2025 08:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9313C02185
+	for <batman@archiver.kernel.org>; Sat, 18 Jan 2025 08:25:31 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4DEE983FAB
-	for <batman-adv@archiver.kernel.org>; Sat, 18 Jan 2025 09:24:43 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 126EC842E4
+	for <batman@archiver.kernel.org>; Sat, 18 Jan 2025 09:25:30 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1737188683;
- b=lcshH5jN/vcIXuLNioaFP8lZ2oNK3WGY9IJm7a2nv8VLNNtI0ubKTQlBjJhKqg4mM6xvr
- GXBcCW0kVpg5fsMtzChlXfk/oojMDX7tavQkmE9S5/C3FTEkmnIjL/C62Pl4LmZk9YNFa3f
- hmKLiPGfTCR6tTtL3VPrJ4xT31dO9DA=
+ t=1737188730;
+ b=0qkZiVX/XqsV1uW/Zfyypc6SWfqQK39f+9vCYA9rIK/cmZPKlsIvXqmR0XP92Uk1OKT3x
+ 1DiNy1fvTgoCk5VXkH+l5h/DlPVjDxx+XnnOtAPK/6+7pObFu1OCwSWCH9/K/v9uu9I3sII
+ Y5zfpG7Z3SP0+dKt+n+biD5BA4v6lLo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1737188683; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1737188730; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=G3IZklEtXMEZQwNwoU/r/BCbLk50+R8M3xF9uAtaFv4=;
- b=NOrcAy26+CuVcd/2vrrr46SLbA021g6pZdhIJqJZ2pimSTUpuIFnqBUqYBKVjdqgRx6zq
- 1gpoYHdsWbjoUqCuOhVcs0KoZY23fimN/TSrUj9A/zAsc9MVM6IrMcZXd7n+LNG5kbqi3nb
- +K1TbvwxkMEHh65U/UHXPWZO2HNld2Y=
+ list-archive; bh=GAw7W4ojRbl4GcrlOhx0WfOpwKrNAZMKKGVvpvBJWdA=;
+ b=D4KcFQNPHcBKX7DQdksis4pUyAx3IfeM5Sv2z4I7fl5pNsJ575eFl1jC02LIOsXlGr7d9
+ pLqqn5obO3+RNMSGRMzDkec5ZOvV4Yshm381ry0SzcmxYcnvWQp+/CS/eEbHJPHDIf0iOpG
+ sg3nh8++OOm9mbnThrSyVWUCrR++XzM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=mailbox.org;
   arc=pass;
@@ -33,84 +33,78 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=mailbox.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=mailbox.org policy.dmarc=reject
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id AE29681AF8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 18 Jan 2025 06:00:05 +0100 (CET)
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4616F81707
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 18 Jan 2025 06:08:11 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1737176405;
+	s=20121; t=1737176891;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=G3IZklEtXMEZQwNwoU/r/BCbLk50+R8M3xF9uAtaFv4=;
-	b=SHxI0x3D8dRdnqqm+3hwM2qb2zoLyghyQjrbxYeVkdanzlzcE3j9c37WhVSoflGfuki+B+
-	CMGrmOK4SCMgczyNUYOaoOMMZQPqk+EVDFlGUpUUmrIEWuePPNUF2MEil8ZDI20XB6zGmg
-	foPn26GbKhZ9oByPLLBoTTOigzgnp6Y=
+	bh=GAw7W4ojRbl4GcrlOhx0WfOpwKrNAZMKKGVvpvBJWdA=;
+	b=LuNTFyaaXAhulJPPtsu4ns+DHqEOLSKoXo+kYW/8nVCHLEY6/lcRXY+D+imqrQIckv3CcY
+	e1VITc60G1Q8XYPL/3JmRYy/5gaD7G0txwL+WWEhyA4+0Ipctq2y5LbMm5EC/mh71M+UUe
+	+nn5NzY5Ijl57UyStEePezRS/napI0s=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=cMbsEm2Q;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=TxiM8elc;
 	spf=pass (diktynna.open-mesh.org: domain of marek.lindner@mailbox.org
- designates 80.241.56.171 as permitted sender)
+ designates 80.241.56.152 as permitted sender)
  smtp.mailfrom=marek.lindner@mailbox.org;
 	dmarc=pass (policy=reject) header.from=mailbox.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1737176405; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1737176891; a=rsa-sha256;
 	cv=none;
-	b=3xSvg6qupYlYC/wvv+h8fdjSmarF4pZr8XQfggrcnYxDkn7uCywko0NDo2zkuwJ3ud2tKx
-	mpbZEj+mcbdV8+7pVkg8b7x12FeChJj6zpoxYchGl6lUl/MRvuoy/vIF3DEQTkmUC8Z3+y
-	lTDeKTwbO8RJmRJptEodCjFvbTARtTM=
-Received: from smtp2.mailbox.org (smtp2.mailbox.org
- [IPv6:2001:67c:2050:b231:465::2])
+	b=dWygxUvFgFbM914y3XavCM3N/ZDu6zCqkFo9epBLZnVp+u5z32SlqxdQuXEzw5jM2dnE1p
+	fkCYGZi8oA6M8nBbAUru94JSEAqR4v7aZC2l/g1k/rj1r5XDZ9BGAFv+STK8bZQ0CyycIn
+	zaz5GHKbSri8uYAUFGh837VCr4Jt2NY=
+Received: from smtp1.mailbox.org (smtp1.mailbox.org
+ [IPv6:2001:67c:2050:b231:465::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4YZktW086sz9sxW;
-	Sat, 18 Jan 2025 06:00:03 +0100 (CET)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4YZl3s0gJRz9svX
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 18 Jan 2025 06:08:09 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
  s=mail20150812;
-	t=1737176403;
+	t=1737176889;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=G3IZklEtXMEZQwNwoU/r/BCbLk50+R8M3xF9uAtaFv4=;
-	b=cMbsEm2Qrn5/2u3JOszAqho5S6bM6waIEUBbVKysFvKFaiElO9Ptg1oN6GtnfXK9xp/A3Q
-	uejZ1huTHULh31dezDwVCUgBQ2Y6XoSRbT58SCj05WbzQkQ3kNZ+XkJvveGDEG/jSoO9bN
-	hhIrGyHtDoXs1xcczIUdGe3btbYdCu+FZYO7kHf46fi5t5fuhgNRJhdtY07kl5eX6L/gU2
-	M4gNPx5IyeV8yQEY8teq97N820vRBgHAsE3t/HeSt1MdDNM9GuYnTUE4F4lr17mLg2UOot
-	115NwphduXPuxBAH9XqanA7pu1vdz1OifoO/ZLN/jNNtnyJh3UfxKKvm+FWA4Q==
+	bh=GAw7W4ojRbl4GcrlOhx0WfOpwKrNAZMKKGVvpvBJWdA=;
+	b=TxiM8elcDUpC6du+FUpdsNV/AepRwRlbdynV5wECxSwMHjFYpnzTXRyAu3M+R5rm0KQoKn
+	zI94ArM7Kwc9uBTpRGMBHOHitvwmgy1pXvZhGZ9iFiv+Xia6lD4/dDVHhTuKH0zOzYon2T
+	zJq44VUNTGq3g9EhCRP03Igq0r4n0Liw/7PshWCt4Fi2lk+4LOTx49cqblD88vzEbWleLV
+	a1M6h/i3afAbE1j28C2EkeA1oCX525rU/kPFyVqni7S2dofEBuqe2A56W8bBPn/awiIaXr
+	HgNNGq1JBYWEGNM06Kq74VoWLEmyikkedqzeWVhZK4Pe20p0vFgMChH3BlpUTw==
 From: Marek Lindner <marek.lindner@mailbox.org>
-To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>,
- b.a.t.m.a.n@lists.open-mesh.org,
- =?ISO-8859-1?Q?Ren=E9?= Treffer <treffer@measite.de>
-Cc: Andrew Strohman <andrew@andrewstrohman.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 Subject: 
  Re: [PATCH RFC] batman-adv: BATMAN V: use/prefer 11s airtime link metric
-Date: Sat, 18 Jan 2025 05:59:56 +0100
-Message-ID: <6131569.pqZb4hCDXM@rousseau>
-In-Reply-To: 
- <CAA8ajJnqXBuUmBzAHVjyEchD2CU9E7SmqJXXvy0V7QAQF9536A@mail.gmail.com>
-References: 
- <20250118003528.6843-1-linus.luessing@c0d3.blue>
- <CAA8ajJnqXBuUmBzAHVjyEchD2CU9E7SmqJXXvy0V7QAQF9536A@mail.gmail.com>
+Date: Sat, 18 Jan 2025 06:08:05 +0100
+Message-ID: <5954293.xXo6FtjLZv@rousseau>
+In-Reply-To: <20250118003528.6843-1-linus.luessing@c0d3.blue>
+References: <20250118003528.6843-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-MBO-RS-META: gcw453dn1n55g8fr5trftn51g5k3nhb7
-X-MBO-RS-ID: 2366fc65270b90d0023
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-MBO-RS-ID: 646667e9b2db55e7031
+X-MBO-RS-META: 7fzmmuyrx4jcyqubgeqad8o4k9ngzrxp
 X-MailFrom: marek.lindner@mailbox.org
 X-Mailman-Rule-Hits: member-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address
-Message-ID-Hash: PDCMTYNTNLJEPOVO5I2VVCIN3X65MJJW
-X-Message-ID-Hash: PDCMTYNTNLJEPOVO5I2VVCIN3X65MJJW
+Message-ID-Hash: EFLVD234UQ5QFXFFYRD6255XTIMSWRSW
+X-Message-ID-Hash: EFLVD234UQ5QFXFFYRD6255XTIMSWRSW
 X-Mailman-Approved-At: Sat, 18 Jan 2025 09:24:35 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PDCMTYNTNLJEPOVO5I2VVCIN3X65MJJW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EFLVD234UQ5QFXFFYRD6255XTIMSWRSW/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -119,49 +113,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Saturday, 18 January 2025 03:00:07 CET Andrew Strohman wrote:
-> The second problem I have, seems to be that sta_get_expected_throughput()
-> returns a bandwidth which is an over-estimate. For example, it
-> estimates 150Mb/s. But really, I'm only getting 25Mb/s, or less on the
-> link. I *think*
-> the expected bandwidth delivered by minstrel is not considering the
-> fact that the
-> radio cannot tx as often as it would like due to contention. The return
-> value seems to reflect that fact that we tx to the sta at a high rate,
-> but doesn't reflect the fact that it's hard to get an opportunity to tx.
+On Saturday, 18 January 2025 01:35:27 CET Linus L=FCssing wrote:
+> When no expected throughput is available then HWMP keeps track of the
+> average packet delivery error rate and average phy rate to calculate its
+> own expected throughput value.
 
-It is important to point out that batman-adv is not trying to get an 
-'accurate' knowledge of the throughput. The throughput metric is an estimate 
-and the important aspect is that the method of estimating the throughput is 
-consistent across all radios on the same AP. This is necessary to make the 
-estimated throughput values comparable. At the end of the day, the routing 
-algorithm has to make an informed decision about which route is better, not 
-getting the most accurate throughput measurement.
-
-Please also keep in mind that the accuracy of any 'measured' throughput value 
-over WiFi is temporary (in real world setups). If you measured 5 minutes later 
-you might get a different throughput value due to interference, traffic from 
-other mesh participants, the weather, etc.
-
-FYI, expected throughput and also 802.11 throughput estimation are taking 
-congestion into account. If you believe this isn't sufficient to get an accurate 
-read of the situation, can you please expand on your findings? Note that the 
-data rate fallback (tx rate / 3) is the exception to this rule.
+Is this also the case when 11s mesh forwarding is disabled?
 
 
-> HWMP doesn't need to consider this, because it only supports one radio. 
+> So the 11s airtime link metric should be a slightly better estimate than
+> the expected throughput provided by Minstrel. And should be significantly
+> better than our raw PHY rate divided by 3 guestimate fallback.
 
-Where do you see the difference to expected throughput? Expected throughput and 
-data rate also is per radio and neighbor. 
+Have you tested the airtime metric in real world setups or what leads you t=
+o=20
+conclude that 11s airtime link metric is better than expected throughput?
+
+Generally speaking, I like the idea of adding another link metric source.
 
 
-> I found that adding a 2.4ghz radio to my bat interface has caused 
-> instability and poor performance compared to just running batman with the
-> 5ghz radio only.
+> +static u32 batadv_v_elp_get_throughput_from_11s(u32 airtime)
+> +{
+> +       const int tu_to_airtime_unit =3D 100;
+> +       const int test_frame_len =3D 8192;
+> +       const int tu_to_us =3D 1024;
+>
+> +       return test_frame_len * 100 * tu_to_airtime_unit / (airtime *=20
+tu_to_us);
 
-With batman-adv throughput metric the 5GHz radio should be preferred due to 
-the higher throughput of the radio. Can you please share details about your 
-setup and highlight why you believe 2.4GHz is chosen over 5GHz.
+Are these values constant across all platforms and drivers?
+
+Maybe there should be a function call to an 11s function doing the conversi=
+on=20
+and handling all cases (instead of doing this in the batman-adv code)?
+
+
+>         struct station_info sinfo;
+>  -       u32 throughput;
+> +       u32 throughput, airtime;
+
+The Reverse Christmas Tree style should be accounted for.
 
 Cheers,
 Marek
