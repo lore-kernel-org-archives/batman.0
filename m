@@ -4,76 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA83CC0218A
-	for <batman-adv@archiver.kernel.org>; Sat,  1 Feb 2025 04:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B7DC0218A
+	for <batman-adv@archiver.kernel.org>; Sat,  1 Feb 2025 09:43:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 452D5841DE
-	for <batman-adv@archiver.kernel.org>; Sat,  1 Feb 2025 05:40:07 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 6BE8A83E48
+	for <batman-adv@archiver.kernel.org>; Sat,  1 Feb 2025 10:43:08 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1738384807;
- b=bQ69avZJtwgoQ1itvkTm8w7dBGtbFmhsMSiQiw1koqLxtpJvb+1SVm6zkNpd1xS3cBPnK
- wqj89/qvdVMmJRb0Kv4PeAc+68IOzllZpIsh5GuyOmY3+wfqBIRcFKrANv8j36kbLRVjLtT
- /sK3TIB7xVWb5ZsfU7Qc5jFqdZanJyQ=
+ t=1738402988;
+ b=3Am0d3zR3icZ4vrjjRqrRdqIXWaoxGiyo686rkgAx9Pjmzd2zAQtWcX+lWsJc1LU3m5pv
+ R70jdbKxM4x7WGyyb3dDGzrgOkIrKC/tkCt09KqpTkZWk6QGjzplO1BNFByAnPnc//WDaBR
+ dBGxeseSWdd5jY9PDpD25PcdBd1WFQg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1738384807; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1738402988; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=7cB8dMzpRl0Td2hCrLAkbaGX0YPw0GRzdUxFOhyapdM=;
- b=tk7sdTkATLjdHMcYEEOWCU/0xjDRACOZBRzSuy7eYBMw6lXEDLqO53IPDLiHVk+QGeNBN
- 0/LvDGfpOK9m2Ugw+7+yWfd+wWX+HSxSyjjBQ88vmXJzYaYmLVSshBjwRoqhPpBShK+miHm
- 7As0ohY2P9hke06GkoEr8jlxonixnVg=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
+ list-archive; bh=QJVw8oG8c7tLjUQ/WTe7JEOOsdrjlVDMGlvrKupVjME=;
+ b=YBRUgKfhZ+7q/FSpwfjI9zppUqMfYjoxX3dIymrsrsUMgJUrou9NIKjKWjycVPfNUqSTg
+ AvRxGU2KeS6xkVOUzY4i8Zq8HIS/9NYhLgEq8h5N2bf7BtJj2+qz+q7D6/1yPhasyeitjDM
+ 2SmOHvjnPCBiVQDTAZcFmXuazyQ9C2A=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=pass;
-  dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D9211805FC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  1 Feb 2025 05:37:55 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A8FFE81EC7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat,  1 Feb 2025 10:42:59 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1738384675;
+	s=20121; t=1738402980;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7cB8dMzpRl0Td2hCrLAkbaGX0YPw0GRzdUxFOhyapdM=;
-	b=zC3Lr67Or92nYU51hgE4Zj4aPvhh0r4NxXGC0cX91XGpXk+OjK/a1m3o14P7IHa7Q459m5
-	FCMLxRDJW4SOzRO3LieDKJumWLncUobagQAIviTj97RHIVdc2kHH7d6sWx7H07IoeJKzU3
-	l3GM0ROy4WnKxgVL3+cH4vX+i/sAwzI=
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=QJVw8oG8c7tLjUQ/WTe7JEOOsdrjlVDMGlvrKupVjME=;
+	b=bIW784ipr6QeWm1xnsUzQ/fAgdgKFHl4czDsMm9NU7BJtHnDZGcitEQ3PMyeI6S5d5faOv
+	gA4UqIvTl96wRjZ0DyEhr+TFd8pdzI+G4Yd73Pm69VJqCcEkQuhLEzMUAC3RyQDQapA5yb
+	MqkSJIzFugmLzBJvibxi/f80oDFPhG4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
- designates 116.203.183.178 as permitted sender)
- smtp.mailfrom=linus.luessing@c0d3.blue;
-	dmarc=none
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1738384675; a=rsa-sha256;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=cjTo00mj;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1738402980; a=rsa-sha256;
 	cv=none;
-	b=i0VlBk9YMpFAYRUrWBgBPSsxcpJvgA+wQEn5fnM80NokRmDD8MA3Fwp9bdj1/xgJ+MlS/N
-	hvU7ZvHrJqR1uNJTWNPy2+/ctRoe4XmqpTZgU8Qa5uQzSMfjKoFMiOe9v01Mi/8KlOQuj/
-	uGD2YhfptPtyBI8dgEVD+K7rTHa5tBA=
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 6C27654D0C9;
-	Sat,  1 Feb 2025 05:37:55 +0100 (CET)
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+	b=ajFXUZd9TLNn4rd6UAYE2r8RRMfYNbrt8Yu+rUAy0TLF0k6K9854S7EvOdpJvqsmIhyLna
+	7d4o78O74JT3HwGTi/9CUrM6u2p4y59H1GpEav6/1YEbMpLvGbPGegECl6dY/fOZLagsYV
+	Z8pR7zE41dYz2tZThaBI8TTlMSzsbXQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1738402978;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QJVw8oG8c7tLjUQ/WTe7JEOOsdrjlVDMGlvrKupVjME=;
+	b=cjTo00mjzsH7sUQCorVAVKc2gcAt7VRT8w615SH1QbtH8XZ/s0HE0oVVQUOdnwXlTXxIQ0
+	orXbDz9BYAamOXQsiHUbl4L+iRAA1rnahIJCLqu67qPjyka/H8r8RNkdA+YS7yv331jrz1
+	XDVGIXOzI6mq6u4LDsCs05tSjdOyMVo=
+From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [PATCH v5 3/3] batman-adv: avoid adding bridge VLAN IDs through
- ndo_vlan_rx_add_vid()
-Date: Sat,  1 Feb 2025 05:31:30 +0100
-Message-ID: <20250201043725.15217-4-linus.luessing@c0d3.blue>
-X-Mailer: git-send-email 2.47.2
+Cc: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>,
+ Antonio Quartulli <a@unstable.cc>
+Subject: Re: [PATCH v5 0/3] batman-adv: add dynamic,
+ bridged-in TT VID detection
+Date: Sat, 01 Feb 2025 10:42:54 +0100
+Message-ID: <2662292.atdPhlSkOF@sven-l14>
 In-Reply-To: <20250201043725.15217-1-linus.luessing@c0d3.blue>
 References: <20250201043725.15217-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: W3QLJ6V3HVFD6EBDIO6YH4CRMAQW4AT2
-X-Message-ID-Hash: W3QLJ6V3HVFD6EBDIO6YH4CRMAQW4AT2
-X-MailFrom: linus.luessing@c0d3.blue
+Content-Type: multipart/signed; boundary="nextPart47764768.fMDQidcC6G";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: 2BCOEA4V5OQ2QJ4WGGKW4U7QXQ3Y5R7U
+X-Message-ID-Hash: 2BCOEA4V5OQ2QJ4WGGKW4U7QXQ3Y5R7U
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -86,7 +94,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/W3QLJ6V3HVFD6EBDIO6YH4CRMAQW4AT2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2BCOEA4V5OQ2QJ4WGGKW4U7QXQ3Y5R7U/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -95,191 +103,146 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The Linux bridge by default adds the PVID of a port (default VID 1) and
-by that triggers our ndo_vlan_rx_add_vid() handler. The PVID is
-for ingress traffic from bat0 to the bridge and other bridge ports.
-However this makes no statement about what is received or send on bat0
-itself, bat0 might as well be an untagged access port, even with a PVID
-configured. Therefore ignoring here when a bridge is involved.
+--nextPart47764768.fMDQidcC6G
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Date: Sat, 01 Feb 2025 10:42:54 +0100
+Message-ID: <2662292.atdPhlSkOF@sven-l14>
+In-Reply-To: <20250201043725.15217-1-linus.luessing@c0d3.blue>
+References: <20250201043725.15217-1-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
 
-Also, similarly a "bridge vlan add vid 42 dev bat0 untagged" would call
-this handler with VID 42. Even though we wouldn't be interested in this
-VLAN as its traffic would be untagged on our side.
+On Saturday, 1 February 2025 05:31:27 GMT+1 Linus L=C3=BCssing wrote:
+> v5:
+> * rebased to current main branch:
+>   -> PATCH 3/3 needed to readd the include for soft-interface.h for
+>      batadv_softif_get_bridge() since commit
+>      "50eddf397ac3 batman-adv: netlink: reduce duplicate code by returnin=
+g interfaces"
 
-The issue is that any extra VLAN currently increases our own
-OGM protocol overhead quite a bit, so we want to avoid that
-by only adding VLANs that we are sure someone will be using.
-So only add VLANs through snooping of actual, VLAN tagged
-traffic, not through kernel internal network events
-if we have a bridge on top.
+I see also following reports:
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/multicast.c      | 30 +++------------------
- net/batman-adv/soft-interface.c | 47 +++++++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.h |  1 +
- 3 files changed, 51 insertions(+), 27 deletions(-)
+ecsv/pu: headers
+=2D---------------
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index b39c214c0c6d..9b7290bf05bd 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -56,6 +56,7 @@
- #include "log.h"
- #include "netlink.h"
- #include "send.h"
-+#include "soft-interface.h"
- #include "translation-table.h"
- #include "tvlv.h"
- 
-@@ -71,31 +72,6 @@ static void batadv_mcast_start_timer(struct batadv_priv *bat_priv)
- 			   msecs_to_jiffies(BATADV_MCAST_WORK_PERIOD));
- }
- 
--/**
-- * batadv_mcast_get_bridge() - get the bridge on top of the softif if it exists
-- * @soft_iface: netdev struct of the mesh interface
-- *
-- * If the given soft interface has a bridge on top then the refcount
-- * of the according net device is increased.
-- *
-- * Return: NULL if no such bridge exists. Otherwise the net device of the
-- * bridge.
-- */
--static struct net_device *batadv_mcast_get_bridge(struct net_device *soft_iface)
--{
--	struct net_device *upper = soft_iface;
--
--	rcu_read_lock();
--	do {
--		upper = netdev_master_upper_dev_get_rcu(upper);
--	} while (upper && !netif_is_bridge_master(upper));
--
--	dev_hold(upper);
--	rcu_read_unlock();
--
--	return upper;
--}
--
- /**
-  * batadv_mcast_mla_rtr_flags_softif_get_ipv4() - get mcast router flags from
-  *  node for IPv4
-@@ -288,7 +264,7 @@ batadv_mcast_mla_flags_get(struct batadv_priv *bat_priv)
- 	struct batadv_mcast_mla_flags mla_flags;
- 	struct net_device *bridge;
- 
--	bridge = batadv_mcast_get_bridge(dev);
-+	bridge = batadv_softif_get_bridge(dev);
- 
- 	memset(&mla_flags, 0, sizeof(mla_flags));
- 	mla_flags.enabled = 1;
-@@ -530,7 +506,7 @@ batadv_mcast_mla_softif_get(struct net_device *dev,
- 			    struct hlist_head *mcast_list,
- 			    struct batadv_mcast_mla_flags *flags)
- {
--	struct net_device *bridge = batadv_mcast_get_bridge(dev);
-+	struct net_device *bridge = batadv_softif_get_bridge(dev);
- 	int ret4, ret6 = 0;
- 
- 	if (bridge)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 806c30fd17ce..70a27eb1db8e 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -677,6 +677,31 @@ static void batadv_softif_destroy_vlan_own(struct batadv_priv *bat_priv,
- 			       "vlan interface destroyed", false);
- }
- 
-+/**
-+ * batadv_softif_get_bridge() - get the bridge on top of the softif if it exists
-+ * @soft_iface: netdev struct of the mesh interface
-+ *
-+ * If the given soft interface has a bridge on top then the refcount
-+ * of the according net device is increased.
-+ *
-+ * Return: NULL if no such bridge exists. Otherwise the net device of the
-+ * bridge.
-+ */
-+struct net_device *batadv_softif_get_bridge(struct net_device *soft_iface)
-+{
-+	struct net_device *upper = soft_iface;
-+
-+	rcu_read_lock();
-+	do {
-+		upper = netdev_master_upper_dev_get_rcu(upper);
-+	} while (upper && !netif_is_bridge_master(upper));
-+
-+	dev_hold(upper);
-+	rcu_read_unlock();
-+
-+	return upper;
-+}
-+
- /**
-  * batadv_interface_add_vid() - ndo_add_vid API implementation
-  * @dev: the netdev of the mesh interface
-@@ -692,6 +717,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 				    unsigned short vid)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct net_device *bridge;
- 
- 	/* only 802.1Q vlans are supported.
- 	 * batman-adv does not know how to handle other types
-@@ -707,6 +733,20 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 	if (vid == 0)
- 		return 0;
- 
-+	/* The Linux bridge adds the PVID of a port (default VID 1) and
-+	 * triggers this handler. The PVID is for ingress traffic from
-+	 * bat0 to the bridge and other bridge ports. However this makes no
-+	 * statement about what is received or send on bat0 itself, bat0
-+	 * might as well be an untagged access port, even with a PVID
-+	 * configured. Therefore ignoring here when a bridge is involved.
-+	 * Instead learn VLANs on the fly from traffic.
-+	 */
-+	bridge = batadv_softif_get_bridge(dev);
-+	if (bridge) {
-+		dev_put(bridge);
-+		return 0;
-+	}
-+
- 	vid |= BATADV_VLAN_HAS_TAG;
- 
- 	return batadv_softif_create_vlan_own(bat_priv, vid);
-@@ -728,6 +768,7 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 				     unsigned short vid)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct net_device *bridge;
- 
- 	/* only 802.1Q vlans are supported. batman-adv does not know how to
- 	 * handle other types
-@@ -741,6 +782,12 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 	if (vid == 0)
- 		return 0;
- 
-+	bridge = batadv_softif_get_bridge(dev);
-+	if (bridge) {
-+		dev_put(bridge);
-+		return 0;
-+	}
-+
- 	batadv_softif_destroy_vlan_own(bat_priv, vid | BATADV_VLAN_HAS_TAG);
- 	return 0;
- }
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index f5334d275229..130447cb22a8 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -19,6 +19,7 @@ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
- void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, int hdr_size,
- 			 struct batadv_orig_node *orig_node);
-+struct net_device *batadv_softif_get_bridge(struct net_device *soft_iface);
- bool batadv_softif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
- int batadv_softif_create_vlan_own(struct batadv_priv *bat_priv,
--- 
-2.47.2
+    diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-inte=
+rface.c
+    index 051e7fce..30f65708 100644
+    --- a/net/batman-adv/soft-interface.c
+    +++ b/net/batman-adv/soft-interface.c
+    @@ -23,6 +23,7 @@
+     #include <linux/kref.h>
+     #include <linux/list.h>
+     #include <linux/lockdep.h>
+    +#include <linux/net.h>
+     #include <linux/netdevice.h>
+     #include <linux/netlink.h>
+     #include <linux/percpu.h>
+
+ecsv/pu: kerneldoc ./net/batman-adv/soft-interface.c
+=2D---------------------------------------------------
+
+    ./net/batman-adv/soft-interface.c:566: warning: Function parameter or s=
+truct member 'own' not described in 'batadv_softif_create_vlan'
+    ./net/batman-adv/soft-interface.c:626: warning: Function parameter or s=
+truct member 'own' not described in 'batadv_softif_vlan_get_or_create'
+
+ecsv/pu: unused_symbols
+=2D----------------------
+
+cfg:
+
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dn DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dn NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dn TRACING=3Dy NC=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dn NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols cfg: BLA=3Dy DAT=3Dy DEBUG=3Dy TRACING=3Dy NC=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+
+    batadv_softif_get_bridge
+
+
+I am guessing I must just ignore the latter because it is only relevant for=
+=20
+non-mcast build and the noise from the extra #ifdef around "static" isn't=20
+worth it.
+
+The the linux/net.h "dependency" came with the second patch
+
+Btw. I am still waiting for reviews from Antonio
+
+Kind regards,
+	Sven
+--nextPart47764768.fMDQidcC6G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ53sngAKCRBND3cr0xT1
+y+r4AP9BAWlHKfYTodO7NpmHRmFFObbnYr5PigWwYEgQzXPaYwD9FcKAJ5+NXRT0
+giKrnVXFoiwtTb5EqTQ5kBrcMA9wgAc=
+=P3jy
+-----END PGP SIGNATURE-----
+
+--nextPart47764768.fMDQidcC6G--
+
+
 
