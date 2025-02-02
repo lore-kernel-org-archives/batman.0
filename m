@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CBEAC0218F
-	for <batman-adv@archiver.kernel.org>; Sun,  2 Feb 2025 16:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82300C0218F
+	for <batman-adv@archiver.kernel.org>; Sun,  2 Feb 2025 16:08:05 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 81A4D842A0
-	for <batman-adv@archiver.kernel.org>; Sun,  2 Feb 2025 17:07:13 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 0412E8402C
+	for <batman-adv@archiver.kernel.org>; Sun,  2 Feb 2025 17:08:04 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1738512433;
- b=3sRMzF2PMXJasoKCDjRJzwQRxmxZglaxg2G/yhEz4aoAraFmNx50VoGra9DzYR72t/ADX
- vYoeBL4nUbUIJ/fj5+K0m97Jol8LnW5apHjApwazwb3jGg/yQIpXgdxBvLuG8H05O1zahQb
- ngvvsp/rIhIN7d4CaTtJcY0T6MWCaAA=
+ t=1738512484;
+ b=VSeQZS5I4nITyezOSbsZInr6qEXLyB3iESShzyrPNyqDwzyVmoqVaKXDLQvXwpByZknM8
+ uc8lyzrFt3PTnKNynpYbJrUBtW4bIuwZ14VlV1jk3HhUzGfMeonXwIJ9CdvxSt6ITBgvXIK
+ fret76s+uMHNrMyQApX/qZto65SUGRs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1738512433; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1738512484; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=oGapBlmMw9gEkPQs8Ge7PbYGBZyCEN9nPgYV9QYHe3c=;
- b=dH7ZjqCtamJtKhO4P/Ups5aUTDNXvMigW0XITV29Ga3vLWG4Ny25TOLPMSIdrtSurL8E0
- CSGbiLOx995y7g5c5QpEPrUvbe2BoTCL/TnkVS89LLEj3avtMdjICReUqTUbGSIYsK1m6n2
- J4qaRnix9sCXAswGCfNcMKd2OM/t6C4=
+ list-archive; bh=4A2VgP/niVHsikbpR6VqhacnmPk4pooFkJl3TZPcHNo=;
+ b=kZzE1vNeDjnCQ/41dqb+C/MNhC+ZbNgJih9ZcKDAtyO1Al6E4bRzC0tM+FGvIhgJCU04b
+ SSdFDxJpEofpRmWwWDZ644ifXBMw++ddE/XRIlPdgq/ImKwZeL2MTvgsuNoYPG/qRSQ6eXO
+ 043qGjdeI3eiqhKUsxEfWHy8/UYJoi4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -33,67 +33,67 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 4CFEC840AE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  2 Feb 2025 17:04:36 +0100 (CET)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2D6A6840F0
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  2 Feb 2025 17:04:41 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1738512276;
+	s=20121; t=1738512281;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=oGapBlmMw9gEkPQs8Ge7PbYGBZyCEN9nPgYV9QYHe3c=;
-	b=sShYmZLZc/I5lKUuUdp0saEmAYsprRzH0yvfti3zd1ZhHzYLlkO6FafUaUXv/60wtvyuss
-	+P+RMqokCtzeEsg97o3fUMrAgI41BtST9xQSAbu4SoyOH4xQftEfxdd46m1mv2V4+fkwTo
-	bNMUwJ4muEWLgv5o0zBendL3kV+HYt0=
+	bh=4A2VgP/niVHsikbpR6VqhacnmPk4pooFkJl3TZPcHNo=;
+	b=Os4zFcmcQOl04p1bSBA6BCVHqHlSun0rpy+uiTNtYKFmao8YCw3yqSMgux5QuSOtvqhaTa
+	T+E4RXTV91Kco24x+LllnwKk6qfDO/UDQQOgn/C0HPCY3o9SV4nAa/lNc+rZ7MY09i8s8i
+	VhduR/6lrrJMdP0ooOkfDe9sC0+5yEY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=hGnD5Ihd;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=a76w0AO+;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1738512276; a=rsa-sha256;
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1738512281; a=rsa-sha256;
 	cv=none;
-	b=st+CRj74LhEp4/MlJ11k8YgHcDPN38y/IOjKzNYUjZ8ELrQSty8U84taMG9AHfBzDaiF3L
-	s29TJVRBmfV7yrHhWZbhhi0S4xI7NSMU2aKl4rHubidGsiIbweOhuXK+ELbQXd41mpQ0D2
-	+tAOyhcxMeA5zGqbAszd4FHW+4yadak=
+	b=wpQwNRs+QVxq/M3ngzMoWMWoQoD2AG0ROy+en3znVjbE+pItLYcQ2GHocM66tykQpY6O07
+	MZkqx3ee5/KBwf3Mn7bAdmiUMA5kTr/xL7IBAAG6T1R6xsbpX3MfRaVVhW7HOyMMbJ3ecr
+	AoPejjApbabJnq1C2gXeCsSl54+sKVg=
 Received: from sven-desktop.home.narfation.org (unknown
  [IPv6:2a00:1ca0:1d86:2efc::ab85])
-	by dvalin.narfation.org (Postfix) with UTF8SMTPSA id 04D0A1FFC7;
-	Sun,  2 Feb 2025 16:04:35 +0000 (UTC)
+	by dvalin.narfation.org (Postfix) with UTF8SMTPSA id D1AA61FFC7;
+	Sun,  2 Feb 2025 16:04:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1738512276;
+	s=20121; t=1738512280;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=oGapBlmMw9gEkPQs8Ge7PbYGBZyCEN9nPgYV9QYHe3c=;
-	b=hGnD5IhdK3OeaMoz4bLGMzD8wmp3qEUg5GoSezxfDNXRBYW0GLxu9oRp2m4/fRqAtMQyC2
-	xM4uyWhMm7qZsY31BIewVBAP24VhXQPJD5rbm2iSU1rB20F1qAd6ro74gk3YcZbmf2HbP7
-	td3WoDm5T0YFc7cVnj6B6Ny8BcR5gns=
+	bh=4A2VgP/niVHsikbpR6VqhacnmPk4pooFkJl3TZPcHNo=;
+	b=a76w0AO+jyXBQCuAbzHUYEDll/27gS17PtpolKR1mzD0UL0gU/zb0mBv114rsGD8ptQl9u
+	GcXYVe776hmHJYBmqGZ7B5q9q4suXI2DRM2WfR5hy9qAjpwwAhdLLLx/x5ILjNKK416IKJ
+	vHGheu2G+Cf9MyLQRvubFYe7Hq6i0bY=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 02 Feb 2025 17:04:13 +0100
-Subject: [PATCH 4/5] batman-adv: Ignore own maximum aggregation size during
- RX
+Date: Sun, 02 Feb 2025 17:04:14 +0100
+Subject: [PATCH 5/5] batman-adv: Limit aggregation size to outgoing MTU
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250202-bitmap_aggregation-v1-4-6542a10e6fad@narfation.org>
+Message-Id: <20250202-bitmap_aggregation-v1-5-6542a10e6fad@narfation.org>
 References: <20250202-bitmap_aggregation-v1-0-6542a10e6fad@narfation.org>
 In-Reply-To: <20250202-bitmap_aggregation-v1-0-6542a10e6fad@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1995; i=sven@narfation.org;
- h=from:subject:message-id; bh=krp5/3huzASscHdXC5MUgCNE3wYmU1VSwpJUmfOImcU=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDOnzp9eUehT1X47vqlNy1V/cGdEo7KRfwzpxavTagCK+V
- QJf2Ys7SlkYxLgYZMUUWfZcyT+/mf2t/OdpH4/CzGFlAhnCwMUpABOJjmRkeJKaa8FZza1bOu3K
- AS3bfjbe9Qnqf6Y5738up6q7/njAd4b/nm36HMkLYx6HfrCZKL3/TOuv512OhtfPhfakqV3I1ln
- EDgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2901; i=sven@narfation.org;
+ h=from:subject:message-id; bh=UNsjzAvyrCK+RI3xQQEacYRYBfrE8644FEAbtApZa00=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDOnzp9fIM86fHdd6L3djYVnXtN2HFm8qFf/5lWXClfkGm
+ hNX+C606ShlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBM5GMow/+K7F61xxLXVJb9
+ 6uJzd370gZn1162bWjK567+vMREyzQtj+B8zvc6O4YHNitVWwQ/bGY+ESj2bKHmx5FO+Q6rRE9k
+ P9owA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: DHMUUSIHRICQXO72WCTWT4LTG3ZDHOLC
-X-Message-ID-Hash: DHMUUSIHRICQXO72WCTWT4LTG3ZDHOLC
+Message-ID-Hash: 66D7JH5R5RTHCMW4AKTUL76GGNRNKW2I
+X-Message-ID-Hash: 66D7JH5R5RTHCMW4AKTUL76GGNRNKW2I
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -107,7 +107,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DHMUUSIHRICQXO72WCTWT4LTG3ZDHOLC/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/66D7JH5R5RTHCMW4AKTUL76GGNRNKW2I/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -116,51 +116,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-An OGMv1 and OGMv2 packet receive processing were not only limited by the
-number of bytes in the received packet but also by the nodes maximum
-aggregation packet size limit. But this limit is relevant for TX and not
-for RX. It should thefore not be enforced by batadv_(i)v_ogm_aggr_packet
+If a B.A.T.M.A.N. IV aggregated OGM was prepared, it was always assumed
+that 512 bytes (BATADV_MAX_AGGREGATION_BYTES) can be transmitted. But the
+outgoing MTU might be too small for these 512 bytes and the aggregation
+size must be adjusted in this case. Otherwise, the aggregates will cause
+unnecessary packet loss.
 
-This has a minor side effect for B.A.T.M.A.N. IV because the
-batadv_iv_ogm_aggr_packet is also used for the preprocessing for the TX.
-But since the aggregation code itself will not allow more than
-BATADV_MAX_AGGREGATION_BYTES bytes, this check was never triggering prior
-of removing it.
+For now, the non-aggregated packet length is not touched.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c | 3 +--
- net/batman-adv/bat_v_ogm.c  | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index a43c268b2a3028c9a36fe8ce060cfb23ac5f9381..769d5ff779eb88de8b9d889bb3e4a3304875ea32 100644
+index 769d5ff779eb88de8b9d889bb3e4a3304875ea32..dbad6007871a97ee01f7295c005ab3deeff86efd 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -325,8 +325,7 @@ batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
- 	/* check if there is enough space for the optional TVLV */
- 	next_buff_pos += ntohs(ogm_packet->tvlv_len);
+@@ -443,22 +443,26 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
+ 			    const struct batadv_forw_packet *forw_packet)
+ {
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+-	int aggregated_bytes = forw_packet->packet_len + packet_len;
++	unsigned int aggregated_bytes = forw_packet->packet_len + packet_len;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	u8 packet_num = forw_packet->num_packets;
+ 	bool res = false;
+ 	unsigned long aggregation_end_time;
++	unsigned int max_bytes;
  
--	return (next_buff_pos <= packet_len) &&
--	       (next_buff_pos <= BATADV_MAX_AGGREGATION_BYTES);
-+	return next_buff_pos <= packet_len;
- }
+ 	batadv_ogm_packet = (struct batadv_ogm_packet *)forw_packet->skb->data;
+ 	aggregation_end_time = send_time;
+ 	aggregation_end_time += msecs_to_jiffies(BATADV_MAX_AGGREGATION_MS);
  
- /* send a batman ogm to a given interface */
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index e503ee0d896bd52bb5827102a7a57fc07279f0bd..8f89ffe6020ced5668dc90ac438ecd6dcd1d74b6 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -839,8 +839,7 @@ batadv_v_ogm_aggr_packet(int buff_pos, int packet_len,
- 	/* check if there is enough space for the optional TVLV */
- 	next_buff_pos += ntohs(ogm2_packet->tvlv_len);
++	max_bytes = min_t(unsigned int, if_outgoing->net_dev->mtu,
++			  BATADV_MAX_AGGREGATION_BYTES);
++
+ 	/* we can aggregate the current packet to this aggregated packet
+ 	 * if:
+ 	 *
+ 	 * - the send time is within our MAX_AGGREGATION_MS time
+ 	 * - the resulting packet won't be bigger than
+-	 *   MAX_AGGREGATION_BYTES
++	 *   MAX_AGGREGATION_BYTES and MTU of the outgoing interface
+ 	 * - the number of packets is lower than MAX_AGGREGATION_PACKETS
+ 	 * otherwise aggregation is not possible
+ 	 */
+@@ -466,7 +470,7 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
+ 	    !time_after_eq(aggregation_end_time, forw_packet->send_time))
+ 		return false;
  
--	return (next_buff_pos <= packet_len) &&
--	       (next_buff_pos <= BATADV_MAX_AGGREGATION_BYTES);
-+	return next_buff_pos <= packet_len;
- }
+-	if (aggregated_bytes > BATADV_MAX_AGGREGATION_BYTES)
++	if (aggregated_bytes > max_bytes)
+ 		return false;
  
- /**
+ 	if (packet_num >= BATADV_MAX_AGGREGATION_PACKETS)
+@@ -551,9 +555,9 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	unsigned int skb_size;
+ 	atomic_t *queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
+ 
+-	if (atomic_read(&bat_priv->aggregated_ogms) &&
+-	    packet_len < BATADV_MAX_AGGREGATION_BYTES)
+-		skb_size = BATADV_MAX_AGGREGATION_BYTES;
++	if (atomic_read(&bat_priv->aggregated_ogms))
++		skb_size = max_t(unsigned int, BATADV_MAX_AGGREGATION_BYTES,
++				 packet_len);
+ 	else
+ 		skb_size = packet_len;
+ 
 
 -- 
 2.47.2
