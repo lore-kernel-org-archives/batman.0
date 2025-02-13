@@ -4,88 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26FF7C021A7
-	for <batman@archiver.kernel.org>; Thu, 13 Feb 2025 07:09:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA630C021A7
+	for <batman@archiver.kernel.org>; Thu, 13 Feb 2025 07:09:52 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5BB23840F0
-	for <batman@archiver.kernel.org>; Thu, 13 Feb 2025 08:09:08 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 58FC483FE2
+	for <batman@archiver.kernel.org>; Thu, 13 Feb 2025 08:09:51 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1739430548;
- b=HdFedbPDGqb5FEu3wtYpti09/lLekaHcrSJWcDcpW7qwp+57RM8QOQViy4zA5fBQU9pPb
- r0hISRwz6UuZOoiItDl886hCYp1ViurSmc8u3KVM2W3C9ds1hH93y+JJlEmYW3CbCi0YPtn
- krF4qBUYEiXnOuDTCfeRnoBReu0ed8c=
+ t=1739430591;
+ b=gyZAd6UkU5UYFfZz/hnULvWIbjaIiN6ma9yZD4UI1wtSkLee++i8WFeOMFyuI+7a8nOZA
+ IbzHW17RcSbHB9LSXeYxS+BRJNOrO1hJNlJVrcQAY3n9hdgKGtVx1zu/PJrZwqNYOxOYIfZ
+ f4Lwx3PT1x+G6b+QpqUDHN77sQD0EVw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1739430548; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1739430591; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2H6L2IVdEyIK/cEvvFHgSWxdXbDY3pM4JrV+qKQ3oRc=;
- b=oGms5ZCZ9QRXN23IY1tOZZalDO+RGiRcQz08dPHXMdzY/86wI1m/k7CPdhjcwNFp5DHtP
- giRMmZP7eGSh9/OXNGrGs/CTCf3+loAFtcV1Lrloc0MCRJckoBttOTNdOANr7hXPZuc96uW
- haek3QP8yTSH0A+WQHYaUM4GMTGYJP8=
+ list-archive; bh=y0qqspgyXFQAiVZhV1is4ipJluGgHz+aCeCybrjLYs8=;
+ b=HbsVMOE2euXvkXUYszPzhriOu9caQHfvtaVZSbU3h2586BUZpi7NOsXmXQLr+2FyyVxap
+ qPV1kq/W01TL860akLGiRZMvNHt4MYNeSmZ/b74M2xEiNvUx5xw2w9867Z0Vlr+wObwP1+t
+ HGnclEl3qulMVhU7Hq7Fysov/YAaioY=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=amazon.com header.i=@amazon.com;
   arc=pass;
   dmarc=none
 Authentication-Results: open-mesh.org;
  dkim=pass header.d=amazon.com header.i=@amazon.com; arc=pass; dmarc=none
-Received: from smtp-fw-6002.amazon.com (smtp-fw-6002.amazon.com [52.95.49.90])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9CE5F80E41
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 13 Feb 2025 06:49:18 +0100 (CET)
+Received: from smtp-fw-80008.amazon.com (smtp-fw-80008.amazon.com
+ [99.78.197.219])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3B331817CA
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 13 Feb 2025 07:20:51 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1739425759;
+	s=20121; t=1739427652;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=2H6L2IVdEyIK/cEvvFHgSWxdXbDY3pM4JrV+qKQ3oRc=;
-	b=JwjMKtd6skPRJ1vfrm8D0tiThbdz2WehnDAuzGRyRLENiFFp6EUqTOKVZ6Zu6T38bIrw7t
-	54JAS0ce4bFEd5bp4dHIi/m6X1V0b2e+Vz1ma8J6pngwc+L/SfaIxvRxx7Q6dgbAKeeax6
-	j35BaXWkgh2sNZg3z9ULpsuxyGMJQDY=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1739425759; a=rsa-sha256;
+	bh=y0qqspgyXFQAiVZhV1is4ipJluGgHz+aCeCybrjLYs8=;
+	b=ulZQv5fSJpVFM/VgkyWYCaJxLUhAMLahduAYhbxG0/9xAKnzSd+RlWBr60rV3dVuo5ARY0
+	txtArEc5GAdFwMEPC8hYTxB7O3wGn8LHgJOtCp42Q3r6obU2pIEG2Lrzy1fS+IzvEUHdOH
+	1Hb1w/sSiNx7bh1Ry8Au7NT1I+mR6oU=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1739427652; a=rsa-sha256;
 	cv=none;
-	b=CrMX8rNesGRxQAKOMfl2PMGrUWIzbqSpgBibhdToFgf2gJMTv+FVWD5x2NgTzvGJESL7og
-	3ouFCww66sjEvQvMle0XoSmICEwk4thKrY0kaQETYuepy9sN4U48gvt/ee1Th8Rxdadg81
-	kosjZk7T2MCgPVJRdkJ/72kkQsURzQU=
+	b=WB9RArEsSRH80em2+On+/0zKXt3kxvpj6A99FQOwn91SeReZ+WfpwnfECDA1oOR5IAiFRP
+	gwsRTqNJVBrzOoS5DPOeewu5dliIvsB/Mbk/CAFJLKGMzUUukUJACNRowmhXEqJX+NQqcq
+	f2X5eMX1CxKL6mWuG24igY+DHVTR3Gs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=amazon.com header.s=amazon201209 header.b=tfevQMuh;
+	dkim=pass header.d=amazon.com header.s=amazon201209 header.b=hgy3QJpl;
 	spf=pass (diktynna.open-mesh.org: domain of
- "prvs=132b843d4=kuniyu@amazon.co.jp" designates 52.95.49.90 as permitted
+ "prvs=132b843d4=kuniyu@amazon.co.jp" designates 99.78.197.219 as permitted
  sender) smtp.mailfrom="prvs=132b843d4=kuniyu@amazon.co.jp";
 	dmarc=pass (policy=quarantine) header.from=amazon.com
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1739425759; x=1770961759;
+  t=1739427652; x=1770963652;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=2H6L2IVdEyIK/cEvvFHgSWxdXbDY3pM4JrV+qKQ3oRc=;
-  b=tfevQMuhUgtCb9dkBIA+Mge0MmoryFBT4daPY6PSB3V76P/zAMVpBQNR
-   DuO6OEBG47UC0exqxtCw385IMR07qe2YLmXE2cvkiBoVKorPDetyi0Kpm
-   tPnM7Ye4ETznKun7zT7Ntu/oDYN3iwPKXgbZ6RVPnThsH10RVyrbsvh5p
-   k=;
+  bh=y0qqspgyXFQAiVZhV1is4ipJluGgHz+aCeCybrjLYs8=;
+  b=hgy3QJplzrbRkfGAbiL4qIhxugyJsSMQoAcGoaRyMzHQxgF/FVBebzjS
+   oSQuyS7kfguBO00zlg5T7TBQ3CyWEcZ2ZdV6WpNhDxunzHySWUqkg0tdv
+   sIKasF859HJ7LmEqJpl2hUDYMGDoLVihvRWicEDMUJfi51ri7U1fQ2Dcf
+   A=;
 X-IronPort-AV: E=Sophos;i="6.13,282,1732579200";
-   d="scan'208";a="471752672"
-Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO
- smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.43.8.6])
-  by smtp-border-fw-6002.iad6.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2025 05:49:13 +0000
-Received: from EX19MTAUWB001.ant.amazon.com [10.0.38.20:24405]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.23.136:2525]
+   d="scan'208";a="169268254"
+Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO
+ smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
+  by smtp-border-fw-80008.pdx80.corp.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Feb 2025 06:20:49 +0000
+Received: from EX19MTAUWA001.ant.amazon.com [10.0.21.151:11164]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.32.208:2525]
  with esmtp (Farcaster)
- id 4661396c-a15f-4263-9318-13d4ea54af5c;
- Thu, 13 Feb 2025 05:49:12 +0000 (UTC)
-X-Farcaster-Flow-ID: 4661396c-a15f-4263-9318-13d4ea54af5c
+ id 6c86040e-10d2-4a2e-98fc-c45ba71a877d;
+ Thu, 13 Feb 2025 06:20:48 +0000 (UTC)
+X-Farcaster-Flow-ID: 6c86040e-10d2-4a2e-98fc-c45ba71a877d
 Received: from EX19D004ANA001.ant.amazon.com (10.37.240.138) by
- EX19MTAUWB001.ant.amazon.com (10.250.64.248) with Microsoft SMTP Server
+ EX19MTAUWA001.ant.amazon.com (10.250.64.204) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.39;
- Thu, 13 Feb 2025 05:49:12 +0000
+ Thu, 13 Feb 2025 06:20:48 +0000
 Received: from 6c7e67bfbae3.amazon.com (10.37.244.7) by
  EX19D004ANA001.ant.amazon.com (10.37.240.138) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1544.14;
- Thu, 13 Feb 2025 05:49:03 +0000
+ Thu, 13 Feb 2025 06:20:40 +0000
 From: Kuniyuki Iwashima <kuniyu@amazon.com>
 To: <shaw.leon@gmail.com>
 CC: <alex.aring@gmail.com>, <andrew+netdev@lunn.ch>,
@@ -100,18 +101,18 @@ CC: <alex.aring@gmail.com>, <andrew+netdev@lunn.ch>,
 	<netdev@vger.kernel.org>, <osmocom-net-gprs@lists.osmocom.org>,
 	<pabeni@redhat.com>, <shuah@kernel.org>, <stefan@datenfreihafen.org>,
 	<steffen.klassert@secunet.com>, <wireguard@lists.zx2c4.com>
-Subject: Re: [PATCH net-next v9 04/11] ieee802154: 6lowpan: Validate link
- netns in newlink() of rtnl_link_ops
-Date: Thu, 13 Feb 2025 14:48:53 +0900
-Message-ID: <20250213054853.285-1-kuniyu@amazon.com>
+Subject: Re: [PATCH net-next v9 05/11] net: ip_tunnel: Use link netns in
+ newlink() of rtnl_link_ops
+Date: Thu, 13 Feb 2025 15:20:31 +0900
+Message-ID: <20250213062031.4547-1-kuniyu@amazon.com>
 X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20250210133002.883422-5-shaw.leon@gmail.com>
-References: <20250210133002.883422-5-shaw.leon@gmail.com>
+In-Reply-To: <20250210133002.883422-6-shaw.leon@gmail.com>
+References: <20250210133002.883422-6-shaw.leon@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [10.37.244.7]
-X-ClientProxiedBy: EX19D035UWA004.ant.amazon.com (10.13.139.109) To
+X-ClientProxiedBy: EX19D040UWB002.ant.amazon.com (10.13.138.89) To
  EX19D004ANA001.ant.amazon.com (10.37.240.138)
 X-MailFrom: prvs=132b843d4=kuniyu@amazon.co.jp
 X-Mailman-Rule-Hits: nonmember-moderation
@@ -120,15 +121,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: AGEXPPXGGDVLHLAIN4TR2GTIQVTL7YVE
-X-Message-ID-Hash: AGEXPPXGGDVLHLAIN4TR2GTIQVTL7YVE
+Message-ID-Hash: BEL6K63GTM5TT3YSLLXHU6DLAJLPPHXS
+X-Message-ID-Hash: BEL6K63GTM5TT3YSLLXHU6DLAJLPPHXS
 X-Mailman-Approved-At: Thu, 13 Feb 2025 08:08:50 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AGEXPPXGGDVLHLAIN4TR2GTIQVTL7YVE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BEL6K63GTM5TT3YSLLXHU6DLAJLPPHXS/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -138,18 +139,71 @@ List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Xiao Liang <shaw.leon@gmail.com>
-Date: Mon, 10 Feb 2025 21:29:55 +0800
-> Device denoted by IFLA_LINK is in link_net (IFLA_LINK_NETNSID) or
-> source netns by design, but 6lowpan uses dev_net.
+Date: Mon, 10 Feb 2025 21:29:56 +0800
+> When link_net is set, use it as link netns instead of dev_net(). This
+> prepares for rtnetlink core to create device in target netns directly,
+> in which case the two namespaces may be different.
 > 
-> Note dev->netns_local is set to true and currently link_net is
-> implemented via a netns change. These together effectively reject
-> IFLA_LINK_NETNSID.
-> 
-> This patch adds a validation to ensure link_net is either NULL or
-> identical to dev_net. Thus it would be fine to continue using dev_net
-> when rtnetlink core begins to create devices directly in target netns.
-> 
-> Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
+> Convert common ip_tunnel_newlink() to accept an extra link netns
+> argument. Don't overwrite ip_tunnel.net in ip_tunnel_init().
 
-Reviewed-by: Kuniyuki Iwashima <kuniyu@amazon.com>
+Why... ?  see a comment below.
+
+
+[...]
+> diff --git a/net/ipv4/ip_gre.c b/net/ipv4/ip_gre.c
+> index 1fe9b13d351c..26d15f907551 100644
+> --- a/net/ipv4/ip_gre.c
+> +++ b/net/ipv4/ip_gre.c
+> @@ -1413,7 +1413,8 @@ static int ipgre_newlink(struct net_device *dev,
+>  	err = ipgre_netlink_parms(dev, data, tb, &p, &fwmark);
+>  	if (err < 0)
+>  		return err;
+> -	return ip_tunnel_newlink(dev, tb, &p, fwmark);
+> +	return ip_tunnel_newlink(params->link_net ? : dev_net(dev), dev, tb, &p,
+
+This is duplicate at all call sites, let's move it into
+ip_tunnel_newlink() by passing params.
+
+
+> +				 fwmark);
+>  }
+>  
+>  static int erspan_newlink(struct net_device *dev,
+> 
+> 
+> diff --git a/net/ipv4/ip_tunnel.c b/net/ipv4/ip_tunnel.c
+> index 09b73acf037a..618a50d5c0c2 100644
+> --- a/net/ipv4/ip_tunnel.c
+> +++ b/net/ipv4/ip_tunnel.c
+> @@ -1213,11 +1213,11 @@ void ip_tunnel_delete_nets(struct list_head *net_list, unsigned int id,
+>  }
+>  EXPORT_SYMBOL_GPL(ip_tunnel_delete_nets);
+>  
+> -int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
+> -		      struct ip_tunnel_parm_kern *p, __u32 fwmark)
+> +int ip_tunnel_newlink(struct net *net, struct net_device *dev,
+> +		      struct nlattr *tb[], struct ip_tunnel_parm_kern *p,
+> +		      __u32 fwmark)
+>  {
+>  	struct ip_tunnel *nt;
+> -	struct net *net = dev_net(dev);
+>  	struct ip_tunnel_net *itn;
+>  	int mtu;
+>  	int err;
+> @@ -1326,7 +1326,9 @@ int ip_tunnel_init(struct net_device *dev)
+>  	}
+>  
+>  	tunnel->dev = dev;
+> -	tunnel->net = dev_net(dev);
+> +	if (!tunnel->net)
+> +		tunnel->net = dev_net(dev);
+
+Isn't tunnel->net always non-NULL ?
+
+ip_tunnel_newlink
+-> netdev_priv(dev)->net = net
+-> register_netdevice(dev)
+  -> dev->netdev_ops->ndo_init(dev)
+    -> ip_tunnel_init(dev)
+      -> netdev_priv(dev)->net = dev_net(dev)
