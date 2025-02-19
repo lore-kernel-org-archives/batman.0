@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8FE1C021AA
-	for <batman@archiver.kernel.org>; Wed, 19 Feb 2025 15:50:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 371C8C021AA
+	for <batman@archiver.kernel.org>; Wed, 19 Feb 2025 15:51:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4C5D2842AF
-	for <batman@archiver.kernel.org>; Wed, 19 Feb 2025 16:50:01 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id CB30B841FF
+	for <batman@archiver.kernel.org>; Wed, 19 Feb 2025 16:50:59 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1739980201;
- b=jpew82C/zrXajMZ/KDF+w/iIQOqEapPx0rdX90cu41QsHIcQv4nIsntjnFqzYLw0/b5BU
- TaTU0y9/fCtXXJwj4gKksBKxy4KwFSSctbH4UJe25DeJuUSM8UgLVZzYFfHz75+CSJuAbN9
- pCKWYMALOLr3XwJPiFmK1HFaKcR+2m0=
+ t=1739980259;
+ b=c/rEK3btksYl+oCtvoaWcVKBH6vClmY7PWupMf2lZdC35IAHr5bDrmxUa3CUmodB4lpSF
+ Roysc9Y+y9Lqj34uax+59O+gyo6AIwP3+omlQ4tIDb6+01vCSJ9yjXwSiFUVRYUA72qp785
+ gWEkHX8kgSJB/2xHqG5Dy1pNADoZ24I=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1739980201; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1739980259; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=B6bozwwxLUJNxVW5ZYXuCA298+o6a+m5Om77EOnyIyg=;
- b=ImlLXpA1AFjIXoqj0L9K34/YP7wAW7YyUueNq5jFkmbmTErGGXg32QAeuwOOO+nTqlX83
- UjY9CbFXPwd57P9Hzv+Xt3sBLZQ/LdG4I3vrf4zvSaskGepQm+U5kF1X7WALJqYuyQd+AOp
- mBTALrA32AEcfZVKKlRAAg9HlSfgouU=
+ list-archive; bh=rsYd7KiB2vQaWNh0ASWhN8pl6PDFq3SaA7EkmHtk6YM=;
+ b=n3jMynuVkdcibJW08HbfeN6d391jIG2V3mj2jUbfvZo9gUq++wtH3P514zD+nWTGoLDDR
+ B/08JXZXK6n6UZ7WRx/CqjAJDGCFkyzgvXf+0bEBhe4zLgMGHj6+lsgvp3BIJCPJt3AzT25
+ 3v79SOwIAG48N/bN0rJEGYLQLBKzltU=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
   dmarc=pass (Used From Domain Record) header.from=gmail.com
@@ -32,80 +32,80 @@ ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
- [IPv6:2607:f8b0:4864:20::634])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C0EB983FA1
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 19 Feb 2025 13:51:58 +0100 (CET)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
+ [IPv6:2607:f8b0:4864:20::636])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A7C2883F16
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 19 Feb 2025 13:52:07 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1739969518;
+	s=20121; t=1739969527;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=B6bozwwxLUJNxVW5ZYXuCA298+o6a+m5Om77EOnyIyg=;
-	b=CBQ6IxAwZwzHIQtZKyVviy2zmtbBP2A3FlyROvm3siTJnt9ApIbkjRhhF+AqNOPwmlDZpk
-	A0YpHS/CJfJ//eGAixSHjZ51KI+p02AQO5f3t6DuRZfoj0tkjnlRbdLmmCIMrdGHMLXwT0
-	fnXN+WjMGIhLieMG4OZkE7iCgoVdvRM=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1739969518; a=rsa-sha256;
+	bh=rsYd7KiB2vQaWNh0ASWhN8pl6PDFq3SaA7EkmHtk6YM=;
+	b=bLJzBwjGqdaTawKTWStDCIr4ThtAlNPWkg11MMPkTXNYcMwmqs4Awms3Vh0/bCLlBf0WhJ
+	Hrb7+7ff9Bpl+k8ziNo7ZK+VML+R/7RM7kSbik31mqdbbsXjhzGDt8wJ8VfdtD4QYB2OKU
+	4FmhhgkHm7/glwiX1qVTO4XijeUtwjE=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1739969527; a=rsa-sha256;
 	cv=none;
-	b=y925jTr3XgojEUHOHD/0uTYtA73uvxlg5lHtA3Y1fOoIiRh5kqek4QpuDTcObnETNByBwV
-	xH3a/xGm0xwvExntbhgfpGQDks/GmCB6nMWKYsNLw0IimgY2XHtPbh/0VJt0Af+xKsHiwO
-	UV8guxLdX2hAo4x/32ul0gJ5PTpfc9Q=
+	b=WpLxAGTyJBjF5bdvlZKgS3Z9CMvZHNJtZW8yHlOOwVlp3MWvQ8eK6Hs1BucjcxtgHGGAvs
+	AOZ5/1P4ZKXwWqsB5wSNbf13ffLuScPn6Pq65sjZoVCWfFMFntTbn34JiYHkeJ23I7Thih
+	/RsAqxW6vRSLWQwBOhlcUIz9cDqd434=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b="W9Fffvg/";
+	dkim=pass header.d=gmail.com header.s=20230601 header.b="Y/u1GXGL";
 	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2607:f8b0:4864:20::634 as permitted sender)
+ 2607:f8b0:4864:20::636 as permitted sender)
  smtp.mailfrom=shaw.leon@gmail.com;
 	dmarc=pass (policy=none) header.from=gmail.com
-Received: by mail-pl1-x634.google.com with SMTP id
- d9443c01a7336-2211acda7f6so77947155ad.3
+Received: by mail-pl1-x636.google.com with SMTP id
+ d9443c01a7336-220c8eb195aso135167875ad.0
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Wed, 19 Feb 2025 04:51:58 -0800 (PST)
+ Wed, 19 Feb 2025 04:52:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739969517; x=1740574317;
+        d=gmail.com; s=20230601; t=1739969526; x=1740574326;
  darn=lists.open-mesh.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=B6bozwwxLUJNxVW5ZYXuCA298+o6a+m5Om77EOnyIyg=;
-        b=W9Fffvg/9K+KSHmIxMb1DIORvVBKRUSPfze3e3enhNr/r5a59L2+chfCYyCsUgYFpr
-         5EMYO1zPQdqfNrNn4JeqZYV7qx8XfAHBf3jswNhVYGV8dgKriPtyFbgZDuvScZZ2//BS
-         uLARfQT50ZgZA3iBV9qX+hi6ZsJR6z+7mG+PdrSin6KnubegTfb6k6/8rOrx5zXI6DzD
-         y0GnbKU/0G2xhKAine9Mf6O4KkEuQqHN5d1G3/2QqptZq8HBX7Vnzbpj5KAUEoHdYI5F
-         R3sWvMCzK+6url96eSY6HG7ImK4NdGLx6EDG+JkI6tl0FFu5q9IChv0tp/+iqWvULJD1
-         cytw==
+        bh=rsYd7KiB2vQaWNh0ASWhN8pl6PDFq3SaA7EkmHtk6YM=;
+        b=Y/u1GXGLQtMKYQxFIgymSpLFouS2y1RXrSk2VkbNExNWTm7dY6FMwByr+vhAwEtGpF
+         3tdDlQUh8rlbRSXs4MmhcAcsBuJb4HTE9Lr22m359NH6UK22rIicvZfqhXHctlS9asAD
+         S2oIPTLYs+JagxVUQptLz2XdoOvYOrEjGG1TUZpziMl18y/pQ5z9h7GU4XpJg5Xm+0nt
+         IqhcWlSyvxg87cSPKRSgfAVn5q/DMEAGTBQDp6Aj9ZYG5+ZBpHd7ub2KqE2DcvBAll4f
+         /jR8YVD8h9JIj8EWhKpCe9nCHxgY3578TGSwqL2a4K/R31gcA6SLQeH/M5A3UvrmVFpW
+         pC8w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739969517; x=1740574317;
+        d=1e100.net; s=20230601; t=1739969526; x=1740574326;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=B6bozwwxLUJNxVW5ZYXuCA298+o6a+m5Om77EOnyIyg=;
-        b=fgcQGoS2o0/gw9zhZ+auHA1EJdXiInwhn2JbU8EFc3ij9DQjl161yU+1QoEBRX+1tD
-         WyepYgG+BGbsVMC7/ePW1ETYSb8lmnHjx/kGglBjiGgRLP0qCcKj57wNB+jbyfHg653C
-         KyfJD7jfOYUGuMVICdE260DSDJTX0PJwq+jADjwirPSluFNH1w1EwCyDb+50cln5Ciko
-         JPrTC85t2HQU+V+NVgDQ7c4RJRfHdoRVntmHIEkdldGHtQ/1ypM++MHHGBoa7JuBrRha
-         01nIncsDmPs5tQGDyNSUKt7DDWS+7xbhbhrQSnZIaGiXkV3P9lj2WZReo0lfvHA/f3CB
-         oVJw==
+        bh=rsYd7KiB2vQaWNh0ASWhN8pl6PDFq3SaA7EkmHtk6YM=;
+        b=AlnO/eB3ad62Vz9BiZ32fudRWPi6iFqJY99h+eH0QIMEEiHo41SqTdA/aEytJwoF+E
+         b0IuCOOJdc4CG/ZCAKjuO14xJqbXSoGCPyRb3dShsKlnFFHFYRtoo/pXd2Jwuqe0DAr0
+         HQpQV7wuX7fnWmyczJcLJaNZbCs9XYDSSTSPlM1j1d9M+s5t3PVW8YOAapoRLc72cuRQ
+         O7Zh6wgZ8g9XlNsoxslDgvE+cRdTXBHhqUm9vAPA/0SStS0ZKHWbim36jsqaBivWR07g
+         Z/73pCg0lHbqRfwq8jIGxchNBaeDT+rjRecwNzk5KG+EfgAZDz7lWhufueGEVq0xas4y
+         uG4A==
 X-Forwarded-Encrypted: i=1;
- AJvYcCV4wu+qxe2hsPDZZoQo7HUnuX3W7kWlM7VQyD3Tv2peYD9hBgJOOd/4FjUWTxEEu85lXoW7Fl6ecjWHxg==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YzMmEyxpKDYIPv0KPwy93gFj7Jp0yh+iDrjh5JAq8ea6DhTiSMU
-	2//GGXB+qs9RRLVss6fsJIj00IbVDvGmsrXEXG8NlT5HfDYxsEtC
-X-Gm-Gg: ASbGnctwCjYzfOS23fU8m9omd9yOH6Wk2yXo4OHQBPN8o1gU8TJ2/vxIo0uLImXSNvi
-	P0S4gXqjeR1bGEVr4x3BtJezd2aARmjIQ8khHJhnzkqBg5pISfvvyaPqyfHO/I4EaSYu20Rrnwk
-	nDIw1OVA7i4VajA8Yn5hvGCeCh6vW3LhqeCalvXmLVu3nHrA8sjUXhKyY3B5/VhKS7DGNdlEMgP
-	Oczgg8DYQYy5Kz7JZ+WsdLYA94BJgo7gZIxOdZq+0KmbPLTtK9N3K6AMgJGpGmdkhGWB6EbVOA2
-	V8uLSA==
+ AJvYcCW/ktBx9P54s3OhuFGSzcZl4C/LoMqmaEOYHquXqnw2AxixPSxsJZ46x971UMm670qzP4mmx013xPbF7w==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0Yxxh2ei0y6JCnzeQmIgF6AAqnlZzfe5a7VCdF+3kbu9JhG9P9Xu
+	+YJvZYeIclZFa0vUVygFm9wCRER/0RbaDhNU3XJo0T+I3YJ4tE12
+X-Gm-Gg: ASbGncuBHUkksoLg+bo0IDRWj8mZueOxc9htD2MlwC6Flj5CrcIqGZq7LJ3iHXPpFWr
+	ripMGoAO7ZwI7KBcG6uwmTetGoTktL7Vb4kD+/tSYJWdDo5QBR5IiqRv/T0mRE6ySCuhunoUSW9
+	DUh+MjCA7b1PDlSz9HyCiH0RNCTsG6QV8xDovgJWzgiHcyEIEXyW4AnTNi9ONBa5ouool1s/uoA
+	SmhO1EPqYu7aSGOOjjqJB752+4mlaP9mjCMh6KbtVTIrPa3CuvxFOn9anCPH4E+Simv+zXVshef
+	g2cdGg==
 X-Google-Smtp-Source: 
- AGHT+IGKxW3/SlkXIFQ/R+7OZM2jJGBrIehyvby3inig7425vAO11UDlInuUnZBsT6heGdokKuXecQ==
-X-Received: by 2002:a17:903:2305:b0:220:fce7:d3b8 with SMTP id
- d9443c01a7336-221709654admr66486875ad.12.1739969517203;
-        Wed, 19 Feb 2025 04:51:57 -0800 (PST)
+ AGHT+IEmzyu5IbJEeeDhw+tXRaZzlcx6HaVQuXOtrNDJjpviTChMhHRF4glLxd0ys0/eE/gPyp4KqQ==
+X-Received: by 2002:a17:902:db0a:b0:21f:8677:5961 with SMTP id
+ d9443c01a7336-2217119d382mr58688885ad.34.1739969526138;
+        Wed, 19 Feb 2025 04:52:06 -0800 (PST)
 Received: from ws.. ([103.167.140.11])
         by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-220d536436fsm103427175ad.64.2025.02.19.04.51.48
+ d9443c01a7336-220d536436fsm103427175ad.64.2025.02.19.04.51.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Feb 2025 04:51:56 -0800 (PST)
+        Wed, 19 Feb 2025 04:52:05 -0800 (PST)
 From: Xiao Liang <shaw.leon@gmail.com>
 To: netdev@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
@@ -135,10 +135,10 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	bridge@lists.linux.dev,
 	linux-wpan@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v10 07/13] net: ipv6: Init tunnel link-netns before
- registering dev
-Date: Wed, 19 Feb 2025 20:50:33 +0800
-Message-ID: <20250219125039.18024-8-shaw.leon@gmail.com>
+Subject: [PATCH net-next v10 08/13] net: ipv6: Use link netns in newlink() of
+ rtnl_link_ops
+Date: Wed, 19 Feb 2025 20:50:34 +0800
+Message-ID: <20250219125039.18024-9-shaw.leon@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250219125039.18024-1-shaw.leon@gmail.com>
 References: <20250219125039.18024-1-shaw.leon@gmail.com>
@@ -151,15 +151,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: FU2F2X6GIBDWDKDNUAG2F7S5W6N5SJSV
-X-Message-ID-Hash: FU2F2X6GIBDWDKDNUAG2F7S5W6N5SJSV
+Message-ID-Hash: 7CGDEVYWAPY3ZOZUU4QOMB2UPYFAP3NZ
+X-Message-ID-Hash: 7CGDEVYWAPY3ZOZUU4QOMB2UPYFAP3NZ
 X-Mailman-Approved-At: Wed, 19 Feb 2025 16:43:04 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FU2F2X6GIBDWDKDNUAG2F7S5W6N5SJSV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7CGDEVYWAPY3ZOZUU4QOMB2UPYFAP3NZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -168,146 +168,171 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Currently some IPv6 tunnel drivers set tnl->net to dev_net(dev) in
-ndo_init(), which is called in register_netdevice(). However, it lacks
-the context of link-netns when we enable cross-net tunnels at device
-registration time.
-
-Let's move the init of tunnel link-netns before register_netdevice().
-
-ip6_gre has already initialized netns, so just remove the redundant
-assignment.
+When link_net is set, use it as link netns instead of dev_net(). This
+prepares for rtnetlink core to create device in target netns directly,
+in which case the two namespaces may be different.
 
 Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
 ---
- net/ipv6/ip6_gre.c    | 2 --
- net/ipv6/ip6_tunnel.c | 3 ++-
- net/ipv6/ip6_vti.c    | 3 ++-
- net/ipv6/sit.c        | 8 +++++---
- 4 files changed, 9 insertions(+), 7 deletions(-)
+ net/ipv6/ip6_gre.c    | 14 ++++++--------
+ net/ipv6/ip6_tunnel.c |  9 +++++----
+ net/ipv6/ip6_vti.c    |  6 +++---
+ net/ipv6/sit.c        |  6 +++---
+ 4 files changed, 17 insertions(+), 18 deletions(-)
 
 diff --git a/net/ipv6/ip6_gre.c b/net/ipv6/ip6_gre.c
-index 863852abe8ea..d9e6b1fd9917 100644
+index d9e6b1fd9917..d31a4ce3b19f 100644
 --- a/net/ipv6/ip6_gre.c
 +++ b/net/ipv6/ip6_gre.c
-@@ -1498,7 +1498,6 @@ static int ip6gre_tunnel_init_common(struct net_device *dev)
- 	tunnel = netdev_priv(dev);
+@@ -1969,7 +1969,7 @@ static bool ip6gre_netlink_encap_parms(struct nlattr *data[],
+ 	return ret;
+ }
  
- 	tunnel->dev = dev;
--	tunnel->net = dev_net(dev);
- 	strcpy(tunnel->parms.name, dev->name);
+-static int ip6gre_newlink_common(struct net *src_net, struct net_device *dev,
++static int ip6gre_newlink_common(struct net *link_net, struct net_device *dev,
+ 				 struct nlattr *tb[], struct nlattr *data[],
+ 				 struct netlink_ext_ack *extack)
+ {
+@@ -1990,7 +1990,7 @@ static int ip6gre_newlink_common(struct net *src_net, struct net_device *dev,
+ 		eth_hw_addr_random(dev);
  
- 	ret = dst_cache_init(&tunnel->dst_cache, GFP_KERNEL);
-@@ -1882,7 +1881,6 @@ static int ip6erspan_tap_init(struct net_device *dev)
- 	tunnel = netdev_priv(dev);
+ 	nt->dev = dev;
+-	nt->net = dev_net(dev);
++	nt->net = link_net;
  
- 	tunnel->dev = dev;
--	tunnel->net = dev_net(dev);
- 	strcpy(tunnel->parms.name, dev->name);
+ 	err = register_netdevice(dev);
+ 	if (err)
+@@ -2007,11 +2007,10 @@ static int ip6gre_newlink(struct net_device *dev,
+ 			  struct rtnl_newlink_params *params,
+ 			  struct netlink_ext_ack *extack)
+ {
++	struct net *net = params->link_net ? : dev_net(dev);
+ 	struct ip6_tnl *nt = netdev_priv(dev);
+ 	struct nlattr **data = params->data;
+-	struct net *src_net = params->net;
+ 	struct nlattr **tb = params->tb;
+-	struct net *net = dev_net(dev);
+ 	struct ip6gre_net *ign;
+ 	int err;
  
- 	ret = dst_cache_init(&tunnel->dst_cache, GFP_KERNEL);
+@@ -2026,7 +2025,7 @@ static int ip6gre_newlink(struct net_device *dev,
+ 			return -EEXIST;
+ 	}
+ 
+-	err = ip6gre_newlink_common(src_net, dev, tb, data, extack);
++	err = ip6gre_newlink_common(net, dev, tb, data, extack);
+ 	if (!err) {
+ 		ip6gre_tnl_link_config(nt, !tb[IFLA_MTU]);
+ 		ip6gre_tunnel_link_md(ign, nt);
+@@ -2246,11 +2245,10 @@ static int ip6erspan_newlink(struct net_device *dev,
+ 			     struct rtnl_newlink_params *params,
+ 			     struct netlink_ext_ack *extack)
+ {
++	struct net *net = params->link_net ? : dev_net(dev);
+ 	struct ip6_tnl *nt = netdev_priv(dev);
+ 	struct nlattr **data = params->data;
+-	struct net *src_net = params->net;
+ 	struct nlattr **tb = params->tb;
+-	struct net *net = dev_net(dev);
+ 	struct ip6gre_net *ign;
+ 	int err;
+ 
+@@ -2266,7 +2264,7 @@ static int ip6erspan_newlink(struct net_device *dev,
+ 			return -EEXIST;
+ 	}
+ 
+-	err = ip6gre_newlink_common(src_net, dev, tb, data, extack);
++	err = ip6gre_newlink_common(net, dev, tb, data, extack);
+ 	if (!err) {
+ 		ip6erspan_tnl_link_config(nt, !tb[IFLA_MTU]);
+ 		ip6erspan_tunnel_link_md(ign, nt);
 diff --git a/net/ipv6/ip6_tunnel.c b/net/ipv6/ip6_tunnel.c
-index 54b843d20870..111a8777c2f7 100644
+index 111a8777c2f7..89d206731af0 100644
 --- a/net/ipv6/ip6_tunnel.c
 +++ b/net/ipv6/ip6_tunnel.c
-@@ -1878,7 +1878,6 @@ ip6_tnl_dev_init_gen(struct net_device *dev)
- 	int t_hlen;
- 
- 	t->dev = dev;
--	t->net = dev_net(dev);
- 
- 	ret = dst_cache_init(&t->dst_cache, GFP_KERNEL);
- 	if (ret)
-@@ -1940,6 +1939,7 @@ static int __net_init ip6_fb_tnl_dev_init(struct net_device *dev)
- 	struct net *net = dev_net(dev);
- 	struct ip6_tnl_net *ip6n = net_generic(net, ip6_tnl_net_id);
- 
-+	t->net = net;
- 	t->parms.proto = IPPROTO_IPV6;
- 
- 	rcu_assign_pointer(ip6n->tnls_wc[0], t);
-@@ -2015,6 +2015,7 @@ static int ip6_tnl_newlink(struct net_device *dev,
+@@ -253,8 +253,7 @@ static void ip6_dev_free(struct net_device *dev)
+ static int ip6_tnl_create2(struct net_device *dev)
+ {
+ 	struct ip6_tnl *t = netdev_priv(dev);
+-	struct net *net = dev_net(dev);
+-	struct ip6_tnl_net *ip6n = net_generic(net, ip6_tnl_net_id);
++	struct ip6_tnl_net *ip6n = net_generic(t->net, ip6_tnl_net_id);
  	int err;
  
- 	nt = netdev_priv(dev);
-+	nt->net = net;
+ 	dev->rtnl_link_ops = &ip6_link_ops;
+@@ -2008,12 +2007,14 @@ static int ip6_tnl_newlink(struct net_device *dev,
+ {
+ 	struct nlattr **data = params->data;
+ 	struct nlattr **tb = params->tb;
+-	struct net *net = dev_net(dev);
+-	struct ip6_tnl_net *ip6n = net_generic(net, ip6_tnl_net_id);
+ 	struct ip_tunnel_encap ipencap;
++	struct ip6_tnl_net *ip6n;
+ 	struct ip6_tnl *nt, *t;
++	struct net *net;
+ 	int err;
  
- 	if (ip_tunnel_netlink_encap_parms(data, &ipencap)) {
- 		err = ip6_tnl_encap_setup(nt, &ipencap);
++	net = params->link_net ? : dev_net(dev);
++	ip6n = net_generic(net, ip6_tnl_net_id);
+ 	nt = netdev_priv(dev);
+ 	nt->net = net;
+ 
 diff --git a/net/ipv6/ip6_vti.c b/net/ipv6/ip6_vti.c
-index 993f85aeb882..16e0d74f99dd 100644
+index 16e0d74f99dd..83c055996fbb 100644
 --- a/net/ipv6/ip6_vti.c
 +++ b/net/ipv6/ip6_vti.c
-@@ -925,7 +925,6 @@ static inline int vti6_dev_init_gen(struct net_device *dev)
+@@ -177,8 +177,7 @@ vti6_tnl_unlink(struct vti6_net *ip6n, struct ip6_tnl *t)
+ static int vti6_tnl_create2(struct net_device *dev)
+ {
  	struct ip6_tnl *t = netdev_priv(dev);
+-	struct net *net = dev_net(dev);
+-	struct vti6_net *ip6n = net_generic(net, vti6_net_id);
++	struct vti6_net *ip6n = net_generic(t->net, vti6_net_id);
+ 	int err;
  
- 	t->dev = dev;
--	t->net = dev_net(dev);
- 	netdev_hold(dev, &t->dev_tracker, GFP_KERNEL);
- 	netdev_lockdep_set_classes(dev);
- 	return 0;
-@@ -958,6 +957,7 @@ static int __net_init vti6_fb_tnl_dev_init(struct net_device *dev)
- 	struct net *net = dev_net(dev);
- 	struct vti6_net *ip6n = net_generic(net, vti6_net_id);
+ 	dev->rtnl_link_ops = &vti6_link_ops;
+@@ -1002,9 +1001,10 @@ static int vti6_newlink(struct net_device *dev,
+ 			struct netlink_ext_ack *extack)
+ {
+ 	struct nlattr **data = params->data;
+-	struct net *net = dev_net(dev);
+ 	struct ip6_tnl *nt;
++	struct net *net;
  
-+	t->net = net;
- 	t->parms.proto = IPPROTO_IPV6;
- 
- 	rcu_assign_pointer(ip6n->tnls_wc[0], t);
-@@ -1009,6 +1009,7 @@ static int vti6_newlink(struct net_device *dev,
++	net = params->link_net ? : dev_net(dev);
+ 	nt = netdev_priv(dev);
  	vti6_netlink_parms(data, &nt->parms);
  
- 	nt->parms.proto = IPPROTO_IPV6;
-+	nt->net = net;
- 
- 	if (vti6_locate(net, &nt->parms, 0))
- 		return -EEXIST;
 diff --git a/net/ipv6/sit.c b/net/ipv6/sit.c
-index e2bd52cabdee..20453671ac50 100644
+index 20453671ac50..f7b59bc957d3 100644
 --- a/net/ipv6/sit.c
 +++ b/net/ipv6/sit.c
-@@ -269,6 +269,7 @@ static struct ip_tunnel *ipip6_tunnel_locate(struct net *net,
- 
- 	nt = netdev_priv(dev);
- 
-+	nt->net = net;
- 	nt->parms = *parms;
- 	if (ipip6_tunnel_create(dev) < 0)
- 		goto failed_free;
-@@ -1449,7 +1450,6 @@ static int ipip6_tunnel_init(struct net_device *dev)
+@@ -201,8 +201,7 @@ static void ipip6_tunnel_clone_6rd(struct net_device *dev, struct sit_net *sitn)
+ static int ipip6_tunnel_create(struct net_device *dev)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct net *net = dev_net(dev);
+-	struct sit_net *sitn = net_generic(net, sit_net_id);
++	struct sit_net *sitn = net_generic(t->net, sit_net_id);
  	int err;
  
- 	tunnel->dev = dev;
--	tunnel->net = dev_net(dev);
- 	strcpy(tunnel->parms.name, dev->name);
- 
- 	ipip6_tunnel_bind_dev(dev);
-@@ -1565,6 +1565,7 @@ static int ipip6_newlink(struct net_device *dev,
+ 	__dev_addr_set(dev, &t->parms.iph.saddr, 4);
+@@ -1556,14 +1555,15 @@ static int ipip6_newlink(struct net_device *dev,
+ {
+ 	struct nlattr **data = params->data;
+ 	struct nlattr **tb = params->tb;
+-	struct net *net = dev_net(dev);
+ 	struct ip_tunnel *nt;
+ 	struct ip_tunnel_encap ipencap;
+ #ifdef CONFIG_IPV6_SIT_6RD
+ 	struct ip_tunnel_6rd ip6rd;
+ #endif
++	struct net *net;
  	int err;
  
++	net = params->link_net ? : dev_net(dev);
  	nt = netdev_priv(dev);
-+	nt->net = net;
- 
- 	if (ip_tunnel_netlink_encap_parms(data, &ipencap)) {
- 		err = ip_tunnel_encap_setup(nt, &ipencap);
-@@ -1860,6 +1861,9 @@ static int __net_init sit_init_net(struct net *net)
- 	 */
- 	sitn->fb_tunnel_dev->netns_local = true;
- 
-+	t = netdev_priv(sitn->fb_tunnel_dev);
-+	t->net = net;
-+
- 	err = register_netdev(sitn->fb_tunnel_dev);
- 	if (err)
- 		goto err_reg_dev;
-@@ -1867,8 +1871,6 @@ static int __net_init sit_init_net(struct net *net)
- 	ipip6_tunnel_clone_6rd(sitn->fb_tunnel_dev, sitn);
- 	ipip6_fb_tunnel_init(sitn->fb_tunnel_dev);
- 
--	t = netdev_priv(sitn->fb_tunnel_dev);
--
- 	strcpy(t->parms.name, sitn->fb_tunnel_dev->name);
- 	return 0;
+ 	nt->net = net;
  
 -- 
 2.48.1
