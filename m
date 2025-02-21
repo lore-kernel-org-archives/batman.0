@@ -4,144 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14866C021AA
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 07:59:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5475BC021B5
+	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 17:29:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A93EC8426A
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 08:59:39 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7F002840BA
+	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 18:28:59 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1740124779;
- b=kfTCY9kY8x5sHaen4vnaIvL6/U3696j5LeplKqUxvkaoKvmt9Ri86oxvY+LMJR2zabVEd
- pgD/jqn+XupbhweG2pbvKTlDdYOcuXfhaXQ8b3VIzsHiHfpZfrWShfdAEr+fybhjTzzslyC
- LSV9UW8lOzWO7qDC1dp40CO92031L00=
+ t=1740158939;
+ b=KZaSJ5K+HGLRk5YzHpeasSZ0ncZTWzWRN4Y5WHpNT6Injtt5JT+1eL/ES30ib0qdgD7L3
+ edeRDX88bFvbzbO7Q8/yAubWgHbXvW11gGZp+eqHJVSiFir3B6DChHmUHaS3m6uGO6b0aGL
+ zplcHE/JXy/cTLIbLrKAVhn3Tbz9/dU=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1740124779; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1740158939; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=z+QeLQVPsYwD13WdLTO9iwIZOqXlzHUuuYA44GHEnsU=;
- b=21YiaHFjTtRw05W63KnKCy+a6vkIA6ExuQLPFBuvKS9i0I55Zoi0XjPgQGURj59fC+VZN
- l22kmUe4zKCo/aJ/uSfJNQZ28nQwl/S4MBOi24UxTy526rPTUBl4S/NIdBPemfLFRPAopRR
- LQBqBvknidXnTRf1L7CtSy2fBUfB9PI=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
+ list-archive; bh=UM+zO8mMzpAneAWdErjtMzTpQ6qzZXAbNcO1ig6HFS0=;
+ b=l3rMXV8FOROWMHv7Tw77e2Ua4udw9yUzTyPRh8kFp+fTvVJCwY3A2EMnG8uFlng4FrglO
+ kcee9oCdFGtuO9qQX9IcfYK62QrGzWvLMGeo+scHgw8d5mko4JyN48tLLLAFKp9AxiCQkUI
+ b4KWwV7++zIZJQ2UOWCXMZI62J0xP2o=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com
- [IPv6:2a00:1450:4864:20::436])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D16FB80DF9
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 21 Feb 2025 08:35:04 +0100 (CET)
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6605B808C7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 21 Feb 2025 18:28:33 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1740123304;
+	s=20121; t=1740158913;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=z+QeLQVPsYwD13WdLTO9iwIZOqXlzHUuuYA44GHEnsU=;
-	b=ovDtdqANrZHfY3WxBdk70frEMk+vOrBQXfpIphiyIMqkS5CgsqBff5a7bc5D8RBikHDPwN
-	FIah/ajf43tPYvWczaZmDEVUtOAh3VHra19C50nLszlUa9GKrZntXNe0NcaVKhGsB1b9I3
-	lEueRut/DqteVG8aIWeK6irBwX+pOok=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740123304; a=rsa-sha256;
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=UM+zO8mMzpAneAWdErjtMzTpQ6qzZXAbNcO1ig6HFS0=;
+	b=yECYqeepzjvQKFLQLwpeBorNbp4/6tbx+g5CHX+8hIO80S/dYmQ295VvBUNcQsBjq67w3E
+	mT4u5LC2eLUKAKoarxfXnvPXFIDUcLeiXHEnAWLItEfp92Wke6MejwA0SESqKwwFSkbIOv
+	gxEipZcMqqhNOYc+FTj/0urM61UGPo4=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740158913; a=rsa-sha256;
 	cv=none;
-	b=pyqwmiu9rTr6HFUqGt5kZGnCBetTCkfKnWX5xLnsjMShxB0XReSjV1jKdAkbMb/BAzu9Uo
-	4ZF6q2db7Wt7vaVGXbzQBP4vEZjLPDAKdEG6fS/sCrMXjaSdACLzUOAQJV+vQRX65iqZRs
-	CBWdvlMxYWUq4AZtaeNka5EZnh4gsw4=
+	b=DE1eJg3RUbqDr13kMrCXkG1pTh8RrMELv5ZjKhyoouyieVs9/tCMr+gh4fHJIOl+oTdbX4
+	uKP+aMHlWxSTRKdLO00n/Fj7cKepVFmYLkbUeZNVZ9U8Jh00NIwpbZV8p2VOI8GRwrET8E
+	isb0tPU7uwBg62di6J/fKgATJAtoCEo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20230601 header.b=Se5FajY1;
-	spf=pass (diktynna.open-mesh.org: domain of shaw.leon@gmail.com designates
- 2a00:1450:4864:20::436 as permitted sender)
- smtp.mailfrom=shaw.leon@gmail.com;
-	dmarc=pass (policy=none) header.from=gmail.com
-Received: by mail-wr1-x436.google.com with SMTP id
- ffacd0b85a97d-38f378498b0so1451413f8f.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Thu, 20 Feb 2025 23:35:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1740123304; x=1740728104;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=z+QeLQVPsYwD13WdLTO9iwIZOqXlzHUuuYA44GHEnsU=;
-        b=Se5FajY1x0BIWFIHY0qCXeX0MdJ6UMHyBe+rhNP25qqFtoSvnpsHOkAc+HhNeeB+X0
-         YXlDQrqiXUbq19NlVozNIyLXCasywB4iz2Vtu+w6CkzKJdacyoa/zH7A28PwTZkbFuxF
-         Sx+RuFjOfeczvbnw/uCLrQVZM9xj10c/ENHVuMcGn9RSZn/IteUz3TQZnqqGJchS+hJH
-         tGFTOd0c32RnYHAIXpRMzk7R4ua+eo6c3NcCGT9vU2hOCyQQd1K1eSz11Ww4atiRT9IF
-         WSEbub393a//bQoqyXtSZIobdhowxmH9yJ3twkk7O2FvNmf8vXhNGZejjzceY/gI7yVp
-         oYjg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740123304; x=1740728104;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=z+QeLQVPsYwD13WdLTO9iwIZOqXlzHUuuYA44GHEnsU=;
-        b=U9wFCRnFa/71k3ujXfSSxiuFxSWgbE84rVLgvD0Ht5iYpeD4iKb9uho5VInStAv8TJ
-         x0+MkDd5OOXbGy+Uy+ImHPxSaKJyD5G0QpJ2GE2YbganmVKbiEoHIYNeoG8FvZ4OhDjL
-         8o1CBkKv8F7ZjvRNRS+u8F6rGJ/y8YlRW5tlAHPWyIEGXPoK6r7EO2tnaZzDcHTVK01O
-         LZoo2qv0HR8y1dbD56uwcb7CRTb6cJ9iHUXwP3MEX73gqu2Fs0ewuoswB5ImV0pzhDm7
-         6TTG4V+yD3gm08PTmTAoReMwQRxaKErmZp+1UpEykqTi1vyo/1NP8zreBQtEnpchQ6A9
-         EDRQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCX85PnjfJXvKjbE9FQHPNC/jBu5WO/AeWbLmKu9mPVsM0K8zPHoc7rZ340G83AsW32Mw2RKn0na41a/ig==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YzUPYfiNkqrIwAl0VbpFnPaN9kqQkEqvRJjt1Q2sPFL09qNJMkm
-	DiwNGr6BaDfUV0KFkh00T8BGx6pRFaLvwPkI5XUUINvMfiHVX9wR64Py8AALrdwsp4geqyIXng9
-	d942Emo8FzwPbBl1kuTn4E/lthj0=
-X-Gm-Gg: ASbGncsbR2whKtdNf8jJaIjJQKa0odAVMAKKN6GJ18DnB1hoPa5G+x2djrMNqYjz/uA
-	XCc0dd3emQOB7e1khcZoINL0+sBsc7SqnQn+COJJU+vmnR7oolKHCpCuJanCK6fTosLo5VzRoCL
-	VjY5EE/g==
-X-Google-Smtp-Source: 
- AGHT+IEnf7T/XWdU9Kctt2h3J5gBBMYg3Bh51JvuIgDPQVVK7cGhz8HpBuMv8GGd62Uk1SqkypkvwsyahBFfgLBFMsQ=
-X-Received: by 2002:a05:6000:4026:b0:38f:2856:7d9a with SMTP id
- ffacd0b85a97d-38f6e7563cfmr1756891f8f.3.1740123304054; Thu, 20 Feb 2025
- 23:35:04 -0800 (PST)
+	dkim=pass header.d=narfation.org header.s=20121 header.b=W8M5p5zY;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1740158911;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=UM+zO8mMzpAneAWdErjtMzTpQ6qzZXAbNcO1ig6HFS0=;
+	b=W8M5p5zYrWpS6M0GMoOfz8ovxZuwrSTAG3Kwbd6/ovK5UCb4Ni2x/qEj6AQDhfCDZhqxvh
+	VlguiMcbggexmlX9g1b95de7TmNvGwgmrkfLo7EEJzv/bHK2XNNiDBtcceGI0Iuc4K7hYA
+	whFOO3xQPpYTsRdOpAs4bWQyaQjAB5w=
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH v6 0/3] batman-adv: add dynamic, bridged-in TT VID
+ detection
+Date: Fri, 21 Feb 2025 18:27:30 +0100
+Message-Id: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
 MIME-Version: 1.0
-References: <20250219125039.18024-8-shaw.leon@gmail.com>
- <20250221040641.77646-1-kuniyu@amazon.com>
-In-Reply-To: <20250221040641.77646-1-kuniyu@amazon.com>
-From: Xiao Liang <shaw.leon@gmail.com>
-Date: Fri, 21 Feb 2025 15:34:27 +0800
-X-Gm-Features: AWEUYZnNy9JuajIA_7tDw52YSOa4CSIEVEzv6mMTGyYFjN7-s6b2UXlhoSAg5e4
-Message-ID: 
- <CABAhCOS3BC+spLNrb_P8Ovzo18BwHU6UEc6Aq80_YKUoc8rfMQ@mail.gmail.com>
-Subject: Re: [PATCH net-next v10 07/13] net: ipv6: Init tunnel link-netns
- before registering dev
-To: Kuniyuki Iwashima <kuniyu@amazon.com>
-Cc: alex.aring@gmail.com, andrew+netdev@lunn.ch,
-	b.a.t.m.a.n@lists.open-mesh.org, bpf@vger.kernel.org, bridge@lists.linux.dev,
-	davem@davemloft.net, donald.hunter@gmail.com, dsahern@kernel.org,
-	edumazet@google.com, herbert@gondor.apana.org.au, horms@kernel.org,
-	kuba@kernel.org, linux-can@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org, linux-ppp@vger.kernel.org,
-	linux-rdma@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-wpan@vger.kernel.org, miquel.raynal@bootlin.com,
- netdev@vger.kernel.org,
-	osmocom-net-gprs@lists.osmocom.org, pabeni@redhat.com, shuah@kernel.org,
-	stefan@datenfreihafen.org, steffen.klassert@secunet.com,
-	wireguard@lists.zx2c4.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-MailFrom: shaw.leon@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAIK3uGcC/03MQQ6CMBBA0auQWTuknVKJrryHcVHLAJNANR0hG
+ sLdbVy5fIv/N1DOwgrnaoPMq6g8UsHxUEEcQxoYpSsGMuQNkcXuk8IsEdcpJEVqHIUQXeNPBkr
+ zzNzL+/e73or7/JjxNWYOfxdjTeNa8rX1ZFu0OElatJ4WVpU0XKLpXH0vhH3/AgNjrWqhAAAA
+X-Change-ID: 20250221-dynamic-vlans-2432aac34590
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?utf-8?q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3732; i=sven@narfation.org;
+ h=from:subject:message-id; bh=cC9fur+1T+z4u5AxxlQekaFZorFZZpy2TALSSvYOUmk=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDOk7tu/6fqbuqlTwrqkCa/fP3tmitcmO5cpxlxlfdE+tN
+ rX7F6Id31HKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYSO5BRoZHp24UcZ5JD1+4
+ KHbftJmVF6Pk27Ye542fdLnYxrw+PzCe4Q/H9s77EsHOYozbv+aVqk+/KiZ1PTDxrOCztU/ehc3
+ fupgbAA==
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: EEIMGTH7F2KE7OI7JZ4NHUAKNKJSXVGC
+X-Message-ID-Hash: EEIMGTH7F2KE7OI7JZ4NHUAKNKJSXVGC
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: 6EDYPZZF7K4Y3TROUZNBXYSZFSVB3YEE
-X-Message-ID-Hash: 6EDYPZZF7K4Y3TROUZNBXYSZFSVB3YEE
-X-Mailman-Approved-At: Fri, 21 Feb 2025 08:53:56 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6EDYPZZF7K4Y3TROUZNBXYSZFSVB3YEE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EEIMGTH7F2KE7OI7JZ4NHUAKNKJSXVGC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -150,41 +113,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Fri, Feb 21, 2025 at 12:07=E2=80=AFPM Kuniyuki Iwashima <kuniyu@amazon.c=
-om> wrote:
->
-> From: Xiao Liang <shaw.leon@gmail.com>
-> Date: Wed, 19 Feb 2025 20:50:33 +0800
-> > Currently some IPv6 tunnel drivers set tnl->net to dev_net(dev) in
-> > ndo_init(), which is called in register_netdevice(). However, it lacks
-> > the context of link-netns when we enable cross-net tunnels at device
-> > registration time.
-> >
-> > Let's move the init of tunnel link-netns before register_netdevice().
-> >
-> > ip6_gre has already initialized netns, so just remove the redundant
-> > assignment.
-> >
-> > Signed-off-by: Xiao Liang <shaw.leon@gmail.com>
->
-> Reviewed-by: Kuniyuki Iwashima <kuniyu@amazon.com>
->
-> left a small comment, but not a blocker.
->
->
-> > @@ -1565,6 +1565,7 @@ static int ipip6_newlink(struct net_device *dev,
-> >       int err;
-> >
-> >       nt =3D netdev_priv(dev);
-> > +     nt->net =3D net;
->
-> This hunk is not necessary as we'll call ipip6_tunnel_locate(),
-> but it's harmless and not worth reposting the whole series given
-> we are alredy in v10.  You can just post a follow-up patch after
-> the series is applied.
+For one thing the following patchest is supposed to mitigate the
+regression of extra OGM overhead that we accidentally introduced with
+the introduction of the compatibility version 15, the TVLV support it
+provided, together with TT VLAN support. The addition of these TVLVs
+roughly doubled the OGM overhead back then, also/mainly because the
+8021q and Linux bridge modules would add TT VLAN IDs 0 and 1, even if
+no one is actually using them. While the 8021q VLAN 0 ID addition was
+addressed in upstream already, PATCH 3/3 tries to avoid unnecessary
+VLAN additions from the bridge and only adds such VLANs if they were
+detected on actual traffic.
 
-Seems ipip6_tunnel_locate() only sets netns for newly created
-devices (for ioctl). ipip6_newlink() is calling it to check for
-conflicts, so we might need this line.
+In preparation of this the internal VLAN creation was overhauled in
+PATCH 1/3. This also in theory allows detecting new VLAN IDs dynamically
+from traffic from bridged-in traffic. So far, VLAN IDs could only be
+used which were anticipated and configured on top of bat0 by the
+administrator.
 
-Thanks for your review!
+However the detection of VLANs from bridged-in clients is by default
+disabled for now through PATCH 2/3. This patch adds a configurable limit
+for such snooped VLAN IDs, defaulting to zero for now. The issue is that
+each added VLAN still increases the OGM size considerably in the current
+protocol, so it is not advised to add many VLANs at the moment, without
+a bigger upgrade of the protocol. Also there is still an outstanding
+issue with temporarily broken broadcast traffic upon adding a new VLAN if
+BLA is enabled at the same time. Therefore defaulting to zero snooped
+VLANs from bridged-in clients for now.
+
+Regards, Linus
+
+---
+Changes in v6:
+- change from "softif" to "meshif" naming
+- add of missing include <linux/net.h> in mesh-interface.c
+- added kernel-doc for own parameter
+- this is not an endorsenment of this patchset - just a rebase to make it
+  apply again on main
+- Link to v5: https://lore.kernel.org/r/20250201043725.15217-1-linus.luessing@c0d3.blue
+
+v5:
+* rebased to current main branch:
+  -> PATCH 3/3 needed to readd the include for soft-interface.h for
+     batadv_softif_get_bridge() since commit
+     "50eddf397ac3 batman-adv: netlink: reduce duplicate code by returning interfaces"
+
+v4:
+* reworking PATCH 3/3:
+  * removing the added exception for VID 0 again, addressed upstream now
+  * replacing the specific VID 1 exception for the bridge default PVID
+    with a more generic solution: a user might change the PVID or add
+    other, untagged VLANs on an access port which we should also ignore;
+    instead always avoid such kernel event additions if a bridge is on
+    top of bat0
+
+v3:
+* fixing refcounting, removing an unnecessary kref_get() in PATCH 1/3
+* adding PATCH 2/3 + PATCH 3/3
+* resubmitting without the RFC tag
+
+v2: fix a typo, a missing "to" in the commit message
+
+---
+Linus Lüssing (3):
+      batman-adv: add dynamic, bridged-in TT VID detection support
+      batman-adv: limit number of learned VLANs from bridged-in clients
+      batman-adv: avoid adding bridge VLAN IDs through ndo_vlan_rx_add_vid()
+
+ include/uapi/linux/batman_adv.h    |   6 ++
+ net/batman-adv/hard-interface.c    |   2 +-
+ net/batman-adv/mesh-interface.c    | 190 ++++++++++++++++++++++++++-----------
+ net/batman-adv/mesh-interface.h    |   7 +-
+ net/batman-adv/multicast.c         |  38 ++------
+ net/batman-adv/netlink.c           |  15 +++
+ net/batman-adv/translation-table.c |  20 ++--
+ net/batman-adv/translation-table.h |   4 +-
+ net/batman-adv/types.h             |   6 ++
+ 9 files changed, 191 insertions(+), 97 deletions(-)
+---
+base-commit: aaa23d95ec513d8507d8aad83b143889c55f1dc0
+change-id: 20250221-dynamic-vlans-2432aac34590
+
+Best regards,
+-- 
+Sven Eckelmann <sven@narfation.org>
+
