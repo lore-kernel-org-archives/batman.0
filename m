@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC807C021B5
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 17:31:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12123C021B3
+	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 17:32:08 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5AB4D8446C
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 18:31:09 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8B8AC8434D
+	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 18:32:07 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1740159069;
- b=Lf7B69IWupwwRvrLGSBDFc+xR9PWAj1zrqBUxCz4MS0i4qCIppaxrltOXrSibzQJGTRtS
- w4bhKe89vXaj2vOh2rMyYXvedEGLKNFbA1imvvWzl4ZfmwBGZj+nTYkuc3fYuXAPAFUwhcF
- aru9AA7TE2nIlts8qx3ri4GOYUTJkfY=
+ t=1740159127;
+ b=Jusnyn0md8vmT2WQw4FEtyKuE5m/2qiXrFUJxBY05zg79w3BFJ0XuuA3EnU54yRcBc4Yh
+ YT/0pVG9WQd2o+QqAhXBymL257tZApn0Oh4p1TsonmrMVwrTiqmjh4w0kDvR5MmyAl+6Bvs
+ +bNjP7PFyjJicQ/muy9y+aupDMr8XbE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1740159069; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1740159127; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=d8E0KCTJcKpTpIbzYmadCCoweUJ51WRfHfeeRgIaVn8=;
- b=oTRvKPgKaG/ReJpaail7p0efi48aW2V6FvSeLGxbA7McrMu0blUftb/FUcyrTwkcX+lQ+
- NH/0RljENBZD4dBibLhiy0ZA7vYLLaj9IJvzuqLvJxTBs6KWtLc7Rmcv5hhQ4YnGgatA2VU
- vELCbYUEzNB+DqO/P33RSpUAllCfPe4=
+ list-archive; bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
+ b=crTwI20efrEOTCFPqg1P1p4YdchZaitQigFYBFUjHrmYdQnklnSzN0G9jbWKvT0KJmvOf
+ moUX36xT3bnEAHQ8GGTVg8QFlwwJezVhQZ6AF/0p247z96VNQz3Pjez3Dk4Evsl1pBHjuP0
+ jrEsPHfAgdA/TVbsOI3POgeVcwrfOeg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
   arc=pass;
@@ -35,62 +35,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A11D083FFC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 21 Feb 2025 18:28:47 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3C47E841DE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 21 Feb 2025 18:28:53 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1740158927;
+	s=20121; t=1740158933;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=d8E0KCTJcKpTpIbzYmadCCoweUJ51WRfHfeeRgIaVn8=;
-	b=C3y6INTA/KXXCy1Euc8gQ2VEcATAU1ql/T4BbvGENi7kKcAdbfCHKQZP0GdsBUfj1hiSIt
-	kuKB57CPNk0SB5yg5ZjLNtmynLZrx3GcQyRAitSJVoYng+mxaXFBvVHilMrRyxynDIsu0u
-	D1ryxnIGK44Rcs+Kc3NmOtNB/0StZyU=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740158927; a=rsa-sha256;
+	bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
+	b=TIbr71UhBF3+naQhb1nU1rN8KWsvSYgnERDImV9SA4CM1QZUEhF7tvanOCnZtaSksLnc5w
+	UzgDKjL5WpVln+bQ9teLS9KZ5EnJq9BtOF8J2ZfFIWiS0UaQnwJlTYrUoNdFwxweK9aMyv
+	A0AH7X0NeyWl/o2YvqBZ0fz7I4osG1k=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740158933; a=rsa-sha256;
 	cv=none;
-	b=u4HckCk6Vtm5+wyHJdHSTgyZpoowlEVrKCJBM3hxxHcWimwhWtS6KkaWlIX5vBC1kbv9qW
-	X0sPXKwO2ADkxiiUnks58l+bex5gEuszr83Cq9+ka7vJqvJaPqcl/LOidR92mGE5OGtizM
-	dGou3gFhxpUQQKLqg3fEXXgMNx9kobA=
+	b=K++QF9PD8Oq+F/wdjZAxWdv80JkySoqbuxbFqlpwAQEu07BHwGNUg8iwWlWq/knwGKu+C4
+	2t6GjaIBnKpdZgZU15lE195MPjxkR2vw6MP6plGZHJlbCsACUZ0eJksY1lMk0wA8DJEkzr
+	FanU/CvInTkh2sMRExToBX4NPUrUcSI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=NKoUb1db;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=SEWNdDqB;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1740158926;
+	s=20121; t=1740158932;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=d8E0KCTJcKpTpIbzYmadCCoweUJ51WRfHfeeRgIaVn8=;
-	b=NKoUb1dbBp+F9+6gy6ZOUTpVbCHE777/iF2djEeqRxEnqSSuIv83nxQaBHF6YDWfE+nk+x
-	wSSahGNcIm8j9hoYJ/vnPBQS/4solT5r61vXbLc27N0uO+Srx1l65yV0iKX7yLs6zEtpJ2
-	esLUv+JK4p5dKOXcgqFEjjlEXwSBKyk=
+	bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
+	b=SEWNdDqBms6TpSO0KTglaukf+jex/r1dcC5KBJxd6ivdE0DA897exjSvvNin9TGHJbrti0
+	+teUXUhCDZ+xRxdXrBhzHcJUHPjA3vZLSX3dArUTXjes4sPeKr4ihjJjh0qRpo9SV+UlD8
+	jYJVWU5tQNfJzoAaCU4OW9YXwPIDEdM=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 21 Feb 2025 18:27:32 +0100
-Subject: [PATCH v6 2/3] batman-adv: limit number of learned VLANs from
- bridged-in clients
+Date: Fri, 21 Feb 2025 18:27:33 +0100
+Subject: [PATCH v6 3/3] batman-adv: avoid adding bridge VLAN IDs through
+ ndo_vlan_rx_add_vid()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250221-dynamic-vlans-v6-2-fd94c9b782a7@narfation.org>
+Message-Id: <20250221-dynamic-vlans-v6-3-fd94c9b782a7@narfation.org>
 References: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
 In-Reply-To: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?utf-8?q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9417; i=sven@narfation.org;
- h=from:subject:message-id; bh=flSgFf4Ye9OUXMO27pKP03bd7BYaBNAikOqK34X4Fio=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDOk7tu+6+HBusnKCSdLG7is+7AlpPDNYP4hvrayvZVq87
- HjAPLaZHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJbNdiZJhw/nPwundiOgGm
- N1P3fbyrNZPvpvJyP57rBxMs30g+3D2bkWFJe1KfvlT7W92lsiueOZ0+tKHIVMg+uH6J7+41m5/
- FzmECAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6954; i=sven@narfation.org;
+ h=from:subject:message-id; bh=0IpLAv/oriwgMw3z2vJTTthIZRJhbA2IQA9o7yNvVjo=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDOk7tu/amvxqS1H1oS027fO6eXSNlkpfXT3jaGD2/ZnZr
+ p8C+A9N7ChlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMpHA5wz+9ConF+wqKzFX2
+ pn6Lir8gZtFrGW48vcK/XbrzfINu92+G/3lZbXEs/ZVNP9bUvqm868O25qtRctAySYWAe21p33b
+ n8QAA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: I5M4RK45EICAUTLJPL3OLY4GHENR4ZGG
-X-Message-ID-Hash: I5M4RK45EICAUTLJPL3OLY4GHENR4ZGG
+Message-ID-Hash: XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ
+X-Message-ID-Hash: XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/I5M4RK45EICAUTLJPL3OLY4GHENR4ZGG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,238 +115,191 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Currently with batman-adv compatibility version 15 each added VLAN
-increases the OGM protocol overhead of this node considerably. Therefore
-adding a configurable knob to limit the number of learned, snooped VLANs
-from traffic from bridged-in clients.
+The Linux bridge by default adds the PVID of a port (default VID 1) and
+by that triggers our ndo_vlan_rx_add_vid() handler. The PVID is
+for ingress traffic from bat0 to the bridge and other bridge ports.
+However this makes no statement about what is received or send on bat0
+itself, bat0 might as well be an untagged access port, even with a PVID
+configured. Therefore ignoring here when a bridge is involved.
 
-There are currently also still issues in the BLA code that would
-temporarily break any broadcast transmissions with every newly learned
-VLAN. Therefore setting the default limit for externally learned VLANs to
-zero for now.
+Also, similarly a "bridge vlan add vid 42 dev bat0 untagged" would call
+this handler with VID 42. Even though we wouldn't be interested in this
+VLAN as its traffic would be untagged on our side.
+
+The issue is that any extra VLAN currently increases our own
+OGM protocol overhead quite a bit, so we want to avoid that
+by only adding VLANs that we are sure someone will be using.
+So only add VLANs through snooping of actual, VLAN tagged
+traffic, not through kernel internal network events
+if we have a bridge on top.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- include/uapi/linux/batman_adv.h    |  6 ++++++
- net/batman-adv/mesh-interface.c    | 32 ++++++++++++++++++++++++++++----
- net/batman-adv/mesh-interface.h    |  4 ++--
- net/batman-adv/netlink.c           | 15 +++++++++++++++
- net/batman-adv/translation-table.c |  3 ++-
- net/batman-adv/types.h             |  6 ++++++
- 6 files changed, 59 insertions(+), 7 deletions(-)
+ net/batman-adv/mesh-interface.c | 47 +++++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/mesh-interface.h |  1 +
+ net/batman-adv/multicast.c      | 30 +++-----------------------
+ 3 files changed, 51 insertions(+), 27 deletions(-)
 
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 936bcac270b5e3b6fc10a0df64ee2f2925cef4bb..893140821c2a8e551c4ffee2a47144abb2069369 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -481,6 +481,12 @@ enum batadv_nl_attrs {
- 	 */
- 	BATADV_ATTR_MULTICAST_FANOUT,
- 
-+	/**
-+	 * @BATADV_ATTR_VLAN_DYN_MAX: defines the maximum number of allowed
-+	 * learned VLANs from bridged-in clients.
-+	 */
-+	BATADV_ATTR_VLAN_DYN_MAX,
-+
- 	/* add attributes above here, update the policy in netlink.c */
- 
- 	/**
 diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index 1e3ffca3fcf03236fb2403d7c6696b6135fc72fc..4a83e6b97afc801e6a1b3b7514a57f0996c68e7c 100644
+index 4a83e6b97afc801e6a1b3b7514a57f0996c68e7c..f1ae8d1b8458b8597121b783697d39032eae2600 100644
 --- a/net/batman-adv/mesh-interface.c
 +++ b/net/batman-adv/mesh-interface.c
-@@ -23,6 +23,7 @@
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/lockdep.h>
-+#include <linux/net.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/percpu.h>
-@@ -46,6 +47,7 @@
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "hard-interface.h"
-+#include "log.h"
- #include "multicast.h"
- #include "network-coding.h"
- #include "send.h"
-@@ -556,13 +558,15 @@ struct batadv_meshif_vlan *batadv_meshif_vlan_get(struct batadv_priv *bat_priv,
-  * batadv_meshif_create_vlan() - create a meshif vlan struct
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @vid: the VLAN identifier
-+ * @own: VLAN was not detected via bridged in traffic
-  *
-  * Return: a pointer to the newly allocated meshif vlan struct on success, NULL
-  * otherwise.
-  */
- static struct batadv_meshif_vlan *
--batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
-+batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid, bool own)
- {
-+	unsigned short vlan_dyn_max, vlan_dyn_count;
- 	struct batadv_meshif_vlan *vlan;
- 
- 	spin_lock_bh(&bat_priv->meshif_vlan_list_lock);
-@@ -573,6 +577,19 @@ batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 		return vlan;
- 	}
- 
-+	vlan_dyn_max = bat_priv->meshif_vlan_dyn_max;
-+	vlan_dyn_count = bat_priv->meshif_vlan_dyn_count;
-+
-+	if (vid & BATADV_VLAN_HAS_TAG && !own &&
-+	    vlan_dyn_max <= vlan_dyn_count) {
-+		spin_unlock_bh(&bat_priv->meshif_vlan_list_lock);
-+
-+		net_ratelimited_function(batadv_info, bat_priv->mesh_iface,
-+					 "not adding VLAN %d, already learned %hu VID(s)\n",
-+					 batadv_print_vid(vid), vlan_dyn_max);
-+		return NULL;
-+	}
-+
- 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
- 	if (!vlan) {
- 		spin_unlock_bh(&bat_priv->meshif_vlan_list_lock);
-@@ -588,6 +605,9 @@ batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 
- 	atomic_set(&vlan->ap_isolation, 0);
- 
-+	if (vid & BATADV_VLAN_HAS_TAG && !own)
-+		bat_priv->meshif_vlan_dyn_count++;
-+
- 	hlist_add_head_rcu(&vlan->list, &bat_priv->meshif_vlan_list);
- 	spin_unlock_bh(&bat_priv->meshif_vlan_list_lock);
- 
-@@ -597,20 +617,22 @@ batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- /**
-  * batadv_meshif_vlan_get_or_create() - retrieve or create a meshif vlan struct
-  * @bat_priv: the bat priv with all the mesh interface information
-+ * @addr: the mac address of the client to add
-  * @vid: the VLAN identifier
-+ * @own: VLAN was not detected via bridged in traffic
-  *
-  * Return: the meshif vlan struct if found or created or NULL otherwise.
-  */
- struct batadv_meshif_vlan *
--batadv_meshif_vlan_get_or_create(struct batadv_priv *bat_priv,
--				 unsigned short vid)
-+batadv_meshif_vlan_get_or_create(struct batadv_priv *bat_priv, const u8 *addr,
-+				 unsigned short vid, bool own)
- {
- 	struct batadv_meshif_vlan *vlan = batadv_meshif_vlan_get(bat_priv, vid);
- 
- 	if (vlan)
- 		return vlan;
- 
--	return batadv_meshif_create_vlan(bat_priv, vid);
-+	return batadv_meshif_create_vlan(bat_priv, vid, own);
+@@ -680,6 +680,31 @@ static void batadv_meshif_destroy_vlan_own(struct batadv_priv *bat_priv,
+ 			       "vlan interface destroyed", false);
  }
  
++/**
++ * batadv_meshif_get_bridge() - get the bridge on top of the meshif if it exists
++ * @mesh_iface: netdev struct of the mesh interface
++ *
++ * If the given mesh interface has a bridge on top then the refcount
++ * of the according net device is increased.
++ *
++ * Return: NULL if no such bridge exists. Otherwise the net device of the
++ * bridge.
++ */
++struct net_device *batadv_meshif_get_bridge(struct net_device *mesh_iface)
++{
++	struct net_device *upper = mesh_iface;
++
++	rcu_read_lock();
++	do {
++		upper = netdev_master_upper_dev_get_rcu(upper);
++	} while (upper && !netif_is_bridge_master(upper));
++
++	dev_hold(upper);
++	rcu_read_unlock();
++
++	return upper;
++}
++
  /**
-@@ -824,6 +846,8 @@ static int batadv_meshif_init_late(struct net_device *dev)
- 	bat_priv->tt.last_changeset_len = 0;
- 	bat_priv->isolation_mark = 0;
- 	bat_priv->isolation_mark_mask = 0;
-+	bat_priv->meshif_vlan_dyn_max = 0;
-+	bat_priv->meshif_vlan_dyn_count = 0;
+  * batadv_interface_add_vid() - ndo_add_vid API implementation
+  * @dev: the netdev of the mesh interface
+@@ -695,6 +720,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 				    unsigned short vid)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct net_device *bridge;
  
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
-diff --git a/net/batman-adv/mesh-interface.h b/net/batman-adv/mesh-interface.h
-index afa29e99df85f7fc60bdf2754f32febabaddb9b2..48971400cacdf9485e48bd9be1657e1194c2292e 100644
---- a/net/batman-adv/mesh-interface.h
-+++ b/net/batman-adv/mesh-interface.h
-@@ -27,8 +27,8 @@ void batadv_meshif_vlan_release(struct kref *ref);
- struct batadv_meshif_vlan *batadv_meshif_vlan_get(struct batadv_priv *bat_priv,
- 						  unsigned short vid);
- struct batadv_meshif_vlan *
--batadv_meshif_vlan_get_or_create(struct batadv_priv *bat_priv,
--				 unsigned short vid);
-+batadv_meshif_vlan_get_or_create(struct batadv_priv *bat_priv, const u8 *addr,
-+				 unsigned short vid, bool own);
+ 	/* only 802.1Q vlans are supported.
+ 	 * batman-adv does not know how to handle other types
+@@ -710,6 +736,20 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 	if (vid == 0)
+ 		return 0;
  
- /**
-  * batadv_meshif_vlan_put() - decrease the vlan object refcounter and
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 1836f64ce8aa247331b003f69c1212f8128baf33..aa63bf92a5d5d46801ff2ea0cc84e58c7d2b0775 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -129,6 +129,7 @@ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_MCAST_FLAGS]		= { .type = NLA_U32 },
- 	[BATADV_ATTR_MCAST_FLAGS_PRIV]		= { .type = NLA_U32 },
- 	[BATADV_ATTR_VLANID]			= { .type = NLA_U16 },
-+	[BATADV_ATTR_VLAN_DYN_MAX]		= { .type = NLA_U16 },
- 	[BATADV_ATTR_AGGREGATED_OGMS_ENABLED]	= { .type = NLA_U8 },
- 	[BATADV_ATTR_AP_ISOLATION_ENABLED]	= { .type = NLA_U8 },
- 	[BATADV_ATTR_ISOLATION_MARK]		= { .type = NLA_U32 },
-@@ -356,6 +357,10 @@ static int batadv_netlink_mesh_fill(struct sk_buff *msg,
- 			atomic_read(&bat_priv->orig_interval)))
- 		goto nla_put_failure;
- 
-+	if (nla_put_u16(msg, BATADV_ATTR_VLAN_DYN_MAX,
-+			bat_priv->meshif_vlan_dyn_max))
-+		goto nla_put_failure;
-+
- 	batadv_hardif_put(primary_if);
- 
- 	genlmsg_end(msg, hdr);
-@@ -610,6 +615,16 @@ static int batadv_netlink_set_mesh(struct sk_buff *skb, struct genl_info *info)
- 		atomic_set(&bat_priv->orig_interval, orig_interval);
- 	}
- 
-+	if (info->attrs[BATADV_ATTR_VLAN_DYN_MAX]) {
-+		u16 vlan_dyn_max;
-+
-+		attr = info->attrs[BATADV_ATTR_VLAN_DYN_MAX];
-+		vlan_dyn_max = nla_get_u16(attr);
-+		vlan_dyn_max = min_t(u16, vlan_dyn_max, VLAN_N_VID);
-+
-+		bat_priv->meshif_vlan_dyn_max = vlan_dyn_max;
++	/* The Linux bridge adds the PVID of a port (default VID 1) and
++	 * triggers this handler. The PVID is for ingress traffic from
++	 * bat0 to the bridge and other bridge ports. However this makes no
++	 * statement about what is received or send on bat0 itself, bat0
++	 * might as well be an untagged access port, even with a PVID
++	 * configured. Therefore ignoring here when a bridge is involved.
++	 * Instead learn VLANs on the fly from traffic.
++	 */
++	bridge = batadv_meshif_get_bridge(dev);
++	if (bridge) {
++		dev_put(bridge);
++		return 0;
 +	}
 +
- 	batadv_netlink_notify_mesh(bat_priv);
+ 	vid |= BATADV_VLAN_HAS_TAG;
  
- 	return 0;
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index efbe7addc121a777393f71d3b07f152d5b039113..75140cb1374d6a476e2e5a0d033423f137925a7c 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -629,6 +629,7 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- int batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 			unsigned short vid, int ifindex, u32 mark)
+ 	return batadv_meshif_create_vlan_own(bat_priv, vid);
+@@ -731,6 +771,7 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 				     unsigned short vid)
  {
-+	bool own = (ifindex == BATADV_NULL_IFINDEX) ? true : false;
- 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
- 	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_tt_global_entry *tt_global = NULL;
-@@ -704,7 +705,7 @@ int batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 	}
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct net_device *bridge;
  
- 	/* increase the refcounter of the related vlan */
--	vlan = batadv_meshif_vlan_get_or_create(bat_priv, vid);
-+	vlan = batadv_meshif_vlan_get_or_create(bat_priv, addr, vid, own);
- 	if (!vlan) {
- 		kmem_cache_free(batadv_tl_cache, tt_local);
- 		tt_local = NULL;
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 0ca0fc072fc9c1bac810d2a166ee2942f8176720..5f2f467b74a86661a075a9fc71075c32d934f453 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1751,6 +1751,12 @@ struct batadv_priv {
- 	/** @meshif_vlan_list_lock: lock protecting meshif_vlan_list */
- 	spinlock_t meshif_vlan_list_lock;
+ 	/* only 802.1Q vlans are supported. batman-adv does not know how to
+ 	 * handle other types
+@@ -744,6 +785,12 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 	if (vid == 0)
+ 		return 0;
  
-+	/** @meshif_vlan_dyn_max: maximum number of allowed learned VLANs */
-+	unsigned short meshif_vlan_dyn_max;
++	bridge = batadv_meshif_get_bridge(dev);
++	if (bridge) {
++		dev_put(bridge);
++		return 0;
++	}
 +
-+	/** @meshif_vlan_dyn_count: current number of learned VLANs */
-+	unsigned short meshif_vlan_dyn_count;
-+
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	/** @bla: bridge loop avoidance data */
- 	struct batadv_priv_bla bla;
+ 	batadv_meshif_destroy_vlan_own(bat_priv, vid | BATADV_VLAN_HAS_TAG);
+ 	return 0;
+ }
+diff --git a/net/batman-adv/mesh-interface.h b/net/batman-adv/mesh-interface.h
+index 48971400cacdf9485e48bd9be1657e1194c2292e..290440b86484a52f313f6f6ca757d27cf44cf5e9 100644
+--- a/net/batman-adv/mesh-interface.h
++++ b/net/batman-adv/mesh-interface.h
+@@ -19,6 +19,7 @@ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
+ void batadv_interface_rx(struct net_device *mesh_iface,
+ 			 struct sk_buff *skb, int hdr_size,
+ 			 struct batadv_orig_node *orig_node);
++struct net_device *batadv_meshif_get_bridge(struct net_device *mesh_iface);
+ bool batadv_meshif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ int batadv_meshif_create_vlan_own(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 97665c3005c54591b205d0f429c98ce056260335..17463c28c04491711239e4f917092415f182ba19 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -56,6 +56,7 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "send.h"
++#include "mesh-interface.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+ 
+@@ -71,31 +72,6 @@ static void batadv_mcast_start_timer(struct batadv_priv *bat_priv)
+ 			   msecs_to_jiffies(BATADV_MCAST_WORK_PERIOD));
+ }
+ 
+-/**
+- * batadv_mcast_get_bridge() - get the bridge on top of the meshif if it exists
+- * @mesh_iface: netdev struct of the mesh interface
+- *
+- * If the given mesh interface has a bridge on top then the refcount
+- * of the according net device is increased.
+- *
+- * Return: NULL if no such bridge exists. Otherwise the net device of the
+- * bridge.
+- */
+-static struct net_device *batadv_mcast_get_bridge(struct net_device *mesh_iface)
+-{
+-	struct net_device *upper = mesh_iface;
+-
+-	rcu_read_lock();
+-	do {
+-		upper = netdev_master_upper_dev_get_rcu(upper);
+-	} while (upper && !netif_is_bridge_master(upper));
+-
+-	dev_hold(upper);
+-	rcu_read_unlock();
+-
+-	return upper;
+-}
+-
+ /**
+  * batadv_mcast_mla_rtr_flags_meshif_get_ipv4() - get mcast router flags from
+  *  node for IPv4
+@@ -288,7 +264,7 @@ batadv_mcast_mla_flags_get(struct batadv_priv *bat_priv)
+ 	struct batadv_mcast_mla_flags mla_flags;
+ 	struct net_device *bridge;
+ 
+-	bridge = batadv_mcast_get_bridge(dev);
++	bridge = batadv_meshif_get_bridge(dev);
+ 
+ 	memset(&mla_flags, 0, sizeof(mla_flags));
+ 	mla_flags.enabled = 1;
+@@ -530,7 +506,7 @@ batadv_mcast_mla_meshif_get(struct net_device *dev,
+ 			    struct hlist_head *mcast_list,
+ 			    struct batadv_mcast_mla_flags *flags)
+ {
+-	struct net_device *bridge = batadv_mcast_get_bridge(dev);
++	struct net_device *bridge = batadv_meshif_get_bridge(dev);
+ 	int ret4, ret6 = 0;
+ 
+ 	if (bridge)
 
 -- 
 2.39.5
