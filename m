@@ -4,107 +4,115 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12123C021B3
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 17:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43960C021B3
+	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 23:48:22 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8B8AC8434D
-	for <batman-adv@archiver.kernel.org>; Fri, 21 Feb 2025 18:32:07 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7C4DC841E1
+	for <batman-adv@archiver.kernel.org>; Sat, 22 Feb 2025 00:48:20 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1740159127;
- b=Jusnyn0md8vmT2WQw4FEtyKuE5m/2qiXrFUJxBY05zg79w3BFJ0XuuA3EnU54yRcBc4Yh
- YT/0pVG9WQd2o+QqAhXBymL257tZApn0Oh4p1TsonmrMVwrTiqmjh4w0kDvR5MmyAl+6Bvs
- +bNjP7PFyjJicQ/muy9y+aupDMr8XbE=
+ t=1740181700;
+ b=HN1ZVoz9dG6gfxQpqcWV6rgCOZWfrye2mcT88zLrxBofrmhdJGB+Fd3r3hKyOE1OTscvx
+ PA6EhM7PZrFYzrMtnl0RZZM8He384F3GuJcg+b6VKt0yzFxemGVL014295Ext77blHxK+WG
+ DHlJdNut0oPNOssX484JdCSxtqrWY9o=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1740159127; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1740181700; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
- b=crTwI20efrEOTCFPqg1P1p4YdchZaitQigFYBFUjHrmYdQnklnSzN0G9jbWKvT0KJmvOf
- moUX36xT3bnEAHQ8GGTVg8QFlwwJezVhQZ6AF/0p247z96VNQz3Pjez3Dk4Evsl1pBHjuP0
- jrEsPHfAgdA/TVbsOI3POgeVcwrfOeg=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=g++xEBC2pAcMMG2YjDMwFnRBQLf2OVRj4BZ5ICpHhjg=;
+ b=iObE6VVJxyTwDOcRjKfLlIKzczvxMVrjdvNzHTbGyyLhDVLNhN0cYOhkOOjdr5evWBEYi
+ 1XgrrvfhPTUoYqOOlnzey5TzsyThAscMtjk/FSnFysUCTXxoOeOx8nBpcfDwYrp3wFYtgVB
+ nMkUz3AJSIQweDZQMKHXor28imFXEk4=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3C47E841DE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 21 Feb 2025 18:28:53 +0100 (CET)
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id F2CC78176D
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 22 Feb 2025 00:47:54 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1740158933;
+	s=20121; t=1740181675;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
-	b=TIbr71UhBF3+naQhb1nU1rN8KWsvSYgnERDImV9SA4CM1QZUEhF7tvanOCnZtaSksLnc5w
-	UzgDKjL5WpVln+bQ9teLS9KZ5EnJq9BtOF8J2ZfFIWiS0UaQnwJlTYrUoNdFwxweK9aMyv
-	A0AH7X0NeyWl/o2YvqBZ0fz7I4osG1k=
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740158933; a=rsa-sha256;
+	bh=g++xEBC2pAcMMG2YjDMwFnRBQLf2OVRj4BZ5ICpHhjg=;
+	b=nyGjGDG8RtWVWVBMV2VRBC6+0+O5li3vcnFh8owfulY+FNahCRAnXljNpu1wwN+f6K6JWD
+	W2naQnVtiaIAjRmWX93YM1zUTlw8Y0PevllRp64AePXLDrL79GhrhKdVq0wo/XcllL/D0+
+	3PeOLwhaNAqRgAdLudzTYAiV6XjtDFQ=
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1740181675; a=rsa-sha256;
 	cv=none;
-	b=K++QF9PD8Oq+F/wdjZAxWdv80JkySoqbuxbFqlpwAQEu07BHwGNUg8iwWlWq/knwGKu+C4
-	2t6GjaIBnKpdZgZU15lE195MPjxkR2vw6MP6plGZHJlbCsACUZ0eJksY1lMk0wA8DJEkzr
-	FanU/CvInTkh2sMRExToBX4NPUrUcSI=
+	b=rQndXiAkm/7ER2/IUARltF2qD3wqNEKcI2jPsCa+jxtoRlS3026bf6+zx2zF7ikZWqz3Dt
+	Cit1SqR6OZFHjYWyNdkqkxXl86M0IOzAM5lCqqZ+7PMSrnBbaKOgcxQ1wpsB2q4P2n2ORh
+	XZ8jR/Jwd5HDmBoMYLEyvrnj2O8kVmg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=SEWNdDqB;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1740158932;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Ai1FMW2tKLlsyzfO1ALrSGqRSRk52N3GifJlO81BPYI=;
-	b=SEWNdDqBms6TpSO0KTglaukf+jex/r1dcC5KBJxd6ivdE0DA897exjSvvNin9TGHJbrti0
-	+teUXUhCDZ+xRxdXrBhzHcJUHPjA3vZLSX3dArUTXjes4sPeKr4ihjJjh0qRpo9SV+UlD8
-	jYJVWU5tQNfJzoAaCU4OW9YXwPIDEdM=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 21 Feb 2025 18:27:33 +0100
-Subject: [PATCH v6 3/3] batman-adv: avoid adding bridge VLAN IDs through
- ndo_vlan_rx_add_vid()
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b="KM/ZfJRW";
+	spf=pass (diktynna.open-mesh.org: domain of kuba@kernel.org designates
+ 2604:1380:4641:c500::1 as permitted sender) smtp.mailfrom=kuba@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4E9415C2720;
+	Fri, 21 Feb 2025 23:47:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 305A7C4CED6;
+	Fri, 21 Feb 2025 23:47:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1740181673;
+	bh=YpqZyI6XQkE+I/cz0HVGo821pG3xUv+i2G8tH9sw4Ck=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=KM/ZfJRW4Ao62YReF/CByxvaytS6eCg7A62ykfem1F7ZlcxARc/ttMS+Eo7QSiRoC
+	 L/Yjcd2caMn4ObZZCnCGyEuo9xgC6WZot/rpFAy5wigXVK3ut+VHILxglTeHRYA9kk
+	 k60pF94LnYZ/h3hrEAauaHfon//iQu4AioNB3aq2W2kbk7oEuocz2/ygkH/nvqljBK
+	 2J+2++rVJPifxTn81/PKTdrWtLY/Om1L+itbDoBh6z+E8Cwe1RdbvdUeamo4+pUpWj
+	 /c4yBKxGb0jQHXag71qQxP+sWONgV0p8K4pbQVmHScKyB2/E2s11Z7gaJWVk4E/s5B
+	 mJf6Xz30VzUiw==
+Date: Fri, 21 Feb 2025 15:47:51 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Xiao Liang <shaw.leon@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kselftest@vger.kernel.org, Kuniyuki
+ Iwashima <kuniyu@amazon.com>, "David S. Miller" <davem@davemloft.net>,
+ David Ahern <dsahern@kernel.org>, Eric Dumazet <edumazet@google.com>, Paolo
+ Abeni <pabeni@redhat.com>, Andrew Lunn <andrew+netdev@lunn.ch>, Simon
+ Horman <horms@kernel.org>, Shuah Khan <shuah@kernel.org>, Donald Hunter
+ <donald.hunter@gmail.com>, Alexander Aring <alex.aring@gmail.com>, Stefan
+ Schmidt <stefan@datenfreihafen.org>, Miquel Raynal
+ <miquel.raynal@bootlin.com>, Steffen Klassert
+ <steffen.klassert@secunet.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-rdma@vger.kernel.org, linux-can@vger.kernel.org,
+ osmocom-net-gprs@lists.osmocom.org, bpf@vger.kernel.org,
+ linux-ppp@vger.kernel.org, wireguard@lists.zx2c4.com,
+ linux-wireless@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ bridge@lists.linux.dev, linux-wpan@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net-next v10 00/13] net: Improve netns handling in
+ rtnetlink
+Message-ID: <20250221154751.54318ae5@kernel.org>
+In-Reply-To: <20250219125039.18024-1-shaw.leon@gmail.com>
+References: <20250219125039.18024-1-shaw.leon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250221-dynamic-vlans-v6-3-fd94c9b782a7@narfation.org>
-References: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
-In-Reply-To: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?utf-8?q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6954; i=sven@narfation.org;
- h=from:subject:message-id; bh=0IpLAv/oriwgMw3z2vJTTthIZRJhbA2IQA9o7yNvVjo=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDOk7tu/amvxqS1H1oS027fO6eXSNlkpfXT3jaGD2/ZnZr
- p8C+A9N7ChlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMpHA5wz+9ConF+wqKzFX2
- pn6Lir8gZtFrGW48vcK/XbrzfINu92+G/3lZbXEs/ZVNP9bUvqm868O25qtRctAySYWAe21p33b
- n8QAA
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ
-X-Message-ID-Hash: XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Message-ID-Hash: 6SIBOIAIUUXIKZUAKYFWA2RAZ5W5ORRK
+X-Message-ID-Hash: 6SIBOIAIUUXIKZUAKYFWA2RAZ5W5ORRK
+X-MailFrom: kuba@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XWRAGSV4I6TXAGB65RAPFXM3PVORYXNZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6SIBOIAIUUXIKZUAKYFWA2RAZ5W5ORRK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,194 +121,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+On Wed, 19 Feb 2025 20:50:26 +0800 Xiao Liang wrote:
+> Patch 01 avoids link name conflict in different netns.
+> 
+> To achieve 2), there're mainly 3 steps:
+> 
+>  - Patch 02 packs newlink() parameters into a struct, including
+>    the original "src_net" along with more netns context. No semantic
+>    changes are introduced.
+>  - Patch 03 ~ 09 converts device drivers to use the explicit netns
+>    extracted from params.
+>  - Patch 10 ~ 11 removes the old netns parameter, and converts
+>    rtnetlink to create device in target netns directly.
+> 
+> Patch 12 ~ 13 adds some tests for link name and link netns.
 
-The Linux bridge by default adds the PVID of a port (default VID 1) and
-by that triggers our ndo_vlan_rx_add_vid() handler. The PVID is
-for ingress traffic from bat0 to the bridge and other bridge ports.
-However this makes no statement about what is received or send on bat0
-itself, bat0 might as well be an untagged access port, even with a PVID
-configured. Therefore ignoring here when a bridge is involved.
-
-Also, similarly a "bridge vlan add vid 42 dev bat0 untagged" would call
-this handler with VID 42. Even though we wouldn't be interested in this
-VLAN as its traffic would be untagged on our side.
-
-The issue is that any extra VLAN currently increases our own
-OGM protocol overhead quite a bit, so we want to avoid that
-by only adding VLANs that we are sure someone will be using.
-So only add VLANs through snooping of actual, VLAN tagged
-traffic, not through kernel internal network events
-if we have a bridge on top.
-
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/mesh-interface.c | 47 +++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/mesh-interface.h |  1 +
- net/batman-adv/multicast.c      | 30 +++-----------------------
- 3 files changed, 51 insertions(+), 27 deletions(-)
-
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index 4a83e6b97afc801e6a1b3b7514a57f0996c68e7c..f1ae8d1b8458b8597121b783697d39032eae2600 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -680,6 +680,31 @@ static void batadv_meshif_destroy_vlan_own(struct batadv_priv *bat_priv,
- 			       "vlan interface destroyed", false);
- }
- 
-+/**
-+ * batadv_meshif_get_bridge() - get the bridge on top of the meshif if it exists
-+ * @mesh_iface: netdev struct of the mesh interface
-+ *
-+ * If the given mesh interface has a bridge on top then the refcount
-+ * of the according net device is increased.
-+ *
-+ * Return: NULL if no such bridge exists. Otherwise the net device of the
-+ * bridge.
-+ */
-+struct net_device *batadv_meshif_get_bridge(struct net_device *mesh_iface)
-+{
-+	struct net_device *upper = mesh_iface;
-+
-+	rcu_read_lock();
-+	do {
-+		upper = netdev_master_upper_dev_get_rcu(upper);
-+	} while (upper && !netif_is_bridge_master(upper));
-+
-+	dev_hold(upper);
-+	rcu_read_unlock();
-+
-+	return upper;
-+}
-+
- /**
-  * batadv_interface_add_vid() - ndo_add_vid API implementation
-  * @dev: the netdev of the mesh interface
-@@ -695,6 +720,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 				    unsigned short vid)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct net_device *bridge;
- 
- 	/* only 802.1Q vlans are supported.
- 	 * batman-adv does not know how to handle other types
-@@ -710,6 +736,20 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 	if (vid == 0)
- 		return 0;
- 
-+	/* The Linux bridge adds the PVID of a port (default VID 1) and
-+	 * triggers this handler. The PVID is for ingress traffic from
-+	 * bat0 to the bridge and other bridge ports. However this makes no
-+	 * statement about what is received or send on bat0 itself, bat0
-+	 * might as well be an untagged access port, even with a PVID
-+	 * configured. Therefore ignoring here when a bridge is involved.
-+	 * Instead learn VLANs on the fly from traffic.
-+	 */
-+	bridge = batadv_meshif_get_bridge(dev);
-+	if (bridge) {
-+		dev_put(bridge);
-+		return 0;
-+	}
-+
- 	vid |= BATADV_VLAN_HAS_TAG;
- 
- 	return batadv_meshif_create_vlan_own(bat_priv, vid);
-@@ -731,6 +771,7 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 				     unsigned short vid)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct net_device *bridge;
- 
- 	/* only 802.1Q vlans are supported. batman-adv does not know how to
- 	 * handle other types
-@@ -744,6 +785,12 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 	if (vid == 0)
- 		return 0;
- 
-+	bridge = batadv_meshif_get_bridge(dev);
-+	if (bridge) {
-+		dev_put(bridge);
-+		return 0;
-+	}
-+
- 	batadv_meshif_destroy_vlan_own(bat_priv, vid | BATADV_VLAN_HAS_TAG);
- 	return 0;
- }
-diff --git a/net/batman-adv/mesh-interface.h b/net/batman-adv/mesh-interface.h
-index 48971400cacdf9485e48bd9be1657e1194c2292e..290440b86484a52f313f6f6ca757d27cf44cf5e9 100644
---- a/net/batman-adv/mesh-interface.h
-+++ b/net/batman-adv/mesh-interface.h
-@@ -19,6 +19,7 @@ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
- void batadv_interface_rx(struct net_device *mesh_iface,
- 			 struct sk_buff *skb, int hdr_size,
- 			 struct batadv_orig_node *orig_node);
-+struct net_device *batadv_meshif_get_bridge(struct net_device *mesh_iface);
- bool batadv_meshif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
- int batadv_meshif_create_vlan_own(struct batadv_priv *bat_priv,
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 97665c3005c54591b205d0f429c98ce056260335..17463c28c04491711239e4f917092415f182ba19 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -56,6 +56,7 @@
- #include "log.h"
- #include "netlink.h"
- #include "send.h"
-+#include "mesh-interface.h"
- #include "translation-table.h"
- #include "tvlv.h"
- 
-@@ -71,31 +72,6 @@ static void batadv_mcast_start_timer(struct batadv_priv *bat_priv)
- 			   msecs_to_jiffies(BATADV_MCAST_WORK_PERIOD));
- }
- 
--/**
-- * batadv_mcast_get_bridge() - get the bridge on top of the meshif if it exists
-- * @mesh_iface: netdev struct of the mesh interface
-- *
-- * If the given mesh interface has a bridge on top then the refcount
-- * of the according net device is increased.
-- *
-- * Return: NULL if no such bridge exists. Otherwise the net device of the
-- * bridge.
-- */
--static struct net_device *batadv_mcast_get_bridge(struct net_device *mesh_iface)
--{
--	struct net_device *upper = mesh_iface;
--
--	rcu_read_lock();
--	do {
--		upper = netdev_master_upper_dev_get_rcu(upper);
--	} while (upper && !netif_is_bridge_master(upper));
--
--	dev_hold(upper);
--	rcu_read_unlock();
--
--	return upper;
--}
--
- /**
-  * batadv_mcast_mla_rtr_flags_meshif_get_ipv4() - get mcast router flags from
-  *  node for IPv4
-@@ -288,7 +264,7 @@ batadv_mcast_mla_flags_get(struct batadv_priv *bat_priv)
- 	struct batadv_mcast_mla_flags mla_flags;
- 	struct net_device *bridge;
- 
--	bridge = batadv_mcast_get_bridge(dev);
-+	bridge = batadv_meshif_get_bridge(dev);
- 
- 	memset(&mla_flags, 0, sizeof(mla_flags));
- 	mla_flags.enabled = 1;
-@@ -530,7 +506,7 @@ batadv_mcast_mla_meshif_get(struct net_device *dev,
- 			    struct hlist_head *mcast_list,
- 			    struct batadv_mcast_mla_flags *flags)
- {
--	struct net_device *bridge = batadv_mcast_get_bridge(dev);
-+	struct net_device *bridge = batadv_meshif_get_bridge(dev);
- 	int ret4, ret6 = 0;
- 
- 	if (bridge)
-
--- 
-2.39.5
-
+Nice work, thank you!
