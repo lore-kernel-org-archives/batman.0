@@ -4,148 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6629C28B28
-	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 13:44:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58A21C282EC
+	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 13:45:24 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0FCA883BC9
-	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 14:44:38 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E210D83BF0
+	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 14:45:22 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1742305478;
- b=JsnnkPMGtvwWQXbIPoGem9yVtXQMsTQsx8u+tFmzmcW+vAXE4leKxSyGtUGVdhgvHu+Xb
- crDDU7XdIYrkYHONQVBZKtUg7C4j/163irGAxFIPLm84CuK+rvbMKlHv+igi4KrqgHQ4QuI
- Ag2wQ5e0K536zHx/wL/HtGwtEvtbShc=
+ t=1742305522;
+ b=DL7X64as2J1Z1ow1mBSbRQxVaTRQq+JIFhMlK6TxQVE9dwN5gLX+NqNKb7dlSQxUSBukK
+ 3c6/qqqf7epTfxKFqdBHyLmIO9TuDw1Gmkkr7z0lkAGKn6u6m5YMAFPZQWjdFtCuWfICvou
+ HTUnWcLKLl2YXJzPzvycFS1pB567fro=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1742305478; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1742305522; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=JYxupuol3hzt3Y5BwfutJ7GZcSRT1GDccfIhI7TAGlY=;
- b=vMgNKSnpUByUQQHjEsoaXI9IYHXzfSWZuF+GCo4IFHZpssI2wLcWaNB8a5vvaq0MkMn0I
- Xc7iFgogRbc19ozqYfU1njk5dt+pbYzZJTuPN4Q6fJYyanVd6B0M9ze3JZfC1Kw/bI2+hux
- wvMmprWxjGwSutcnxpzN9A010kmuNw4=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=redhat.com;
+ list-archive; bh=OcSTZcGwm0Ufp/SuCoUfQrUUcXsmfnW04AtmtgJKBUE=;
+ b=s12jBTGF6M6X3Nxuq9TLYwT4/Qq82QS6qtV6WEdgE3Z188nAPbMUBH2DVUrkdG9ZiX6Mo
+ gwDKPWslev7yymFlIZDRoROqAywrSigWMi/ohOitWHpAKIBhD5xmikRYqhyk+RirLEvoYIT
+ rzzeTkHkhnGmrlSnFMmzeFR8Ry0iEoo=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=redhat.com
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
  policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=redhat.com;
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=redhat.com policy.dmarc=quarantine
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B228281EFE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 18 Mar 2025 12:05:59 +0100 (CET)
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A2F4280926
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 18 Mar 2025 12:30:05 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1742295961;
+	s=20121; t=1742297406;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=JYxupuol3hzt3Y5BwfutJ7GZcSRT1GDccfIhI7TAGlY=;
-	b=NBLnbZXtLs6Gl1N4eU2f0c8UPorJPi7lFraHnJrp1XxltLrtPhNuOCUYkyOwtOQ+TtTBxZ
-	bMu1KwSSnyXVmTnUTEGkcS2Fhlqx6dTJ9s/7VQjQ8JVsKx9cw0AVXDggnZmGp7G0ilBunf
-	VTLndvQqKDXvMp7PXexArDhj/O/7K0s=
+	bh=OcSTZcGwm0Ufp/SuCoUfQrUUcXsmfnW04AtmtgJKBUE=;
+	b=o5nymtbl5iezFa4MF7MoVssgEEFGpku2Cutv+O8zDPdIDLFymSZ6YdiNHuwSSVhHn8ymI6
+	SKC4vptp2vN3wMcx6PX5uv5Bbo+QHJn6q5mWWSJygPnPe7AruO8vg4B1TFYUlDV7CmnTu3
+	puxluFXlVyYqlFhzqfLnATASbUCHdCg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=redhat.com header.s=mimecast20190719 header.b=d2zdxkYZ;
-	spf=pass (diktynna.open-mesh.org: domain of pabeni@redhat.com designates
- 170.10.133.124 as permitted sender) smtp.mailfrom=pabeni@redhat.com;
-	dmarc=pass (policy=quarantine) header.from=redhat.com
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1742295961; a=rsa-sha256;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=tq48iJkb;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
+ permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1742297406; a=rsa-sha256;
 	cv=none;
-	b=gTQTl3g6x86ui6c0pK65F1XRA+EUW+B/mGMDKGNZ6Ar8ZiLg23YOZD0mE0qAM/1mS1o7gx
-	Ny56vdUGRvo1f6m3Ngf0v2rl5VhmO/bJHeFu3ZrD7yrS6Q0SRaW2ZYOknjKg9eUbZyJLhB
-	4joWRE1wRt54AZ9diJnVKZfmF8fwj08=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1742295957;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JYxupuol3hzt3Y5BwfutJ7GZcSRT1GDccfIhI7TAGlY=;
-	b=d2zdxkYZDeC228ac64ioMhLuEtZDTrMqC4DqGi9VnTtOyVZvxtZeTYWHCULse/3cdvY2Km
-	zv1MlwGn5RV4AnQQbQ1hkYUfMxs42FHqPHoJgqe5jyHS4sLHeFp2XrMDR7+g3gQOUIN62F
-	OK2+3LdTWcnfThIui3ktUeJX0mDcK4E=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-624-2uMk0xPJMpG7wVL5bVocyg-1; Tue, 18 Mar 2025 07:05:56 -0400
-X-MC-Unique: 2uMk0xPJMpG7wVL5bVocyg-1
-X-Mimecast-MFC-AGG-ID: 2uMk0xPJMpG7wVL5bVocyg_1742295955
-Received: by mail-wm1-f70.google.com with SMTP id
- 5b1f17b1804b1-43cec217977so22004975e9.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Tue, 18 Mar 2025 04:05:56 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742295955; x=1742900755;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=JYxupuol3hzt3Y5BwfutJ7GZcSRT1GDccfIhI7TAGlY=;
-        b=Lyyexml1hcW0L3xGaXyhmvUIQt+gnlDS4kWUOjGOvgT02nDYGaNgAqHJSeD6hKCyw1
-         DVRlfBdX4qV7qvmNP+CjxTBiS7tf/VxqJp5Ua7b1VS3kp1dES0RNLONvPUyHgaLIc3Bf
-         nE344L07n2/c/AYEs91ZLW8Tz2o6zzBVLgl+63CCih+w7tdcNLWFDAY38mI6tNQYFesm
-         8i1inL2fCxwPjPCkh5FKlm2sAw90MJyAMJCd33BciHN7IWrXL8kT9TjUm7U/xrUlot7o
-         5oNY032uXjeqw4lx8xfBdUHtXq7Ec4iubpbgnPDPeatcPh0pO3/2j0dlvX3yC/qt8gOn
-         vZlA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUwlPNJCo6GTUWx2NDpKHesA1g1PsofWRbi6V5YtuFBrkY0p+D6E9Oyi9u2UWUJGJAT3NVPxnLLsaugLA==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0YxTZy/FQHCXEEX8MCy9xQM7lwxgoUvSnn7x8BzII8hkOlUcRCm1
-	6qsI7V5eI1IbeEdsd4SrTSadCYNy5tRep+N+niCnoYvWg0a737tUeuI2L/NDtA/OaTlXIW4a/GU
-	1XpjY64Ii1cz2gCY7sMqzQQO3mzpIfA4ax9HgkhvVg7jT2fiRuKW70uFmiWyG0/Lzg0hCsxcw2g
-	Co
-X-Gm-Gg: ASbGncudgd7DRzniySDnAz3POW3T2vBldAbNj46nP/0MBVuDgn/D0nv2lF8zm7dHf+6
-	JBb21+k5vHOl1d5EckDsbrBtmKGlLfYgNkf1swrPSFen8qXyq/wMzfQVllTcffgowwa25Cq4USZ
-	0CMEWs2g2z8EBCvohKNQWVLdCS7sXxt9psKKsSgQyyKQEKXyZBh++6cx3vDUOBvcQSdV0H8I7xs
-	bCV2h96XZYJ+6VeFD80q+UlZgwvUnZZ+G9EiITGHo9IIsPmrQrtUI1Vk4ldxKA/7AKiD+AJFmHO
-	Q/ijk4AKriqpdnNHDy0TQqKvDyTu516xldFKxfhFD8t38Q==
-X-Received: by 2002:a05:600c:34c7:b0:43c:fe15:41dd with SMTP id
- 5b1f17b1804b1-43d3b951a70mr16594205e9.6.1742295954666;
-        Tue, 18 Mar 2025 04:05:54 -0700 (PDT)
-X-Google-Smtp-Source: 
- AGHT+IGjOQJ9N2uizMg7NPUyYVTQbobEjlEhqs1ZRY7mDMuFURwbgXUYvDp8nOZ2LQ0I+DuyUV9WnQ==
-X-Received: by 2002:a05:600c:34c7:b0:43c:fe15:41dd with SMTP id
- 5b1f17b1804b1-43d3b951a70mr16594015e9.6.1742295954311;
-        Tue, 18 Mar 2025 04:05:54 -0700 (PDT)
-Received: from [192.168.88.253] (146-241-10-172.dyn.eolo.it. [146.241.10.172])
-        by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-395cb7eb92csm18225173f8f.91.2025.03.18.04.05.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Mar 2025 04:05:53 -0700 (PDT)
-Message-ID: <a0f1deec-2770-4b51-ad2b-b3d0e846be25@redhat.com>
-Date: Tue, 18 Mar 2025 12:05:52 +0100
+	b=UqtOKLGlDOI5fARIWT1R67qbokophEy/4pqCAOHHt/lDdb4xm4pTngMtmTT2Z5hgl/RYSe
+	v2pCj7HshboIcIUxHgwGgJfUs/nQwHimDEhKYHFV8Rmlh2cT10/y81tieZD0Kj7AvLXdBm
+	iiXXMW/Xg8AOdeSdZ8WXn/AaFr6fCzc=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3DFDB5C58C1;
+	Tue, 18 Mar 2025 11:27:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D06CEC4CEE3;
+	Tue, 18 Mar 2025 11:30:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1742297403;
+	bh=r69d5xBhzd1oSteBxc/VbEo1hdNp79uDB5aVghpztaM=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=tq48iJkbASb1aHOoBxNL5OirnAc/ZAXyLmWNVOJUyEerYnbT3RKLOwQwNTvU3wu0A
+	 xXyx4dN2d7skqwW/+Q2IDUvy/acx9JI/RrGOGx8CEGhhAvkDnCsW8IsAWJ7aJV9ZSd
+	 9sc/IY5mPGN8nlJ1laO6KNvJKS+/8J0lr/NHoXLOarFSMkTMyEPTigG0E14jswBvGa
+	 geG+19Og1xndvUvMrOZr0Mhq51cFeXpTV85Zl2mFHeJkZBc1VVgRF/g4qhlqw9uPas
+	 BXbgvn7tCkjTs5bL5HoDKHhmdiA35B2qsXvUpvv0mFIHMqsYPoS76X8rsxzV99X6Eo
+	 Wb1YqyUfmIw6A==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ 75030380DBE8;
+	Tue, 18 Mar 2025 11:30:40 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] pull request for net: batman-adv 2025-03-13
-To: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net,
- kuba@kernel.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
-References: <20250313161738.71299-1-sw@simonwunderlich.de>
-From: Paolo Abeni <pabeni@redhat.com>
-In-Reply-To: <20250313161738.71299-1-sw@simonwunderlich.de>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: _STsb50S4JOTcGr0zMyK_EmMHrYDndHJcuwU_Na_ktU_1742295955
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-MailFrom: pabeni@redhat.com
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 01/10] batman-adv: Start new development cycle
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <174229743927.4143607.16972269079132014230.git-patchwork-notify@kernel.org>
+Date: Tue, 18 Mar 2025 11:30:39 +0000
+References: <20250313164519.72808-2-sw@simonwunderlich.de>
+In-Reply-To: <20250313164519.72808-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: SIVQ3EQ5INH272HICXDHEMR5KAQEDGIZ
-X-Message-ID-Hash: SIVQ3EQ5INH272HICXDHEMR5KAQEDGIZ
+Message-ID-Hash: FVQ7LUUEM4SW74IN3ZPKWY763ZQ7STMA
+X-Message-ID-Hash: FVQ7LUUEM4SW74IN3ZPKWY763ZQ7STMA
 X-Mailman-Approved-At: Tue, 18 Mar 2025 14:44:21 +0100
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SIVQ3EQ5INH272HICXDHEMR5KAQEDGIZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G6LLXYPJ6OT4TYJHERT2QOOIVIPEIJ3T/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -154,21 +114,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi,
+Hello:
 
-On 3/13/25 5:17 PM, Simon Wunderlich wrote:
-> here are some bugfixes for batman-adv which we would like to have integrated into net.
+This series was applied to netdev/net-next.git (main)
+by Simon Wunderlich <sw@simonwunderlich.de>:
+
+On Thu, 13 Mar 2025 17:45:10 +0100 you wrote:
+> This version will contain all the (major or even only minor) changes for
+> Linux 6.15.
 > 
-> Please pull or let me know of any problem!
+> The version number isn't a semantic version number with major and minor
+> information. It is just encoding the year of the expected publishing as
+> Linux -rc1 and the number of published versions this year (starting at 0).
+> 
+> [...]
 
-I'm sorry, we are lagging behind.
+Here is the summary with links:
+  - [01/10] batman-adv: Start new development cycle
+    https://git.kernel.org/netdev/net-next/c/b195d60408d4
+  - [02/10] batman-adv: Drop batadv_priv_debug_log struct
+    https://git.kernel.org/netdev/net-next/c/9a006e72d30c
+  - [03/10] batman-adv: adopt netdev_hold() / netdev_put()
+    https://git.kernel.org/netdev/net-next/c/00b35530811f
+  - [04/10] batman-adv: Add support for jumbo frames
+    https://git.kernel.org/netdev/net-next/c/1666951c4424
+  - [05/10] batman-adv: Use consistent name for mesh interface
+    https://git.kernel.org/netdev/net-next/c/94433355027d
+  - [06/10] batman-adv: Limit number of aggregated packets directly
+    https://git.kernel.org/netdev/net-next/c/434becf57bdc
+  - [07/10] batman-adv: Switch to bitmap helper for aggregation handling
+    https://git.kernel.org/netdev/net-next/c/77405977f187
+  - [08/10] batman-adv: Use actual packet count for aggregated packets
+    https://git.kernel.org/netdev/net-next/c/0db110059e79
+  - [09/10] batman-adv: Limit aggregation size to outgoing MTU
+    https://git.kernel.org/netdev/net-next/c/e4aa3412f632
+  - [10/10] batman-adv: add missing newlines for log macros
+    https://git.kernel.org/netdev/net-next/c/7cfb32456ed8
 
-The series does not apply cleanly to the net tree, could you please
-rebase it?
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-While at it, could you please include the target tree in the subj prefix?
-
-Thanks!
-
-Paolo
 
