@@ -4,108 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58A21C282EC
-	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 13:45:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92BD4C28B28
+	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 13:56:28 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E210D83BF0
-	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 14:45:22 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 1A89383CDE
+	for <batman@archiver.kernel.org>; Tue, 18 Mar 2025 14:56:27 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1742305522;
- b=DL7X64as2J1Z1ow1mBSbRQxVaTRQq+JIFhMlK6TxQVE9dwN5gLX+NqNKb7dlSQxUSBukK
- 3c6/qqqf7epTfxKFqdBHyLmIO9TuDw1Gmkkr7z0lkAGKn6u6m5YMAFPZQWjdFtCuWfICvou
- HTUnWcLKLl2YXJzPzvycFS1pB567fro=
+ t=1742306187;
+ b=maSWrAj8EkzrQoGaPQbTaPN9TUHm1cEQtwEE00EfRKP9bYZ5OKx+vUfFSv1ekxBFRiv3J
+ xuorIPpaguxutEN5bpRDqRALcOvgvwenSEq2yMMWLE0GweDOjHI3we4UNE1znhToZhS1seT
+ OobLpmXGEBZ0Sb7MXjqa2C2aQV5/swE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1742305522; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1742306187; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=OcSTZcGwm0Ufp/SuCoUfQrUUcXsmfnW04AtmtgJKBUE=;
- b=s12jBTGF6M6X3Nxuq9TLYwT4/Qq82QS6qtV6WEdgE3Z188nAPbMUBH2DVUrkdG9ZiX6Mo
- gwDKPWslev7yymFlIZDRoROqAywrSigWMi/ohOitWHpAKIBhD5xmikRYqhyk+RirLEvoYIT
- rzzeTkHkhnGmrlSnFMmzeFR8Ry0iEoo=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
+ list-archive; bh=zS6U9IbqxukiJ1clWx1A4PxWHL2mCHGPOXvVeRtKO/w=;
+ b=D4Ok1Ym48iBo9Fg1ldn0ifaxFTLsb5hRtxoCAXsgn5cE6J42w+QAg1nkfYSA5QJjjwuGV
+ 0sLv1xze2mNYZafX6vwKsOnxvg5oiuDdWRy9qcI4RdTiew936RvD7A6L9jqy8w7EJzSdqhY
+ FLCQ9bN9RxGR1ixmSqyNw2FbPZ5WtXQ=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=kernel.org
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+  dmarc=pass (Used From Domain Record) header.from=narfation.org
+ policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A2F4280926
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 18 Mar 2025 12:30:05 +0100 (CET)
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7C294800D6
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 18 Mar 2025 14:56:11 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1742297406;
+	s=20121; t=1742306171;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=OcSTZcGwm0Ufp/SuCoUfQrUUcXsmfnW04AtmtgJKBUE=;
-	b=o5nymtbl5iezFa4MF7MoVssgEEFGpku2Cutv+O8zDPdIDLFymSZ6YdiNHuwSSVhHn8ymI6
-	SKC4vptp2vN3wMcx6PX5uv5Bbo+QHJn6q5mWWSJygPnPe7AruO8vg4B1TFYUlDV7CmnTu3
-	puxluFXlVyYqlFhzqfLnATASbUCHdCg=
+	bh=zS6U9IbqxukiJ1clWx1A4PxWHL2mCHGPOXvVeRtKO/w=;
+	b=XZrOrwZkpljm20wdUg2kt1ULxnI2HeMVMHyAcOq9mm2dxNpG0ZNBYBq9yb5MVeFtQfAvZY
+	XdT4uQy/GiTCqw7ciiHm3va8hZ+77bOQrVDBhWYXibNWj8KTCpVqtvn7Ea0IsNCoGBjHy/
+	d4bK6skWgC4zDGrto35JNDmuTseOhL0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=tq48iJkb;
-	spf=pass (diktynna.open-mesh.org: domain of
- patchwork-bot+netdevbpf@kernel.org designates 2604:1380:4641:c500::1 as
- permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
-	dmarc=pass (policy=quarantine) header.from=kernel.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1742297406; a=rsa-sha256;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=0mT47E2y;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1742306171; a=rsa-sha256;
 	cv=none;
-	b=UqtOKLGlDOI5fARIWT1R67qbokophEy/4pqCAOHHt/lDdb4xm4pTngMtmTT2Z5hgl/RYSe
-	v2pCj7HshboIcIUxHgwGgJfUs/nQwHimDEhKYHFV8Rmlh2cT10/y81tieZD0Kj7AvLXdBm
-	iiXXMW/Xg8AOdeSdZ8WXn/AaFr6fCzc=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3DFDB5C58C1;
-	Tue, 18 Mar 2025 11:27:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D06CEC4CEE3;
-	Tue, 18 Mar 2025 11:30:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742297403;
-	bh=r69d5xBhzd1oSteBxc/VbEo1hdNp79uDB5aVghpztaM=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=tq48iJkbASb1aHOoBxNL5OirnAc/ZAXyLmWNVOJUyEerYnbT3RKLOwQwNTvU3wu0A
-	 xXyx4dN2d7skqwW/+Q2IDUvy/acx9JI/RrGOGx8CEGhhAvkDnCsW8IsAWJ7aJV9ZSd
-	 9sc/IY5mPGN8nlJ1laO6KNvJKS+/8J0lr/NHoXLOarFSMkTMyEPTigG0E14jswBvGa
-	 geG+19Og1xndvUvMrOZr0Mhq51cFeXpTV85Zl2mFHeJkZBc1VVgRF/g4qhlqw9uPas
-	 BXbgvn7tCkjTs5bL5HoDKHhmdiA35B2qsXvUpvv0mFIHMqsYPoS76X8rsxzV99X6Eo
-	 Wb1YqyUfmIw6A==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
- 75030380DBE8;
-	Tue, 18 Mar 2025 11:30:40 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	b=AQSy4ncNZ2nOuL1vLPGx+0Fa4dM77VJA/kBi1EjPOLDaLU3uNF7Zv956SIbsFm3c8H4KEa
+	Fwes8NsbGdwg1kuiiiEi2M6a/sf92CBjfmLvaJFRhVbtp5Sa+cAS9ghRJJJXYXIXP9HhJl
+	DyM9PEpFg2V10dwLq2iinDSEPo1FBW4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1742306170;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zS6U9IbqxukiJ1clWx1A4PxWHL2mCHGPOXvVeRtKO/w=;
+	b=0mT47E2yVSK9sQUtr2JzKuXdSBEYGzBRbtTqUi6/gq6OOpst2y3o9eErHmgUIOC2b45dNM
+	Zooer++1C3wtMq0Ny7oqY3hp7V5Xv2cWZz3iH7s22ByHUs/BA1dX2yUU4YFq68mumjPtEd
+	DRYMGzX0hI7yjd78mlCtcrGgOdQjYGo=
+From: Sven Eckelmann <sven@narfation.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net,
+ Paolo Abeni <pabeni@redhat.com>
+Cc: kuba@kernel.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH 0/5] pull request for net: batman-adv 2025-03-13
+Date: Tue, 18 Mar 2025 14:56:07 +0100
+Message-ID: <3809149.MHq7AAxBmi@ripper>
+In-Reply-To: <a0f1deec-2770-4b51-ad2b-b3d0e846be25@redhat.com>
+References: 
+ <20250313161738.71299-1-sw@simonwunderlich.de>
+ <a0f1deec-2770-4b51-ad2b-b3d0e846be25@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 01/10] batman-adv: Start new development cycle
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <174229743927.4143607.16972269079132014230.git-patchwork-notify@kernel.org>
-Date: Tue, 18 Mar 2025 11:30:39 +0000
-References: <20250313164519.72808-2-sw@simonwunderlich.de>
-In-Reply-To: <20250313164519.72808-2-sw@simonwunderlich.de>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org
-X-MailFrom: patchwork-bot+netdevbpf@kernel.org
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: multipart/signed; boundary="nextPart1964837.taCxCBeP46";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: USKRCU6O7HCVYUH3BSRCDDO5ZQIOQY6Z
+X-Message-ID-Hash: USKRCU6O7HCVYUH3BSRCDDO5ZQIOQY6Z
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: FVQ7LUUEM4SW74IN3ZPKWY763ZQ7STMA
-X-Message-ID-Hash: FVQ7LUUEM4SW74IN3ZPKWY763ZQ7STMA
-X-Mailman-Approved-At: Tue, 18 Mar 2025 14:44:21 +0100
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G6LLXYPJ6OT4TYJHERT2QOOIVIPEIJ3T/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/USKRCU6O7HCVYUH3BSRCDDO5ZQIOQY6Z/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,46 +104,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hello:
+--nextPart1964837.taCxCBeP46
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+Subject: Re: [PATCH 0/5] pull request for net: batman-adv 2025-03-13
+Date: Tue, 18 Mar 2025 14:56:07 +0100
+Message-ID: <3809149.MHq7AAxBmi@ripper>
+In-Reply-To: <a0f1deec-2770-4b51-ad2b-b3d0e846be25@redhat.com>
+MIME-Version: 1.0
 
-This series was applied to netdev/net-next.git (main)
-by Simon Wunderlich <sw@simonwunderlich.de>:
+On Tuesday, 18 March 2025 12:05:52 CET Paolo Abeni wrote:
+> The series does not apply cleanly to the net tree, could you please
+> rebase it?
 
-On Thu, 13 Mar 2025 17:45:10 +0100 you wrote:
-> This version will contain all the (major or even only minor) changes for
-> Linux 6.15.
-> 
-> The version number isn't a semantic version number with major and minor
-> information. It is just encoding the year of the expected publishing as
-> Linux -rc1 and the number of published versions this year (starting at 0).
-> 
-> [...]
+$ git log -1 --oneline
+9a81fc3480bf (HEAD, net/main) ipv6: Set errno after ip_fib_metrics_init() in ip6_route_info_create().
 
-Here is the summary with links:
-  - [01/10] batman-adv: Start new development cycle
-    https://git.kernel.org/netdev/net-next/c/b195d60408d4
-  - [02/10] batman-adv: Drop batadv_priv_debug_log struct
-    https://git.kernel.org/netdev/net-next/c/9a006e72d30c
-  - [03/10] batman-adv: adopt netdev_hold() / netdev_put()
-    https://git.kernel.org/netdev/net-next/c/00b35530811f
-  - [04/10] batman-adv: Add support for jumbo frames
-    https://git.kernel.org/netdev/net-next/c/1666951c4424
-  - [05/10] batman-adv: Use consistent name for mesh interface
-    https://git.kernel.org/netdev/net-next/c/94433355027d
-  - [06/10] batman-adv: Limit number of aggregated packets directly
-    https://git.kernel.org/netdev/net-next/c/434becf57bdc
-  - [07/10] batman-adv: Switch to bitmap helper for aggregation handling
-    https://git.kernel.org/netdev/net-next/c/77405977f187
-  - [08/10] batman-adv: Use actual packet count for aggregated packets
-    https://git.kernel.org/netdev/net-next/c/0db110059e79
-  - [09/10] batman-adv: Limit aggregation size to outgoing MTU
-    https://git.kernel.org/netdev/net-next/c/e4aa3412f632
-  - [10/10] batman-adv: add missing newlines for log macros
-    https://git.kernel.org/netdev/net-next/c/7cfb32456ed8
+$ git pull --no-ff git://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20250313
+>From git://git.open-mesh.org/linux-merge
+ * tag                         batadv-net-pullrequest-20250313 -> FETCH_HEAD
+Merge made by the 'ort' strategy.
+ net/batman-adv/bat_iv_ogm.c | 3 +--
+ net/batman-adv/bat_v_ogm.c  | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+So, it works perfectly fine for me .
+
+I understand that it is confusing that that Simon send a PR with 5 patches 
+mentioned. It is actually only 1 patch - 4 were already submitted in the last 
+PR. But still, the PR seems to apply cleanly for me.
+
+Any hints how to reproduce your problem?
+ 
+> While at it, could you please include the target tree in the subj prefix?
+
+It currently mentions net in the subject. But I think you mean to change it 
+from "[PATCH 0/5] pull request for net: batman-adv 2025-03-13" to 
+"[PATCH net 0/5] pull request: batman-adv 2025-03-13". Or which exact format 
+do you prefer?
+
+Kind regards,
+	Sven
+
+
+--nextPart1964837.taCxCBeP46
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCZ9l7dwAKCRBND3cr0xT1
+y5/DAQD20CG4iCNDzl8RXkBPzxz4miX+U6QNUXpR+iB0JCSm8QEAzVj7p6ylNvFQ
+Cqf6IBTk8Z+k1c9gZxXP1SkDzm6uAwk=
+=+ADe
+-----END PGP SIGNATURE-----
+
+--nextPart1964837.taCxCBeP46--
+
 
 
