@@ -4,105 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14CB8C369A2
-	for <batman@archiver.kernel.org>; Mon, 14 Apr 2025 18:08:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9072DC369B2
+	for <batman@archiver.kernel.org>; Mon, 14 Apr 2025 19:21:24 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 809B8847AD
-	for <batman@archiver.kernel.org>; Mon, 14 Apr 2025 20:08:24 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id D5687847C1
+	for <batman@archiver.kernel.org>; Mon, 14 Apr 2025 21:21:22 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1744654104;
- b=bowIh1UaH+F+l7nONN9rzpOIMbtdNE19cYH4ZE2vUn61xyDRukyvQM0Bz64OGysPK6uI4
- hzquWDeuvKYrnv2mdFhCOloX608KARlVPJzNXSupoc7atlIgXchiGoUQtaa2lwzmX63i9NB
- u2e0hjUuNYKBygzBTgH+bVIE4yK9y98=
+ t=1744658482;
+ b=Gi7RTzpCoI2Zn3Qn8JDxSiq6a4ShBy2YiL6vVHvBy/AIH6QSI7vY3zpQhaL62K477zteB
+ AsJkZfWxtlbgF6ml/ZJOdFiThXZ2CT/8eNVwfxkHw/Gd2rjJDIubJXf7FutOHgZMm9iSlui
+ ELW3qq1CKFMiyWq2w82g9ixbpVfKuDQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1744654104; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1744658482; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ore2h7sZOyoYEG4C62YqwDZEFQDa/Mcv8WyUAUTbahM=;
- b=rVFKpuzDCfTQNXfgK3jLAWg+N7O39ghGrkf9gMoQMjZDtv7zykVj+K/fh6NUT9sOs7b2C
- t2RRWQ9Yhz03YYbyW0NkslafUas+u6osCUktNPIWxVFtDqczWiPtuHRyYTNunmmYzaF9LL7
- buqgivqiCROl3iap09dmyMWWsNs9Hvc=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
+ list-archive; bh=RVj63pLHPDOADttU5mk9xoBgxj6+KEfzLF7NO/zyIHU=;
+ b=CYhh0UnQVgEWxW8ht+FdoVAqMBaRZ+L+ypO8dIVZw2A5PJyzt1T9btjecfi5kyoU1UCcz
+ +OKMhlgykVI9/sq1krswnt8omQIpNPqvI/VXcn/2DfGh6zJcxFo6JYlYByt5qfF+LrUQDb8
+ nwiFkKZjmbgVniuhmUn/SZ8KqAfvzlY=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=google.com;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=kernel.org
- policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+  dmarc=pass (Used From Domain Record) header.from=google.com
+ policy.dmarc=reject
+Authentication-Results: open-mesh.org; dkim=pass header.d=google.com;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from nyc.source.kernel.org (nyc.source.kernel.org
- [IPv6:2604:1380:45d1:ec00::3])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7A9D984221
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Apr 2025 18:55:29 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1744649739; a=rsa-sha256;
+ dmarc=pass (Used From Domain Record) header.from=google.com policy.dmarc=reject
+Received: from mail-qt1-x82e.google.com (mail-qt1-x82e.google.com
+ [IPv6:2607:f8b0:4864:20::82e])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0BF8C843AB
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 14 Apr 2025 20:42:08 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1744656129; a=rsa-sha256;
 	cv=none;
-	b=RKg9xdX7+0FKkVQ+nFjM4u51UJKhpaxhU1QjpJbUBhMB1HpZfzYwV9GqofTe1gyNXsg3GP
-	+ea/rMS487hDGBulfql3r9JIZL7G8G4u4O6hNsM8DhNeaewNxHa89fTp/oJ7y549OcMuhq
-	eCy3ymJdj1PNJw7noHHBRBn8H/vd4Jc=
+	b=tOMrQDGERd8/CSLBhanNaEVDkG7sZf/3DBeMDp9SL9EPcZZ0J/eJpi4qho4PC7ULY+tc/t
+	vVbTvN+c5MkqFLL8o//P+UPosRWz8RApKHdTxbRZJ0YcPlQuOT9GxxtD2qmQ3UxO/p31Y7
+	4kWDh6hnyqYHTqkxj/Q1kppnZFcbv8Q=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=VsoRwWB1;
-	spf=pass (diktynna.open-mesh.org: domain of horms@kernel.org designates
- 2604:1380:45d1:ec00::3 as permitted sender) smtp.mailfrom=horms@kernel.org;
-	dmarc=pass (policy=quarantine) header.from=kernel.org
+	dkim=pass header.d=google.com header.s=20230601 header.b=JuTAQ9kv;
+	spf=pass (diktynna.open-mesh.org: domain of edumazet@google.com designates
+ 2607:f8b0:4864:20::82e as permitted sender)
+ smtp.mailfrom=edumazet@google.com;
+	dmarc=pass (policy=reject) header.from=google.com
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1744649739;
+	s=20121; t=1744656129;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ore2h7sZOyoYEG4C62YqwDZEFQDa/Mcv8WyUAUTbahM=;
-	b=zFC2Ppo32mJgNeLUrwiorJWGCnn5XuLZyuD284H5dgqR54w9FGPTGCOiLJxcpCiHUSu2YE
-	MhlagRQOblqoBQidhWL/JFUELaV3nhLBCHcB5MvGSq626DKzgels3tzjHOKS3tDrFIusMN
-	QyfBmtWsRBybCQcwwX1FRypxJR/S/e4=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id D003CA49F4E;
-	Mon, 14 Apr 2025 16:49:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 407D4C4CEE2;
-	Mon, 14 Apr 2025 16:55:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744649727;
-	bh=B/f8nfuCKrz3hf3ccJBtDMWjTuWvH9EW7AkbfWjqkrs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=VsoRwWB1aQivpwc5jmlzMzh0dvP+D9thuMGPLW6og/2G6EpsUigpcwI1L8xYjMQA8
-	 bM6yoTrT8/JEyVUbhPljmzTG+U14OfV4knZxc5iL8ISIjCYzOnaumc7y/WFt/F843t
-	 qoza24nMp8VO0BJmK9nlAK7q/fZ4fEH5FHOfNPHPtzu7LFztzWtHzpFJn+jgoqNg7t
-	 aRFgVj39xnnz5qnh/a7thobFPe/rkxwIw19icHBDmZFC3sWgzMmVo+AJ5A7gZMFWd4
-	 XK7yDgHlPpTNDUw2VLNN5G2jUxD7O14+aHWGRMGXgSvDhQXBr/jm3LExUVHC+C3cGi
-	 J0snPHWvjbjLA==
-Date: Mon, 14 Apr 2025 17:55:23 +0100
-From: Simon Horman <horms@kernel.org>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net v4] batman-adv: Fix double-hold of meshif when
- getting enabled
-Message-ID: <20250414165523.GV395307@horms.kernel.org>
-References: <20250410-double_hold_fix-v4-1-2f606fe8c204@narfation.org>
+	bh=RVj63pLHPDOADttU5mk9xoBgxj6+KEfzLF7NO/zyIHU=;
+	b=3kh5V8F/W1hOas4PcNOariwc7H9IgTQmmKrY6hlcYeK9Buz9pUo/VNcVaRAtkJInuHJd0A
+	jjBcx88qTplxzoCGwEMaO/rm9rQbhTK8lIJJQ8tCWITo1P3FOdUAnhTBgwVCT1AyYA78PO
+	wr3PtYDKm0r7AdlwYZJuYctXKcMkF4o=
+Received: by mail-qt1-x82e.google.com with SMTP id
+ d75a77b69052e-47677b77725so49135121cf.3
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Mon, 14 Apr 2025 11:42:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1744656127; x=1745260927;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RVj63pLHPDOADttU5mk9xoBgxj6+KEfzLF7NO/zyIHU=;
+        b=JuTAQ9kvk6qrsMYm8fcb42EP2YINjqD+fGGTV63dUWGTWWTVQ6wNeX7yvMDHUYEqzE
+         0OGnBmqY705Av2LDm7D4yMqa34CbZToz+oIfkFiMuzAPqS91ldGJG0zCZWfttBWbi9jr
+         /DWHG499hgDouSZcYI8/9bOD31jUzuC/j/5GORvIrjR+AkHazLCm3ej8/Z757+JL7WCl
+         E8hbLrjqOSd1lO+EFw3mjDf/mOoKWdIs8Utkf+oR1t19Yu77nzfrB+eU8Qc42UvzoaJX
+         hQaR3goWx8E+T8WzFi0fsnpM/b/YU9kUPeZm12R4KX3ZzHaR8lppIIRQOVIhD/4krhq7
+         RriA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1744656127; x=1745260927;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=RVj63pLHPDOADttU5mk9xoBgxj6+KEfzLF7NO/zyIHU=;
+        b=RE8wU2bAIJGfGE22SMJ/M3KPULszHSFAJPk66EERSaHE2oU5k8QcWCTdM5SsajdEne
+         xkCwHav7kK7/JvfE5qapjOOPvggs63dlqJhByhu2fAEYOV4Ifu6FNORY3TPi5bcZMmaQ
+         u5FpCmmDcjRAl8I7bjrTJrv6+D/tpoCLFHUcAWJl8ovdbWsTjbSYmcSGCE6+o0QpBGMC
+         ZNXN7HOVAeOjcA2VE+5e0eWjvnR1wDucfO7bqQ8+GvwztEA+tq2zw51wnN/uztJsTIXl
+         vYe7pkxj3iq8RX06KnWhA6Sa9Mc4ISH+U220+9VGwXTV1EVYlqngeXYXGk+m+C/uBb56
+         GbDw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUXaD6YE3Q8k083VQIvHAu5CVij70lmWCLMA0ptEpq0VFko5AfAKOpPgE+PDYEWE9gUWvMCSfKtyTytKA==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YwsSOzELzsJn3EMiU+gn8e6PWEgl9g1UazaFs+1vOJeSIpJ5ETN
+	EhFWDe3fY8MXpUmkON4UrvJYskA2CCJTy3ibjMB2Uk07XWrxJuVuI0yJm1+tS7w5GcgKYa7bdue
+	2iThbtCCgXkUuwF3ChaSZgicfiw+idSnOwqxB
+X-Gm-Gg: ASbGncs6WBTSk9LIqwqzqry0w4QROi3urk6o2IbEZe4x8PdetmxbqC652SHIsLJJ8YT
+	Rq7KiKbVqOLcG/ZcgnplBjKD+6SEe0chvOxTeexVVFK9DiB2rkqrYfk7DqRzYyyXFdErGxARzaz
+	Cx+qowg8qMXXVmDrcCMqsDTBXgnQuPuugg5mXMsXZqcewjuUtOdrtG
+X-Google-Smtp-Source: 
+ AGHT+IEM2908mcWzVKMjpolQ0hIG1B9gw1c/6MnW5biuy6F3HJ9GSftRvzmu/S4TKHnQCd3lqvgWhDveMpG2O2LCLJQ=
+X-Received: by 2002:a05:622a:250:b0:476:77ba:f7 with SMTP id
+ d75a77b69052e-479775d5ac4mr205613591cf.34.1744656127177; Mon, 14 Apr 2025
+ 11:42:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250410-double_hold_fix-v4-1-2f606fe8c204@narfation.org>
-X-MailFrom: horms@kernel.org
+References: <20250414-double_hold_fix-v5-1-10e056324cde@narfation.org>
+In-Reply-To: <20250414-double_hold_fix-v5-1-10e056324cde@narfation.org>
+From: Eric Dumazet <edumazet@google.com>
+Date: Mon, 14 Apr 2025 11:41:56 -0700
+X-Gm-Features: ATxdqUF7AI_OOcycjc1SsjBq1YuDR9GVzjAZt9KIbXpqOALRRD2LjaN3l9RR8PI
+Message-ID: 
+ <CANn89iJEFq4QeFDSq=-7NdPnqPgwMJDd5xvQ70YUEqHjNjdchw@mail.gmail.com>
+Subject: Re: [PATCH net v5] batman-adv: Fix double-hold of meshif when getting
+ enabled
+To: Sven Eckelmann <sven@narfation.org>
+Cc: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ b.a.t.m.a.n@lists.open-mesh.org,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	syzbot+ff3aa851d46ab82953a3@syzkaller.appspotmail.com,
+	syzbot+4036165fc595a74b09b2@syzkaller.appspotmail.com,
+	syzbot+c35d73ce910d86c0026e@syzkaller.appspotmail.com,
+	syzbot+48c14f61594bdfadb086@syzkaller.appspotmail.com,
+	syzbot+f37372d86207b3bb2941@syzkaller.appspotmail.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-MailFrom: edumazet@google.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: NSVUT7VMPVRDXKNTQ3LBANN7WY7MO45H
-X-Message-ID-Hash: NSVUT7VMPVRDXKNTQ3LBANN7WY7MO45H
-X-Mailman-Approved-At: Mon, 14 Apr 2025 20:08:19 +0200
+Message-ID-Hash: VSZNHHJVLD27PZTBXWKBFT7XZYWNTFPR
+X-Message-ID-Hash: VSZNHHJVLD27PZTBXWKBFT7XZYWNTFPR
+X-Mailman-Approved-At: Mon, 14 Apr 2025 21:21:16 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NSVUT7VMPVRDXKNTQ3LBANN7WY7MO45H/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VSZNHHJVLD27PZTBXWKBFT7XZYWNTFPR/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,37 +146,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Thu, Apr 10, 2025 at 08:58:51PM +0200, Sven Eckelmann wrote:
-> It was originally meant to replace the dev_hold with netdev_hold. But this
+On Mon, Apr 14, 2025 at 11:05=E2=80=AFAM Sven Eckelmann <sven@narfation.org=
+> wrote:
+>
+> It was originally meant to replace the dev_hold with netdev_hold. But thi=
+s
 > was missed in batadv_hardif_enable_interface(). As result, there was an
 > imbalance and a hang when trying to remove the mesh-interface with
 > (previously) active hard-interfaces:
-> 
->   unregister_netdevice: waiting for batadv0 to become free. Usage count = 3
-> 
+>
+>   unregister_netdevice: waiting for batadv0 to become free. Usage count =
+=3D 3
+>
 > Fixes: 00b35530811f ("batman-adv: adopt netdev_hold() / netdev_put()")
+> Suggested-by: Eric Dumazet <edumazet@google.com>
+> Reported-by: syzbot+ff3aa851d46ab82953a3@syzkaller.appspotmail.com
+> Reported-by: syzbot+4036165fc595a74b09b2@syzkaller.appspotmail.com
+> Reported-by: syzbot+c35d73ce910d86c0026e@syzkaller.appspotmail.com
+> Reported-by: syzbot+48c14f61594bdfadb086@syzkaller.appspotmail.com
+> Reported-by: syzbot+f37372d86207b3bb2941@syzkaller.appspotmail.com
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> This patch is skipping Simon's normal PR submission to get this problem
-> fixed faster in Linus' tree. This currently creates quite a lot of wrong
-> bisect results for syzkaller and it would be better to have this fixed
-> sooner than later.
-> ---
-> Changes in v4:
-> - added Suggested-by: Eric Dumazet <edumazet@google.com>
-> - added Reported-by: of various syzkaller reports which were affected (during
->   bisecting) by this problem
 
-FWIIW, I don't see those tags at the bottom of the commit message.
-
-> - resubmission after 24h cooldown time
-> - added kernel message during hang to commit message
-> - Link to v3: https://lore.kernel.org/r/20250409073524.557189-1-sven@narfation.org
-> Changes in v3:
-> - fix submitter address
-> - Link to v2: https://lore.kernel.org/r/20250409073304.556841-1-sw@simonwunderlich.de
-> Changes in v2:
-> - add missing commit message
-> - Link to v1: https://lore.kernel.org/r/20250409073000.556263-1-sven@narfation.org
-
-...
+Reviewed-by: Eric Dumazet <edumazet@google.com>
