@@ -4,86 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F01BC3ABBC
-	for <batman-adv@archiver.kernel.org>; Fri,  9 May 2025 14:18:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E806C3ABBC
+	for <batman-adv@archiver.kernel.org>; Sat, 10 May 2025 00:30:30 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B225C849AC
-	for <batman-adv@archiver.kernel.org>; Fri,  9 May 2025 16:18:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C776A84030
+	for <batman-adv@archiver.kernel.org>; Sat, 10 May 2025 02:30:28 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1746800295;
- b=UxyiupUaiUy889rd0a1ToTAm3mvCYsdtbd3toxFVgBxRqpqg3ZR5mXWXzMdEHM8BLykak
- WbwaHjBpj79zvpQRC7aEUeM+PYKUIG/bJzzPMzAyC5DGqxPgHuq2VmCQ/EVpb8QQPoZay0e
- FOjrN/DcGZ9JdbMg9xx4ghjf+K2LJIs=
+ t=1746837028;
+ b=mB/mZTyBR9qJ5FmxhlWoO2ZGjVxwTSb7Iq+sfUGLcJ2WPkp+9MoKmOmpwY5YXVnNpG+E6
+ UUgdXx7ZtkPxVlbXAKC+Qr0x/j2FbI3owYDL1FXoDk1vysVkDkUKvzayMSeuIDr7QBKPpS0
+ Rn325Zqocw/2yKTFogAUXakT7DMZlUc=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1746800295; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1746837028; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Nn4QC2geRHigWlYfVmoghVqxMGxzVTQ8TbyACpPT6Zk=;
- b=cIgG60QSSK50+fh4p1/QhGGjcd4ScVM4vHT5q6WVrZYtqf+11b3gGqnce/zg5GZFNUfaO
- mo8Wtf5TYoKdd5kj9dTbvz4SUlawzK6LOkOE9xLGICd8RXfJJEY1ySU+XnqcvCFUxSe48Eh
- px7t6a7FIMT9aHvkjHKiJ+a1lIBxabI=
-ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
+ list-archive; bh=ikyeM1Fr2Lf42LA7e3l3u9fdIDF8e5AVlUcNmcep/qI=;
+ b=Ovsan1v4rBdYywHAhx2Zafg01wY6tqCVbC2TF/Htp6CnQwP6AEZYzrNNdLCqhXjD9QikO
+ zme2PYIzh/ULKv0ulJUkXdZhx9hMJiP9Mfi3CqJNwuXhURsiwY8DAK1GVa2UQ6d6kV3TkcE
+ BBazWQv8ntnjxPWi+qTOc3JG/vgz3/M=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=kernel.org;
   arc=pass;
-  dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 71CE6845D1
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  9 May 2025 16:17:58 +0200 (CEST)
+  dmarc=pass (Used From Domain Record) header.from=kernel.org
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6396084334
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 10 May 2025 02:29:52 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1746800288;
+	s=20121; t=1746837003;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Nn4QC2geRHigWlYfVmoghVqxMGxzVTQ8TbyACpPT6Zk=;
-	b=K7xWsx2tKSWEYxG2j+qOHlmMSSxzGJYhXysXRx2DmpCMuugtbTIdh6N1QDK04bU9rZnKNR
-	mB28IcXHcbl6LojjCqX0nQ0DsMQTi5GaY8yai01nbGITXNQl6B0AmGYhYOVaWd2MdD828f
-	Lfgb0XbS8w/isqdI3SCbd7xPHhEuRJk=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=ikyeM1Fr2Lf42LA7e3l3u9fdIDF8e5AVlUcNmcep/qI=;
+	b=baVu14VJXH8ufhPvi3nOtBc/DaffUCiuQQpKoh3cp2JP/KdCwmrSzTRxBMU6f/lc08LGF3
+	L0N3kKXzAKLU+yM40IVDwFymGYQfSzZymCRaan7B+eUlvfUghC1+pH8nnYgFpkS5irKFDc
+	6hQ3+C9li9YY3QAiM+DbU5cCNHVj7JQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
- designates 116.203.183.178 as permitted sender)
- smtp.mailfrom=linus.luessing@c0d3.blue;
-	dmarc=none
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1746800288; a=rsa-sha256;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=JXrtRgB8;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 172.234.252.31 as permitted
+ sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1746837003; a=rsa-sha256;
 	cv=none;
-	b=FygxdDr24U33x92tGmuZYAy4cn9YeCEKYzA4iDE5Us44/mO9g/HUlRFi2hBmePllLn29zk
-	ZXBmu1g7vrSdn1xm68Ismk+F4EDGpR2bzZqKYeNma+cymBKZ3fvZ2L4wwibDXrH/yCww1z
-	1CAaJ61HSABgsSe2SUrSbKiTZZMDwhI=
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id A5BFD54DCEB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri,  9 May 2025 16:17:57 +0200 (CEST)
-Date: Fri, 9 May 2025 16:17:56 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH v6 0/3] batman-adv: add dynamic, bridged-in TT VID
- detection
-Message-ID: <aB4OlGLxvaAQt0zf@sellars>
-References: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
+	b=ihMvQvH23leS2+o78SzRtbVoHue/2MYiDjUgqEXy9Arnw2GGpEQFQNlqHSqAT3NyAM3B8z
+	tmpfR4kJFaXnL9f2eNrgmqlXlrJGpg/0uwD+53SI9XJjTLmWfZulvFMAzwKcjH8t7ji+oa
+	XhzizSJQweVeOcgS2Y41C0rbUnNdZug=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8DB074A66E;
+	Sat, 10 May 2025 00:29:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C507C4CEE4;
+	Sat, 10 May 2025 00:29:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746836990;
+	bh=5flC4LkV9wCWcziU/SIzwtlZU/HyoHncGFHjDuXVcK8=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=JXrtRgB8zfKe6iFLpm5gVd0HBGdFl+W83iP8aki9M+6nWeGXbvk1DUivPDhkznEqC
+	 WvrgASH3E6MuYE1FSFCoQ4BCZwKLvh8e5ycPDCbo0Sm+4TX0VUo9cNiqP/cuwmYape
+	 qheFUeAAS9DXCAL0i2zyrbacW3fGnoSuoDQvVjxe6ZB7qtlUScl3eccNIRe/AJQ0Yt
+	 fWtFlsy7ZvORs45uM8ueynpzzOuRHNxr5Z5xlwezccB5OZTEiKViOLVzmemLKlIBkr
+	 ned9a5qQrGrN/fRNZ9c87/9zTziAp4w84zXd/SihHupe2avnip+0OYBiOfzB51KbZm
+	 PzfSBS/Va/6SA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ EACF4381091A;
+	Sat, 10 May 2025 00:30:29 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250221-dynamic-vlans-v6-0-fd94c9b782a7@narfation.org>
-X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: LPYFISLWRJ4PVN6HMS7CXLVDSMIJQUH7
-X-Message-ID-Hash: LPYFISLWRJ4PVN6HMS7CXLVDSMIJQUH7
-X-MailFrom: linus.luessing@c0d3.blue
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH net 1/1] batman-adv: fix duplicate MAC address check
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <174683702875.3851370.14678019061074033156.git-patchwork-notify@kernel.org>
+Date: Sat, 10 May 2025 00:30:28 +0000
+References: <20250509090240.107796-2-sw@simonwunderlich.de>
+In-Reply-To: <20250509090240.107796-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, mschiffer@universe-factory.net
+Message-ID-Hash: L7OQVGKB2VFKV2JOFERVZ7Z3HBZOHLWX
+X-Message-ID-Hash: L7OQVGKB2VFKV2JOFERVZ7Z3HBZOHLWX
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LPYFISLWRJ4PVN6HMS7CXLVDSMIJQUH7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AXWBNTGSOYDFHWGCQVZXIPLKZTGTYIX4/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -92,30 +112,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-I also got some before and after OGMv1 overhead test results
-with this patchset and the VID 0 remapping patch, averaged over
-one week. Not as significant as the pending DAT patchset, but still
-a -15.94% OGM overhead saving on our ~200 nodes network.
+Hello:
 
-The theoretical upper limit would have been 23.5% with a raw OGM
-message size of 68 bytes reduced to 52 bytes. The measured 15.94%
-also includes +14 bytes ethernet frame size and batman-adv aggregation
-though. The more OGMs are aggregated, the closer you'd get to a
-23.5% saving.
+This patch was applied to netdev/net.git (main)
+by Simon Wunderlich <sw@simonwunderlich.de>:
+
+On Fri,  9 May 2025 11:02:40 +0200 you wrote:
+> From: Matthias Schiffer <mschiffer@universe-factory.net>
+> 
+> batadv_check_known_mac_addr() is both too lenient and too strict:
+> 
+> - It is called from batadv_hardif_add_interface(), which means that it
+>   checked interfaces that are not used for batman-adv at all. Move it
+>   to batadv_hardif_enable_interface(). Also, restrict it to hardifs of
+>   the same mesh interface; different mesh interfaces should not interact
+>   at all. The batadv_check_known_mac_addr() argument is changed from
+>   `struct net_device` to `struct batadv_hard_iface` to achieve this.
+> - The check only cares about hardifs in BATADV_IF_ACTIVE and
+>   BATADV_IF_TO_BE_ACTIVATED states, but interfaces in BATADV_IF_INACTIVE
+>   state should be checked as well, or the following steps will not
+>   result in a warning then they should:
+> 
+> [...]
+
+Here is the summary with links:
+  - [net,1/1] batman-adv: fix duplicate MAC address check
+    https://git.kernel.org/netdev/net/c/8772cc49e0b8
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
-$ capinfos ogmv1-1week-before.cap:
-...
-Data bit rate:       43 kbps
-Average packet size: 212.77 bytes
-Average packet rate: 25 packets/s
-...
-$ capinfos ogmv1-1week-after.cap:
-...
-Data bit rate:       36 kbps
-Average packet size: 178.84 bytes
-Average packet rate: 25 packets/s
-...
-
-
-Regards, Linus
