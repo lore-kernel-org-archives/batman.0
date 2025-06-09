@@ -4,105 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E4EEC5B549
-	for <batman-adv@archiver.kernel.org>; Sun,  1 Jun 2025 13:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAEFAC61CE8
+	for <batman-adv@archiver.kernel.org>; Mon,  9 Jun 2025 19:16:43 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id BFE6784881
-	for <batman-adv@archiver.kernel.org>; Sun,  1 Jun 2025 15:37:12 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id F3D1B8477A
+	for <batman-adv@archiver.kernel.org>; Mon,  9 Jun 2025 21:16:41 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1748785032;
- b=NQmKBwaf2qo9BJYVgqOBNAu7mNNdpZU0j+LwEZRiaEuZ17GLQw6mX7eDm/NjoB9UC6rTM
- sBQXruGpz7EgVfVleRM0eKdY2GiMMkJ+hxpL/Y/QDsRQfXlD5VMlYl6TQEn1hPtj9Sjp0Br
- SVV5L4XN2Er9okEjGE8D4w2+RlrxCyA=
+ t=1749496601;
+ b=IFlCUTmXplzCHFRhUG3M20DEBz8ojv8kD7h+Wk4GaLEYScenKEeS5WSF5V9yzakL00AOx
+ zJXR5CxvTXtcXKEym8MdE23qU5K9Kxy+cVy9XAK7WSs3P8ZV5AUWvopJ2zbjrIaQ6BGNzJc
+ EUzits1FMzCbToN6sMhRKYTyFGq+WcQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1748785032; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1749496601; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=6zILuC+fJQ0XHCp2HcwA6LIeh6l7/8sDjGhWTTsieFE=;
- b=ZoYfL7Pg1IOu0TzCrECKOflcDdbn1mNM9Jd+jazCXv0gewnysQiL7gFx0g323Mfwo/1/h
- WfCLmZ1RkwBlg7SL1wqB9yk0jYMBH1nBmVEF4yx0pMJRq2LfhF2pd+89KjL4QC4WUdbB7Q8
- Absl0CJItedWGueYb6vFItYGlynvNSs=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=Gm694UbRA2FsHSktdWiEibC98mf9+ieBghmbgjCPjcA=;
+ b=cKMias3M/xNh8e7tHMUcgkVe1PbN/nwQQ27Sheqoze0ZpARNf6jsEYQm1ZZyPH070+rLL
+ QNykucl/rlXmUymWkSeydaqj3A/7t1l3hc+xs7g6h4J5d2o0fP3zUN392eBj9TbO2uPT2NW
+ zUfuFI++rnMmgfQXab8HcO835FaU4Y8=
+ARC-Authentication-Results: i=2; open-mesh.org; dkim=pass header.d=gmail.com;
   arc=pass;
-  dmarc=pass (Used From Domain Record) header.from=narfation.org
- policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 88EF983B40
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun,  1 Jun 2025 15:36:49 +0200 (CEST)
+  dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-oa1-x29.google.com (mail-oa1-x29.google.com
+ [IPv6:2001:4860:4864:20::29])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 45CB482F33
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  9 Jun 2025 21:08:21 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1748785019;
+	s=20121; t=1749496112;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=6zILuC+fJQ0XHCp2HcwA6LIeh6l7/8sDjGhWTTsieFE=;
-	b=JyE87hr0keaK4q5fxBf/Njb3zZ1vmPwtOsuSSc3D++/jTmaVXLZsTY9Q2PPufDLqnCJ/Kp
-	ZIin34sjUlCvfC/NAacTtBiiYezMnb95pH/6Znf4Pt127bID6YEIE7L9xk1Z8++QEVFlyK
-	jKqUf/2a7Dqr25REVi7EmDB+ZThOM9k=
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 dkim-signature; bh=Gm694UbRA2FsHSktdWiEibC98mf9+ieBghmbgjCPjcA=;
+	b=iGtoZ7vlW7SF59Gi/2fYghWFzJhir5NyiEzA90HsEb0Sco9Mp/etCee4gZOdmj3J5AtwJ0
+	jNXGyLr7+A0XRqx0J5zEdLDVYoWlCFeJxTq46e6orqOlkwGksZTQ4c2ZvLw2xIrpss7GBe
+	69DQVjeSF47SwRGGheYO73yWsNhMW0I=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=rLoCL4a+;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1748785019; a=rsa-sha256;
+	dkim=pass header.d=gmail.com header.s=20230601 header.b="Gs+9X/8w";
+	dmarc=pass (policy=none) header.from=gmail.com;
+	spf=pass (diktynna.open-mesh.org: domain of rustamabd@gmail.com designates
+ 2001:4860:4864:20::29 as permitted sender) smtp.mailfrom=rustamabd@gmail.com
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1749496112; a=rsa-sha256;
 	cv=none;
-	b=0dPg7sgCSzXgxVxklS1q0iGXIjZnToqjISukv2VruXHfMmboRbxZJmfnGJB3NzRl8oLZqT
-	XbTdusIFu5Dg5+1UR/KoCg9qXIXTkiZ+Zvz/vD2W4LzzFcRika+L297cxwOEDIhJUW3j+6
-	MQz3sFsPe0/tU32Gj1EEDPwvFQSxFbA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1748785008;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=6zILuC+fJQ0XHCp2HcwA6LIeh6l7/8sDjGhWTTsieFE=;
-	b=rLoCL4a+u7rcjzVNw7BOCDOPvSFqyKolol1d+Mr+uoLOS29EN8Toga/dII26130TqLW4my
-	ZifdsG6Yn4ghya8OZFqIegcRPSCTqDslap5P/cNs/Pl//ZCOv/C+0+CKjtb7C0xeBE4Sxa
-	9VQRx75GMoUqLn4XbMSfBk1Jo0Wa2gI=
-From: Sven Eckelmann <sven@narfation.org>
-To: Marek Lindner <marek.lindner@mailbox.org>,
- Simon Wunderlich <sw@simonwunderlich.de>,
- Antonio Quartulli <antonio@mandelbit.com>,
- Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH batadv 4/5] batman-adv: remove global hardif list
-Date: Sun, 01 Jun 2025 15:36:44 +0200
-Message-ID: <2767731.Lt9SDvczpP@sven-l14>
-In-Reply-To: <3742218.iIbC2pHGDl@sven-l14>
-References: 
- <0b26554afea5203820faef1dfb498af7533a9b5d.1747687504.git.mschiffer@universe-factory.net>
- <bb85858d-b123-45ce-8fae-9658e13b822c@universe-factory.net>
- <3742218.iIbC2pHGDl@sven-l14>
+	b=PR6Rp4+qel+YABd+Z9lnCg81rOrcuu/QwekdbxZjXF6RBLPi2mLZQKkGOyqkTb/Bp4gXqz
+	fwn4a0h7JbWLEsl+p9UX8gK45Dr1y4HgKwdzBA/d6MnQLouXp5jQYkaNH0LRSJKXzqvQz7
+	mBKkzGlvNJvWl2D+Igz8J8IkF+dlHXc=
+Received: by mail-oa1-x29.google.com with SMTP id
+ 586e51a60fabf-2dfe2913a4bso1079409fac.1
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Mon, 09 Jun 2025 12:08:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1749496098; x=1750100898;
+ darn=lists.open-mesh.org;
+        h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Gm694UbRA2FsHSktdWiEibC98mf9+ieBghmbgjCPjcA=;
+        b=Gs+9X/8wmPOomNLZW8+Rxc4R6DQcbH76WTcekNKPz+s54Jjci42uS0+yCszsfh9iaz
+         mfN9XHzGt+n575RkDqNUbwMV9iYHBqk6x5vub2spmtM9YcQeXpdOGU79kLnKzuSz9hlL
+         pLVRc/5aj9yqRjCdktMa9kXzTYYkuz/1lLqaJu4V3UAmD087bMBKB66rxxs1SyrgVL7V
+         ZBtNOrD7H1YM7Dhe1l9Cpr+PQIPhcZ29a55HvxBDIvOdDqAGyqUyZEXGDnJl3PEptGdl
+         VqvMuvQ9uSYVv1FHxILQHjNkjwauNCOGI28O4ikf7v4xQXt8Gq/woIhrdDUIacrUghxW
+         2jVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749496098; x=1750100898;
+        h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Gm694UbRA2FsHSktdWiEibC98mf9+ieBghmbgjCPjcA=;
+        b=jA1HAGxAQtMr5V6pMTwxR2OO3SF+nQux0i6ES2dKTbUESgEUFjyRwY+/u3x0OdPrAE
+         JPzgNn8eHYPqym537G0eHRLsA92bXlPW85ortUjiKEFxY2LTR7QZIZalVlZ+w3hY/SA/
+         YMYHeZlzBraZSOhCAkA9gRVmiRKbMPp9RUgNxTduzIlwQ1xT0tzg9Cj8WIaWL9BODcZO
+         OmyspDZajX5CfL7zpUHLGGvHlxUJxWpjky9CDrPnERDmjAb/6gS5AAlBGqHTfI/2RhhM
+         UwWYv4CcannH+EwQTnYHvm4N/1lLJ14trGOJ+tg8bYv2k0ky01p7hIje/25XspU+v7t1
+         8ouA==
+X-Gm-Message-State: AOJu0Yx+JT0G/Pqp7u7v+qD/oXwgdOFmiAU22Cf2V6n8RHO04eL3qsjK
+	VLdL8sLMfqCX1U4ZWBpkcRUQo7TONxcj5aknXhptvnu+Z0N5lUP+mbEAtDqUqy72U/muW/81YFj
+	zLj/Nfp4JgLjT7TmTAPwSkRdC0evqxz40J1tfp8Xc+Q==
+X-Gm-Gg: ASbGncsrG7L3IGKqnrSJoupHAj36vWyfibln6r6ewHURizAbZf+hS6PPcu7Aa4y+3gN
+	X2BEUKAIS0abRkc5WRiTDQ3Erk2EvtovczpR0cayJVrS2s0bpFhGnFvuXbyXBClM35wo04Bza1T
+	j/JBKC3qMtWmx5NI7tidzel+I2zNbpjQIVhcc3K6mAcmpLSxKHnse34ZLRs/Cw
+X-Google-Smtp-Source: 
+ AGHT+IEOCnybk36PeBUsqoCKxXBsvyypWsiaDkIUugtFRJWWyHzydsp4f5dpo3sFf4BgpBBc67B2+A9DQGD8w9Hm3nU=
+X-Received: by 2002:a05:6871:7c07:b0:2b7:7abf:df6b with SMTP id
+ 586e51a60fabf-2ea012e44dfmr9527091fac.26.1749496098587; Mon, 09 Jun 2025
+ 12:08:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4541340.ejJDZkT8p0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: NHDKKAT2ONYRK6PMMM4EGCJS4VTS574O
-X-Message-ID-Hash: NHDKKAT2ONYRK6PMMM4EGCJS4VTS574O
-X-MailFrom: sven@narfation.org
+From: Rustam <rustamabd@gmail.com>
+Date: Mon, 9 Jun 2025 21:08:07 +0200
+X-Gm-Features: AX0GCFvTe4oJkc8KaIx2dbaqFvfjY825RnkgwR106rylYfc7EnN8pnbv-6_fUaY
+Message-ID: 
+ <CAPzS6u_U+BgkE+Unc_nmikEb45QeN7TVF7MFu=6ckAu-c44=Rw@mail.gmail.com>
+Subject: suppressing warning about unavailable link speed
+To: b.a.t.m.a.n@lists.open-mesh.org
+Content-Type: multipart/alternative; boundary="0000000000007e09390637284d5f"
+X-MailFrom: rustamabd@gmail.com
+X-Mailman-Rule-Hits: member-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
- loop; banned-address; member-moderation;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
- administrivia; implicit-dest; max-recipients; max-size; news-moderation;
- no-subject; digests; suspicious-header
+ loop; banned-address
+Message-ID-Hash: CU2LLOIOKVGLCB5DSRILFOBLRN7XI3Y6
+X-Message-ID-Hash: CU2LLOIOKVGLCB5DSRILFOBLRN7XI3Y6
+X-Mailman-Approved-At: Mon, 09 Jun 2025 21:16:30 +0200
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NHDKKAT2ONYRK6PMMM4EGCJS4VTS574O/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CU2LLOIOKVGLCB5DSRILFOBLRN7XI3Y6/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,48 +123,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart4541340.ejJDZkT8p0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH batadv 4/5] batman-adv: remove global hardif list
-Date: Sun, 01 Jun 2025 15:36:44 +0200
-Message-ID: <2767731.Lt9SDvczpP@sven-l14>
-In-Reply-To: <3742218.iIbC2pHGDl@sven-l14>
-MIME-Version: 1.0
+--0000000000007e09390637284d5f
+Content-Type: text/plain; charset="UTF-8"
 
-On Sunday, 1 June 2025 15:10:50 CEST Sven Eckelmann wrote:
-> So, even getting the parent (see `ASSERT_RTNL` in 
-> `netdev_master_upper_dev_get`) of the lower interface is a no-go at that 
-> point.
+When I try to configure batman_adv on a bridge interface, I get this
+warning from the kernel:
 
-I didn't want to say here that this specific operation is necessary here. Just 
-wanted to point out that operating on these data structures might not always 
-be possible at that point. This is why I tried to point out that it might be 
-better to have something "good enough" using RCU which is managed outside this 
-context (write-only protected using rtnl_lock).
+> batman_adv: bat0: WiFi driver or ethtool info does not provide
+information about link speeds on interface br0.100, therefore defaulting to
+hardcoded throughput values of 1.0 Mbps. Consider overriding the throughput
+manually or checking your driver.
 
-The idea of having something specific to meshif that still manages to detect 
-(beforehand) if there's a path to `batadv_interface_tx` - while `skb_iif` 
-remains set to a specific interface along the way - sounds like an 
-implementation nightmare to me.
+It seems there is no way to suppress it.
 
-Kind regards,
-	Sven
---nextPart4541340.ejJDZkT8p0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+I could do `batctl hardif br0.100 to 100000` but only *after* I add the
+interface and get the above warning.
 
------BEGIN PGP SIGNATURE-----
+So here's a suggestion - maybe there could be a "default link speed"
+setting, which, when set, would also suppress the warning?
+And/or allow setting the link speed override *before* adding the interface.
+Then we could patch systemd-networkd to make it configurable.
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaDxXbAAKCRBND3cr0xT1
-y2B/AQCJ/7bJD+rjoCQmz2lOKcFzS3+eddnIoXgnTHyC5k6TaQD/c6W7fxCqe45U
-ceQ+DuoPPWrCN6EyZMeEMSJ88E1M0AE=
-=njVk
------END PGP SIGNATURE-----
+Or perhaps expand link speed detection to descend into bridges and grab the
+underlying link speeds?
 
---nextPart4541340.ejJDZkT8p0--
+---
+To prevent discussion about why I'm adding a bridge interface instead of
+underlying ports, it's because my ethernet has loops and I have STP
+enabled, and STP doesn't interoperate with batman_adv at all, plus I have
+other services that run outside batman_adv so I have to keep the bridge
+with STP on.
 
+Thanks in advance for any reaction on this matter,
 
+Cheers
+Rustam
 
+--0000000000007e09390637284d5f
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><div di=
+r=3D"ltr">When I try to configure batman_adv on a bridge interface, I get t=
+his warning from the kernel:<div><br></div><div>&gt; batman_adv: bat0: WiFi=
+ driver or ethtool info does not provide information about link speeds on i=
+nterface br0.100, therefore defaulting to hardcoded throughput values of 1.=
+0 Mbps. Consider overriding the throughput manually or checking your driver=
+.</div><div><br></div><div>It seems there is no way to suppress it.</div><d=
+iv><br></div><div>I could do `batctl hardif br0.100 to 100000` but only *af=
+ter* I add the interface and get the above warning.</div><div><br></div><di=
+v>So here&#39;s a suggestion - maybe there could be a &quot;default link sp=
+eed&quot; setting, which, when set, would also suppress the warning?</div><=
+div>And/or allow setting the link speed override *before* adding the interf=
+ace.</div><div><div>Then we could patch systemd-networkd to make it configu=
+rable.</div><div><br></div><div>Or perhaps expand link speed detection to d=
+escend into bridges and grab the underlying link speeds?</div><div><br></di=
+v></div><div>---</div><div>To prevent discussion about why I&#39;m adding a=
+ bridge interface instead of underlying ports, it&#39;s because my ethernet=
+ has loops and I have STP enabled, and STP doesn&#39;t interoperate with ba=
+tman_adv at all, plus I have other services that run outside batman_adv so =
+I have to keep the bridge with STP on.</div><div><br></div><div>Thanks in a=
+dvance for any reaction on this matter,</div><div><br></div><div>Cheers</di=
+v><div>Rustam</div></div></div></div></div></div>
+
+--0000000000007e09390637284d5f--
