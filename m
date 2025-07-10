@@ -4,115 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3EACC83029
-	for <batman@archiver.kernel.org>; Mon, 30 Jun 2025 17:08:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7B77C83F21
+	for <batman@archiver.kernel.org>; Thu, 10 Jul 2025 16:45:45 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 24C3E84777
-	for <batman@archiver.kernel.org>; Mon, 30 Jun 2025 19:08:40 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 275878475E
+	for <batman@archiver.kernel.org>; Thu, 10 Jul 2025 18:45:44 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1751303320;
- b=D9Im4xe3BH57QHqJn15DOCS4GzJ/b2y8PjWz7hlLdYeztHhd/if5suVazCxlGDeaQ22VG
- lsiDKUNODEJMkLUQE2ICboRo5BJlENLnXfStCvQ3symgPBAf+IvNoR62abWdHHU5BpHf2h+
- GLtRN/IFp2gJQIAQTAK0KtAi49PAhTU=
+ t=1752165944;
+ b=Ttgew45ys+SFh7To4pkO+EmQnPNPLZBc6TnPdTTrF8/dZ4iyKaSOsSFVQgA2kwe26oUHA
+ Q29TMphd4R1Fmywgx4ClwPB1CvQf5RzvGtiAMifIzkRFgdECpJ5cX+p4+XzrefIQ1/uDuSj
+ 1sahkjSgERjM1l5SWElTWo1rKlzeLzA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1751303320; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1752165944; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=4eVH34/JyElyGCncpABHXHf6kfIN2WmIJvCTUgA3HEQ=;
- b=sBu6g0zsjbi/aw7Wg1LlA083TfljSR0SGxZmlysdseZ+nXrg7r7KNEmCFgCXFkvWR7RYw
- ePFafaUd5O9sRtUuW0FWYsOa0+hklHKNTXQe7wHZiVp1JnDH3CDkPnfpI+YtvL7+4PfXs8Q
- 1J67uFb45wdkwYrc4HEYsZcSR2lXvyA=
+ list-archive; bh=t31uGxWw3hSjhLd3iHx9pNC8fT08q8+YVzcZBnbRc7k=;
+ b=DmRT56uReRpW+HaDnWH6MNl4qQCFr69iDpjaPDALydvqs7bcd71MNdtsxBJ1v6EMji6u+
+ mV2ucbnaJ4eI8MHPuiOpxzqobDMm4TQMj0LYKlAlZu2s6k2PHrLz63P0zsuxN85CRWcWx0U
+ UPQHMuyo7Yf+t5cNXoJYLHOJ79eFltM=
 ARC-Authentication-Results: i=2; open-mesh.org; dkim=fail;
   arc=pass;
-  dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
+  dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
  policy.dmarc=none
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
+ dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
  policy.dmarc=none
-Received: from mail-il1-f206.google.com (mail-il1-f206.google.com
- [209.85.166.206])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A419A805DE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 30 Jun 2025 19:07:42 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1751303272; a=rsa-sha256;
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 603FD81E89
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 10 Jul 2025 18:45:11 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1752165916; a=rsa-sha256;
 	cv=none;
-	b=AF8q0Qhs7cdqEi9sIaPpPv0JE5PtO5PQ5AZRU6Z6DpbVAPbQ7izohbr4xa+t2PGR6xvvU3
-	DLw3cENQCkgwneNlfEIHr7G3cCTYSNxT93zoOYjr91eAiE3EeMkg/ga2JM//40sVG+A7o0
-	XXC9CsSOUP1KBvHTyI/+xmOi7cMDTk4=
+	b=b1uAeY56aqvqLD34KBUNhaOb2Gu1pJvKRnz7i1qGYq4TOX/g6FrVv9ezYlxZZkg3ZH5xem
+	AcYtlEp65DakuLOsJ98ByOYBuIe6MaRV6umn4Y3b9PbGBRlNV2y631aVIyyDTPECFxb16w
+	/Q5RLkcvAkQ0cYQKYNTAbcE4SZOI/sQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of
- 3XMRiaAkbALkrxyjZkkdqZoohc.fnnfkdtrdqbnmsdms.bnl@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
- designates 209.85.166.206 as permitted sender)
- smtp.mailfrom=3XMRiaAkbALkrxyjZkkdqZoohc.fnnfkdtrdqbnmsdms.bnl@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com;
-	dmarc=fail reason="SPF not aligned (relaxed),
- No valid DKIM" header.from=appspotmail.com (policy=none)
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1751303272;
+	s=20121; t=1752165916;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type;
-	bh=4eVH34/JyElyGCncpABHXHf6kfIN2WmIJvCTUgA3HEQ=;
-	b=Vn9wLltd5xlsquevlPBuFKA7ODPcUlZb/w0axn5lWjL4Tqb34iXqHMfpZ/xwRYze9rw5qw
-	rvZw3ClQLS356MVOHpdjHtHxR7S/NQaYjHHw25GFhPzL6LnfQ266+cj6T4wn73SPzcebm5
-	fST4zLOuaPKMSsiMsTqRr3ukTNSGeSQ=
-Received: by mail-il1-f206.google.com with SMTP id
- e9e14a558f8ab-3ddc0a6d4bdso29567915ab.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 30 Jun 2025 10:07:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751303261; x=1751908061;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=4eVH34/JyElyGCncpABHXHf6kfIN2WmIJvCTUgA3HEQ=;
-        b=MX1UuDEax/atIQaRqYuVwOWTMnFda7oe5DgOk1xG8k0UNXoa4Ph6YipJVWZOxK1Kas
-         M6osSe6W5Z/LpQyOsdayQX35xdv/z1znT6QaSK2LQcWytQOEnVg/9Vq+U/9+ShR1A4zz
-         kwNXArNy4saafxs9v0zC3HErVuLFzyvwL1l7YDhBEUrCqwejkCXRUsYeaA0R24JJk50a
-         lDNPW746MCJfLLXKq3IhS6BwsK24LNXw8QIgsx0SEh2BKpMTDQXJWZUOaQxgnq5cmHVj
-         Mvga7/RZ1pL3TLzx72DHDBwU6flMJnwUSib5SkIDfozzKULtYemQcN/BX9axlm/cIkB+
-         tl/Q==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUbWvw8Gqw4UhU5j6jwb9NxGStO44shgNVk0DEGgXJYJ4U5Qn9U55gLCWqLYdR3bd4Rps/lERJoJe/bLw==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0Yzo15AdEpHomsZETHciGwWqbs0Mzpw8OsSce9/ft8rrLgW/2NeJ
-	Uc+UoVfqdF27hCX+T5ztgWqyfCN9qRdHhwiYqdnkYsnMuFueiA5eblLP2JcQM70T+hE+yebqNou
-	sMm2QXI5ddAk+zxz4PweRpaqomwFUneO7puCKhH4Jmhmw9PF21bAjILeF+kc=
-X-Google-Smtp-Source: 
- AGHT+IFnc7V73z7h/yTZD0NLdobDmnUYkaIBhp0J7a3EbG/eiKtDvFtwI3av4DgI57JfmgOGsh/VTEJ+bL5aJvfAIgeVVThTd/4T
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=t31uGxWw3hSjhLd3iHx9pNC8fT08q8+YVzcZBnbRc7k=;
+	b=ihz3YC/YxoYs5+ydqprIKVK3LeNUqkyGMK1MYxvMl3CGQ1xx5sD9UiW+oYgHegOJP37wgO
+	HlJIheAQYX5/I1MOanSp48/IzGqqaal3UUtFlVSHHpfUHihRujoJDiNeafdsnG5VR5VqJ+
+	HHB+gamABN3mATL99Qw+GGS6W+5IzAA=
+Received: from kero.packetmixer.de
+ (p200300fa271BaC80353e86dE392BA4Af.dip0.t-ipconnect.de
+ [IPv6:2003:fa:271b:ac80:353e:86de:392b:a4af])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits)
+ server-digest SHA256)
+	(No client certificate requested)
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id C0CCAFA022;
+	Thu, 10 Jul 2025 18:45:09 +0200 (CEST)
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: kuba@kernel.org,
+	davem@davemloft.net
+Cc: netdev@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net-next 0/2] pull request for net-next: batman-adv 2025-07-10
+Date: Thu, 10 Jul 2025 18:44:59 +0200
+Message-Id: <20250710164501.153872-1-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.39.5
 MIME-Version: 1.0
-X-Received: by 2002:a05:6e02:188e:b0:3df:3ab2:cc7c with SMTP id
- e9e14a558f8ab-3df4abae83emr151790175ab.13.1751303260942; Mon, 30 Jun 2025
- 10:07:40 -0700 (PDT)
-Date: Mon, 30 Jun 2025 10:07:40 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6862c45c.a70a0220.3b7e22.10aa.GAE@google.com>
-Subject: [syzbot] [batman?] KMSAN: uninit-value in batadv_mcast_mla_update
-From: syzbot <syzbot+1daa6a8aecb922ad3c30@syzkaller.appspotmail.com>
-To: antonio@mandelbit.com, b.a.t.m.a.n@lists.open-mesh.org,
-	davem@davemloft.net, edumazet@google.com, horms@kernel.org, kuba@kernel.org,
-	linux-kernel@vger.kernel.org, marek.lindner@mailbox.org,
-	netdev@vger.kernel.org, pabeni@redhat.com, sven@narfation.org,
-	sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
-X-MailFrom: 
- 3XMRiaAkbALkrxyjZkkdqZoohc.fnnfkdtrdqbnmsdms.bnl@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: 4OWZJZNGQCLDNOXFK4WBPUZXCJ5Z4A67
+X-Message-ID-Hash: 4OWZJZNGQCLDNOXFK4WBPUZXCJ5Z4A67
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; emergency;
  loop; banned-address; member-moderation;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2
-Message-ID-Hash: VKSX7LGLKOKD3TE25SSHIW2RMKPSOI77
-X-Message-ID-Hash: VKSX7LGLKOKD3TE25SSHIW2RMKPSOI77
-X-Mailman-Approved-At: Mon, 30 Jun 2025 19:08:20 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; nonmember-moderation;
+ administrivia; implicit-dest; max-recipients; max-size; news-moderation;
+ no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.8
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VKSX7LGLKOKD3TE25SSHIW2RMKPSOI77/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4OWZJZNGQCLDNOXFK4WBPUZXCJ5Z4A67/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -121,83 +102,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hello,
+Hi Jakub, hi David,
 
-syzbot found the following issue on:
+here is a small cleanup pull request of batman-adv to go into net-next.
 
-HEAD commit:    ee88bddf7f2f Merge tag 'bpf-fixes' of git://git.kernel.org..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=12b1db70580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=595d344ff0b23ac5
-dashboard link: https://syzkaller.appspot.com/bug?extid=1daa6a8aecb922ad3c30
-compiler:       Debian clang version 20.1.6 (++20250514063057+1e4d39e07757-1~exp1~20250514183223.118), Debian LLD 20.1.6
+Please pull or let me know of any problem!
 
-Unfortunately, I don't have any reproducer for this issue yet.
+Thank you,
+      Simon
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/405f6113ec86/disk-ee88bddf.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/57f4fa239393/vmlinux-ee88bddf.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/32892fe29e1c/bzImage-ee88bddf.xz
+The following changes since commit 90b83efa6701656e02c86e7df2cb1765ea602d07:
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+1daa6a8aecb922ad3c30@syzkaller.appspotmail.com
+  Merge tag 'bpf-next-6.16' of git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next (2025-05-28 15:52:42 -0700)
 
-=====================================================
-BUG: KMSAN: uninit-value in batadv_mcast_mla_is_duplicate net/batman-adv/multicast.c:347 [inline]
-BUG: KMSAN: uninit-value in batadv_mcast_mla_tt_retract net/batman-adv/multicast.c:692 [inline]
-BUG: KMSAN: uninit-value in __batadv_mcast_mla_update net/batman-adv/multicast.c:920 [inline]
-BUG: KMSAN: uninit-value in batadv_mcast_mla_update+0x35f4/0x4f80 net/batman-adv/multicast.c:948
- batadv_mcast_mla_is_duplicate net/batman-adv/multicast.c:347 [inline]
- batadv_mcast_mla_tt_retract net/batman-adv/multicast.c:692 [inline]
- __batadv_mcast_mla_update net/batman-adv/multicast.c:920 [inline]
- batadv_mcast_mla_update+0x35f4/0x4f80 net/batman-adv/multicast.c:948
- process_one_work kernel/workqueue.c:3238 [inline]
- process_scheduled_works+0xb91/0x1d80 kernel/workqueue.c:3321
- worker_thread+0xedf/0x1590 kernel/workqueue.c:3402
- kthread+0xd5c/0xf00 kernel/kthread.c:464
- ret_from_fork+0x1e3/0x310 arch/x86/kernel/process.c:148
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
+are available in the Git repository at:
 
-Uninit was created at:
- slab_post_alloc_hook mm/slub.c:4154 [inline]
- slab_alloc_node mm/slub.c:4197 [inline]
- __kmalloc_cache_noprof+0x7f7/0xed0 mm/slub.c:4354
- kmalloc_noprof include/linux/slab.h:905 [inline]
- batadv_mcast_mla_meshif_get_ipv6 net/batman-adv/multicast.c:477 [inline]
- batadv_mcast_mla_meshif_get net/batman-adv/multicast.c:535 [inline]
- __batadv_mcast_mla_update net/batman-adv/multicast.c:911 [inline]
- batadv_mcast_mla_update+0x1c17/0x4f80 net/batman-adv/multicast.c:948
- process_one_work kernel/workqueue.c:3238 [inline]
- process_scheduled_works+0xb91/0x1d80 kernel/workqueue.c:3321
- worker_thread+0xedf/0x1590 kernel/workqueue.c:3402
- kthread+0xd5c/0xf00 kernel/kthread.c:464
- ret_from_fork+0x1e3/0x310 arch/x86/kernel/process.c:148
- ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-pullrequest-20250710
 
-CPU: 1 UID: 0 PID: 68 Comm: kworker/u8:4 Tainted: G        W           6.16.0-rc3-syzkaller-00072-gee88bddf7f2f #0 PREEMPT(undef) 
-Tainted: [W]=WARN
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 05/07/2025
-Workqueue: bat_events batadv_mcast_mla_update
-=====================================================
+for you to fetch changes up to 7dc284702bcd065a822a4c0bdbca09a08de5a654:
 
+  batman-adv: store hard_iface as iflink private data (2025-05-31 10:41:11 +0200)
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+ - bump version strings, by Simon Wunderlich
 
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
+ - batman-adv: store hard_iface as iflink private data,
+   by Matthias Schiffer
 
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
+----------------------------------------------------------------
+Matthias Schiffer (1):
+      batman-adv: store hard_iface as iflink private data
 
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
 
-If you want to undo deduplication, reply with:
-#syz undup
+ net/batman-adv/bat_algo.c       |  1 +
+ net/batman-adv/bat_algo.h       |  2 --
+ net/batman-adv/bat_iv_ogm.c     | 25 ++++++++-----------------
+ net/batman-adv/bat_v.c          |  6 ++----
+ net/batman-adv/bat_v_elp.c      |  8 ++------
+ net/batman-adv/bat_v_ogm.c      | 14 ++++----------
+ net/batman-adv/hard-interface.c | 39 ++++++++++++++-------------------------
+ net/batman-adv/main.c           |  7 ++-----
+ net/batman-adv/main.h           |  2 +-
+ net/batman-adv/mesh-interface.c |  6 +++---
+ net/batman-adv/multicast.c      |  6 ++----
+ net/batman-adv/netlink.c        |  7 ++-----
+ net/batman-adv/originator.c     |  7 ++-----
+ net/batman-adv/send.c           |  7 ++-----
+ 14 files changed, 45 insertions(+), 92 deletions(-)
