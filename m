@@ -4,88 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A911CA0FF2
-	for <batman-adv@archiver.kernel.org>; Mon,  1 Sep 2025 01:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA05BCA0FFD
+	for <batman-adv@archiver.kernel.org>; Mon,  1 Sep 2025 13:09:23 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4510C83E16
-	for <batman-adv@archiver.kernel.org>; Mon, 01 Sep 2025 03:50:47 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 1E6B183E83
+	for <batman-adv@archiver.kernel.org>; Mon, 01 Sep 2025 15:09:22 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1756691447;
- b=alttFKiRecl2ulVx2ztzLmhEdzOZ5Grh5d0kg1ifPavW1fWIDAtrL5rz07DgaYPTclAkt
- YBMvqd+1qGAf2n9+jmo3ERUcWKm7ZbYHtKTyerOJ3GZ0LVIHIflw1nATc/vD2R+ZZ8njSRa
- 5tuOb3k3fl/oHFDV2eufU863ZgKUras=
+ t=1756732162;
+ b=sXIqo7AFlPx4n31z47DdX8TM0FXO+tzTYtuVfWcLnVTr5QQjD5I+izQpqP8vOVxgZmfwW
+ Zrdd9yIH3BuzIzyyaGPHBGtzSbtOlpGiKyhzSk4zH/WdO2v7OSsSkwEREtyCUT/tXdBVZBJ
+ D4fgBeRyCmVR0/vXjhw5PkF5bylhtno=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1756691447; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1756732162; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=N4bnpA/HOdFOXnMD6fv9VGVJB7aMOJ5cCx4HPUQZRIE=;
- b=hmflszV44+sv35ag6AZ/oAEDnUNvorWRQju6W18uV+wIuKBoPMUTuqpYBm0mJ4/ZBPqYV
- xYbXSclRV+TzEZvMSoV+Mtvi1duTM1H52OkZLxp5F5CuB+Xqk78578zKHlq3tP/7shp9pmE
- zYRhW/o0tG48EzxIWeyJy2NDoAjPd+c=
+ list-archive; bh=m5VjQZAVa1BHaSq1AXpNcFdY64WJdTs+/Rs/CiJpO8U=;
+ b=RmI6+MOX4Tya0TliRPQ+d9Gv7llKUddhiSS836XzIs7vDm1ABGLHXFfqZYElVSmhEnrPa
+ HaWZJDaS2M3JTDxKoC5rtYJLlU4LMUGMI4kzBpArNYX55jzTshPQRqdiziwVtoRr+KwSHsu
+ kcWF6cybaNtzJyuDCP8VAFkJLzuSo5I=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=fail;
+ dkim=pass header.d=mailbox.org;
  arc=pass;
- dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from mail.aperture-lab.de (mail.aperture-lab.de
- [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C13F8837F8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Sep 2025 03:50:16 +0200 (CEST)
+ dmarc=pass header.from=mailbox.org policy.dmarc=reject
+Authentication-Results: open-mesh.org; dkim=pass header.d=mailbox.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=mailbox.org policy.dmarc=reject
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org
+ [IPv6:2001:67c:2050:0:465::202])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0B84B80099
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Sep 2025 15:09:06 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1756691426;
+	s=20121; t=1756732157;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=N4bnpA/HOdFOXnMD6fv9VGVJB7aMOJ5cCx4HPUQZRIE=;
-	b=Gnfbwq1FYQG1UN5YpenuEZIGk17t1Il0Iyh3SiAlL+zDLEkYPuIhuiukdSz6vGWX0Sl2Tv
-	rGpgOPxvYVGUVpEPOp4F9K+jv3v9jWgwmXI3wUS0nnIgl4pJTeYrdQq5sYmEbb/srCjsbQ
-	I5inYFQ3kEAvEGI+UThJLWm8NafAChA=
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=m5VjQZAVa1BHaSq1AXpNcFdY64WJdTs+/Rs/CiJpO8U=;
+	b=xJFAHsD3b9LQb3MCkFS8+cgIm8XoEU7KxcC5WIGZdzVQhdntEEmB0urBkrnMUpZeNUPiIX
+	Oc2OAKrVDg+CNV7fcVjOGkUQ1JxEYvaqVqDvDXiY0bmbsvK9bxv+6ah3O1n7ZVbG4kS9JI
+	ZNXrXd80RSNy5ft6+wdCXZmdUXrbQHw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	dmarc=none;
-	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
- designates 2a01:4f8:c2c:665b::1 as permitted sender)
- smtp.mailfrom=linus.luessing@c0d3.blue
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1756691426; a=rsa-sha256;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=vWJYzHdm;
+	dmarc=pass (policy=reject) header.from=mailbox.org;
+	spf=pass (diktynna.open-mesh.org: domain of marek.lindner@mailbox.org
+ designates 2001:67c:2050:0:465::202 as permitted sender)
+ smtp.mailfrom=marek.lindner@mailbox.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1756732157; a=rsa-sha256;
 	cv=none;
-	b=0yunyt76BAZiQ2wW5649I3MsDEk5Jpl5MzU/NoEsgwUnkFHep07/YPDUy94njom4emA8eK
-	GI8ONyMBctOScvzYbNJJ87p07omemTR+y7Mi3/PvN0h2NT2rdeQ7j1aZ4A7k3za6vO3ldu
-	Cx5o2iqxkgbJ7vIol1RYA70xrKyk5lg=
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 1B311541362;
-	Mon,  1 Sep 2025 03:50:13 +0200 (CEST)
-Date: Mon, 1 Sep 2025 03:50:12 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-To: Sven Eckelmann <sven@narfation.org>,
-	Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Subject: Re: [PATCH 0/2] batman-adv: remove network coding support
-Message-ID: <aLT71OlX6b7YUZQj@sellars>
+	b=Mp1W40RJ016QReCG3kEgtWda4B6tsJYe7TQu3F0o0xMBwumiED4oeKT3zkS7q4+pIainQq
+	eJCIdOgkEaGmWrfaPckU6JwUk4mmWyw5AxQfS8AlvyAxVmHf6Rt1tfgpZbc0a/ZnnFf3qH
+	FOhrOLebBQtXb36Tmrf9M1GKDTP6q8Y=
+Received: from smtp202.mailbox.org (smtp202.mailbox.org
+ [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4cFq2M4P5Lz9tbV
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon,  1 Sep 2025 15:08:59 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
+ s=mail20150812;
+	t=1756732139;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=m5VjQZAVa1BHaSq1AXpNcFdY64WJdTs+/Rs/CiJpO8U=;
+	b=vWJYzHdmqKo56j+7AcaseLlaAcCuciBP7vs1n0KHqCAf1mdphpylrFAoXow5ThHjDXEaPi
+	2G+MpLuLjnLtZGSH9oJdPEiVuChAWLcIb+JX5Nrh/OeYk8shT4SbbY4oRzbHSzNrej9vGT
+	siySfs9uwwn6NCpws6UlU49ZVbIRJRE+vjnDGvWtFDrf+3GgExl1sJIqlagxIPRyUHJavj
+	FGeFNPjaFb5IhgGTsLiX8tqKYZAw0yA0m7w8bTaorowh1IXU90PM9iGo0VCgmPQTJDAMjr
+	MXgIaPd6cITeaFIGfsv0acdFwj+wDe59vr0x32KQlwvQMB72nmL7X+70F80qng==
+From: Marek Lindner <marek.lindner@mailbox.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [PATCH 1/2] batman-adv: remove network coding support
+Date: Mon, 01 Sep 2025 15:08:58 +0200
+Message-ID: <2795124.mvXUDI8C0e@voltaire>
+In-Reply-To: <20250831-drop-catwoman-v1-1-1071bb2a159a@narfation.org>
 References: <20250831-drop-catwoman-v1-0-1071bb2a159a@narfation.org>
+ <20250831-drop-catwoman-v1-1-1071bb2a159a@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250831-drop-catwoman-v1-0-1071bb2a159a@narfation.org>
-X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: RGKZXM5GHXLAZQC4BMWPJO3C2R6WM2CM
-X-Message-ID-Hash: RGKZXM5GHXLAZQC4BMWPJO3C2R6WM2CM
-X-MailFrom: linus.luessing@c0d3.blue
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+X-MBO-RS-ID: e80be1e3d5de1ea3f90
+X-MBO-RS-META: s85or5uddap9qxbkn9kxnm84ydegg7ex
+Message-ID-Hash: QWOK2OIIZQOQZE6XAVCIYIRIXMPQE3KK
+X-Message-ID-Hash: QWOK2OIIZQOQZE6XAVCIYIRIXMPQE3KK
+X-MailFrom: marek.lindner@mailbox.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; emergency; member-moderation;
  nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
  news-moderation; no-subject; digests; suspicious-header
-CC: b.a.t.m.a.n@lists.open-mesh.org
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RGKZXM5GHXLAZQC4BMWPJO3C2R6WM2CM/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QWOK2OIIZQOQZE6XAVCIYIRIXMPQE3KK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -94,38 +115,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sun, Aug 31, 2025 at 05:40:00PM +0200, Sven Eckelmann wrote:
-> This assumption no longer holds for modern wireless mesh networks, which
-> are heterogeneous and make overhearing increasingly unreliable.
+On Sunday, 31 August 2025 17:40:01 CEST Sven Eckelmann wrote:
+> In addition, the feature has been unmaintained for years and is discouraged
+> for use. None of the current maintainers have the required test
+> setup to verify its functionality, and known issues remain in its data
+> structures (reference counting, RCU usage, and cleanup handling). Its
+> continued presence also blocks necessary refactoring of the core originator
+> infrastructure.
+> 
+> Remove this obsolete and unmaintained feature.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-.oO(I was wondering if it could be interesting again with IEEE
-802.11ah HaLow. Recently read that AREDN mesh had added
-experimental support in their firmware (though with using Babel,
-not batman-adv), with ALFA Network Tube-AHM R0C devices.
-https://www.arednmesh.org/content/aredn-production-release-32580-now-available
-But testing and tuning HaLow + batman-adv + NC would still
-be quite some work...)
+Acked-by: Marek Lindner <marek.lindner@mailbox.org>
+
+Thanks for the cleanup initiative, Sven!
+
+Cheers,
+Marek
 
 
-Have had the pleasure to play with this ages ago on 802.11g
-hardware. It generally semeed to work and was a lot of fun to
-experiment with. But it wasn't easy to use it reliably, it needed
-quite some precise placement of nodes. Rate control algorithms
-wouldn't be aware of network coding opportunities, would have
-been nice if it had sometimes chosen slower rates for more
-NC opportunities. (Also CPU usage with promisc mode was maybe
-an issue back then on many devices? But maybe I misremember that.)
 
-I'd maybe try to ask around one more time on Freifunk or
-Battlemesh channels if anyone would be interested in reviving
-this, a final call. But as to my knowledge no one has used it in
-practical scenarios I guess the chances are low. And I agree that
-it might maybe be better to remove it then in the upstream Linux
-kernel.
-
-Many thanks for the awesome work on this exciting experiment though,
-Martin! I think it inspired quite some people and contributed to
-the crazy mesh excitment and pioneering back then that was going
-on at all fronts.
-
-Regards, Linus
