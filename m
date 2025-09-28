@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36222CAC5BB
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 07:50:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B663CCAC5B5
+	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 08:45:53 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AB77183FFB
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 09:50:52 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3DF8884257
+	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 10:45:52 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1759045852;
- b=qFs2He3CYgjHMWZHFRpMt/C2USj2Rgt7f9hpsLfbyaeZWOwpgW0f325/KV5b0NbDRCGxm
- 0npZiY5oa+fubr6UMRBAMYNkGRWYpvsnLWtXHRgn5eacY8yVbiYl1i3LZt3Igxk7Rb7pi3P
- pU1g5p6bUGGeFU5q/ewJPPSxXcAsFRQ=
+ t=1759049152;
+ b=pZntnVWso7VxescYwMu4A0wd7GeL+Ry8wS/B43yv4jf6Ll4KVpTSe1LZmE6/d7Wu7xeWJ
+ rBe6wHc4MiLb2BpKNmwBpi7kp9Svobona2vZfnhiknOG9bWSRCejMzf7cwaoCS8eZQwh50V
+ s7OwbWC0B9MjjnY9HxM7yU4EpJxfwOA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1759045852; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1759049152; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=nB0ZMVuZr2JHPPFgW1Unq44brdPP7xx9CNItiimsCZU=;
- b=NexIeoov0U3YQ7oClSEgYMTEnxuv+WgVXD17sXsbewF0Bb5JaDyzBXrsIBXiKpKkSvwOh
- eLoOJAMfnUcQJ1sGZMeByenq3n1YujbzJtSKuatYP2/W3ahlbqN7kxt8RoeU76158LJ+NY0
- rMyEBb9SOoG6g78A0Ubo7J1E16kBFhI=
+ list-archive; bh=jM7Ox3+Ul4dOIfVByBI3tj0o8LxVWBiiGDPq1t2V7FY=;
+ b=nbr9q2cNIm/geFVka8Dll8vQHOjoGv27wYSTOdQE6HlPHEEeXI9To+TO3IMNGyqZKlCBE
+ q/hTyzQ/TkvzG9FyDX+xnGnbntXqTfr8qYtdDNXTE1/fPhkHUY5WOUdQw5nv1bhcFPqgMaF
+ UiCiyKSFuJfuyRqTeIqGVPWET0/iNwM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,53 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id CC87C83B47
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 28 Sep 2025 09:50:14 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1759045824; a=rsa-sha256;
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id D6D0E80449
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 28 Sep 2025 10:45:15 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1759049125; a=rsa-sha256;
 	cv=none;
-	b=Kgcqy8TfbBbDd2UNpGfYabmyLK34/Vo7c/ygpp9c4bL9nYZvb13xOM+FtcmD0kCy3xLD+d
-	Xn0jexgRoYOEdvm3Y5vH9LJYw4Oy88Hist3RG52lVm6SBb3Jd6admb+uNlf5glpq7ukPBW
-	jVAZ+Z+24bNlHQAiSeDRNPPjcqr+ygE=
+	b=pfYyoaV2jhdMfkEa/wFTGXs6Fb+nv+De10iCVQIjQZWaJvL/UaV7G+8N/iWAXv6w8EtfMz
+	g/0954X+kKrrdRnvqvzS6koDVuuObdSakKiqdj9P0hsB2Mrzx0KZZL7A3byL/rZnkGmn+H
+	QEOIr+gOJKab/01v6+xx6MO3Qs0I8q8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=ekcqcMPH;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=P91IYOJk;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1759045824;
+	s=20121; t=1759049125;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=nB0ZMVuZr2JHPPFgW1Unq44brdPP7xx9CNItiimsCZU=;
-	b=rBK/PnLxW3CGqKv9WdgPd67C0R+fZwER7NDbE6eJJqi+9jf53goyX4ktWdyZqXeYQIrppm
-	gAp3IcRP+NLFG5iwnA1OBKZca0KGLa3fQs9N5Wb7FBbPFR+sWtYpOucuQzLqNEa8UQRk/3
-	TxYcCHURGyYo/LayIHj1iDdQ77ATNr0=
-Received: by dvalin.narfation.org (Postfix) id 3FB6020EC2;
-	Sun, 28 Sep 2025 07:50:13 +0000 (UTC)
+	bh=jM7Ox3+Ul4dOIfVByBI3tj0o8LxVWBiiGDPq1t2V7FY=;
+	b=LdZFf8lmIinKng3tflrkg4kHQ6YhtC1B/DE949MkMXewOYfFUNbY2Vp3bDdIH8+LvQbC1S
+	/yDvYcKxCYC8dudtsa0TvOqSHfmAabXtAs+At1Zi7pWLEngYuNwkGjBlTJxapLAsvJ1Urz
+	NnhNZ5Z4NxaBg2olsNvBX/kFurGDlds=
+Received: by dvalin.narfation.org (Postfix) id 246D82054D;
+	Sun, 28 Sep 2025 08:45:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1759045813;
+	s=20121; t=1759049115;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=nB0ZMVuZr2JHPPFgW1Unq44brdPP7xx9CNItiimsCZU=;
-	b=ekcqcMPHOzkYt3yXGhY+atCZe4Fxp+CdJHlsxTeIy0aQUXuBVXcXwOxD2zOurkhatIz2s4
-	1z+QLSbxDdzMQryNlk266z/etCO2Y0aGwOHeAivfGPybBmD22gn/a5gCZ/1ZOrme6Mypwa
-	rhDc2qexHPAzdbHRo7lpml6ibf6EtXU=
+	bh=jM7Ox3+Ul4dOIfVByBI3tj0o8LxVWBiiGDPq1t2V7FY=;
+	b=P91IYOJk5Q6yuHqV/tJlwva9JKaGlRMiHSULbqaKZbKROaV3t6vufMNH7avrjFIftjczDl
+	sFYDKaWHVJAcmGfIQ2H0BNwUgOHthtNYhvE2fY1/Zi4yKIRuWlYF7bBH5I3pnxcz5U7Rdy
+	lsTc5Se3ircXO/eh6PS2hbILQXR/M4I=
 From: Sven Eckelmann <sven@narfation.org>
-To: Marek Lindner <marek.lindner@mailbox.org>,
- Simon Wunderlich <sw@simonwunderlich.de>,
- Antonio Quartulli <antonio@mandelbit.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org,
- Network Development <netdev@vger.kernel.org>,
- Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: unregister_netdevice: waiting for batadv_slave_0 to become free.
- Usage
- count = 2
-Date: Sun, 28 Sep 2025 09:50:02 +0200
-Message-ID: <2450943.NG923GbCHz@sven-desktop>
-In-Reply-To: <9f999251-8132-414e-9ea1-f83ecc41dfdd@I-love.SAKURA.ne.jp>
-References: <e50546d9-f86f-426b-9cd3-d56a368d56a8@I-love.SAKURA.ne.jp>
- <2754825.KlZ2vcFHjT@sven-desktop>
- <9f999251-8132-414e-9ea1-f83ecc41dfdd@I-love.SAKURA.ne.jp>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH net-next 3/4] batman-adv: keep skb crc32 helper local in
+ BLA
+Date: Sun, 28 Sep 2025 10:45:12 +0200
+Message-ID: <2878689.BEx9A2HvPv@sven-desktop>
+In-Reply-To: <20250927205552.GD9798@quark>
+References: <20250916122441.89246-1-sw@simonwunderlich.de>
+ <20250916122441.89246-4-sw@simonwunderlich.de> <20250927205552.GD9798@quark>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart879527330.0ifERbkFSE";
+Content-Type: multipart/signed; boundary="nextPart15571232.tv2OnDr8pf";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 4NLK2VPRSCH4TB264PFF6M7VULEC536M
-X-Message-ID-Hash: 4NLK2VPRSCH4TB264PFF6M7VULEC536M
+Message-ID-Hash: J7LQ5GFEC2IMSEU4GMLTCODRYMTRGZN2
+X-Message-ID-Hash: J7LQ5GFEC2IMSEU4GMLTCODRYMTRGZN2
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -97,12 +87,14 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; emergency; member-moderation;
  nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
  news-moderation; no-subject; digests; suspicious-header
+CC: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4NLK2VPRSCH4TB264PFF6M7VULEC536M/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/J7LQ5GFEC2IMSEU4GMLTCODRYMTRGZN2/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,106 +103,186 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart879527330.0ifERbkFSE
+--nextPart15571232.tv2OnDr8pf
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 28 Sep 2025 09:50:02 +0200
-Message-ID: <2450943.NG923GbCHz@sven-desktop>
+To: Eric Biggers <ebiggers@kernel.org>
+Date: Sun, 28 Sep 2025 10:45:12 +0200
+Message-ID: <2878689.BEx9A2HvPv@sven-desktop>
+In-Reply-To: <20250927205552.GD9798@quark>
 MIME-Version: 1.0
 
-On Sunday, 28 September 2025 03:06:05 CEST Tetsuo Handa wrote:
-> Thank you for responding quickly.
+On Saturday, 27 September 2025 22:55:52 CEST Eric Biggers wrote:
+> Hi,
 > 
-> On 2025/09/28 2:21, Sven Eckelmann wrote:
-> > The question would now be: what is the actual problem? 
+> On Tue, Sep 16, 2025 at 02:24:40PM +0200, Simon Wunderlich wrote:
+> > +static __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
+> > +{
+> > +	unsigned int to = skb->len;
+> > +	unsigned int consumed = 0;
+> > +	struct skb_seq_state st;
+> > +	unsigned int from;
+> > +	unsigned int len;
+> > +	const u8 *data;
+> > +	u32 crc = 0;
+> > +
+> > +	from = (unsigned int)(payload_ptr - skb->data);
+> > +
+> > +	skb_prepare_seq_read(skb, from, to, &st);
+> > +	while ((len = skb_seq_read(consumed, &data, &st)) != 0) {
+> > +		crc = crc32c(crc, data, len);
+> > +		consumed += len;
+> > +	}
+> > +
+> > +	return htonl(crc);
+> > +}
 > 
-> Sorry, my explanation was not clear enough.
+> Has using skb_crc32c() been considered here?
 
-It was long and contained a lot of things - but not what the actual problem is. 
-It is necessary to read a lot of inline calltraces with subclauses - and then 
-by reading between the lines, we must figure out what you actually wanted to 
-say.
+No. At the time this was written (v3.8), skb_crc32c (v6.16) didnt exist. Also 
+its predecessor __skb_checksum only started its existence in v3.13. And no one 
+noticed it as candidate to replace batadv_skb_crc32 with
 
-It is no problem to not know the underlying problem. But all these absolute 
-statements, accusations and overly detailed statement made me think that I am 
-just too stupid to get it and you must be right.
+And this patch here was just moving the function between two places - so not 
+introducing new code.
 
-> What I thought as a problem is the difference between
-> 
-> 	netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, "batadv0", 0, 0);
-> 	//netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, 0, &macaddr, ETH_ALEN);
-> 
-> and
-> 
-> 	netlink_device_change(&nlmsg, sock, "batadv_slave_0", false, "batadv0", 0, 0);
-> 	netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, 0, &macaddr, ETH_ALEN);
-> 
-> . The former makes hard_iface->if_status == BATADV_IF_ACTIVE while the latter makes
-> hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED (because batadv_iv_ogm_schedule_buff()
-> is not called).
-> 
-> This difference makes operations that depend on hard_iface->if_status == BATADV_IF_ACTIVE
-> impossible to work properly. You can confirm this difference using diff show below.
+Do you want to submit a patch to integrate your new function in batman-adv? I 
+only performed a quick-and-dirty test to see if it returns the same results 
+and it seemed to do its job fine.
 
-This is again (in my opinion) this kind of (odd) absolute statement again. 
-"impossible to work properly" - this sounds like BATADV_IF_TO_BE_ACTIVATED is 
-an state which you cannot escape. And that functions/operations depend on 
-BATADV_IF_ACTIVE. Both statements are not really true. 
-
-BATADV_IF_TO_BE_ACTIVATED is a transient state and some algorithm depending 
-code is responsible to automatically get it in the BATADV_IF_ACTIVE state. 
-This is somewhat important here because the first time I read your second 
-mail, I was under the impression that something in the reproducer showed that 
-the state would be stuck. I searched rather hard in the code but couldn't find 
-the reason for this. Only much later, I decided to ignore all this and look 
-what the reproducer is actually doing. And also ignore commit 9e6b5648bbc4 
-("batman-adv: Fix duplicated OGMs on NETDEV_UP") - because it was impossible 
-for me to reproduce it on this commit.
-
-And regarding the functions/operations which "impossible to work properly": 
-called functions must "work properly" independent of the state. Just what 
-they are doing as work can be different depending on the state. But maybe this 
-is a case of "glass is half full" vs "glass is half empty".
-
-The problem is therefore that some function broke this "promise". Your second 
-mail (and the patch) was then basically saying "BATADV_IF_TO_BE_ACTIVATED" must 
-not exist and we must directly go to BATADV_IF_ACTIVE. (Even if this is in my 
-opinion not the right statement) it never said why it must not exist and what 
-broke because of "BATADV_IF_TO_BE_ACTIVATED".
-
-The inline calltraces with detailed statements in subclauses make it 
-harder to digest. Some small high level statements like 
-
-"I don't know exactly what the underlying problem is but skipping 
-BATADV_IF_TO_BE_ACTIVATED in batadv_hardif_activate_interface() seems to work 
-around the problem. I suspect that some function is not handling 
-BATADV_IF_TO_BE_ACTIVATED correctly. Maybe some kind of race condition between 
-switching to BATADV_IF_ACTIVE and executing some specific code. Here are my 
-detailed notes:"
-
-would have helped me not to get stuck too long in the interpretation of 
-paragraphs. But at the same time, would have given a lot of pointers in the 
-right direction. But maybe I would have been stuck anyway - no idea.
-
-Anyway, I hope we found the problem now and thanks for the help.
+diff --git c/net/batman-adv/Kconfig w/net/batman-adv/Kconfig
+index c299e2bc..58c408b7 100644
+--- c/net/batman-adv/Kconfig
++++ w/net/batman-adv/Kconfig
+@@ -35,6 +35,7 @@ config BATMAN_ADV_BLA
+ 	bool "Bridge Loop Avoidance"
+ 	depends on BATMAN_ADV && INET
+ 	select CRC16
++	select NET_CRC32C
+ 	default y
+ 	help
+ 	  This option enables BLA (Bridge Loop Avoidance), a mechanism
+diff --git c/net/batman-adv/bridge_loop_avoidance.c w/net/batman-adv/bridge_loop_avoidance.c
+index b992ba12..eef40b6f 100644
+--- c/net/batman-adv/bridge_loop_avoidance.c
++++ w/net/batman-adv/bridge_loop_avoidance.c
+@@ -12,7 +12,6 @@
+ #include <linux/compiler.h>
+ #include <linux/container_of.h>
+ #include <linux/crc16.h>
+-#include <linux/crc32.h>
+ #include <linux/err.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -1585,45 +1584,11 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ 	return 0;
+ }
+ 
+-/**
+- * batadv_skb_crc32() - calculate CRC32 of the whole packet and skip bytes in
+- *  the header
+- * @skb: skb pointing to fragmented socket buffers
+- * @payload_ptr: Pointer to position inside the head buffer of the skb
+- *  marking the start of the data to be CRC'ed
+- *
+- * payload_ptr must always point to an address in the skb head buffer and not to
+- * a fragment.
+- *
+- * Return: big endian crc32c of the checksummed data
+- */
+-static __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
+-{
+-	unsigned int to = skb->len;
+-	unsigned int consumed = 0;
+-	struct skb_seq_state st;
+-	unsigned int from;
+-	unsigned int len;
+-	const u8 *data;
+-	u32 crc = 0;
+-
+-	from = (unsigned int)(payload_ptr - skb->data);
+-
+-	skb_prepare_seq_read(skb, from, to, &st);
+-	while ((len = skb_seq_read(consumed, &data, &st)) != 0) {
+-		crc = crc32c(crc, data, len);
+-		consumed += len;
+-	}
+-
+-	return htonl(crc);
+-}
+-
+ /**
+  * batadv_bla_check_duplist() - Check if a frame is in the broadcast dup.
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @skb: contains the multicast packet to be checked
+- * @payload_ptr: pointer to position inside the head buffer of the skb
+- *  marking the start of the data to be CRC'ed
++ * @payload_offset: offset in the skb, marking the start of the data to be CRC'ed
+  * @orig: originator mac address, NULL if unknown
+  *
+  * Check if it is on our broadcast list. Another gateway might have sent the
+@@ -1638,16 +1603,18 @@ static __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
+  * Return: true if a packet is in the duplicate list, false otherwise.
+  */
+ static bool batadv_bla_check_duplist(struct batadv_priv *bat_priv,
+-				     struct sk_buff *skb, u8 *payload_ptr,
++				     struct sk_buff *skb, int payload_offset,
+ 				     const u8 *orig)
+ {
+ 	struct batadv_bcast_duplist_entry *entry;
+ 	bool ret = false;
++	int payload_len;
+ 	int i, curr;
+ 	__be32 crc;
+ 
+ 	/* calculate the crc ... */
+-	crc = batadv_skb_crc32(skb, payload_ptr);
++	payload_len = skb->len - payload_offset;
++	crc = htonl(skb_crc32c(skb, payload_offset, payload_len, 0));
+ 
+ 	spin_lock_bh(&bat_priv->bla.bcast_duplist_lock);
+ 
+@@ -1727,7 +1694,7 @@ static bool batadv_bla_check_duplist(struct batadv_priv *bat_priv,
+ static bool batadv_bla_check_ucast_duplist(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb)
+ {
+-	return batadv_bla_check_duplist(bat_priv, skb, (u8 *)skb->data, NULL);
++	return batadv_bla_check_duplist(bat_priv, skb, 0, NULL);
+ }
+ 
+ /**
+@@ -1745,12 +1712,10 @@ bool batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				    struct sk_buff *skb)
+ {
+ 	struct batadv_bcast_packet *bcast_packet;
+-	u8 *payload_ptr;
+ 
+ 	bcast_packet = (struct batadv_bcast_packet *)skb->data;
+-	payload_ptr = (u8 *)(bcast_packet + 1);
+ 
+-	return batadv_bla_check_duplist(bat_priv, skb, payload_ptr,
++	return batadv_bla_check_duplist(bat_priv, skb, sizeof(*bcast_packet),
+ 					bcast_packet->orig);
+ }
+ 
 
 Regards,
 	Sven
---nextPart879527330.0ifERbkFSE
+--nextPart15571232.tv2OnDr8pf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaNjoqgAKCRBND3cr0xT1
-y9m2AP9zRfPoLfv/wRBSat2mfNow7negQymlLIHciFrlhp2rtwEAnyVyDoxTT9i5
-5s8TyBYZJG6NFxFWKvIkbuasC+XR5Q4=
-=t2sP
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaNj1mAAKCRBND3cr0xT1
+y5DIAQDuvVj4HaKlvbXTdpeXUycI3OUfV9GO4+sBWl2SsCPocgD/QH0XR1Po0lGU
+NHIZEee3ff9REwUiuSxuBTzCr8noDQA=
+=bykD
 -----END PGP SIGNATURE-----
 
---nextPart879527330.0ifERbkFSE--
+--nextPart15571232.tv2OnDr8pf--
 
 
 
