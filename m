@@ -4,101 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD6ACCAC5BB
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 06:21:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E81B0CAC5B5
+	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 06:22:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 125AE840E5
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 08:21:58 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 6614A84509
+	for <batman-adv@archiver.kernel.org>; Sun, 28 Sep 2025 08:22:45 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1759040518;
- b=0wouI68tS4jisi0YpOPsv/9LQvLoCsCCXIAVmeu1tZ97nmCl+hA8THwQAIQ3vBtu7YKCg
- 91fdgEYkWOgG1mt/yWIrCVL7xlqVdKfnaq841Ifv8NeB/46ou0bxmlqNpJrnFuSM17q4+Ku
- 1xFu185dhxDUPNCYzv5KJCT5V1fJ8dM=
+ t=1759040565;
+ b=nqrP7EauChVAeBbO0imc6yh5MJk0v9yOdkVjSl+oAgkE7znsbq9mHSrnWoP9ezSHeyvVc
+ sBMgKAAssb158HQ/AneCGH1HH7HhWkmdeqtKU/auG+cI4rd9+AxNQ73q0E9xwJkAPgAH0vM
+ F1nD/YSaNCwh5mOEaxh0kI2mNuLCRoM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1759040518; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1759040565; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=S/vRGevhosvEotDZYnL6q1ZsIVL8K1pu8f9Ti2RbPhw=;
- b=QwT4ieTOtHi9PKO0fL8687KlkgaaWDKEEGpmB+Kgf6gVDdGKWS5RUrSLGZ+ZsXjJpqO4E
- C18hwpFh5UPHjavUIEnzCW06XeZ5+Th50NLb/akJZ1jxz45SsXKNnbjxYQRFnfnwscgNV3m
- Q2nQr5MGDusUh03EUj/Vt75vPtnjG2E=
+ list-archive; bh=H7NNxl6VWaozmUR3XVKD/Tk2/6qe1iE73DQDTeA7nFc=;
+ b=gVg4vKqNgVuHgoMrg831uyD9QrQAfuaV5RM6LhwUNnN3EPljWWAOWwS+8b18ffdBEWI+S
+ BmWz3bgrmi3oAbdU7u8zPWnsR2XjhxhOaUUiiMgfrAn7/MD6RJfyfFr3T73nKGMYRF7YF55
+ QbsAgr+cFdPQL8fCjN2pkQMceLL4sss=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=kernel.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=kernel.org policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9811683B66
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 27 Sep 2025 22:55:56 +0200 (CEST)
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1759006566; a=rsa-sha256;
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6294B83CBA
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 28 Sep 2025 03:06:29 +0200 (CEST)
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1759021601; a=rsa-sha256;
 	cv=none;
-	b=V4dviYvsRO9xmhVL7bFinHByzc6aIKUBFH6dLbuRgRXHgvLRSIhP46858ORBnO6PzUF3Dp
-	85vXxsxmFLreCC5onn174h7HxYuvOUNzycIPBsPLnsenQnizOOAl+2uyIHqrfcYQhN4Gqp
-	4/i1P91iO09MTSX6VCRdUnYLrfBloeM=
+	b=e8Fk+yu6jy+eqNYjOcnAwJqbXAc/j4+6o/ox5s3lOpds27bZz79BiTn1TRGYjEYkFs6POZ
+	aIgkf0XwnO2evOSU0san79oqL1lOLJYTQKwtikMbGBgSuSCSLY9pItL4Hl2DX9TagAEDO8
+	X5fLiDpmcolNYUMYCSobw0DuA7mw89o=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20201202 header.b=DRZgM9jU;
-	spf=pass (diktynna.open-mesh.org: domain of ebiggers@kernel.org designates
- 172.234.252.31 as permitted sender) smtp.mailfrom=ebiggers@kernel.org;
-	dmarc=pass (policy=quarantine) header.from=kernel.org
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of
+ penguin-kernel@I-love.SAKURA.ne.jp designates 202.181.97.72 as permitted
+ sender) smtp.mailfrom=penguin-kernel@I-love.SAKURA.ne.jp
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1759006566;
+	s=20121; t=1759021601;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=S/vRGevhosvEotDZYnL6q1ZsIVL8K1pu8f9Ti2RbPhw=;
-	b=SEDZobsXXpWpq6YI1+xcRYEP5PhUO+skhcCmc+3/4L1gPInWgtS1in9HpzmzqdWRcnsvER
-	QWyz971oCWxg6tWDUsBq/PBTiysm2k0Q/FeBvYyGWWJN7BeiLCuURXJVQaDvo2JAgCEJCH
-	Wf4I0ypSgpAOizq1IGZ735lLYBD4OTs=
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2A87A43F63;
-	Sat, 27 Sep 2025 20:55:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A04EC4CEE7;
-	Sat, 27 Sep 2025 20:55:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1759006555;
-	bh=WhvCEHR71JlepeZAgEOKFLslIS3HckCTEyON7ene1Vw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DRZgM9jUhtMTEydD42j7Nbtxg+JhtWb+Z249XgUWhuKN089P67pck7c/3ueE3mfNx
-	 eX660JzdA4nIrDnLpbt3uFexE6YeMaJpO8rJbRlm8ZJp1OPKCsnTlUhqmhhGrcjn7g
-	 a8uU8698JcEObJ2+EMJyUrQNSe8hlXL6QRq0KQfep1fTaaqu2XWCj8qczQs36NG9Qq
-	 AsNNLqSGZsQQ2TySKM6WAgC/2T+6Xzg2yS1H1Tc/ellHXa49Km514naXvDOcjJujV1
-	 +4IAbbwC1hklKbx2YEp8nmneRrcmVOZLmRMAdKNgqp8wISGB755bgyqqc86WRxPedJ
-	 O8R/zKuKRcBQg==
-Date: Sat, 27 Sep 2025 13:55:52 -0700
-From: Eric Biggers <ebiggers@kernel.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: [PATCH net-next 3/4] batman-adv: keep skb crc32 helper local in
- BLA
-Message-ID: <20250927205552.GD9798@quark>
-References: <20250916122441.89246-1-sw@simonwunderlich.de>
- <20250916122441.89246-4-sw@simonwunderlich.de>
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=H7NNxl6VWaozmUR3XVKD/Tk2/6qe1iE73DQDTeA7nFc=;
+	b=Y9dqW5rInln1ZsyKPcJn4qORLW5LrB7//CZvF1PGUXsLvS1Qg3vR1Wqj6PgMT4EOVBWmbo
+	i710L6zeBzb90UuPMBLDBJg0oF9NOUBzwHi4+eX5J8T672oV0NSlIFMjZqwRFzACIhStrg
+	Blwng2tV8JAxzrxToxaxb3CvOQ78wi8=
+Received: from www262.sakura.ne.jp (localhost [127.0.0.1])
+	by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 58S165Ad006793;
+	Sun, 28 Sep 2025 10:06:05 +0900 (JST)
+	(envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Received: from [192.168.1.10] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+	(authenticated bits=0)
+	by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 58S165LM006787
+	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+	Sun, 28 Sep 2025 10:06:05 +0900 (JST)
+	(envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Message-ID: <9f999251-8132-414e-9ea1-f83ecc41dfdd@I-love.SAKURA.ne.jp>
+Date: Sun, 28 Sep 2025 10:06:05 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250916122441.89246-4-sw@simonwunderlich.de>
-X-MailFrom: ebiggers@kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: unregister_netdevice: waiting for batadv_slave_0 to become free.
+ Usage count = 2
+To: Sven Eckelmann <sven@narfation.org>,
+        Marek Lindner <marek.lindner@mailbox.org>,
+        Simon Wunderlich <sw@simonwunderlich.de>,
+        Antonio Quartulli <antonio@mandelbit.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+        b.a.t.m.a.n@lists.open-mesh.org,
+        Network Development <netdev@vger.kernel.org>,
+        =?UTF-8?Q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
+References: <e50546d9-f86f-426b-9cd3-d56a368d56a8@I-love.SAKURA.ne.jp>
+ <1731a084-79fb-4bc6-9e0b-9b17f3345c4b@I-love.SAKURA.ne.jp>
+ <2754825.KlZ2vcFHjT@sven-desktop>
+Content-Language: en-US
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+In-Reply-To: <2754825.KlZ2vcFHjT@sven-desktop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Anti-Virus-Server: fsav405.rs.sakura.ne.jp
+X-Virus-Status: clean
+X-MailFrom: penguin-kernel@I-love.SAKURA.ne.jp
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2; emergency; member-moderation
-Message-ID-Hash: T2KMKENZD6OB76YHFROD7DA4YUMIGJ6N
-X-Message-ID-Hash: T2KMKENZD6OB76YHFROD7DA4YUMIGJ6N
+Message-ID-Hash: IKHJCWGRYU7UR7X7MSEDDMYBNP7TWIEI
+X-Message-ID-Hash: IKHJCWGRYU7UR7X7MSEDDMYBNP7TWIEI
 X-Mailman-Approved-At: Sun, 28 Sep 2025 08:21:32 +0200
-CC: kuba@kernel.org, davem@davemloft.net, netdev@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/T2KMKENZD6OB76YHFROD7DA4YUMIGJ6N/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/IKHJCWGRYU7UR7X7MSEDDMYBNP7TWIEI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -107,30 +114,117 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi,
+Thank you for responding quickly.
 
-On Tue, Sep 16, 2025 at 02:24:40PM +0200, Simon Wunderlich wrote:
-> +static __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
-> +{
-> +	unsigned int to = skb->len;
-> +	unsigned int consumed = 0;
-> +	struct skb_seq_state st;
-> +	unsigned int from;
-> +	unsigned int len;
-> +	const u8 *data;
-> +	u32 crc = 0;
-> +
-> +	from = (unsigned int)(payload_ptr - skb->data);
-> +
-> +	skb_prepare_seq_read(skb, from, to, &st);
-> +	while ((len = skb_seq_read(consumed, &data, &st)) != 0) {
-> +		crc = crc32c(crc, data, len);
-> +		consumed += len;
-> +	}
-> +
-> +	return htonl(crc);
-> +}
+On 2025/09/28 2:21, Sven Eckelmann wrote:
+> The question would now be: what is the actual problem? 
 
-Has using skb_crc32c() been considered here?
+Sorry, my explanation was not clear enough.
 
-- Eric
+What I thought as a problem is the difference between
+
+	netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, "batadv0", 0, 0);
+	//netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, 0, &macaddr, ETH_ALEN);
+
+and
+
+	netlink_device_change(&nlmsg, sock, "batadv_slave_0", false, "batadv0", 0, 0);
+	netlink_device_change(&nlmsg, sock, "batadv_slave_0", true, 0, &macaddr, ETH_ALEN);
+
+. The former makes hard_iface->if_status == BATADV_IF_ACTIVE while the latter makes
+hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED (because batadv_iv_ogm_schedule_buff()
+is not called).
+
+This difference makes operations that depend on hard_iface->if_status == BATADV_IF_ACTIVE
+impossible to work properly. You can confirm this difference using diff show below.
+
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -761,6 +761,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+
+        batadv_check_known_mac_addr(hard_iface);
+
++       pr_info("step 1: %d\n", hard_iface->if_status);
+        if (batadv_hardif_is_iface_up(hard_iface))
+                batadv_hardif_activate_interface(hard_iface);
+        else
+@@ -768,10 +769,12 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+                           "Not using interface %s (retrying later): interface not active\n",
+                           hard_iface->net_dev->name);
+
++       pr_info("step 2: %d\n", hard_iface->if_status);
+        batadv_hardif_recalc_extra_skbroom(mesh_iface);
+
+        if (bat_priv->algo_ops->iface.enabled)
+                bat_priv->algo_ops->iface.enabled(hard_iface);
++       pr_info("step 3: %d\n", hard_iface->if_status);
+
+ out:
+        return 0;
+@@ -961,7 +964,9 @@ static int batadv_hard_if_event(struct notifier_block *this,
+
+        switch (event) {
+        case NETDEV_UP:
++               pr_info("step 4: %d\n", hard_iface->if_status);
+                batadv_hardif_activate_interface(hard_iface);
++               pr_info("step 5: %d\n", hard_iface->if_status);
+                break;
+        case NETDEV_GOING_DOWN:
+        case NETDEV_DOWN:
+
+The former case:
+
+  batman_adv: batadv0: Adding interface: batadv_slave_0
+  batman_adv: batadv0: The MTU of interface batadv_slave_0 is too small (1500) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
+  batman_adv: step 1: 2
+  batman_adv: batadv0: Interface activated: batadv_slave_0
+  batman_adv: step 2: 4
+  batman_adv: step 3: 3
+  batman_adv: batadv0: Interface deactivated: batadv_slave_0
+  batman_adv: batadv0: Removing interface: batadv_slave_0
+
+The latter case:
+
+  batman_adv: step 1: 2
+  batman_adv: batadv0: Not using interface batadv_slave_0 (retrying later): interface not actve
+  batman_adv: step 2: 2
+  batman_adv: step 3: 2
+  batman_adv: step 4: 2
+  batman_adv: batadv0: Interface activated: batadv_slave_0
+  batman_adv: step 5: 4
+  batman_adv: batadv0: Interface deactivated: batadv_slave_0
+  batman_adv: batadv0: Removing interface: batadv_slave_0
+
+
+
+> --- i/net/batman-adv/originator.c
+> +++ w/net/batman-adv/originator.c
+> @@ -763,7 +763,7 @@ int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb)
+>  	bat_priv = netdev_priv(mesh_iface);
+>  
+>  	primary_if = batadv_primary_if_get_selected(bat_priv);
+> -	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
+> +	if (!primary_if) {
+>  		ret = -ENOENT;
+>  		goto out_put_mesh_iface;
+>  	}
+> 
+> 
+> And now we are most likely on the right path... primary_if is holding a 
+> reference to an hardif and therefore also a reference to the netdev. And the 
+> error handling is only taking care of releasing the reference to the meshif 
+> but not the primary_if.
+
+Ah, indeed. Since batadv_primary_if_get_selected() is calling kref_get_unless_zero(),
+primary_if->if_status != BATADV_IF_ACTIVE case needs to call kref_put().
+Also, this matches my what I thought as a problem (BATADV_IF_TO_BE_ACTIVATED prevents
+operations that depends on BATADV_IF_ACTIVE from working as expected).
+
+> I will later send a fix for this with you and 
+> syzbot+881d65229ca4f9ae8c84@syzkaller.appspotmail.com as Reported-by. Is this
+> okay for you?
+
+Yes, the reproducer no longer shows the problem.
+
+Thank you.
+
