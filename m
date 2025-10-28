@@ -4,96 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB68FCCD1A5
-	for <batman@archiver.kernel.org>; Fri, 24 Oct 2025 10:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CE1ACCF9E5
+	for <batman@archiver.kernel.org>; Tue, 28 Oct 2025 01:10:45 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3AC798190B
-	for <batman@archiver.kernel.org>; Fri, 24 Oct 2025 12:03:36 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3D65F8030B
+	for <batman@archiver.kernel.org>; Tue, 28 Oct 2025 02:10:43 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1761300216;
- b=WSnYCdQlXkwML4j1VrDzhTOsLPKm7Gt4ILTKb7DNLJY2SWlctITZW0cJ7PB4U7ILLgtfp
- 2ogkM9/hwNLDCeZlAyZY2sCqeIjCplCAsIo+QJc+aZ45Ssq9pDggCQnol7yXA4P5kHaCQSW
- PLKVHNBI5Nly90lG+30ucbabgz+9DhQ=
+ t=1761613843;
+ b=DFk5rtPZBP+S7rX8gIVHbvPyINyi1vQgh1CthBCJzidklx/OtkmHU/jd4/opxm+4nCae6
+ 0GNcF/x+eX5aEAAoxxdPWuSJx2DEs353N+Vxr7K0dtOIu24Vq/GE0OhTw1wCuOQ6rFTjqnm
+ T3+pw/T9nC/G6p8ezdZnkvctqiKK6/o=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1761300216; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1761613843; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2/QaDQ6D4wsdtaHzsCyAZeip4UsZW1l+inN7auHlcOw=;
- b=4IT2I00X3gQ3bJFJbFl8sIswh1XxzTegiY0wirx9u7aEsEbT6au16sRZPicu1PbU4W4WN
- /en58q+MDsL1z+Q2S0Th5JEx9JKhZfCGR4sFZGheyImiwKUBplzrrI9JoZIt1iGkMYThQvz
- dsZLITwGbG1SifYXrJwVN2UvKNsPJ0E=
+ list-archive; bh=hWUSUHKODuEa3m7PyhIDtX6dw0NzcqY2EGOlmvK+eRA=;
+ b=kvBW03G6vy9oxRzzROAZp0Xm1S5BjuWSO3dXYozURUWOuqnXJ2zV3lLLUk6k6ATnMQs7U
+ cpls39GRGDGCZP9XAxZ93IOSiZl+fe4z6QcHGI0YcykXiVsfterLW/J9a75N+QIYJhImkQp
+ 4Oc8fBKgTDRGwGCum/7Rdd8LtHHgfAE=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=fail;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=fail header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
- dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
- policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id CC89B81067
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 24 Oct 2025 12:03:23 +0200 (CEST)
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id EE68083AB3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 28 Oct 2025 02:10:29 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1761300213;
+	s=20121; t=1761613840;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2/QaDQ6D4wsdtaHzsCyAZeip4UsZW1l+inN7auHlcOw=;
-	b=s7OjwdUqYHPOK1gGAnMDua0zFur+nXK+PeXOEEBtwd8RU7u/sva1WuAJWSF4JRB6IAxr6C
-	9AXpPVR9sIwbRIuilhz7EMDhsOp1oNuT4tH0uMEVWbXp1j7NkXPqtlI5yHWpA6Cr+DQF5H
-	kE8z2Qe10RgfLZWsZz/HFUW0XR+Tcuo=
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=hWUSUHKODuEa3m7PyhIDtX6dw0NzcqY2EGOlmvK+eRA=;
+	b=b6ssJLUl6CGChClQv0zPYTZLy0z2mzj+PF0AzuISrH+5GmRMLtG+DvXMCFvFnuKs589Bez
+	jWKcuiuNSuMR46ttYy0lr1STZiSC8TTNF7zasJyPXAgQwJTnlqVNna+vtD1HAhVfrbxaGq
+	2NuPKUBqi4wWNbyDuB5X8MkCU617H+Q=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1761300213; a=rsa-sha256;
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=YnPPjTsC;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2600:3c0a:e001:78e:0:1991:8:25
+ as permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+ARC-Seal: i=1; s=20121; d=open-mesh.org; t=1761613840; a=rsa-sha256;
 	cv=none;
-	b=EFYFOsVGSjSFmljSw6aCg8y3AtDIhdKybT01ehNEKu5AZ/Hlub2p1FeRiCgK+grwVQnDDV
-	mn/fp1S0nLXA5+U7YKqlWG6E5jbBmvA5UKalti+R61w6XisLkHcSC0x3HL0QqgbvzD5DA5
-	zDKxHu084ai1Y/2dtwb6SM0f6Glgc3c=
-Received: from prime.localnet
- (p200300C5970781D8B076411Bb4C554a3.dip0.t-ipconnect.de
- [IPv6:2003:c5:9707:81d8:b076:411b:b4c5:54a3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
- SHA256)
-	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 49734FA130;
-	Fri, 24 Oct 2025 12:03:23 +0200 (CEST)
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: mbiglari4@gmail.com
-Subject: Re: Gateway shut down detection takes too time from other nodes
-Date: Fri, 24 Oct 2025 12:03:22 +0200
-Message-ID: <3735338.hdfAi7Kttb@prime>
-In-Reply-To: <176122249070.1493.7302683075039006895@diktynna.open-mesh.org>
-References: <9767419.DvuYhMxLoT@prime>
- <176122249070.1493.7302683075039006895@diktynna.open-mesh.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+	b=dMQ3okl2iuQIHdUKEAZoreiTKRFF7uhhhuVK3U0fykX34E+LpdJ0GWvcfJY/Y6R0NK8pWp
+	OUkthV1bL7gzCktemmkMmR1LIiuW6ZLDzKd5FUD2NGZ/iyKfdr8tmN7Ssu7NLcg1qLzP/3
+	HhccVJPC+qo18AQO4srK1ShSwcQquVE=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1CEBD4192F;
+	Tue, 28 Oct 2025 01:10:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB6BEC4CEF1;
+	Tue, 28 Oct 2025 01:10:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761613828;
+	bh=wVaT28yBfsup28vEdLuACMHTePkpOekM+7EufB5qAhw=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=YnPPjTsC8LYWRKb5n+0BIhpy5Turp0Eah6yM2UlDMH5nWLdcpHme2kZo5iigbfHcT
+	 WjmgU1lGEwltGeCQJt2nDV/xqy04yD7ytCy18grYHw7hEgoXJ0k3AuuPGIe7AHWvOi
+	 WiHqaFlgCXWXvzmElH2G8defmcsUes9b5tjjC+TqcWfdGVk3LRVOD7QpI3SN/vbNdY
+	 +kHmdGW6aTT+vwcCtPhIlU9bxv9uqZTL29gCa+Cnm3d8vZ5kKcdaFnXAJJMCeGaPBa
+	 JgiLfwpg5zIi7ibuL3aEnM0LiauXPPhjWkViYvNoGS5AQlzGoH/sBxZc3Qct36h8AI
+	 LBmAzF36QdQGw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ 33DEA39D60B9;
+	Tue, 28 Oct 2025 01:10:07 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
-Message-ID-Hash: O565IWXPBY4MAPF46ZYIUU5AES2ULSPF
-X-Message-ID-Hash: O565IWXPBY4MAPF46ZYIUU5AES2ULSPF
-X-MailFrom: sw@simonwunderlich.de
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH net 1/1] batman-adv: Release references to inactive
+ interfaces
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <176161380600.1648894.13441398313655370264.git-patchwork-notify@kernel.org>
+Date: Tue, 28 Oct 2025 01:10:06 +0000
+References: <20251024091150.231141-2-sw@simonwunderlich.de>
+In-Reply-To: <20251024091150.231141-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: davem@davemloft.net, kuba@kernel.org, netdev@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, stable@vger.kernel.org,
+ syzbot+881d65229ca4f9ae8c84@syzkaller.appspotmail.com,
+ penguin-kernel@i-love.sakura.ne.jp
+Message-ID-Hash: CMENGQTGSQZYOTUGQMGYVZL54EVHW6XL
+X-Message-ID-Hash: CMENGQTGSQZYOTUGQMGYVZL54EVHW6XL
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-2; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-2; emergency; member-moderation
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/O565IWXPBY4MAPF46ZYIUU5AES2ULSPF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CMENGQTGSQZYOTUGQMGYVZL54EVHW6XL/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -102,69 +115,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Thursday, October 23, 2025 2:28:10=E2=80=AFPM Central European Summer Ti=
-me=20
-mbiglari4@gmail.com wrote:
-> Dear Simon,
->=20
-> I have a mesh network with three nodes that use 802.11s for the PHY and M=
-AC
-> layers, and BATMAN-adv on top to provide routing and mobility. Two of the
-> nodes act as gateways, and the other functions as a client. The client
-> selects the best gateway based on throughput.
->=20
-> Currently, I don=E2=80=99t have a DHCP server in this network =E2=80=94 e=
-ach node has a
-> static IP address. The issue I=E2=80=99m encountering is that when the se=
-lected
-> gateway node turns off, the client takes too long to switch to a new
-> gateway. All nodes are using the BATMAN V routing protocol.
+Hello:
 
-The setup is still not really clear to me. If you are not using DHCP but us=
-e=20
-static IP addresses, how do you do the selection of the best gateway? Is th=
-is=20
-a functionality of batman-adv, or a script?
+This patch was applied to netdev/net.git (main)
+by Simon Wunderlich <sw@simonwunderlich.de>:
 
-batman-adv has the gateway feature [1] which optimizes the gateway based on=
-=20
-throughput, but this is useful only with DHCP enabled - because it redirect=
-s=20
-your DHCP requests, nothing more, nothing less. This mechanism is rather sl=
-ow,=20
-and changes will only happen when the IP address renewal is due.
+On Fri, 24 Oct 2025 11:11:50 +0200 you wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> Trying to dump the originators or the neighbors via netlink for a meshif
+> with an inactive primary interface is not allowed. The dump functions were
+> checking this correctly but they didn't handle non-existing primary
+> interfaces and existing _inactive_ interfaces differently.
+> 
+> [...]
 
-You may also have interconnect your gateways with Ethernet, use a bridge, a=
-nd=20
-enable BLA (bridge loop avoidance) in batman-adv. But it's not clear whethe=
-r=20
-you do that.
+Here is the summary with links:
+  - [net,1/1] batman-adv: Release references to inactive interfaces
+    https://git.kernel.org/netdev/net/c/f12b69d8f228
 
-Please explain your network setup in more detail, then we may be able to he=
-lp.
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
-
->=20
-> I believe this delay could be reduced by factoring the last connection ti=
-me
-> into the throughput calculation. For example, if you=E2=80=99re using an =
-EWMA
-> filter, you could treat a node that has been disconnected for more than 10
-> seconds as having a throughput of zero. This would cause the EWMA value to
-> drop quickly, allowing the client to select a new gateway sooner.
-
-I can't really comment here unless I know which component in batman-adv wou=
-ld=20
-interact with, as explained above.
-
-However, if you have an idea, you can also go ahead and implement those thi=
-ngs=20
-yourself in batman-adv and try it out. Please note that BATMAN V is still=20
-considered experimental, and most networks I work with are running BATMAN I=
-V.
-
-Cheers,
-      Simon
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
