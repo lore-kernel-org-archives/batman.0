@@ -1,86 +1,84 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 850DEE9A02C
-	for <batman-adv@archiver.kernel.org>; Wed, 18 Feb 2026 15:39:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77BAFEFD20A
+	for <batman@archiver.kernel.org>; Wed, 25 Feb 2026 08:47:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B4C4F857AE
-	for <batman-adv@archiver.kernel.org>; Wed, 18 Feb 2026 16:39:34 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B2F06859F3
+	for <batman@archiver.kernel.org>; Wed, 25 Feb 2026 09:46:59 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1771429174;
- b=F30YVWa+fJ6hhcaRUvOs5wlbaSatmEUDxbUNXx9pZd47Its9ZPBjuOxIQDd2qMWwGSpe3
- Srp/fsiHp+9iJbteCb23Ojr31wuXIl0dCpbkGLzfAROuUnF+wGWqHRdnODQ+uwuX/bz9U4q
- +LPuvaqFfyJOpG4FbiGtb71iKk+mecE=
+ t=1772009219;
+ b=niskOZxbFY0FJmhx48F+gOOjB/NOTCb8b3CcRSdQFoUE0hPRJwEGOA0UqzplUtVe15WfU
+ v+HsxCN0M6jjphCZVVI2nmVpqFI+LgA1lxtAAhy1m+/mVoOIagYif6Cibpbz756NwJWfG5G
+ FgMyCS0krUo2OTsTBKtxGMBLZUCCRAc=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1771429174; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1772009219; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=8VvcYrea6sHh+GqMj/SJShm4gng7cbUXMHd15ATAHbI=;
- b=Y2nPZxwB8M0efswtqMUda9Uv6WBF8xohUE8Jp78etuVxI5W5zTJ9J1mpCDZFq9OsZXoTO
- LxtDAYn2NCi+XEbEwaXlOnTHZwl+WYp4V+iNhylr40SoSAcXNhx3sG9/kRFW0TpYt0zSzYU
- 4UxQc1KVcrnbQrIke91JYVZfFZgdVxQ=
+ list-archive; bh=9+r/aLXNcZUbizaqmSJ4N85bkD5HLrXYGZvg1TDdi7c=;
+ b=d6qgYDT5xlkKZaAmgj6A3+CGFI7Gzm6t3hBmLIc4rYoOzuFWyrk+2zd3DRJMPLA++2ePb
+ ymfP2MrFDI+KEZvEADP9SdlhvGsZyVQgLMKxcqr+6VAfYJVSFnbXtT/qXKuy6B/9eN9jCu7
+ x3SJo0yk17Qqjy8mS2IVKe9Pr6yLitQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D128A84289
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 18 Feb 2026 16:39:20 +0100 (CET)
+ dmarc=fail header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
+ dmarc=fail (Used From Domain Record) header.from=simonwunderlich.de
+ policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id CDD5984220
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 25 Feb 2026 09:46:19 +0100 (CET)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1771429160;
+	s=20121; t=1772009190;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=8VvcYrea6sHh+GqMj/SJShm4gng7cbUXMHd15ATAHbI=;
-	b=zDfGfijLamnhpKy6LnVZROSW4rR9JkbN6aXUSLl0xEeKiKZQCNiSjqsyF0qW7yrvvl0QxP
-	ygEPUOSLpU2x3OQcyqlMSI3oWiP7WzLsjjTXYbIc5onKOLP2nCMBl1xEKyS0DURs67fi5x
-	pUMSK1hEP6UiPjNMYUAW274fIg84vIc=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=9+r/aLXNcZUbizaqmSJ4N85bkD5HLrXYGZvg1TDdi7c=;
+	b=YqbGcqEALqfWfmP69ppG6+VqOW1eW3GURJYDB2dQMkZIxRJifuvOLSeREaF3GGri/twP4U
+	Q/z2Rni0fllrkd1xI66n62WIOkk78Xx0D3AvY7eBtQRDtxlCpdNJ2cvHsyfLz21oCpKGs9
+	BwLnGvlp6eOCqGhJg41SpFRxhTsaa0c=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="o/rT4i6m";
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1771429160;
-	b=BXVyShPZiuAVHioil69wESBiEURlkvdvC51EMi0/g5GR+zdwF1xpYrOV5+2KQAujYS//on
-	/xz6oHrbmg7nHpc04kdHQZkbZr9BX1jzLwhCPjQ3JZW7UBEOwIs2qH3JFdMuGfaGrNNoNo
-	8x+Nf2Khl5keucSEorrKErWbeVZFcPc=
-Received: by dvalin.narfation.org (Postfix) id 8E0181FF29
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 18 Feb 2026 15:39:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1771429158;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8VvcYrea6sHh+GqMj/SJShm4gng7cbUXMHd15ATAHbI=;
-	b=o/rT4i6mETScccBcuPqniBee+n4wURzbRg23kfqVuTxkvEHyomjWx8L447jGnT47amj+cm
-	rejBYlLMnKFdLCgu6tECDbfJhpAzOL0Kyych75KbU2sOeigcd7ApdQJfbqikb8ynG0mSXK
-	FwtEbN0zdZ/QsR6RgyAO+RwlsuDeDg0=
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH] batman-adv: Avoid double-rtnl_lock ELP metric worker
-Date: Wed, 18 Feb 2026 16:39:16 +0100
-Message-ID: <2032168.PYKUYFuaPT@ripper>
-In-Reply-To: 
- <20260216-double-rtnl-lock-throughput-v1-1-513f66d3b36e@narfation.org>
-References: 
- <20260216-double-rtnl-lock-throughput-v1-1-513f66d3b36e@narfation.org>
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1772009190;
+	b=Ldjsoy/9MrKcNbBaU8B+LkWrqaRavd8WCuTNGOkDDdOs4JOIRC5kvOa9+JW8FB0rN5RDP2
+	X0YaxM+u32nKnxb1XQWFf1IpNYpXo2cufE4o5bvvhwW100e/w9ynq229Ykfm1Y5jTTlwCN
+	V9EnHCpbYtVbncmCSmR6XWmtMX0zL0U=
+Received: from kero.packetmixer.de
+ (p200300c5970D83d820CE3bc4f6Cb317e.dip0.t-ipconnect.de
+ [IPv6:2003:c5:970d:83d8:20ce:3bc4:f6cb:317e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits)
+ server-digest SHA256)
+	(No client certificate requested)
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 274A6FA12C;
+	Wed, 25 Feb 2026 09:46:18 +0100 (CET)
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: davem@davemloft.net,
+	kuba@kernel.org
+Cc: netdev@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 0/1] pull request: batman-adv 2025-05-09
+Date: Wed, 25 Feb 2026 09:46:13 +0100
+Message-ID: <20260225084614.229077-1-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart23010935.EfDdHjke4D";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 525DKXXKOUYSDQLG4YDQZHLVHDKXQ6ZR
-X-Message-ID-Hash: 525DKXXKOUYSDQLG4YDQZHLVHDKXQ6ZR
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: CIHHXYJ5Z6YEXF4UDBH3T6BURVYGCR5C
+X-Message-ID-Hash: CIHHXYJ5Z6YEXF4UDBH3T6BURVYGCR5C
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -100,65 +98,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart23010935.EfDdHjke4D
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Date: Wed, 18 Feb 2026 16:39:16 +0100
-Message-ID: <2032168.PYKUYFuaPT@ripper>
-MIME-Version: 1.0
+Hi David, hi Jakub,
 
-On Monday, 16 February 2026 20:05:55 CET Sven Eckelmann wrote:
-> batadv_v_elp_get_throughput() might be called when the RTNL lock is alrea=
-dy
-> held. This could be problematic when the work queue item is canceled via
-> cancel_delayed_work_sync() in batadv_v_elp_iface_disable(). In this case,
-> an rtnl_lock() would cause a deadlock.
->=20
-> To avoid this, rtnl_trylock() was used in this function to skip the
-> retrieval of the ethtool information in case the RTNL lock was already
-> held.
->=20
-> But for cfg80211 interfaces, batadv_get_real_netdev() was called - which
-> also uses rtnl_lock(). The approach for __ethtool_get_link_ksettings() mu=
-st
-> also be used instead and the lockless version __batadv_get_real_netdev()
-> has to called.
->=20
-> Fixes: 405d49a20a20 ("batman-adv: Drop unmanaged ELP metric worker")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_v_elp.c      | 10 +++++++++-
->  net/batman-adv/hard-interface.c |  8 ++++----
->  net/batman-adv/hard-interface.h |  1 +
->  3 files changed, 14 insertions(+), 5 deletions(-)
+here is a bugfix for batman-adv which we would like to have integrated into net.
 
+Please pull or let me know of any problem!
 
-Via github [1]:
+Thank you,
+      Simon
 
-Reported-by: Christian Schmidbauer <github@grische.xyz>
-Tested-by: S=C3=B6ren Skaarup <freifunk_nordm4nn@gmx.de>
+The following changes since commit 8f7aa3d3c7323f4ca2768a9e74ebbe359c4f8f88:
 
-Regards,
-	Sven
+  Merge tag 'net-next-6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next (2025-12-03 17:24:33 -0800)
 
-[1] https://github.com/freifunkMUC/site-ffm/issues/776#issuecomment-3920865=
-984
---nextPart23010935.EfDdHjke4D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+are available in the Git repository at:
 
------BEGIN PGP SIGNATURE-----
+  https://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20260225
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaZXdJAAKCRBND3cr0xT1
-y4g2AQCJi6xJCAj2mMDyTpOw/In+7qZr6oEgiJbhHLqUaK/9hwD/cfjpvJLRiI1U
-U5syhR6f0hAL0VxcgexYuf0ERYp7oAY=
-=Tz3m
------END PGP SIGNATURE-----
+for you to fetch changes up to cfc83a3c71517b59c1047db57da31e26a9dc2f33:
 
---nextPart23010935.EfDdHjke4D--
+  batman-adv: Avoid double-rtnl_lock ELP metric worker (2026-02-21 13:01:55 +0100)
 
+----------------------------------------------------------------
+Here is a batman-adv bugfix:
 
+ - Avoid double-rtnl_lock ELP metric worker, by Sven Eckelmann
 
+----------------------------------------------------------------
+Sven Eckelmann (1):
+      batman-adv: Avoid double-rtnl_lock ELP metric worker
+
+ net/batman-adv/bat_v_elp.c      | 10 +++++++++-
+ net/batman-adv/hard-interface.c |  8 ++++----
+ net/batman-adv/hard-interface.h |  1 +
+ 3 files changed, 14 insertions(+), 5 deletions(-)
