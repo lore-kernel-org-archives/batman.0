@@ -4,67 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5225D3943A
-	for <batman-adv@archiver.kernel.org>; Thu,  2 Apr 2026 15:17:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A4C3D6AAE4
+	for <batman-adv@archiver.kernel.org>; Thu,  2 Apr 2026 15:41:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1E68085A00
-	for <batman-adv@archiver.kernel.org>; Thu, 02 Apr 2026 17:17:49 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id BECFB85925
+	for <batman-adv@archiver.kernel.org>; Thu, 02 Apr 2026 17:41:44 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1775143069;
- b=W1Gh6jEFYOizo++EhqS5GxyRJl2yc9NsWIDHcDq7lo6Y1MRsNWkF9VCgRrld7PM1XyNn6
- /r0qyam4eqbfoyXSMWp7bLZOAmJUhg58RqevRMPzTZ5mvIC/3SlaMkI6yCte2ZsWUdGZlk6
- NHRfTVTY4WCpVXJFNhWnHD4W82xHqDA=
+ t=1775144504;
+ b=2VPI0b4izfwaCaETG1MDj4fwPe0hSWncy4Aoqf7BTMeZerZkRS8CX/oO3vZMoZjNhnRHK
+ VTwTcKw/yEXwDxwxnU8/TWjJQpav6YIer/8LfzCRJgJIXdt1ZrmHT3cdrimqk89yI3YbpP2
+ wG0iFqM9zXA5X6NaEmXxr0j5Imj/Ln8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1775143069; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1775144504; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=InV9ULBcR38fiUPRcvPboUdlam8KdnJ8VA/9KP7DIAY=;
- b=SXve8/XsU0l4vSN3WINFXp/YeJteG5bhJYeQcnquBm/6vOfhwlIHm3y05VUii9pdc9h0/
- Y9ZuQstYOSMASxukqzQUhKkuoU4/UpjEcqPjhdBEOu1DblKltVYfvLBEClgrqk9X4sVpbuK
- VJCBbT/U2Fjtf4H5fHME7pEcwJzy3cM=
+ list-archive; bh=HMLKN6+DFzl+KveR0ngqcK+e+QLEHyshk8tGIc9QbzQ=;
+ b=vc8frCEx0mqXXaE8JMzgaSTzVSWNcqjPqFNqY5riSEn0JnQ8zq7KJoD4NfkuIr8ZPndDk
+ sSaULRcuN9EYdoCrQjQQxWrao6uhdt2T3jT90yqnKwtiZql8VcSRLC8Z0lM9VT87vourLXQ
+ w6yFYcHq+yJyb+0k/FjHVDa1w8xxme8=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=fail;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from zg8tmja5ljk3lje4mi4ymjia.icoremail.net
- (zg8tmja5ljk3lje4mi4ymjia.icoremail.net [209.97.182.222])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id CFBCD845A4
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 02 Apr 2026 17:12:40 +0200 (CEST)
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 57FEE83AAD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 02 Apr 2026 17:41:16 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1775142773;
+	s=20121; t=1775144476;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=InV9ULBcR38fiUPRcvPboUdlam8KdnJ8VA/9KP7DIAY=;
-	b=3oKuWgfj2LavgtUQbi8XWztpJ3y3utz+PZK1MuPNklxrLEB574XbWln2XnblTBCxxoCgF0
-	vnEWZpTOnVLg3VWOpmVNnjCzrf2iBKKwHguBEii1Z0L1XreiEqCfMfKtq0vpTesKLR86zO
-	AY9YGTgknA653PLOR6e57Lx1DHJ6ztA=
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=HMLKN6+DFzl+KveR0ngqcK+e+QLEHyshk8tGIc9QbzQ=;
+	b=xGk1sb84Rc7+wU4Gq4/GOJin7fBlspYTmQC9y8/eixIJFILxzymYmokkd/fxfSqoFuENqW
+	hyTRapjkPAAZxBC2fO7jnbB55OjF7qLTC/uTv0Fegc5tfohtfKOQCAXKBEQLESmm74ELSV
+	p8MZzUSQwYgixMVhSQqTBdgPa6GNaiU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	dmarc=none;
-	spf=pass (diktynna.open-mesh.org: domain of n05ec@lzu.edu.cn designates
- 209.97.182.222 as permitted sender) smtp.mailfrom=n05ec@lzu.edu.cn
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1775142773;
-	b=nXCo0XNPjPnXudCffvAcoxw6jQpnbMBZYPUoFAGZUyDMd4zyEb0pKbi50ocf8O7E4nivLW
-	1fCUu5RhPQHPDo1/Dgp2XlXBr2t6yoBM65A7PTXWIpENvE0Xt1Ob2KqO3Vz8Qm7kpCEmA1
-	iPecjuR86V1swFKSOSb+/38WSed+i/U=
-Received: from enjou-Legion-Y7000P-2019.coin-barley.ts.net (unknown
- [172.23.56.36])
-	by app1 (Coremail) with SMTP id ygmowACnHwBgh85pjSKhAA--.35323S3;
-	Thu, 02 Apr 2026 23:12:34 +0800 (CST)
-From: Ren Wei <n05ec@lzu.edu.cn>
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Dyb8LWcd;
+	dmarc=pass (policy=none) header.from=narfation.org;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1775144476;
+	b=2Pyg4+ltUxor5kgQzg0BNLcGwNfH2lncrJtlvr6ugLVpYCnAgXqdtflS/coLqQziQ7w1Mh
+	h5mxeU0MrXQFa2s2xlvcZtGQwFNO/mfGjgamu6wUYXrV77o92s3mDXIaFQxps6FraV//Z7
+	gFEguE1LMmug3DOy/KSTXyWFY5+JJ90=
+Received: by dvalin.narfation.org (Postfix) id 4C66020D7E;
+	Thu, 02 Apr 2026 15:41:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1775144475;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HMLKN6+DFzl+KveR0ngqcK+e+QLEHyshk8tGIc9QbzQ=;
+	b=Dyb8LWcdbbOgiyhpzVg7petD/yM5XsqLAiNoyKpQuSeYN6jOApYKdwv1XZZQXA9kuDM2fj
+	ZzzgXlpj89C/wOQI4k0Nc87Qkf5GynHJnG7RF/yVxnBhkUquB76M8WgjEM+ck87R7LDMX0
+	bBuNWO+jt22t+JaRo5sVKSaqbYNRRVQ=
+From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org,
-	netdev@vger.kernel.org
-Cc: marek.lindner@mailbox.org,
-	sw@simonwunderlich.de,
+	netdev@vger.kernel.org,
+	Ren Wei <n05ec@lzu.edu.cn>
+Cc: Sven Eckelmann <sven@narfation.org>,
+	marek.lindner@mailbox.org,
 	antonio@mandelbit.com,
-	sven@narfation.org,
 	davem@davemloft.net,
 	edumazet@google.com,
 	kuba@kernel.org,
@@ -75,52 +84,35 @@ Cc: marek.lindner@mailbox.org,
 	yuantan098@gmail.com,
 	bird@lzu.edu.cn,
 	enjou1224z@gmail.com,
-	caoruide123@gmail.com,
-	n05ec@lzu.edu.cn
-Subject: [PATCH net 1/1] batman-adv: reject oversized global TT response
+	caoruide123@gmail.com
+Subject: Re: [PATCH net 1/1] batman-adv: reject oversized global TT response
  buffers
-Date: Thu,  2 Apr 2026 23:12:31 +0800
-Message-ID: 
+Date: Thu,  2 Apr 2026 17:40:50 +0200
+Message-ID: <177514407836.3993083.12834978230665818269.b4-ty@b4>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: 
  <f1ae21c92be31b48651378f1ceba0dbbb43c2847.1774947926.git.caoruide123@gmail.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <cover.1774947926.git.caoruide123@gmail.com>
-References: <cover.1774947926.git.caoruide123@gmail.com>
+References: 
+ <f1ae21c92be31b48651378f1ceba0dbbb43c2847.1774947926.git.caoruide123@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: ygmowACnHwBgh85pjSKhAA--.35323S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7uryDZr4rAF13Cw1fXFykGrg_yoW8uw4rpF
-	WfGryDGrZ3J3sxJFn2y340vr4FkFs7Gr1UtasYv3Z0va1kKr93JayYkryqvF4rJayIkFWY
-	vF1Y9FW7Xa1DZrDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUBY1xkIjI8I6I8E6xAIw20EY4v20xvaj40_JFC_Wr1l1IIY67AE
-	w4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2
-	IY67AKxVW7JVWDJwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E
-	87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c
-	8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_
-	Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwI
-	xGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAa
-	w2AFwI0_GFv_Wrylc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMxAIw28IcVCjz48v1sIEY2
-	0_Gr4l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8G
-	jcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2I
-	x0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK
-	8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I
-	0E14v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7sRi_HU3UUUUU==
-X-CM-SenderInfo: zqqvvuo6o23hxhgxhubq/1tbiAQQFCWnNP3wYUwAAsl
-X-MailFrom: n05ec@lzu.edu.cn
-X-Mailman-Rule-Hits: nonmember-moderation
+Message-ID-Hash: GNT23CGP47OFQUQW2ANB6JVCI6EANW63
+X-Message-ID-Hash: GNT23CGP47OFQUQW2ANB6JVCI6EANW63
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: H2DPB7L5YYV42HDPSX73ZQKPUVM4GLAX
-X-Message-ID-Hash: H2DPB7L5YYV42HDPSX73ZQKPUVM4GLAX
-X-Mailman-Approved-At: Thu, 02 Apr 2026 17:17:21 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
+ news-moderation; no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/H2DPB7L5YYV42HDPSX73ZQKPUVM4GLAX/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GNT23CGP47OFQUQW2ANB6JVCI6EANW63/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -129,61 +121,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Ruide Cao <caoruide123@gmail.com>
 
-batadv_tt_prepare_tvlv_global_data() builds the allocation length for a
-global TT response in 16-bit temporaries. When a remote originator
-advertises a large enough global TT, the TT payload length plus the VLAN
-header offset can exceed 65535 and wrap before kmalloc().
+On Thu, 02 Apr 2026 23:12:31 +0800, Ren Wei wrote:
+> batman-adv: reject oversized global TT response buffers
 
-The full-table response path still uses the original TT payload length when
-it fills tt_change, so the wrapped allocation is too small and
-batadv_tt_prepare_tvlv_global_data() writes past the end of the heap object
-before the later packet-size check runs.
+Applied, thanks!
 
-Fix this by rejecting TT responses whose TVLV value length cannot fit in
-the 16-bit TVLV payload length field.
+[1/1] batman-adv: reject oversized global TT response buffers
+      https://git.open-mesh.org/linux-merge.git/commit/?h=batadv/net&id=3a359bf5c61d52e7f09754108309d637532164a6
 
-Fixes: 7ea7b4a14275 ("batman-adv: make the TT CRC logic VLAN specific")
-Reported-by: Yifan Wu <yifanwucs@gmail.com>
-Reported-by: Juefei Pu <tomapufckgml@gmail.com>
-Co-developed-by: Yuan Tan <yuantan098@gmail.com>
-Signed-off-by: Yuan Tan <yuantan098@gmail.com>
-Suggested-by: Xin Liu <bird@lzu.edu.cn>
-Tested-by: Ren Wei <enjou1224z@gmail.com>
-Signed-off-by: Ruide Cao <caoruide123@gmail.com>
-Signed-off-by: Ren Wei <n05ec@lzu.edu.cn>
----
- net/batman-adv/translation-table.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 6e95e883c2bf..05cddcf994f6 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -798,8 +798,8 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- {
- 	u16 num_vlan = 0;
- 	u16 num_entries = 0;
--	u16 change_offset;
--	u16 tvlv_len;
-+	u16 tvlv_len = 0;
-+	unsigned int change_offset;
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
- 	struct batadv_orig_node_vlan *vlan;
- 	u8 *tt_change_ptr;
-@@ -816,6 +816,11 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	if (*tt_len < 0)
- 		*tt_len = batadv_tt_len(num_entries);
- 
-+	if (change_offset > U16_MAX || *tt_len > U16_MAX - change_offset) {
-+		*tt_len = 0;
-+		goto out;
-+	}
-+
- 	tvlv_len = *tt_len;
- 	tvlv_len += change_offset;
- 
+Best regards,
 -- 
-2.34.1
-
+Sven Eckelmann <sven@narfation.org>
