@@ -4,52 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46BCBFEEF38
-	for <batman@archiver.kernel.org>; Tue,  7 Apr 2026 13:47:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3543D1073C8D
+	for <batman@archiver.kernel.org>; Wed,  8 Apr 2026 11:03:19 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 7873F85A13
-	for <batman@archiver.kernel.org>; Tue, 07 Apr 2026 15:47:21 +0200 (CEST)
-ARC-Seal: i=1; cv=none; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1775569641;
- b=2ieycOtNhKV9LobkDHn2rY7xcFQgXwx1BXJGbe8m4cRtU6c8+MvIbQd7hH1QJHahm+UM/
- t4CPg002IYDmZcc1aZhImqpAv2fd0N7Q18uO3cm2OGmyCwGnX+9s5CUsiirjXSi451BxSdU
- AiBQmbQT7bJIlwD31cVItZO1UkcQwkM=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1775569641; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7243E81712
+	for <batman@archiver.kernel.org>; Wed, 08 Apr 2026 13:03:17 +0200 (CEST)
+ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1775646197;
+ b=uPf/Hv7DHSSf7Z+tgc3XaZ4g3/bIGjAQ5eO56yuiR03EO5f0aDCTdg9na9ZUO598g3EVd
+ 1mVJmmf8L1sAXHeNHQwuU0fd5LIOsrbQzx1s0DDbA9G1SRPgPMvvN3tuFiwMYcpW85GZr+v
+ ghtmKbxJ359WxEaPfqcZ486Dkv+yrMs=
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1775646197; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=DCjz17ewHfu8Yr+SV6U7S1CqIqYVFXv8Ix1xoVywBf0=;
- b=jsGrWPbzp43QAaGUFs1gFKR3HhZXr37cnHnkEc9uBgxXPdB0d5TU0O1zzqU3bIkOThsz7
- Ipj788JrDmzPjv46Cxmbn2TjIv2aGRYg2c48V2IQRejRlEoZqJqb320w1IPVkqUA6LNrnq8
- Ws7hLjJlWdKbBdKAcuf2N+1fKpJcsng=
-ARC-Authentication-Results: i=1; open-mesh.org;
- dkim=fail;
- arc=none;
- dmarc=fail header.from=gmail.com policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=fail;
- arc=none (Message is not ARC signed);
- dmarc=fail (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 61FB18044F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 07 Apr 2026 15:46:59 +0200 (CEST)
-Content-Type: text/plain; charset="utf-8"
+ list-archive; bh=pJS2ibfOWyySj7tquSq/UocQeHFXSHfn/HFR9aV+i4Y=;
+ b=b9xZFd3GHY9cowRvWM1jkP1Rba2c6kuElsHAPEYxb9Ps3we6WFZededyhBVF0+TvDsS9k
+ v6tI51mexvLC4/opI7Cg/88uts+QcYjrgbsX4LAFKWCLp9AHgszvSAbg5ygPzq4EMUxDmXI
+ s1D7wbGxPLcDikqmbweJ0S2ZIDgW0uU=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=simonwunderlich.de;
+ arc=pass;
+ dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id BDCC580270
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Apr 2026 13:03:03 +0200 (CEST)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1775646183;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=pJS2ibfOWyySj7tquSq/UocQeHFXSHfn/HFR9aV+i4Y=;
+	b=B9p/+awVjzVBirB/Zy0wctlpaSnLHO8CIqklPoCN73+4lthJdldpygHIKnPaSodA+aezF7
+	zWFBPxaRyEWgrOVvmt579Hr0ssnqgx3ttLnPrUBPFgZcMU8rrUMO7CkECfE4+0VZyx9M8k
+	OgiE2ttWebEnhBmHgaTGm805iCojdbM=
+ARC-Authentication-Results: i=1;
+	diktynna.open-mesh.org;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=mqrZy+Ay;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1775646183;
+	b=fM12GHSGB4Wo94Dfg3Sqq7VMswTIrKHpNc49sMwYghVt9kX8Nf/5e0CLYEsbD8CZFNIwZG
+	4qysqcI/d8SHglkAPfMGqselDHn8zNAxQVjllgiYHHBfY8eYGp5KnQS18XZ76wXxVhJn50
+	ZTIxhJ8YzLOG8MwTkxMn0IrDM1CFg1U=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
+	s=09092022; t=1775646182;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=pJS2ibfOWyySj7tquSq/UocQeHFXSHfn/HFR9aV+i4Y=;
+	b=mqrZy+AyIsuGGaULaUhSwNWvYnzFI13etUrR5xa0reTzbXUSPagIzqtXiq/0mcuap+KGjd
+	43OaVeulFeo56UFFDUH5q7uEBbZV0raavHkqF3qCci1XukfhRCKqJ5lNY3Dn7VATEJWf05
+	It7gqgtNRUFReLswtLfFMNPMFG4U+WCK4OaCqUIo3Xawzzwgy3tSh6UX4VYF97omYCQfKM
+	nz7GoKWgcyTYylkjIeXuFBK8xIto+K1RgB9iyc3jH0fC0bqcbYYoGSUVU5daFaVlydLsm1
+	rTJrjoP/WzvyBLDvSNzinYfMDApX2EnyTZ5jA8+cXStMYpfRT1ojF4tJvb8FfA==
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: davem@davemloft.net,
+	kuba@kernel.org
+Cc: netdev@vger.kernel.org,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 0/2] pull request: batman-adv 2025-04-08
+Date: Wed,  8 Apr 2026 13:02:53 +0200
+Message-ID: <20260408110255.976389-1-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: Gateway shut down detection takes too time from other nodes
-From: martinvdberg@gmail.com
-To: b.a.t.m.a.n@lists.open-mesh.org
-Date: Tue, 07 Apr 2026 13:46:59 -0000
-Message-ID: <177556961939.1631.5621807886524407791@diktynna.open-mesh.org>
-In-Reply-To: <3735338.hdfAi7Kttb@prime>
-References: <3735338.hdfAi7Kttb@prime>
-User-Agent: HyperKitty on http://lists.open-mesh.org/
-Message-ID-Hash: 6TYRWEMVWFV7WMQB7ZYKHWQIUFRRS7X2
-X-Message-ID-Hash: 6TYRWEMVWFV7WMQB7ZYKHWQIUFRRS7X2
-X-MailFrom: martinvdberg@gmail.com
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: CW57MFLH5O322K73MLAZV4FUMR324Y2E
+X-Message-ID-Hash: CW57MFLH5O322K73MLAZV4FUMR324Y2E
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -62,7 +92,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6TYRWEMVWFV7WMQB7ZYKHWQIUFRRS7X2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CW57MFLH5O322K73MLAZV4FUMR324Y2E/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -71,24 +101,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-I think I have a similar use-case as the original poster and ran into the same problem. 
+Hi David, hi Jakub,
 
-Let me try to explain:
+here are two bugfixes for batman-adv which we would like to have integrated into net.
 
-- Given a mesh network where each node is assigned a *static IP*.
-- In the mesh network there are some nodes acting as a Gateway.
-- The other nodes in the mesh are clients.
-- Using BATMAN-V
+Please pull or let me know of any problem!
 
-Each client node has a script running, when it detects "batctl gwl" to elect another gateway, the script will set the gateway's IP-address as default route: "ip route replace default via $gateway_ip dev bat0".
+Thank you,
+      Simon
 
-Now whenever a mesh-gateway is turned off, it will take 200 seconds before it is removed from the originators and only then "batctl gwl" will elect another gateway. This results in some client nodes have no internet for 200 seconds.
+The following changes since commit 0d4aef630be9d5f9c1227d07669c26c4383b5ad0:
 
-So far, I haven't been able to get batman-adv (using batctl) to switch to another gateway sooner, e.g. after 10 or 20 seconds.
+  batman-adv: avoid OGM aggregation when skb tailroom is insufficient (2026-03-14 08:29:47 +0100)
 
+are available in the Git repository at:
 
-Using DHCP is not an option in my use-case.
+  https://git.open-mesh.org/linux-merge.git tags/batadv-net-pullrequest-20260408
 
-Is there somehow a way to reduce the 200 seconds? Possibly by switching to BATMAN-IV?
+for you to fetch changes up to 82d8701b2c930d0e96b0dbc9115a218d791cb0d2:
 
-Regards, Martin
+  batman-adv: hold claim backbone gateways by reference (2026-04-06 15:42:29 +0200)
+
+----------------------------------------------------------------
+Here are two batman-adv bugfixes:
+
+ - reject oversized global TT response buffers, by Ruide Cao
+
+ - hold claim backbone gateways by reference, by Haoze Xie
+
+----------------------------------------------------------------
+Haoze Xie (1):
+      batman-adv: hold claim backbone gateways by reference
+
+Ruide Cao (1):
+      batman-adv: reject oversized global TT response buffers
+
+ net/batman-adv/bridge_loop_avoidance.c | 27 ++++++++++++++++++---------
+ net/batman-adv/translation-table.c     |  9 +++++++--
+ 2 files changed, 25 insertions(+), 11 deletions(-)
