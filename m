@@ -4,98 +4,138 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACC73F36C5C
-	for <batman@archiver.kernel.org>; Mon, 20 Apr 2026 12:06:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7560F94CCD
+	for <batman@archiver.kernel.org>; Wed, 22 Apr 2026 06:14:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DB98F858C9
-	for <batman@archiver.kernel.org>; Mon, 20 Apr 2026 14:06:53 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3D5A885470
+	for <batman@archiver.kernel.org>; Wed, 22 Apr 2026 08:14:54 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1776686813;
- b=DrhCjy/JoVv6H7n6oabRIydt2GsFfa68OMpwcrf3WR5F0rBEbDcjsAVdHcdEz7exyOMsE
- +foP1rhvxOcgdoAaFfhjeXOKzw29dJBV89PhR/709sZuT0eyHULfXlteKl0PKFHdh4fpGv0
- 49JsAc7IYozL+iEpfmZDYKJ4DwE4GMs=
+ t=1776838494;
+ b=K7fVO6VFB7F01vGNFLGbQjtIJHLRnzeWHRRddKCjWwBBGl8BG7mO2TgBpyQzva2AtaSQQ
+ tORNUZun+IFn/67AZmppSmUpNFBaWLvmfOdWz96/XUyMqyUB6vUrS7BVtIcqAu8AdB8AK1w
+ mA1qy4w+20h2hzUDJrH4G2UYUwKbRHA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1776686813; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1776838494; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=HwD+ieIXBMkELbsH7yoJMBlZvdZwoUCke5Jryc1Sl2Q=;
- b=G78mgCzBFwF/KENmIcNdqLDffVdfUjb2vFVLyfzfEhDjnlO87vD8iG+iBobPK9WdQ8tvg
- Pxf0TqYUIu/lTJIdzwnuP3wg3Wxz/oTB7QrwTEHe9EmA00pRuSywmkZWEmZjE2MQK/yoPYn
- FA60KRcbR8O4dyp7Q2EWBoX+jbnfZAI=
+ list-archive; bh=PgCpzzuc3EvfhU68f+8j+UPIVo7srbeg8aF5h8NYH+w=;
+ b=d3SJTIEENVFSVrqTLLjPLaOpRO186uS6STvfn55ouk4cdN/GMtlF7acVEMYobJTLlhR0D
+ NLKQMe3zGN9+AoSambMHd+aePROV2t1LUfh6cqsvV6uhTKbhDvgNXB1Lsh2pWkFf4sJhBcP
+ /O1EyOatFxSb64JEY4wnDhQXtr63A9M=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ dkim=pass header.d=fuzzinglabs-com.20251104.gappssmtp.com;
  arc=pass;
- dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 38EFD8033A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 20 Apr 2026 14:06:13 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1776686783;
-	b=kR2gJED9OoBw5/6tv1m8roFm2MBsZDzFUtLrDNeOPUSMrQyCaKu37HYwOBaXSMh1h5c04N
-	fdQxBG7cDKNs1VRvYzro5yjcm0wTXX8jsAjrlIwVUMDuLtiCv7VQrbPrX7QbCVM+9PDBX8
-	gWkgNfsjRI5zET50VGgcVNbnzPSeSoU=
+ dmarc=none
+Authentication-Results: open-mesh.org;
+ dkim=pass header.d=fuzzinglabs-com.20251104.gappssmtp.com; arc=pass;
+ dmarc=none
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com
+ [IPv6:2a00:1450:4864:20::32a])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 53F8B827E7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 22 Apr 2026 00:21:34 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1776810105;
+	b=cBc+/fGkxCgPbDzcyxMG+fsZg2Gg5mJT8Yytyv451cYi9ZLx7fMBCQ4zzIoPlS+5amMZ/N
+	HD9HJFsKVUaOiiB9yC44mIwdzRPFVdcQok2XI6mPIPW7M8B40YZAiA/rODuSMj+j3V2lDL
+	iCWdf36CZvwbj44Y/g5oqD0Kqe7Ish0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=HgKq3uRs;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
+	dkim=pass header.d=fuzzinglabs-com.20251104.gappssmtp.com header.s=20251104
+ header.b=xYiN1E4f;
+	spf=pass (diktynna.open-mesh.org: domain of lbourennani@fuzzinglabs.com
+ designates 2a00:1450:4864:20::32a as permitted sender)
+ smtp.mailfrom=lbourennani@fuzzinglabs.com;
+	dmarc=none
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1776686783;
+	s=20121; t=1776810105;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=HwD+ieIXBMkELbsH7yoJMBlZvdZwoUCke5Jryc1Sl2Q=;
-	b=yiZiiQnDwwUjk5swpl9sdtLWsIMxz7PMWzKkKC+2owQpOUo6b4B1Soj7gPDfe1kTYmxjl0
-	rwtaPlzQauA657h+k6oWmST7Htiz+O5khCHVKePKr8D8jiqn2qBo+HFyEfSk91LlYRHlRX
-	cayDi8h180amnmS3M8SrETDKkNHs/xI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1776686770;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HwD+ieIXBMkELbsH7yoJMBlZvdZwoUCke5Jryc1Sl2Q=;
-	b=HgKq3uRsySOQEkxwu8+YNfeW7KaNFlUXCiQYWtV8vDFna+obyztBKByBcrGKL3RW+Lg77f
-	WDDbTLqvxYFUKqiJ09Vt2Vxlus1be3xuhzLtanE8OAOldxSgGGwnxdF/lIQ0xI39bLIgyk
-	AnMVtdQ4W0GLeNWRHZMoSX5lH4uVU2odo2AqnFJwnn8hLwykjfg/ePI/pyyVdDsLgn+0sE
-	J5qoAx7RUXom5Dvmn2bbgOOGiutDhzWGB45Le7hCr9zkbxg++HarqZO0AU+Vy2URPWyuHQ
-	8f7XWhQAs+vaX5rsE6nMJgPTJfpRFb1BajF2rgU/xvT7+144HRhLdHgsnH/dtQ==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: Martin <martinvdberg@protonmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: Gateway shut down detection takes too time from other nodes
-Date: Mon, 20 Apr 2026 14:06:09 +0200
-Message-ID: <7831023.jRhZ6ZUK3Y@prime>
-In-Reply-To: 
- <Y7MSNnrQG9nc9mStihbiD3_QRV6QRc7K_7cBn5fJo-2Zzvu-XnKJ2E_z0wElZXZUrPGnpBKDasjjLryDqg5z8Y9jHdf7M4696K_kFweOlsk=@protonmail.com>
-References: <3735338.hdfAi7Kttb@prime> <3233879.U3zVgo479M@prime>
- <Y7MSNnrQG9nc9mStihbiD3_QRV6QRc7K_7cBn5fJo-2Zzvu-XnKJ2E_z0wElZXZUrPGnpBKDasjjLryDqg5z8Y9jHdf7M4696K_kFweOlsk=@protonmail.com>
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=PgCpzzuc3EvfhU68f+8j+UPIVo7srbeg8aF5h8NYH+w=;
+	b=m8DlErUpncLLNn2lsdnX69u3kaJ+byydTY3vjmRCGxhSLNBUf/q0f1uvmR0780pZwnojtu
+	36qyxRetqkaoquC0G4SYuuMHZ3R/vQFaC4raLYLaZgICcSH6EksEfpHj/NH/VtKhghbwUA
+	bryOHYSaW+l8rIs2O/5RXZ9QfK3Si5U=
+Received: by mail-wm1-x32a.google.com with SMTP id
+ 5b1f17b1804b1-4896c22fcbaso21958115e9.0
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Tue, 21 Apr 2026 15:21:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fuzzinglabs-com.20251104.gappssmtp.com; s=20251104; t=1776810093;
+ x=1777414893; darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=PgCpzzuc3EvfhU68f+8j+UPIVo7srbeg8aF5h8NYH+w=;
+        b=xYiN1E4f7m5G3T8DIcgdXFgwrW/4xdojjsgNjZj4CL5IjedgKwfdz56Rb2COFHfH77
+         w5Fv4qMDfZw6KiEIIJ6H0Wg2o2E8MVd5orXz4hIFbhMCqglgfd97LmqCPtJ20DArHFRZ
+         WW1hvsDng6oqRCmmnjbkPo9SnZPgLQZFyGDmDgEDX1TmUthCQK3Omi0z0UwZTdHE4wMO
+         6TkYSJ5XoKHKnWKAuy78xe2Ym1Rg9j0mIjY2HgJHGNMKFGd+nSFwTtbY2TTfDdbn8n4g
+         nnYejP0TqgCCIqJMetiaV6hsJyldG+GevtSn5qJQtI7t4IAUakW5x+VRDeClVxEPehNI
+         C9bQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776810093; x=1777414893;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PgCpzzuc3EvfhU68f+8j+UPIVo7srbeg8aF5h8NYH+w=;
+        b=jR4zXdDmnAs0rZHqKZo+0iflcCX2i2wODpjjzlAemzjP5lSl8hkVryqaWMSYjhey/p
+         ZC1vPtzoK8sv4tq0ixtCyIIiRU7bk3XBMd3eMSFJ7TuDK3K5jaxSiBSyunNZ7gMxgRzO
+         ZAL4pIEpyPKGwndE2z2qQw9Ba+GIzsuv3Y8/Y/4Rz9rodpVu45hpA5JjEnfF1CxPx/xL
+         AUxKy+Ialypi3MjjON9IVP9UB/hhcuZaW/qc3/cYJsTVSfmHEfm9wh1SS+hxrCpBgw63
+         d5UOkpQ8DMvRyCCkoUrnZMh8+FRFkhlqg05FcwYHqPiVp0+9v0vQpdjpTZSggfwIdbwE
+         EeMg==
+X-Forwarded-Encrypted: i=1;
+ AFNElJ/Mo9C3WTYlBHAo5L7wdfQ+uXW8/7w+rFzz0WkPYORX1nnxLFQT3IqJF6TXPOW+ncHjlWk8CDxR6Lx4Sw==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YzDDrraUxLqPvRo43SyIaEw9vZTkq/65PMSkQKUkHXZJhZodeK2
+	j67np0xZjfqKu8cpabKVsVfLuhMlCgWk6/89EdBKTP+JKf8+woIKDu8eaKeMPh9WDA==
+X-Gm-Gg: AeBDiesVhM96tT15/kHJJJojavkyJOvCnRpX1+Ss3mYLlOytaFJQwY8URkX4DdhjUsd
+	WP3n6yMsympmyDa2P3qG9GTHHjqJ/s3h+ttt0X8e3iB6j9CnvkD/bkiWH9SMB1czgorJXO3J+ls
+	+skMnO4OyLiPK2qh9POqM2OV+kiE/i9PQnPHmmW5lSVBqIQlHK6chfceS6c70LlHeentfyOjF2h
+	tM/29Bp/w/TBL1olW7VtUmDcbGrQCuWIFUVNr8Q3xzlNLpM7nIAMdL5+4XwZ3aeqNB80/OptFnV
+	NZjYliWmw7qw74hvrHr63xt3yONV2b6NU2n2cEcPRieBsYBLHviboG9lBDTIMQSyYah8tUKOx5i
+	zBmmUC1eI+WNqC69a5xE0E5DOdM9YIlwMD+T/wlEktvoCmOnaFh0PKKL3AqzQWeEm9AWa6EL6OT
+	/8V+KstHsbS8vphDlxaH6N4cRwVQpeP6TqzkEhcc7UDvbSLdQSQVMN0v+Yqg==
+X-Received: by 2002:a05:600c:8586:b0:489:e49:f766 with SMTP id
+ 5b1f17b1804b1-4890e49f7d8mr121077635e9.17.1776810093164;
+        Tue, 21 Apr 2026 15:21:33 -0700 (PDT)
+Received: from m1nds-pc.lan ([2001:861:4681:5b10:5055:b6f4:e5c1:bf80])
+        by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-488fc100162sm418853475e9.5.2026.04.21.15.21.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Apr 2026 15:21:32 -0700 (PDT)
+From: Lyes Bourennani <lbourennani@fuzzinglabs.com>
+To: marek.lindner@mailbox.org,
+	sw@simonwunderlich.de,
+	antonio@mandelbit.com,
+	sven@narfation.org
+Cc: apinson@fuzzinglabs.com,
+	security@kernel.org,
+	syzkaller@googlegroups.com,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Lyes Bourennani <lbourennani@fuzzinglabs.com>
+Subject: [PATCH] batman-adv: fix integer overflow on buff_pos
+Date: Wed, 22 Apr 2026 00:20:22 +0200
+Message-ID: <20260421222022.21231-1-lbourennani@fuzzinglabs.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2205804.VsPgYW4pTa";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: BKETKKDTWNQDGAHOBVQMU7HXJNX6WYA4
-X-Message-ID-Hash: BKETKKDTWNQDGAHOBVQMU7HXJNX6WYA4
-X-MailFrom: sw@simonwunderlich.de
+Content-Transfer-Encoding: 8bit
+X-MailFrom: lbourennani@fuzzinglabs.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: CBW7AZ6BJZLYANDVQIEZKF6OGPLKGB6T
+X-Message-ID-Hash: CBW7AZ6BJZLYANDVQIEZKF6OGPLKGB6T
+X-Mailman-Approved-At: Wed, 22 Apr 2026 08:14:24 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BKETKKDTWNQDGAHOBVQMU7HXJNX6WYA4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CBW7AZ6BJZLYANDVQIEZKF6OGPLKGB6T/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -104,195 +144,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart2205804.VsPgYW4pTa
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: Martin <martinvdberg@protonmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Date: Mon, 20 Apr 2026 14:06:09 +0200
-Message-ID: <7831023.jRhZ6ZUK3Y@prime>
-MIME-Version: 1.0
+Fixing an integer overflow present in batadv_iv_ogm_send_to_if.
+The size check is done using the int type in batadv_iv_ogm_aggr_packet whereas the buff_pos variable uses the s16 type.
+This could lead to an out-of-bound read.
 
-Hi Martin,
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
 
-I'm answering without PGP - your previous mail was encrypted so I guess oth=
-ers=20
-can't read it. I hope you don't mind. Please see inline:
+Signed-off-by: Lyes Bourennani <lbourennani@fuzzinglabs.com>
+Signed-off-by: Alexis Pinson <apinson@fuzzinglabs.com>
+---
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Friday, April 17, 2026 9:49:13=E2=80=AFAM Central European Summer Time M=
-artin=20
-wrote:
-> Hi Simon,
->=20
-> Thank you for your reply.
->=20
-> I=E2=80=99ve considered your suggestion, and it sounds feasible. The only=
- issue I
-> can think of is how to select the best possible gateway at the application
-> level in this scenario. Wouldn=E2=80=99t this result in duplication of lo=
-gic?
-
-You are right, you may end up having some similar logic compared to what=20
-batman-adv does internally. I don't think this is much of a problem, since =
-you=20
-would be re-using the same data but have a (slightly) different interpretat=
-ion=20
-of it. The original batman-adv code doesn't (directly) care about the last=
-=20
-seen time after all.
-
->=20
-> For the time being, I=E2=80=99ve patched the batman code to reduce the ti=
-meout from
-> 200s to 20s. This works fine.
-
-Glad to hear! If you don't mind that the originators time out quicker, then=
-=20
-this could just be sufficient as well. Some other users may have even stric=
-ter=20
-timing requirements (e.g. less than 5s or even 1s) which may not work with=
-=20
-this approach, though.
-
->=20
-> It would be great to have this timeout configurable via batctl. Is there =
-any
-> chance that such a feature could be implemented in the near future?
-
-Personally I don't have plans to do so. This is quite a corner case, and we=
-=20
-generally prefer to expose only few defines/variables to keep things simple=
-=2E In=20
-a typical community network (Freifunk etc), 20s OGM timeout might be less t=
-han=20
-the TQ window size (5 entries * 5s originator interval), and create other=20
-problems. I don't see a general case where we want to change it, and I gues=
-s=20
-you have two options now (change the one line in the source or indirectly u=
-se=20
-the gateway list), so that's satisified too. :)
-
-If there is more general interest to this, you can also write a patch if yo=
-u=20
-like.
-
-Cheers,
-       Simon
-
->=20
->=20
-> Regards, Martin
->=20
-> Sent from Proton Mail for iOS.
->=20
-> -------- Original Message --------
-> On Thursday, 04/16/26 at 07:47 Simon Wunderlich <sw@simonwunderlich.de>
-> wrote: On Wednesday, April 15, 2026 5:10:23=E2=80=AFPM Central European S=
-ummer Time
-> Simon
-> Wunderlich wrote:
-> > Hi Martin,
-> >=20
-> > On Tuesday, April 7, 2026 3:46:59=E2=80=AFPM Central European Summer Ti=
-me
-> >=20
-> > martinvdberg@gmail.com wrote:
-> > > I think I have a similar use-case as the original poster and ran into
-> > > the
-> > > same problem.
-> > >=20
-> > > Let me try to explain:
-> > >=20
-> > > - Given a mesh network where each node is assigned a *static IP*.
-> > > - In the mesh network there are some nodes acting as a Gateway.
-> > > - The other nodes in the mesh are clients.
-> > > - Using BATMAN-V
-> > >=20
-> > > Each client node has a script running, when it detects "batctl gwl" to
-> > > elect another gateway, the script will set the gateway's IP-address as
-> > > default route: "ip route replace default via $gateway_ip dev bat0".
-> > >=20
-> > > Now whenever a mesh-gateway is turned off, it will take 200 seconds
-> > > before
-> > > it is removed from the originators and only then "batctl gwl" will el=
-ect
-> > > another gateway. This results in some client nodes have no internet f=
-or
-> > > 200
-> > > seconds.
-> > >=20
-> > > So far, I haven't been able to get batman-adv (using batctl) to switch
-> > > to
-> > > another gateway sooner, e.g. after 10 or 20 seconds.
-> > >=20
-> > >=20
-> > > Using DHCP is not an option in my use-case.
-> > >=20
-> > > Is there somehow a way to reduce the 200 seconds? Possibly by switchi=
-ng
-> > > to
-> > > BATMAN-IV?
-> > >=20
-> > > Regards, Martin
-> >=20
-> > that's an interesting use case, although I would like to make clear that
-> > the gateway feature was designed for DHCP in mind, yet you use it with
-> > static IPs. The main purpose was to re-route DHCP packets to the select=
-ed
-> > gateway. Nethertheless, you could still use this mechanism for
-> > "signaling".
-> >=20
-> > The gateway selection can be based on TQ or on bandwidth parameters, but
-> > there is no option to speed up the "dead marking" from the 200s of the
-> > originator timeout. you can decrease that number in the source code, bu=
-t I
-> > would actually advise to use a completely different method independent =
-of
-> > batman-adv - for example by using a layer 3 routing daemon, or another
-> > application which regularly signals their availability as a gateway. For
-> > DHCP (which it was originally designed for), lease times are typically 5
-> > minutes minmum, so the 200s timeout are not really a problem there ... =
-but
-> > I acknowledge that it's not really useful for "fast" switching.
->=20
-> Perhaps one more practical idea: You could parse the gateway list and the
-> originator list yourself (batctl has json output options). Then, you could
-> get the "last seen" value from the originator list, and combine it with
-> your gatewaylist. In that way, you could easily filter the "best gateway
-> which was last seen <20 s" in a script. This doesn't help with batmans
-> internal DHCP forwarding, but since you use static IPs anyway and probably
-> already use a script to get the current gateway to look up the IP, this m=
-ay
-> be an easy fix ...
->=20
-> Cheers,
->        Simon
-
-
---nextPart2205804.VsPgYW4pTa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAmnmFrEACgkQoSvjmEKS
-nqGVyg//fOnFClpxD+eDi3w4EsbTWh7JqxYzWFFZUwefmaLcYoIlRx83tpq6fhC+
-/9ViE5ofuhlBQBwxrKPde0jq9SBwUORrsm1Yttx6W+i5NRTO23/DxuN7waVYhGef
-GpsjGq1n0IBicteq8dJ9z/pQqr8tcJmuhWz5rvR42HYFGVR4FfSpwapr5RxrV3V7
-DvHfNUqHzLCu6oRbS9t+TI7+11H7JI+GAcS14tAyBc/UWI6UaGhJfUT+PFlkKDzO
-DL4Obb3oOG+pw2w1G6CrhaX+aAdH9i9ieQzf+8Aq4vHnIufDOX323J8QG9sIKyzN
-Rls3YOylmYJ7L6eMGB5od7wQlQr/auRokejKXluA0vbAC5XwmLBPEhZY5M5awJ6t
-J/dFXaFs8fm8jGC3ZP+x1RDk6UIG90d3OArKqUhQ7+DX0kHSoagU14RpS0nIbDUm
-+mYOF0ewM/TV/9S5p27cp3DmBzHB6pHIXyBM4LlIekajxR3TI75PbfHyNC6AfA4/
-44G3u/jx19iQ7HvfL5MvAs0PLQVZW1Mfv9Ho9dl9WOPNO8fXUEPtsYz+IlFzlKNN
-pTfdj47uHjUmA2yXiV8R34Ot3bGflLnvT6jS6VJmLW9QGWmFFHZ4QkGkEJV+zwSa
-yOenMhcvLSVSoweZx01A08SJX7ye2i8DKQPqTkSNGWkTZPKCC6g=
-=IqYk
------END PGP SIGNATURE-----
-
---nextPart2205804.VsPgYW4pTa--
-
-
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index f28e9cbf8ad5..618d1889c04e 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -335,7 +335,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
+ 	const char *fwd_str;
+ 	u8 packet_num;
+-	s16 buff_pos;
++	int buff_pos;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+ 	struct sk_buff *skb;
+ 	u8 *packet_pos;
+-- 
+2.43.0
 
