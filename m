@@ -4,100 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64A36F9EDD7
-	for <batman@archiver.kernel.org>; Wed, 22 Apr 2026 14:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62BEEFF885C
+	for <batman@archiver.kernel.org>; Sat, 25 Apr 2026 13:11:42 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A7000859A6
-	for <batman@archiver.kernel.org>; Wed, 22 Apr 2026 16:22:04 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 80C7E85A95
+	for <batman@archiver.kernel.org>; Sat, 25 Apr 2026 15:11:40 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1776867724;
- b=T9ee52eFY0YcAh5y58LpQG6XN4ear9XPwpE1gk7baA8YVWqGM+ZqwN2RAtRkWaZH49/cT
- s+ph6l7Vp+SlfbJWjTFNFrFvB/lcbyywUEqnL/fsAQEj0XbbrAu5KsC8IcaYwH0KnmupbyR
- fnrARlINZT0U+MNlBzRAMTbvR9D3uVk=
+ t=1777122700;
+ b=OlrkgMOvaQ2wu9j0XdMuKtEKBgDt1DSYkrVHxOjAV8U+AhwNjZVetgThgQ8zIpER5Ebg2
+ fjXUwicLWDUxunzulpH8HrWMtYq43CWBDWqm1U7F3mu0EljjcuGqkqFbq6LDUwJxCY8Axap
+ eQqQOJf2LJRZvCPaucR+kRDCC3vo0hE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1776867724; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1777122700; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=bJi4BvGgxMRiaf6iBIys+pqoEYrH5Lgg4VXB+ViNH6g=;
- b=gW9C59yTPqavAGgwAw38egNq03BqOesKNfsjSNsNHac/C6lTiOCOffl32uXRYdtxumLXM
- 0zpIgiNI0w0PXRsWIYE9E5iSc1vWVuz45ZhyTdq6Kr2OdQYUHH78vKctn5364gfGqNrGuCt
- gK36sH5EgW5U5JYhq4MH+DKppwcAfhI=
+ list-archive; bh=uWMzYkXnAOnytEvxSnXeTLKMozklXyzaRjy0VvzES1s=;
+ b=BOu2XdIUflLlJQ6IP25LSBarpvXroy2vgn3HkoeoXikwOZuw5h+tGCHpW9XAqiEyPmO23
+ PPRiUnG5bXX7+Or0LPlmA2lNmAN3E0DUHPnmOrGUyXcWVV5cJBzmPpk2znlWApN1kXvZnsm
+ mdF5W4zxXdIwnAj9JePaOKTxlWu9hyU=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id F1C8B84511
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 22 Apr 2026 16:21:32 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1776867693;
-	b=pDmz5PnM8OTeo85PA2SPP2ufsp6QstAjiFKAn9jEwEM3cVR3O090GE+13/t40AFTmOdsW6
-	7XBQdewdm56MTdvaz8hYVu5JdGukTvLY+/sK3iO7lJG+O6QGifpZEKKfj+SvbVoU0Ne3Vv
-	+wA9oHAXcQCR2HMivJJeRAFxy2CDGNs=
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net
+ (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 907D784653
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 25 Apr 2026 15:08:43 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1777122525;
+	b=AtaG4QVF/+2HbPhUnU0Snxswgkn1jGI3am2NVx8IeamRmUpaAD/+8eQ+Gbe+KR/CdkcPhb
+	DGNGy26uMxxTMyNvom9R3BA7hGZR6JB+fxYsvtIzK3852niDeu3OyZJG92c+1C4BLbf5z9
+	8/z9ulgivh2rgdl5oaREPQwQpfbW0P0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=gg2Jx32V;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of n05ec@lzu.edu.cn designates
+ 162.243.164.118 as permitted sender) smtp.mailfrom=n05ec@lzu.edu.cn;
+	dmarc=none
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1776867693;
+	s=20121; t=1777122525;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=bJi4BvGgxMRiaf6iBIys+pqoEYrH5Lgg4VXB+ViNH6g=;
-	b=UiUgB1OUyD0TkpncbhQer7bkq+O3KZnNLuC+DD319z3qIkpTSNFy7SAqzi9dyrmx47X1HD
-	Vq7+SX8yQqEXynJAC6Oe1uTjBhq6SeAbFtwRWtsQj4erO8DiA3g8wh4jM07QFM3JI3T+9V
-	aYh8p96DBC1jqW01KDLk1BOiFed/uao=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1776867690;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bJi4BvGgxMRiaf6iBIys+pqoEYrH5Lgg4VXB+ViNH6g=;
-	b=gg2Jx32VHD17jFW9Y3ZOWwNh0umF8wycaaqyQPGbUoj143fAqIXVB/iu7vMqXUDZlxT7lv
-	GQMyDCSQiEqjiYlJyK42FG5DUq6U1ZWV7NG0Z476mOWiglXZZEMQ/gmx1EBEfMEvW7I1Bu
-	c3rBsyyJcohQJih75q7IKOfddv+NESmVm5t7pAy6GeQ6EhWvzpgXlR/bOKxCNQifD3pFEy
-	0bMv0svzfa8P5mtpvzzSp/L7w1U4ulDB4MrLzr3xaY7LKY6V1QpTdCAjwOXpjEb8ZE+dbg
-	B/0eMVXk905nu4j7cOf+zLNYUm9sIfCr0MFnClsj/K30WY1AtthiMZY+xSnfYg==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: Martin <martinvdberg@protonmail.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: Gateway shut down detection takes too time from other nodes
-Date: Wed, 22 Apr 2026 16:21:30 +0200
-Message-ID: <3280589.q0ZmV6gNhb@prime>
-In-Reply-To: 
- <T9GBvsX7uc7S-GxsAnHMFg5oj-euOauWkNTXi2SouU2ow1oX1yogmMCi6FW7mXlFuZ3D9zMBiIGARWa2UDobQ2S0OrY8To4neWUtWArNXzw=@protonmail.com>
-References: <3735338.hdfAi7Kttb@prime> <7831023.jRhZ6ZUK3Y@prime>
- <T9GBvsX7uc7S-GxsAnHMFg5oj-euOauWkNTXi2SouU2ow1oX1yogmMCi6FW7mXlFuZ3D9zMBiIGARWa2UDobQ2S0OrY8To4neWUtWArNXzw=@protonmail.com>
+	bh=uWMzYkXnAOnytEvxSnXeTLKMozklXyzaRjy0VvzES1s=;
+	b=I34puux8mW2TUlQiXvehppJmk0GtTMu47dtljGTVp5hKFK3xz4FUNObzlG4v/bmeaUSzw0
+	7E6A43t3yt4pzGe8xiNehj26Con/aO6cxWOW10DgckdDIy0woWGeMVYWLnAAYinbTAZpPC
+	cR4CSIyAABmp/7VPiFpJMmf/0qq6B2M=
+Received: from enjou-Legion-Y7000P-2019.coin-barley.ts.net (unknown
+ [172.23.56.36])
+	by app1 (Coremail) with SMTP id ygmowACH+PjSvOxpQHXgAA--.39303S3;
+	Sat, 25 Apr 2026 21:08:36 +0800 (CST)
+From: Ren Wei <n05ec@lzu.edu.cn>
+To: b.a.t.m.a.n@lists.open-mesh.org,
+	netdev@vger.kernel.org
+Cc: marek.lindner@mailbox.org,
+	sw@simonwunderlich.de,
+	antonio@mandelbit.com,
+	sven@narfation.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	horms@kernel.org,
+	yuantan098@gmail.com,
+	yifanwucs@gmail.com,
+	tomapufckgml@gmail.com,
+	bird@lzu.edu.cn,
+	tr0jan@lzu.edu.cn,
+	wangjiexun2025@gmail.com,
+	n05ec@lzu.edu.cn
+Subject: [PATCH net 1/1] batman-adv: stop tp_meter sessions during mesh
+ teardown
+Date: Sat, 25 Apr 2026 20:59:16 +0800
+Message-ID: 
+ <80ccaa2c7ce0f72c4555b039217834386282aa0e.1776998957.git.wangjiexun2025@gmail.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <cover.1776998957.git.wangjiexun2025@gmail.com>
+References: <cover.1776998957.git.wangjiexun2025@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Message-ID-Hash: SBGQ4LITWMIDPVGQKT6NMM7C5AT5AEPJ
-X-Message-ID-Hash: SBGQ4LITWMIDPVGQKT6NMM7C5AT5AEPJ
-X-MailFrom: sw@simonwunderlich.de
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: ygmowACH+PjSvOxpQHXgAA--.39303S3
+X-Coremail-Antispam: 1UD129KBjvJXoWxuw4UKrW5GFWfCFy7Kw13twb_yoWDGry3pF
+	4rXr9xGFsrtw4kXFsFyFyYyr1Yyw4IgFWUWa4akrn8AFsxtr4Sg34ktFyjvr1FyayUKrsx
+	Zw1jga4UAr4kGrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUB01xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AE
+	w4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2
+	IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E
+	87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c
+	8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_
+	Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwI
+	xGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAa
+	w2AFwI0_GFv_Wrylc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMxAIw28IcVCjz48v1sIEY2
+	0_Gr4l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8G
+	jcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2I
+	x0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK
+	8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I
+	0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjTRMXdjDUUUU
+X-CM-SenderInfo: zqqvvuo6o23hxhgxhubq/1tbiAQEICWnsf+ICRgAAsd
+X-MailFrom: n05ec@lzu.edu.cn
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: XFPU3EUGC43WNCBH644EGUUALBC2DE5V
+X-Message-ID-Hash: XFPU3EUGC43WNCBH644EGUUALBC2DE5V
+X-Mailman-Approved-At: Sat, 25 Apr 2026 15:11:10 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SBGQ4LITWMIDPVGQKT6NMM7C5AT5AEPJ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XFPU3EUGC43WNCBH644EGUUALBC2DE5V/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -106,215 +129,290 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hi Martin,
+From: Jiexun Wang <wangjiexun2025@gmail.com>
 
-I've discussed this with my co-maintainer Sven, but we will most likely not=
-=20
-adopt this change to batman-adv unless we find a really good use case or re=
-ason=20
-why this change should be made - as I wrote earlier, changing the originato=
-r=20
-timeout is not really required for most use cases, and even your use case c=
-an=20
-be solved differently. We try to keep the knobs in batman-adv/batctl minima=
-l to=20
-avoid that people shoot themselves in the foot.
+TP meter sessions are started asynchronously and remain linked on
+bat_priv->tp_list after the netlink request has already finished.
+When the mesh interface is removed, batadv_mesh_free() currently tears
+down the mesh without first draining these sessions.
 
-Therefore, I would actually recommend to not make this patch, at least not =
-for=20
-upstream. If you need this for your own setup, then fine, but just hardcodi=
-ng=20
-the change in the source code or use the application-level method we discus=
-sed=20
-is probably better.
+A running sender thread or a late incoming tp_meter packet can then keep
+processing against a mesh instance which is already shutting down.
+Synchronize tp_meter with the mesh lifetime by stopping all active
+sessions from batadv_mesh_free(), refusing new sender/receiver setup once
+the mesh is no longer active, and waiting for sender threads to exit
+before teardown continues.
 
-=46or contributions we have a page [1] describing what we expect and how pa=
-tches=20
-should be made. But again, I would suggest to spend the effort on something=
-=20
-else. :)
+Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
+Cc: stable@kernel.org
+Reported-by: Yuan Tan <yuantan098@gmail.com>
+Reported-by: Yifan Wu <yifanwucs@gmail.com>
+Reported-by: Juefei Pu <tomapufckgml@gmail.com>
+Reported-by: Xin Liu <bird@lzu.edu.cn>
+Co-developed-by: Luxing Yin <tr0jan@lzu.edu.cn>
+Signed-off-by: Luxing Yin <tr0jan@lzu.edu.cn>
+Signed-off-by: Jiexun Wang <wangjiexun2025@gmail.com>
+Signed-off-by: Ren Wei <n05ec@lzu.edu.cn>
+---
+ net/batman-adv/main.c     |   1 +
+ net/batman-adv/tp_meter.c | 112 +++++++++++++++++++++++++++++++-------
+ net/batman-adv/tp_meter.h |   1 +
+ net/batman-adv/types.h    |   4 ++
+ 4 files changed, 97 insertions(+), 21 deletions(-)
 
-Thank you,
-        Simon
-
-[1] https://www.open-mesh.org/projects/open-mesh/wiki/Contribute
-
-On Tuesday, April 21, 2026 10:33:13=E2=80=AFAM Central European Summer Time=
- Martin=20
-wrote:
-> Hi Simon,
->=20
-> I=E2=80=99m considering to add this batctl config. Do you have any tips t=
-o get
-> started and would this be  something that you are willing to integrate /
-> merge, once reviewed& approved?
->=20
-> Thanks, Martin
->=20
-> Sent from Proton Mail for iOS.
->=20
-> -------- Original Message --------
-> On Monday, 04/20/26 at 14:06 Simon Wunderlich <sw@simonwunderlich.de> wro=
-te:
-> Hi Martin,
->=20
-> I'm answering without PGP - your previous mail was encrypted so I guess
-> others can't read it. I hope you don't mind. Please see inline:
->=20
-> On Friday, April 17, 2026 9:49:13=E2=80=AFAM Central European Summer Time=
- Martin
->=20
-> wrote:
-> > Hi Simon,
-> >=20
-> > Thank you for your reply.
-> >=20
-> > I=E2=80=99ve considered your suggestion, and it sounds feasible. The on=
-ly issue I
-> > can think of is how to select the best possible gateway at the applicat=
-ion
-> > level in this scenario. Wouldn=E2=80=99t this result in duplication of =
-logic?
->=20
-> You are right, you may end up having some similar logic compared to what
-> batman-adv does internally. I don't think this is much of a problem, since
-> you would be re-using the same data but have a (slightly) different
-> interpretation of it. The original batman-adv code doesn't (directly) care
-> about the last seen time after all.
->=20
-> > For the time being, I=E2=80=99ve patched the batman code to reduce the =
-timeout
-> > from
-> > 200s to 20s. This works fine.
->=20
-> Glad to hear! If you don't mind that the originators time out quicker, th=
-en
-> this could just be sufficient as well. Some other users may have even
-> stricter timing requirements (e.g. less than 5s or even 1s) which may not
-> work with this approach, though.
->=20
-> > It would be great to have this timeout configurable via batctl. Is there
-> > any chance that such a feature could be implemented in the near future?
-> Personally I don't have plans to do so. This is quite a corner case, and =
-we
-> generally prefer to expose only few defines/variables to keep things simp=
-le.
-> In a typical community network (Freifunk etc), 20s OGM timeout might be
-> less than the TQ window size (5 entries * 5s originator interval), and
-> create other problems. I don't see a general case where we want to change
-> it, and I guess you have two options now (change the one line in the sour=
-ce
-> or indirectly use the gateway list), so that's satisified too. :)
->=20
-> If there is more general interest to this, you can also write a patch if =
-you
-> like.
->=20
-> Cheers,
->        Simon
->=20
-> > Regards, Martin
-> >=20
-> > Sent from Proton Mail for iOS.
-> >=20
-> > -------- Original Message --------
-> > On Thursday, 04/16/26 at 07:47 Simon Wunderlich <sw@simonwunderlich.de>
-> > wrote: On Wednesday, April 15, 2026 5:10:23=E2=80=AFPM Central European=
- Summer
-> > Time
-> > Simon
-> >=20
-> > Wunderlich wrote:
-> > > Hi Martin,
-> > >=20
-> > > On Tuesday, April 7, 2026 3:46:59=E2=80=AFPM Central European Summer =
-Time
-> > >=20
-> > > martinvdberg@gmail.com wrote:
-> > > > I think I have a similar use-case as the original poster and ran in=
-to
-> > > > the
-> > > > same problem.
-> > > >=20
-> > > > Let me try to explain:
-> > > >=20
-> > > > - Given a mesh network where each node is assigned a *static IP*.
-> > > > - In the mesh network there are some nodes acting as a Gateway.
-> > > > - The other nodes in the mesh are clients.
-> > > > - Using BATMAN-V
-> > > >=20
-> > > > Each client node has a script running, when it detects "batctl gwl"=
- to
-> > > > elect another gateway, the script will set the gateway's IP-address=
- as
-> > > > default route: "ip route replace default via $gateway_ip dev bat0".
-> > > >=20
-> > > > Now whenever a mesh-gateway is turned off, it will take 200 seconds
-> > > > before
-> > > > it is removed from the originators and only then "batctl gwl" will
-> > > > elect
-> > > > another gateway. This results in some client nodes have no internet
-> > > > for
-> > > > 200
-> > > > seconds.
-> > > >=20
-> > > > So far, I haven't been able to get batman-adv (using batctl) to swi=
-tch
-> > > > to
-> > > > another gateway sooner, e.g. after 10 or 20 seconds.
-> > > >=20
-> > > >=20
-> > > > Using DHCP is not an option in my use-case.
-> > > >=20
-> > > > Is there somehow a way to reduce the 200 seconds? Possibly by
-> > > > switching
-> > > > to
-> > > > BATMAN-IV?
-> > > >=20
-> > > > Regards, Martin
-> > >=20
-> > > that's an interesting use case, although I would like to make clear t=
-hat
-> > > the gateway feature was designed for DHCP in mind, yet you use it with
-> > > static IPs. The main purpose was to re-route DHCP packets to the
-> > > selected
-> > > gateway. Nethertheless, you could still use this mechanism for
-> > > "signaling".
-> > >=20
-> > > The gateway selection can be based on TQ or on bandwidth parameters, =
-but
-> > > there is no option to speed up the "dead marking" from the 200s of the
-> > > originator timeout. you can decrease that number in the source code, =
-but
-> > > I
-> > > would actually advise to use a completely different method independent
-> > > of
-> > > batman-adv - for example by using a layer 3 routing daemon, or another
-> > > application which regularly signals their availability as a gateway. =
-=46or
-> > > DHCP (which it was originally designed for), lease times are typicall=
-y 5
-> > > minutes minmum, so the 200s timeout are not really a problem there ...
-> > > but
-> > > I acknowledge that it's not really useful for "fast" switching.
-> >=20
-> > Perhaps one more practical idea: You could parse the gateway list and t=
-he
-> > originator list yourself (batctl has json output options). Then, you co=
-uld
-> > get the "last seen" value from the originator list, and combine it with
-> > your gatewaylist. In that way, you could easily filter the "best gateway
-> > which was last seen <20 s" in a script. This doesn't help with batmans
-> > internal DHCP forwarding, but since you use static IPs anyway and proba=
-bly
-> > already use a script to get the current gateway to look up the IP, this
-> > may
-> > be an easy fix ...
-> >=20
-> > Cheers,
-> >=20
-> >        Simon
-
-
-
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 3a35aadd8b41..a4d33ee0fda5 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -249,6 +249,7 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+ 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 
+ 	batadv_purge_outstanding_packets(bat_priv, NULL);
++	batadv_tp_stop_all(bat_priv);
+ 
+ 	batadv_gw_node_free(bat_priv);
+ 
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 2e42f6b348c8..028cd4e0f9d1 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -365,23 +365,38 @@ static void batadv_tp_vars_put(struct batadv_tp_vars *tp_vars)
+ }
+ 
+ /**
+- * batadv_tp_sender_cleanup() - cleanup sender data and drop and timer
+- * @bat_priv: the bat priv with all the mesh interface information
+- * @tp_vars: the private data of the current TP meter session to cleanup
++ * batadv_tp_list_detach() - remove tp session from mesh session list once
++ * @tp_vars: the private data of the current TP meter session
+  */
+-static void batadv_tp_sender_cleanup(struct batadv_priv *bat_priv,
+-				     struct batadv_tp_vars *tp_vars)
++static void batadv_tp_list_detach(struct batadv_tp_vars *tp_vars)
+ {
+-	cancel_delayed_work(&tp_vars->finish_work);
++	bool detached = false;
+ 
+ 	spin_lock_bh(&tp_vars->bat_priv->tp_list_lock);
+-	hlist_del_rcu(&tp_vars->list);
++	if (!hlist_unhashed(&tp_vars->list)) {
++		hlist_del_init_rcu(&tp_vars->list);
++		detached = true;
++	}
+ 	spin_unlock_bh(&tp_vars->bat_priv->tp_list_lock);
+ 
++	if (!detached)
++		return;
++
++	atomic_dec(&tp_vars->bat_priv->tp_num);
++
+ 	/* drop list reference */
+ 	batadv_tp_vars_put(tp_vars);
++}
+ 
+-	atomic_dec(&tp_vars->bat_priv->tp_num);
++/**
++ * batadv_tp_sender_cleanup() - cleanup sender data and drop and timer
++ * @tp_vars: the private data of the current TP meter session to cleanup
++ */
++static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
++{
++	cancel_delayed_work_sync(&tp_vars->finish_work);
++
++	batadv_tp_list_detach(tp_vars);
+ 
+ 	/* kill the timer and remove its reference */
+ 	timer_delete_sync(&tp_vars->timer);
+@@ -886,7 +901,8 @@ static int batadv_tp_send(void *arg)
+ 	batadv_orig_node_put(orig_node);
+ 
+ 	batadv_tp_sender_end(bat_priv, tp_vars);
+-	batadv_tp_sender_cleanup(bat_priv, tp_vars);
++	batadv_tp_sender_cleanup(tp_vars);
++	complete(&tp_vars->finished);
+ 
+ 	batadv_tp_vars_put(tp_vars);
+ 
+@@ -918,7 +934,8 @@ static void batadv_tp_start_kthread(struct batadv_tp_vars *tp_vars)
+ 		batadv_tp_vars_put(tp_vars);
+ 
+ 		/* cleanup of failed tp meter variables */
+-		batadv_tp_sender_cleanup(bat_priv, tp_vars);
++		batadv_tp_sender_cleanup(tp_vars);
++		complete(&tp_vars->finished);
+ 		return;
+ 	}
+ 
+@@ -947,6 +964,13 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 
+ 	/* look for an already existing test towards this node */
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
++	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE) {
++		spin_unlock_bh(&bat_priv->tp_list_lock);
++		batadv_tp_batctl_error_notify(BATADV_TP_REASON_DST_UNREACHABLE,
++					      dst, bat_priv, session_cookie);
++		return;
++	}
++
+ 	tp_vars = batadv_tp_list_find(bat_priv, dst);
+ 	if (tp_vars) {
+ 		spin_unlock_bh(&bat_priv->tp_list_lock);
+@@ -966,7 +990,6 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 					      bat_priv, session_cookie);
+ 		return;
+ 	}
+-
+ 	tp_vars = kmalloc_obj(*tp_vars, GFP_ATOMIC);
+ 	if (!tp_vars) {
+ 		spin_unlock_bh(&bat_priv->tp_list_lock);
+@@ -1017,6 +1040,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	tp_vars->start_time = jiffies;
+ 
+ 	init_waitqueue_head(&tp_vars->more_bytes);
++	init_completion(&tp_vars->finished);
+ 
+ 	spin_lock_init(&tp_vars->unacked_lock);
+ 	INIT_LIST_HEAD(&tp_vars->unacked_list);
+@@ -1119,14 +1143,7 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ 		   "Shutting down for inactivity (more than %dms) from %pM\n",
+ 		   BATADV_TP_RECV_TIMEOUT, tp_vars->other_end);
+ 
+-	spin_lock_bh(&tp_vars->bat_priv->tp_list_lock);
+-	hlist_del_rcu(&tp_vars->list);
+-	spin_unlock_bh(&tp_vars->bat_priv->tp_list_lock);
+-
+-	/* drop list reference */
+-	batadv_tp_vars_put(tp_vars);
+-
+-	atomic_dec(&bat_priv->tp_num);
++	batadv_tp_list_detach(tp_vars);
+ 
+ 	spin_lock_bh(&tp_vars->unacked_lock);
+ 	list_for_each_entry_safe(un, safe, &tp_vars->unacked_list, list) {
+@@ -1329,9 +1346,12 @@ static struct batadv_tp_vars *
+ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 		    const struct batadv_icmp_tp_packet *icmp)
+ {
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_vars *tp_vars = NULL;
+ 
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
++	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++		goto out_unlock;
++
+ 	tp_vars = batadv_tp_list_find_session(bat_priv, icmp->orig,
+ 					      icmp->session);
+ 	if (tp_vars)
+@@ -1342,7 +1362,6 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 			   "Meter: too many ongoing sessions, aborting (RECV)\n");
+ 		goto out_unlock;
+ 	}
+-
+ 	tp_vars = kmalloc_obj(*tp_vars, GFP_ATOMIC);
+ 	if (!tp_vars)
+ 		goto out_unlock;
+@@ -1464,6 +1483,9 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+ {
+ 	struct batadv_icmp_tp_packet *icmp;
+ 
++	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++		goto out;
++
+ 	icmp = (struct batadv_icmp_tp_packet *)skb->data;
+ 
+ 	switch (icmp->subtype) {
+@@ -1478,9 +1500,57 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+ 			   "Received unknown TP Metric packet type %u\n",
+ 			   icmp->subtype);
+ 	}
++
++out:
+ 	consume_skb(skb);
+ }
+ 
++/**
++ * batadv_tp_stop_all() - stop all currently running tp meter sessions
++ * @bat_priv: the bat priv with all the mesh interface information
++ */
++void batadv_tp_stop_all(struct batadv_priv *bat_priv)
++{
++	struct batadv_tp_vars *tp_vars[BATADV_TP_MAX_NUM];
++	struct batadv_tp_vars *tp_var;
++	int count = 0;
++	int i;
++
++	spin_lock_bh(&bat_priv->tp_list_lock);
++	hlist_for_each_entry(tp_var, &bat_priv->tp_list, list) {
++		if (WARN_ON_ONCE(count >= BATADV_TP_MAX_NUM))
++			break;
++
++		if (!kref_get_unless_zero(&tp_var->refcount))
++			continue;
++
++		tp_vars[count++] = tp_var;
++	}
++	spin_unlock_bh(&bat_priv->tp_list_lock);
++
++	for (i = 0; i < count; i++) {
++		tp_var = tp_vars[i];
++
++		switch (tp_var->role) {
++		case BATADV_TP_SENDER:
++			batadv_tp_sender_shutdown(tp_var,
++						  BATADV_TP_REASON_CANCEL);
++			wake_up(&tp_var->more_bytes);
++			wait_for_completion(&tp_var->finished);
++			break;
++		case BATADV_TP_RECEIVER:
++			batadv_tp_list_detach(tp_var);
++			if (timer_shutdown_sync(&tp_var->timer))
++				batadv_tp_vars_put(tp_var);
++			break;
++		}
++
++		batadv_tp_vars_put(tp_var);
++	}
++
++	synchronize_net();
++}
++
+ /**
+  * batadv_tp_meter_init() - initialize global tp_meter structures
+  */
+diff --git a/net/batman-adv/tp_meter.h b/net/batman-adv/tp_meter.h
+index f0046d366eac..4e97cd10cd02 100644
+--- a/net/batman-adv/tp_meter.h
++++ b/net/batman-adv/tp_meter.h
+@@ -17,6 +17,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 		     u32 test_length, u32 *cookie);
+ void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
+ 		    u8 return_value);
++void batadv_tp_stop_all(struct batadv_priv *bat_priv);
+ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb);
+ 
+ #endif /* _NET_BATMAN_ADV_TP_METER_H_ */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 8fc5fe0e9b05..daa06f421154 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -14,6 +14,7 @@
+ #include <linux/average.h>
+ #include <linux/bitops.h>
+ #include <linux/compiler.h>
++#include <linux/completion.h>
+ #include <linux/if.h>
+ #include <linux/if_ether.h>
+ #include <linux/kref.h>
+@@ -1328,6 +1329,9 @@ struct batadv_tp_vars {
+ 	/** @finish_work: work item for the finishing procedure */
+ 	struct delayed_work finish_work;
+ 
++	/** @finished: completion signaled when a sender thread exits */
++	struct completion finished;
++
+ 	/** @test_length: test length in milliseconds */
+ 	u32 test_length;
+ 
+-- 
+2.34.1
 
