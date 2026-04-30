@@ -4,109 +4,113 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C83CCD13D3
-	for <batman@archiver.kernel.org>; Thu, 30 Apr 2026 07:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5A70FF8873
+	for <batman@archiver.kernel.org>; Thu, 30 Apr 2026 13:33:26 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0006C85A57
-	for <batman@archiver.kernel.org>; Thu, 30 Apr 2026 09:45:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 06D5B859C5
+	for <batman@archiver.kernel.org>; Thu, 30 Apr 2026 15:33:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1777535144;
- b=Ye47PdgRvaDbLCR1CLQWdYLzaSzo8aqgu74ASYnXqz4Upi2QcPVkFk4kgm1kGY+CRzID1
- B+8YefFdMLYlQ9c8rFgMKy9p3slmNMd4hm1Ckbch9Jy4StPt6pocnreEzCmys/USARbvGjx
- LHCaTIdBCkeU2pWmpRaiPpvV2JiH9so=
+ t=1777556005;
+ b=ij5KuQEkGMCUo3FoqRctPf2L2ejKp3zuPA/yu7ys1RoWvf524YmQ6A51ghywONthkSgYP
+ rH81REAOaOkQc3mfwgbIX35clHY7oQ7G4BtASJFsl97z+i8YgXHRd95cn11S+iYWUCpBE/1
+ wGCEkcACK0NWrqYPwdC8fWdtsT7WvjA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1777535144; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1777556005; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=b5T6Tm8mn1JHMRFC8Mtn+CMd8n0ePg2A3I4KI2l1PNA=;
- b=gZO2L7eJwthIj/9ztrXmtxlfogColEl/NQfnxKXT2+SsMEEa26t3EO79KSEHipsynxfNr
- HpiVR4JckqdRoKXOSLedUewQVpqdiEZNIz0wsZru3NN+PdCee1Dmfg/lysOfd0qlsHHEQM/
- 0BD2HRS2IRFg93U49/6C/JIxpiwKcNE=
+ list-archive; bh=eef9yXm6XkyBRVRp1Tslp00310RuvOpdMSFBXBjo5j0=;
+ b=SlpxealeWJpAyWXY1kuHK8gM3wDIWfztQhg7aQoTizJyVaDIHfvDLtM5GfF8YikDczwwA
+ +48tXOvRbh3OkvfKRYhIJn96eLztEvwknBZE9mihMDjEoU8475nXZzdshxpUNEQaqrPRvlf
+ 9pQLfGtvJLvc5izu5HQRDWsp+WvaIdQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 06BD5842E3
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Apr 2026 09:40:39 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1777534840;
-	b=0+Gj/7Ik6FegOQyzBtrG1eh1XUKmz80qHao1bMSYM/PWY/lScHLfQ+fRU6ZG77MECEIkvi
-	1j+KA1igEhpISG71+ANSc7s4t08vwFzeYpnB6enCyCKAMZoISFe8bc43h1l3w8mW6ed55b
-	lX2+qfUOK4hLsX/qZPot1Ac86dqBowM=
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 300808068E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Apr 2026 15:32:06 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1777555926;
+	b=xnHeD86MgdfPPzkYISwOcDnVGqXSDwxjWOQ6MtKZrYfqhXiw+P/0UQ76oiBetip01E2LXy
+	rPWqfwRtEx4M0npwdFldPVI/hpHRnDHuFnDu1t8nQ6pi8LQroWlHWXa3H5zplW9eZ7AFsD
+	FijzZYzI461VaVRWqtrjyCZPnhjJJuM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=R0rS2QeC;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=MLfLT3gY;
+	spf=pass (diktynna.open-mesh.org: domain of sashal@kernel.org designates
+ 2600:3c04:e001:324:0:1991:8:25 as permitted sender)
+ smtp.mailfrom=sashal@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1777534840;
+	s=20121; t=1777555926;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=b5T6Tm8mn1JHMRFC8Mtn+CMd8n0ePg2A3I4KI2l1PNA=;
-	b=2dwbpxDLTB4PCBqWQnTQa/Y/U3rABp/Z4mUTeITwoz0D7bNS9PW8Ktrs6Us/81QhV1d7vU
-	F6ZxPbsnIC89gPtcBoOxhLjW8bsG8KUB1RsK34Zxv6w9jpQNSdxQIgkiTY8LzQIMddfX9d
-	O3fJMR0V89LpLYDVN0k+IejgOqD29iA=
-Received: by dvalin.narfation.org (Postfix) id 10CBB1FF65;
-	Thu, 30 Apr 2026 07:40:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1777534838;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=b5T6Tm8mn1JHMRFC8Mtn+CMd8n0ePg2A3I4KI2l1PNA=;
-	b=R0rS2QeCbZsX3riHy7LG7YuYAQ5vd7gYDMFY/W+HjoTIOOeNKyBh443kjjMRPmsJHpQvsO
-	bxR5mog0StlF0o+J/ijdo4EmDu4rYIuxR3bAILL45VX37Y6AoiSG8AJ0R5aRkWd5XN6y86
-	pqCP2QpjyJoSD8H9jgi4QHnqIyZZPMs=
-From: Sven Eckelmann <sven@narfation.org>
-To: stable@vger.kernel.org, Haoze Xie <royenheart@gmail.com>,
- Robert Garcia <rob_garcia@163.com>, b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <sw@simonwunderlich.de>,
- Robert Garcia <rob_garcia@163.com>, Yifan Wu <yifanwucs@gmail.com>,
- Juefei Pu <tomapufckgml@gmail.com>, Yuan Tan <yuantan098@gmail.com>,
- Xin Liu <bird@lzu.edu.cn>, Ao Zhou <n05ec@lzu.edu.cn>,
- Marek Lindner <mareklindner@neomailbox.ch>,
- Antonio Quartulli <a@unstable.cc>, "David S . Miller" <davem@davemloft.net>,
- Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
- b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Sasha Levin <sashal@kernel.org>,
- Sven Eckelmann <sven@narfation.org>
+	bh=eef9yXm6XkyBRVRp1Tslp00310RuvOpdMSFBXBjo5j0=;
+	b=jONzdsq+DmMHo+u1JNyxR2nh+Qjlqa/BzT9jLbyZkV9LgYeiE7DpkbpctLSa/zVfmDbi6Z
+	TLOOjapGUWJAKxO5Elt8upO81MmlTYuXzYp0aO0I0s8LOw+63rGyCynoiLIIPo23NuRd4T
+	ulQGDxF7G1M7DdNyzzWDNGpMR6Fl5Sw=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0F2D060142;
+	Thu, 30 Apr 2026 13:32:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90388C2BCB3;
+	Thu, 30 Apr 2026 13:32:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777555924;
+	bh=iN8DKEJJ1MqxD8Atz5WqGwwGI8zukpbk6ZFINC7U+H0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=MLfLT3gYJYUrNlUUkxWDvsFI0GEOKhIELDpU30KfET7gp5dTZ9EY4yyMRczN4jZYE
+	 kqXh+s5ibDaz4iOJHmi/9a3t5PdwUCMVIPhSyv19a35G0YWrCuHRJ68M2QfyfU6FzX
+	 vbrFtrqv2nfcDGMpLeznkZGIaOVkMBBYgUR8RK+me3NEajH4Fm8l691ni6A/iw9Bzm
+	 evViPymfOmZlY003vEz7sliSgQKwulQt5UV8/tFcpCN0UoX+Q7TUlnqDc9ttQ8+a5w
+	 33Hchtzclp1IGnms+afkLKQSx0mG3M58jh1HGFCYfgOkMPwwuoI9aqhWUOf6Ic5shv
+	 occY/ASH6fFqQ==
+Date: Thu, 30 Apr 2026 09:32:03 -0400
+From: Sasha Levin <sashal@kernel.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: stable@vger.kernel.org, Haoze Xie <royenheart@gmail.com>,
+	Robert Garcia <rob_garcia@163.com>, b.a.t.m.a.n@lists.open-mesh.org,
+	Simon Wunderlich <sw@simonwunderlich.de>,
+	Yifan Wu <yifanwucs@gmail.com>, Juefei Pu <tomapufckgml@gmail.com>,
+	Yuan Tan <yuantan098@gmail.com>, Xin Liu <bird@lzu.edu.cn>,
+	Ao Zhou <n05ec@lzu.edu.cn>,
+	Marek Lindner <mareklindner@neomailbox.ch>,
+	Antonio Quartulli <a@unstable.cc>,
+	"David S . Miller" <davem@davemloft.net>,
+	Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 5.15.y] batman-adv: hold claim backbone gateways by
  reference
-Date: Thu, 30 Apr 2026 09:40:34 +0200
-Message-ID: <3609597.QJadu78ljV@ripper>
-In-Reply-To: <1857579.VLH7GnMWUR@ripper>
+Message-ID: <afNZ0zVdXkgj5hvA@laps>
 References: <20260430071645.3030702-1-rob_garcia@163.com>
  <1857579.VLH7GnMWUR@ripper>
+ <3609597.QJadu78ljV@ripper>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1959533.CQOukoFCf9";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-X-MailFrom: sven@narfation.org
-X-Mailman-Rule-Hits: max-recipients
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <3609597.QJadu78ljV@ripper>
+Message-ID-Hash: LQAXJCI3ODGGP5WDH6PX2LCHOBK3QXUC
+X-Message-ID-Hash: LQAXJCI3ODGGP5WDH6PX2LCHOBK3QXUC
+X-MailFrom: sashal@kernel.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-size;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
  news-moderation; no-subject; digests; suspicious-header
-Message-ID-Hash: YM5RYRQOF65UJCUUWENZRGRMRCIV7OA4
-X-Message-ID-Hash: YM5RYRQOF65UJCUUWENZRGRMRCIV7OA4
-X-Mailman-Approved-At: Thu, 30 Apr 2026 09:45:09 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/YM5RYRQOF65UJCUUWENZRGRMRCIV7OA4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LQAXJCI3ODGGP5WDH6PX2LCHOBK3QXUC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,38 +119,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart1959533.CQOukoFCf9
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Apr 2026 09:40:34 +0200
-Message-ID: <3609597.QJadu78ljV@ripper>
-In-Reply-To: <1857579.VLH7GnMWUR@ripper>
-MIME-Version: 1.0
+On Thu, Apr 30, 2026 at 09:40:34AM +0200, Sven Eckelmann wrote:
+>On Thursday, 30 April 2026 09:38:05 CEST Sven Eckelmann wrote:
+>> Sasha Levin <sashal@kernel.org> picked it up for 5.15.y (on Sun, 19 Apr 2026
+>> 21:13:58 -0400, MsgId 20260419195610.batman-adv-5.15@kernel.org).
+>> Yes, it was not yet published or 5.15 - so maybe fell through the cracks.
+>
+>https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git/commit/?h=queue/5.15&id=6fd37208adf6771125b59e1ae0452561024be4e2
 
-On Thursday, 30 April 2026 09:38:05 CEST Sven Eckelmann wrote:
-> Sasha Levin <sashal@kernel.org> picked it up for 5.15.y (on Sun, 19 Apr 2026 
-> 21:13:58 -0400, MsgId 20260419195610.batman-adv-5.15@kernel.org). 
-> Yes, it was not yet published or 5.15 - so maybe fell through the cracks.
+Yup, it's still in the queue.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git/commit/?h=queue/5.15&id=6fd37208adf6771125b59e1ae0452561024be4e2
-
-Regards,
-	Sven
---nextPart1959533.CQOukoFCf9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCafMHcgAKCRBND3cr0xT1
-y7V/AP9BMH0S8bDU+veLaqdqd/7YjiL5klqj+wG7K6SUqPoNAQD/ZFycWLIHLcz3
-YaivZtqG9mnJJkSDo399V/GNymYUZAk=
-=lQ4+
------END PGP SIGNATURE-----
-
---nextPart1959533.CQOukoFCf9--
-
-
-
+-- 
+Thanks,
+Sasha
