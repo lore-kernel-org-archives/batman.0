@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5ACFCD3424
-	for <batman@archiver.kernel.org>; Sun,  3 May 2026 20:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4046ECD3424
+	for <batman@archiver.kernel.org>; Sun,  3 May 2026 20:47:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DD3A785437
-	for <batman@archiver.kernel.org>; Sun, 03 May 2026 22:46:51 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9DC0085AD8
+	for <batman@archiver.kernel.org>; Sun, 03 May 2026 22:47:36 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1777841211;
- b=W8D4lhr9Xi/XdGOCLYDG+v5X9Ohngu5SLvgQ5kd1sA02iwM5fdMxVB2pflgThpVfvbkRF
- cfRRcsRKaKD+jHA7mv6JHy92JHSiEjmJn1AZw34RTB8RjIZM3HW4ykRdyj0qNN3LRIir3Kt
- h6ENovYxOI5jVfP9nucnY5GCLWqnJa4=
+ t=1777841256;
+ b=sinMuKqn0LPGkUdt6L10/5GMjwrMa91F52bH+q/J5gWE3MdHABGLwI5S6/1AXMSqZHNbi
+ Fcb3mpv73gwfFSaIEJa9oF6kFlS5OhoxSCj2HuntbW9g3V2yWTGGnhTge/ijQUDxObmQlsa
+ DqMv2PpdAU1n6crmdP5GvE/7A+8jlKk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1777841211; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1777841256; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2akAyu476DYSvCMGTegf/7PngWzy4rf2uSUoD3iLa/w=;
- b=VW6wfiwkFp/Bb4q7TMOO0Lg/ECoR5P5j+qJjZtK7WYl+pt7RPc0nOijvx8JZD8chOl+5z
- qYu1Lm/pQPVR/1a3DXL2qAZnpZiPZcnmIPe8My/bBAwiAJHHzBPcXIpKaY5jTNDr3wXVtZj
- 5tSQfDeLAzjw443YRcSsh+X8WcuGHVk=
+ list-archive; bh=Dl0H+IkG+2i7Cy1ZIJqnydcGqZNk/5PjSDN9apFgp58=;
+ b=pFBXeOHJ8yRKHhPG/0AukmXJa7R33iF+z0gBhSIKQxO3npaXbQqAz/ytMF7zJedp+6mBV
+ 0RA6fJ72nbMkA5fd8BwwHEWApDvsHBeosxIJs1U9CFFyAyg1rkoHDoIxH4ncxWvw728h2hX
+ ixOSXwCPht56u0d09CHUR/7rth4syN4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,62 +34,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 04E1882444
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 03 May 2026 22:46:47 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1777841208;
-	b=KatM8ZZbzIR5N5CjHHOv8dh7WEudUiA3Ypp1kOFYh0kIuSkCDrE+d//0zmVgUkPAOn95Ve
-	9HmYYQzHOiIleYYepNu5oMKydVBz2NOMcw5L6Oghr+8oH9YTEjSzEZWrITp4YAR9yfntDD
-	BMvWbpLGMlL1fbguHxOd3pEPtXqn3Dc=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 42BE185AB1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 03 May 2026 22:47:04 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1777841224;
+	b=oDAAdzj7NMNIEOV6Op3w30UTqDXrGVDI9ZAaO4NBo85zTJHfkGu3vOXvfQzYpWKRn6WKoN
+	+DOHLAVF4CQpgdlOREkvM5B8HCoFwn+TbNcbuPyS2LfqjQIfl9TNVlaux5LO0CuerH2SWW
+	TRkzj7yPhENmWKZ6P3El6CKG9mk+ed0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=FLLavlkq;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=SMXlP74P;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1777841208;
+	s=20121; t=1777841224;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=2akAyu476DYSvCMGTegf/7PngWzy4rf2uSUoD3iLa/w=;
-	b=MRgezbEHtlWtDxjnj1bLrk/tRKSY9jUkpqR8orJXYpDFs9QoPVnACB96wk64IYbKml3s2s
-	N1OAlFg7GiaHW3ETp+B8MUx1tVsNU7Uvkku+qC23rulsZBlrjBPseOdJNRg5z6vGepErXe
-	BGjlyHuosrNt3XHQey/7kQk8KGzCpHY=
-Received: by dvalin.narfation.org (Postfix) id 01AD01FDD3;
-	Sun, 03 May 2026 20:46:45 +0000 (UTC)
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=Dl0H+IkG+2i7Cy1ZIJqnydcGqZNk/5PjSDN9apFgp58=;
+	b=EFWfTyCrG71wb4uHRb1c/aw0jLr7NvIMTmHZ6zfviXWK24uBd4LQgPx3AbZ7TDi5iV2iDh
+	QDJ6X0uDnv6YICU/hsOaPxupIotHqPVcsUSR4zK9FlYAabgZLxZCP9t666Fykh5Y2lY68V
+	mQZfZl5JWWdDUCCTIh1GQsGvXZLUbpI=
+Received: by dvalin.narfation.org (Postfix) id 83BDC1FDD3;
+	Sun, 03 May 2026 20:47:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1777841206;
+	s=20121; t=1777841223;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=2akAyu476DYSvCMGTegf/7PngWzy4rf2uSUoD3iLa/w=;
-	b=FLLavlkqOlzh99EoWLzh+NDkWX//t1OyPFygTlcOd3y0L9+ZPldOD/UF/Ux3CwOj0OrQWT
-	ma0Ui3DR9Zaq0njtmlMmZmELhDv7NypyEP8/YaNmGszWLf6HTYPsbVVh66lRl5/AEGUY08
-	d8g6koKugFfdJKht6SbF0P6Mu6wEB6A=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Dl0H+IkG+2i7Cy1ZIJqnydcGqZNk/5PjSDN9apFgp58=;
+	b=SMXlP74PdEHqMfxPIJJe/0taumyQBcdZrT5NMlXKijJH92XCWKQGUIatGjqZz3LGL0d+ZX
+	LvLTj8ICic1o8XuQ5jlyXjH1OWdnu0rdeOhe4+ZJtlGo7HIUHp0mE0WFTnF9XJdk5/zEce
+	j2+fiaH8PqnreNOPC/g8dDDptuJOy3U=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv-next 0/2] batman-adv: post-fixes cleanup
-Date: Sun, 03 May 2026 22:46:13 +0200
-Message-Id: <20260503-post-fixes-cleanup-v1-0-9c5c0ff0fcb4@narfation.org>
+Date: Sun, 03 May 2026 22:46:14 +0200
+Subject: [PATCH batadv-next 1/2] batman-adv: add missing includes
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABW092kC/yWMSwrDMAwFrxK0rsCNUQu9SunCH6VVKY6xnBAIu
- XucZjnMm7eCchFWeHQrFJ5FZUwNrpcOwselN6PExtCb/mbIWMyjVhxkYcXwY5emjAN5tmTNnSh
- CC3Ph/6B1T/Cuujhj4qXC65Q6+S+HetzCtu3FpF28gwAAAA==
-X-Change-ID: 20260503-post-fixes-cleanup-f5be3530755d
+Message-Id: <20260503-post-fixes-cleanup-v1-1-9c5c0ff0fcb4@narfation.org>
+References: <20260503-post-fixes-cleanup-v1-0-9c5c0ff0fcb4@narfation.org>
+In-Reply-To: <20260503-post-fixes-cleanup-v1-0-9c5c0ff0fcb4@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1017; i=sven@narfation.org;
- h=from:subject:message-id; bh=5AaVjDs8EZZnCBNAn8BVXeou0Ybt7Mv9SfEVhplyLQA=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDJnft0g0uhjI3RH20z6Uv/HSm0k2NR+9Gc/95igX39u74
- feDZKPzHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJvKpg+Gfr+3z2ZdlO3c2F
- W/tO3TspsVzZs/XK/v7LVlkf/nJa60xl+F+V5h14pz9ewc/dRH3K8efLPIVCP7K8f/5LxioysOV
- KNzsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3328; i=sven@narfation.org;
+ h=from:subject:message-id; bh=i8jeUTkvUvqfGjUvIbd9cqsG6UBXtdKjqzaquZ32WcY=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDJnft0jUuh3Z9kHuVdq1r5fO7jmyo9hw96V9ug/bNuV0T
+ X/cl1Ve0lHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYSGk0I8PBj93yf7vf3P1U
+ 3bC9+iJb9N7tx5zkI24s7vNmPnun+S4TI8PW36HPars/+l7ca8h85N2PK19WLa8wPqrT3LPwRf3
+ knboMAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: THZI2WX5AFF4MNZKWVIZ6DNH5M45CA4M
-X-Message-ID-Hash: THZI2WX5AFF4MNZKWVIZ6DNH5M45CA4M
+Message-ID-Hash: BH5WZN4V3LRMK4EBZK4AA5JUAWEKAUJT
+X-Message-ID-Hash: BH5WZN4V3LRMK4EBZK4AA5JUAWEKAUJT
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/THZI2WX5AFF4MNZKWVIZ6DNH5M45CA4M/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BH5WZN4V3LRMK4EBZK4AA5JUAWEKAUJT/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,32 +112,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-In some of the recent fixes, we got a couple of unclean changes which are
-either reported by the daily builds or were noticed during the "follow up
-fixes" preparations.
-
-It is nothing spectacular and no reason to add it to the stable branch. Let
-us just handle them as part of main/next.
+Some of the recent fixes required features from new header files. There is
+currently build problem because transitive includes take care of it. But
+the batman-adv source code tries to avoid the dependency to
+transitive/implicite includes because it has no control over them and they
+might get removed at some point.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Sven Eckelmann (2):
-      batman-adv: add missing includes
-      batman-adv: tt: replace open-coded overflow check with helper
-
  net/batman-adv/bat_v_ogm.c         | 1 +
  net/batman-adv/fragmentation.c     | 1 +
  net/batman-adv/gateway_client.c    | 1 +
  net/batman-adv/hard-interface.c    | 1 +
  net/batman-adv/tp_meter.c          | 1 +
- net/batman-adv/translation-table.c | 8 +++-----
+ net/batman-adv/translation-table.c | 1 +
  net/batman-adv/tvlv.c              | 1 +
- 7 files changed, 9 insertions(+), 5 deletions(-)
----
-base-commit: 3158b1f3ce2a4fe0a07d2a9544dd4b72e2f2670f
-change-id: 20260503-post-fixes-cleanup-f5be3530755d
+ 7 files changed, 7 insertions(+)
 
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index e3870492..9914346a 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/errno.h>
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index f4e45cc2..068d8b41 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 51e9c081..a4ab3d44 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/err.h>
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index d6732c34..4b3804ef 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/compiler.h>
+ #include <linux/container_of.h>
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 58ca59a2..5e556024 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index d39332ea..8ab93458 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
++#include <linux/bug.h>
+ #include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 8129a3f9..328636c4 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -6,6 +6,7 @@
+ 
+ #include "main.h"
+ 
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/etherdevice.h>
+
+-- 
+2.47.3
 
