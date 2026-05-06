@@ -4,108 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3340BCD3424
-	for <batman-adv@archiver.kernel.org>; Wed,  6 May 2026 07:12:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 860F1CD342C
+	for <batman-adv@archiver.kernel.org>; Wed,  6 May 2026 12:42:18 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6B76081CA1
-	for <batman-adv@archiver.kernel.org>; Wed, 06 May 2026 09:12:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C988883D24
+	for <batman-adv@archiver.kernel.org>; Wed, 06 May 2026 14:42:16 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778051564;
- b=bC5a8NIi3fdaam3yGzfVBTVHXpByORZn3r9WuqBPFoU2phLA0iyfEJoZg0CJv9Gg2+EgJ
- nECwyGESrvQNdW22D+IpuX3rvoiEHvA/5cmYDQQz3m/jRB6KBj2PIoLjpC7Wgiclk3hhgA8
- cehT1xLW0Eu8eO+tLNOdIh0t9roNtV0=
+ t=1778071336;
+ b=GLAIVe0zAHzFghad2+YnzpHFpvvRFsQ/yK3s3BQnipeuq3rcEiQfRfiwfrVzpImUmupcX
+ GhdfwIh2QOt3TbSuwoR0Uh32fqMs+ieavZ8grgHzQLi2UANBOAD/gLp0KBUhqfirgxWmggO
+ rTFlO/hpamgiP3asuljjHXZEjQ/ohX8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778051564; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778071336; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=uWVaLyHPZtQIn5sUjDowWMmG8VQiZnZt08qHxOQJwuQ=;
- b=G7GXJY/XOVIVNwWQ/Li5BH/ABz88m2ep11Bk8WVUZVSEVVVHztc3GXxgvBi4PgbTlNBWm
- 6za0Lig7uXuQGeeWtDAQ73zmuvfbT9Zr5jnojwe+arV31qpJBjAmfGV4aP4ivpghf15r0hD
- MQGNVxkhfOdQzW6GEJhUR9Q8HU+TjeQ=
+ list-archive; bh=IhCV7KRKQ8AOzPAjZl7LQ9PVGTNSBLwaZEj9Y3bacCE=;
+ b=CoX2rEOc8n76pM8H0AHf2sp5KTo/rIaKxIMcqV1/UbayOYUo7UG8BUSyPXW6amcFmZwnC
+ HLvBTMdykm2UzlPnHWSkA322uNcC6LZLAmKRDPydGkYx3CJe1QDjeF40eI/bGkY5xo5q0bn
+ RdcURZhhgbvNBEgFBqSrVZld+LaeZKg=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id F07308183E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 06 May 2026 08:59:24 +0200 (CEST)
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 29FBA83BFE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 06 May 2026 14:40:37 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778050765;
+	s=20121; t=1778071248;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=uWVaLyHPZtQIn5sUjDowWMmG8VQiZnZt08qHxOQJwuQ=;
-	b=qrrw2N1R2iZAU8ADx5hn+Aih8RiePvTh/wurTTGkJfj/chjrvd5HR0T/Hfp7Og8EqVlYeE
-	etXCKY1n6+jKYIDbx9Mk8hmHYp2BwKk2SbNmm7BSyXuPWE7AtHv1ZNZZV5k/rwanlXgT0F
-	5shbaVmSy9qto8lSqgfP9bW7LSG56/s=
+	bh=IhCV7KRKQ8AOzPAjZl7LQ9PVGTNSBLwaZEj9Y3bacCE=;
+	b=D82lOmsakB2mJx6V2lfrXbW1DspQkGwV3PanwBQj4DfWsPfZsHSIoSIj+xq3qPi0SgV4/k
+	JS3gPbVNm59V9NzWlDGPOWZAAKDtumWzjg0ahgjn+ElP9kBv4BWrF6F2oq12TNveUx/aHa
+	jLn7VAlwYMjidyQLPPCTumpz1CpGYmQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=JjglE0W1;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778050765;
-	b=IMhS+joEQcHO22BNLJciILJHtSAeaksisbl4N0BbASmU56NS2ALJ+8dmgN5c4c4Pti0UpM
-	by1akvByJ6nkmqkor26z8im8iyX61AG3b/PcRVDoS6tJ4+NN32FSRD+2R2B1dP+NfQphem
-	iLtgYUvUIx7Vjh7ve7BXgRZdJs6NZMk=
-Received: by dvalin.narfation.org (Postfix) id 502FC20DBE;
-	Wed, 06 May 2026 06:59:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778050762;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uWVaLyHPZtQIn5sUjDowWMmG8VQiZnZt08qHxOQJwuQ=;
-	b=JjglE0W1bfq7CphEirApsrNeQYJaIS6NCjTH4w6oaUSZnTubnpGXNM4D73Qn4sPK4Qk+p0
-	iqA/gOzCTPfEzEzqflV/fXf5HwcyLJgQAdZUYH1JSAotz5mSxIKmBWb9gf8lnkFNV0BGCN
-	eZ81mGfDt1HRb5suqbqyZ+kFwIPlcAs=
-From: Sven Eckelmann <sven@narfation.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: Marek Lindner <marek.lindner@mailbox.org>,
- Simon Wunderlich <sw@simonwunderlich.de>,
- Antonio Quartulli <antonio@mandelbit.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ao Zhou <n05ec@lzu.edu.cn>,
- Haoze Xie <royenheart@gmail.com>, Jiexun Wang <wangjiexun2025@gmail.com>,
- Juefei Pu <tomapufckgml@gmail.com>, Luxing Yin <tr0jan@lzu.edu.cn>,
- Ruide Cao <caoruide123@gmail.com>, Xin Liu <bird@lzu.edu.cn>,
- Yifan Wu <yifanwucs@gmail.com>, Yuan Tan <yuantan098@gmail.com>
-Subject: Re: [PATCH batadv 0/8] batman-adv: follow up fixes
-Date: Wed, 06 May 2026 08:59:19 +0200
-Message-ID: <5367405.irdbgypaU6@ripper>
-In-Reply-To: <20260505172017.6caf7347@kernel.org>
-References: <20260503-fixes-followup-v1-0-4313278918d3@narfation.org>
- <5990011.DvuYhMxLoT@sven-l14> <20260505172017.6caf7347@kernel.org>
+	dkim=pass header.d=kernel.org header.s=k20201202 header.b=VuQpGZ29;
+	dmarc=pass (policy=quarantine) header.from=kernel.org;
+	spf=pass (diktynna.open-mesh.org: domain of horms@kernel.org designates
+ 172.234.252.31 as permitted sender) smtp.mailfrom=horms@kernel.org
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778071248;
+	b=psPCR8AXO3+DNIRz5GIxSy1l3ByKvTgV1cATbWloH01HpcHEiRffL/h9V/pyIePVI3uakx
+	Nmsj1YbDYf9o2+wcQadNwWVeC9rSsRNwZbRpLqo+8BEDDoHMoLL5EIjC7BkWPnjd3mFLR0
+	DOoyqLfT+iP7rmqnk6Te+UHWKWx6OeQ=
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 305CA43479;
+	Wed,  6 May 2026 12:40:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0050EC2BCC4;
+	Wed,  6 May 2026 12:40:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778071236;
+	bh=HPJqgvmSRfiKw78LZ5qA65mNKPFtkuVJT9wIyurZU5w=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=VuQpGZ29fQWmFDVFMgiCaABL86t7aTqBqCCXFaMk+SdkvuAEXkMUXBOhGGCYbhU1+
+	 ok1/bu8AiUY05XqjEpJ1DaSzgqHCl3LLZ+QFVa6gHDDJEU/X2Y0dP9Hb/lIE1XPfhs
+	 G0Smo7U3ED2Y3smvGNtTlbApLCtppX2XrpFdMuRzaGjSFL+YdKcVYl0Db5nKYQ6XL7
+	 PY0oeEX9Qk3jKb61Rbth1CUyDx8pX5T9GKslFK1QR20OFvvIs5w92WXYX4QgdbatOw
+	 nf99+8/tCVxVzVvKbuGYn2zoX2JZH9Ha4NdcRQLOvX0UcnyZvafXvO7chGVoGkxPEk
+	 85ANHeZ0EnS2g==
+From: Simon Horman <horms@kernel.org>
+To: n05ec@lzu.edu.cn
+Cc: 'Simon Horman' <horms@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	netdev@vger.kernel.org,
+	marek.lindner@mailbox.org,
+	sw@simonwunderlich.de,
+	antonio@mandelbit.com,
+	sven@narfation.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	yuantan098@gmail.com,
+	yifanwucs@gmail.com,
+	tomapufckgml@gmail.com,
+	bird@lzu.edu.cn,
+	wangjiexun2025@gmail.com
+Subject: Re: [PATCH net 1/1] batman-adv: stop caching unowned originator
+ pointers in BAT IV
+Date: Wed,  6 May 2026 13:39:46 +0100
+Message-ID: <20260506123952.671718-3-horms@kernel.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: 
+ <e12a51ee998808be6381780d6aaf32e093dc7d1e.1777692024.git.wangjiexun2025@gmail.com>
+References: 
+ <e12a51ee998808be6381780d6aaf32e093dc7d1e.1777692024.git.wangjiexun2025@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart17108528.uLZWGnKmhe";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-X-MailFrom: sven@narfation.org
-X-Mailman-Rule-Hits: max-recipients
+Content-Transfer-Encoding: 8bit
+X-MailFrom: horms@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-size;
- news-moderation; no-subject; digests; suspicious-header
-Message-ID-Hash: B5LM46MOJ56AJPOVJOIN4XSR3HUT25U6
-X-Message-ID-Hash: B5LM46MOJ56AJPOVJOIN4XSR3HUT25U6
-X-Mailman-Approved-At: Wed, 06 May 2026 09:12:37 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: HTOHE6BSWD3424ISX4AEMMGTOEB2GYTQ
+X-Message-ID-Hash: HTOHE6BSWD3424ISX4AEMMGTOEB2GYTQ
+X-Mailman-Approved-At: Wed, 06 May 2026 14:42:11 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/B5LM46MOJ56AJPOVJOIN4XSR3HUT25U6/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HTOHE6BSWD3424ISX4AEMMGTOEB2GYTQ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,80 +123,139 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart17108528.uLZWGnKmhe
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH batadv 0/8] batman-adv: follow up fixes
-Date: Wed, 06 May 2026 08:59:19 +0200
-Message-ID: <5367405.irdbgypaU6@ripper>
-In-Reply-To: <20260505172017.6caf7347@kernel.org>
-MIME-Version: 1.0
+From: 'Simon Horman' <horms@kernel.org>
 
-On Wednesday, 6 May 2026 02:20:17 CEST Jakub Kicinski wrote:
-> Ah, I see. I was asking because I don't recall us getting much batadv
-> patches CCed to netdev. Maybe it's simply because there wasn't that
-> many of them to begin with.
-> 
-> If the rate keeps up let's add an X: to MAINTAINERS to avoid
-> netdev@ being CCed. IDK if that's what X is supposed to be used for 
-> but we use it for wireless and bluetooth already. The PRs still
-> flow thru networking tree, but there's no need for netdev to be CCed
-> on 99% of the patch submissions.
-> 
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://netdev-ai.bots.linux.dev/sashiko/
 
-Thanks for the hint, queued up a patch:
+I do have concerns that this review needs to be addressed in
+order for this patch to progress.
 
-$ ./scripts/get_maintainer.pl -f net/batman-adv/*
-Marek Lindner <marek.lindner@mailbox.org> (maintainer:BATMAN ADVANCED)
-Simon Wunderlich <sw@simonwunderlich.de> (maintainer:BATMAN ADVANCED)
-Antonio Quartulli <antonio@mandelbit.com> (maintainer:BATMAN ADVANCED)
-Sven Eckelmann <sven@narfation.org> (maintainer:BATMAN ADVANCED)
-b.a.t.m.a.n@lists.open-mesh.org (moderated list:BATMAN ADVANCED)
-linux-kernel@vger.kernel.org (open list)
+OTOH, there is another AI-generated review of this patch available at
+https://sashiko.dev. In that case, I believe the review relates to
+a pre-existing condition, and addressing that (or not) can be treated
+as a follow-up.
 
+---
+batman-adv: stop caching unowned originator pointers in BAT IV
 
-$ ./scripts/get_maintainer.pl -f Documentation/networking/batman-adv.rst
-Marek Lindner <marek.lindner@mailbox.org> (maintainer:BATMAN ADVANCED)
-Simon Wunderlich <sw@simonwunderlich.de> (maintainer:BATMAN ADVANCED)
-Antonio Quartulli <antonio@mandelbit.com> (maintainer:BATMAN ADVANCED)
-Sven Eckelmann <sven@narfation.org> (maintainer:BATMAN ADVANCED)
-Jonathan Corbet <corbet@lwn.net> (maintainer:DOCUMENTATION)
-Shuah Khan <skhan@linuxfoundation.org> (reviewer:DOCUMENTATION)
-b.a.t.m.a.n@lists.open-mesh.org (moderated list:BATMAN ADVANCED)
-linux-doc@vger.kernel.org (open list:DOCUMENTATION)
-linux-kernel@vger.kernel.org (open list)
+This patch removes the orig_node back-pointer cached inside each BAT IV
+neigh_node and resolves the originator on demand via batadv_orig_hash_find()
+from the stored neighbor address. Tagged Fixes: c6c8fea29769 and
+Cc: stable@kernel.org.
 
-$ ./scripts/get_maintainer.pl -f include/uapi/linux/batadv_packet.h include/uapi/linux/batman_adv.h
-Marek Lindner <marek.lindner@mailbox.org> (maintainer:BATMAN ADVANCED)
-Simon Wunderlich <sw@simonwunderlich.de> (maintainer:BATMAN ADVANCED)
-Antonio Quartulli <antonio@mandelbit.com> (maintainer:BATMAN ADVANCED)
-Sven Eckelmann <sven@narfation.org> (maintainer:BATMAN ADVANCED)
-b.a.t.m.a.n@lists.open-mesh.org (moderated list:BATMAN ADVANCED)
-linux-kernel@vger.kernel.org (open list)
+> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+> index f28e9cbf8ad5..168b413dd18b 100644
+> --- a/net/batman-adv/bat_iv_ogm.c
+> +++ b/net/batman-adv/bat_iv_ogm.c
 
+[ ... ]
 
-@Yuan: Thanks for updating your internal rules. But the main problem (more 
-patches send to netdev) was caused by my oversight. Btw. thanks for all your 
-contributions.
+> @@ -1372,8 +1380,8 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
+>  
+>  	router = batadv_orig_router_get(orig_node, if_outgoing);
+>  	if (router) {
+> -		router_router = batadv_orig_router_get(router->orig_node,
+> -						       if_outgoing);
+> +		router_router = batadv_orig_to_router(bat_priv, router->addr,
+> +						      if_outgoing);
+>  		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
+>  	}
 
-Regards,
-	Sven
---nextPart17108528.uLZWGnKmhe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Is this replacement semantically equivalent to the original call?
 
------BEGIN PGP SIGNATURE-----
+The previous code used batadv_orig_router_get() on the cached orig_node to
+fetch router_router. The new code calls batadv_orig_to_router(), which
+internally runs batadv_find_router():
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCafrmxwAKCRBND3cr0xT1
-y4M7AQD3C+0KX+H35fwADJMKyyDf2c6YpeMAzo+O1stjymGMpgEAwQzkhEb6I/tf
-HEOwkJ70VPq8m4RGK8qvBwrpKpKFNgc=
-=cvFu
------END PGP SIGNATURE-----
+    net/batman-adv/originator.c:batadv_orig_to_router() {
+        orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
+        ...
+        neigh_node = batadv_find_router(bat_priv, orig_node, if_outgoing);
+        ...
+    }
 
---nextPart17108528.uLZWGnKmhe--
+batadv_find_router() has a bonding path that is taken when
+recv_if == BATADV_IF_DEFAULT and bonding is enabled:
 
+    net/batman-adv/routing.c:batadv_find_router() {
+        ...
+        if (!(recv_if == BATADV_IF_DEFAULT &&
+              atomic_read(&bat_priv->bonding)))
+            return router;
 
+        /* bonding: loop through the list of possible routers ... */
+        ...
+        if (next_candidate) {
+            ...
+            batadv_last_bonding_replace(orig_node, next_candidate);
+        } else if (first_candidate) {
+            ...
+            batadv_last_bonding_replace(orig_node, first_candidate);
+        } else {
+            batadv_last_bonding_replace(orig_node, NULL);
+        }
+        ...
+    }
 
+batadv_iv_ogm_process() invokes batadv_iv_ogm_process_per_outif() once with
+BATADV_IF_DEFAULT per received OGM:
+
+    net/batman-adv/bat_iv_ogm.c:batadv_iv_ogm_process() {
+        ...
+        batadv_iv_ogm_process_per_outif(skb, ogm_offset, orig_node,
+                                        if_incoming, BATADV_IF_DEFAULT);
+        ...
+    }
+
+With bonding enabled, does every received OGM now rotate
+orig_node->last_bonding_candidate on the last-hop neighbor's originator via
+batadv_last_bonding_replace(), where previously that state was advanced only
+from forwarding paths?
+
+And can the bonding candidate selection return a different router_router than
+batadv_orig_router_get() would have, which then feeds the subsequent
+loop-avoidance check?
+
+    if (router && router_router &&
+        (batadv_compare_eth(router->addr, prev_sender)) &&
+        !(batadv_compare_eth(ogm_packet->orig, prev_sender)) &&
+        (batadv_compare_eth(router->addr, router_router->addr))) {
+        ...
+        goto out;
+    }
+
+The sister helper added by this same patch, batadv_iv_ogm_neigh_ifinfo_sum(),
+uses batadv_orig_hash_find() followed by batadv_iv_orig_ifinfo_sum() rather
+than batadv_orig_to_router():
+
+> +static u8 batadv_iv_ogm_neigh_ifinfo_sum(struct batadv_priv *bat_priv,
+> +					 const struct batadv_neigh_node *neigh_node)
+> +{
+> +	struct batadv_orig_node *orig_neigh;
+> +	u8 sum;
+> +
+> +	orig_neigh = batadv_orig_hash_find(bat_priv, neigh_node->addr);
+> +	if (!orig_neigh)
+> +		return 0;
+> +
+> +	sum = batadv_iv_orig_ifinfo_sum(orig_neigh, neigh_node->if_incoming);
+> +	batadv_orig_node_put(orig_neigh);
+> +
+> +	return sum;
+> +}
+
+Would a similar pattern work here, something like:
+
+    orig = batadv_orig_hash_find(bat_priv, router->addr);
+    router_router = batadv_orig_router_get(orig, if_outgoing);
+    batadv_orig_node_put(orig);
+
+so that the lookup avoids invoking the bonding candidate machinery from the
+OGM processing path?
+
+The commit message describes only removing an unowned cached originator
+pointer and does not mention a routing or bonding behavior change. Is the
+change in router_router resolution intentional, and if so could the commit
+message call it out?
