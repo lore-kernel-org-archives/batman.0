@@ -4,98 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68506CD37AA
-	for <batman-adv@archiver.kernel.org>; Thu,  7 May 2026 20:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FE2BCD3436
+	for <batman-adv@archiver.kernel.org>; Fri,  8 May 2026 15:43:40 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A087585C05
-	for <batman-adv@archiver.kernel.org>; Thu, 07 May 2026 22:57:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B2A6685471
+	for <batman-adv@archiver.kernel.org>; Fri, 08 May 2026 17:43:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778187464;
- b=fWD82g1JNKuNX6DKaAxMSd43M2Pwz8YEO1TTIaTM/4zFsqUBifTBJBM0EzlUqUmlInA24
- OdnIR6nJ+KKStLd2XGxKHJBNeXDWP8ve42C4VPJDOcxLKpheD06x6GCZ/NH8ISM7i/Ag/Va
- IPjXGtDFgPJiRqYGzHUyBEaRA6vxhfc=
+ t=1778255018;
+ b=zrE8c9JGXOUDfyEeR8jm1HjiUeOgcDYuJw+5pPg1kOD720t3P0fAyUzy05Y/4Ag8OiLdw
+ qfmwuOsxO+68LafvcINDLFubWTJqbKxbP1hJ2uHJoJzu5qgIBX2VT7qZgHIR60zlVoroFia
+ rTegx15k8KJDeSP7lRWA03GsZ9zotq4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778187464; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778255018; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=sDJLEQFq4xW1obvMFv3XH4Ldn5o/0Tg+hnOb+zRZDEk=;
- b=F3/gbDnYMw6Yyooliz4ZNTEu5pmOch3ARVkU8dDiuzP3v4v8JSbfTzd4ebliH+/ixl7V+
- 2ywCdtFhGImrJuA5t5S6v3S3tgSURQrZt1cU9gF+MEeQye3uTXBkiBtTxufXCekeffrYmi6
- PT12fwrggLlRYb+H3WeS22NQVh2X+1Q=
+ list-archive; bh=/C4VTQQ2znN8LdH45GpQQcLnQ3TRxQ3MYwjIBnQbm/w=;
+ b=wJ7wFsj/PadO7qhhq1te2AcL2Hjpau7iP9aCzHktCPEiO2OseId2wOt3DXL2D/ZO16ffz
+ C2JdWXtT8Ed7BeKJ2kE6DxWjXYpQsuDQ1yDBNB5YhAyDTAGMbaiAwY+tmcC0ANibUMf4c3D
+ iC/o9zNrTW4QOBNYhrQ0at23qBMuTSU=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3E22F85A7B
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 07 May 2026 22:57:26 +0200 (CEST)
+ dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2FAF185471
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 08 May 2026 17:43:32 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778187456;
+	s=20121; t=1778255012;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=sDJLEQFq4xW1obvMFv3XH4Ldn5o/0Tg+hnOb+zRZDEk=;
-	b=ZL1S9NAK7kiUoK49oIUKR1irSnWzeP4xeFC5LVF9LxLRbLSoFbWX6/EdOEAhujBuvKRu9b
-	vWrTmRrev4gIFBwhATQN+AdXMOLVTGCTCodtvgnjUylFakb8JevBtyueyh5QBmhk4X06Ba
-	Bsg217v+3SewZ9BI1yBAUHYlQ4T715E=
+	bh=/C4VTQQ2znN8LdH45GpQQcLnQ3TRxQ3MYwjIBnQbm/w=;
+	b=0b2WRsrR+KfiqBqsMgH6hiWMDESe4eSpKuB7gkcc/dLISOxNNmtdiGIoGodfO9Ha7uJJFi
+	+t4212xXXrXRwbuswcb0EF7+ZeorxZ3b4QHw8LbsXaYe+kSudidKnMp2MyyabuTf16T5bW
+	IgEIZXjcwRNY7RfQ4PBWJ9EDoBA/WR8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="R/Hf/hdj";
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778187456;
-	b=Gwucypur5gH7XycFS39XmQdTjshqfDV10pfGAQGvdVYXFKXDEOOOm5hVNkDWeuqB3T8Y41
-	bLXAJMQUwPkzFYSnL/d892NjnoUnU/M54ODEv4E2GdJHRnPg5WgDQKd7eQL0LE1gCcZogV
-	X79PvUoHnJ+mYelZoa5oZ1zI/IjRmXI=
-Received: by dvalin.narfation.org (Postfix) id 3195520DD3;
-	Thu, 07 May 2026 20:57:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778187445;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=CFAOfkSp;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778255012;
+	b=27Rr54kMWjbUfWUCs/3JSeYB50vKDpBodu4peJR1n4FygTSx25qHzRNF2PFHmV7WrJn2Jd
+	hlo/8ucwRMeH3QhAy0TJktmh8qjchyH0iTTRbJqOsgv4/zbT461rD3nPf4CClrVqm4lcFZ
+	pgxoAlSjKtY6ldibAhxCg1ssVcIXVW4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
+	s=09092022; t=1778255009;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=sDJLEQFq4xW1obvMFv3XH4Ldn5o/0Tg+hnOb+zRZDEk=;
-	b=R/Hf/hdjw0y+UELP8T3Fg+VxzucNzyg/X17+ck5ZLPs28DbgX+un6i6Fb+cB3JHbmWcMHX
-	NjHOlyGmJqHkK4yUKl7eYAiuWTmRpdYxqIWGf4RKyA9bk4OszQxldYxcPbOuiTfFG74AMn
-	w+RdTl48V6iLnm49OZg/Z8kx+wZ9TI0=
+	bh=/C4VTQQ2znN8LdH45GpQQcLnQ3TRxQ3MYwjIBnQbm/w=;
+	b=CFAOfkSpK1fBvvEFGHd8VOCKI2ih4i6aEeAtYXwY0lfZK3u0JBmtpIESaTjAAEyrinZqfw
+	BrJGvCsiblBDcbTj7a2X8Hbi22BEvbsX7sZylt8t3MJPqInNgpBuMoWyPJKr3yhENwS42W
+	L1s4X3eW26N9++rNgxVlkENjMlS++/5h1m3dNBCXfxReMURXUcnlNywm6/2UaIiSwv+wXN
+	yVABfDloIu4iookXUhN7q4rUOpSZd1wYyasXKi2SP/KQzGmLVFTTY2pTxbAfwX/AAHeZ86
+	GxVoQ7sTlv3vEBeIAZ67oAnfHAdcAKvdPfzTVzVGDSBFseEN0iN+AfvH9DIxdQ==
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Jiexun Wang <wangjiexun2025@gmail.com>,
+	stable@kernel.org,
+	Yuan Tan <yuantan098@gmail.com>,
+	Yifan Wu <yifanwucs@gmail.com>,
+	Juefei Pu <tomapufckgml@gmail.com>,
+	Xin Liu <bird@lzu.edu.cn>,
+	Luxing Yin <tr0jan@lzu.edu.cn>,
+	Ren Wei <n05ec@lzu.edu.cn>,
+	Sven Eckelmann <sven@narfation.org>,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 3/8] batman-adv: stop tp_meter sessions during mesh
+ teardown
+Date: Fri,  8 May 2026 17:43:09 +0200
+Message-ID: <20260508154314.12817-4-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260508154314.12817-1-sw@simonwunderlich.de>
+References: <20260508154314.12817-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH batadv 1/1] batman-adv: fix tp_meter counter underflow
- during shutdown
-From: Sven Eckelmann <sven@narfation.org>
-To: Ren Wei <n05ec@lzu.edu.cn>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
- marek.lindner@mailbox.org, sw@simonwunderlich.de, antonio@mandelbit.com,
- sven@narfation.org, yuantan098@gmail.com, yifanwucs@gmail.com,
- tomapufckgml@gmail.com, bird@lzu.edu.cn, rakukuip@gmail.com
-In-Reply-To: 
- <df73e607bda0c84b22d64d80f8ac887190242baf.1778118303.git.rakukuip@gmail.com>
-References: <cover.1778118303.git.rakukuip@gmail.com>
- <df73e607bda0c84b22d64d80f8ac887190242baf.1778118303.git.rakukuip@gmail.com>
-Date: Thu, 07 May 2026 22:56:49 +0200
-Message-Id: <177818740941.228652.6887332849423368018.b4-review@b4>
-X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1453; i=sven@narfation.org;
- h=from:subject:message-id; bh=t80X5BPUGmVpO62XoQ1ic3S9abIWlczIk/GA+oTjLyQ=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDJl//szpFZu+Mcjk0/yLfLVGy/f7PXjbcnxKdceuMOdb2
- uz6tvUPO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATUdvG8E9hmtmmuCdxrqX/
- 55jI1a25acnWeqxAid9sqX/JjY8HLzAx/C93OfhK0e7je/bs4Ffbf3y0PjJnb4S1dOpBi/32i7r
- PvuMBAA==
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: QTNG57G5XXUHC4WD3VRSMRWZZAS2JBZQ
-X-Message-ID-Hash: QTNG57G5XXUHC4WD3VRSMRWZZAS2JBZQ
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: YZUW7B7T4Z5WYL4P2PVA6MEB3BWZOG7X
+X-Message-ID-Hash: YZUW7B7T4Z5WYL4P2PVA6MEB3BWZOG7X
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -108,7 +110,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QTNG57G5XXUHC4WD3VRSMRWZZAS2JBZQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/YZUW7B7T4Z5WYL4P2PVA6MEB3BWZOG7X/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -117,43 +119,240 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Thu, 07 May 2026 23:49:46 +0800, Ren Wei <n05ec@lzu.edu.cn> wrote:
-> diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-> index 2e42f6b348c8..4c582443f67c 100644
-> --- a/net/batman-adv/tp_meter.c
-> +++ b/net/batman-adv/tp_meter.c
-> @@ -435,7 +435,7 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
->  static void batadv_tp_sender_shutdown(struct batadv_tp_vars *tp_vars,
->  				      enum batadv_tp_meter_reason reason)
->  {
-> -	if (!atomic_dec_and_test(&tp_vars->sending))
-> +	if (atomic_xchg(&tp_vars->sending, 0) != 1)
->  		return;
->  
->  	tp_vars->reason = reason;
+From: Jiexun Wang <wangjiexun2025@gmail.com>
 
-What about:
+TP meter sessions remain linked on bat_priv->tp_list after the netlink
+request has already finished. When the mesh interface is removed,
+batadv_mesh_free() currently tears down the mesh without first draining
+these sessions.
 
+A running sender thread or a late incoming tp_meter packet can then keep
+processing against a mesh instance which is already shutting down.
+Synchronize tp_meter with the mesh lifetime by stopping all active
+sessions from batadv_mesh_free() and waiting for sender threads to exit
+before teardown continues.
 
-	/* ensure nobody else tries to stop the thread now */
-	if (atomic_dec_and_test(&tp_vars->sending))
-		tp_vars->reason = err;
-	break;
+Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
+Cc: stable@kernel.org
+Reported-by: Yuan Tan <yuantan098@gmail.com>
+Reported-by: Yifan Wu <yifanwucs@gmail.com>
+Reported-by: Juefei Pu <tomapufckgml@gmail.com>
+Reported-by: Xin Liu <bird@lzu.edu.cn>
+Co-developed-by: Luxing Yin <tr0jan@lzu.edu.cn>
+Signed-off-by: Luxing Yin <tr0jan@lzu.edu.cn>
+Signed-off-by: Jiexun Wang <wangjiexun2025@gmail.com>
+Signed-off-by: Ren Wei <n05ec@lzu.edu.cn>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/main.c     |  1 +
+ net/batman-adv/tp_meter.c | 94 +++++++++++++++++++++++++++++++--------
+ net/batman-adv/tp_meter.h |  1 +
+ net/batman-adv/types.h    |  4 ++
+ 4 files changed, 82 insertions(+), 18 deletions(-)
 
-
-in batadv_tp_send()? If shutdown is called and then batadv_tp_send reaches
-this part, isn't this also ending up at -1?
-
-Regarding the netdev mail situation: Please don't send it to
-netdev@vger.kernel.org directly - they want us to first handle it internally
-before forwarding it later to netdev. This should reduce the patch volume for
-them. There is already a change to the MAINTAINERS file to remove the
-batman-adv paths from the NETWORKING section (netdev@....) queued up
-- but it was not yet forwarded to net-next (and I am just wondering whether I
-should ask Simon to directly submit it to net).
-
-Regards,
-	Sven
-
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 3a35aadd8b419..a4d33ee0fda59 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -249,6 +249,7 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+ 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 
+ 	batadv_purge_outstanding_packets(bat_priv, NULL);
++	batadv_tp_stop_all(bat_priv);
+ 
+ 	batadv_gw_node_free(bat_priv);
+ 
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index d9a80e459c2e4..58ca59a2799ed 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -12,6 +12,7 @@
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
++#include <linux/completion.h>
+ #include <linux/container_of.h>
+ #include <linux/err.h>
+ #include <linux/etherdevice.h>
+@@ -365,23 +366,38 @@ static void batadv_tp_vars_put(struct batadv_tp_vars *tp_vars)
+ }
+ 
+ /**
+- * batadv_tp_sender_cleanup() - cleanup sender data and drop and timer
+- * @bat_priv: the bat priv with all the mesh interface information
+- * @tp_vars: the private data of the current TP meter session to cleanup
++ * batadv_tp_list_detach() - remove tp session from mesh session list once
++ * @tp_vars: the private data of the current TP meter session
+  */
+-static void batadv_tp_sender_cleanup(struct batadv_priv *bat_priv,
+-				     struct batadv_tp_vars *tp_vars)
++static void batadv_tp_list_detach(struct batadv_tp_vars *tp_vars)
+ {
+-	cancel_delayed_work(&tp_vars->finish_work);
++	bool detached = false;
+ 
+ 	spin_lock_bh(&tp_vars->bat_priv->tp_list_lock);
+-	hlist_del_rcu(&tp_vars->list);
++	if (!hlist_unhashed(&tp_vars->list)) {
++		hlist_del_init_rcu(&tp_vars->list);
++		detached = true;
++	}
+ 	spin_unlock_bh(&tp_vars->bat_priv->tp_list_lock);
+ 
++	if (!detached)
++		return;
++
++	atomic_dec(&tp_vars->bat_priv->tp_num);
++
+ 	/* drop list reference */
+ 	batadv_tp_vars_put(tp_vars);
++}
+ 
+-	atomic_dec(&tp_vars->bat_priv->tp_num);
++/**
++ * batadv_tp_sender_cleanup() - cleanup sender data and drop and timer
++ * @tp_vars: the private data of the current TP meter session to cleanup
++ */
++static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
++{
++	cancel_delayed_work_sync(&tp_vars->finish_work);
++
++	batadv_tp_list_detach(tp_vars);
+ 
+ 	/* kill the timer and remove its reference */
+ 	timer_delete_sync(&tp_vars->timer);
+@@ -886,7 +902,8 @@ static int batadv_tp_send(void *arg)
+ 	batadv_orig_node_put(orig_node);
+ 
+ 	batadv_tp_sender_end(bat_priv, tp_vars);
+-	batadv_tp_sender_cleanup(bat_priv, tp_vars);
++	batadv_tp_sender_cleanup(tp_vars);
++	complete(&tp_vars->finished);
+ 
+ 	batadv_tp_vars_put(tp_vars);
+ 
+@@ -918,7 +935,8 @@ static void batadv_tp_start_kthread(struct batadv_tp_vars *tp_vars)
+ 		batadv_tp_vars_put(tp_vars);
+ 
+ 		/* cleanup of failed tp meter variables */
+-		batadv_tp_sender_cleanup(bat_priv, tp_vars);
++		batadv_tp_sender_cleanup(tp_vars);
++		complete(&tp_vars->finished);
+ 		return;
+ 	}
+ 
+@@ -1024,6 +1042,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	tp_vars->start_time = jiffies;
+ 
+ 	init_waitqueue_head(&tp_vars->more_bytes);
++	init_completion(&tp_vars->finished);
+ 
+ 	spin_lock_init(&tp_vars->unacked_lock);
+ 	INIT_LIST_HEAD(&tp_vars->unacked_list);
+@@ -1126,14 +1145,7 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ 		   "Shutting down for inactivity (more than %dms) from %pM\n",
+ 		   BATADV_TP_RECV_TIMEOUT, tp_vars->other_end);
+ 
+-	spin_lock_bh(&tp_vars->bat_priv->tp_list_lock);
+-	hlist_del_rcu(&tp_vars->list);
+-	spin_unlock_bh(&tp_vars->bat_priv->tp_list_lock);
+-
+-	/* drop list reference */
+-	batadv_tp_vars_put(tp_vars);
+-
+-	atomic_dec(&bat_priv->tp_num);
++	batadv_tp_list_detach(tp_vars);
+ 
+ 	spin_lock_bh(&tp_vars->unacked_lock);
+ 	list_for_each_entry_safe(un, safe, &tp_vars->unacked_list, list) {
+@@ -1496,6 +1508,52 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+ 	consume_skb(skb);
+ }
+ 
++/**
++ * batadv_tp_stop_all() - stop all currently running tp meter sessions
++ * @bat_priv: the bat priv with all the mesh interface information
++ */
++void batadv_tp_stop_all(struct batadv_priv *bat_priv)
++{
++	struct batadv_tp_vars *tp_vars[BATADV_TP_MAX_NUM];
++	struct batadv_tp_vars *tp_var;
++	size_t count = 0;
++	size_t i;
++
++	spin_lock_bh(&bat_priv->tp_list_lock);
++	hlist_for_each_entry(tp_var, &bat_priv->tp_list, list) {
++		if (WARN_ON_ONCE(count >= BATADV_TP_MAX_NUM))
++			break;
++
++		if (!kref_get_unless_zero(&tp_var->refcount))
++			continue;
++
++		tp_vars[count++] = tp_var;
++	}
++	spin_unlock_bh(&bat_priv->tp_list_lock);
++
++	for (i = 0; i < count; i++) {
++		tp_var = tp_vars[i];
++
++		switch (tp_var->role) {
++		case BATADV_TP_SENDER:
++			batadv_tp_sender_shutdown(tp_var,
++						  BATADV_TP_REASON_CANCEL);
++			wake_up(&tp_var->more_bytes);
++			wait_for_completion(&tp_var->finished);
++			break;
++		case BATADV_TP_RECEIVER:
++			batadv_tp_list_detach(tp_var);
++			if (timer_shutdown_sync(&tp_var->timer))
++				batadv_tp_vars_put(tp_var);
++			break;
++		}
++
++		batadv_tp_vars_put(tp_var);
++	}
++
++	synchronize_net();
++}
++
+ /**
+  * batadv_tp_meter_init() - initialize global tp_meter structures
+  */
+diff --git a/net/batman-adv/tp_meter.h b/net/batman-adv/tp_meter.h
+index f0046d366eac6..4e97cd10cd025 100644
+--- a/net/batman-adv/tp_meter.h
++++ b/net/batman-adv/tp_meter.h
+@@ -17,6 +17,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 		     u32 test_length, u32 *cookie);
+ void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
+ 		    u8 return_value);
++void batadv_tp_stop_all(struct batadv_priv *bat_priv);
+ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb);
+ 
+ #endif /* _NET_BATMAN_ADV_TP_METER_H_ */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 8fc5fe0e9b053..daa06f4211542 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -14,6 +14,7 @@
+ #include <linux/average.h>
+ #include <linux/bitops.h>
+ #include <linux/compiler.h>
++#include <linux/completion.h>
+ #include <linux/if.h>
+ #include <linux/if_ether.h>
+ #include <linux/kref.h>
+@@ -1328,6 +1329,9 @@ struct batadv_tp_vars {
+ 	/** @finish_work: work item for the finishing procedure */
+ 	struct delayed_work finish_work;
+ 
++	/** @finished: completion signaled when a sender thread exits */
++	struct completion finished;
++
+ 	/** @test_length: test length in milliseconds */
+ 	u32 test_length;
+ 
 -- 
-Sven Eckelmann <sven@narfation.org>
+2.47.3
+
