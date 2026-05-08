@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 703ADCD3436
-	for <batman-adv@archiver.kernel.org>; Fri,  8 May 2026 15:48:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FCB3CD3445
+	for <batman-adv@archiver.kernel.org>; Fri,  8 May 2026 15:49:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 02E7385C5E
-	for <batman-adv@archiver.kernel.org>; Fri, 08 May 2026 17:48:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B199F85CCB
+	for <batman-adv@archiver.kernel.org>; Fri, 08 May 2026 17:48:59 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778255295;
- b=dM0AEqbRNz895v5RN8TIKobGnfBC/htjCJkdN8DoEJQ7OW0Eye/QmO6gFz3zpL+t6Bj88
- IJeUQHF0wrmmaEZ6Ea/ucy+k+GfkgHgD2k9hlwS/2Q9aszhMs/08eQjfh8dqYkb5V2NuCUd
- 3LVOwLrhbHRoHNcPu68hFlTAyauumEI=
+ t=1778255339;
+ b=OXcxfTPBK3/Vi4lpDcWEMY6fLE+FsIqf9RKEByTbX9fQk3p6BnRwhnXxid0OF2YSNFJmD
+ 1c9w3rvl+Qj35nllVGCkk8S3oIRoa+OEIx/KSTrbo7p31oxHqU/EE8eXTzxMVYNV/sKeT31
+ IQZ+7KR/En2/kUC6byeoEdJ0zI+24vk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778255295; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778255339; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=rKkYdkKDVA6gC80Vrr+hLi2juPjpTi5IVGhvcsqIlUU=;
- b=CTDPHsComKjulzfljXpPiz7qiTawStMpwWye9WVV8nXOrfJ5Y1X71jD4aWE4PlHwqGjMQ
- U7djnjeeDu3DFw6GFexkiv2/gSUJsETmRLtxcysi4jjKYKBuO07vCsDhr1RNH0TgkldvR+H
- fS18LGles2aTXs4MdupHdYdwB4zxKIU=
+ list-archive; bh=t2WVnKodF7OA43BNZg/AbdNpLnEVxLugYisgg7uXA3A=;
+ b=zfDj9wsU2NtakCc/kfx5amSfC5za3xJixH/2/GCAAhj12P6HITNI0K9Ea0XZp4q+tqblz
+ mNkv0I/g0rhUTtc4aW5+CLKCGFxoG38VSFbrxeTmzU3znJ22e5jYXigvtjBDvXEY8es3NoA
+ WMY3Syxd9dja6IqTzbe99pDb5FpY/4o=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,42 +32,41 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A34D085AA6
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 08 May 2026 17:43:34 +0200 (CEST)
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 5EBC485A9E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 08 May 2026 17:43:35 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778255014;
+	s=20121; t=1778255015;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=rKkYdkKDVA6gC80Vrr+hLi2juPjpTi5IVGhvcsqIlUU=;
-	b=zSdaeXKVA+PgwfaB46nHX+8pOrX7rto1uzar0EA8qwyrybpnI6HejUs6xaoLMXnSc+C4pZ
-	lODFDc24APwHlmhdtERx5kRgOmSLrXR9QP38okX+FScB1nNEQVbKEK6ySij/N+C7yGoz0Y
-	fC6f8NHL8xTIr/Uj5LyukhBx4lHvcHk=
+	bh=t2WVnKodF7OA43BNZg/AbdNpLnEVxLugYisgg7uXA3A=;
+	b=SSEWz/MS2QmDpBAEJpzrXOSb7hzHO6lVR4JO1fZBwb6pgnyXx72oD5ilYV1g64GrjkLAgp
+	obbamhiLeBuULyEh5Ov97KCzY1ShgpbuaFx9u2qZq/xaSDLvxfKR5W8pp8n0DYfF/W5lMS
+	jB3h0UHML4fbiGYVKVTUSVPOji38f/E=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="v/+GCSlx";
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=HekLV+e3;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778255014;
-	b=0k8VOzZOHBtkSyeKD6fIJhEeciucASbBAjtya/bMbAaWeVwUe4dB3ug+52eyxqjWHTBmYV
-	DCb6TvrCHlT5LfSnR5lvvXhhObjrT4R4TmZBtzsfNaO3Q0z4NMYki9I5t4tdQaSc2sh443
-	31VQEo01VF+K2A/6KHXAluC2WeYR8UA=
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778255015;
+	b=Tjvv2oDW7KqHAM7DWl4k8uXdkSF83kySB5Ef/t9FWkDyHg8glXUAncOIAQHkxVeync+D5J
+	RWlKObdxi8w61VTvLGOkCKI82E/LzqPZblUEgG9weFUNd6lCFE+FqeW8kCVJtoDPWuBCB/
+	gQbUCi8rhomv5GCzC5r36ldeEXKtxwk=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1778255013;
+	s=09092022; t=1778255014;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rKkYdkKDVA6gC80Vrr+hLi2juPjpTi5IVGhvcsqIlUU=;
-	b=v/+GCSlxpizvDw965L+ZXXx+0bNpP5FzqyVAiNCADni4gXVh0xStkeJrCChaRphD2jIxPS
-	fUiRhAaIDeOhSn8XqfULs5ENFRYxPMr1XMpzJv2XlFJYTjgD0660SXTvQn4SWV7J9C0lSk
-	PcQpTz9hzRmeoiyUv4Kp6F4bg3k2Er//Ow59Cyd+2Svhb0LjtfEAwL8JTpUnYcVCQbYxTI
-	RewF1G6z1ww5+L0v5YeZFHN+bioQBBje1O9Evo/NGKrDfXFdSAGvqrufpe77yGdf+I1VI+
-	/ozebiq7NTjWSDsZnT2+vAj3ywb5+M+ryTjnrghoxyeWuaVBTUjPJFHklKWgpw==
+	bh=t2WVnKodF7OA43BNZg/AbdNpLnEVxLugYisgg7uXA3A=;
+	b=HekLV+e3twos4FvXcDO/PZmGKBhyVJ5u+/IWhNtiWCQeyYwvIYa6Bya9gdOVId7tQ3ZFMW
+	HibHj3QhsCoq2OpA19T7ED93XQuJbrTiiYIFaRv4TA3SaIOiFKKEsUqY53yrkzKuRSkCAL
+	CAxgIg+tCpM+31PzcQ8LfvIAr0VqnjUl8xGxmfwubFMKc1rGE1Gwx7RPqAPK2E/ShpUYx+
+	pjIYgJ/ZadC+RfWwEtPsJkyvZOuQQ2wpBgMoVpy7B25Y8X03fYbSYHaF4rG6Vd5qT5i2I3
+	7RzMIv6AncAu1KKdUy2/TeIk7LqVECu71CRaa2un37U+oviBx/K8Eq3UQpVzvw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -79,16 +78,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@kernel.org,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 7/8] batman-adv: bla: only purge non-released claims
-Date: Fri,  8 May 2026 17:43:13 +0200
-Message-ID: <20260508154314.12817-8-sw@simonwunderlich.de>
+Subject: [PATCH net 8/8] batman-adv: bla: put backbone reference on failed
+ claim hash insert
+Date: Fri,  8 May 2026 17:43:14 +0200
+Message-ID: <20260508154314.12817-9-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260508154314.12817-1-sw@simonwunderlich.de>
 References: <20260508154314.12817-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: 77M6CG4BEYESQHC4CM7SNRVDQGKJ4ZM2
-X-Message-ID-Hash: 77M6CG4BEYESQHC4CM7SNRVDQGKJ4ZM2
+Message-ID-Hash: 3DIBTN3K7NNN6VHB3KSFZAY2QWXOSIMJ
+X-Message-ID-Hash: 3DIBTN3K7NNN6VHB3KSFZAY2QWXOSIMJ
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/77M6CG4BEYESQHC4CM7SNRVDQGKJ4ZM2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3DIBTN3K7NNN6VHB3KSFZAY2QWXOSIMJ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,51 +113,31 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-When batadv_bla_purge_claims() goes through the list of claims, it is only
-traversing the hash list with an rcu_read_lock(). Due to a potential
-parallel batadv_claim_put(), it can happen that it encounters a claim which
-was actually in the process of being released+freed by
-batadv_claim_release(). In this case, backbone_gw is set to NULL before the
-delayed RCU kfree is started. Calling batadv_bla_claim_get_backbone_gw() is
-then no longer allowed because it would cause a NULL-ptr derefence.
-
-To avoid this, only claims with a valid reference counter must be purged.
-All others are already taken care of.
+When batadv_bla_add_claim() fails to insert a new claim into the hash, it
+leaked a reference to the backbone_gw for which the claim was intended.
+Call batadv_backbone_gw_put() on the error path to release the reference
+and avoid leaking the backbone_gw object.
 
 Cc: stable@kernel.org
-Fixes: 23721387c409 ("batman-adv: add basic bridge loop avoidance code")
+Fixes: 3db0decf1185 ("batman-adv: Fix non-atomic bla_claim::backbone_gw access")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ net/batman-adv/bridge_loop_avoidance.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 8b77dd2ecfa41..879ab043d57a9 100644
+index 879ab043d57a9..cec11f1251d66 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1288,6 +1288,13 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
+@@ -723,6 +723,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
  
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(claim, head, hash_entry) {
-+			/* only purge claims not currently in the process of being released.
-+			 * Such claims could otherwise have a NULL-ptr backbone_gw set because
-+			 * they already went through batadv_claim_release()
-+			 */
-+			if (!kref_get_unless_zero(&claim->refcount))
-+				continue;
-+
- 			backbone_gw = batadv_bla_claim_get_backbone_gw(claim);
- 			if (now)
- 				goto purge_now;
-@@ -1313,6 +1320,7 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
- 					      claim->addr, claim->vid);
- skip:
- 			batadv_backbone_gw_put(backbone_gw);
-+			batadv_claim_put(claim);
+ 		if (unlikely(hash_added != 0)) {
+ 			/* only local changes happened. */
++			batadv_backbone_gw_put(backbone_gw);
+ 			kfree(claim);
+ 			return;
  		}
- 		rcu_read_unlock();
- 	}
 -- 
 2.47.3
 
