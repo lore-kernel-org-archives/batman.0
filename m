@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C295CD37AF
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 09:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFA5BCD3427
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 10:04:11 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 9E21585D0D
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 11:37:07 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5E3DE85BA1
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 12:04:10 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778405827;
- b=pDkmee7Vnxzu5IwBWd9qTdqsjEb8q+gnpFF/C6favcR24yMY099GiHbkgRgIwE7vfoSwc
- cdHO+Yhv7yPUU1dwJ/MJ0JcrExGCC3fE013x2Xelsagep5OlaFAielYQKp20FfJ4CC9i2ID
- ZeyuBZVG7Z59WGslm27FGJDPHNc37dE=
+ t=1778407450;
+ b=Sd8RGfqzr65aZVVziLZMjUMxnB3qXl9p7UMgq7PCXdQXkW4AZgqfSrfHCk865Yq1O2lq2
+ VdgXEq4fhwuWngN3H+ExwxcPTmEIfzyadL7qpPUvJWP7vUm/Pjk4FRvFL2ubuulSvLQDrt3
+ Z7ac8WzDIeexcHbpp3R8dnm+QQuPjnw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778405827; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778407450; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Y45aNJzCtGVotV8xytx1AAqe8yNDYRCbMkRS8jpMCU8=;
- b=a87UCMZWiEBm5cFrBTUfflMugxlRTloLQK7DX+wPp3zprczrGai37VkJyTGJsQESO1Qkv
- ta+MWv68hqrM17g/uocBEL2+IInLQIxmkBbdHo0IzdnUIHrTHo32XvuxxaK5N5QnNWUk/QX
- YlIXM8qm61yYJ3uMydSQX42EsxehSxw=
+ list-archive; bh=CciFi0Ar+J2F2o0YZ/6Ocl6Be20s8j8uvRwBbHvi6bc=;
+ b=KR6EJh/y19YHpakMPBVXw9FMA//+xAoLrDINeM5Px11nLvBRqof/2xvhjNgZTfksCYws5
+ CpUlZsbhOzCsOBKv2ib7dnlFkvQMToXzK7S4/ayUewlPpKf9Q2aSNyz5CyAe2rHgRjfiCmt
+ cmG8OEfqMdlOw332JP2sgA5f/sXZLa4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 43E6C85AD0
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 11:31:23 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 859B181B68
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 12:03:46 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778405483;
+	s=20121; t=1778407426;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Y45aNJzCtGVotV8xytx1AAqe8yNDYRCbMkRS8jpMCU8=;
-	b=lOzmGqKa4JREutc8RxkBO46yKzsC4Jl+AsMdx9uTiFEswpa9Zz6SGqmY6DKrsgZnYttGcu
-	h8fdQfe/yMMe9zkmtVgHpOZQd0x8Ikl9TdFy0LsydfYCsR0+C/GuAgQfv+JxR3HesfhQ0U
-	/d0wMjBlulsZG68HzPwG8C0nlgVBAvA=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=CciFi0Ar+J2F2o0YZ/6Ocl6Be20s8j8uvRwBbHvi6bc=;
+	b=BgP+/XQovh6p3TsiL+iUWv54q6e80CPX9QxKI2XkTeh8Ygqx+2F2IZjFU6rIdd5CCoYnWO
+	i9TWKewpzeGWpYTctLwJAwRfaxv2soLqDx/m9xOqvgKMc3x/miiWpGWaDsxTCIH6FwNwC2
+	D9dzRpT+yuOrU3D/auUuhekY3kgIJOg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=KNKWlHI7;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=DFB9Wzwh;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778405483;
-	b=TlykS402jPoQqWLqoWYzvZe5lM9sVJnE7lXR4WCCjlav2cpazklPPWlh0WEcgEIgNS5a8E
-	62g8luMtW01dhDPyXkTv3guwPt1VVY2frcjtG0sTyO4XTiO5H7Qm80HRMjqe3YZrgsVkBA
-	ZbMZWpxbR3gSWA7zWc3qnYhmjb473Wc=
-Received: by dvalin.narfation.org (Postfix) id 049B0201FE;
-	Sun, 10 May 2026 09:31:23 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778407426;
+	b=YpUQlO/5GjHnPjNQz41kc831BSKpU4NDifzNblyisSGmMRg1ckXxJiHHzS1FIYzxceixFz
+	uWIm9sAsk+mDeJsPEMqPxFGpKOPDp+voEPLnP3qoC2B3F1X3noAm1Mon1o/XOePwIgPMLr
+	Co090ZEyVTvJH7e9NcWtM+Br7S9gMz8=
+Received: by dvalin.narfation.org (Postfix) id A77A6201FE;
+	Sun, 10 May 2026 10:03:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778405483;
+	s=20121; t=1778407425;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y45aNJzCtGVotV8xytx1AAqe8yNDYRCbMkRS8jpMCU8=;
-	b=KNKWlHI7+40dg/MRmCujnS2futHtnwDBk7d/Z/bxlxoL0Upc9sbco6Lnq/5mImhv0X8/vn
-	RAarBoFcapPHX98S+laeTH66SNisi19UJG5o72FvYdm/xz1RSVTkB7Eg6kuOy9ZjcjFrhu
-	knnRmsExam6/ZJTjZhroEq/vgiZCHcM=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=CciFi0Ar+J2F2o0YZ/6Ocl6Be20s8j8uvRwBbHvi6bc=;
+	b=DFB9WzwhqHTcLLTtvW331sOQPOmJ2GthFRReDJsd1ArOytN2CYs0qbLWKa/0FSctCoKToh
+	WDFcYEhU2QtIPCQR1h9Cm8caB5FwWXLV3AC+DdsZ4zmSPaiu9UYncFCgSUPaLPKverDcaT
+	nu7UBrIjLzl3XSALc2Gu0K6c34wE7zs=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 10 May 2026 11:31:03 +0200
-Subject: [PATCH batadv v3 7/7] batman-adv: tp_meter: fix tp_vars reference
- leak in receiver shutdown
+Date: Sun, 10 May 2026 12:03:42 +0200
+Subject: [PATCH RFC batadv] batman-adv: bla: fix report_work leak on
+ backbone_gw purge
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260510-fixes-followup-v3-7-1079a93bc964@narfation.org>
-References: <20260510-fixes-followup-v3-0-1079a93bc964@narfation.org>
-In-Reply-To: <20260510-fixes-followup-v3-0-1079a93bc964@narfation.org>
+Message-Id: <20260510-bla-cancel-work-v1-1-3654903495ef@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAP1XAGoC/yWMQQrCMBBFr1Jm7UAStYhbwQO4lS4mk6mOllSSt
+ gqldzfV5fuf92bIklQyHKsZkkyatY8F7KYCvlO8CWooDM642uytQd8RMkWWDt99euIhcN1u2bG
+ 3OyjWK0mrn1/xCpfzad08DRQmaP53Hv1DeFirsCxftQNz+YIAAAA=
+X-Change-ID: 20260510-bla-cancel-work-8dc6f3c2cb14
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: sw@simonwunderlich.de, Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3126; i=sven@narfation.org;
- h=from:subject:message-id; bh=AigBjQ6hOlbf/QoDp113zRB8MtaDNQkdvctkhUf56hg=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkMASE/FFSTOqYfDdXLnHSgnuvTJi0Dj9zZXY+cUuZoL
- LqRNGltRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAisxcx/M9/tL2RMdN1/g7B
- PR8n9pfuvqQlIDNxTkGXNHfFd6eK/ecY/inudNfetaOHw+pJR8nbSu1v/JN+3T/hfe9xz/O1xVW
- LnnIBAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3961; i=sven@narfation.org;
+ h=from:subject:message-id; bh=O58I/HWImMpeSVU18Rx0HICktlt2jx9fI50Mh+9+wfI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkM4f+nOJ9VEcrS6Lr18kuc2dEnizl+lT7MZ5vG9/j7r
+ amB02s/dpSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAm8uw7I8ORtJRN656XKv6U
+ u115RSvB9PQlqXtmvEfcY9zUTlqdEJjPyDC7kPPrhqCOwGQDvdnLFNcwzhV9efBIeuTzN76+Quk
+ L+fkA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: GAFPJ7SV466XMGZUXZYI55J3RRG5734R
-X-Message-ID-Hash: GAFPJ7SV466XMGZUXZYI55J3RRG5734R
+Message-ID-Hash: ZNXPDO7KEF4L62WWCZ2EHA3CXA5VGBS3
+X-Message-ID-Hash: ZNXPDO7KEF4L62WWCZ2EHA3CXA5VGBS3
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GAFPJ7SV466XMGZUXZYI55J3RRG5734R/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZNXPDO7KEF4L62WWCZ2EHA3CXA5VGBS3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,91 +112,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The receiver shutdown timer handler, batadv_tp_receiver_shutdown(), is
-responsible for releasing the tp_vars reference it holds. However, the
-existing logic for coordinating this release with batadv_tp_stop_all() was
-flawed.
+batadv_bla_purge_backbone_gw() removes stale backbone gateway entries,
+but fails to properly handle their associated report_work:
 
-timer_shutdown_sync() guarantees the timer will not fire again after it
-returns, but it returns non-zero only when the timer was pending at the
-time of the call. If the timer had already expired (and
-batadv_tp_stop_all() would unsucessfully try to  rearm itself),
-batadv_tp_stop_all() skips its batadv_tp_vars_put(), and
-batadv_tp_receiver_shutdown() fails to put its own reference as well.
+- If report_work is running, the purge must wait for it to finish before
+  freeing the backbone_gw, otherwise the worker may access freed memory
+  (e.g. bat_priv).
+- If report_work is pending, the purge must cancel it and release the
+  reference held for that pending work item.
 
-Fix this by introducing a new atomic variable receiving that is set to 1
-when the receiver is initialized and cleared atomically with atomic_xchg()
-by whichever side claims it first. Only the side that observes the
-transition from 1 to 0 is responsible for releasing the tp_vars timer
-reference, eliminating the uncertainty.
+The previous implementation called hlist_for_each_entry_safe() inside a
+spin_lock_bh() section, but cancel_work_sync() may sleep and therefore
+cannot be called from within a spinlock-protected region.
 
-Fixes: 13f49ae89725 ("batman-adv: stop tp_meter sessions during mesh teardown")
+Restructure the loop to handle one entry per spinlock critical section:
+acquire the lock, find the next entry to purge, remove it from the hash
+list, then release the lock before calling cancel_work_sync() and
+dropping the hash_entry reference. Repeat until no more entries require
+purging.
+
+Fixes: a998bf5dfbd7 ("batman-adv: add detection for complex bridge loops")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/tp_meter.c | 13 +++++++++++--
- net/batman-adv/types.h    |  3 +++
- 2 files changed, 14 insertions(+), 2 deletions(-)
+See
+https://sashiko.dev/#/patchset/20260508154314.12817-1-sw@simonwunderlich.de?part=7
+---
+ net/batman-adv/bridge_loop_avoidance.c | 53 ++++++++++++++++++++++------------
+ 1 file changed, 34 insertions(+), 19 deletions(-)
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 066c7611..f1c11777 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -8,6 +8,7 @@
- #include "main.h"
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index cec11f12..ff2097eb 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1224,6 +1224,7 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+ 	struct hlist_head *head;
+ 	struct batadv_hashtable *hash;
+ 	spinlock_t *list_lock;	/* protects write access to the hash lists */
++	bool purged;
+ 	int i;
  
- #include <linux/atomic.h>
-+#include <linux/bug.h>
- #include <linux/build_bug.h>
- #include <linux/byteorder/generic.h>
- #include <linux/cache.h>
-@@ -1156,6 +1157,9 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
- 	spin_unlock_bh(&tp_vars->unacked_lock);
+ 	hash = bat_priv->bla.backbone_hash;
+@@ -1234,30 +1235,44 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+ 		head = &hash->table[i];
+ 		list_lock = &hash->list_locks[i];
  
- 	/* drop reference of timer */
-+	if (WARN_ON(atomic_xchg(&tp_vars->receiving, 0) != 1))
-+		return;
+-		spin_lock_bh(list_lock);
+-		hlist_for_each_entry_safe(backbone_gw, node_tmp,
+-					  head, hash_entry) {
+-			if (now)
+-				goto purge_now;
+-			if (!batadv_has_timed_out(backbone_gw->lasttime,
+-						  BATADV_BLA_BACKBONE_TIMEOUT))
+-				continue;
++		do {
++			purged = false;
+ 
+-			batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
+-				   "%s(): backbone gw %pM timed out\n",
+-				   __func__, backbone_gw->orig);
++			spin_lock_bh(list_lock);
++			hlist_for_each_entry_safe(backbone_gw, node_tmp,
++						  head, hash_entry) {
++				if (now)
++					goto purge_now;
++				if (!batadv_has_timed_out(backbone_gw->lasttime,
++							  BATADV_BLA_BACKBONE_TIMEOUT))
++					continue;
 +
- 	batadv_tp_vars_put(tp_vars);
++				batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
++					   "%s(): backbone gw %pM timed out\n",
++					   __func__, backbone_gw->orig);
+ 
+ purge_now:
+-			/* don't wait for the pending request anymore */
+-			if (atomic_read(&backbone_gw->request_sent))
+-				atomic_dec(&bat_priv->bla.num_requests);
++				purged = true;
++				/* don't wait for the pending request anymore */
++				if (atomic_read(&backbone_gw->request_sent))
++					atomic_dec(&bat_priv->bla.num_requests);
+ 
+-			batadv_bla_del_backbone_claims(backbone_gw);
++				batadv_bla_del_backbone_claims(backbone_gw);
+ 
+-			hlist_del_rcu(&backbone_gw->hash_entry);
+-			batadv_backbone_gw_put(backbone_gw);
+-		}
+-		spin_unlock_bh(list_lock);
++				hlist_del_rcu(&backbone_gw->hash_entry);
++				break;
++			}
++			spin_unlock_bh(list_lock);
++
++			if (purged) {
++				/* reference for pending report_work */
++				if (cancel_work_sync(&backbone_gw->report_work))
++					batadv_backbone_gw_put(backbone_gw);
++
++				/* reference for hash_entry */
++				batadv_backbone_gw_put(backbone_gw);
++			}
++		} while (purged);
+ 	}
  }
  
-@@ -1374,6 +1378,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
- 
- 	ether_addr_copy(tp_vars->other_end, icmp->orig);
- 	tp_vars->role = BATADV_TP_RECEIVER;
-+	atomic_set(&tp_vars->receiving, 1);
- 	memcpy(tp_vars->session, icmp->session, sizeof(tp_vars->session));
- 	tp_vars->last_recv = BATADV_TP_FIRST_SEQ;
- 	tp_vars->bat_priv = bat_priv;
-@@ -1546,8 +1551,12 @@ void batadv_tp_stop_all(struct batadv_priv *bat_priv)
- 			break;
- 		case BATADV_TP_RECEIVER:
- 			batadv_tp_list_detach(tp_var);
--			if (timer_shutdown_sync(&tp_var->timer))
--				batadv_tp_vars_put(tp_var);
-+			timer_shutdown_sync(&tp_var->timer);
-+
-+			if (atomic_xchg(&tp_var->receiving, 0) != 1)
-+				break;
-+
-+			batadv_tp_vars_put(tp_var);
- 			break;
- 		}
- 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 179b90c1..739439e2 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1323,6 +1323,9 @@ struct batadv_tp_vars {
- 	/** @sending: sending binary semaphore: 1 if sending, 0 is not */
- 	atomic_t sending;
- 
-+	/** @receiving: receiving binary semaphore: 1 if receiving, 0 is not */
-+	atomic_t receiving;
-+
- 	/** @reason: reason for a stopped session */
- 	enum batadv_tp_meter_reason reason;
- 
 
--- 
-2.47.3
+---
+base-commit: 05abe1217c5104b3514ef1945dacf511b012b921
+change-id: 20260510-bla-cancel-work-8dc6f3c2cb14
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
