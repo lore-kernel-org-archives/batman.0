@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 455B9CD3427
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 07:30:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4A5BCD37AF
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 08:05:25 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6140B85B06
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 09:30:36 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id EE12F85B08
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 10:05:23 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778398236;
- b=dNl8SB2CMDzb6PfbvqXdCqKbkz2I2ojJJgEB8oIOTJCOiyGGTlTBeJgeIyUwDzk+fJTmn
- TJK/Y/wiTCmYlRrlvqARAvzoO06MQNgOLAeP2sFBFigXIi4bnZ3ZfaAcAjsruugVFlbJYcH
- damAw28PDFttYwyJy0jJ9W9c2og5FOs=
+ t=1778400323;
+ b=erhQgYgRa9taSwSPvUQWCJP7P/VSM9Ah42hQHnYKPvs6etDfb2KXkA+682x1vlM7OduE5
+ umtdkFqe6tfVefjiZh+W3FsiFBflZ5h6FQo6A1tTlduTjHEOjNFKh7qbyiDDqWht2jdHnO3
+ LJkiy1WUVG8bVMf+wajtF+09YCnCQ44=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778398236; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778400323; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=s0pXAsroFmy3RG2Oct2MYElbUy7bdYgO2iWJ3mlSD4U=;
- b=dA70urto3crmIE1+LhIJRIR9c2StBLLdeh9Xo02HapRdlCbosBoGrZDDDDRzZKwEznaZf
- GxBQb5EKHffPBg2o+4Da3m20iaDsnKZ6c0vB9h1/uW3RAc+5KtWsuneTiYNuOjHWvwljmef
- 1g98Zdbm5/RdXgtLVEI0OLJAJZLEaM0=
+ list-archive; bh=b+6MqIJnJRgcUaZr33tcmO6u41qqKCpv1Gvyt/Zdykg=;
+ b=tfHIKijD1ZibOrG063wE59AvBMhgJZ6Q3EHltPwkLnvkBvTAc60raRdk3udj8vAeact4S
+ Wz1rNrM87Ea/Un1XkwqVR1rARFCvBZNT87rMjCEkkhv7FL2D5k/zM0cvTFCMjdCjPcJXxp7
+ +XWhMEmfIS1izciLDOAscp8q7KSGQTs=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,55 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id E2BFC82752
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 09:30:11 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8D30583AB1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 10:05:00 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778398212;
+	s=20121; t=1778400300;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=s0pXAsroFmy3RG2Oct2MYElbUy7bdYgO2iWJ3mlSD4U=;
-	b=mGfhLiiMU5HibVRXHmFCMMmtpT5neSkb4L3ea66TO21nVCoiLksFkPxE2wxEoTEu/sV4vn
-	zXTF52RE8DMX3rAR6BKiXGXaJ37rHZyodEnt5z6mG2LuEfnbxpMTEU5mm/XLpS3ivIIIip
-	vo8PYcTor2GqZLAjbhonjWQONx4kELs=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=b+6MqIJnJRgcUaZr33tcmO6u41qqKCpv1Gvyt/Zdykg=;
+	b=JCuS8EY4KWRZgfAxMxLyr7pymseGtNabB9+OjNdN3JdU4MC1oTLzSPFvbb/Jlud+ZC1j27
+	fqWp6DL1O94vRs/fwc4OHDQqY+TV4rYNbLXNkUfBd81f99URb3d1YTSAEocghby1MDEf1U
+	DhaXDsipQ9G6mvZL6I2W5G+Un8v2YNk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=RRsNGAiJ;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=l1NCDPgG;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778398212;
-	b=l/TYB5pdaBZe9EQiEvi716XjyZyxsyn/RDbUSvHgEoMNqwOyscwv77TpzkmscRAXIei5lH
-	PNT137tlRNnp0/JUA2p9TaAjlYQorEHLmr34oYLWtZLb+pqGuOJ/V4EBtsiar5cZGNlRIK
-	hxHDJfcKXnFp6VyaPqoL9NWp6aewTiQ=
-Received: by dvalin.narfation.org (Postfix) id C2CC42020B;
-	Sun, 10 May 2026 07:30:10 +0000 (UTC)
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778400300;
+	b=I8Et/zuWMN50uXxdkbfu9P4XphunMfWgOrfxjqgVEeAQpY3qxSYDeSZRE9Z0heFjS+3wPt
+	TT+WbVm51SrZtRYVKEOC/KEe+/VWwXw5R7GxW/T87DNdgxBdmMH+dI6h7AQ8iLj1l828Yf
+	nkDkrc9gRAE4olzq9tdTSPmmmwY9Zyg=
+Received: by dvalin.narfation.org (Postfix) id B58E92024F;
+	Sun, 10 May 2026 08:04:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778398210;
+	s=20121; t=1778400299;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=s0pXAsroFmy3RG2Oct2MYElbUy7bdYgO2iWJ3mlSD4U=;
-	b=RRsNGAiJLKzvBigevBzfa3u/q4o4/LLt+XQ/1bNppu7jkKZ2IIBtNibBtEaEq3sJd3W5mj
-	KXESGYjzmlhFmF8n1oRD7wlcG2Lnf6NkNzi7l2oylkHLvr+aGwwgtIxkZYamVigSySG6hJ
-	8C9avUamFp4x/C9uhkpbP8VR+qYjsFs=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=b+6MqIJnJRgcUaZr33tcmO6u41qqKCpv1Gvyt/Zdykg=;
+	b=l1NCDPgGRIvi4THwik9V5xNuwt1bigLQoo5pLdTTvbwJjkaEeKLDRgR2a0oqZpwBkvYZYk
+	tTEernlN7nCXUZJFGqn6PFFKhKe5gKAVVyHPBikOwup5J/Y6EhdvDmTbJ75dCBsi4r7MhM
+	hTzHD/hjiIKjC7lxWRKaT+FkRDJLnJI=
 From: Sven Eckelmann <sven@narfation.org>
-To: Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH batadv 4/5] batman-adv: remove global hardif list
-Date: Sun, 10 May 2026 09:30:04 +0200
-Message-ID: <6325094.lOV4Wx5bFT@sven-desktop>
-In-Reply-To: 
- <262d5c5a5afe3d478d2e65187c0913a3a8c4781f.1747687504.git.mschiffer@universe-factory.net>
-References: 
- <0b26554afea5203820faef1dfb498af7533a9b5d.1747687504.git.mschiffer@universe-factory.net>
- <262d5c5a5afe3d478d2e65187c0913a3a8c4781f.1747687504.git.mschiffer@universe-factory.net>
+Date: Sun, 10 May 2026 10:04:27 +0200
+Subject: [PATCH batadv] batman-adv: tp_meter: directly shut down timer on
+ cleanup
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5158825.31r3eYUQgx";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: QCJ55O5MHYADTRALOEZX4EDEQH7JFTGI
-X-Message-ID-Hash: QCJ55O5MHYADTRALOEZX4EDEQH7JFTGI
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260510-tp-shutdown-v1-1-770f2ad24e29@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAAo8AGoC/yWMzQrCMBAGX6V8ZwPbxB/wVcRDfrZ2PaQlm1ah9
+ N2NepyBmQ3KRVhx7TYUXkVlyg36Q4c4+vxgI6kxLNkznXoydTY6LjVNr2wGZy+RQiR3dGjFXHi
+ Q9+92Q/DVpxX3v9clPDnW7wr7/gHYM3nXdwAAAA==
+X-Change-ID: 20260510-tp-shutdown-f327c0bc0343
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1618; i=sven@narfation.org;
+ h=from:subject:message-id; bh=YbVrDTrZq7nqqi8FZPh02QZIRNvSC4L7377CAr3fTR8=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkMNjxt91JqZz/YXHKPp1gx285nwp59CSpb73aHWXHq7
+ EmcuKW6o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRjGmMDBM0NCXyxC6Y6Oaz
+ saulGkuptFRsMzDoms+tfNPjdt6rrQz/s9PFXRxK1bam/mQob9/+fHJAxJErCqyrUs31i+q84p4
+ yAwA=
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: INYDCUJSMKCWE35XW6NS44Y54JZR3JUA
+X-Message-ID-Hash: INYDCUJSMKCWE35XW6NS44Y54JZR3JUA
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -94,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QCJ55O5MHYADTRALOEZX4EDEQH7JFTGI/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/INYDCUJSMKCWE35XW6NS44Y54JZR3JUA/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -103,59 +113,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart5158825.31r3eYUQgx
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH batadv 4/5] batman-adv: remove global hardif list
-Date: Sun, 10 May 2026 09:30:04 +0200
-Message-ID: <6325094.lOV4Wx5bFT@sven-desktop>
-MIME-Version: 1.0
+batadv_tp_sender_cleanup() was calling timer_delete_sync() followed by
+timer_delete() to guard against the timer handler re-arming itself between
+the two calls. This double-deletion hack relied on the sending status being
+set to 0 to suppress re-arming.
 
-On Monday, 19 May 2025 22:46:31 CEST Matthias Schiffer wrote:
-> @@ -876,6 +869,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
->         batadv_purge_outstanding_packets(bat_priv, hard_iface);
->         netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
->  
-> +       batadv_hardif_generation++;
->         netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->mesh_iface);
->         batadv_hardif_recalc_extra_skbroom(hard_iface->mesh_iface);
+Replace both calls with a single timer_shutdown_sync(). This function both
+waits for any running timer callback to complete (like timer_delete_sync())
+and permanently disarms the timer so it cannot be re-armed afterwards,
+making re-arming prevention unconditional and self-documenting.
 
-I think, the following code also has to be removed from here:
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/tp_meter.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 759ae923..d27c3da9 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -401,13 +401,7 @@ static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
+ 	batadv_tp_list_detach(tp_vars);
+ 
+ 	/* kill the timer and remove its reference */
+-	timer_delete_sync(&tp_vars->timer);
+-	/* the worker might have rearmed itself therefore we kill it again. Note
+-	 * that if the worker should run again before invoking the following
+-	 * timer_delete(), it would not re-arm itself once again because the status
+-	 * is OFF now
+-	 */
+-	timer_delete(&tp_vars->timer);
++	timer_shutdown_sync(&tp_vars->timer);
+ 	batadv_tp_vars_put(tp_vars);
+ }
+ 
 
-	netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
-...
-	hard_iface->mesh_iface = NULL;
+---
+base-commit: f876964b732393119a036ff1ce7a1c94290b09ed
+change-id: 20260510-tp-shutdown-f327c0bc0343
 
-
-And following has to be added then to the batadv_hardif_release function.
-
-	netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
-
-Otherwise code which iterates via RCU over the netdevices list might find a 
-batadv_hard_iface which is currently getting removed - but it can still find 
-it and might try to access hard_iface->mesh_iface (which is NULL at that 
-point).
-
-Regards,
-	Sven
---nextPart5158825.31r3eYUQgx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCagAz/AAKCRBND3cr0xT1
-yzcFAQDRALiRgoKwOrIr4X3JQNWI1sm+7rpqt3kdSj47zuvl/wEA/pO4scc5JM6P
-wEZ1lhcYQzvk54ctpDxojTjYPe2xowc=
-=xW22
------END PGP SIGNATURE-----
-
---nextPart5158825.31r3eYUQgx--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
