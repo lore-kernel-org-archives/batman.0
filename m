@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0805DCD37AF
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 09:33:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46779CD3427
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 09:33:53 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5371C85C12
-	for <batman@archiver.kernel.org>; Sun, 10 May 2026 11:33:07 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id CDFB185B08
+	for <batman@archiver.kernel.org>; Sun, 10 May 2026 11:33:51 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778405587;
- b=QJIzJFR9NBUf6Ob5T7m7MSvPcI27DNxhq70oy3k4KDxshCJ1X0D6Al29JGXmcZHX0rlbO
- Yd4HmPABPFaCFa4hgKG6trPbd0KF0EtXEMwOYRgVFBLWWNSRW4wsgZLaC9qKgvD8YzZAReO
- 8LehnehyFwsb3JhpBG1DOVWRnsc4+6Q=
+ t=1778405631;
+ b=10I9c9HSNZ5UBNcuNfNpFZAEOK10wy9jRNrA7jR/1BATpGiSS3p2oAE+cGYCEoVI1IjqY
+ FdKNjSBN7EXyynn5ygx8boaDOIcjKR826uCywVdEqvQ5yX0Rxki58O1kiVNfSOP8snkNh+w
+ exQcfmdzfyx9r3R452tscid4AsEgdcs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778405587; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778405631; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=PCUiU671og5mU7SQihPEafA8emKZUawbchYXjCoa+cQ=;
- b=Fv8o8j+901YleiipB5hU2uqhrK0dC+tQ4ce8mQ2QNGuWJyhTzJL15a+Td6AWzFMMoDXV0
- fIUsRH963efURTOGV7TXO2s9c6ZIA8Yph4nONyyYNuIAGEyy0KQK12hBC/Kg6ybGFkE8Hte
- sKyXd7NDXU++RYYQIWEPeWJF7JObjdU=
+ list-archive; bh=E7oeW+d2kTwQUAiPKP99mh83CAh/EVd6tcUzolSnDz8=;
+ b=TubH4T0IACCYuhgjWzyoA86CNrdo7nC2npkQi4519v7gDkKwjJDUuLp41YYLRuIEKeDOP
+ iDbMtlH7NpMhjx7BM9lMTRANEsmF9gVBQISJcTKMpkggpc+KK6Q2SPCqEaGeHLY7CC2cjyn
+ fxceIcS7mgF3YnkyZxgRVh93qleKO/A=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 14192859D3
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 11:31:16 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8FD89859D3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 10 May 2026 11:31:11 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1778405476;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=PCUiU671og5mU7SQihPEafA8emKZUawbchYXjCoa+cQ=;
-	b=hQphIouYYx4yiAavtxvI7w0YNWpE5s7uy1rU3FOyOPHgBkOU0UPsilmupCPcx7ktabrQ5q
-	I7h0lzZm/vN4yQ+abmInWS+F2gHVhBztwWFgAgFZewVXi4baY3Yw2eOlCzJiKi6cyXjg/0
-	ot2pVmT7osY0A5PTy/qvxRjc63PZwdI=
+	bh=E7oeW+d2kTwQUAiPKP99mh83CAh/EVd6tcUzolSnDz8=;
+	b=VEE92T7LSNq9TrW/tz55myA30GaA1IygKFSTEoCXSEuTVvw9oGAA4++cRnuBid8/rWiAb5
+	Mo6hxQznIskq8A9X3H+CyTk0xp5+tTuY69zboPXFJuKP58uLf9HvqEzjphjte8QM85p6u6
+	9ikHY8KCPq5CYBYWjop1m2wj6Km0HKc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="rLF/BHTK";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=llsa64bc;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778405476;
-	b=cA1T4OJo30LVeKAQWtNMBKfAZxgdZSrFWjnIic+MtQ4qb0Z0238SMC6j/EaTByvMoH+Hur
-	QeVNx/8ttd0IIkVfXpwgA/fccy1KI3IZXu3s/bXTUyUDYtfGntNSc1YP6IQ6dCJ0rELgYe
-	w4z5iP6jUVoL0kDdywTNxywGklLcd8w=
-Received: by dvalin.narfation.org (Postfix) id AD13E21617;
-	Sun, 10 May 2026 09:31:15 +0000 (UTC)
+	b=T15izUIwOWRTMWAStOn/+zgMLC/PCE/M5QAGr+Hg2uY2rG5Zo+nPpE3jB/vDPFXmNzpLHS
+	ll1xzFVwsfiuMW4SjKoTR5+WpfIEa5h6BLf5ABKGXbL9xGeNgyuQpkUBvASAUyD6N2D7eX
+	FsJMtdRZLFK8MhZ2HFgth1t3P2GZLgo=
+Received: by dvalin.narfation.org (Postfix) id 0CC3321722;
+	Sun, 10 May 2026 09:31:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778405475;
+	s=20121; t=1778405471;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=PCUiU671og5mU7SQihPEafA8emKZUawbchYXjCoa+cQ=;
-	b=rLF/BHTKA78pq6hBFIMKfYTRdn7pJ2h+jgLk0ApFHBPs9kvOilLx9RbYVv7WT7hm7NOZol
-	QwgGlg+JC0ikYu8ISq3GLsnr6oJtWLamuqpG6nzKiXZIuc9RDVE41vy4OBYBNIL+9PTQ7/
-	BRu6nCbyFkrj0xhJqJjk+9zmjtFF++E=
+	bh=E7oeW+d2kTwQUAiPKP99mh83CAh/EVd6tcUzolSnDz8=;
+	b=llsa64bc7golY5oqal7X24ICDKPG74mBcYW5CnsfIw07L4VpJwZgBqugObPZa/7Uso7T7P
+	TIxSXft9K9AH+dfMSp5rlwtcj8xuLLGGOjJd73Br/7x6XqkPuVY9vwuys9cT0+G6X3s9iw
+	nz/5GS5TRTT/aSb3WSaXa8vudmIPFsQ=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 10 May 2026 11:31:00 +0200
-Subject: [PATCH batadv v3 4/7] batman-adv: tt: fix TOCTOU race for reported
- vlans
+Date: Sun, 10 May 2026 11:30:58 +0200
+Subject: [PATCH batadv v3 2/7] batman-adv: tt: fix negative
+ last_changeset_len
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260510-fixes-followup-v3-4-1079a93bc964@narfation.org>
+Message-Id: <20260510-fixes-followup-v3-2-1079a93bc964@narfation.org>
 References: <20260510-fixes-followup-v3-0-1079a93bc964@narfation.org>
 In-Reply-To: <20260510-fixes-followup-v3-0-1079a93bc964@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2608; i=sven@narfation.org;
- h=from:subject:message-id; bh=o1jALkBeu3YwznwSlcv20X1Cqa5GOtdkMooiE4tr2mc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkMASGfpb5PaPZmSXR8HlhacLTtUqvV9qtWrSW2+47lS
- d6dd1Wno5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjAR7oOMDCu/Xkr4OMNmXrnK
- rTcfKw67O2zp7W2ONed7fsi9li2ukoGRYWn3fwaxdxOTpZ5e2cp6XneuQvf/cKYkGZaNYvoV50O
- qGQE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1330; i=sven@narfation.org;
+ h=from:subject:message-id; bh=yi60lbuycw7okgeAErpbOVkSJ72iiXwdg0ZPDtPalvI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkMASE+NhIS21Ij/RkZn0UskkusOvD1gbe++ayjvdvsN
+ j1qT5XpKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAExkjy0jw76Mf/GvvxdnsJxl
+ KsjlVzSMMXzDd2D1K93Ns5rPfV9Zf4/hf/yLnd4x6sap1cvEJRJueaSFlMc/ybj7zi4j9c8WqR0
+ z+QA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: O4CEYB4QSQENKNVFJGZCN5O4CNAC4WDF
-X-Message-ID-Hash: O4CEYB4QSQENKNVFJGZCN5O4CNAC4WDF
+Message-ID-Hash: IYCYCUOAHKDQQQ3FVC4FWXFL577VBHXN
+X-Message-ID-Hash: IYCYCUOAHKDQQQ3FVC4FWXFL577VBHXN
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/O4CEYB4QSQENKNVFJGZCN5O4CNAC4WDF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/IYCYCUOAHKDQQQ3FVC4FWXFL577VBHXN/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,68 +112,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The local TT based TVLV is generated by first checking the number of VLANs
-which have at least one TT entry. A new buffer with the correct size for
-the VLANs is then allocated. Only then, the list of VLANs s used to fill
-the VLAN entries in the buffer. During this time, the meshif_vlan_list_lock
-is held. But the actual number of TT entries of each VLAN can still
-increase during this time - just not the number of VLANs in the list.
+batadv_piv_tt::last_changeset_len len was declared as s16, but the field is
+never intended to hold a negative value. When a value greater than 32767 is
+assigned, it wraps to a negative signed integer.
 
-But the prefilter used in the buffer size calculation might still cause an
-increase of the number of VLANs which need to be stored. Simply because a
-VLAN might now suddenly have at least one entry when it had none in the
-pre-alloc check - and then needs to occupy space which was not allocated.
+In batadv_send_my_tt_response(), last_changeset_len is temporarily widened
+to s32. The incorrectly negative s16 value propagates into the s32, causing
+batadv_tt_prepare_tvlv_local_data() to allocate a full sized buffer but
+populates only a small portion of it with the collected changeset. All
+remaining bits are kept uninitialized.
 
-It is better to overestimate the buffer size at the beginning and then fill
-the buffer only with the VLANs which are not empty.
+Using an u16 avoids this type confusion and ensures that no (negative) sign
+extension is performed in batadv_send_my_tt_response().
 
-Fixes: e4687b4be274 ("batman-adv: prevent TT request storms by not sending inconsistent TT TLVLs")
+Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ net/batman-adv/types.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index e65bd3ea..23e06cc4 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -927,11 +927,8 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	spin_lock_bh(&bat_priv->meshif_vlan_list_lock);
- 	hlist_for_each_entry(vlan, &bat_priv->meshif_vlan_list, list) {
- 		vlan_entries = atomic_read(&vlan->tt.num_entries);
--		if (vlan_entries < 1)
--			continue;
--
--		num_vlan++;
- 		total_entries += vlan_entries;
-+		num_vlan++;
- 	}
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 0f3814b4..179b90c1 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -993,7 +993,7 @@ struct batadv_priv_tt {
+ 	 * @last_changeset_len: length of last tt changeset this host has
+ 	 *  generated
+ 	 */
+-	s16 last_changeset_len;
++	u16 last_changeset_len;
  
- 	change_offset = struct_size(*tt_data, vlan_data, num_vlan);
-@@ -956,6 +953,7 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 	(*tt_data)->num_vlan = htons(num_vlan);
- 
- 	tt_vlan = (*tt_data)->vlan_data;
-+	num_vlan = 0;
- 	hlist_for_each_entry(vlan, &bat_priv->meshif_vlan_list, list) {
- 		vlan_entries = atomic_read(&vlan->tt.num_entries);
- 		if (vlan_entries < 1)
-@@ -966,8 +964,15 @@ batadv_tt_prepare_tvlv_local_data(struct batadv_priv *bat_priv,
- 		tt_vlan->reserved = 0;
- 
- 		tt_vlan++;
-+		num_vlan++;
- 	}
- 
-+	/* recalculate in case number of VLANs reduced */
-+	change_offset = struct_size(*tt_data, vlan_data, num_vlan);
-+	tvlv_len = *tt_len + change_offset;
-+
-+	(*tt_data)->num_vlan = htons(num_vlan);
-+
- 	tt_change_ptr = (u8 *)*tt_data + change_offset;
- 	*tt_change = (struct batadv_tvlv_tt_change *)tt_change_ptr;
- 
+ 	/**
+ 	 * @last_changeset_lock: lock protecting last_changeset &
 
 -- 
 2.47.3
