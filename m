@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85A7ACD37BE
-	for <batman@archiver.kernel.org>; Mon, 11 May 2026 17:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E426CD37BE
+	for <batman@archiver.kernel.org>; Mon, 11 May 2026 17:33:47 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1106885C64
-	for <batman@archiver.kernel.org>; Mon, 11 May 2026 19:32:52 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C3E9C85D40
+	for <batman@archiver.kernel.org>; Mon, 11 May 2026 19:33:45 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778520772;
- b=rZ+rv9/tv1mO+vBlusE+M7t265d0Sd5eGXQfBKV5UqNu8Qoxk3R1BExzcRtSYqb7177E9
- o+XJtclPBJjDOdlfzkVz80ZbJIgvrTmyrZozwBjQza1msgt9lPbndijQmvFfFeyrViFVaZz
- wHUveXZVKD/sZpm6J7P0dS9qMmZT9OQ=
+ t=1778520825;
+ b=nQ6QwbRTop3ot5BQv6luev1tXikJsLUCyllgELLPzi+YUnTioFL7WXwNmsA0FJSVdDluc
+ 36DrAtUNK8rR826Cb+uo6cpucqtQIl80GUafVEuc4cPVN5cg3FSjYkobIMtA75hNN194cTF
+ 4N4OI0nu2vQKR43NLlP0DzTDgL49C74=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778520772; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778520825; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=U8p1bmfbFTLTDcXCYavEaco35Q/ys/xMNNalBJ4SIT8=;
- b=wOsbXy4r1IMGNuZN8XgYQPOGfyFQwS+jMfz4udiwpgYd8dTC049W3MxsGggENGwTX6dmd
- T6cxx3l36ZHh0bZU+VGt/eLA0h5s9fh13sOdTRuQAPooEDPOiI1QdH9AmUS0nAMOOg8no74
- Uwh7lUz5uIyujgDYHlcechbkK6wSwl0=
+ list-archive; bh=kXJdvG/Cvglft5gqBzEH4twv5RHfSjMGn2vCVhMHxck=;
+ b=aYU/gUzhaZoCzPockl+MRc2+/QATZYrLZwnAcGZkuwI8i0MAN3DrUEDmT9TTJ/QSQxKX/
+ vjbFsS96yoMsHtUEXu8fe8HeHwopgMV0dzs9z0o4+6i6A75VFOkoHzriKKzy0ZTM6XYDgqQ
+ NsmLzqR7qUbFHWS+7BWzCG6uznMQ+20=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,48 +34,47 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C662485A75
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 11 May 2026 19:30:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2890D85A89
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 11 May 2026 19:30:18 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778520615;
+	s=20121; t=1778520618;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=U8p1bmfbFTLTDcXCYavEaco35Q/ys/xMNNalBJ4SIT8=;
-	b=JbEA5ATyQgnQCey6NEvqTdOunCXQ3QeOXKRTkVNXgMPsudVBlQR0xJ7LtuwpIxq7Q2EmBX
-	X6MG0qHWqVVC8FAvMQx2yPiVcbF2j90zJPL6OXwkpOatSxpHWmWGaKo3JtAXMbLWgAVsbh
-	I8kSLwOYAHSxuHw8tX2Gdrq4E6SohfY=
+	bh=kXJdvG/Cvglft5gqBzEH4twv5RHfSjMGn2vCVhMHxck=;
+	b=vXaSVjaUzVG5UMFBEKqw30lQBoSnFfXFogEAYW9KKniCDNQslWJJyXF8jpNW7t8iQXngBg
+	tB9YJEZU3YTXLdnRpSfxT+SvhW8x/HO7CAFIOLg5Igu2UQOeURp1b6952m+fmZX6pOTgXC
+	evzMtVhQmF9nqIGs7p9np4n7uHBgzzw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=ZWVTxXr4;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xfohePqd;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778520615;
-	b=VRcPgE7tPDCaJGpQnbymtXnU6NDx+DWEAbaDvJm7GMrLtGOwwwlZQdTEsFlVnhMslQTqZW
-	cSbHC0rjTexRc3Pkz91ZEG++n1CZyyX7+go/irxtTi1KMcMrWwNPW27PlYowoLEhyubZXM
-	rGLgNPEgu8vsDdu+E3OuRTPxOidFjN4=
-Received: by dvalin.narfation.org (Postfix) id 33E8621A12;
-	Mon, 11 May 2026 17:30:15 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778520618;
+	b=lhjcMWV7AVAVK+IIhQIU+eFyQvS/JdCkH7eI5CDGF3hyYyWwy0qOYLRVAQMiA4E6Yf3RGS
+	qLtujtVJP+iP2iuTgayCiHt3xM+df4Gb7EBqpaFjNZ7qB4D5rmxRnsbLUrC/BETemEblaw
+	Eua+lECobN7wV0xAs34ySOajbg2vAwc=
+Received: by dvalin.narfation.org (Postfix) id B214A1FFD9;
+	Mon, 11 May 2026 17:30:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778520615;
+	s=20121; t=1778520617;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=U8p1bmfbFTLTDcXCYavEaco35Q/ys/xMNNalBJ4SIT8=;
-	b=ZWVTxXr4ui9uFVxpHdtCLDYYknWEcvCnl1skZit+A8HVqMmnEZnp8998sfloiJywhxGT4M
-	K+qjpy+pFPyVsB3UB8a3rsHInn9whSMU26G3Mzh5hjC8yvGBrjKpGfyIHhJpQbHBJ0/8AP
-	2kPOqQCG/nBNfZs2F+EZUsPlh4CzgPQ=
+	bh=kXJdvG/Cvglft5gqBzEH4twv5RHfSjMGn2vCVhMHxck=;
+	b=xfohePqdP2Z4vPh+jiXILSScMCIaKgzHh87XXGjphzuzGREan2n0xxZWADG7/zCfU4hQS1
+	JdzeaxLPvIv/zeu+p6ttkkdpT02Awwf53LRpe2gN8y7tNUxRdCYlFTohS5msf9w9lVjdt6
+	nJyXNWtn7eUAvz3qWIz7MTM6+nmI0Ec=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 11 May 2026 19:30:01 +0200
-Subject: [PATCH batadv 3/5] batman-adv: frag: disallow unicast fragment in
- fragment
+Date: Mon, 11 May 2026 19:30:02 +0200
+Subject: [PATCH batadv 4/5] batman-adv: tvlv: reject oversized TVLV packets
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260511-yuantan098-bugfixes-v1-3-6adf6965f2b3@narfation.org>
+Message-Id: <20260511-yuantan098-bugfixes-v1-4-6adf6965f2b3@narfation.org>
 References: <20260511-yuantan098-bugfixes-v1-0-6adf6965f2b3@narfation.org>
 In-Reply-To: <20260511-yuantan098-bugfixes-v1-0-6adf6965f2b3@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
@@ -83,16 +82,16 @@ Cc: Yuan Tan <yuantan098@gmail.com>, Sven Eckelmann <sven@narfation.org>,
  stable@kernel.org, Yifan Wu <yifanwucs@gmail.com>,
  Juefei Pu <tomapufckgml@gmail.com>, Xin Liu <bird@lzu.edu.cn>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2665; i=sven@narfation.org;
- h=from:subject:message-id; bh=+aVsNTPGpL4xP/xAohMMxJJWimdlvb/hXASrfySGpz4=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlMQlL7pv6yLNqarP97moul0a3773fcMkpZsW3hgXPL2
- 6Tc9v0K6ihlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMpL6T4a9g6b9NVke414j6
- LF4/w+jqwiC5Wc1/voo6iUzPv/5tU6s7w28WRaYviyVl1GseTVEQk5m7f5+e0I3vxZuYawSPPmW
- 6zcsJAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2681; i=sven@narfation.org;
+ h=from:subject:message-id; bh=733yn4sorp59gcJF0qsKQld0NbE/UBHmOraDoFC2OLQ=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlMQtLHO7evULO3+R29V7Q1J2Ter8OrZ6SJW3LMkeX1F
+ Lw0pZOvo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjARowRGhkZ2qbIb5bPXJJxf
+ XsI6a966rASlaVeZ102+0O9Z9kLR/yQjw8Vtn7/uDEtwmJEqdvb3uS/m8VcubU/s//klI1o9y0N
+ IkAMA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: VQRPHRZM57TXW4ZNTKFJA3PQC42PA6WG
-X-Message-ID-Hash: VQRPHRZM57TXW4ZNTKFJA3PQC42PA6WG
+Message-ID-Hash: V7M6BDB6AHKIZXSUC5OSSWWI5V4ZWBQR
+X-Message-ID-Hash: V7M6BDB6AHKIZXSUC5OSSWWI5V4ZWBQR
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -106,7 +105,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VQRPHRZM57TXW4ZNTKFJA3PQC42PA6WG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/V7M6BDB6AHKIZXSUC5OSSWWI5V4ZWBQR/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,84 +114,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_frag_skb_buffer() is called by batadv_batman_skb_recv() when a
-BATADV_UNICAST_FRAG packet is received. Once all fragments are collected
-and the packet is reassembled, batadv_recv_frag_packet() calls
-batadv_batman_skb_recv() again to process the defragmented payload.
+batadv_tvlv_container_ogm_append() builds a TVLV packet section from
+the tvlv.container_list. The total size of this section is computed by
+batadv_tvlv_container_list_size(), which sums the sizes of all registered
+containers.
 
-A malicious sender can craft a BATADV_UNICAST_FRAG packet whose reassembled
-payload is itself a BATADV_UNICAST_FRAG packet (matryoshka-style nesting).
-Each nesting level recurses through batadv_batman_skb_recv() without bound,
-growing the kernel stack until it is exhausted.
+The return type and accumulator in batadv_tvlv_container_list_size() were
+u16. If the accumulated size exceeds U16_MAX, the value wraps around,
+causing the subsequent allocation in batadv_tvlv_container_ogm_append()
+to be undersized. The memcpy-style copy that follows would then write
+beyond the end of the allocated buffer, corrupting kernel memory.
 
-Since refragmentation or fragments in fragments are not actually allowed,
-discard all packets which are still BATADV_UNICAST_FRAG packets after the
-defragmentation process.
+Fix this by widening the return type of batadv_tvlv_container_list_size()
+to size_t. In batadv_tvlv_container_ogm_append(), check the computed length
+against U16_MAX before proceeding, and bail out as if the allocation had
+failed when the limit is exceeded.
 
 Cc: stable@kernel.org
-Fixes: 610bfc6bc99b ("batman-adv: Receive fragmented packets and merge")
+Fixes: ef26157747d4 ("batman-adv: tvlv - basic infrastructure")
 Reported-by: Yuan Tan <yuantan098@gmail.com>
 Reported-by: Yifan Wu <yifanwucs@gmail.com>
 Reported-by: Juefei Pu <tomapufckgml@gmail.com>
 Reported-by: Xin Liu <bird@lzu.edu.cn>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/fragmentation.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ net/batman-adv/tvlv.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 068d8b41..380f868e 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -294,6 +294,31 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 	return skb_out;
- }
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 328636c4..278007e8 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -13,6 +13,7 @@
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+ #include <linux/kref.h>
++#include <linux/limits.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -160,10 +161,10 @@ batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
+  *
+  * Return: size of all currently registered tvlv containers in bytes.
+  */
+-static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
++static size_t batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_tvlv_container *tvlv;
+-	u16 tvlv_len = 0;
++	size_t tvlv_len = 0;
  
-+/**
-+ * batadv_skb_is_frag() - check if newly merged skb is gain a unicast packet
-+ * @skb: newly merged skb
-+ *
-+ * Return: if newly skb is of type BATADV_UNICAST_FRAG
-+ */
-+static bool batadv_skb_is_frag(struct sk_buff *skb)
-+{
-+	struct batadv_ogm_packet *batadv_ogm_packet;
-+
-+	/* packet should hold at least type and version */
-+	if (unlikely(!pskb_may_pull(skb, 2)))
-+		return false;
-+
-+	batadv_ogm_packet = (struct batadv_ogm_packet *)skb->data;
-+
-+	if (batadv_ogm_packet->version != BATADV_COMPAT_VERSION)
-+		return false;
-+
-+	if (batadv_ogm_packet->packet_type != BATADV_UNICAST_FRAG)
-+		return false;
-+
-+	return true;
-+}
-+
- /**
-  * batadv_frag_skb_buffer() - buffer fragment for later merge
-  * @skb: skb to buffer
-@@ -327,6 +352,16 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
- 	if (!skb_out)
- 		goto out_err;
+ 	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
  
-+	/* fragment in fragment is not allowed. otherwise it is possible
-+	 * to exhaust the stack when receiving a matryoshka-style
-+	 * "fragments in a fragment packet"
-+	 */
-+	if (batadv_skb_is_frag(skb_out)) {
-+		kfree_skb(skb_out);
-+		skb_out = NULL;
-+		goto out_err;
-+	}
-+
- out:
- 	ret = true;
- out_err:
+@@ -315,12 +316,14 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_tvlv_container *tvlv;
+ 	struct batadv_tvlv_hdr *tvlv_hdr;
+-	u16 tvlv_value_len;
++	size_t tvlv_value_len;
+ 	void *tvlv_value;
+ 	bool ret;
+ 
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv_value_len = batadv_tvlv_container_list_size(bat_priv);
++	if (tvlv_value_len > U16_MAX)
++		goto end;
+ 
+ 	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
+ 					      packet_min_len, tvlv_value_len);
 
 -- 
 2.47.3
