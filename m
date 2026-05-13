@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D33FECD4F21
-	for <batman@archiver.kernel.org>; Wed, 13 May 2026 20:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F836CD37AC
+	for <batman@archiver.kernel.org>; Wed, 13 May 2026 20:38:43 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5678185C78
-	for <batman@archiver.kernel.org>; Wed, 13 May 2026 22:37:56 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id D143685B9E
+	for <batman@archiver.kernel.org>; Wed, 13 May 2026 22:38:41 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778704676;
- b=hLfRXgQaO7bFw6L48DA3QuNNF0w/QW91yLBTlw3jZc7DiDx8DtBoN6VOy8cpkbhkWhAc6
- lSAWgwraNKrc50CcmH2X3SseS754c79V5983xgqV2vsL6lOCGlwlls/8rdQCarahOUc7e3D
- 7BMNe6QAhXVZRXXFQCOW8+TveOOxmac=
+ t=1778704721;
+ b=BtGZPsgIRigi5UcowtQ9d9Fo//93ikoe+olEkPufMC+EFoNkJKAsERapwM/N82GuuOW0k
+ 6yn0MlFu70I0yi1/7UlovOaD5LVB72Hn/tiFL4ey2mRIpyRDW43HIna1UVh9pa5coKXCrkB
+ 7nhlEze96FoiG4mBuXVdPjqJ9fePfkw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778704676; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778704721; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=gt2S5syziJdkxqfKYMn2Uy4pDKjZgaU/bKCTW+wRz5c=;
- b=q/0FU+8OsaXUtDDYJ2Bj189fh3f0HNxbHs0cBNjr4NkcjmSHGUvEQ9bMtyVTVv4PHjtRw
- 9dmpDOv92vMoNKtwUl+Wu2KRIv9jsS3D4bElSOVRplU97fnlkG+1+aKBhYF9cILI+EVgyne
- cYaTric2XW8FyqBSD1hs/lZcsQVkItg=
+ list-archive; bh=+AjkjfBPRDmpWN1LczW8eCsFff1DdBs0RANtnFCzFAk=;
+ b=XiNRvW17E8x2+KnsQ+X/Egys0lrZ4ax9XrcjFM+j8Gy6JYuBmMCsKrZN+8E51SsvkAgzF
+ V8qILqGXcJjoCV9TeZw7m6qlR4MIMOw21nEHXUfL3KFjIh8JhdJ4RZgokyaNZVu7RpKQj2I
+ dI0MDSXlbavFhpS1qs/WWUX7/YybyHQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DB3B68474C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 13 May 2026 22:36:44 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1ED4E8581C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 13 May 2026 22:36:42 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778704609;
+	s=20121; t=1778704612;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=gt2S5syziJdkxqfKYMn2Uy4pDKjZgaU/bKCTW+wRz5c=;
-	b=ZbnyCIqZozzNi742kRuKe0KpB2uGVbdRq4Ys/lzYKlwwC4JejRKPsLm+vwsPiJi1X7AGyf
-	uRM6mtacThu4hP1lrafG0bW6Dak96ExH3SltNLMiGCTNxjjTdGrmJLVpx/kB6OLM4j+PdL
-	jKxnY+KOmKIMItPxpLzVHOTnQlBmq4s=
+	bh=+AjkjfBPRDmpWN1LczW8eCsFff1DdBs0RANtnFCzFAk=;
+	b=ujSyDvDIBgXcgjNJMQk1fF+6KywSr7DQrGA7NglbCepeXmymy+yMsCozpezzyL43wNiS8P
+	zWR2H1RReKneqaWWYvKmOxmGlUVBCzZXY+K2Py4KUVoNvwg3uEV37zvUpL653FwUbKBUuK
+	+iNgCwkS+cIecrMpVbBXDDeXh2rjIUE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="M20r5S/y";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=QaFd50Kc;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778704609;
-	b=J8SGs/ofMBxLQYU8UjAQzz7sieyhRzlo7kjb2WgKl+vdv69oTaSonAIU3JH4JS2MLTvAt4
-	KZgFyT3qYLlAQ5/ptxqnPCq6Tp62BHAbaAJ3rKtfL9lNT/zkYnTudAEbiHTbWt2etK/2/U
-	iYklJvmRqAkedW0b7dEmmjUj30VxhtY=
-Received: by dvalin.narfation.org (Postfix) id 32FC7202A2;
-	Wed, 13 May 2026 20:36:39 +0000 (UTC)
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778704612;
+	b=IUQoanpxtw/Rm415fhT6Lg/oRKt6cjC6g8dxcQ8HFcGqM9Jc8YCnoOGxEPSnc25zOvSm55
+	UvpWuuz6VAJC5UudUayKxSp7pjSU73yWZuEsYVKEbcfCYPt5LXr9Zs2yNvcDgZPcDt3IS8
+	y4XX3HBWJz1020hdf65JW9sptoNUWRc=
+Received: by dvalin.narfation.org (Postfix) id C6E6421A12;
+	Wed, 13 May 2026 20:36:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778704599;
+	s=20121; t=1778704601;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=gt2S5syziJdkxqfKYMn2Uy4pDKjZgaU/bKCTW+wRz5c=;
-	b=M20r5S/yEB9cZycshywmcf1IMYjk1+mVQbWA8NaC4nxtALE2jPtTXlVRoeAgGo1XiDbeN3
-	6J50MjdDbF5G9n1o+yym//EoV8Rm6nP+PA0xIeSIOWJoUbFrHz957nGDyLY3z5QBCLDd9K
-	NDXIOd7ojJRN04jusrlbR8RAMuO62q0=
+	bh=+AjkjfBPRDmpWN1LczW8eCsFff1DdBs0RANtnFCzFAk=;
+	b=QaFd50KcMWgRRmHRpC4aPPW9ikptTUURCDU+bHEkXqfISEcY3NbG0HSrqp9uwfWJCB9RAX
+	1D3AHZTv3yeGWlmK4YOV6vrBXCFQdnsBZac8sNYTwoemxRtQMElhaAXIrcfgQt5YY8yLGA
+	IsvpVTonmeIfXnqy+d2T55LeLDTkoFQ=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 13 May 2026 22:36:25 +0200
-Subject: [PATCH batadv v2 1/2] batman-adv: bla: fix report_work leak on
- backbone_gw purge
+Date: Wed, 13 May 2026 22:36:26 +0200
+Subject: [PATCH batadv v2 2/2] batman-adv: bla: avoid double decrement of
+ bla.num_requests
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260513-bla-cancel-work-v2-1-9c17d82d7e2d@narfation.org>
+Message-Id: <20260513-bla-cancel-work-v2-2-9c17d82d7e2d@narfation.org>
 References: <20260513-bla-cancel-work-v2-0-9c17d82d7e2d@narfation.org>
 In-Reply-To: <20260513-bla-cancel-work-v2-0-9c17d82d7e2d@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>,
- Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3768; i=sven@narfation.org;
- h=from:subject:message-id; bh=NirVm14j8UtMcZyAKcjYubuLNFLUABRgahHP0giwDF8=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFksDy5eemUnL7sqpvHs9qzkw+dZzLj6OCqCvF+J54TcO
- cj7j/t/RykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAia1YyMly4tk5juQqPFIO7
- /eUljNLBStf3sp2tWpTRt+2JstTpwwEM/6zFRZf4+vfM5ZN+cflLaLxuUP3iZlYxa64QzX9u3i8
- rOAE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6478; i=sven@narfation.org;
+ h=from:subject:message-id; bh=bEoKMaqD/+5XgWPpVXAud1G+osq0xozaYzSyfOgbboo=;
+ b=kA0DAAoWTQ93K9MU9csByyZiAGoE4NGg0XvDhYMVhjTExd+YJmkxk07fywqFBMbwIoPjcQFkU
+ 4h1BAAWCgAdFiEEvNRvz7MH7R/zlvHFTQ93K9MU9csFAmoE4NEACgkQTQ93K9MU9cvckAD9FX4S
+ jdNF5tsO51CsYJPrWySPJxLNpc4RwmXWk6g8EUQBAPUvAmItDh/vk7NK2k2w0VPw0DXuV7qF8V0
+ aCjwjOwsE
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 3JOFGZWVA7AVUAXEZMEJK74PSUTKFQWK
-X-Message-ID-Hash: 3JOFGZWVA7AVUAXEZMEJK74PSUTKFQWK
+Message-ID-Hash: LLDA2R245LCJGW2OQPHBDJD5KBT7MH7C
+X-Message-ID-Hash: LLDA2R245LCJGW2OQPHBDJD5KBT7MH7C
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3JOFGZWVA7AVUAXEZMEJK74PSUTKFQWK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LLDA2R245LCJGW2OQPHBDJD5KBT7MH7C/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,109 +113,167 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_bla_purge_backbone_gw() removes stale backbone gateway entries,
-but fails to properly handle their associated report_work:
+The bla.num_requests is increased when no request_sent was in progress. And
+it is decremented in various places (announcemnt was received, backbone is
+purged, periodic work). But the check if the request_sent is actually set
+to a specific state and the atomic_dec/_inc are not safe because they are
+not atomic (TOCTOU) and multiple such code portions can run concurrently.
 
-- If report_work is running, the purge must wait for it to finish before
-  freeing the backbone_gw, otherwise the worker may access freed memory
-  (e.g. bat_priv).
-- If report_work is pending, the purge must cancel it and release the
-  reference held for that pending work item.
+At the same time, it is necessary to modify request_sent and
+bla.num_requests at the same time. Otherwise batadv_bla_send_request()
+might set request_sent to 1 and is interrupted.  batadv_handle_announce()
+can then set request_sent back to 0 and decrement num_requests before
+batadv_bla_send_request() incremented it.
 
-The previous implementation called hlist_for_each_entry_safe() inside a
-spin_lock_bh() section, but cancel_work_sync() may sleep and therefore
-cannot be called from within a spinlock-protected region.
+The two operations must therefore be locked. And since request_sent is only
+accessed inside this lock, it can be converted to a simpler datatype.
 
-Restructure the loop to handle one entry per spinlock critical section:
-acquire the lock, find the next entry to purge, remove it from the hash
-list, then release the lock before calling cancel_work_sync() and
-dropping the hash_entry reference. Repeat until no more entries require
-purging.
-
-Fixes: a998bf5dfbd7 ("batman-adv: add detection for complex bridge loops")
-Reviewed-by: Simon Wunderlich <sw@simonwunderlich.de>
+Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 54 ++++++++++++++++++++++------------
- 1 file changed, 35 insertions(+), 19 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 45 +++++++++++++++++++++++-----------
+ net/batman-adv/mesh-interface.c        |  1 +
+ net/batman-adv/types.h                 |  7 ++++--
+ 3 files changed, 37 insertions(+), 16 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index cec11f12..df1dfdf4 100644
+index df1dfdf4..29bfb052 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1224,6 +1224,7 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
- 	struct hlist_head *head;
- 	struct batadv_hashtable *hash;
- 	spinlock_t *list_lock;	/* protects write access to the hash lists */
-+	bool purged;
- 	int i;
+@@ -514,7 +514,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+ 	entry->crc = BATADV_BLA_CRC_INIT;
+ 	entry->bat_priv = bat_priv;
+ 	spin_lock_init(&entry->crc_lock);
+-	atomic_set(&entry->request_sent, 0);
++	entry->request_sent = 0;
+ 	atomic_set(&entry->wait_periods, 0);
+ 	ether_addr_copy(entry->orig, orig);
+ 	INIT_WORK(&entry->report_work, batadv_bla_loopdetect_report);
+@@ -544,9 +544,13 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+ 		batadv_bla_send_announce(bat_priv, entry);
  
- 	hash = bat_priv->bla.backbone_hash;
-@@ -1234,30 +1235,45 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
- 		head = &hash->table[i];
- 		list_lock = &hash->list_locks[i];
- 
--		spin_lock_bh(list_lock);
--		hlist_for_each_entry_safe(backbone_gw, node_tmp,
--					  head, hash_entry) {
--			if (now)
--				goto purge_now;
--			if (!batadv_has_timed_out(backbone_gw->lasttime,
--						  BATADV_BLA_BACKBONE_TIMEOUT))
--				continue;
-+		do {
-+			purged = false;
- 
--			batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
--				   "%s(): backbone gw %pM timed out\n",
--				   __func__, backbone_gw->orig);
-+			spin_lock_bh(list_lock);
-+			hlist_for_each_entry_safe(backbone_gw, node_tmp,
-+						  head, hash_entry) {
-+				if (now)
-+					goto purge_now;
-+				if (!batadv_has_timed_out(backbone_gw->lasttime,
-+							  BATADV_BLA_BACKBONE_TIMEOUT))
-+					continue;
-+
-+				batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
-+					   "%s(): backbone gw %pM timed out\n",
-+					   __func__, backbone_gw->orig);
- 
- purge_now:
--			/* don't wait for the pending request anymore */
--			if (atomic_read(&backbone_gw->request_sent))
--				atomic_dec(&bat_priv->bla.num_requests);
-+				purged = true;
- 
--			batadv_bla_del_backbone_claims(backbone_gw);
-+				/* don't wait for the pending request anymore */
-+				if (atomic_read(&backbone_gw->request_sent))
-+					atomic_dec(&bat_priv->bla.num_requests);
- 
--			hlist_del_rcu(&backbone_gw->hash_entry);
--			batadv_backbone_gw_put(backbone_gw);
--		}
--		spin_unlock_bh(list_lock);
-+				batadv_bla_del_backbone_claims(backbone_gw);
-+
-+				hlist_del_rcu(&backbone_gw->hash_entry);
-+				break;
-+			}
-+			spin_unlock_bh(list_lock);
-+
-+			if (purged) {
-+				/* reference for pending report_work */
-+				if (cancel_work_sync(&backbone_gw->report_work))
-+					batadv_backbone_gw_put(backbone_gw);
-+
-+				/* reference for hash_entry */
-+				batadv_backbone_gw_put(backbone_gw);
-+			}
-+		} while (purged);
+ 		/* this will be decreased in the worker thread */
+-		atomic_inc(&entry->request_sent);
+-		atomic_set(&entry->wait_periods, BATADV_BLA_WAIT_PERIODS);
+-		atomic_inc(&bat_priv->bla.num_requests);
++		spin_lock_bh(&bat_priv->bla.num_requests_lock);
++		if (!entry->request_sent) {
++			entry->request_sent = 1;
++			atomic_set(&entry->wait_periods, BATADV_BLA_WAIT_PERIODS);
++			atomic_inc(&bat_priv->bla.num_requests);
++		}
++		spin_unlock_bh(&bat_priv->bla.num_requests_lock);
  	}
+ 
+ 	return entry;
+@@ -649,10 +653,12 @@ static void batadv_bla_send_request(struct batadv_bla_backbone_gw *backbone_gw)
+ 			      backbone_gw->vid, BATADV_CLAIM_TYPE_REQUEST);
+ 
+ 	/* no local broadcasts should be sent or received, for now. */
+-	if (!atomic_read(&backbone_gw->request_sent)) {
++	spin_lock_bh(&backbone_gw->bat_priv->bla.num_requests_lock);
++	if (!backbone_gw->request_sent) {
++		backbone_gw->request_sent = 1;
+ 		atomic_inc(&backbone_gw->bat_priv->bla.num_requests);
+-		atomic_set(&backbone_gw->request_sent, 1);
+ 	}
++	spin_unlock_bh(&backbone_gw->bat_priv->bla.num_requests_lock);
  }
  
+ /**
+@@ -873,10 +879,12 @@ static bool batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
+ 		/* if we have sent a request and the crc was OK,
+ 		 * we can allow traffic again.
+ 		 */
+-		if (atomic_read(&backbone_gw->request_sent)) {
++		spin_lock_bh(&bat_priv->bla.num_requests_lock);
++		if (backbone_gw->request_sent) {
++			backbone_gw->request_sent = 0;
+ 			atomic_dec(&backbone_gw->bat_priv->bla.num_requests);
+-			atomic_set(&backbone_gw->request_sent, 0);
+ 		}
++		spin_unlock_bh(&bat_priv->bla.num_requests_lock);
+ 	}
+ 
+ 	batadv_backbone_gw_put(backbone_gw);
+@@ -1254,9 +1262,14 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+ purge_now:
+ 				purged = true;
+ 
+-				/* don't wait for the pending request anymore */
+-				if (atomic_read(&backbone_gw->request_sent))
++				/* don't wait for the pending request anymore,
++				 * also don't set request_sent to 0 to avoid a parallel
++				 * RCU list iterator to increase num_requests again
++				 */
++				spin_lock_bh(&bat_priv->bla.num_requests_lock);
++				if (backbone_gw->request_sent)
+ 					atomic_dec(&bat_priv->bla.num_requests);
++				spin_unlock_bh(&bat_priv->bla.num_requests_lock);
+ 
+ 				batadv_bla_del_backbone_claims(backbone_gw);
+ 
+@@ -1517,14 +1530,18 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 			 * some grace time.
+ 			 */
+ 
+-			if (atomic_read(&backbone_gw->request_sent) == 0)
+-				continue;
++			spin_lock_bh(&bat_priv->bla.num_requests_lock);
++			if (!backbone_gw->request_sent)
++				goto unlock_next;
+ 
+ 			if (!atomic_dec_and_test(&backbone_gw->wait_periods))
+-				continue;
++				goto unlock_next;
+ 
++			backbone_gw->request_sent = 0;
+ 			atomic_dec(&backbone_gw->bat_priv->bla.num_requests);
+-			atomic_set(&backbone_gw->request_sent, 0);
++
++unlock_next:
++			spin_unlock_bh(&bat_priv->bla.num_requests_lock);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 50c26037..cad65055 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -787,6 +787,7 @@ static int batadv_meshif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	atomic_set(&bat_priv->bla.num_requests, 0);
++	spin_lock_init(&bat_priv->bla.num_requests_lock);
+ #endif
+ 	atomic_set(&bat_priv->tp_num, 0);
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 739439e2..5b14ead8 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1023,6 +1023,9 @@ struct batadv_priv_bla {
+ 	/** @num_requests: number of bla requests in flight */
+ 	atomic_t num_requests;
+ 
++	/** @num_requests_lock: locks update request_sent + num_request update */
++	spinlock_t num_requests_lock;
++
+ 	/**
+ 	 * @claim_hash: hash table containing mesh nodes this host has claimed
+ 	 */
+@@ -1701,9 +1704,9 @@ struct batadv_bla_backbone_gw {
+ 	/**
+ 	 * @request_sent: if this bool is set to true we are out of sync with
+ 	 *  this backbone gateway - no bcast traffic is formwared until the
+-	 *  situation was resolved
++	 *  situation was resolved. Must only be access with num_requests_lock.
+ 	 */
+-	atomic_t request_sent;
++	u8 request_sent;
+ 
+ 	/** @crc: crc16 checksum over all claims */
+ 	u16 crc;
 
 -- 
 2.47.3
