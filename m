@@ -4,155 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6794BCD4F25
-	for <batman@archiver.kernel.org>; Thu, 14 May 2026 10:08:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0A1FCD4F25
+	for <batman@archiver.kernel.org>; Thu, 14 May 2026 10:14:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E262185C4A
-	for <batman@archiver.kernel.org>; Thu, 14 May 2026 12:07:59 +0200 (CEST)
-ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778753279;
- b=jPGFIsf82CEG28YszHAw5bOrjVNGHJTwY/zjDk7louuG3mBj+Jk40R+eb64HF516bFFUz
- s2m89MLEAtjZd1sANfsGK5KlrjBcLQjcgtVjwmzHRd0NYCcJbtURbJEW/Yg/wIaX03pK2/p
- FM3f9Sa6X5O91h2FkKuAchhOHeW7gRw=
-ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778753279; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 55EED85AA8
+	for <batman@archiver.kernel.org>; Thu, 14 May 2026 12:14:28 +0200 (CEST)
+ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1778753668;
+ b=DKK5m7APrUINls+pVxVTGxYnxSS0kN1we0jMnnhiDQmIjTEUb/a18wWUbMl1BE6HZb0nP
+ TW9Z+VhQI76/IFc2n4qF8qWHTLB25Am/Rz31A3wO6fszemfm/1RFFy4OMvXuFtwsD9ZDsZt
+ KNBU1GeUu0aT+ooz+SfNcWBEIdvN1oA=
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1778753668; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=m64BEL48rFdcWWIPr1G5xibBcZ9asFZbVzR89KqZM4Q=;
- b=kTxVF2cGxPYCPa4uvznP0LiRoDfipmRv+JlAMd8Qx6xtJeQMiTT3+v1usJvO80vpJC403
- wTPUzoGUMHx6j1HyrWU8fOMsrU6/L7oTKZIVBR+D9uXsKnaBsqxJkhjGNQxFGwymW4PztV1
- ZklWSFosqqN8JdeRlMYpDmUHEJax71I=
-ARC-Authentication-Results: i=3; open-mesh.org;
- dkim=pass header.d=gmail.com;
+ list-archive; bh=U0zTgYxHdD1m6RbaTPl+7No2tF/0kskVY+L8MaWEnIQ=;
+ b=NR881znLa0+bWdHr+vTVblMYyffX2WqkJO39mGJi7jZ4amXmhEtFwOyagbpkumlmjjUiU
+ XPiWepgTw95MmFUWXxwNZlRjCA1JniBrqWqXFdoYyTtxANiWquw9wIHKBd8woultuCXbg72
+ bun31LHnux1df0Y/CyZpPIpcjq202+U=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass header.from=gmail.com policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-qt1-x82a.google.com (mail-qt1-x82a.google.com
- [IPv6:2607:f8b0:4864:20::82a])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id BD99981BF6
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 14 May 2026 12:06:54 +0200 (CEST)
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778753214;
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 138B0845D7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 14 May 2026 12:14:04 +0200 (CEST)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1778753645;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=m64BEL48rFdcWWIPr1G5xibBcZ9asFZbVzR89KqZM4Q=;
-	b=Pwk99jOWa480aalHbuL2KopiTHgg/qPwGM3wQNIzAKe8nz2wY2s5aY56RfUQH66FP8bDGe
-	tbpCxglauIu48eM10svc5KJDxuHpv3IaLoDyBJw/wY/1z6qh4FgxwbhtiObPNuhx1X1Bhe
-	AS+GH77Kw1NNTc4hI1hupnqJccdUJS0=
-ARC-Authentication-Results: i=2;
+	bh=U0zTgYxHdD1m6RbaTPl+7No2tF/0kskVY+L8MaWEnIQ=;
+	b=UayCy+y0UwWCVlADYYvouXNEtjOWRDY16AawNYFpS0jmuW5G5te4pene7jZ9AQpKYhL5kq
+	b7dnM9RbNqmrVhflIM2EaByH5JBL62HcFRxC4YwRMYl8KOdayhynW5hPgH84ra79hPoMGg
+	zmT1ITsnVw86uUk+a1H4N2+ZUHMtgTk=
+ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20251104 header.b=G3xu1xuS;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of yuantan098@gmail.com designates
- 2607:f8b0:4864:20::82a as permitted sender)
- smtp.mailfrom=yuantan098@gmail.com;
-	arc=pass ("google.com:s=arc-20240605:i=1")
-ARC-Seal: i=2; a=rsa-sha256; d=open-mesh.org; s=20121; cv=pass; t=1778753214;
-	b=0SbcYoJ4uUTSbShUeuwPBsZPmvB4LpVZvXgYP2Ff/+5RZiVv2qi6nR7MeYrn+WXhpn6Ovr
-	KXsr7aUnOmzAO6vRwwzSA/3i223U5+hQ0puKKUbt9pT19kHKoO/5dfk2y9scjrptuwaUHZ
-	+/gHhwYMNb3DyKW0lyldd/oU6R4VIxk=
-Received: by mail-qt1-x82a.google.com with SMTP id
- d75a77b69052e-50d6b9bca48so94727531cf.2
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Thu, 14 May 2026 03:06:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778753213; cv=none;
-        d=google.com; s=arc-20240605;
-        b=DP+wFnykkJ0QmrIyhHHh/0a2MT4SvIe9hti+5WL/PNgulqrvksMfjIJJCA1GT2R/LB
-         TNheUd6/HQIaEqtY4F2t6n2f3BBKZLZ5EA8FZ31d5F8yDaWdxjIgtMfnOilqTVVzQ4Z9
-         DoBbNHsUpRCEF6ziYTQ1i+mM4vSsCky10BmvUSiHvFwY+77CFgMOKgICNWf7NswKlHBZ
-         cXxKLnsxt926YS9CjWPI669IC0YiaIJkWlq7KDACjdAEKLCdINGD2DHM5rZ1+tWGaJ+o
-         qzhmmAlVTdaleC65AGjC0p8xhC9l5y8pAAjorvmyPh8oFZkJfY8P8UhYTk9KUOlXclkn
-         +9dw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=m64BEL48rFdcWWIPr1G5xibBcZ9asFZbVzR89KqZM4Q=;
-        fh=fGpATJGdA5gBFxywIcayagIpQImFJ7uNKXfLW6dnd4U=;
-        b=arsgipMwQgSrEP/lNHUDiRkbXL/tSSPHE3F7pr75UjhM1cgCeWevMZ02tKqUr6juDx
-         /N10NNzb/0OL/w/VGapnICuMm1lvfq8BG+wSzLQWuJsfNRv8FpdCvU/6P+4kM56BhLCu
-         SG7TMdsPv3O9Pje1walrGy87O1jNnkVGEya6B2F6LBk0WAMYZ7nM9gPGmzcRFszUhzt/
-         k4PpIVN9IxsTHgQd6E1FYQh5wvSNP1c7/kYpNUxtPFKKImDkwyFjkziEC2P9e/gMiakF
-         Ro2nwyhcAguHc74RkxUFkqGYaiQm5lGKYQ8Xbezv4sCDFAPnYVe6sgdYSUSfFr1eOPzQ
-         KrBQ==;
-        darn=lists.open-mesh.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778753213; x=1779358013;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=m64BEL48rFdcWWIPr1G5xibBcZ9asFZbVzR89KqZM4Q=;
-        b=G3xu1xuSovGBM7P/GdcjNO8Df/xnnJX329NsMSrbr+7knlfyx9gRD8WFoDuvbiskcJ
-         C2zsnqPaXo7eOlhu0onJ+ywhV2T7L+L3SeVpl6cOEtT5hu9QmqNS8KmbZ25V/QnioZJ7
-         bYBRv8tBkg+AaiwuldtrybmsZ+zBK/ZudRyS+tm2RruRNb08CATD8xS0eOb+KaiCK0Zh
-         IUPKnFlR7ooMOmNRBKKiRLwWV9+oYwM2LheV3sJZp2Qd3NIOWTcITUjNpLkKjZYZWsqm
-         sPERVu1NOxkx7oGquzmnpzRGBcnD6gafmqCaP7/B1DabBek/bJpTpxkMTVmjSJ0JS9zA
-         eKwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778753213; x=1779358013;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=m64BEL48rFdcWWIPr1G5xibBcZ9asFZbVzR89KqZM4Q=;
-        b=aORKXzDpi6U9/p6EmSneY9dODQX7wupIvKNasynTF++MNAw6fgtcOMWJU1BxAPd5Vr
-         RAFxCziAtdZKH8iDJUNqS+02Ui4tdk8wdxjNbkppiWOEXLjVQp0tHQNbAxe/HIG+NRta
-         +GrH8qfZFisvtJjOCxn21J+AmXgyrooAb2r5VMqoRBG6BgXnsTOisDXmsFEFjpJe7Lyo
-         2EiIjD1WrPnma1bcG01zbeIpOyQSQtTEzS+g+VmYXENGMnuK+AD6/+uigekUU8txaXZM
-         X5X+h2J2izglTtn0u3JubBuuWBzIryaXperCc5wSaUrD22iWqmV4e5diBYiXNUqXq4y5
-         9UzA==
-X-Gm-Message-State: AOJu0YxZEea1Cjtdi2WXPWlN2vs90ikDqoud/8qrWnDpuegiELQ/ysx/
-	AaTYcz69ZxbcbFreza0hHY+sAB80y99ICIIMtHerRWkGJwZdi63l7+PzOxRpCG8i8sJSg6E1GM3
-	Y8lJKvxBB6Vsl/f2doLBwm7wK/PHWOFHWuBhi
-X-Gm-Gg: Acq92OFrwSsJT6+fPeuVXNReKiqg6ODdVPzBYO5j2EYl9AQf/SXZS5rTtLzfN0INRaO
-	Q1v8YTvpNch4ei/deW7hBCApMFqfe6QL6vHhBo8/9VhmYA3NFqGl7y/qMBMiPl2EQbZU3eP7HPa
-	6yAbSzlbKNlMl34ex2CDB0MGB+ry79bA5tileN7qMEJT7ZFqz3IzBIBxrczpQUwdAXzKpEnKgBx
-	vRZBengC9FHdoH5WMHuIxhFcexmWOAJSFq1q4w8Cz4tvZQ/hOn/8dJPinVhx5A+K7MfMpIGDAzY
-	ypMmZCxO8kXpF48x+QI=
-X-Received: by 2002:a05:622a:5c85:b0:50b:3788:ab59 with SMTP id
- d75a77b69052e-5162f4b00dfmr99007741cf.22.1778753213391; Thu, 14 May 2026
- 03:06:53 -0700 (PDT)
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xyMULtZD;
+	dmarc=pass (policy=none) header.from=narfation.org;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778753645;
+	b=PUkwbQE+TGa/+O/nG9t+4km2tt2lMMaiY9Jo+81UWSvYwoxzzWe+egC26huvxUsAlMQZi7
+	xCVVU4eEO4y81kJui+SUgbfDgnaVIgV6oQCTiwoCPaxCJpmdehro7uFiib1NNXCOaWpZXf
+	NNgPPrJqZRlrSueDc1+meoOws13W2XM=
+Received: by dvalin.narfation.org (Postfix) id 3AAC41FDDA;
+	Thu, 14 May 2026 10:14:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1778753644;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=U0zTgYxHdD1m6RbaTPl+7No2tF/0kskVY+L8MaWEnIQ=;
+	b=xyMULtZD1b3zUdo4TZMIbW2z3ZKXlMc3J32xVd+/4IL+YXEFVF0MOQ++kY/R7qsTmh4woV
+	bhRb2GMs+YQvxyM+8o7B/yEdKj5Sit1dadlghsOr6xVDIXVAoIdF4HSqkPARbg3L+Mih2X
+	a2tpjV7gP+rdqRIS0vLTkPWNHw3aRmo=
 MIME-Version: 1.0
-References: <20260513-yuantan098-bugfixes-v2-0-863e9caa2a57@narfation.org>
- <20260513-yuantan098-bugfixes-v2-1-863e9caa2a57@narfation.org>
-In-Reply-To: <20260513-yuantan098-bugfixes-v2-1-863e9caa2a57@narfation.org>
-From: Yuan Tan <yuantan098@gmail.com>
-Date: Thu, 14 May 2026 03:06:15 -0700
-X-Gm-Features: AVHnY4IjY9I4Eg76vviXc9TKP7wPMXQ527-im1SzXXaqCzAlwXXnuOmb1WBJJf8
-Message-ID: 
- <CAPuPA7KVJWfGnycE+XE1ioFYUWZKUNDddVpXOd6rupxDbGd0Vw@mail.gmail.com>
-Subject: Re: [PATCH batadv v2 1/5] batman-adv: dat: handle forward allocation
- error
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org,
-	Yifan Wu <yifanwucs@gmail.com>, Juefei Pu <tomapufckgml@gmail.com>,
- Xin Liu <bird@lzu.edu.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-MailFrom: yuantan098@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v9 2/3] batman-adv: split DAT cache into DAT cache and
+ DAT DHT
+From: Sven Eckelmann <sven@narfation.org>
+To: =?utf-8?q?Linus_L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+In-Reply-To: <20250117021348.2021-3-linus.luessing@c0d3.blue>
+References: <20250117021348.2021-1-linus.luessing@c0d3.blue>
+ <20250117021348.2021-3-linus.luessing@c0d3.blue>
+Date: Thu, 14 May 2026 12:13:15 +0200
+Message-Id: <177875359527.23013.13660542318783039992.b4-review@b4>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6159; i=sven@narfation.org;
+ h=from:subject:message-id; bh=RHbDLfrqO/aAVDpGEOZOFZM5VeoES6aXi0X9vZVIMRI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmsC9L17r1dveJbr7Oh6Bf1N3N+TRXLmpypmHRnsXDhv
+ e8nv77e2lHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYCKcSI8O9sM1sXydwdMhy
+ cXTqnqoObl84lSvkpYzgn9TW0EvR118zMqxhmlzvfVR7r+C5d/usfCZMqfafdGXOPqZTvX9f+r7
+ r/cQHAA==
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: ZDQT46AIZU7ZG7OGIT3ACFBJFT2QVD4P
+X-Message-ID-Hash: ZDQT46AIZU7ZG7OGIT3ACFBJFT2QVD4P
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: NSZRIICLBHYINKVDKFHJPWSW5AHE3GJF
-X-Message-ID-Hash: NSZRIICLBHYINKVDKFHJPWSW5AHE3GJF
-X-Mailman-Approved-At: Thu, 14 May 2026 12:07:37 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
+ news-moderation; no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NSZRIICLBHYINKVDKFHJPWSW5AHE3GJF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZDQT46AIZU7ZG7OGIT3ACFBJFT2QVD4P/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -161,52 +114,202 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Wed, May 13, 2026 at 12:01=E2=80=AFAM Sven Eckelmann <sven@narfation.org=
-> wrote:
+On Fri, 17 Jan 2025 03:06:36 +0100, Linus Lüssing <linus.luessing@c0d3.blue> wrote:
+> Similar to the translation table split the (mostly) locally maintained
+> DAT cache and the DAT DHT concepts into two separate tables.
+> 
+> This eases the monitoring and debugging regarding the origin of DAT
+> entries. And allows to apply differing properties to entries in the DAT
+> cache and DAT DHT in the future, like distinct timeouts.
+> 
+> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+
+It applies find on 2cff5b1c6bba ("batman-adv: Use mailmap to fix old e-mail
+addresses") but not anymore on the current main. This patch has various minor
+conflicts with the rename of softif to meshif. It looks like the conflict has
+to be solved like this
+
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -144,13 +144,8 @@
+ }
+ 
+ /**
+-<<<<<<<
+  * __batadv_dat_purge() - delete entries from a DAT hash table
+  * @hash: the hash table to delete from
+-=======
+- * __batadv_dat_purge() - delete entries from the DAT local storage
+- * @bat_priv: the bat priv with all the mesh interface information
+->>>>>>>
+  * @to_purge: function in charge to decide whether an entry has to be purged or
+  *	      not. This function takes the dat_entry as argument and has to
+  *	      returns a boolean value: true is the entry has to be deleted,
+@@ -319,14 +314,8 @@
+ }
+ 
+ /**
+-<<<<<<<
+  * batadv_dat_entry_hash_find() - look for a given dat_entry in a hash table
+  * @hash: the hash table to search in
+-=======
+- * batadv_dat_entry_hash_find() - look for a given dat_entry in the local hash
+- * table
+- * @bat_priv: the bat priv with all the mesh interface information
+->>>>>>>
+  * @ip: search key
+  * @vid: VLAN identifier
+  *
+@@ -397,12 +386,8 @@
+ 
+ /**
+  * batadv_dat_entry_add() - add a new dat entry or update it if already exists
+-<<<<<<<
+  * @bat_priv: the bat priv with all the mesh interface information
+-=======
+- * @bat_priv: the bat priv with all the soft interface information
+  * @hash: the hash table to add to
+->>>>>>>
+  * @ip: ipv4 to add/edit
+  * @mac_addr: mac address to assign to the given ipv4
+  * @vid: VLAN identifier
+@@ -865,13 +850,8 @@
+ }
+ 
+ /**
+-<<<<<<<
+  * batadv_dat_hash_free() - free a DAT hash table
+- * @bat_priv: the bat priv with all the soft interface information
+-=======
+- * batadv_dat_hash_free() - free the local DAT hash table
+  * @bat_priv: the bat priv with all the mesh interface information
+->>>>>>>
+  */
+ static void batadv_dat_hash_free(struct batadv_hashtable **hash)
+ {
+@@ -1068,27 +1048,11 @@
+ 		u8 cmd)
+ {
+ 	int portid = NETLINK_CB(cb->skb).portid;
+-<<<<<<<
+ 	struct batadv_hard_iface *primary_if;
+-=======
+-	struct net_device *mesh_iface;
+-	struct batadv_hashtable *hash;
+-	struct batadv_priv *bat_priv;
+->>>>>>>
+ 	int bucket = cb->args[0];
+ 	int idx = cb->args[1];
+ 	int ret = 0;
+ 
+-<<<<<<<
+-=======
+-	mesh_iface = batadv_netlink_get_meshif(cb);
+-	if (IS_ERR(mesh_iface))
+-		return PTR_ERR(mesh_iface);
+-
+-	bat_priv = netdev_priv(mesh_iface);
+-	hash = bat_priv->dat.hash;
+-
+->>>>>>>
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
+ 		ret = -ENOENT;
+@@ -1112,12 +1076,8 @@
+ out:
+ 	batadv_hardif_put(primary_if);
+ 
+-<<<<<<<
+-	dev_put(mesh_iface);
+-=======
+ 	return ret;
+ }
+->>>>>>>
+ 
+ /**
+  * batadv_dat_cache_dump() - dump the DAT cache table to a netlink socket
+@@ -1128,20 +1088,20 @@
+  */
+ int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
+ {
+-	struct net_device *soft_iface;
++	struct net_device *mesh_iface;
+ 	struct batadv_priv *bat_priv;
+ 	int ret;
+ 
+-	soft_iface = batadv_netlink_get_softif(cb);
+-	if (IS_ERR(soft_iface))
+-		return PTR_ERR(soft_iface);
++	mesh_iface = batadv_netlink_get_meshif(cb);
++	if (IS_ERR(mesh_iface))
++		return PTR_ERR(mesh_iface);
+ 
+-	bat_priv = netdev_priv(soft_iface);
++	bat_priv = netdev_priv(mesh_iface);
+ 
+ 	ret = batadv_dat_dump(bat_priv, msg, cb, bat_priv->dat.cache_hash,
+ 			      BATADV_CMD_GET_DAT_CACHE);
+ 
+-	dev_put(soft_iface);
++	dev_put(mesh_iface);
+ 	return ret;
+ }
+ 
+@@ -1154,20 +1114,20 @@
+  */
+ int batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb)
+ {
+-	struct net_device *soft_iface;
++	struct net_device *mesh_iface;
+ 	struct batadv_priv *bat_priv;
+ 	int ret;
+ 
+-	soft_iface = batadv_netlink_get_softif(cb);
+-	if (IS_ERR(soft_iface))
+-		return PTR_ERR(soft_iface);
++	mesh_iface = batadv_netlink_get_meshif(cb);
++	if (IS_ERR(mesh_iface))
++		return PTR_ERR(mesh_iface);
+ 
+-	bat_priv = netdev_priv(soft_iface);
++	bat_priv = netdev_priv(mesh_iface);
+ 
+ 	ret = batadv_dat_dump(bat_priv, msg, cb, bat_priv->dat.dht_hash,
+ 			      BATADV_CMD_GET_DAT_DHT);
+ 
+-	dev_put(soft_iface);
++	dev_put(mesh_iface);
+ 	return ret;
+ }
+
 >
-> batadv_dat_forward_data() calls pskb_copy_for_clone() to duplicate an skb
-> for each DHT candidate, but does not check the return value before passin=
-g
-> it to batadv_send_skb_prepare_unicast_4addr(). That function dereferences
-> the skb unconditionally, so a failed allocation triggers a NULL pointer
-> dereference.
 >
-> Skip forwarding to the current DHT candidate on allocation failure.
->
-> Cc: stable@kernel.org
-> Fixes: 785ea1144182 ("batman-adv: Distributed ARP Table - create DHT help=
-er functions")
-> Reported-by: Yuan Tan <yuantan098@gmail.com>
-> Reported-by: Yifan Wu <yifanwucs@gmail.com>
-> Reported-by: Juefei Pu <tomapufckgml@gmail.com>
-> Reported-by: Xin Liu <bird@lzu.edu.cn>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/distributed-arp-table.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/dist=
-ributed-arp-table.c
-> index 3efc4cf5..0a8bd95e 100644
+> diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+> index e5a07152..8d6d5e33 100644
 > --- a/net/batman-adv/distributed-arp-table.c
 > +++ b/net/batman-adv/distributed-arp-table.c
-> @@ -696,6 +696,9 @@ static bool batadv_dat_forward_data(struct batadv_pri=
-v *bat_priv,
->                         goto free_orig;
->
->                 tmp_skb =3D pskb_copy_for_clone(skb, GFP_ATOMIC);
-> +               if (!tmp_skb)
-> +                       goto free_neigh;
-> +
->                 if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_=
-skb,
->                                                            cand[i].orig_n=
-ode,
->                                                            packet_subtype=
-)) {
->
-> --
-> 2.47.3
->
+> @@ -785,19 +851,57 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+>  }
+>  
+>  /**
+> - * batadv_dat_hash_free() - free the local DAT hash table
+> + * batadv_dat_hash_free() - free a DAT hash table
+>   * @bat_priv: the bat priv with all the soft interface information
+>   */
+> -static void batadv_dat_hash_free(struct batadv_priv *bat_priv)
+> +static void batadv_dat_hash_free(struct batadv_hashtable **hash)
 
-Reviewed-by: Yuan Tan <yuantan098@gmail.com>
+function parameter 'hash' not described in 'batadv_dat_hash_free'
+
+> @@ -1332,7 +1486,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+>   * packet has to be delivered to the interface
+>   */
+>  bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+> -					 struct sk_buff *skb, int hdr_size)
+> +					 struct sk_buff *skb, int hdr_size,
+> +					 bool is_dht_put)
+
+function parameter 'is_dht_put' not described in 'batadv_dat_snoop_incoming_arp_reply'
+
+-- 
+Sven Eckelmann <sven@narfation.org>
