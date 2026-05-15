@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE512CD4F39
-	for <batman@archiver.kernel.org>; Thu, 14 May 2026 21:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B2ECD4851
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 08:06:25 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 46384840E8
-	for <batman@archiver.kernel.org>; Thu, 14 May 2026 23:11:49 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 61DE185075
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 10:06:19 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778793109;
- b=Mj6UVfQRgxelTMeWGBj4OuQ60U/HzywgREDV3hK+lUE4jlyJv4Ogxm6tmA1GgPn7emMeO
- GVG0lu4FZ5SZXg8NJVNt6GpcGOklhEaq/ypMkZuDaiRnupO/mPdIxZJi9IiboYUJbde3EEY
- 7hfIzS9T1sctEBSGhdJT2QfFMmxgdW4=
+ t=1778832379;
+ b=TTk0LznljSkBcjuwZSU/1pxOTqF47vXsHP5CH9fPg3W7n301qStvrzSj/w+ZL4pxfoVm7
+ 2hjkDWLwGXGaAbn2DAyPitRvgSPvHMLVregiHX8QUwPYqWd595J2RFBp4TOriw02Y78j/gN
+ lmkUfRiuXmN7vTtK3T2ydKq6pqIOW3U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778793109; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778832379; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=IQrVr7QF8CnElXcFob4nlMdaB20hy7kqewImOHtHHh0=;
- b=mw4aDAxonkD0yLOG7fKuHLge9id13gR+8K7qXEPDdpJ/oRiYGCPht5vqLQLBQsAYAktg1
- k+GSShnA2Za/i/LzAkVYCjhlII4VPhH0AFgmOChiMDvfuJSRlswdoPZ9tTD1oKCjR8p6Cfe
- HgJQ153dpdEi/sJtXM2Uvs1iNfTKdck=
+ list-archive; bh=jV/cwCYbnUhkCZkOtgnH9jR+yFAAXWUXv0Eu2H49SBU=;
+ b=rXEB4Wm4AnoFCNt2nrg1U5DK6AlE7NQ+na6cJlgGgEiablaTFbWU8CyetAndDC6NHL3F4
+ nQ6hA5EJsV+1n9PscFQH5dJAVADawl8KxlK+zne2nf4crG0euOuLVoFIw3zXWCDbswDj7Zq
+ d3O8wmz7XZfB/klNojPoPmWEgQABUF0=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,54 +34,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B67A283DBD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 14 May 2026 23:11:12 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8B8B882727
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 10:00:17 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778793082;
+	s=20121; t=1778832019;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=IQrVr7QF8CnElXcFob4nlMdaB20hy7kqewImOHtHHh0=;
-	b=J4mBB94Kgf0SKH4TKdv2xD0aAEigmJsVIt/P9vcHfdXb9vNBrxSaxupArJZLkw6dBzf8nm
-	yoqHpuN8ISghX63j0XiAEGMGHVlrhxwJXjQcNQHChQAWRCR+0zicNVjAMlOZLTViI5JWJJ
-	JAkCJvk3gxxvk4FecUFzSQJN27NabnA=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=jV/cwCYbnUhkCZkOtgnH9jR+yFAAXWUXv0Eu2H49SBU=;
+	b=TQSQ913UWMr58MMQRNvWKIiw7jGycfLFVdlLCoLjt3tfhxdaJHTy+yZrLlGhD7g1ToJ7Sw
+	k2h0yb2w/2wttcBRcouZJ/oNKC802RYGiMmyTSN2ncf4o0PZtnbFntK0TcEszDBpeeNYXB
+	M6C7XTqfOoL+V+WdU4Y1sfdvW7YAPh0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=nuCv0YG8;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=wT2zxSbM;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778793082;
-	b=KBvfK7Tu25NbY56n1L5G/MZzB3iqWJ6CFeoNud608+FD6IdyWKw/mt+w8pq+CJQAr+iugr
-	0G0PVFE1VeQiPDjZYa6rIeuWsKslhZJ5O7TqnOo4f09XXHPlsKHDb7RsvBbs2n6CLQNUwX
-	an/IB2ChDo/lcsFi2toR7YRPdZlK6rQ=
-Received: by dvalin.narfation.org (Postfix) id 63C6A218A8;
-	Thu, 14 May 2026 21:11:10 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778832019;
+	b=WdMf+F7dy+aUpi7fWe21vpxMGnO1IaTRDwaDGKoOKs9gZu+QErXbWtQoka0C2hOEqrr9VO
+	BJY2C/cBcF1Fl4Lit8iJ8cBaYNPBUjMkjd5yQgu1TzWzkfF3CNG2eYYnrGF88bN3rMSlEO
+	4Ds0LeMVt5XZOPOVXDAnJvPH4cRwM4g=
+Received: by dvalin.narfation.org (Postfix) id 8D70820C4F;
+	Fri, 15 May 2026 08:00:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778793070;
+	s=20121; t=1778832012;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=IQrVr7QF8CnElXcFob4nlMdaB20hy7kqewImOHtHHh0=;
-	b=nuCv0YG8bVMqklalxKCm5pt8VxDWxMUnHQw/Wo/7PnImGsg9tg46WzLAcW0OKXgzFXYhh3
-	70vMoVHXOS7hXNLpi9swc12iLDbY3FF2iDnypbgl5pihres9f3i6LrDwlfO3ZicVO6aHXT
-	62UKJw8RtLyMGhiTzBgGTNUXwPyIDHs=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jV/cwCYbnUhkCZkOtgnH9jR+yFAAXWUXv0Eu2H49SBU=;
+	b=wT2zxSbMJkK1XRokXd7q0WL0pZ83lmi7vSplbhxThd/NFypVdUaLeiZ0UZL7s/Db5wMldG
+	LQopzqyCNvixEYNuPLCcLyJoeXIclec9LSTpCoubnhfXwYiHjscCh2d7VPDMMzhD/bEYgj
+	RAxqTzk8oRb3AsTRZlz7ZSLmlg/GNAU=
 From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de
-Cc: antonio@mandelbit.com, marek.lindner@mailbox.org,
- b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
-Subject: Re: [PATCH batadv v3 2/2] batman-adv: bla: avoid double decrement of
- bla.num_requests
-Date: Thu, 14 May 2026 23:11:04 +0200
-Message-ID: <5105124.31r3eYUQgx@sven-desktop>
-In-Reply-To: <20260514210047.08C2BC2BCB3@smtp.kernel.org>
-References: <20260514-bla-cancel-work-v3-2-dc65d3485e11@narfation.org>
- <20260514210047.08C2BC2BCB3@smtp.kernel.org>
+Date: Fri, 15 May 2026 10:00:00 +0200
+Subject: [PATCH RFC batadv] batman-adv: drop batman-adv specific version
+ for in-tree module
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4739128.LvFx2qVVIh";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: THAAIGXQFSFO2FBCKGCS2AV3X4IMWRDL
-X-Message-ID-Hash: THAAIGXQFSFO2FBCKGCS2AV3X4IMWRDL
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: 
+ <20260515-no-upstream-version-bumps-v1-1-6aa349f8e949@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAH/SBmoC/yWMwQrCMBBEf6Xs2YUmUhGvgh/gVTxs2lUjNA27S
+ RBK/91EjzPz5q2gLJ4VTt0KwsWrX0INZtfB+KLwZPRTzWB7e+gHM2BYMEdNwjRjYWk8ujxHRSZ
+ r9mSOFSOo/yj88J+f+wbXy7l1jhJNBe7/WbN785iaH7btC4SZJT2MAAAA
+X-Change-ID: 20260515-no-upstream-version-bumps-ea213a18051a
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3916; i=sven@narfation.org;
+ h=from:subject:message-id; bh=9ucb7azKJEhzsTYm02LPU9dOfbPkutDxQ9vpRUe7qrg=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlsl9rOeT275fNigoDjbcUVzHqu6xblOc74P3Phike35
+ F2nrd3P0VHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYCMtdhj+cMxYaXBM88Hmm
+ Q7CWgNjH2cUcV9/dTn54zX3mn18b3IQCGBlOP/t091fYleqn2zv2HHqR+XlPX8Sq4y3fKuZvSL8
+ YvaaICwA=
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: VP7JXQ777RWYLMFJBHFFRONC57I5BH43
+X-Message-ID-Hash: VP7JXQ777RWYLMFJBHFFRONC57I5BH43
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -95,7 +105,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/THAAIGXQFSFO2FBCKGCS2AV3X4IMWRDL/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VP7JXQ777RWYLMFJBHFFRONC57I5BH43/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -104,88 +114,126 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart4739128.LvFx2qVVIh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de
-Date: Thu, 14 May 2026 23:11:04 +0200
-Message-ID: <5105124.31r3eYUQgx@sven-desktop>
-In-Reply-To: <20260514210047.08C2BC2BCB3@smtp.kernel.org>
-MIME-Version: 1.0
+Bumping the version number on the first pull request after each merge
+window was deemed inappropriate for an in-tree component. The version
+number carries little meaningful information in the context of the Linux
+kernel release model, where stable and distribution might all carry
+slightly different patches (without any change to the batman-adv version).
 
-On Thursday, 14 May 2026 23:00:45 CEST sashiko-bot@kernel.org wrote:
-> [ ... ]
-> 
-> > @@ -1517,14 +1529,21 @@ static void batadv_bla_periodic_work(struct work_struct *work)
-> >  			 * some grace time.
-> >  			 */
-> >  
-> > -			if (atomic_read(&backbone_gw->request_sent) == 0)
-> > -				continue;
-> > +			spin_lock_bh(&bat_priv->bla.num_requests_lock);
-> > +			if (backbone_gw->state != BATADV_BLA_BACKBONE_GW_UNSYNCED)
-> > +				goto unlock_next;
-> >  
-> > -			if (!atomic_dec_and_test(&backbone_gw->wait_periods))
-> > -				continue;
-> > +			if (backbone_gw->wait_periods > 0)
-> > +				backbone_gw->wait_periods--;
-> > +
-> > +			if (backbone_gw->wait_periods > 0)
-> > +				goto unlock_next;
-> >  
-> > +			backbone_gw->state = BATADV_BLA_BACKBONE_GW_SYNCED;
-> >  			atomic_dec(&backbone_gw->bat_priv->bla.num_requests);
-> > -			atomic_set(&backbone_gw->request_sent, 0);
-> > +
-> > +unlock_next:
-> > +			spin_unlock_bh(&bat_priv->bla.num_requests_lock);
-> 
-> Will this prematurely reset the bridge loop avoidance sync state when a request
-> is sent?
-> 
-> In the previous implementation, batadv_bla_send_request() set request_sent to 1
-> but left wait_periods at 0. When batadv_bla_periodic_work() ran,
-> atomic_dec_and_test() on wait_periods would decrement it to -1 (returning
-> false), which correctly kept the gateway in the out-of-sync state until a valid
-> ANNOUNCE frame arrived.
-> 
-> With wait_periods now being a u8, if batadv_bla_send_request() sets the state
-> to BATADV_BLA_BACKBONE_GW_UNSYNCED but leaves wait_periods at 0, the next run
-> of batadv_bla_periodic_work() will evaluate if (backbone_gw->wait_periods > 0)
-> as false.
-> 
-> Because the code falls through when wait_periods is 0, it appears to
-> unconditionally transition back to BATADV_BLA_BACKBONE_GW_SYNCED.
-> 
-> Could this spontaneously drop the out-of-sync block without receiving a valid
-> ANNOUNCE frame, potentially allowing broadcast loops?
+Instead, expose a UTC_RELEASE-based string to consumers of the netlink
+and ethtool interfaces.
 
-@Simon, can you double check this? My understanding is that this code is only 
-relevant for own_backbone (see batadv_bla_get_backbone_gw()). And for
-own_backbone, we are always setting wait_periods to BATADV_BLA_WAIT_PERIODS.
+The out-of-tree batman-adv package is unaffected by this change.
 
-An underflow was never expected and this code should not run for 
-batadv_handle_announce() with CRC error (see batadv_bla_send_request()). Only
-in this codepath, we don't set wait_periods to anything.
+Link: https://lore.kernel.org/r/20200104195131.16577-3-info@metux.net
+Link: https://lore.kernel.org/r/20201202124959.29209-2-info@metux.net
+Link: https://lore.kernel.org/r/20210203163302.13e8a2a7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com
+Link: https://lore.kernel.org/r/YnfjtpuAaH+Zkf9S@unreal
+Link: https://lore.kernel.org/r/Y9faTA0rNSXg%2FsLD@nanopsycho
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ .gitignore              | 2 ++
+ Makefile                | 2 ++
+ compat-sources/Makefile | 3 +++
+ compat-sources/compat.c | 7 +++++++
+ net/batman-adv/main.c   | 1 -
+ net/batman-adv/main.h   | 9 +++++++++
+ 6 files changed, 23 insertions(+), 1 deletion(-)
 
-Regards,
-	Sven
---nextPart4739128.LvFx2qVVIh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+diff --git a/.gitignore b/.gitignore
+index fdacbf29..1fa30c6b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,6 +8,8 @@
+ /compat-sources/**/*.o
+ /modules.order
+ /Module.symvers
++/..module-common.o.cmd
++/.module-common.o
+ /net/batman-adv/batman-adv.ko
+ /net/batman-adv/.batman-adv.ko.cmd
+ /net/batman-adv/batman-adv.mod.c
+diff --git a/Makefile b/Makefile
+index ae3fd885..017165c6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -39,6 +39,8 @@ NOSTDINC_FLAGS += \
+ 	-include $(PWD)/compat.h \
+ 	$(CFLAGS)
+ 
++include $(PWD)/compat-sources/Makefile
++
+ ifneq ($(REVISION),)
+ NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
+ endif
+diff --git a/compat-sources/Makefile b/compat-sources/Makefile
+new file mode 100644
+index 00000000..daf80deb
+--- /dev/null
++++ b/compat-sources/Makefile
+@@ -0,0 +1,3 @@
++# SPDX-License-Identifier: GPL-2.0
++
++batman-adv-y += ../../compat-sources/compat.o
+diff --git a/compat-sources/compat.c b/compat-sources/compat.c
+new file mode 100644
+index 00000000..4aa5fcb8
+--- /dev/null
++++ b/compat-sources/compat.c
+@@ -0,0 +1,7 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <linux/module.h>
++
++#include "../net/batman-adv/main.h"
++
++MODULE_VERSION(BATADV_SOURCE_VERSION);
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 2baf8e2c..5d27175a 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -696,6 +696,5 @@ MODULE_LICENSE("GPL");
+ 
+ MODULE_AUTHOR(BATADV_DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(BATADV_DRIVER_DESC);
+-MODULE_VERSION(BATADV_SOURCE_VERSION);
+ MODULE_ALIAS_RTNL_LINK("batadv");
+ MODULE_ALIAS_GENL_FAMILY(BATADV_NL_NAME);
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 465d26d8..7f722425 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -7,15 +7,24 @@
+ #ifndef _NET_BATMAN_ADV_MAIN_H_
+ #define _NET_BATMAN_ADV_MAIN_H_
+ 
++#include <generated/utsrelease.h>
++
+ #define BATADV_DRIVER_AUTHOR "Marek Lindner <marek.lindner@mailbox.org>, " \
+ 			     "Simon Wunderlich <sw@simonwunderlich.de>"
+ #define BATADV_DRIVER_DESC   "B.A.T.M.A.N. advanced"
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+ 
++#ifdef CONFIG_BATMAN_ADV_IN_TREE // UGLY_HACK_NEW
++#define BATADV_SOURCE_VERSION "linux-" UTS_RELEASE
++#else // UGLY_HACK_OLD
++
++/* prefer version provided by Makefile */
+ #ifndef BATADV_SOURCE_VERSION
+ #define BATADV_SOURCE_VERSION "2026.2"
+ #endif
+ 
++#endif // UGLY_HACK_STOP
++
+ /* B.A.T.M.A.N. parameters */
+ 
+ #define BATADV_TQ_MAX_VALUE 255
 
------BEGIN PGP SIGNATURE-----
+---
+base-commit: 7700c90cbd12d04b8aabb62fe031ce6b31d6a4d9
+change-id: 20260515-no-upstream-version-bumps-ea213a18051a
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCagY6aAAKCRBND3cr0xT1
-y9QHAP9H81QkqhvptMrvk5FQMi1BFFa5NetSBjry3A8yB9+bfwEAn4xPCV7MOOB8
-PXVudWO0UrI60g97tiw3tSooZ3ibRwo=
-=x+NR
------END PGP SIGNATURE-----
-
---nextPart4739128.LvFx2qVVIh--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
