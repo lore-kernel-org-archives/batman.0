@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6D8CCD343F
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 09:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B37ACD343F
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 09:42:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 40E958561E
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 11:41:41 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5FAD28534B
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 11:42:27 +0200 (CEST)
 ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778838101;
- b=R3pjOCt0ea2+He2jEWTTg09D24MPCNx6K4+G7RF+HDYS8msIHuW3++vLGvmMtRbrROR7D
- rRpinwd9R0AF21Fh9NJIJFjb9nBfvAp0PEuC8x8FZYNVFUKMQtPRG2BDuPQ5yi5+tOmgmuP
- yjAF0z561ia9ueqkSJvosJkT729wSdE=
+ t=1778838147;
+ b=T/RBS4vhcqc6nECBUyqb6DK8mvn/dihgapn690ErQhIuGnX8QwNA7W6Ta9tWsoN5YPItA
+ NeLAdbRIlNY8Q38K1MHUQPMqSkAiSn+IQ7NJtpumaESf4jwJuCHfdVn8vccU8J5E4o5QlLX
+ 9dERGRLuN7GcdSi2cwI2SlrBVDmeLvk=
 ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778838101; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1778838147; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
- b=JE1hx9VbXopxJRhjE1+ZFrH/NwRKOJ+PIHuxB+eOQ5IiXNnDC9+lb49o45OKJ3w9DAGcg
- sEZs85ahckVyhDqF6KGNLep0B9iG1SrWsp2ivMW8Yvrm8AnSvDfK126OKDoVKtHmBZfYduB
- 4YYLqwzxRXliOEC7QT5H3k1/JecjVvQ=
+ list-archive; bh=drIb5iX5pGZ7J161OUgFjHSR9Uf5QgPhJcrTERWfRqQ=;
+ b=rNDlnuNY41O4kYtAUQp7UHPSsxN/5TN51zg8QxniT4MhpsThpOtg6l/C53bL+Rum25GW7
+ VvrfNH/SIBUA4SZCZyu2y9TnZurmHHnQfL/0o0yNIYkWMe4POq3vC/GrdKdNqFYTB/RATJF
+ a8fS1S5WaxaUHL56ZoUqdk4T/MCGBeQ=
 ARC-Authentication-Results: i=3; open-mesh.org;
  dkim=pass header.d=gmail.com;
  arc=pass;
@@ -32,105 +32,105 @@ ARC-Authentication-Results: i=3; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
  dmarc=pass (Used From Domain Record) header.from=gmail.com
  policy.dmarc=quarantine
-Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com
- [IPv6:2607:f8b0:4864:20::f2e])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3FC66849F2
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 10:27:44 +0200 (CEST)
+Received: from mail-qt1-x836.google.com (mail-qt1-x836.google.com
+ [IPv6:2607:f8b0:4864:20::836])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 04F2E844B1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 11:31:17 +0200 (CEST)
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778833675;
+	s=20121; t=1778837478;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
-	b=twpAkmWdrFRVxZuYpb6qya07djoA0CsoSifbvpwa+cMLQuUhu9rAZ0ccKDLDN8C7ccnQmu
-	Lsbwu3XOCmmah1YkFgx8AqiSDRE5VCi1eaSw4F0sytSlOOoVrnYB05OcvX4XXyKj5WlsvY
-	ax9wGVVLCnNCRX90lVO1NdPf7zllaTA=
+	bh=drIb5iX5pGZ7J161OUgFjHSR9Uf5QgPhJcrTERWfRqQ=;
+	b=NpzO5Uv5Z5kcxY5aJLBT6gW3gm+JdpI2az4SI6/W5NnOKS10K5Plq1D4nJGUxWsom76uaO
+	Txom6sbB3QGcP4fPkPQ0F7k32QHpYTfxdtS0GcOSEejzJfTf+xtVR3lUV/diHynDtvZ2rS
+	XgfUrVrKIKSGQCa1EiHEGcBPoLmE0Qc=
 ARC-Authentication-Results: i=2;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20251104 header.b=hrP+v5Ba;
+	dkim=pass header.d=gmail.com header.s=20251104 header.b=n88v7MpO;
 	dmarc=pass (policy=none) header.from=gmail.com;
 	spf=pass (diktynna.open-mesh.org: domain of yuantan098@gmail.com designates
- 2607:f8b0:4864:20::f2e as permitted sender)
+ 2607:f8b0:4864:20::836 as permitted sender)
  smtp.mailfrom=yuantan098@gmail.com;
 	arc=pass ("google.com:s=arc-20240605:i=1")
-ARC-Seal: i=2; a=rsa-sha256; d=open-mesh.org; s=20121; cv=pass; t=1778833675;
-	b=VmKRZDvyMXVkbo1HunY0b/SEaiekRqC7PQD70Jno4pKEOoSd0hRxrEy+7q4DJr/U0utTIk
-	OgsLJyIQ0XKQ2WLImZ1mBZUdVO/bZ2g3nMKv2fVtvIfJEV40VtpgIhssDJLqqvrq58P7fc
-	lrRtFWNghEP5+G57WMth5owU3KLCDoM=
-Received: by mail-qv1-xf2e.google.com with SMTP id
- 6a1803df08f44-8b6dd874471so116220176d6.0
+ARC-Seal: i=2; a=rsa-sha256; d=open-mesh.org; s=20121; cv=pass; t=1778837478;
+	b=znbPvpSOcGJsBZCzMSEsVGFtGV35H//h2i96tUtZQ0sj25I4K0uT+6HrgUEWhxQP1Sz1x/
+	fBY+2eJo9MJ93KPm7KyeEyjY5CBdCzJ/lcg4wg0WNDG+8qEXPlTcIbejm3yd0a9U5B+U6t
+	KUWNQmuUcA/UAwfnvzVyJ+9NZBV4hWg=
+Received: by mail-qt1-x836.google.com with SMTP id
+ d75a77b69052e-50fb4a7d704so67856291cf.1
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Fri, 15 May 2026 01:27:44 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778833663; cv=none;
+ Fri, 15 May 2026 02:31:17 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778837476; cv=none;
         d=google.com; s=arc-20240605;
-        b=E4Jwwzakh6jqU3EUu8lCldXIXJ8cFBhD9ughWKKyb1V+tFq3zvDt9L2U4ydcAhoC33
-         GqC5c2JaIS8j/G80pU2lXytx8wyEqcV+VP145EHxI1pXU62F7VGmJ+r7nRCkSJeLW3yd
-         vbbQW6owor0/7A5hgZL8C036WLAQjpzJZI8umsCfwZsR1sF4dvKO0KABr2e3DgGTSILf
-         DawqC16m4AEP5uApECbmNCUTBEbJIM+f9YcRYX7O5uuGr9Z2/xZyBVvJQNhGmXBA6sji
-         /0Hk1VbqvyfdPD/sMEaycQJhNFsAxjISL/FA5eDthlH20pf1lArgzGL/aksDrz9dykv/
-         Fsrw==
+        b=krwxAxOOMXn7hjKzWb42+zvBRypKcFRiqBM34KEPij1u8Pl7iZNdDtotGFFE+UN2OU
+         VLRSFzxASRlg7IZRvkJ2lHiO9z+UY9uVSoKmX62zluC3Tg7h6EUCH9Q184JK+3Zg/H0W
+         nTsEyCYYmU73+WLCCxpbZrXp5m3yxFIgLFryK90hUdSCpmcl+Gk5rb41K85Xdn+KkavT
+         Qeodvs7BBSzKnwkrYYWTSHMqFVbjDplNnbUid+3/EOqGQhCwqX3OQccfViIS4BM1IMm9
+         I6mlVO5hxIHbN+1wDNxAOZ3w9+xeQ3KCWJNOdVuKjY/3zDKr1JcD6CdFk+HH34gVBrKO
+         6vVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
  s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+        bh=drIb5iX5pGZ7J161OUgFjHSR9Uf5QgPhJcrTERWfRqQ=;
         fh=fGpATJGdA5gBFxywIcayagIpQImFJ7uNKXfLW6dnd4U=;
-        b=X2+ntLWws67J48tnte1WQHV4lEkCy8sxhvE4Wgs78rsgJ/9sPY999JpZ7KGun3wBk7
-         nwKBwj5NQ57NqlRyX3TXuRK/A269pVtql67JNlyACo6rofGLdcqvBtNvmk9m0ovqxCux
-         cbMC7Qom55CDppv2nCzM7MzjMryg3TbXJcDBkkT4MDZm0Krtx0+P5KjwCmnoc+T73g/p
-         alqb9zLl33PS1EotZsZxIaU8khOJxhizLgZjA0Xclyr4ThF9daRn5uTSu/Z9pdRHB8ZD
-         v2v9nts1aH2i8QaPKlP9fP9HMq2nH5WIQKS4DQjM5hzcHSjwfBL6SP6NZI7rwfdVgOUP
-         Qzlg==;
+        b=BoBspjqb7hnBE6CRbnbXvLweZaGw3H9aTxWg72EsyRfpEQQQFZm9h7hCq526m0vbIb
+         8whHdmo0bn6PjnydqEeQ71UEMY8FpbMHCcFy4oeCrUZs0jczEDI5mkANTPdW5qckl5nz
+         jCyaGc/EM3Si7fTiw/EzO9CKZ/USQW6aqBg5iXG6bSRpJahBq1q9Q9QDfsX5LO1oXjOa
+         P2CNg7bme2MUUyY65s1Z3d5EGXZNGSTJ5DYfFc5J3ShZOWB3IZWK4PiZPUjWn4NmAxg2
+         A7uJDUj36uWABvftKGyJ5pMsB5WmJkBVpSHKd7hH36dlTL3zm/2jaVqO8gzJNIWq2HcZ
+         Ue7w==;
         darn=lists.open-mesh.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778833663; x=1779438463;
+        d=gmail.com; s=20251104; t=1778837476; x=1779442276;
  darn=lists.open-mesh.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
-        b=hrP+v5BahxUV5x3zSo9dhKOibSKM4Imni0XdT7HsceZ9ZF3mGzr1Z53YQQeqs3szD1
-         0C2033nydTwSPqTHtVl4vGlZExDjl7E6a+GgcBNsitxDBXbZkpvbk+gZ8JRvJTPDJNrO
-         AAZd1w1LGcHZvPhRmPtctYqQmbdDAm31KTMmMgeoC404dajxhT8SDkLv58ApPTSjgk5N
-         v/+DvJbmtc23rWkdbhaxlNdWt3ZOSFPHSuy4MnP8UMV1E84cEPabyzvNeTp2e+m50S2L
-         cnKKgazOo2dpPKeqUtdIV1L7pN9ZVyPiZYP/AKAbzV7fx9hqbrD8MjM4FU+GJoHqgPFA
-         SvXw==
+        bh=drIb5iX5pGZ7J161OUgFjHSR9Uf5QgPhJcrTERWfRqQ=;
+        b=n88v7MpOlA78utKBYAMN9kBkQmqnBbRUBDoPR4NYQIOtlbs/VOtPNCYpanBpACW5i/
+         2it89kv3XGoroxOCh4Ie4djn7GwUFZmefWCltpzZJSX+TVDo5DiJeofUyaUDryUcRaes
+         yxSb+rPYGGKD6qp1LfoN+4fbsD/rtv58ixn5yYjCYEpwvxmixocZmfj1txYo1Vsx25wR
+         LfV8si+ml4rcdX1bkfd5lRQVNCU7+ko68L0HEyZFbfJhzaP2IhYtGiksIDA6kVaYUq6I
+         qaVGQqWFgKuNAUlnWcZ3kM0661UN7k0Xlnn2KJeEreUe0OUFO1yO3khWQR8dDPv+pzLR
+         nyuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778833663; x=1779438463;
+        d=1e100.net; s=20251104; t=1778837476; x=1779442276;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
-        b=HPIqKihEh/xFj27I3wZ2NHwgMhE2359PtfObdjHzFimLoqCWI2NbkzE+dcaFbA+Hr/
-         xpasetZrqqZcar2fDf4IimesxY6LXubg/0e5hwoNjzsmRH1lVHrroH7rjB62tYIP3p30
-         64Bf/h2MZvpIBujd/jnRfVrfBdPTt6z1ALTwEK1LvUAyo3+yD/BReBxhE49z0gSI1ddV
-         1DSd6Wk4NInqkPNdt60sLMA/NwI8aB6vs9XOA6DeKGNSgX8+zIM0sjZkfgucXMfqzmAT
-         /kQeXeeaB3Oob3tbFK/903TsxexPP5//cO7fENqpBX1liH1ff9FCElmIw4DlXQH0SvBv
-         FyaQ==
-X-Gm-Message-State: AOJu0Yys68jryMs25mCULE1nMXSCARtxF78GEiciH20aCVBafQJJQQgs
-	zdprPqxqam5TUayoGeZSJ6YbVHavaRbT1QXAuqJSreGntiDCt2zSTbLQm6P47IdfpW9ahuPOkzZ
-	ad+MNzXsjbAyrPg4VOKyNxcGtkLAKQDo=
-X-Gm-Gg: Acq92OFTwy4G30e7vNGkcHNacHhJNgQSQoqHOUkk+mLGv7MK8YYYj5VJeSHGxRidEsH
-	b4uhC1buL1Z5Fp/oybT2zFgDVNBWEIK0AxB5mAqOeqYzxBa3VdgIVgrqTKoFTQS13xg3ssX75/6
-	vA3BgQ1o+P16nfOeUsp+6Z+SfKrp7gZHvcYhVz4I4rdoXuZsStmzMzTsz9rbbMeCPZrewvy/cgu
-	JFykUtri/5EPSBZO0u4j8mWAvmDPFz1ae2NFWvmRb6/rsXnDCXGAZ8gr4dN9+rE0+bmqD6eGW3u
-	A+nrA+D6Eel8uluyqa+K6rhC6efumk1pYdc6elg=
-X-Received: by 2002:a05:6214:478e:b0:8ca:f47:25ea with SMTP id
- 6a1803df08f44-8ca0f4fcfb8mr47115646d6.0.1778833663368; Fri, 15 May 2026
- 01:27:43 -0700 (PDT)
+        bh=drIb5iX5pGZ7J161OUgFjHSR9Uf5QgPhJcrTERWfRqQ=;
+        b=H7Lkd8A7hs5C62gSTxf4UrojXZ6edxo0+TFW8+i9xAO5YEHDFXM6MEd03SzTSQ08A1
+         FRb98C466es9We0ndsz8ujCIyvXIyCMRjt3CLDtN9VV1zW20Z7o5Taf6e6rBD7a2yuVO
+         tI+YjlE0LwaGSQzDLfRtEzp2p2WnBJDLbMT7MpSm0EBWhj52H7XOlO8WTFHtRSJzF4uV
+         5/IZucV/LMJuSWsyR06fomiyaixY0MY0RIRQ4pMFK7KpNMsrHvIRhWiOi2pWX38glv5t
+         Wywf+qoSQaczf7p/3zGytyC2/UZ0tXPtpN7BUAlT0th8NPgbsi1Frqela5icwkf/qeMG
+         YMrA==
+X-Gm-Message-State: AOJu0YwamBFb4hDEB1FxlJqyku8MDMabS+bNIN+zJ2LRHKpyj9mYcpE0
+	Mluc+uW4zd5DosIIypwbOGghy889iUjOl1+aUzftZnDgkWAd/HPaDYFPahW9bIexr+rQJg8AOxn
+	s+ZFfWrsadom/7QIqfPDlUeEPQsJUpAQ=
+X-Gm-Gg: Acq92OE51RGMisCTwVk7bt+HV2pStkbjIrdY8zeR5kRswRaMcFieoHMaatHYAL+zsZD
+	CtAkSy4XTLgcAIx3zECdUziViCJCm61VAHq8X57ORVPLkA9zQNMx3UAZcEu3Pc7ObeuuQK7XYtT
+	8fXgJA+qQYX/fbDT0hyQqIFAKqd5a+QRpDZSh06jRWPoYtxi33Xssqt8+07Esl7lui2xonNVYCq
+	g5joVuZ9cQg1XVhq/qeBIG/mTr+uahB7G4JCc6RzQOisvcYuh+3hzdfv9LRhQ/WKKQtrljQNB5g
+	MfiAR1s3Hlvx2mraH1nlixFC5eSXfUTkzVUyj80=
+X-Received: by 2002:a05:622a:130a:b0:50d:a301:2fc0 with SMTP id
+ d75a77b69052e-5165a077858mr42815841cf.26.1778837476404; Fri, 15 May 2026
+ 02:31:16 -0700 (PDT)
 MIME-Version: 1.0
 References: <20260513-yuantan098-bugfixes-v2-0-863e9caa2a57@narfation.org>
- <20260513-yuantan098-bugfixes-v2-3-863e9caa2a57@narfation.org>
-In-Reply-To: <20260513-yuantan098-bugfixes-v2-3-863e9caa2a57@narfation.org>
+ <20260513-yuantan098-bugfixes-v2-5-863e9caa2a57@narfation.org>
+In-Reply-To: <20260513-yuantan098-bugfixes-v2-5-863e9caa2a57@narfation.org>
 From: Yuan Tan <yuantan098@gmail.com>
-Date: Fri, 15 May 2026 01:27:32 -0700
-X-Gm-Features: AVHnY4L-jlZwmfq7Tu_QdGkxqKXB6IKN5KXaDYTfI3al6Vuo0u4dHF3vb4AAX_s
+Date: Fri, 15 May 2026 02:31:00 -0700
+X-Gm-Features: AVHnY4L-xzaQcxvCpWWjH56EKRXIIOj1Lj_HAOe5co45NBRDzSBQMWmEUu1q62Y
 Message-ID: 
- <CAPuPA7LKCUnBWWrGAg7T2cgnuzp3pcRveQeXg5Vxcxi00oZs7w@mail.gmail.com>
-Subject: Re: [PATCH batadv v2 3/5] batman-adv: frag: disallow unicast fragment
- in fragment
+ <CAPuPA7KEnOyK1cs1T=pQo7fye2TeMPZZw_pBiMCpJoQ4eXAE5g@mail.gmail.com>
+Subject: Re: [PATCH batadv v2 5/5] batman-adv: v: stop OGMv2 on disabled
+ interface
 To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org,
 	Yifan Wu <yifanwucs@gmail.com>, Juefei Pu <tomapufckgml@gmail.com>,
@@ -144,15 +144,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: 7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V
-X-Message-ID-Hash: 7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V
+Message-ID-Hash: YFSBGAVC6QZNUSWVWEAWUA5LF3VCM4XL
+X-Message-ID-Hash: YFSBGAVC6QZNUSWVWEAWUA5LF3VCM4XL
 X-Mailman-Approved-At: Fri, 15 May 2026 11:41:18 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/YFSBGAVC6QZNUSWVWEAWUA5LF3VCM4XL/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -164,89 +164,160 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 On Wed, May 13, 2026 at 12:01=E2=80=AFAM Sven Eckelmann <sven@narfation.org=
 > wrote:
 >
-> batadv_frag_skb_buffer() is called by batadv_batman_skb_recv() when a
-> BATADV_UNICAST_FRAG packet is received. Once all fragments are collected
-> and the packet is reassembled, batadv_recv_frag_packet() calls
-> batadv_batman_skb_recv() again to process the defragmented payload.
+> When a batadv_hard_iface is disabled, its mesh_iface pointer is set to
+> NULL. However, batadv_v_ogm_send_meshif() may still dispatch OGMs via
+> batadv_v_ogm_queue_on_if() for interfaces that have since lost their
+> mesh_iface association. This results in a NULL pointer dereference when
+> batadv_v_ogm_queue_on_if() unconditionally calls netdev_priv() on the
+> now NULL hard_iface->mesh_iface to retrieve the batadv_priv.
 >
-> A malicious sender can craft a BATADV_UNICAST_FRAG packet whose reassembl=
-ed
-> payload is itself a BATADV_UNICAST_FRAG packet (matryoshka-style nesting)=
-.
-> Each nesting level recurses through batadv_batman_skb_recv() without boun=
-d,
-> growing the kernel stack until it is exhausted.
->
-> Since refragmentation or fragments in fragments are not actually allowed,
-> discard all packets which are still BATADV_UNICAST_FRAG packets after the
-> defragmentation process.
+> It is necessary to ensure that the batadv_v_ogm_queue_on_if() checks that
+> it is using the same mesh_iface for which batadv_v_ogm_send_meshif() was
+> called.
 >
 > Cc: stable@kernel.org
-> Fixes: 610bfc6bc99b ("batman-adv: Receive fragmented packets and merge")
+> Fixes: 0da0035942d4 ("batman-adv: OGMv2 - add basic infrastructure")
 > Reported-by: Yuan Tan <yuantan098@gmail.com>
 > Reported-by: Yifan Wu <yifanwucs@gmail.com>
 > Reported-by: Juefei Pu <tomapufckgml@gmail.com>
 > Reported-by: Xin Liu <bird@lzu.edu.cn>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/fragmentation.c | 35 +++++++++++++++++++++++++++++++++++
->  1 file changed, 35 insertions(+)
+>  net/batman-adv/bat_v_ogm.c | 39 +++++++++++++++++++++++++++------------
+>  1 file changed, 27 insertions(+), 12 deletions(-)
 >
-> diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentatio=
-n.c
-> index f4e45cc2..42f3d4ee 100644
-> --- a/net/batman-adv/fragmentation.c
-> +++ b/net/batman-adv/fragmentation.c
-> @@ -293,6 +293,31 @@ batadv_frag_merge_packets(struct hlist_head *chain)
->         return skb_out;
+> diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+> index e3870492..0643a723 100644
+> --- a/net/batman-adv/bat_v_ogm.c
+> +++ b/net/batman-adv/bat_v_ogm.c
+> @@ -113,14 +113,14 @@ static void batadv_v_ogm_start_timer(struct batadv_=
+priv *bat_priv)
+>
+>  /**
+>   * batadv_v_ogm_send_to_if() - send a batman ogm using a given interface
+> + * @bat_priv: the bat priv with all the mesh interface information
+>   * @skb: the OGM to send
+>   * @hard_iface: the interface to use to send the OGM
+>   */
+> -static void batadv_v_ogm_send_to_if(struct sk_buff *skb,
+> +static void batadv_v_ogm_send_to_if(struct batadv_priv *bat_priv,
+> +                                   struct sk_buff *skb,
+>                                     struct batadv_hard_iface *hard_iface)
+>  {
+> -       struct batadv_priv *bat_priv =3D netdev_priv(hard_iface->mesh_ifa=
+ce);
+> -
+>         if (hard_iface->if_status !=3D BATADV_IF_ACTIVE) {
+>                 kfree_skb(skb);
+>                 return;
+> @@ -187,6 +187,7 @@ static void batadv_v_ogm_aggr_list_free(struct batadv=
+_hard_iface *hard_iface)
+>
+>  /**
+>   * batadv_v_ogm_aggr_send() - flush & send aggregation queue
+> + * @bat_priv: the bat priv with all the mesh interface information
+>   * @hard_iface: the interface with the aggregation queue to flush
+>   *
+>   * Aggregates all OGMv2 packets currently in the aggregation queue into =
+a
+> @@ -196,7 +197,8 @@ static void batadv_v_ogm_aggr_list_free(struct batadv=
+_hard_iface *hard_iface)
+>   *
+>   * Caller needs to hold the hard_iface->bat_v.aggr_list.lock.
+>   */
+> -static void batadv_v_ogm_aggr_send(struct batadv_hard_iface *hard_iface)
+> +static void batadv_v_ogm_aggr_send(struct batadv_priv *bat_priv,
+> +                                  struct batadv_hard_iface *hard_iface)
+>  {
+>         unsigned int aggr_len =3D hard_iface->bat_v.aggr_len;
+>         struct sk_buff *skb_aggr;
+> @@ -226,27 +228,32 @@ static void batadv_v_ogm_aggr_send(struct batadv_ha=
+rd_iface *hard_iface)
+>                 consume_skb(skb);
+>         }
+>
+> -       batadv_v_ogm_send_to_if(skb_aggr, hard_iface);
+> +       batadv_v_ogm_send_to_if(bat_priv, skb_aggr, hard_iface);
 >  }
 >
-> +/**
-> + * batadv_skb_is_frag() - check if newly merged skb is gain a unicast pa=
-cket
-> + * @skb: newly merged skb
-> + *
-> + * Return: if newly skb is of type BATADV_UNICAST_FRAG
-> + */
-> +static bool batadv_skb_is_frag(struct sk_buff *skb)
-> +{
-> +       struct batadv_ogm_packet *batadv_ogm_packet;
-> +
-> +       /* packet should hold at least type and version */
-> +       if (unlikely(!pskb_may_pull(skb, 2)))
-> +               return false;
-> +
-> +       batadv_ogm_packet =3D (struct batadv_ogm_packet *)skb->data;
-> +
-> +       if (batadv_ogm_packet->version !=3D BATADV_COMPAT_VERSION)
-> +               return false;
-> +
-> +       if (batadv_ogm_packet->packet_type !=3D BATADV_UNICAST_FRAG)
-> +               return false;
-> +
-> +       return true;
-> +}
-> +
 >  /**
->   * batadv_frag_skb_buffer() - buffer fragment for later merge
->   * @skb: skb to buffer
-> @@ -326,6 +351,16 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
->         if (!skb_out)
->                 goto out_err;
->
-> +       /* fragment in fragment is not allowed. otherwise it is possible
-> +        * to exhaust the stack when receiving a matryoshka-style
-> +        * "fragments in a fragment packet"
-> +        */
-> +       if (batadv_skb_is_frag(skb_out)) {
-> +               kfree_skb(skb_out);
-> +               skb_out =3D NULL;
-> +               goto out_err;
+>   * batadv_v_ogm_queue_on_if() - queue a batman ogm on a given interface
+> + * @bat_priv: the bat priv with all the mesh interface information
+>   * @skb: the OGM to queue
+>   * @hard_iface: the interface to queue the OGM on
+>   */
+> -static void batadv_v_ogm_queue_on_if(struct sk_buff *skb,
+> +static void batadv_v_ogm_queue_on_if(struct batadv_priv *bat_priv,
+> +                                    struct sk_buff *skb,
+>                                      struct batadv_hard_iface *hard_iface=
+)
+>  {
+> -       struct batadv_priv *bat_priv =3D netdev_priv(hard_iface->mesh_ifa=
+ce);
+> +       if (hard_iface->mesh_iface !=3D bat_priv->mesh_iface) {
+> +               kfree_skb(skb);
+> +               return;
 > +       }
+>
+>         if (!atomic_read(&bat_priv->aggregated_ogms)) {
+> -               batadv_v_ogm_send_to_if(skb, hard_iface);
+> +               batadv_v_ogm_send_to_if(bat_priv, skb, hard_iface);
+>                 return;
+>         }
+>
+>         spin_lock_bh(&hard_iface->bat_v.aggr_list.lock);
+>         if (!batadv_v_ogm_queue_left(skb, hard_iface))
+> -               batadv_v_ogm_aggr_send(hard_iface);
+> +               batadv_v_ogm_aggr_send(bat_priv, hard_iface);
+>
+>         hard_iface->bat_v.aggr_len +=3D batadv_v_ogm_len(skb);
+>         __skb_queue_tail(&hard_iface->bat_v.aggr_list, skb);
+> @@ -343,7 +350,7 @@ static void batadv_v_ogm_send_meshif(struct batadv_pr=
+iv *bat_priv)
+>                         break;
+>                 }
+>
+> -               batadv_v_ogm_queue_on_if(skb_tmp, hard_iface);
+> +               batadv_v_ogm_queue_on_if(bat_priv, skb_tmp, hard_iface);
+>                 batadv_hardif_put(hard_iface);
+>         }
+>         rcu_read_unlock();
+> @@ -383,12 +390,20 @@ void batadv_v_ogm_aggr_work(struct work_struct *wor=
+k)
+>  {
+>         struct batadv_hard_iface_bat_v *batv;
+>         struct batadv_hard_iface *hard_iface;
+> +       struct batadv_priv *bat_priv;
+> +       struct net_device *meshif;
+>
+>         batv =3D container_of(work, struct batadv_hard_iface_bat_v, aggr_=
+wq.work);
+>         hard_iface =3D container_of(batv, struct batadv_hard_iface, bat_v=
+);
+> +       meshif =3D hard_iface->mesh_iface;
 > +
+> +       if (!meshif)
+> +               return;
+> +
+> +       bat_priv =3D netdev_priv(meshif);
+>
+>         spin_lock_bh(&hard_iface->bat_v.aggr_list.lock);
+> -       batadv_v_ogm_aggr_send(hard_iface);
+> +       batadv_v_ogm_aggr_send(bat_priv, hard_iface);
+>         spin_unlock_bh(&hard_iface->bat_v.aggr_list.lock);
+>
+>         batadv_v_ogm_start_queue_timer(hard_iface);
+> @@ -578,7 +593,7 @@ static void batadv_v_ogm_forward(struct batadv_priv *=
+bat_priv,
+>                    if_outgoing->net_dev->name, ntohl(ogm_forward->through=
+put),
+>                    ogm_forward->ttl, if_incoming->net_dev->name);
+>
+> -       batadv_v_ogm_queue_on_if(skb, if_outgoing);
+> +       batadv_v_ogm_queue_on_if(bat_priv, skb, if_outgoing);
+>
 >  out:
->         ret =3D true;
->  out_err:
+>         batadv_orig_ifinfo_put(orig_ifinfo);
 >
 > --
 > 2.47.3
