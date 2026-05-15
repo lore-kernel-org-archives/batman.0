@@ -4,106 +4,155 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7883FCD4851
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 09:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6D8CCD343F
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 09:41:42 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B810E853A9
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 11:38:50 +0200 (CEST)
-ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778837930;
- b=a96LXV/FO2EmGsxm1Z7tResP1Ev8bV2LrpRcpdIlI+rj/xv/J3B/1p/fE2qT4MAdCHAkp
- 8AVM4/CBCNDdqJZ/9tBABm1dEWCnQDs7Ok4S5bsvq/7bY9Xxz5y7jGj9Qxkn5xspuH3ceLy
- f12WTt2n0dX4RQf0/rBJ6EalJHMwtuA=
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778837930; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 40E958561E
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 11:41:41 +0200 (CEST)
+ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1778838101;
+ b=R3pjOCt0ea2+He2jEWTTg09D24MPCNx6K4+G7RF+HDYS8msIHuW3++vLGvmMtRbrROR7D
+ rRpinwd9R0AF21Fh9NJIJFjb9nBfvAp0PEuC8x8FZYNVFUKMQtPRG2BDuPQ5yi5+tOmgmuP
+ yjAF0z561ia9ueqkSJvosJkT729wSdE=
+ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1778838101; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=KesFVBbFBdTXG1cYhGPrecWznk4odX3vlkrvcWA4D7g=;
- b=3RpTtEbnWaRtJ1ThhzDYtrelpQxmZaYJoQDiXVspzmX7KKDxID02z41excYnoDr3XRtb9
- 6TJl0DlzAzg6tGR0CZl6sKvvYnLOL0d1+Sfk6MWbIITG5hPiovNfO6CDcSa4Rdk/Gjnwl1J
- hH3np5AfukeXd+1CD3NOGzpaZRK7FVk=
-ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ list-archive; bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+ b=JE1hx9VbXopxJRhjE1+ZFrH/NwRKOJ+PIHuxB+eOQ5IiXNnDC9+lb49o45OKJ3w9DAGcg
+ sEZs85ahckVyhDqF6KGNLep0B9iG1SrWsp2ivMW8Yvrm8AnSvDfK126OKDoVKtHmBZfYduB
+ 4YYLqwzxRXliOEC7QT5H3k1/JecjVvQ=
+ARC-Authentication-Results: i=3; open-mesh.org;
+ dkim=pass header.d=gmail.com;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0D58D84A9F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 11:38:17 +0200 (CEST)
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778837908;
+ dmarc=pass header.from=gmail.com policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=gmail.com
+ policy.dmarc=quarantine
+Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com
+ [IPv6:2607:f8b0:4864:20::f2e])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3FC66849F2
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 10:27:44 +0200 (CEST)
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1778833675;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=KesFVBbFBdTXG1cYhGPrecWznk4odX3vlkrvcWA4D7g=;
-	b=TqTezRkFpGWP/ixUvS8Iu2mE51nTEbAtxvAn7KP5rAI9DaEaKJbzmuC6wiT0Z2iJFtkCV4
-	MIitDy7uAiBGwerk4K5ngB36eW5Hymp7FYpxC6cdnfaSwUdBzsJb2dm8T8oVYOINuHkFR7
-	ZhyIOcY5f2ejZkdbHOGnI1YKnmftt5E=
-ARC-Authentication-Results: i=1;
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+	b=twpAkmWdrFRVxZuYpb6qya07djoA0CsoSifbvpwa+cMLQuUhu9rAZ0ccKDLDN8C7ccnQmu
+	Lsbwu3XOCmmah1YkFgx8AqiSDRE5VCi1eaSw4F0sytSlOOoVrnYB05OcvX4XXyKj5WlsvY
+	ax9wGVVLCnNCRX90lVO1NdPf7zllaTA=
+ARC-Authentication-Results: i=2;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=2QJz83sK;
-	dmarc=pass (policy=none) header.from=narfation.org;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778837908;
-	b=yLgB3HPbe/KUAYhGgtuLvR4NOrpmHwNpC4namwL8gGj/FCk0pXfiXZF0n4e2NKy4c+zqu1
-	RP3kJYfcQl59eLM3pYals9S8G08XkdwXG4NQ+5z9VA0EVDtX3zYxLQnU2DflDgMa4Kaf1J
-	pftulSjd9UuVdnE7QYz/kqol4t1qP4A=
-Received: by dvalin.narfation.org (Postfix) id 24ECE21550;
-	Fri, 15 May 2026 09:38:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1778837896;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=KesFVBbFBdTXG1cYhGPrecWznk4odX3vlkrvcWA4D7g=;
-	b=2QJz83sK3AW+pJ5iDrJ3Fb7tzT3Desk9ykS6wWHL3fd6K0r8ON5//q6bog5Hl5CnVAGiyj
-	hVlziEAcI3Pi705tIk6idZUiUWGDwugIkXY0tOi3/500RuihmSs/ozCP4rahnj5pCqPR/M
-	6Edq0RGTIs69QQ2HT1nOR4RdIHKHfHI=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 May 2026 11:38:08 +0200
-Subject: [PATCH] batctl: don't stop on missing batman-adv version file
+	dkim=pass header.d=gmail.com header.s=20251104 header.b=hrP+v5Ba;
+	dmarc=pass (policy=none) header.from=gmail.com;
+	spf=pass (diktynna.open-mesh.org: domain of yuantan098@gmail.com designates
+ 2607:f8b0:4864:20::f2e as permitted sender)
+ smtp.mailfrom=yuantan098@gmail.com;
+	arc=pass ("google.com:s=arc-20240605:i=1")
+ARC-Seal: i=2; a=rsa-sha256; d=open-mesh.org; s=20121; cv=pass; t=1778833675;
+	b=VmKRZDvyMXVkbo1HunY0b/SEaiekRqC7PQD70Jno4pKEOoSd0hRxrEy+7q4DJr/U0utTIk
+	OgsLJyIQ0XKQ2WLImZ1mBZUdVO/bZ2g3nMKv2fVtvIfJEV40VtpgIhssDJLqqvrq58P7fc
+	lrRtFWNghEP5+G57WMth5owU3KLCDoM=
+Received: by mail-qv1-xf2e.google.com with SMTP id
+ 6a1803df08f44-8b6dd874471so116220176d6.0
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Fri, 15 May 2026 01:27:44 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778833663; cv=none;
+        d=google.com; s=arc-20240605;
+        b=E4Jwwzakh6jqU3EUu8lCldXIXJ8cFBhD9ughWKKyb1V+tFq3zvDt9L2U4ydcAhoC33
+         GqC5c2JaIS8j/G80pU2lXytx8wyEqcV+VP145EHxI1pXU62F7VGmJ+r7nRCkSJeLW3yd
+         vbbQW6owor0/7A5hgZL8C036WLAQjpzJZI8umsCfwZsR1sF4dvKO0KABr2e3DgGTSILf
+         DawqC16m4AEP5uApECbmNCUTBEbJIM+f9YcRYX7O5uuGr9Z2/xZyBVvJQNhGmXBA6sji
+         /0Hk1VbqvyfdPD/sMEaycQJhNFsAxjISL/FA5eDthlH20pf1lArgzGL/aksDrz9dykv/
+         Fsrw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+        fh=fGpATJGdA5gBFxywIcayagIpQImFJ7uNKXfLW6dnd4U=;
+        b=X2+ntLWws67J48tnte1WQHV4lEkCy8sxhvE4Wgs78rsgJ/9sPY999JpZ7KGun3wBk7
+         nwKBwj5NQ57NqlRyX3TXuRK/A269pVtql67JNlyACo6rofGLdcqvBtNvmk9m0ovqxCux
+         cbMC7Qom55CDppv2nCzM7MzjMryg3TbXJcDBkkT4MDZm0Krtx0+P5KjwCmnoc+T73g/p
+         alqb9zLl33PS1EotZsZxIaU8khOJxhizLgZjA0Xclyr4ThF9daRn5uTSu/Z9pdRHB8ZD
+         v2v9nts1aH2i8QaPKlP9fP9HMq2nH5WIQKS4DQjM5hzcHSjwfBL6SP6NZI7rwfdVgOUP
+         Qzlg==;
+        darn=lists.open-mesh.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778833663; x=1779438463;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+        b=hrP+v5BahxUV5x3zSo9dhKOibSKM4Imni0XdT7HsceZ9ZF3mGzr1Z53YQQeqs3szD1
+         0C2033nydTwSPqTHtVl4vGlZExDjl7E6a+GgcBNsitxDBXbZkpvbk+gZ8JRvJTPDJNrO
+         AAZd1w1LGcHZvPhRmPtctYqQmbdDAm31KTMmMgeoC404dajxhT8SDkLv58ApPTSjgk5N
+         v/+DvJbmtc23rWkdbhaxlNdWt3ZOSFPHSuy4MnP8UMV1E84cEPabyzvNeTp2e+m50S2L
+         cnKKgazOo2dpPKeqUtdIV1L7pN9ZVyPiZYP/AKAbzV7fx9hqbrD8MjM4FU+GJoHqgPFA
+         SvXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778833663; x=1779438463;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=eTW3edd0iz7itkPvnlatci8goZhgBs5rERZ7V0Ca1W8=;
+        b=HPIqKihEh/xFj27I3wZ2NHwgMhE2359PtfObdjHzFimLoqCWI2NbkzE+dcaFbA+Hr/
+         xpasetZrqqZcar2fDf4IimesxY6LXubg/0e5hwoNjzsmRH1lVHrroH7rjB62tYIP3p30
+         64Bf/h2MZvpIBujd/jnRfVrfBdPTt6z1ALTwEK1LvUAyo3+yD/BReBxhE49z0gSI1ddV
+         1DSd6Wk4NInqkPNdt60sLMA/NwI8aB6vs9XOA6DeKGNSgX8+zIM0sjZkfgucXMfqzmAT
+         /kQeXeeaB3Oob3tbFK/903TsxexPP5//cO7fENqpBX1liH1ff9FCElmIw4DlXQH0SvBv
+         FyaQ==
+X-Gm-Message-State: AOJu0Yys68jryMs25mCULE1nMXSCARtxF78GEiciH20aCVBafQJJQQgs
+	zdprPqxqam5TUayoGeZSJ6YbVHavaRbT1QXAuqJSreGntiDCt2zSTbLQm6P47IdfpW9ahuPOkzZ
+	ad+MNzXsjbAyrPg4VOKyNxcGtkLAKQDo=
+X-Gm-Gg: Acq92OFTwy4G30e7vNGkcHNacHhJNgQSQoqHOUkk+mLGv7MK8YYYj5VJeSHGxRidEsH
+	b4uhC1buL1Z5Fp/oybT2zFgDVNBWEIK0AxB5mAqOeqYzxBa3VdgIVgrqTKoFTQS13xg3ssX75/6
+	vA3BgQ1o+P16nfOeUsp+6Z+SfKrp7gZHvcYhVz4I4rdoXuZsStmzMzTsz9rbbMeCPZrewvy/cgu
+	JFykUtri/5EPSBZO0u4j8mWAvmDPFz1ae2NFWvmRb6/rsXnDCXGAZ8gr4dN9+rE0+bmqD6eGW3u
+	A+nrA+D6Eel8uluyqa+K6rhC6efumk1pYdc6elg=
+X-Received: by 2002:a05:6214:478e:b0:8ca:f47:25ea with SMTP id
+ 6a1803df08f44-8ca0f4fcfb8mr47115646d6.0.1778833663368; Fri, 15 May 2026
+ 01:27:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260515-no-version-file-check-v1-1-21c3dd60e4dc@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAH/pBmoC/yXMUQ6CMBCE4auQfXaTApZGr2J4gHUKq6aYVokJ4
- e4UefySmX+hhKhIdC0Wipg16RQyylNBMnZhAOs9mypTNcaWlsPEM+I+Y68vsIyQJztve3dxcq6
- NUP6+I7z+/t1bezh9+wfks8doXTeQC8preQAAAA==
-X-Change-ID: 20260515-no-version-file-check-7f5b797c430c
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4069; i=sven@narfation.org;
- h=from:subject:message-id; bh=WPQsqBr2OgOdD9AhAf1pbUX6+Ns/lzug696ikdd1yT0=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlsL1uyLx36qfHtnfjF3FPCllcv1YY7ykYtP3P2apjJs
- ZsPrNbFdpSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAmoq/AyHDjRuKnO6f4jQ7s
- 3nOk49aZJpNlNhuenX/0dj+j9Om0SWXXGBkudExjtFU8W3l6b/XVPa33/Dl733rZbTE5Ov1O8Mp
- V/+5wAQA=
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: F53HY5YWWH34E2KWSY35SV72CNYZV2BD
-X-Message-ID-Hash: F53HY5YWWH34E2KWSY35SV72CNYZV2BD
-X-MailFrom: sven@narfation.org
+References: <20260513-yuantan098-bugfixes-v2-0-863e9caa2a57@narfation.org>
+ <20260513-yuantan098-bugfixes-v2-3-863e9caa2a57@narfation.org>
+In-Reply-To: <20260513-yuantan098-bugfixes-v2-3-863e9caa2a57@narfation.org>
+From: Yuan Tan <yuantan098@gmail.com>
+Date: Fri, 15 May 2026 01:27:32 -0700
+X-Gm-Features: AVHnY4L-jlZwmfq7Tu_QdGkxqKXB6IKN5KXaDYTfI3al6Vuo0u4dHF3vb4AAX_s
+Message-ID: 
+ <CAPuPA7LKCUnBWWrGAg7T2cgnuzp3pcRveQeXg5Vxcxi00oZs7w@mail.gmail.com>
+Subject: Re: [PATCH batadv v2 3/5] batman-adv: frag: disallow unicast fragment
+ in fragment
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org,
+	Yifan Wu <yifanwucs@gmail.com>, Juefei Pu <tomapufckgml@gmail.com>,
+ Xin Liu <bird@lzu.edu.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-MailFrom: yuantan098@gmail.com
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: 7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V
+X-Message-ID-Hash: 7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V
+X-Mailman-Approved-At: Fri, 15 May 2026 11:41:18 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/F53HY5YWWH34E2KWSY35SV72CNYZV2BD/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7NPGMCMY6DSJW5TK3KL3N3EM7XRZTK5V/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,135 +161,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The system doesn't have to expose the /sys/module/batman_adv/version to the
-userspace. This can either happen because:
+On Wed, May 13, 2026 at 12:01=E2=80=AFAM Sven Eckelmann <sven@narfation.org=
+> wrote:
+>
+> batadv_frag_skb_buffer() is called by batadv_batman_skb_recv() when a
+> BATADV_UNICAST_FRAG packet is received. Once all fragments are collected
+> and the packet is reassembled, batadv_recv_frag_packet() calls
+> batadv_batman_skb_recv() again to process the defragmented payload.
+>
+> A malicious sender can craft a BATADV_UNICAST_FRAG packet whose reassembl=
+ed
+> payload is itself a BATADV_UNICAST_FRAG packet (matryoshka-style nesting)=
+.
+> Each nesting level recurses through batadv_batman_skb_recv() without boun=
+d,
+> growing the kernel stack until it is exhausted.
+>
+> Since refragmentation or fragments in fragments are not actually allowed,
+> discard all packets which are still BATADV_UNICAST_FRAG packets after the
+> defragmentation process.
+>
+> Cc: stable@kernel.org
+> Fixes: 610bfc6bc99b ("batman-adv: Receive fragmented packets and merge")
+> Reported-by: Yuan Tan <yuantan098@gmail.com>
+> Reported-by: Yifan Wu <yifanwucs@gmail.com>
+> Reported-by: Juefei Pu <tomapufckgml@gmail.com>
+> Reported-by: Xin Liu <bird@lzu.edu.cn>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  net/batman-adv/fragmentation.c | 35 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>
+> diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentatio=
+n.c
+> index f4e45cc2..42f3d4ee 100644
+> --- a/net/batman-adv/fragmentation.c
+> +++ b/net/batman-adv/fragmentation.c
+> @@ -293,6 +293,31 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+>         return skb_out;
+>  }
+>
+> +/**
+> + * batadv_skb_is_frag() - check if newly merged skb is gain a unicast pa=
+cket
+> + * @skb: newly merged skb
+> + *
+> + * Return: if newly skb is of type BATADV_UNICAST_FRAG
+> + */
+> +static bool batadv_skb_is_frag(struct sk_buff *skb)
+> +{
+> +       struct batadv_ogm_packet *batadv_ogm_packet;
+> +
+> +       /* packet should hold at least type and version */
+> +       if (unlikely(!pskb_may_pull(skb, 2)))
+> +               return false;
+> +
+> +       batadv_ogm_packet =3D (struct batadv_ogm_packet *)skb->data;
+> +
+> +       if (batadv_ogm_packet->version !=3D BATADV_COMPAT_VERSION)
+> +               return false;
+> +
+> +       if (batadv_ogm_packet->packet_type !=3D BATADV_UNICAST_FRAG)
+> +               return false;
+> +
+> +       return true;
+> +}
+> +
+>  /**
+>   * batadv_frag_skb_buffer() - buffer fragment for later merge
+>   * @skb: skb to buffer
+> @@ -326,6 +351,16 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+>         if (!skb_out)
+>                 goto out_err;
+>
+> +       /* fragment in fragment is not allowed. otherwise it is possible
+> +        * to exhaust the stack when receiving a matryoshka-style
+> +        * "fragments in a fragment packet"
+> +        */
+> +       if (batadv_skb_is_frag(skb_out)) {
+> +               kfree_skb(skb_out);
+> +               skb_out =3D NULL;
+> +               goto out_err;
+> +       }
+> +
+>  out:
+>         ret =3D true;
+>  out_err:
+>
+> --
+> 2.47.3
+>
 
-* batman-adv was not loaded
-* container doesn't expose the root namespace's /sys/modules
-* distribution (like OpenWrt with `CONFIG_MODULE_STRIPPED`) decided to
-  strip out this information and therefore the file
-* kernel removed the version support at all
-* ...
-
-The check does therefore more harm and is not helping a lot to identify the
-a missing batman-adv kernel module.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- functions.c | 12 ------------
- functions.h |  1 -
- interface.c | 11 -----------
- main.c      |  4 ++--
- main.h      |  2 --
- 5 files changed, 2 insertions(+), 28 deletions(-)
-
-diff --git a/functions.c b/functions.c
-index f7a3080..771b065 100644
---- a/functions.c
-+++ b/functions.c
-@@ -110,20 +110,8 @@ char *get_name_by_macstr(char *mac_str, int read_opt)
- 	return get_name_by_macaddr(mac_addr, read_opt);
- }
- 
--int file_exists(const char *fpath)
--{
--	struct stat st;
--
--	return stat(fpath, &st) == 0;
--}
--
- static void file_open_problem_dbg(const char *full_path)
- {
--	if (!file_exists(module_ver_path)) {
--		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
--		return;
--	}
--
- 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
- 	fprintf(stderr,
- 		"The option you called seems not to be compiled into your batman-adv kernel module.\n");
-diff --git a/functions.h b/functions.h
-index 33b57da..c2ce1b8 100644
---- a/functions.h
-+++ b/functions.h
-@@ -42,7 +42,6 @@ double end_timer(void);
- char *ether_ntoa_long(const struct ether_addr *addr);
- char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
- char *get_name_by_macstr(char *mac_str, int read_opt);
--int file_exists(const char *fpath);
- int read_file(const char *full_path, int read_opt);
- struct ether_addr *translate_mac(struct state *state,
- 				 const struct ether_addr *mac);
-diff --git a/interface.c b/interface.c
-index dfe5ad4..dc77ad4 100644
---- a/interface.c
-+++ b/interface.c
-@@ -154,11 +154,6 @@ static int print_interfaces(struct state *state)
- {
- 	int ret;
- 
--	if (!file_exists(module_ver_path)) {
--		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
--		return EXIT_FAILURE;
--	}
--
- 	/* duplicated code here from the main() because interface doesn't always
- 	 * need COMMAND_FLAG_MESH_IFACE and COMMAND_FLAG_NETLINK
- 	 */
-@@ -524,12 +519,6 @@ static int interface(struct state *state, int argc, char **argv)
- 		goto err;
- 	}
- 
--	/* make sure that batman-adv is loaded or was loaded by create_interface */
--	if (!file_exists(module_ver_path)) {
--		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
--		goto err;
--	}
--
- 	pre_cnt = count_interfaces(state->mesh_iface);
- 
- 	for (i = 1; i < rest_argc; i++) {
-diff --git a/main.c b/main.c
-index 9516dee..921b3af 100644
---- a/main.c
-+++ b/main.c
-@@ -20,7 +20,7 @@
- #include "netlink.h"
- 
- char mesh_dfl_iface[] = "bat0";
--char module_ver_path[] = "/sys/module/batman_adv/version";
-+static const char module_ver_path[] = "/sys/module/batman_adv/version";
- 
- extern const struct command *__start___command[];
- extern const struct command *__stop___command[];
-@@ -138,7 +138,7 @@ static void version(void)
- 	if (ret == EXIT_SUCCESS)
- 		printf("%s]\n", line_ptr);
- 	else
--		printf("module not loaded]\n");
-+		printf("module version unknown]\n");
- 
- 	free(line_ptr);
- 	exit(EXIT_SUCCESS);
-diff --git a/main.h b/main.h
-index bbac4c2..e6a08d3 100644
---- a/main.h
-+++ b/main.h
-@@ -33,8 +33,6 @@
- #define __maybe_unused __attribute__((unused))
- #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
- 
--extern char module_ver_path[];
--
- #ifndef VLAN_VID_MASK
- #define VLAN_VID_MASK   0xfff
- #endif
-
----
-base-commit: a77a273d30a2fff8027e0b2382b4759740435f8c
-change-id: 20260515-no-version-file-check-7f5b797c430c
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
-
+Reviewed-by: Yuan Tan <yuantan098@gmail.com>
