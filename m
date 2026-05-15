@@ -4,155 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C363CD343F
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 10:08:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3D0CCD343F
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 12:05:57 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 9418B85A61
-	for <batman@archiver.kernel.org>; Fri, 15 May 2026 12:08:48 +0200 (CEST)
-ARC-Seal: i=3; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1778839728;
- b=GDsvvBh+LAk/o89dZVWp6AS1mV2WOUlOrLejt9JpttcKKl78c7RnCqNrNCd4BYPEX+XwY
- l3HoBxhS3VMo7tcE+7yyZigM8pMxizo1pgozs4JJXWIFu8JpwLjUPySOt2vjwiYEwlEc3Ay
- UNcPPi6lbPRcR7vYYh0sn+HqD5v20D8=
-ARC-Message-Signature: i=3; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1778839728; h=from : sender : reply-to :
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 05C8085BA2
+	for <batman@archiver.kernel.org>; Fri, 15 May 2026 14:05:56 +0200 (CEST)
+ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
+ t=1778846756;
+ b=mLpcclvb1LEzfpLBh4TzbrXuMrmm7DskqWEpr8VqyGEd9UROcbqlcRpgU2hFprPuIMduX
+ veya8cUBdSEHdpKXFOCKaHzr587BgocxDcH0UQRkKkt4RuTojVTXCCjaKGWHvHmLjDXrgD9
+ 8XGVHsoaaKt0fYVzpWhAxP6IXbVK90w=
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
+ d=open-mesh.org; s=20121; t=1778846756; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=5EElz+2jxl13VfEl6Ul4cSmF0KTR6hyaxEnjiNXlNlE=;
- b=zbqU9pZ7mxUx4Odg5vGHpy8Evw/MyhqMGgkpX+/H9YVoOO2EnqtlQOoNCGP8g2wWRx4+8
- h+P+qRNjlsl8VFeR2l+f04z76LrCwDqUml8PxO+L9DScaJoMr+90qaWTEfPLnEv4sJFRqPO
- +pviND+JIc0d+qETYaGsj/sblQpEthA=
-ARC-Authentication-Results: i=3; open-mesh.org;
- dkim=pass header.d=gmail.com;
+ list-archive; bh=0yOQzcwBovUCFTj5r+vnA2KGDV0IVDWP8Uv8obelYFU=;
+ b=fhhlGdh52BYY2PkPf5m9KJOA9W6WnOdobkuU9InxXsT/BX8Y4XIYSd3pJV586/76b6bHm
+ nB8QCFcCEuAgsgkSOICFkKVuMTegIvKcnu4nagRqNaqHdQDr6CWfNAozibix4hZotw9fFOY
+ uazV7W7qUgFYV8aty0WzyKrHK/TyirA=
+ARC-Authentication-Results: i=2; open-mesh.org;
+ dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass header.from=gmail.com policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=gmail.com; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=gmail.com
- policy.dmarc=quarantine
-Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com
- [IPv6:2607:f8b0:4864:20::830])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 5678484264
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 11:54:39 +0200 (CEST)
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1778838889;
+ dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4052D8430A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 15 May 2026 14:05:31 +0200 (CEST)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
+	s=20121; t=1778846731;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=5EElz+2jxl13VfEl6Ul4cSmF0KTR6hyaxEnjiNXlNlE=;
-	b=om+NCngddXC30DDSaAOd+4jmcdKFDVBaHVhmVmzmK4iv9sX7NdA23bvCFQZuhyZ0x3TEzJ
-	Y8RehglDbYK61Qyr82JGZT3UY39SRKdF/nMPD+I9fIfxGqFKgilqai+CWMHIuUrzh4wOS2
-	D5LOePkuM8O7j8cxHu5Infnr7Rc9SrI=
-ARC-Authentication-Results: i=2;
+	bh=0yOQzcwBovUCFTj5r+vnA2KGDV0IVDWP8Uv8obelYFU=;
+	b=Acu4H9Yrwzrlb6vlPfNWpq65AnNTXx9oYRIwY3hxj0piy6YVrssEZYEQO6kdLTJHhBf51T
+	wKumWHwPA2/CZ0oBR0DzaPYd/Y4h9GSjpC4fYIrhnNBg2og+Rr3jR9dG/fluCCR8GWknlT
+	zT40dMwN1oIU6FKn/DlBEWWDnc5AsMU=
+ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=gmail.com header.s=20251104 header.b=Zac+Mu20;
-	dmarc=pass (policy=none) header.from=gmail.com;
-	spf=pass (diktynna.open-mesh.org: domain of yuantan098@gmail.com designates
- 2607:f8b0:4864:20::830 as permitted sender)
- smtp.mailfrom=yuantan098@gmail.com;
-	arc=pass ("google.com:s=arc-20240605:i=1")
-ARC-Seal: i=2; a=rsa-sha256; d=open-mesh.org; s=20121; cv=pass; t=1778838889;
-	b=A7lHMVzyQtDKFkwLTb3VcXLffYx3DGhPYDkPfqtFkgMizPmqeM0fB40ky0zgrzXbO8GPwX
-	v4LwNTQda4DOQh8cdh9P/EimkZzjff/E/afJInrBhoZlr6B8SeWdlJ8pWGEzS7DTCMkoIT
-	dyOXWAAerdGMSOPb5WowtImnjzeafkc=
-Received: by mail-qt1-x830.google.com with SMTP id
- d75a77b69052e-50e63771d91so87392691cf.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Fri, 15 May 2026 02:54:39 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778838878; cv=none;
-        d=google.com; s=arc-20240605;
-        b=TrbqpwZl8T6W8MWkVUH9MF83uzsYB4EuITwRP2bK+KRTKXw+WdmVbGbU15JzYfl2E4
-         blPpd3Dx/Z//N6wpXwc96M3AbNlC8KyiN2lRLW8/iSHQrNEQOWi8tra5HxEOVOabhj5K
-         k+NAD8JRg/bx859axncaZ1P5PNbCaL48UWZ78Db2uygLyx9mJAZLeigXECnrE7rvH11d
-         q6R0vwuMyvn+oSvDwpi0MsqpuTKd6vJ9zb4LHTr7yytO58qHjW+3Z5i4F5as1gdBERNP
-         9FvZz5EU0+RBNKtJZx8cg1rGT1DV0K6pZtzoj5ffvdc5k7VhHoG7MUVlj7ELZS7kIrvb
-         Idiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=5EElz+2jxl13VfEl6Ul4cSmF0KTR6hyaxEnjiNXlNlE=;
-        fh=fGpATJGdA5gBFxywIcayagIpQImFJ7uNKXfLW6dnd4U=;
-        b=j9qYLRNyzFCjZVmSDGuGLefgWdvDz7XFPHPV2BDXd5alG9H8mIk5sSuQ3yTFgGcmiB
-         EEf7lgb+1vY5PJCkaAvs6YY6mvliEfOoTU5psI1lHSR17nm3n0W4M34El25N/nKxFB1z
-         ffvdyZNjRtliF/oXpXaHMjrb43fIkkPzhjZhj+64fOkJ9ItWbb5AAgzQAwuq3Poc5FTC
-         6LAcdIsW8ymUkCq9p9b+Y3Q1pfhJc7sDt9SzHzgA3d7d26rGIvDbyfU3n7ODJHCjVgGf
-         kPkwUpW9auURIFJSDcFyiyiA0HecfAyp2WVsngG79QQiixSSDfAWi4CrUWf4YJLkJhTU
-         k3OA==;
-        darn=lists.open-mesh.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778838878; x=1779443678;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5EElz+2jxl13VfEl6Ul4cSmF0KTR6hyaxEnjiNXlNlE=;
-        b=Zac+Mu20vSIZ5nh70WwJRAyQQNB89aChMrwexHCTU/JbrwH9tJVCP9PvWR/tBu2c3G
-         uJS6FayomV0p4JlM1fXMIsULv6g2Ppj6Ti51q1AJsEH8cE6Onag/jQxgfTvGqpm991px
-         qRy77OXEqStRVxClEHNMmrJzx9KMBuhCccXhx94XoOiIVfeLrol03hnsU0qvZFVhsZ+t
-         2bWoiOTby86UtaM60yEp7M9ZHUAcqONgvxHT8xODiDKo97aCBwjnYcacCgnVTRwtuobU
-         wvk3SBR5XBtHLAvWZHrZX2Ub/WUV2fJOG2RgYGZg/iJbbn8qlYU2l77SnxGGzXtb4Euc
-         Ejog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778838878; x=1779443678;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=5EElz+2jxl13VfEl6Ul4cSmF0KTR6hyaxEnjiNXlNlE=;
-        b=D+MZEUEmOC4tqmhraBoNMFOic6abgN05kQycXZEsHIsfHSwijoGlmMDooMubucwiKS
-         dyxnWTF58InZ5FgUIT9ENMO69Swt7PRfRKlv6mwpZW1Gr9GPmggCKTy99caNxyQaxMrJ
-         uWoH6NKi0Fzurm/4BJMD1nAnzVMenBnzAgOFOu7kj42U16rjd4jjok7bbbMHfH9Ta6eX
-         0d0+FOXYaEkYtilOYx4d7h1rxXxjzKITim4ssGUcYNC65bTF2yU+xoAyUox8RLLmrvM4
-         BaheX2ZDP2tXA93DDESgQPXFBNGzrekgF2sICtJCxyZsZVjJhxswwOFdRojhyFo+6uo4
-         p9Gw==
-X-Gm-Message-State: AOJu0YyLgpVlY5KVhIZ67LMCzPrW3x8gKZx1MCMG9/0dWHxETnmQTH29
-	oyy1/6kUmqDUBqeQ82dhf7oyjFHg92EG0qw1YopMX42mM5vygllzRoP49Lu7fpIS3TeMcmq8fdO
-	QDAYqx2tRt8B7z6AKHjoi7jA20HPecpw=
-X-Gm-Gg: Acq92OFpqREgcvd3EihaO6qkPAAWLImDwfq0BjpW5JOtFYQsQwBx86ruLgJuiKAnpVO
-	YkCXCKVZZY6/zfydH0pFNlkPevFHQPj3zCGJabxbe2p3Z0iBFjaR2uHN+7A/HUutWPjDbBOgBjD
-	e6OSW546kFn6QFd4XOl84laQ5trXKurBR8wN0VtSDl1zgvzGSvd74//SY66vQ44s6YXylcSF32t
-	fVRw/Jj3o9nVjOPrhV8o4W+8TMdysnsDyfuWfgpBCYYoSmzIRQ83kygfdNJf8bjbCHjyZeXhJWJ
-	gY145yQ+jH4jdveIm5UhycDwR5kr1ppN7uDFEUKCoXn1gTPsC/4dM+NIfovl
-X-Received: by 2002:a05:622a:a1b:b0:50f:c109:b78 with SMTP id
- d75a77b69052e-5165a27f690mr37826721cf.60.1778838877961; Fri, 15 May 2026
- 02:54:37 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260513-yuantan098-bugfixes-v2-0-863e9caa2a57@narfation.org>
- <20260513-yuantan098-bugfixes-v2-4-863e9caa2a57@narfation.org>
-In-Reply-To: <20260513-yuantan098-bugfixes-v2-4-863e9caa2a57@narfation.org>
-From: Yuan Tan <yuantan098@gmail.com>
-Date: Fri, 15 May 2026 02:54:00 -0700
-X-Gm-Features: AVHnY4JgnFKwc7UzFU2M6OHRsJF05nTQbRKQ7BYR1MBFK-NEb4BVysrnvBpv6jE
-Message-ID: 
- <CAPuPA7+5uDy5JX1LR_etpVwV3UEmWir-E+7dgpMH96Ca5MQjAw@mail.gmail.com>
-Subject: Re: [PATCH batadv v2 4/5] batman-adv: tvlv: reject oversized TVLV
- packets
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=qkkixbfM;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1778846731;
+	b=liOLv7D7dJnKEz5ZeWfk31Hj1LT2FSehJsT0fAKQTzxws6I9G15Hjb7kSLTNrIXwkIkYSX
+	O1zT1hYBdI+uPMufGP258YkIC3zOFM+mabpoDZkyyaUywYvWcDgv2715NphIkhUY0+24Bt
+	hr6a10adCVFFWOWM30Lpktavt6QCCvU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
+	s=09092022; t=1778846730;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=0yOQzcwBovUCFTj5r+vnA2KGDV0IVDWP8Uv8obelYFU=;
+	b=qkkixbfMqSpNqEFJnZE3E/54F4yST8D2pgvEWga9BmH8XKqS4FifdR7v28ui852yRpgqG3
+	+VYvfZ7Sa48FI0+5MQa7jm8muzXkvp8Mb2mUksMYqbx+bM7aiIsyH6U9p97TQJ+YzUWD1o
+	dHGmG2A3x/A67T+593sppZn7/2HUAjqHJ4YCXP9JnF1ZXQxh9EhYWt+jD7H/+9/H+SDYEp
+	Lru9OyNhMKq6DHZyLqoYa9Fdeel5pujNmx08/BueNzE88IPo8uO4A2Zsoxja+HTdHaLiDN
+	97VGUu8s2t9JUIOBJL7DOQym3qQTezF32a3fzeoyFBuQCIGTT40U3BuzJSWAIA==
+From: Simon Wunderlich <sw@simonwunderlich.de>
 To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, stable@kernel.org,
-	Yifan Wu <yifanwucs@gmail.com>, Juefei Pu <tomapufckgml@gmail.com>,
- Xin Liu <bird@lzu.edu.cn>
-Content-Type: text/plain; charset="UTF-8"
+Cc: antonio@mandelbit.com, marek.lindner@mailbox.org,
+ b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
+Subject: Re: [PATCH batadv v3 2/2] batman-adv: bla: avoid double decrement of
+ bla.num_requests
+Date: Fri, 15 May 2026 14:05:30 +0200
+Message-ID: <5395267.31r3eYUQgx@prime>
+In-Reply-To: <5105124.31r3eYUQgx@sven-desktop>
+References: <20260514-bla-cancel-work-v3-2-dc65d3485e11@narfation.org>
+ <20260514210047.08C2BC2BCB3@smtp.kernel.org>
+ <5105124.31r3eYUQgx@sven-desktop>
+MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-MailFrom: yuantan098@gmail.com
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: text/plain; charset="utf-8"
+Message-ID-Hash: UVYXPFUUEGBWLMUYTVHMAS5URVDCDTGU
+X-Message-ID-Hash: UVYXPFUUEGBWLMUYTVHMAS5URVDCDTGU
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: I45SE3HHRAILHGB3PWT4GUWTXHEY7QZB
-X-Message-ID-Hash: I45SE3HHRAILHGB3PWT4GUWTXHEY7QZB
-X-Mailman-Approved-At: Fri, 15 May 2026 11:58:18 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
+ news-moderation; no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/I45SE3HHRAILHGB3PWT4GUWTXHEY7QZB/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/UVYXPFUUEGBWLMUYTVHMAS5URVDCDTGU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -161,86 +107,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Wed, May 13, 2026 at 12:01=E2=80=AFAM Sven Eckelmann <sven@narfation.org=
-> wrote:
->
-> batadv_tvlv_container_ogm_append() builds a TVLV packet section from
-> the tvlv.container_list. The total size of this section is computed by
-> batadv_tvlv_container_list_size(), which sums the sizes of all registered
-> containers.
->
-> The return type and accumulator in batadv_tvlv_container_list_size() were
-> u16. If the accumulated size exceeds U16_MAX, the value wraps around,
-> causing the subsequent allocation in batadv_tvlv_container_ogm_append()
-> to be undersized. The memcpy-style copy that follows would then write
-> beyond the end of the allocated buffer, corrupting kernel memory.
->
-> Fix this by widening the return type of batadv_tvlv_container_list_size()
-> to size_t. In batadv_tvlv_container_ogm_append(), check the computed leng=
-th
-> against U16_MAX before proceeding, and bail out as if the allocation had
-> failed when the limit is exceeded.
->
-> Cc: stable@kernel.org
-> Fixes: ef26157747d4 ("batman-adv: tvlv - basic infrastructure")
-> Reported-by: Yuan Tan <yuantan098@gmail.com>
-> Reported-by: Yifan Wu <yifanwucs@gmail.com>
-> Reported-by: Juefei Pu <tomapufckgml@gmail.com>
-> Reported-by: Xin Liu <bird@lzu.edu.cn>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/tvlv.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-> index 8129a3f9..4e2a9ec7 100644
-> --- a/net/batman-adv/tvlv.c
-> +++ b/net/batman-adv/tvlv.c
-> @@ -12,6 +12,7 @@
->  #include <linux/gfp.h>
->  #include <linux/if_ether.h>
->  #include <linux/kref.h>
-> +#include <linux/limits.h>
->  #include <linux/list.h>
->  #include <linux/lockdep.h>
->  #include <linux/netdevice.h>
-> @@ -159,10 +160,10 @@ batadv_tvlv_container_get(struct batadv_priv *bat_p=
-riv, u8 type, u8 version)
->   *
->   * Return: size of all currently registered tvlv containers in bytes.
->   */
-> -static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
-> +static size_t batadv_tvlv_container_list_size(struct batadv_priv *bat_pr=
-iv)
->  {
->         struct batadv_tvlv_container *tvlv;
-> -       u16 tvlv_len =3D 0;
-> +       size_t tvlv_len =3D 0;
->
->         lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
->
-> @@ -314,12 +315,14 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_=
-priv *bat_priv,
->  {
->         struct batadv_tvlv_container *tvlv;
->         struct batadv_tvlv_hdr *tvlv_hdr;
-> -       u16 tvlv_value_len;
-> +       size_t tvlv_value_len;
->         void *tvlv_value;
->         bool ret;
->
->         spin_lock_bh(&bat_priv->tvlv.container_list_lock);
->         tvlv_value_len =3D batadv_tvlv_container_list_size(bat_priv);
-> +       if (tvlv_value_len > U16_MAX)
-> +               goto end;
->
->         ret =3D batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_=
-len,
->                                               packet_min_len, tvlv_value_=
-len);
->
-> --
-> 2.47.3
->
+On Thursday, May 14, 2026 11:11:04=E2=80=AFPM Central European Summer Time =
+Sven=20
+Eckelmann wrote:
+> On Thursday, 14 May 2026 23:00:45 CEST sashiko-bot@kernel.org wrote:
+> > [ ... ]
+> >=20
+> > > @@ -1517,14 +1529,21 @@ static void batadv_bla_periodic_work(struct
+> > > work_struct *work)> >=20
+> > >  			 * some grace time.
+> > >  			 */
+> > >=20
+> > > -			if (atomic_read(&backbone_gw->request_sent) =3D=3D 0)
+> > > -				continue;
+> > > +			spin_lock_bh(&bat_priv->bla.num_requests_lock);
+> > > +			if (backbone_gw->state !=3D=20
+BATADV_BLA_BACKBONE_GW_UNSYNCED)
+> > > +				goto unlock_next;
+> > >=20
+> > > -			if (!atomic_dec_and_test(&backbone_gw-
+>wait_periods))
+> > > -				continue;
+> > > +			if (backbone_gw->wait_periods > 0)
+> > > +				backbone_gw->wait_periods--;
+> > > +
+> > > +			if (backbone_gw->wait_periods > 0)
+> > > +				goto unlock_next;
+> > >=20
+> > > +			backbone_gw->state =3D=20
+BATADV_BLA_BACKBONE_GW_SYNCED;
+> > >=20
+> > >  			atomic_dec(&backbone_gw->bat_priv-
+>bla.num_requests);
+> > >=20
+> > > -			atomic_set(&backbone_gw->request_sent, 0);
+> > > +
+> > > +unlock_next:
+> > > +			spin_unlock_bh(&bat_priv->bla.num_requests_lock);
+> >=20
+> > Will this prematurely reset the bridge loop avoidance sync state when a
+> > request is sent?
+> >=20
+> > In the previous implementation, batadv_bla_send_request() set request_s=
+ent
+> > to 1 but left wait_periods at 0. When batadv_bla_periodic_work() ran,
+> > atomic_dec_and_test() on wait_periods would decrement it to -1 (returni=
+ng
+> > false), which correctly kept the gateway in the out-of-sync state until=
+ a
+> > valid ANNOUNCE frame arrived.
+> >=20
+> > With wait_periods now being a u8, if batadv_bla_send_request() sets the
+> > state to BATADV_BLA_BACKBONE_GW_UNSYNCED but leaves wait_periods at 0,
+> > the next run of batadv_bla_periodic_work() will evaluate if
+> > (backbone_gw->wait_periods > 0) as false.
+> >=20
+> > Because the code falls through when wait_periods is 0, it appears to
+> > unconditionally transition back to BATADV_BLA_BACKBONE_GW_SYNCED.
+> >=20
+> > Could this spontaneously drop the out-of-sync block without receiving a
+> > valid ANNOUNCE frame, potentially allowing broadcast loops?
+>=20
+> @Simon, can you double check this? My understanding is that this code is
+> only relevant for own_backbone (see batadv_bla_get_backbone_gw()). And for
+> own_backbone, we are always setting wait_periods to
+> BATADV_BLA_WAIT_PERIODS.
 
-Reviewed-by: Yuan Tan <yuantan098@gmail.com>
+This part was/is only relevant for the own gateway (we check for the own=20
+primary address in the beginning of this function).
+
+The wait_period is only set when creating the own backbone_gw, and then onl=
+y=20
+decremented in the worker. The idea is that we wait for ~30 seconds or so=20
+after batman-adv initially joined the network before we allow broadcasts.=20
+Sometimes switches or the Linux bridge need some learning time of their own=
+=20
+and would not forward our BLA announcements either, so we want to give them=
+=20
+this time to get to know us.
+
+> An underflow was never expected and this code should not run for
+> batadv_handle_announce() with CRC error (see batadv_bla_send_request()).
+> Only in this codepath, we don't set wait_periods to anything.
+
+Yes, I think this is the mistake on Sashikos side (saw that in another revi=
+ew=20
+previously):=20
+
+ * we don't reset waiting times again. It's only set during creation
+ * we don't send requests to ourselves, therefore request_sent shouldn't be=
+=20
+touched by anything else. So basically the request_sent is serving a specia=
+l=20
+case purpose for own gatways.
+
+Cheers,
+        Simon
+
+
+
+
