@@ -4,84 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBEC8CD4F4A
-	for <batman-adv@archiver.kernel.org>; Sun, 17 May 2026 18:09:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D370DCD4F3C
+	for <batman-adv@archiver.kernel.org>; Sun, 17 May 2026 21:09:15 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3D650859D8
-	for <batman-adv@archiver.kernel.org>; Sun, 17 May 2026 20:09:16 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4A30585A1C
+	for <batman-adv@archiver.kernel.org>; Sun, 17 May 2026 23:09:14 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779041356;
- b=k+ScxXnWqlYhl2x6umAWhRMPq3eO7r25+p0kA6nEHtX56gBCO7FDMGxlWXyfAuaw1r50p
- +KZctfuH9hut7HPRrTrXxevXPbdnxNibEusxuZ+iI12pZrYTZOxcA6qv5JTrmOWf3y9zzbV
- u882EWpB0l1bJGB0+z2ciU2ocCy30O4=
+ t=1779052154;
+ b=1ZGN1xBDNqCZNB2vnngB5eiSzUpsEVVzM11JaLUb/ExV14Yd6Bl0/EM2QKUqSDsNb83Iy
+ NZ1y547jMmiE7PWRngncUUDKC1BTG5ZrTFd0gYa3UouNP5VHOsxmUBRiEQdpicNFBVlLj/V
+ AYGT68OhBKW8NUJbNyKPLbJnLRNFtVE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779041356; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779052154; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=53DOWufWUCciaBKvvVQpgxjbVFkRWap+iYy67h7nsJw=;
- b=pStuigwYU1OVa/bI7lTQ2AgS+fB33iGI6N6um5oHWrg8DsmB0ewBdkXwmNp+HxQ1Jq6u9
- odskTxkL7P07Fh33TqvT9UN3BLKOnMqLTGI6Skn4ig7EM2lKg5Llj/CJJ3wcr++8uP4zuB6
- TFcQ1B84eqZXz+0XvKzuaL7LogALRvI=
+ list-archive; bh=HCZedBTffng3L/uSmwsqlC9XJGWi3K7avu2lWsh/luA=;
+ b=z6iwUbT4w+qvPu6qL7W1XHBDeT8Rydn6nvM4R6MOb18Yf+9seWhXAOaK0If8lqAdVM5dZ
+ fqAd228sn+G7APdfoGekY7SymL8HxW+bDPCUI98ZhUhrwx20oci/ruJu2m++eUf1lzy0XAX
+ 9RBVtFwY03YX9TMDd+Oh17Y1f6P5cxY=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 03DDE83E9E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 17 May 2026 20:08:32 +0200 (CEST)
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de
+ [IPv6:2a01:4f8:c2c:665b::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 184DD84219
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 17 May 2026 23:08:33 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779041323;
+	s=20121; t=1779052123;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=53DOWufWUCciaBKvvVQpgxjbVFkRWap+iYy67h7nsJw=;
-	b=Wa0osyxx1D0w73I8n89pyI5s9jV7AAVnNFwS6dRbAq5xl1kPqT9PntAjaRWrLtV4UD7YFi
-	t+FIcylc5XgGI4USDWUqcAsra5tflDDgmqJAE10YADTIfNy6yk/dAaWdHZnxWdI59U8IoE
-	1w3+r8sU9uJx2ywvEEAtfItZ1SsPGVY=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779041323;
-	b=rfKlZUH+3J/uYYU4ZFynvgjW+1Z9XSfgzh8fIft0s65y3rmqeh3D1WyGlOgdn/GxsrME7y
-	4ChYRj8r0SxGUCvfB8l4QRYUK6oyikPlOESBCRvYSa0P6UN0cXfPtiSejKKp6YUsxCVOa+
-	HJK3qK53Q2yOJy5oTtdEzJolbbfi1so=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HCZedBTffng3L/uSmwsqlC9XJGWi3K7avu2lWsh/luA=;
+	b=21RMs7oz7/Ysk1ZIYTKfIeCK7FPwwXrWvqu95eLjOHo6moAAzI2VHg2miGnzzbFJT39Omu
+	7Skyh52iKdJlYjlgWhPmwJ8NWoMS230B/9t6yxZJ3SKwg0nzx9KGTYaJrFMz35C5NspT4J
+	abktrx/EXcBEo4x63kdgSnb7pOdoSY8=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779052123;
+	b=036Y43rGxYbku+aWWlttXbadnf3Og+c/Hj/VQWdnFiVCr9EZY7onRMEomPGAnECr4kQkQ7
+	x2TY7UzOYKImhWrISaqOJthnuLj2P69PE0wo5ccSQOwwiUDQOI1q3uAlOfYtg9OJ6mBdeu
+	i9GNy+ZkDHAw81aRRxtndKvw9nCyAZ8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=fyBrmxnX;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 7A27D1FD57;
-	Sun, 17 May 2026 18:08:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1779041311;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=53DOWufWUCciaBKvvVQpgxjbVFkRWap+iYy67h7nsJw=;
-	b=fyBrmxnXihkf/NQXcKBTz3xO7fd4dnPM+Qq//bS5UM8ko9NKdhzkHPzH67eudhsSnTSQvw
-	V1nxELEvkGAqXW4lw9E1q8YazB/iVKwlqlKs+4Sbt8rwfYx1gwDOSlJ9WoOf1ZrcZQHanj
-	dw7cmDIczgEGS59h1lzNyy8CllxN7Pw=
-From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue;
+	dmarc=none
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 31C1E541046;
+	Sun, 17 May 2026 23:08:32 +0200 (CEST)
+Date: Sun, 17 May 2026 23:08:30 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 Subject: Re: [PATCH RFC batadv] batman-adv: mcast: fix use-after-free in
- orig_node RCU
- release
-Date: Sun, 17 May 2026 20:08:27 +0200
-Message-ID: <3412939.aeNJFYEL58@sven-l14>
-In-Reply-To: <agoBLITjEyVPScvd@sellars>
+ orig_node RCU release
+Message-ID: <agouTnSEU6CuTF5i@sellars>
 References: <20260514-mcast-rcu-list-free-v1-1-0e20f24faa61@narfation.org>
- <5073295.GXAFRqVoOG@sven-l14> <agoBLITjEyVPScvd@sellars>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3419480.44csPzL39Z";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: XC2AGGIDIEHCLUP2P5F6Y3V4CLTZDJRK
-X-Message-ID-Hash: XC2AGGIDIEHCLUP2P5F6Y3V4CLTZDJRK
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260514-mcast-rcu-list-free-v1-1-0e20f24faa61@narfation.org>
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: OX2RKJERKFJE4ZKL2R5FKZQP5K2MDEZ4
+X-Message-ID-Hash: OX2RKJERKFJE4ZKL2R5FKZQP5K2MDEZ4
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -94,7 +87,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XC2AGGIDIEHCLUP2P5F6Y3V4CLTZDJRK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OX2RKJERKFJE4ZKL2R5FKZQP5K2MDEZ4/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -103,96 +96,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3419480.44csPzL39Z
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Date: Sun, 17 May 2026 20:08:27 +0200
-Message-ID: <3412939.aeNJFYEL58@sven-l14>
-In-Reply-To: <agoBLITjEyVPScvd@sellars>
-MIME-Version: 1.0
+On Thu, May 14, 2026 at 07:41:38PM +0200, Sven Eckelmann wrote:
+> batadv_mcast_purge_orig() removes entries from RCU-protected hlists but
+> does not wait for an RCU grace period before returning. Concurrent RCU
+> readers may still accesses references to those entries at the point of
+> removal. RCU-protected readers trying to operate on entries like
+> orig->mcast_want_all_ipv6_node will then access already freed memory.
+> 
+> Fix this by moving batadv_mcast_purge_orig() to batadv_orig_node_release(),
+> just before the call_rcu() invocation. This ensures RCU readers that were
+> active at purge time have drained before the orig_node memory is reclaimed.
+> 
+> Fixes: 1c090349e2f6 ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-On Sunday, 17 May 2026 19:55:56 CEST Linus L=C3=BCssing wrote:
-[...]
-> Maybe this might make more sense as a fixes line then, though?
->=20
-> Fixes: 500ea14940f8 ("batman-adv: Add multicast-to-unicast support for mu=
-ltiple targets")
->=20
->=20
-> I think before that commit we only used these atomic counters in
-> fast path?
+Makes sense to me now and does not seem to crash on my laptop with
+Debian Sid in a simple batadv/veth setup.
 
-I don't really care about the fast path. I care about things which could be=
-=20
-called in parallel and is only RCU protected. For example in 1c090349e2f6,
-we have the reader:
-
-static struct batadv_orig_node *
-batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
-{
-	struct batadv_orig_node *orig_node;
-
-	rcu_read_lock();
-	hlist_for_each_entry_rcu(orig_node,
-				 &bat_priv->mcast.want_all_unsnoopables_list,
-				 mcast_want_all_unsnoopables_node) {
-		if (atomic_inc_not_zero(&orig_node->refcount))
-			goto unlock;
-	}
-
-	orig_node =3D NULL;
-
-unlock:
-	rcu_read_unlock();
-	return orig_node;
-}
-
-
-And here the cleanup code in 1c090349e2f6
-
-static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
-					     struct batadv_orig_node *orig,
-					     uint8_t mcast_flags)
-{
-[...]
-		hlist_add_head_rcu(&orig->mcast_want_all_unsnoopables_node,
-				   &bat_priv->mcast.want_all_unsnoopables_list);
-[...]
-		hlist_del_rcu(&orig->mcast_want_all_unsnoopables_node);
-[...]
-}
-
-/**
- * batadv_mcast_purge_orig - reset originator global mcast state modificati=
-ons
- * @orig: the originator which is going to get purged
- */
-void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
-{
-[...]
-	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
-}
-
-
-Regards,
-	Sven
---nextPart3419480.44csPzL39Z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCagoEGwAKCRBND3cr0xT1
-y+yHAP9VNkh7SAizUd8sOsf0JMsZ5Cng9wmgDJlAy86oawweGgEAnQorCmWFcspK
-3Y30CfdovMQrC7aoidYEDvZlIEXN/AM=
-=meKX
------END PGP SIGNATURE-----
-
---nextPart3419480.44csPzL39Z--
-
-
-
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
