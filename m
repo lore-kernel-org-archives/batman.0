@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 339CACD4F3C
-	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 07:11:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 684D2CD4F54
+	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 07:12:32 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id BBB4680C52
-	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 09:11:45 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id F0436811D4
+	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 09:12:30 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779174705;
- b=q1Gzsm1dKTN7yt0ldP3v/+qsqCutXtlyxQzTQ5oQsIfgQUq6bswi85LfegPTdvn2yemYE
- qXLGbEnoPigv/NYT8lT8UJgHI46+Sksn+N7UENgedJ8L13A2XIHx5s4+nJidtH1rNmNd8YC
- gKsZ/cVE2o/KPu3P8c8R+uN3r5WNG8A=
+ t=1779174750;
+ b=eEV4WLWa+msIjiI5/HqfUFXAa063iCjAqhokpc2fasfVgelCSm+ZaMRU0uP7MGAjkvsJh
+ ZwEIx9zDcMuyRym8HRk3yW6zkf1x2cZSZLOZFMw3a08C/nn5vIIWPgNMm4c2RaUXIYwM8IN
+ 6Pr9VIljXqOP95GbttG4KF31O5cJH7I=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779174705; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779174750; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2zFg2tKHAVuwDCRHVssocRcS0Pz6hMyzI4BTjJn/7d4=;
- b=p06Q7+Roc997tJ5XyHN5zFN/PVeRlrxQiLO8q07TIQ10Y+fUB0fLGv00M16LlK3HgaM1c
- 8oKHEyplJC6T1VJqWbN9zhldpGxDsXYepy8OtVq5IuF+rbJbvc5OGv9X7cRKiPyJEj9NmC9
- bxbnb7ChnxCRsOfWhUGHevLcVMH/Cqo=
+ list-archive; bh=BEXYyhXYJpwh9NVWEs/iOzEBHQbAo/IK2gLFOWJ1S+g=;
+ b=RqPCvUr7aaQqoZxZRka9ZOsPv0z46As3kK+Ie+nx1JUYZ6zW/B01EH71muGQKFFwT3AHk
+ JXu3eUEgu++YW7YldH5qnBeS+4PL1kK3q45M8uTVaHzfc3ReMRf+XYgx/665TuNtckqtNtz
+ DbFwm/dDX73mpwn/0+U/S8UzhknLdVM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id AC7C380DEB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 May 2026 09:04:49 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D3CFA80D56
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 May 2026 09:04:51 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779174289;
+	s=20121; t=1779174291;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=2zFg2tKHAVuwDCRHVssocRcS0Pz6hMyzI4BTjJn/7d4=;
-	b=hiectq/wjBlWO+1cW/E+n6dUm4Q0y516GgsOtHeZAndXEgdto3uFzgUKVGan9ytCMEitdM
-	fsyKnP75AYRfR7x/LdY6APJTPcMFlUa7tymtXeHAUm50PyRzubVh9jr0gRZPP8Yi4ORdt1
-	Sa/up6qJoy5a4jKAHrZBNSFpvDMpHw4=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779174289;
-	b=wjN+Nlmxswqm4UiDi7lzRLZ+QZh9t29wqkP/1URTU3OXUH2OkQsaO+X+2zoL4zoClYCHXq
-	eroGg6DQH6hi82lYzZu0dY6mWDpn8MbRJO7kFkUdpRjTZrMqmAzQY6THMgA+3T+uSntPxm
-	EP3jVjyOd2hdaoePJBtoP6A/RpDLsnU=
+	bh=BEXYyhXYJpwh9NVWEs/iOzEBHQbAo/IK2gLFOWJ1S+g=;
+	b=xKMcpCs1QDRpR1TP6qZcz06l6CIUj8xU9bDsdY9zJW1slPAidbHCaqJia5DArLZOz6ittY
+	eTjDu6J0/pbKYHgD4fYrEP12uaxM/4KT8iVcuEdCri3FtXpt30T1bmBkNleSvTpi9V9aNp
+	IWKvhG/GozRps9f0BHYvvlBfbAAIfns=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779174291;
+	b=tRj1ej8zZ6K4U6KxWbLUgZN1AtziQmT99seZTQkDKMJuKKQ14V4tQC+vRA/e4ySWMhVk1a
+	PoGtPGW+HBw8F5/SlGI9ZHu0nc4qOzbpOfSKZgw7bLoyL/YmRg8LJe1eBouKT8iNOqOm1O
+	zSsh7MlSjRI3X4uYPcjUqgd4yFTtM54=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=YLEYetzX;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="C9nPZb/h";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 326E11FE24;
-	Tue, 19 May 2026 07:04:49 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 8F07E1FD9C;
+	Tue, 19 May 2026 07:04:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1779174289;
+	s=20121; t=1779174291;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=2zFg2tKHAVuwDCRHVssocRcS0Pz6hMyzI4BTjJn/7d4=;
-	b=YLEYetzXcwLQeYltyHYMDQdEJ5JmvYuhQAcbS/aNecQDl1PR5cDSA7T4wcDlOWwGT72ER2
-	vcsnLwmIjQ9kNVQ0XZVxKDoP5UqwENAIE5OQXXTueYygYLSCkdq25hBSw0GpYtMGa0Gf1H
-	ZdkDEPZDkBNADjEtfEEXSKVxYC1M/wA=
+	bh=BEXYyhXYJpwh9NVWEs/iOzEBHQbAo/IK2gLFOWJ1S+g=;
+	b=C9nPZb/hbq+ZJwPt2J42TOftvLKA4hmD1lE0R7uZnWcS1fsa5cKWNjQ7SbaEUdOq/5CeD4
+	jf18IjSN/vSB3y5BHr7w+3sRPfCYbbPWEB5Mf1mhDLJv60JAisiC9sOu7YsIepWgK4NSf4
+	CYQBdsCyz9ncMEKpvUWkBRDCFA5Rjlg=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 May 2026 09:04:38 +0200
-Subject: [PATCH batadv v2 3/7] batman-adv: replace non-atomic vlan config
- fields with (READ|WRITE)_ONCE
+Date: Tue, 19 May 2026 09:04:39 +0200
+Subject: [PATCH batadv v2 4/7] batman-adv: replace non-atomic mesh state
+ with (READ|WRITE)_ONCE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260519-atomic-to-write-once-v2-3-1b643e847a56@narfation.org>
+Message-Id: <20260519-atomic-to-write-once-v2-4-1b643e847a56@narfation.org>
 References: <20260519-atomic-to-write-once-v2-0-1b643e847a56@narfation.org>
 In-Reply-To: <20260519-atomic-to-write-once-v2-0-1b643e847a56@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4018; i=sven@narfation.org;
- h=from:subject:message-id; bh=EBsQSqvY1VpZh+FMxIZad8I+/b2VcB+ggvNcbPWu9Xk=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFk83K2mMXX3fzBt5m2xyN6/rWRuKmPHtEncGe62W78w9
- efeOxbXUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZjIqesM/9RlN1ectLl+zXcW
- Z3+ekv35tzrnZ+UJzj39pCxF6mVJ0DuGf+ZGrxy4dh+54aO430Fi2vYmDRavidx7j616I78mdb7
- iXxYA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8961; i=sven@narfation.org;
+ h=from:subject:message-id; bh=DdKghCMUpI8/LoPlyhpCE+nhNvVESa5z5x5c63sE1EI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFk83G2tght+vfx7xWri4y/yAXFrxRpt9Bi3X33fUPPk2
+ 4OJHfMfd5SyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAmkrWH4a9Mm+WVrGcNKtcO
+ cIfdLXAMvyA8m+nQ7HrrDeVBr2M2PPzE8E91jezXGWe/rE5+/lzQ5cSqy29vzZrVVrmX5XHaJbH
+ SKY1cAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: LAPAGA6JLJV3YRGVEOBQXWNMGRPCGE4A
-X-Message-ID-Hash: LAPAGA6JLJV3YRGVEOBQXWNMGRPCGE4A
+Message-ID-Hash: TJU5IE2WYFBFCXJ7ADNJTLFF62XRMXFO
+X-Message-ID-Hash: TJU5IE2WYFBFCXJ7ADNJTLFF62XRMXFO
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LAPAGA6JLJV3YRGVEOBQXWNMGRPCGE4A/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TJU5IE2WYFBFCXJ7ADNJTLFF62XRMXFO/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,112 +112,235 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The vlan configuration values are only accessed as plain loads/stores and
-do not require full atomic_t semantics. Convert these fields to native
-integer types and replace their users with READ_ONCE()/WRITE_ONCE() to
-avoid load/store tearing.
+The mesh state is only accessed as plain loads/stores and does not require
+full atomic_t semantics. Convert to an enum and replace its users with
+READ_ONCE()/WRITE_ONCE() to avoid load/store tearing.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/main.c              | 2 +-
- net/batman-adv/mesh-interface.c    | 2 +-
- net/batman-adv/netlink.c           | 8 ++++----
- net/batman-adv/translation-table.c | 2 +-
- net/batman-adv/types.h             | 2 +-
- 5 files changed, 8 insertions(+), 8 deletions(-)
+ net/batman-adv/bat_iv_ogm.c     |  2 +-
+ net/batman-adv/bat_v_elp.c      |  2 +-
+ net/batman-adv/bat_v_ogm.c      |  2 +-
+ net/batman-adv/main.c           | 20 ++++++++++----------
+ net/batman-adv/mesh-interface.c |  6 +++---
+ net/batman-adv/send.c           |  2 +-
+ net/batman-adv/tp_meter.c       |  6 +++---
+ net/batman-adv/types.h          |  2 +-
+ 8 files changed, 21 insertions(+), 21 deletions(-)
 
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index c7751e0a..abd752db 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1731,7 +1731,7 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+ 				   delayed_work);
+ 	bat_priv = netdev_priv(forw_packet->if_incoming->mesh_iface);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
++	if (READ_ONCE(bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
+ 		dropped = true;
+ 		goto out;
+ 	}
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 075a58dd..a94e31a7 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -305,7 +305,7 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+ 	hard_iface = container_of(bat_v, struct batadv_hard_iface, bat_v);
+ 	bat_priv = netdev_priv(hard_iface->mesh_iface);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++	if (READ_ONCE(bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
+ 		goto out;
+ 
+ 	/* we are in the process of shutting this interface down */
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 5e187fc8..4ed0bb5b 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -271,7 +271,7 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
+ 
+ 	lockdep_assert_held(&bat_priv->bat_v.ogm_buff_mutex);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++	if (READ_ONCE(bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
+ 		goto out;
+ 
+ 	ogm_buff = bat_priv->bat_v.ogm_buff;
 diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index a4d33ee0..4ee2b14d 100644
+index 4ee2b14d..4d83577f 100644
 --- a/net/batman-adv/main.c
 +++ b/net/batman-adv/main.c
-@@ -614,7 +614,7 @@ bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid)
- 	 */
- 	vlan = batadv_meshif_vlan_get(bat_priv, vid);
- 	if (vlan) {
--		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
-+		ap_isolation_enabled = READ_ONCE(vlan->ap_isolation);
- 		batadv_meshif_vlan_put(vlan);
+@@ -187,31 +187,31 @@ int batadv_mesh_init(struct net_device *mesh_iface)
+ 
+ 	ret = batadv_originator_init(bat_priv);
+ 	if (ret < 0) {
+-		atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 		goto err_orig;
  	}
  
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index d1f50b8b..0e63fad0 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -565,7 +565,7 @@ int batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	vlan->vid = vid;
- 	kref_init(&vlan->refcount);
+ 	ret = batadv_tt_init(bat_priv);
+ 	if (ret < 0) {
+-		atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 		goto err_tt;
+ 	}
  
--	atomic_set(&vlan->ap_isolation, 0);
-+	WRITE_ONCE(vlan->ap_isolation, 0);
+ 	ret = batadv_v_mesh_init(bat_priv);
+ 	if (ret < 0) {
+-		atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 		goto err_v;
+ 	}
  
- 	kref_get(&vlan->refcount);
- 	hlist_add_head_rcu(&vlan->list, &bat_priv->meshif_vlan_list);
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 64e26313..711746c5 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -180,7 +180,7 @@ static int batadv_netlink_mesh_fill_ap_isolation(struct sk_buff *msg,
- 	if (!vlan)
- 		return 0;
+ 	ret = batadv_bla_init(bat_priv);
+ 	if (ret < 0) {
+-		atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 		goto err_bla;
+ 	}
  
--	ap_isolation = atomic_read(&vlan->ap_isolation);
-+	ap_isolation = READ_ONCE(vlan->ap_isolation);
- 	batadv_meshif_vlan_put(vlan);
+ 	ret = batadv_dat_init(bat_priv);
+ 	if (ret < 0) {
+-		atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 		goto err_dat;
+ 	}
  
- 	return nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION_ENABLED,
-@@ -203,7 +203,7 @@ static int batadv_netlink_set_mesh_ap_isolation(struct nlattr *attr,
- 	if (!vlan)
- 		return -ENOENT;
+@@ -219,7 +219,7 @@ int batadv_mesh_init(struct net_device *mesh_iface)
+ 	batadv_mcast_init(bat_priv);
  
--	atomic_set(&vlan->ap_isolation, !!nla_get_u8(attr));
-+	WRITE_ONCE(vlan->ap_isolation, !!nla_get_u8(attr));
- 	batadv_meshif_vlan_put(vlan);
+ 	atomic_set(&bat_priv->gw.reselect, 0);
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_ACTIVE);
++	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_ACTIVE);
  
  	return 0;
-@@ -1021,7 +1021,7 @@ static int batadv_netlink_vlan_fill(struct sk_buff *msg,
- 		goto nla_put_failure;
  
- 	if (nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION_ENABLED,
--		       !!atomic_read(&vlan->ap_isolation)))
-+		       !!READ_ONCE(vlan->ap_isolation)))
- 		goto nla_put_failure;
+@@ -233,7 +233,7 @@ int batadv_mesh_init(struct net_device *mesh_iface)
+ 	batadv_originator_free(bat_priv);
+ err_orig:
+ 	batadv_purge_outstanding_packets(bat_priv, NULL);
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
++	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_INACTIVE);
  
- 	genlmsg_end(msg, hdr);
-@@ -1109,7 +1109,7 @@ static int batadv_netlink_set_vlan(struct sk_buff *skb, struct genl_info *info)
- 	if (info->attrs[BATADV_ATTR_AP_ISOLATION_ENABLED]) {
- 		attr = info->attrs[BATADV_ATTR_AP_ISOLATION_ENABLED];
+ 	return ret;
+ }
+@@ -246,7 +246,7 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
  
--		atomic_set(&vlan->ap_isolation, !!nla_get_u8(attr));
-+		WRITE_ONCE(vlan->ap_isolation, !!nla_get_u8(attr));
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
++	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 
+ 	batadv_purge_outstanding_packets(bat_priv, NULL);
+ 	batadv_tp_stop_all(bat_priv);
+@@ -277,7 +277,7 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+ 	free_percpu(bat_priv->bat_counters);
+ 	bat_priv->bat_counters = NULL;
+ 
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
++	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_INACTIVE);
+ }
+ 
+ /**
+@@ -441,7 +441,7 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 
+ 	bat_priv = netdev_priv(hard_iface->mesh_iface);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto err_free;
+ 
+ 	/* discard frames on not active interfaces */
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 0e63fad0..9c53552a 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -123,7 +123,7 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 	eth_hw_addr_set(dev, addr->sa_data);
+ 
+ 	/* only modify transtable if it has been initialized before */
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		return 0;
+ 
+ 	rcu_read_lock();
+@@ -190,7 +190,7 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 	int network_offset = ETH_HLEN;
+ 	__be16 proto;
+ 
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+ 
+ 	/* reset control block to avoid left overs from previous users */
+@@ -781,7 +781,7 @@ static int batadv_meshif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->bcast_queue_left, BATADV_BCAST_QUEUE_LEN);
+ 	atomic_set(&bat_priv->batman_queue_left, BATADV_BATMAN_QUEUE_LEN);
+ 
+-	atomic_set(&bat_priv->mesh_state, BATADV_MESH_INACTIVE);
++	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_INACTIVE);
+ 	atomic_set(&bat_priv->bcast_seqno, 1);
+ 	atomic_set(&bat_priv->tt.vn, 0);
+ 	atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 62ae98ee..c7e86c83 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -1047,7 +1047,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 				   delayed_work);
+ 	bat_priv = netdev_priv(forw_packet->if_incoming->mesh_iface);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
++	if (READ_ONCE(bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
+ 		dropped = true;
+ 		goto out;
  	}
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 1fd15260..fef98fbe 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -963,7 +963,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
  
- 	batadv_netlink_notify_vlan(bat_priv, vlan);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index d72adda4..bfd0e720 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3769,7 +3769,7 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
- 	if (!vlan)
- 		return false;
+ 	/* look for an already existing test towards this node */
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE) {
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE) {
+ 		spin_unlock_bh(&bat_priv->tp_list_lock);
+ 		batadv_tp_batctl_error_notify(BATADV_TP_REASON_DST_UNREACHABLE,
+ 					      dst, bat_priv, session_cookie);
+@@ -1357,7 +1357,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	struct batadv_tp_vars *tp_vars = NULL;
  
--	if (!atomic_read(&vlan->ap_isolation))
-+	if (!READ_ONCE(vlan->ap_isolation))
- 		goto vlan_put;
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto out_unlock;
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
+ 	tp_vars = batadv_tp_list_find_session(bat_priv, icmp->orig,
+@@ -1495,7 +1495,7 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+ {
+ 	struct batadv_icmp_tp_packet *icmp;
+ 
+-	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto out;
+ 
+ 	icmp = (struct batadv_icmp_tp_packet *)skb->data;
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c4b220fa..d5f9d130 100644
+index d5f9d130..d2dea899 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1432,7 +1432,7 @@ struct batadv_meshif_vlan {
- 	unsigned short vid;
+@@ -1477,7 +1477,7 @@ struct batadv_priv {
+ 	 * @mesh_state: current status of the mesh
+ 	 *  (inactive/active/deactivating)
+ 	 */
+-	atomic_t mesh_state;
++	enum batadv_mesh_state mesh_state;
  
- 	/** @ap_isolation: AP isolation state */
--	atomic_t ap_isolation;		/* boolean */
-+	u8 ap_isolation;		/* boolean */
- 
- 	/** @tt: TT private attributes (VLAN specific) */
- 	struct batadv_vlan_tt tt;
+ 	/** @mesh_iface: net device which holds this struct as private data */
+ 	struct net_device *mesh_iface;
 
 -- 
 2.47.3
