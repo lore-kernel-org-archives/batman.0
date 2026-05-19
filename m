@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E98F1CD4851
-	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 08:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13AA0CD4F5B
+	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 09:11:39 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 498578092B
-	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 10:37:53 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5B6A580CA6
+	for <batman-adv@archiver.kernel.org>; Tue, 19 May 2026 11:11:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779179873;
- b=uZQV8lOs2jt2lGc2PjYyEsDZ7Pd5adKF69SfSiiEJ2qT2bf1E4GjAJFYwwNWu3vFzQwVz
- ZAnN4T4794uMw8V4UCB95qD+PaaKLdOxXninHkNoUwmT2SDWffKm60Bas9Gb9gjDs3XuOSG
- CtsJ+HMJcFxkWQuWD1W4NFZal+0Tvmg=
+ t=1779181898;
+ b=c6w0XYgw1+wQBk9fBUVkEqNtO1FgittcmPKpw8LKJ/y11jMpdwXNz0Wy3aQX0KlaNTqnM
+ i787gXIKMLObBgx3yHAUG/aHTD4VJnt1ujVQrRb9V9J49yqwUJketllEt7Hk08/CYHnzYXm
+ 7HUtlrg1QM2xLSon/FUVCgW3ukVdI6g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779179873; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779181898; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ZnzxoHNrbiLFBlPqCsYTZbX33no/2D7ec4ZZH8yzyyM=;
- b=ET5nYs4ge9ipRvrdtsl+mQKTf2rKs03cL6/x/OvvhBJqjjAD0tumQyueNCKuxJDsm5DiU
- /st6ecZGHc/6sjteuJgLcUxhEyTxZHZs1GlhJhUFs/lyet70zqrfqD01/91RrtMAc0OCeeA
- JvabHKOes83GmKZP7ICaVj3rWL8jxKg=
+ list-archive; bh=eUUHE0BcTCfS29wc4RdIQIT3Ig9yu6Crov8DsGjQZFU=;
+ b=Jkzcfy/DjQCVpGnmyWDLvo/ikRLnYcgzQJfIrhCq7I7FPrE3ITmH7Gp2GYKOBQ8dL2cOO
+ Xqsyn1tqNl/5d7+a8KTJyXy9hPJBOJLs6n/SrQ7JCavL3i9l9X9SRj+ZQMiKHl22oT7T5Wo
+ 07pJeLzzq5h3cn2mAXI0lkuR2PwDSKc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,53 +32,56 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C34438042C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 May 2026 10:37:38 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 950488083F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 May 2026 11:10:56 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779179868;
+	s=20121; t=1779181866;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ZnzxoHNrbiLFBlPqCsYTZbX33no/2D7ec4ZZH8yzyyM=;
-	b=ULkAPYW0bLGoDnqjGLs2NSsau33FkCz6bbD6gozmy5fgnPSVioATYboAocbG8dMAkbkU+1
-	0iADqVi6mZ3kfyf8mIb5zi208aVcVPAaoIX4F1vhaj6H1FkdWKNb2ujHWKaGeuwZJXLI/h
-	36ZNjcn97rTwyQELTAT9HD9bxy8lbGA=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779179868;
-	b=OYzgklLu5mHITegEe9Q9LXoMWVAN/bzEpOYlwym2ZMwoa8scQkRebZQ9xAkNlFYUAD8j61
-	8q9sxfdpMfKCY1fhLgwqkUofnZOwhi75eVyKzlioQoarcrcQ/4L6CndASyeQ3GjaW7UZdB
-	ie4OuPHWX1hz5gnR1/tcGVC5w6ChARA=
+	bh=eUUHE0BcTCfS29wc4RdIQIT3Ig9yu6Crov8DsGjQZFU=;
+	b=VE5ogJ0pB8dq1Kz4UA77ay6FNUKPshGJdkqtZb+hK1g4wiLRCdZYRzvQOzUm/5z3eZFn95
+	z7HnntbAEF1iA1BKJ3udFSlMtV8e6SPiXXxQZf/SSqOFyDsvRZu6+zRDmd11G9DxJwySkq
+	W/kbK4rqQLznjIE3NnTDmAnmKiwKVZ4=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779181866;
+	b=LTj4R2gjlYndLxWq4Qlqkngbr1sbt2IHDfso6jOMv8zPV8jb0RuXHIuRkmBTu1ATWDoBO+
+	CsbEpK3CFZqkEDY6UaHX+y9uhGKvcbOx1taMnIK4ckt46L5xVZDdskuFF38x0w9l4icqUU
+	XHjSnIrX51VZryIWsYETaxTneQWejgg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=yRIhkzjy;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Lj+WZqaw;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id F28231FD57
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 19 May 2026 08:37:37 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 43E171FF3A;
+	Tue, 19 May 2026 09:10:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1779179858;
+	s=20121; t=1779181855;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ZnzxoHNrbiLFBlPqCsYTZbX33no/2D7ec4ZZH8yzyyM=;
-	b=yRIhkzjyylB6jfLO8bdteGvrqh5TqjENZeW8vHh/E0x8DWmXtwOiYYYjC5Y96xnlNCRgeY
-	RR+zjgMDxtXjBpFX7BZZh3UFUStINd7o5U/+AacdRN9usvrQxb9hINi9Rynd3gjciwSKa1
-	v+EHFYAJyyqkpTcDgGEIj7SVMteOt7Y=
+	bh=eUUHE0BcTCfS29wc4RdIQIT3Ig9yu6Crov8DsGjQZFU=;
+	b=Lj+WZqawsXVhzFEh1FJ65Gw31fREezt+a/IwMIknbMWrQ1KPQoXCm4IpPZQqfMhFgiPL0y
+	orlTaYIBaB5ENwEwcnek4rh1gO+SI0VurSvM4KahpxYtTXRxQpsdm8hIjMhAr6zfdoBO10
+	AQs+HbBAw2Dsu4z/Rx0l9nEepfAyo1w=
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH RFC batadv v2 0/5] batman-adv: allow to specify limits for
- remote
- learned objects
-Date: Tue, 19 May 2026 10:37:34 +0200
-Message-ID: <3036655.mvXUDI8C0e@ripper>
-In-Reply-To: <20260519-resource-limit-v2-0-489c3c919a54@narfation.org>
+Cc: simonwunderlich <sw@simonwunderlich.de>
+Subject: Re: [PATCH RFC batadv v2 4/5] batman-adv: limit numbers of parallel
+ learned
+ BLA backbones
+Date: Tue, 19 May 2026 11:10:52 +0200
+Message-ID: <6472795.lOV4Wx5bFT@ripper>
+In-Reply-To: <20260519-resource-limit-v2-4-489c3c919a54@narfation.org>
 References: <20260519-resource-limit-v2-0-489c3c919a54@narfation.org>
+ <20260519-resource-limit-v2-4-489c3c919a54@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13100678.O9o76ZdvQC";
+Content-Type: multipart/signed; boundary="nextPart5306013.31r3eYUQgx";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: QJAG33UB7V23ASCWXZSCSQEA572OKSJZ
-X-Message-ID-Hash: QJAG33UB7V23ASCWXZSCSQEA572OKSJZ
+Message-ID-Hash: WH5TPDEVD4TNN7325CCFBR7UDTL5YPQE
+X-Message-ID-Hash: WH5TPDEVD4TNN7325CCFBR7UDTL5YPQE
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -92,7 +95,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QJAG33UB7V23ASCWXZSCSQEA572OKSJZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WH5TPDEVD4TNN7325CCFBR7UDTL5YPQE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -101,41 +104,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart13100678.O9o76ZdvQC
+--nextPart5306013.31r3eYUQgx
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Date: Tue, 19 May 2026 10:37:34 +0200
-Message-ID: <3036655.mvXUDI8C0e@ripper>
-In-Reply-To: <20260519-resource-limit-v2-0-489c3c919a54@narfation.org>
-References: <20260519-resource-limit-v2-0-489c3c919a54@narfation.org>
+Cc: simonwunderlich <sw@simonwunderlich.de>
+Date: Tue, 19 May 2026 11:10:52 +0200
+Message-ID: <6472795.lOV4Wx5bFT@ripper>
+In-Reply-To: <20260519-resource-limit-v2-4-489c3c919a54@narfation.org>
 MIME-Version: 1.0
 
-On Tuesday, 19 May 2026 09:02:14 CEST Sven Eckelmann wrote:
-> For the moment, I just want to demonstrate how this might work with some
-> example code. I didn't invest any time to actually check out the other
-> items in the list. So, please consider these lists as vague suggestions.
+On Tuesday, 19 May 2026 09:02:18 CEST Sven Eckelmann wrote:
+> @@ -505,6 +507,11 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+>                    "%s(): not found (%pM, %d), creating new entry\n", __func__,
+>                    orig, batadv_print_vid(vid));
+>  
+> +       bla_backbone_max_learned = READ_ONCE(bat_priv->bla_backbone_max_learned);
+> +       bla_backbone_learned = atomic_read(&bat_priv->bla_backbone_learned);
+> +       if (bla_backbone_max_learned && bla_backbone_learned >= bla_backbone_max_learned)
+> +               return NULL;
+> +
+>         entry = kzalloc_obj(*entry, GFP_ATOMIC);
+>         if (!entry)
+>                 return NULL;
 
-Please also consider the commit messages as placeholder :)
+@Simon: remark from Sashiko, should we actually exempt own_gateway?
 
+
+@@ -508,10 +508,12 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+ 		   "%s(): not found (%pM, %d), creating new entry\n", __func__,
+ 		   orig, batadv_print_vid(vid));
+ 
+-	bla_backbone_max_learned = READ_ONCE(bat_priv->bla_backbone_max_learned);
+-	bla_backbone_learned = atomic_read(&bat_priv->bla_backbone_learned);
+-	if (bla_backbone_max_learned && bla_backbone_learned >= bla_backbone_max_learned)
+-		return NULL;
++	if (!own_backbone) {
++		bla_backbone_max_learned = READ_ONCE(bat_priv->bla_backbone_max_learned);
++		bla_backbone_learned = atomic_read(&bat_priv->bla_backbone_learned);
++		if (bla_backbone_max_learned && bla_backbone_learned >= bla_backbone_max_learned)
++			return NULL;
++	}
+ 
+ 	entry = kzalloc_obj(*entry, GFP_ATOMIC);
+ 	if (!entry)
+@@ -539,7 +541,10 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+ 	if (unlikely(hash_added != 0)) {
+ 		/* hash failed, free the structure */
+ 		kfree(entry);
+-		atomic_dec(&bat_priv->bla_backbone_learned);
++
++		if (!own_backbone)
++			atomic_dec(&bat_priv->bla_backbone_learned);
++
+ 		return NULL;
+ 	}
+ 
 Regards,
 	Sven
-
---nextPart13100678.O9o76ZdvQC
+--nextPart5306013.31r3eYUQgx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCagwhTgAKCRBND3cr0xT1
-yzuTAP4hklHkgdBm9mo/pgF8jwlGs0Y1buax55npmSxu3AweHwEA9nEtm3yZ/H1a
-O4b8N9N2LgOfY8ll8FVRtzTi1OCWlgk=
-=XIBa
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCagwpHAAKCRBND3cr0xT1
+ywRUAQC6metEDP9gn57XIfn2U4N+q8G6tOQigVgwtSeAsafyagD9GmP1uTNe3zGk
+sbJQ5dezcamNypu7xzfFYPkY/PPMTQM=
+=cR/x
 -----END PGP SIGNATURE-----
 
---nextPart13100678.O9o76ZdvQC--
+--nextPart5306013.31r3eYUQgx--
 
 
 
