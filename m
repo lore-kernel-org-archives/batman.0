@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D12DBCD5BA4
-	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 08:17:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D2EBCD4F54
+	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 11:55:12 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0447A818A3
-	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 10:17:06 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8CD79835E8
+	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 13:55:10 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779265026;
- b=x6TsJArpoGsJS4pGAmFd5kS/n1VghjZSebQ6IyBzZCa+SHva6D4pH4dkutqk61qRmdMC4
- 9YJicXfVRXGeMuiD+j3cG7YXNpO8Zh8H/7Wp1N2pfmVWhmPHCW9bgjBrTxhxa3YfgpAd6gZ
- LcfheIggdztYu0BJQj1bu5EkTfB34ZA=
+ t=1779278110;
+ b=uKCcPwhgAi4v1UDrKcZElLcFUPFS1Gww8rHnKmY5fc5xLpwpkqLUL3DzPpliJjKfOmX1d
+ RlKE16nVoj9PlDsKH/LD0dYzlNnjLbfAeEN1sWsQ9rVuSLDi00h+5kImTjOwHBUjCryzZQl
+ KyvK9fdMN98lZ+8Uta+KCh351aTP8ts=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779265026; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779278110; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=bHfGMh4pefjZO5sb8M/ALllLw/5Oe8GAxPgoxjMl0gM=;
- b=3SCq/DfghLGbWIsUGvxmjTUliXm2QCL4buD43WF1kW8nf1BSv212EdxA4rPclENaZn+HG
- s4MGSvB0/x+yVps3lpSa+DKrORCftY6SrmTW+nizXQS2TjXK505RUKz2gqptDQsKSaguoxc
- b403d3CHE/4jJyXOvM/8FoLuvNd/HnY=
+ list-archive; bh=57IURDDFIFOT/WBGtFTYA7tK0Bics1a5jiAyMagCYF8=;
+ b=cJh8RYIYA3vpkK3fR7i0ZY82Lfrynipx29MQ81hjdAYUbwSNiOc/9MI3Lrddsc4qMT4w5
+ eh/vu6hBllyVf4bgsvs4hAirV1kSXhH9uDtb7sAHVhu5vSkANWTFkDg9xZru2ZkafHm/JGM
+ SM/JFcHIqXdyBTwTDCMZNpnbPe+7LqU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,57 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id EE7BE8032E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 20 May 2026 10:16:30 +0200 (CEST)
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0C5C780DF2
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 20 May 2026 13:54:40 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779264991;
+	s=20121; t=1779278080;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=bHfGMh4pefjZO5sb8M/ALllLw/5Oe8GAxPgoxjMl0gM=;
-	b=BNeMS1o7NTqIS6kIAkXAF89rYGSLafXmdOdSMbkiXirlp9pX5zzlDvS2B8bRJ874a3h2ob
-	KSml1UEXoG5aXYCEk/3ScNvH67a7lrxEpuZS4L/rlwikr3tzb3kR1kEIAQWUvMUE8hvA6f
-	8Jn/M+Gtd26aUhseO2dK4qAMbcIsm9E=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779264991;
-	b=dtkhR7bZV1WtHoXuv2Y7Ytvfdetoo5qI+A+dR9phk61X6vcHrwmNY1o4e/7s7x5HAY8InP
-	km+tgEb+jwkcpf4ZRDlw6YtHpozTI3gVYZkhHlOJugIeT+f0xmPVr4juA3Lu+ASUUSjOb3
-	PwYFeQSvOTNLVVJnsMsUetmgrRK0XRM=
+	bh=57IURDDFIFOT/WBGtFTYA7tK0Bics1a5jiAyMagCYF8=;
+	b=FSQ50Cwncf22GKxUL2HjYBbgB3w3paBpKitHQ4ISXJaLfmvRgwg98SxWWiEpR5XfJZFHq/
+	YzskM62l4u/Q505LQu+CsEol17jf8j5PgcBr5qGCxxNTp3T3abrQAV8hyqgCPcOsu3AxkB
+	bZK9cHYocGvRpJRI6LwFz5sl1k0xCQ4=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779278080;
+	b=JkLSKvUCzxxY4uJW3ULJgCOph/i2vGXISHEtTIEAKf651ENCB1Jj4d6pBQsSEFNc22aMRR
+	YZ55QosKWRzSwVrm4gffgMbg6LKXd40USSFjLWpjKt0xlx4NA7247QLq9+wFdJ36/mYpLt
+	jK8UBr5HIFJ4oY6luaoXfwNDQc8yfSE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="eMKc7po/";
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=dhh8G420;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1779264989;
+	s=09092022; t=1779278079;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bHfGMh4pefjZO5sb8M/ALllLw/5Oe8GAxPgoxjMl0gM=;
-	b=eMKc7po/bwYIgREiHDJjH0oyM/3rFUOiKl3jtcEN93e0FWAaflZU5ic5Jlvic3E3j7WwTa
-	H0/eFTJEJHyHg+ggRCKThCGTZyBazjQ/fQZOipef3MTHZ6zDhnRpmM+TcWB9frpRedW/Yg
-	lzWtynXHH1UQW8XEHNmQDIeRJ4Dnhqwc3Bk00oojlCpr+hetpoEFRO9UeH8ZuvFW8WGvUB
-	h66oDH3yIt8ZxBU2xWyj/AM22RMmvTuRQUkat8OTC1NHOgyKP7mUWI7LlOqKZPibaCxHB6
-	VpluXDJZ6IxlPhmLpaZHSB++GQ8qin3iuYA14Ye/C6M4W9rtJQGDMjI2xtuoeQ==
+	bh=57IURDDFIFOT/WBGtFTYA7tK0Bics1a5jiAyMagCYF8=;
+	b=dhh8G420vTVHPRWTOuccB89e3nkGz8ejcclO5pR81wZbcnT1w8aiiDNew1DkQ9Hov7nq+r
+	bmlE8SxNZfZBRVZhMKhrCc4GpfTBZqTtMqliqapDSWS4Gf5PS/gtLCXuyVje7gfRuTwh8t
+	ain0qxXJLq26DY7XOcH+GFBNGa/6+anT9BCRF7FlPDshO7+XR0ZtXvej49Je3J90E0sNfc
+	yb/ktZ8vYfudhR1X1Hkr9wLcGpgsLFLc5FWOc7oURH3ribznxQevh5ckMHHmm42Y5NWD5f
+	tmg/TqtRmnA6zF+/hVL601zw7SgPJQBeCkVAi/Qj8tSe6TGysMcxMXjPL90s8Q==
 From: Simon Wunderlich <sw@simonwunderlich.de>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sven Eckelmann <sven@narfation.org>
-Subject: Re: [PATCH RFC batadv v2 4/5] batman-adv: limit numbers of parallel
- learned
- BLA backbones
-Date: Wed, 20 May 2026 10:16:29 +0200
-Message-ID: <48092628.fMDQidcC6G@prime>
-In-Reply-To: <20260519-resource-limit-v2-4-489c3c919a54@narfation.org>
-References: <20260519-resource-limit-v2-0-489c3c919a54@narfation.org>
- <20260519-resource-limit-v2-4-489c3c919a54@narfation.org>
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Sven Eckelmann <sven@narfation.org>,
+	stable@kernel.org,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 03/11] batman-adv: tvlv: abort OGM send on tvlv append
+ failure
+Date: Wed, 20 May 2026 13:54:14 +0200
+Message-ID: <20260520115422.53552-4-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260520115422.53552-1-sw@simonwunderlich.de>
+References: <20260520115422.53552-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Message-ID-Hash: MIWHTGVHKDUOR2ELSDZH6WOJYK25DDYN
-X-Message-ID-Hash: MIWHTGVHKDUOR2ELSDZH6WOJYK25DDYN
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: B2QH3R3O7SJMMHBD5KACLR3EJ7FJ3FP3
+X-Message-ID-Hash: B2QH3R3O7SJMMHBD5KACLR3EJ7FJ3FP3
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -96,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MIWHTGVHKDUOR2ELSDZH6WOJYK25DDYN/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/B2QH3R3O7SJMMHBD5KACLR3EJ7FJ3FP3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -105,135 +113,192 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-This looks mostly good and I like the approach in general!
+From: Sven Eckelmann <sven@narfation.org>
 
-commit message: batman-adv: limit numbers of parallel learned BLA backbones
+batadv_tvlv_container_ogm_append() could fail in two ways: a memory
+allocation failure when resizing the packet buffer, or the tvlv data
+exceeding U16_MAX bytes. In both cases the function previously returned the
+old (now stale) tvlv_value_len rather than signalling an error, causing the
+OGM/OGM2 send path to transmit a packet whose TVLV length field no longer
+matched the actual buffer contents. And because it also didn't fill in the
+new TVLV data, sending either uninitialized or corrupted data on the wire.
 
-numbers -> number
+All errors in batadv_tvlv_container_ogm_append() must be forwarded to the
+caller. And the caller must abort the send of the OGM2. For B.A.T.M.A.N.
+IV, it is currently not allowed to abort the send. The non-TVLV part of the
+OGM must be queued up instead.
 
-On Tuesday, May 19, 2026 9:02:18=E2=80=AFAM Central European Summer Time Sv=
-en=20
-Eckelmann wrote:
-> A malicious actor behind one bridge port may spam the kernel with OGMs wi=
-th
-> a random source MAC address, each of which will create a BLA backbone, ea=
-ch
-> of which is a dynamic allocation in the kernel. This will at some point
-> exhaust the available memory.
+Cc: stable@kernel.org
+Fixes: ef26157747d4 ("batman-adv: tvlv - basic infrastructure")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/bat_iv_ogm.c | 16 +++++++++++++---
+ net/batman-adv/bat_v_ogm.c  | 26 ++++++++++++++------------
+ net/batman-adv/tvlv.c       | 17 ++++++++++++-----
+ net/batman-adv/tvlv.h       |  2 +-
+ 4 files changed, 40 insertions(+), 21 deletions(-)
 
-To get backbone gateways, spamming OGMs is not sufficient (or not even=20
-necessary), but BLA claims and/or BLA announcements need to be sent (with t=
-he=20
-same group ID or need to exist on the mesh) on the backbone Ethernet.=20
-
-Just sending OGMs will not create backbone GWs, so I think this commit mess=
-age=20
-needs to be revised (you already said it's a placeholder, so I think those =
-are=20
-the specifics for this counter ;] ).
-
->=20
-> Mitigate this by maintaining a per meshif count of those automatically
-> generated entries in orig_learned, and a limit in orig_max_learned. If the
-> limit is hit new entries are not learned anymore.
->=20
-> For backwards compatibility, the default setting of 0 disables the limit.
->=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> [...]
-> ---
->  include/uapi/linux/batman_adv.h        |  6 ++++++
->  net/batman-adv/bridge_loop_avoidance.c | 11 +++++++++++
->  net/batman-adv/mesh-interface.c        |  3 +++
->  net/batman-adv/netlink.c               | 10 ++++++++++
->  net/batman-adv/types.h                 |  6 ++++++
->  5 files changed, 36 insertions(+)
->=20
-> diff --git a/include/uapi/linux/batman_adv.h
-> b/include/uapi/linux/batman_adv.h index cca87d42..4188d83c 100644
-> --- a/include/uapi/linux/batman_adv.h
-> +++ b/include/uapi/linux/batman_adv.h
-> @@ -499,6 +499,12 @@ enum batadv_nl_attrs {
->  	 */
->  	BATADV_ATTR_DAT_MAX_LEARNED,
->=20
-> +	/**
-> +	 * @BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED: defines the maximum=20
-number of
-> BLA backbone=20
-
-number of BLA backbones (add the s)
-
-> +	 * which can be learned in parallel
-> +	 */
-> +	BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED,
-> +
->  	/* add attributes above here, update the policy in netlink.c */
->=20
->  	/**
-> diff --git a/net/batman-adv/bridge_loop_avoidance.c
-> b/net/batman-adv/bridge_loop_avoidance.c index cec11f12..8bb8dec6 100644
-> --- a/net/batman-adv/bridge_loop_avoidance.c
-> +++ b/net/batman-adv/bridge_loop_avoidance.c
-> @@ -494,6 +494,8 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_pr=
-iv,
-> const u8 *orig, {
->  	struct batadv_bla_backbone_gw *entry;
->  	struct batadv_orig_node *orig_node;
-> +	u32 bla_backbone_max_learned;
-> +	int bla_backbone_learned;
->  	int hash_added;
->=20
->  	entry =3D batadv_backbone_hash_find(bat_priv, orig, vid);
-> @@ -505,6 +507,11 @@ batadv_bla_get_backbone_gw(struct batadv_priv
-> *bat_priv, const u8 *orig, "%s(): not found (%pM, %d), creating new
-> entry\n", __func__, orig, batadv_print_vid(vid));
->=20
-> +	bla_backbone_max_learned =3D READ_ONCE(bat_priv-
->bla_backbone_max_learned);
-> +	bla_backbone_learned =3D atomic_read(&bat_priv-
->bla_backbone_learned);
-> +	if (bla_backbone_max_learned && bla_backbone_learned >=3D
-> bla_backbone_max_learned) +		return NULL;
-> +
-
-I think we should always allow "own backbones" to pass. This could be done =
-by=20
-adding an exception in this check.
-
-If (for some, probably unlikely reason) an attacker fills up the table befo=
-re=20
-the own backbone is registered, this may create problems on many other=20
-occurences.
-
->  	entry =3D kzalloc_obj(*entry, GFP_ATOMIC);
->  	if (!entry)
->  		return NULL;
-
-> --- a/net/batman-adv/types.h
-> +++ b/net/batman-adv/types.h
-> @@ -1656,6 +1656,12 @@ struct batadv_priv {
->  	atomic_t orig_learned;
->=20
->  #ifdef CONFIG_BATMAN_ADV_BLA
-> +	/** @bla_backbone_max_learned: Maximum number of backbone_gw */
-> +	u32 bla_backbone_max_learned;
-> +
-> +	/** @bla_backbone_learned: current number of learned backbone_gw=20
-entries
-> */ +	atomic_t bla_backbone_learned;
-> +
-
-should this go into batadv_priv_bla or along the other counters in=20
-batadv_priv? I'm fine either way.
-
-Thank you!
-        Simon
-
->  	/** @bla: bridge loop avoidance data */
->  	struct batadv_priv_bla bla;
->  #endif
-
-
-
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 74ef7dc2b2f98..7ad26128b5f7c 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -790,6 +790,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 	u32 seqno;
+ 	u16 tvlv_len = 0;
+ 	unsigned long send_time;
++	int ret;
+ 
+ 	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+@@ -813,9 +814,18 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		 * appended as it may alter the tt tvlv container
+ 		 */
+ 		batadv_tt_local_commit_changes(bat_priv);
+-		tvlv_len = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff,
+-							    ogm_buff_len,
+-							    BATADV_OGM_HLEN);
++		ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff,
++						       ogm_buff_len,
++						       BATADV_OGM_HLEN);
++		if (ret < 0) {
++			/* OGMs must be queued even when the buffer allocation for
++			 * TVLVs failed. just fall back to the non-TVLV version
++			 */
++			ret = 0;
++			*ogm_buff_len = BATADV_OGM_HLEN;
++		}
++
++		tvlv_len = ret;
+ 	}
+ 
+ 	batadv_ogm_packet = (struct batadv_ogm_packet *)(*ogm_buff);
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index e955b4940c728..d66ca77b1aaa3 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -269,10 +269,10 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
+ 	struct batadv_hard_iface *hard_iface;
+ 	struct batadv_ogm2_packet *ogm_packet;
+ 	struct sk_buff *skb, *skb_tmp;
+-	unsigned char *ogm_buff;
++	unsigned char **ogm_buff;
+ 	struct list_head *iter;
+-	int ogm_buff_len;
+-	u16 tvlv_len = 0;
++	int *ogm_buff_len;
++	u16 tvlv_len;
+ 	int ret;
+ 
+ 	lockdep_assert_held(&bat_priv->bat_v.ogm_buff_mutex);
+@@ -280,25 +280,27 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
+ 	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
+ 		goto out;
+ 
+-	ogm_buff = bat_priv->bat_v.ogm_buff;
+-	ogm_buff_len = bat_priv->bat_v.ogm_buff_len;
++	ogm_buff = &bat_priv->bat_v.ogm_buff;
++	ogm_buff_len = &bat_priv->bat_v.ogm_buff_len;
++
+ 	/* tt changes have to be committed before the tvlv data is
+ 	 * appended as it may alter the tt tvlv container
+ 	 */
+ 	batadv_tt_local_commit_changes(bat_priv);
+-	tvlv_len = batadv_tvlv_container_ogm_append(bat_priv, &ogm_buff,
+-						    &ogm_buff_len,
+-						    BATADV_OGM2_HLEN);
++	ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff,
++					       ogm_buff_len,
++					       BATADV_OGM2_HLEN);
++	if (ret < 0)
++		goto reschedule;
+ 
+-	bat_priv->bat_v.ogm_buff = ogm_buff;
+-	bat_priv->bat_v.ogm_buff_len = ogm_buff_len;
++	tvlv_len = ret;
+ 
+-	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + ogm_buff_len);
++	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + *ogm_buff_len);
+ 	if (!skb)
+ 		goto reschedule;
+ 
+ 	skb_reserve(skb, ETH_HLEN);
+-	skb_put_data(skb, ogm_buff, ogm_buff_len);
++	skb_put_data(skb, *ogm_buff, *ogm_buff_len);
+ 
+ 	ogm_packet = (struct batadv_ogm2_packet *)skb->data;
+ 	ogm_packet->seqno = htonl(atomic_read(&bat_priv->bat_v.ogm_seqno));
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 8129a3f9c44d0..46ed61dbf0879 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
++#include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/gfp.h>
+ #include <linux/if_ether.h>
+@@ -306,9 +307,10 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+  * The ogm packet might be enlarged or shrunk depending on the current size
+  * and the size of the to-be-appended tvlv containers.
+  *
+- * Return: size of all appended tvlv containers in bytes.
++ * Return: size of all appended tvlv containers in bytes (max U16_MAX), negative
++ *  if operation failed
+  */
+-u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
++int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 				     unsigned char **packet_buff,
+ 				     int *packet_buff_len, int packet_min_len)
+ {
+@@ -316,6 +318,7 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 	struct batadv_tvlv_hdr *tvlv_hdr;
+ 	u16 tvlv_value_len;
+ 	void *tvlv_value;
++	int tvlv_len_ret;
+ 	bool ret;
+ 
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+@@ -323,9 +326,12 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 
+ 	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
+ 					      packet_min_len, tvlv_value_len);
+-
+-	if (!ret)
++	if (!ret) {
++		tvlv_len_ret = -ENOMEM;
+ 		goto end;
++	}
++
++	tvlv_len_ret = tvlv_value_len;
+ 
+ 	if (!tvlv_value_len)
+ 		goto end;
+@@ -344,7 +350,8 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 
+ end:
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
+-	return tvlv_value_len;
++
++	return tvlv_len_ret;
+ }
+ 
+ /**
+diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
+index e5697230d9917..f96f6b3f44a00 100644
+--- a/net/batman-adv/tvlv.h
++++ b/net/batman-adv/tvlv.h
+@@ -16,7 +16,7 @@
+ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 				    u8 type, u8 version,
+ 				    void *tvlv_value, u16 tvlv_value_len);
+-u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
++int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 				     unsigned char **packet_buff,
+ 				     int *packet_buff_len, int packet_min_len);
+ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
+-- 
+2.47.3
 
