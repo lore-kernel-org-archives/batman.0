@@ -4,107 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDF7DCD4F3C
-	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 12:05:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19A72CD4F3D
+	for <batman-adv@archiver.kernel.org>; Thu, 21 May 2026 14:11:00 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 7B1ED8408A
-	for <batman-adv@archiver.kernel.org>; Wed, 20 May 2026 14:05:21 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 51EB484160
+	for <batman-adv@archiver.kernel.org>; Thu, 21 May 2026 16:10:59 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779278721;
- b=SNT+b55ZhHc7OlFLPWFE1QloREdKNBmPYw/w0nwOPVqFBzSnovuxBOpnvnx6colQ4zV6H
- bIUZ3x1YQrZ4A+EIOy5oTGpMn9no5q98t+pwlkGCnaTuY+eSlzmV0PjxRFbzzlTZpyaWD6t
- f8oAzE/rwwzhx1GGtWlEpYmMBBehJEU=
+ t=1779372659;
+ b=iogHbDLm6mUUbsV98zkA58yCNLnltvmmBLCTMt+Bq/UD8pIrd4G63wsjFfH8naHtMy/Nd
+ qeAn83sanQ33vz4/bR/XczDu3f2TDP3y1o1av//UVkA6fQVI7Oc6V8vrzCgWtDALJgVuta/
+ IVPoFFAl6ANmOd3Jam6/s6Zy1cLb38U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779278721; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779372659; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=TMSBQ8vty5KjvQRWobUPtXD4d+KsnwJfeTiOE5MDdw4=;
- b=fCyP+9ou41Jhf1V4Fr0s5kFHRddp/V+hPo33Zvgz8ywGvFziVTSR+37j3pvzTNEEeDj4C
- 6RV3Vx1Tn06H/KO0bzhuKCGvVdfpduGj639eu77BR6owlSZE7h6BrTlPAGVnUAG22Z9xBnK
- oYr7vdI5ZO2tQ+WbrnIamOwWrTWf6TU=
+ list-archive; bh=ALfJb7rTXQ+RL1IByyB+qWVeikkQgS87H8EQ9cZsr4c=;
+ b=vk0h6gkpR60/KXujEoSEgBgEa14h6TsNdYD49seOm1iWdy1JS0ZDOXdMs0+Jew2lBqzsc
+ 6U1I700jmg15na6ssGF9Ybu0ZBijDBu3MVPKxJVtDx7mFMInmCuoFtya15T8siUh3eFBIvq
+ bAx+pSRqpmb+dZtoG0XCo/F/r3Va6Rg=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7C0CB811CA
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 20 May 2026 13:54:46 +0200 (CEST)
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 222D482C2E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 21 May 2026 16:10:11 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779278086;
+	s=20121; t=1779372621;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=TMSBQ8vty5KjvQRWobUPtXD4d+KsnwJfeTiOE5MDdw4=;
-	b=YlGQ/xDD2uukqC81E8FE5QaAUQesbaA/CkXbFYp6VxJpU3Udhi+Ifdvwm0zp8NYxLvfD/G
-	aAIozNnFmKrMhNzLCf2NYMLvJiiRHgftdq/iRpLgJljEh+XyPihHmmw6ipneE4DHbpv+ZN
-	FEb7XBa5vGyfSwPQj6dT9XyR06H2uBE=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779278086;
-	b=BOpHATkeLxdJXZGIjuZk49kWOxx4pi64RyAlJA0vd65eZkb2TL9SVOzeIuAJ/q4AfZaFSl
-	tz9JkmzmsrguCF5BZtOip9rPXK8h2jvocwYdUc2eJjpvOmC9V4e87u7yxTJ8l9KCGpuTWa
-	1cxPmXxEyn8S9pmN53yhUEYEn00STEk=
+	bh=ALfJb7rTXQ+RL1IByyB+qWVeikkQgS87H8EQ9cZsr4c=;
+	b=nudOkmhaELsaIbzltL/uQSOGTR5DUW2ErSkRQU1TGNPSOfMWfTE9xSvra53weCWvz74I05
+	KRurM3ELVNfk29BsOCkWH3C0QBpsDuzxdMAr25DTmHpcYksBTjX2/HTWhyIAq3C3g4uiwJ
+	kIyc+gcumzEF54IpimQZzlrwOM6VjEA=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779372621;
+	b=IZVJz8HKr+QmXduCsJEnNI1bVsc1JzNKwdJHqs1kdmOnt+6zwFtuHIRrYSmNfGs7r+VH8o
+	x/MgFdZOfDjASWvcOHBmrjz8dqxZyFG0ambSo2YeH+uZvj0PC876K+gy5CpyHCrLtNpWwM
+	ob5gpZ9wKFUhNHH3rcWUwZvi+QO2BoM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=WmlK1rmA;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1779278085;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TMSBQ8vty5KjvQRWobUPtXD4d+KsnwJfeTiOE5MDdw4=;
-	b=WmlK1rmAnMvhqs2bx78u4Dhvw8v6D2tlP3X/UNXu8ET8l13eZFRWzc15kEtWCn4DBbLSt+
-	1WsyNqT0r/f2rArZpvQR5Qgm81/wqApw0r4wDaWE5zM/nntmewaqID1Fs8WtFr8bLRm7mB
-	/Iqv4JhvN812Hgsv7Q71+Q5rpWY3lK5prACqHcGc3Ht/YQTy4pgI6+PDPeUxtKapJzEGqG
-	Fjp4SX/qjvRtFle3lRoxKodEz9pxSap472+m7Oeb7t6QQyk4OTeD7B7PIjXz73aMCbb4Eo
-	Qa4ModJBAKQhwqmd3V/KUxLXyYj227y368mhn1zEXSQ+hwdByzy5pWqplhOfiw==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: netdev@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
-	stable@kernel.org,
-	Ido Schimmel <idosch@nvidia.com>,
-	syzbot+9fdcc9f05a98a540b816@syzkaller.appspotmail.com,
-	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 11/11] batman-adv: bla: avoid NULL-ptr deref for claim via
- dropped interface
-Date: Wed, 20 May 2026 13:54:22 +0200
-Message-ID: <20260520115422.53552-12-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260520115422.53552-1-sw@simonwunderlich.de>
-References: <20260520115422.53552-1-sw@simonwunderlich.de>
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=GsKg+a+x;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2600:3c04:e001:324:0:1991:8:25
+ as permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 08AAE601F4;
+	Thu, 21 May 2026 14:10:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3DD81F000E9;
+	Thu, 21 May 2026 14:10:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779372609;
+	bh=ALfJb7rTXQ+RL1IByyB+qWVeikkQgS87H8EQ9cZsr4c=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=GsKg+a+xtMFkLOTv9gk5rAV2YNiDd1JwYCvfUQ06co0bMlI5PBcMJ5h3HVl23IdVx
+	 2sqDESNsx1vavu/1uQ/YJ4QXgp5qSb3hURNwetG9+yRteE4MovXVBJK8HhH7VrzwVX
+	 5ST5Wcw5AtD3ZUr0suDJmr28B7GVYg7kSl0nFK2ZbbyHdl8QpyhKjVcYTWb8VesBHA
+	 6ThCx27WsUb7K7Nqc+Ul97zkTs6vsK+ltsCbATsiAVkDguDjHTFR3s3G89yMUncfyr
+	 whtcpogu4uGJYy2I1uP8qPRMWZ9cSSw8outrshzJ+Sz8cnyanbfZwTKw23OlVh/5Kg
+	 diJsydiCnFH5Q==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ D0B733930DE5;
+	Thu, 21 May 2026 14:10:20 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: CVYKBZ6IXVGHFHFECSTY7IPBMX3QD6AH
-X-Message-ID-Hash: CVYKBZ6IXVGHFHFECSTY7IPBMX3QD6AH
-X-MailFrom: sw@simonwunderlich.de
+Subject: Re: [PATCH net 01/11] batman-adv: fix batadv_skb_is_frag() kernel-doc
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <177937261940.334326.3846070326283907142.git-patchwork-notify@kernel.org>
+Date: Thu, 21 May 2026 14:10:19 +0000
+References: <20260520115422.53552-2-sw@simonwunderlich.de>
+In-Reply-To: <20260520115422.53552-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org
+Message-ID-Hash: FGOJ7P7I4AGADYGYCUFCOJZ2TYEVXWCW
+X-Message-ID-Hash: FGOJ7P7I4AGADYGYCUFCOJZ2TYEVXWCW
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CVYKBZ6IXVGHFHFECSTY7IPBMX3QD6AH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FGOJ7P7I4AGADYGYCUFCOJZ2TYEVXWCW/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,48 +113,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+Hello:
 
-Without rtnl_lock held, a hardif might be retrieved as primary interface of
-a meshif, but then (while operating on this interface) getting decoupled
-from the mesh interface. In this case, the meshif still exists but the
-pointer from the primary hardif to the meshif is set to NULL.
+This series was applied to netdev/net.git (main)
+by Sven Eckelmann <sven@narfation.org>:
 
-The mesh_iface must be checked first to be non-NULL before continuing to
-send an ARP request using meshif.
+On Wed, 20 May 2026 13:54:12 +0200 you wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> The kernel-doc comment for batadv_skb_is_frag() contained two errors:
+> 
+> * the function description referred to "gain a unicast packet" instead
+>   of "contains unicast fragment".
+> * the Return section omitted "merged" from "newly skb", leaving the
+>   description grammatically incorrect and inconsistent with the
+>   function description.
+> 
+> [...]
 
-Cc: stable@kernel.org
-Fixes: 23721387c409 ("batman-adv: add basic bridge loop avoidance code")
-Reported-by: Ido Schimmel <idosch@nvidia.com>
-Reported-by: syzbot+9fdcc9f05a98a540b816@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=9fdcc9f05a98a540b816
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bridge_loop_avoidance.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Here is the summary with links:
+  - [net,01/11] batman-adv: fix batadv_skb_is_frag() kernel-doc
+    https://git.kernel.org/netdev/net/c/0039ac830506
+  - [net,02/11] batman-adv: v: stop OGMv2 on disabled interface
+    https://git.kernel.org/netdev/net/c/f8ce8b8331a1
+  - [net,03/11] batman-adv: tvlv: abort OGM send on tvlv append failure
+    https://git.kernel.org/netdev/net/c/501368506563
+  - [net,04/11] batman-adv: tvlv: reject oversized TVLV packets
+    https://git.kernel.org/netdev/net/c/f50487e35663
+  - [net,05/11] batman-adv: tp_meter: fix race condition in send error reporting
+    https://git.kernel.org/netdev/net/c/71dce47f0758
+  - [net,06/11] batman-adv: tp_meter: avoid role confusion in tp_list
+    https://git.kernel.org/netdev/net/c/ff24f2ecfd94
+  - [net,07/11] batman-adv: mcast: fix use-after-free in orig_node RCU release
+    https://git.kernel.org/netdev/net/c/20c2d6a20ca9
+  - [net,08/11] batman-adv: iv: recover OGM scheduling after forward packet error
+    https://git.kernel.org/netdev/net/c/aa3153bd139a
+  - [net,09/11] batman-adv: bla: fix report_work leak on backbone_gw purge
+    https://git.kernel.org/netdev/net/c/0459430add32
+  - [net,10/11] batman-adv: bla: avoid double decrement of bla.num_requests
+    https://git.kernel.org/netdev/net/c/83ab69bd12b8
+  - [net,11/11] batman-adv: bla: avoid NULL-ptr deref for claim via dropped interface
+    https://git.kernel.org/netdev/net/c/f80d3d98d2ff
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 1bef12e659cb2..ffe854018bd3a 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -356,12 +356,14 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, const u8 *mac,
- 	       sizeof(local_claim_dest));
- 	local_claim_dest.type = claimtype;
- 
--	mesh_iface = primary_if->mesh_iface;
-+	mesh_iface = READ_ONCE(primary_if->mesh_iface);
-+	if (!mesh_iface)
-+		goto out;
- 
- 	skb = arp_create(ARPOP_REPLY, ETH_P_ARP,
- 			 /* IP DST: 0.0.0.0 */
- 			 zeroip,
--			 primary_if->mesh_iface,
-+			 mesh_iface,
- 			 /* IP SRC: 0.0.0.0 */
- 			 zeroip,
- 			 /* Ethernet DST: Broadcast */
+You are awesome, thank you!
 -- 
-2.47.3
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
