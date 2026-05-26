@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B615CD5BC8
-	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 19:46:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C99DCD5BB1
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 20:06:51 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6258683C55
-	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 21:46:16 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7990A83DBA
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 22:06:50 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779824776;
- b=AgTgC6HZFLNok5+ZhZJFhMnhvfSok9jOGINEkLm3kV9pgVep/iAzE8zr4V76TkZZcWfcK
- jySJUdYZOAFu9MiBqsyPxYhcV5k5GXuOvMHdpzk4YAvHMDITFk/FKRDqR6mzwXpy/hpIyJf
- gOBC92lOVLA3zrrGk1yk5n/X/SfITu0=
+ t=1779826010;
+ b=vOA/RbNMFHqvCoz0qbpQOwezd+oZqjS6ABEdGsnMwCOhMWSMb4bjZND5IyEbmAGUMztas
+ sK+1Q/4XU46pWAPhqq96xLJslNRITYqXaJclZDHaPl2yJOmG8CAirKNSI4rJ+I62Awd7MkH
+ Qr3VPcdgZ7nBbF7j/hYnVkRSiT9Dl7g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779824776; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779826010; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=lU8rbgo43HT4HSkuGbXdNCEmkvzzcZzcCV5Or4ImeYk=;
- b=wMCnLhT2tf/W+FoFYbL+5eonsiLIYQwohl89+LwOhQBMFltFhoe5G+QG0ZCw1qDoDryl4
- hDB54b9r03fcEwqyktieHPPvE15WeyxTkJufORNp/4H+LzqVQx7pIrGFfV8ymyU8hLxEcHt
- Kg2G0sDt7OWCTq0S1AFLQ22yiwWe3E4=
+ list-archive; bh=rIxT03KQp5QT84JPnmJBJ1noHlhUKtvzU2vsvA262Kw=;
+ b=AQAD0wotXjUF6pv2XFquZ0P+p7om3T3NvszKc8/qNBfJtVeOa3fH0IxwFLB/IP0GN2BJ4
+ UhD4WhRMzgEXkXZuZW8Zbimlz7H+EEMPjnHExRvvwfk747rL8xMsKwUGLhWs9oFsXdT23eT
+ qWZRwbnkLTGaUREnDHMEygBwAQwCAgI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 931158109D
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 26 May 2026 21:45:34 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id AE07180DBE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 26 May 2026 22:06:19 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779824744;
+	s=20121; t=1779825979;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=lU8rbgo43HT4HSkuGbXdNCEmkvzzcZzcCV5Or4ImeYk=;
-	b=rVg7mhfGHRJcCD062lR+ZOe6IUkJrkTp7V7iSKxIEaoJ3guX27ojBMDZRdkLWeGBgTnioa
-	u8FOeZEzEl6yVnQW8c7N14hzgsR966n3SiP/s/fJEfFQG8jpmtgZLrtjkUBukrlfTyORE+
-	7vZusxn1zvNaOuNNmpJUctLjVBHaCgo=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779824744;
-	b=v7cHgVGtL5LqAg+BGdQrYecSxevOlIbBCqGxuWXdPwC388EM+OQhbrCAAwbcVH5IxxIgAm
-	MQ8RzPDbBYrD0rWUFTMZPJwWe6Lhjk4tg8LHYLMcRvFyd6GR0NFQupeH78RmsvjUqPS90t
-	AIt1gzQ5TNl/v9BKddbFnmMtUyn5tgI=
+	bh=rIxT03KQp5QT84JPnmJBJ1noHlhUKtvzU2vsvA262Kw=;
+	b=GvpjFSPQdPUcg1Mt5Haq+rN7HhjTnHQ7PWJ9bcfj/S2WcVyjZJOJXSrycqmbKY3Tfi+b6t
+	v+Ae7MvqgLcj3UI3kLp/CuYrLakp/SRifjQVqiITGmWr1OXMeZr3rT8ZawU7MJWEimN657
+	+Yw7pvyPcaOhtmZ+qg1LBcGCWeUZm/g=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779825979;
+	b=LhcrW7J46RZrqejBlldimmFijXbrZF/4fCogvZYvOGPCL3jLjMRQlqywCp6IR0psTYlmTv
+	Q5WKQqBU7PCe7qcNgfN1aFAeRsnz0ujfguQ6oyZgW6VxPkiUz81J4l0k6jI6JI6jks24PE
+	AfUOdOYAqdUCtt2OJ6J0mpif0TQke00=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=TUBpiQPv;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=bkW8tcb7;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 5A0631FDD5;
-	Tue, 26 May 2026 19:45:33 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 0EAE61FDD5;
+	Tue, 26 May 2026 20:06:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1779824733;
+	s=20121; t=1779825974;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=lU8rbgo43HT4HSkuGbXdNCEmkvzzcZzcCV5Or4ImeYk=;
-	b=TUBpiQPvuZGFYGXXn34/37bvqeKhgK/1WdRENGLzp9Me6f0f/WMMbWG4T1KF1ANn4wgzTv
-	d6qxVxF4kpkbXwi1hPQQjWXJltk7t3zD2fw3DiUVTTyW/Htb8gly8PE/bHlhSWgIrYHC+S
-	Q2IzRXl+hVUmNUAhbx3Z60sc17zOB7o=
+	bh=rIxT03KQp5QT84JPnmJBJ1noHlhUKtvzU2vsvA262Kw=;
+	b=bkW8tcb7f2Fg7OINMkFsMEkn7w0/Epekxnc4kIderSzdxgYIJuU+NevdFAM1s8stPCojds
+	zMWdriFHHQ18ZdCpa7+AgqoiplwYwcGB8MDJRSjEUe6B38HlD6YUKgagCNt13O/w1/zkxp
+	+ssI2pV9ZNXuo3kqnrcqB/ft857Hlyo=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 26 May 2026 21:45:16 +0200
-Subject: [PATCH batadv] batman-adv: convert cancellation of work items to
- disable helper
+Date: Tue, 26 May 2026 22:06:00 +0200
+Subject: [PATCH batadv] batman-adv: bla: annotate lasttime access with
+ READ/WRITE_ONCE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260526-cancel-to-disable-v1-1-c9cffb8c0034@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAEv4FWoC/yWMQQrCMBAAv1L23IUkYlC/Ij1sklVXSirZNAilf
- zfqcQZmNlAuwgqXYYPCTVSW3MGOA8QH5TujpM7gjPPm6DxGypFnrAsmUQozo7UHMvZkKPkz9O5
- V+Cbv3/MKgSqlBtPf6xqeHOt3CPv+AVsSsQF9AAAA
-X-Change-ID: 20260526-cancel-to-disable-113a0180ad69
+Message-Id: <20260526-lasttime-once-v1-1-8fa43079b5fc@narfation.org>
+X-B4-Tracking: v=1; b=H4sIACf9FWoC/yWMwQrCMBAFf6Xs2UBdMaK/Ih426bNd0VSysRRK/
+ 71RjzMws5AhK4wuzUIZk5qOqcJ+11AcJPVw2lUmbtm3R/buKVaKvuDGFOG8HDhCTmcEptq8M+4
+ 6/35XClKkm+j29/YJD8TyndG6bpuQ1cp5AAAA
+X-Change-ID: 20260526-lasttime-once-6a32cea79eb2
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9077; i=sven@narfation.org;
- h=from:subject:message-id; bh=8hWU0HFaSBMONub2u4tq44Jj3BFvsXNXsmR6sryusPA=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmiP/zWLot12jY/7KChC+/km8mzzWXZ49r1lwp9/99gp
- j11yf2THaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJHAhhZHh2Lttldtepdv0g
- U7NMJ/7VecfP8ys7qJ2Yb7zu9hLTr/MY/vt+PJUbdO/VJHuWoksSvv2Fv3wDU81lenmT2Jlfz57
- SxwEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5768; i=sven@narfation.org;
+ h=from:subject:message-id; bh=ptGZkStfZH823K+Kw5fGAqbKxHkKSyKTPKY6yGFSKQ4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmifw2Mzl/YM5+9aZf2r7KSxcoXFp8VjtstOmFBlcWro
+ EdLPu2U7ShlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMpEea4RfTCsWTeWk6Susb
+ z1+NtG+7t/XEAz//1OcHlkbq+dy2U5zD8Id/WUazxZbgUu56hTkTK6SYS+8J7ah/0COcvHzN8QZ
+ pBmYA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: HQYCIKNVPX67LRNAGHKO4HOSXHA5W4MA
-X-Message-ID-Hash: HQYCIKNVPX67LRNAGHKO4HOSXHA5W4MA
+Message-ID-Hash: I4FRP44VS5HZFVLNNC7BY6EK2EUY4JS7
+X-Message-ID-Hash: I4FRP44VS5HZFVLNNC7BY6EK2EUY4JS7
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HQYCIKNVPX67LRNAGHKO4HOSXHA5W4MA/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/I4FRP44VS5HZFVLNNC7BY6EK2EUY4JS7/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,223 +113,152 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-With commit 86898fa6b8cd ("workqueue: Implement disable/enable for
-(delayed) work items"), work queues gained the ability to permanently
-disallow re-queuing of work items. This is particularly important during
-object teardown, where a work item must not be re-armed after shutdown
-begins.
+The lasttime field for claim, backbone_gw, and loopdetect tracks the
+jiffies value of the most recent activity and is used to detect timeouts.
+These accesses are not consistently protected by a lock, so
+READ_ONCE/WRITE_ONCE must be used to prevent data races caused by compiler
+optimizations.
 
-Convert all cancel_work_sync() and cancel_delayed_work_sync() call sites to
-their disable_* equivalents to clarify the intent to prevent re-arming
-after teardown.
-
+Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c            | 2 +-
- net/batman-adv/bat_v.c                 | 2 ++
- net/batman-adv/bat_v_elp.c             | 6 +++---
- net/batman-adv/bat_v_ogm.c             | 6 ++++--
- net/batman-adv/bridge_loop_avoidance.c | 4 ++--
- net/batman-adv/distributed-arp-table.c | 2 +-
- net/batman-adv/multicast.c             | 2 +-
- net/batman-adv/originator.c            | 2 +-
- net/batman-adv/send.c                  | 2 +-
- net/batman-adv/tp_meter.c              | 2 +-
- net/batman-adv/translation-table.c     | 2 +-
- 11 files changed, 18 insertions(+), 14 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index b8b1b997..6538d54d 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -225,7 +225,7 @@ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- 
- 	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
- 
--	cancel_delayed_work_sync(&hard_iface->bat_iv.reschedule_work);
-+	disable_delayed_work_sync(&hard_iface->bat_iv.reschedule_work);
- }
- 
- static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index de944471..c19fa26c 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -819,6 +819,8 @@ void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
- 	skb_queue_head_init(&hard_iface->bat_v.aggr_list);
- 	INIT_DELAYED_WORK(&hard_iface->bat_v.aggr_wq,
- 			  batadv_v_ogm_aggr_work);
-+	/* make sure it doesn't run until interface gets enabled */
-+	disable_delayed_work(&hard_iface->bat_v.aggr_wq);
- }
- 
- /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index fdc2abe9..d43f555f 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -112,7 +112,7 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
- 			goto default_throughput;
- 
- 		/* only use rtnl_trylock because the elp worker will be cancelled while
--		 * the rntl_lock is held. the cancel_delayed_work_sync() would otherwise
-+		 * the rntl_lock is held. the disable_delayed_work_sync() would otherwise
- 		 * wait forever when the elp work_item was started and it is then also
- 		 * trying to rtnl_lock
- 		 */
-@@ -159,7 +159,7 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
- 	}
- 
- 	/* only use rtnl_trylock because the elp worker will be cancelled while
--	 * the rntl_lock is held. the cancel_delayed_work_sync() would otherwise
-+	 * the rntl_lock is held. the disable_delayed_work_sync() would otherwise
- 	 * wait forever when the elp work_item was started and it is then also
- 	 * trying to rtnl_lock
- 	 */
-@@ -444,7 +444,7 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
-  */
- void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
- {
--	cancel_delayed_work_sync(&hard_iface->bat_v.elp_wq);
-+	disable_delayed_work_sync(&hard_iface->bat_v.elp_wq);
- 
- 	dev_kfree_skb(hard_iface->bat_v.elp_skb);
- 	hard_iface->bat_v.elp_skb = NULL;
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index d66ca77b..645e4b8a 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -417,6 +417,8 @@ int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
- 
-+	enable_delayed_work(&hard_iface->bat_v.aggr_wq);
-+
- 	batadv_v_ogm_start_queue_timer(hard_iface);
- 	batadv_v_ogm_start_timer(bat_priv);
- 
-@@ -429,7 +431,7 @@ int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
-  */
- void batadv_v_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- {
--	cancel_delayed_work_sync(&hard_iface->bat_v.aggr_wq);
-+	disable_delayed_work_sync(&hard_iface->bat_v.aggr_wq);
- 
- 	spin_lock_bh(&hard_iface->bat_v.aggr_list.lock);
- 	batadv_v_ogm_aggr_list_free(hard_iface);
-@@ -1079,7 +1081,7 @@ int batadv_v_ogm_init(struct batadv_priv *bat_priv)
-  */
- void batadv_v_ogm_free(struct batadv_priv *bat_priv)
- {
--	cancel_delayed_work_sync(&bat_priv->bat_v.ogm_wq);
-+	disable_delayed_work_sync(&bat_priv->bat_v.ogm_wq);
- 
- 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
- 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index ffe85401..828f6cae 100644
+index ffe85401..7f643de4 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1281,7 +1281,7 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+@@ -512,7 +512,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, const u8 *orig,
+ 		return NULL;
  
- 			if (purged) {
- 				/* reference for pending report_work */
--				if (cancel_work_sync(&backbone_gw->report_work))
-+				if (disable_work_sync(&backbone_gw->report_work))
- 					batadv_backbone_gw_put(backbone_gw);
- 
- 				/* reference for hash_entry */
-@@ -1849,7 +1849,7 @@ void batadv_bla_free(struct batadv_priv *bat_priv)
- {
- 	struct batadv_hard_iface *primary_if;
- 
--	cancel_delayed_work_sync(&bat_priv->bla.work);
-+	disable_delayed_work_sync(&bat_priv->bla.work);
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 
- 	if (bat_priv->bla.claim_hash) {
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 0a8bd95e..9dce7da4 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -837,7 +837,7 @@ void batadv_dat_free(struct batadv_priv *bat_priv)
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 
--	cancel_delayed_work_sync(&bat_priv->dat.work);
-+	disable_delayed_work_sync(&bat_priv->dat.work);
- 
- 	batadv_dat_hash_free(bat_priv);
- }
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 7dba0c2b..b7a72c23 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -2168,7 +2168,7 @@ int batadv_mcast_flags_dump(struct sk_buff *msg, struct netlink_callback *cb)
-  */
- void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
--	cancel_delayed_work_sync(&bat_priv->mcast.work);
-+	disable_delayed_work_sync(&bat_priv->mcast.work);
- 
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST_TRACKER, 1);
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index ad4921b6..d6fa3f22 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -906,7 +906,7 @@ void batadv_originator_free(struct batadv_priv *bat_priv)
- 	if (!hash)
+ 	entry->vid = vid;
+-	entry->lasttime = jiffies;
++	WRITE_ONCE(entry->lasttime, jiffies);
+ 	entry->crc = BATADV_BLA_CRC_INIT;
+ 	entry->bat_priv = bat_priv;
+ 	spin_lock_init(&entry->crc_lock);
+@@ -580,7 +580,7 @@ batadv_bla_update_own_backbone_gw(struct batadv_priv *bat_priv,
+ 	if (unlikely(!backbone_gw))
  		return;
  
--	cancel_delayed_work_sync(&bat_priv->orig_work);
-+	disable_delayed_work_sync(&bat_priv->orig_work);
+-	backbone_gw->lasttime = jiffies;
++	WRITE_ONCE(backbone_gw->lasttime, jiffies);
+ 	batadv_backbone_gw_put(backbone_gw);
+ }
  
- 	bat_priv->orig_hash = NULL;
+@@ -714,7 +714,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
+ 		ether_addr_copy(claim->addr, mac);
+ 		spin_lock_init(&claim->backbone_lock);
+ 		claim->vid = vid;
+-		claim->lasttime = jiffies;
++		WRITE_ONCE(claim->lasttime, jiffies);
+ 		kref_get(&backbone_gw->refcount);
+ 		claim->backbone_gw = backbone_gw;
+ 		kref_init(&claim->refcount);
+@@ -736,7 +736,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
+ 			return;
+ 		}
+ 	} else {
+-		claim->lasttime = jiffies;
++		WRITE_ONCE(claim->lasttime, jiffies);
+ 		if (claim->backbone_gw == backbone_gw)
+ 			/* no need to register a new backbone */
+ 			goto claim_free_ref;
+@@ -769,7 +769,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
+ 	spin_lock_bh(&backbone_gw->crc_lock);
+ 	backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
+ 	spin_unlock_bh(&backbone_gw->crc_lock);
+-	backbone_gw->lasttime = jiffies;
++	WRITE_ONCE(backbone_gw->lasttime, jiffies);
  
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 60cd67ec..dbccfc99 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -629,7 +629,7 @@ static void batadv_forw_packet_list_free(struct hlist_head *head)
+ claim_free_ref:
+ 	batadv_claim_put(claim);
+@@ -858,7 +858,7 @@ static bool batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
+ 		return true;
  
- 	hlist_for_each_entry_safe(forw_packet, safe_tmp_node, head,
- 				  cleanup_list) {
--		cancel_delayed_work_sync(&forw_packet->delayed_work);
-+		disable_delayed_work_sync(&forw_packet->delayed_work);
+ 	/* handle as ANNOUNCE frame */
+-	backbone_gw->lasttime = jiffies;
++	WRITE_ONCE(backbone_gw->lasttime, jiffies);
+ 	crc = ntohs(*((__force __be16 *)(&an_addr[4])));
  
- 		hlist_del(&forw_packet->cleanup_list);
- 		batadv_forw_packet_free(forw_packet, true);
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 0fc4ca78..aaf24db1 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -425,7 +425,7 @@ static void batadv_tp_list_detach(struct batadv_tp_vars *tp_vars)
-  */
- static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
- {
--	cancel_delayed_work_sync(&tp_vars->finish_work);
-+	disable_delayed_work_sync(&tp_vars->finish_work);
+ 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
+@@ -1253,7 +1253,7 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+ 						  head, hash_entry) {
+ 				if (now)
+ 					goto purge_now;
+-				if (!batadv_has_timed_out(backbone_gw->lasttime,
++				if (!batadv_has_timed_out(READ_ONCE(backbone_gw->lasttime),
+ 							  BATADV_BLA_BACKBONE_TIMEOUT))
+ 					continue;
  
- 	batadv_tp_list_detach(tp_vars);
+@@ -1334,7 +1334,7 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
+ 						primary_if->net_dev->dev_addr))
+ 				goto skip;
  
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index d72adda4..30873021 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3606,7 +3606,7 @@ void batadv_tt_free(struct batadv_priv *bat_priv)
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_TT, 1);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_TT, 1);
+-			if (!batadv_has_timed_out(claim->lasttime,
++			if (!batadv_has_timed_out(READ_ONCE(claim->lasttime),
+ 						  BATADV_BLA_CLAIM_TIMEOUT))
+ 				goto skip;
  
--	cancel_delayed_work_sync(&bat_priv->tt.work);
-+	disable_delayed_work_sync(&bat_priv->tt.work);
+@@ -1494,7 +1494,7 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 		eth_random_addr(bat_priv->bla.loopdetect_addr);
+ 		bat_priv->bla.loopdetect_addr[0] = 0xba;
+ 		bat_priv->bla.loopdetect_addr[1] = 0xbe;
+-		bat_priv->bla.loopdetect_lasttime = jiffies;
++		WRITE_ONCE(bat_priv->bla.loopdetect_lasttime, jiffies);
+ 		atomic_set(&bat_priv->bla.loopdetect_next,
+ 			   BATADV_BLA_LOOPDETECT_PERIODS);
  
- 	batadv_tt_local_table_free(bat_priv);
- 	batadv_tt_global_table_free(bat_priv);
+@@ -1515,7 +1515,7 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 						primary_if->net_dev->dev_addr))
+ 				continue;
+ 
+-			backbone_gw->lasttime = jiffies;
++			WRITE_ONCE(backbone_gw->lasttime, jiffies);
+ 
+ 			batadv_bla_send_announce(bat_priv, backbone_gw);
+ 			if (send_loopdetect)
+@@ -1899,7 +1899,7 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	/* If the packet came too late, don't forward it on the mesh
+ 	 * but don't consider that as loop. It might be a coincidence.
+ 	 */
+-	if (batadv_has_timed_out(bat_priv->bla.loopdetect_lasttime,
++	if (batadv_has_timed_out(READ_ONCE(bat_priv->bla.loopdetect_lasttime),
+ 				 BATADV_BLA_LOOPDETECT_TIMEOUT))
+ 		return true;
+ 
+@@ -2014,7 +2014,7 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 
+ 	if (own_claim) {
+ 		/* ... allow it in any case */
+-		claim->lasttime = jiffies;
++		WRITE_ONCE(claim->lasttime, jiffies);
+ 		goto allow;
+ 	}
+ 
+@@ -2116,7 +2116,7 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		/* if yes, the client has roamed and we have
+ 		 * to unclaim it.
+ 		 */
+-		if (batadv_has_timed_out(claim->lasttime, 100)) {
++		if (batadv_has_timed_out(READ_ONCE(claim->lasttime), 100)) {
+ 			/* only unclaim if the last claim entry is
+ 			 * older than 100 ms to make sure we really
+ 			 * have a roaming client here.
+@@ -2361,7 +2361,7 @@ batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid,
+ 	backbone_crc = backbone_gw->crc;
+ 	spin_unlock_bh(&backbone_gw->crc_lock);
+ 
+-	msecs = jiffies_to_msecs(jiffies - backbone_gw->lasttime);
++	msecs = jiffies_to_msecs(jiffies - READ_ONCE(backbone_gw->lasttime));
+ 
+ 	if (is_own)
+ 		if (nla_put_flag(msg, BATADV_ATTR_BLA_OWN)) {
 
 ---
 base-commit: ec9f686b42917e9b67725d7245b50de72f59fa9e
-change-id: 20260526-cancel-to-disable-113a0180ad69
+change-id: 20260526-lasttime-once-6a32cea79eb2
 
 Best regards,
 --  
