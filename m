@@ -4,107 +4,134 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45D76CD5BAF
-	for <batman-adv@archiver.kernel.org>; Thu, 21 May 2026 20:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC3BCCD5BD5
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 07:01:04 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B4D1584227
-	for <batman-adv@archiver.kernel.org>; Thu, 21 May 2026 22:34:46 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3878682FED
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 09:01:03 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779395686;
- b=lCoB7U3isOt3/5oPb27eOPSybQNOjDP1XQbi/eRr6SbKYWFA3Ddh+VfSnCYygAFRpyr4S
- UzFFfjBIcgTmw5rR9SKN5qBwQUKX7/Sy5QwFUs52XikjXQoIcTNjqVFDvXFL0zP8uWPi4Ht
- naQ1G1HEvlXxZMW4CRj9CVHCFPvXqSI=
+ t=1779778863;
+ b=gLTlgnguvekEm5w4yPGgVedLfbmtRHus+4bfvik0fQC/XwyRFoJYGxVCg6JKcymknJ+sr
+ TYhUB3kpE3o4Yv+H/DmOtOKKEfF4BiDymOxGsIOTX7WasqR+XffzCFIKPD4QOw2U6X6fDrX
+ yht0lt6rEJJxmaaRRCsdx3syFkNCkUk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779395686; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779778863; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=PPc28HbT7YztKFtZmo4C1YdhxsEbs532zt2vW/jZIcw=;
- b=E1NYDXZoLhMAMRB1tMnK1nE/yFGEQ9hRjcBNBdGMk711Ihl+g0zaWNlDH4Ndmw9UtnlM0
- xXlBdkJSTwmuTZ1PLEqwI3NivqZM0x7EXEKvSvw+iboAxThDF/AN1BiTqaIu32VNcQ8/mPe
- 72B3NS1VwERaDbwozG2NxOSA3iDuN2c=
+ list-archive; bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
+ b=yWdXn8h316nDHTFQGEFhpueDnd0dpmwvF67UQlSivTVVezi7QFrU6/SHC+H4K+PTeSS3N
+ 6GSwtclu1Uc6gOVU+MSbgF4HoM35b50I9zIKT+2TTfLJorq1v0G5KZbeChI6BrWsfE2pU0N
+ pKnkSgDNo8IqKxI29V3wQRyRfq+v1Hc=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=snu.ac.kr;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 07CAC840B3
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 21 May 2026 22:32:45 +0200 (CEST)
+ dmarc=pass header.from=snu.ac.kr policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=snu.ac.kr; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=snu.ac.kr policy.dmarc=none
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
+ [IPv6:2607:f8b0:4864:20::42a])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 055D380F29
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 26 May 2026 08:48:47 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779395565;
+	s=20121; t=1779778140;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=PPc28HbT7YztKFtZmo4C1YdhxsEbs532zt2vW/jZIcw=;
-	b=K/Mp+bQCrkz4Iu3pD1G8nwQKJ/sQcVQ8IDyU1T3wXthwcgYCK9qWhzV7GgrpK1dfKd3gVW
-	YDvdRBjNp6ZSYqJ1am2Xb/B8uXEo0eM2Q8a2T1ZLBGFM7c1ebRC5TLBxqLlFmqBBrf0zSI
-	d3vOy+19eH9no1Dt+1YDupCx0llYvE4=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779395565;
-	b=1ZEtI6+6KFNwfpfDLxkuADCW58yUwvLaGZpd1EHjlHSLHKJ0hG45HTrxIkK+NnkKmx+4ls
-	RSCfWtTu0sm3DIflM6LD0JjLRjSScDXrVSN+di4pLU2GpKVLQrcDAAgxXCyKkSGn4wgdoa
-	so9D+7D7qoqsO8zUAO1f3RguAUTslE0=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
+	b=O6bPVRbVjcFUBnyt14grEJ0P4wCrRKW1YhO4AU8S47zXV5VbnBzSDyuhSBghTRB1mEAYvh
+	bsH7hsyXXRqnp85QpquPBjIj0wn0BfEfF7Wnhaq+w2OcaSinCqlOjoefg9FVY5ogPE6j9d
+	3zYl5IC8JZbvQWsVcg2FIUT2LBmf1Wk=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779778140;
+	b=cSXxHYmAzjwpk8/4LhUGZntEZxdSmJf9KQgcmZEN721Alp8b733dMvV2OUX/IFrfqZ4lZn
+	M9zUxjpq4fqBi0Mkikb/itYtIgZquAy+YDyDFAKe5DBffkDpzslDAY5WULZKOBegW++V/H
+	vRr9YtiZfaRdeE7XXnDS95rDCLS5iYE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=egCFIaIZ;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id B52BA1FF83;
-	Thu, 21 May 2026 20:32:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1779395564;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PPc28HbT7YztKFtZmo4C1YdhxsEbs532zt2vW/jZIcw=;
-	b=egCFIaIZ4SXsgXTLlX8ZtAcqYrf5VCBV6M2pC2mgO2FvbV9kvQ2xj5uORa5aKshSHeEzpb
-	hYbTGrrnN/7CBRUZTRu/+ungWOMxyWdwXMO4ymfeY4SK4VzpWZ1kfjJ5eee9/ul+fyYtRF
-	aNqzV5BXOK2D8yb1oY477H0938QYfdc=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 21 May 2026 22:32:37 +0200
-Subject: [PATCH batadv v3 2/2] batman-adv: tp_meter: consolidate congestion
- control variables
+	dkim=pass header.d=snu.ac.kr header.s=google header.b=bhCQFxin;
+	spf=pass (diktynna.open-mesh.org: domain of swan2718@snu.ac.kr designates
+ 2607:f8b0:4864:20::42a as permitted sender) smtp.mailfrom=swan2718@snu.ac.kr;
+	dmarc=pass (policy=none) header.from=snu.ac.kr
+Received: by mail-pf1-x42a.google.com with SMTP id
+ d2e1a72fcca58-82faf871346so7807281b3a.0
+        for <b.a.t.m.a.n@lists.open-mesh.org>;
+ Mon, 25 May 2026 23:48:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=snu.ac.kr; s=google; t=1779778125; x=1780382925;
+ darn=lists.open-mesh.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
+        b=bhCQFxinXZ7opoZDuPXm3dKIN4D5OOoOK7xU/1hDEt/a2KHKeumcHPP5kW2K/g4qZE
+         pekZeqPXbeq2LFiBFUVqaVrwG7DD+ciBIxS1pHIUHqnnqQ0iilk3D97FByrWFTQzaa+V
+         4GUFhE05rpisxlgtXcciZH+5K1Bmr6VxtQfS8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779778125; x=1780382925;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
+        b=d7VPQqWjVRW6xB0MsCwWaXJilSTEl5XnHXPibn3YGlv9gtclVug2+VYZYKGXhTr5uH
+         X5+ZZxoNBew2zLshhjR4x3gXNKQP8OvC61E5ViN/kazZPvFMot9cesb6n+wHtCfqrx2V
+         oYwjyEXnMy24v++a86H89Jy8qB9Pg5xpYsBPLjUBIcLcYHN/BcsmN8eYOVxVxOWvRQcr
+         4Kkt/T4YciXpR0956VyJkRJMAJ2SPEHFZ9oJZgPgyYoQ8ZVfnqRIPAznDa0Yp/EpyJMS
+         wSMWb50ntREb6nN7PFKVZzky3UP8SYvr71Chx+tVlodrYBnGrFGkIVGVXLvNq+PyWjKM
+         tbSw==
+X-Gm-Message-State: AOJu0Yy0jsx5Z9kmorvktUKCvHDAsD4Cx09QOG1EPeHqU1JhjfwVTc3W
+	26vkcUXH8qS+ODarsQH2ptJt8EzP2OWKvhJiypmCJ75VyiNAhGkitAvipvZeCHuOw84djfbilyN
+	e+/EU5x/x5HzH
+X-Gm-Gg: Acq92OEQ20I1kelOHfnrKSxuKrB6+xlLn+wnNnGqbX5ENSE3w6WpeWonXc7Lr7sDsWz
+	awHSVq9h6IXI8M55QiYlgWg4SeyqoIcPsMVp4nzEl9VNx87kGXYdETgnlHhiwfQY2FpH+VjG1/s
+	AeXcRXIse5RNY8/gAn+l7oTYqaioNmv+KLpObGFiZD8HeJVoVl8nVVHAvJT3cTmaCJPftagYqIA
+	be7fBI4Rtp7tQlJrBcCuKvGK4jV8YVZuzJSHGJEWPwuDfXcrQ5/D5iunrfS23fp7jWZbl1xCdv1
+	d87iPJFq+6u9Kje+oqc1nuq680gaT6K9n4dUwYoqlocsmx8dZCNVWiop2LgkR8pclwdo2oarXZU
+	tVdn1jpJqod98Q5dwqtfu2R/8ai+UvGxPAFPcJTrx5CHsTvsXwtA6b88IE8nZDPjDkTtgNtSeo6
+	D76afx058ROUqrPuY5zDjl3oXNcVjVcXJoAqA6ZZy/lXumh872vA==
+X-Received: by 2002:a05:6a00:2da4:b0:82a:6ef8:cb43 with SMTP id
+ d2e1a72fcca58-8415f53dbe4mr15892684b3a.19.1779778125518;
+        Mon, 25 May 2026 23:48:45 -0700 (PDT)
+Received: from ubuntu.. ([147.46.174.166])
+        by smtp.gmail.com with ESMTPSA id
+ d2e1a72fcca58-84164e9e7cdsm11909392b3a.34.2026.05.25.23.48.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 May 2026 23:48:44 -0700 (PDT)
+From: Soowan Park <swan2718@snu.ac.kr>
+To: b.a.t.m.a.n@lists.open-mesh.org,
+	netdev@vger.kernel.org
+Cc: marek.lindner@mailbox.org,
+	sw@simonwunderlich.de,
+	antonio@mandelbit.com,
+	sven@narfation.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	horms@kernel.org,
+	Soowan Park <swan2718@snu.ac.kr>
+Subject: [PATCH] batman-adv: fix DAT purge use-after-free on teardown
+Date: Tue, 26 May 2026 15:48:35 +0900
+Message-ID: <20260526064835.2233822-1-swan2718@snu.ac.kr>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260521-tp-reason-missing-v3-2-26855460087a@narfation.org>
-References: <20260521-tp-reason-missing-v3-0-26855460087a@narfation.org>
-In-Reply-To: <20260521-tp-reason-missing-v3-0-26855460087a@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=22104; i=sven@narfation.org;
- h=from:subject:message-id; bh=vxcy6kFQzr7oinK1hff6chThYdgv11l0jSI7V3Xn55A=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFn82U98cj6+sZhstODmwcAlazRuZtqEXWHkvbvnX885M
- Uvmk62LOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATWc7FyHB6hv0sOVauqbqX
- tP3ctm7JPcLk0J1yKeOq65lvZ6vzExUYGZq6pa6e/PRSr1ki8tMB9undF/PqXwjxzw66/XlW8gq
- rTG4A
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ONUJ57JWXDQLSPUEKXGT2IQWQE5GNXKQ
-X-Message-ID-Hash: ONUJ57JWXDQLSPUEKXGT2IQWQE5GNXKQ
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+X-MailFrom: swan2718@snu.ac.kr
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID
+X-Message-ID-Hash: XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID
+X-Mailman-Approved-At: Tue, 26 May 2026 09:00:32 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ONUJ57JWXDQLSPUEKXGT2IQWQE5GNXKQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,660 +140,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Congestion control variables in batadv_tp_sender were scattered across the
-struct without clear grouping, making it difficult to reason about which
-fields require cwnd_lock (now "cc_lock") protection. These should be
-combined in a structure to make it more easily visible which variable
-should be read/modified with the cc_lock held.
+batadv_dat_purge() is a periodic delayed work that re-queues itself via
+batadv_dat_start_timer() at the end of each run. When the mesh interface
+is torn down, batadv_dat_free() calls cancel_delayed_work_sync() to stop
+the purge work before freeing the DAT hash table.
 
-Some variables used atomic_t for concurrent access while others relied on
-cwnd_lock, leading to an inconsistent locking model. This can be simplified
-by:
+However, cancel_delayed_work_sync() leaves the work in an enabled state.
+If the purge work is currently executing and re-queues itself before
+cancel_delayed_work_sync() internally marks it for cancellation, the
+newly queued work escapes cancellation. This re-queued work then fires
+after batadv_dat_hash_free() has already freed the hash table but before
+the pointer is set to NULL, causing __batadv_dat_purge() to operate on a
+dangling pointer that passes the NULL check, and spin indefinitely on a
+spinlock in freed memory.
 
-* keeping all congestion control decisions inside the cc_lock
-* variables which can be accessed without a lock must use
-  READ_ONCE/WRITE_ONE
+Replace cancel_delayed_work_sync() with disable_delayed_work_sync(),
+which additionally disables the work so that any concurrent
+queue_delayed_work() call from the running batadv_dat_purge() is
+silently rejected. This guarantees no re-queued work can fire after
+disable_delayed_work_sync() returns.
 
-This is only possible, by extracting the congestion control logic from
-batadv_tp_recv_ack() into a new helper batadv_tp_handle_ack(). Its
-decisions are returned as a batadv_tp_ack_reaction enum value and then
-applied by the caller. This separates the algorithm (deciding what to do)
-from the mechanism (actually doing it).
+Found by syzkaller.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: 2f1dfbe18507 ("batman-adv: Distributed ARP Table - implement local storage")
+Signed-off-by: Soowan Park <swan2718@snu.ac.kr>
 ---
- net/batman-adv/tp_meter.c | 329 +++++++++++++++++++++++++++-------------------
- net/batman-adv/types.h    |  80 +++++------
- 2 files changed, 240 insertions(+), 169 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index cb4849ce..6c6066f0 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -143,29 +143,23 @@ static u32 batadv_tp_cwnd(u32 base, u32 increment, u32 min)
-  * increased by MSS * MSS / CWND for every unique received ACK
-  */
- static void batadv_tp_update_cwnd(struct batadv_tp_sender *tp_vars, u32 mss)
-+	__must_hold(&tp_vars->cc_lock)
- {
--	spin_lock_bh(&tp_vars->cwnd_lock);
--
- 	/* slow start... */
--	if (tp_vars->cwnd <= tp_vars->ss_threshold) {
--		tp_vars->dec_cwnd = 0;
--		tp_vars->cwnd = batadv_tp_cwnd(tp_vars->cwnd, mss, mss);
--		spin_unlock_bh(&tp_vars->cwnd_lock);
-+	if (tp_vars->cc.cwnd <= tp_vars->cc.ss_threshold) {
-+		tp_vars->cc.dec_cwnd = 0;
-+		tp_vars->cc.cwnd = batadv_tp_cwnd(tp_vars->cc.cwnd, mss, mss);
- 		return;
- 	}
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 0a8bd95e2f99..9dce7da4282c 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -837,7 +837,7 @@ void batadv_dat_free(struct batadv_priv *bat_priv)
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
+ 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_DAT, 1);
  
- 	/* increment CWND at least of 1 (section 3.1 of RFC5681) */
--	tp_vars->dec_cwnd += max_t(u32, 1U << 3,
--				   ((mss * mss) << 6) / (tp_vars->cwnd << 3));
--	if (tp_vars->dec_cwnd < (mss << 3)) {
--		spin_unlock_bh(&tp_vars->cwnd_lock);
-+	tp_vars->cc.dec_cwnd += max_t(u32, 1U << 3,
-+				      ((mss * mss) << 6) / (tp_vars->cc.cwnd << 3));
-+	if (tp_vars->cc.dec_cwnd < (mss << 3))
- 		return;
--	}
+-	cancel_delayed_work_sync(&bat_priv->dat.work);
++	disable_delayed_work_sync(&bat_priv->dat.work);
  
--	tp_vars->cwnd = batadv_tp_cwnd(tp_vars->cwnd, mss, mss);
--	tp_vars->dec_cwnd = 0;
--
--	spin_unlock_bh(&tp_vars->cwnd_lock);
-+	tp_vars->cc.cwnd = batadv_tp_cwnd(tp_vars->cc.cwnd, mss, mss);
-+	tp_vars->cc.dec_cwnd = 0;
+ 	batadv_dat_hash_free(bat_priv);
  }
- 
- /**
-@@ -175,6 +169,7 @@ static void batadv_tp_update_cwnd(struct batadv_tp_sender *tp_vars, u32 mss)
-  */
- static void batadv_tp_update_rto(struct batadv_tp_sender *tp_vars,
- 				 u32 new_rtt)
-+	__must_hold(&tp_vars->cc_lock)
- {
- 	long m = new_rtt;
- 
-@@ -184,24 +179,24 @@ static void batadv_tp_update_rto(struct batadv_tp_sender *tp_vars,
- 	 * It's tricky to understand. Don't lose hair please.
- 	 * Inspired by tcp_rtt_estimator() tcp_input.c
- 	 */
--	if (tp_vars->srtt != 0) {
--		m -= (tp_vars->srtt >> 3); /* m is now error in rtt est */
--		tp_vars->srtt += m; /* rtt = 7/8 srtt + 1/8 new */
-+	if (tp_vars->cc.srtt != 0) {
-+		m -= (tp_vars->cc.srtt >> 3); /* m is now error in rtt est */
-+		tp_vars->cc.srtt += m; /* rtt = 7/8 srtt + 1/8 new */
- 		if (m < 0)
- 			m = -m;
- 
--		m -= (tp_vars->rttvar >> 2);
--		tp_vars->rttvar += m; /* mdev ~= 3/4 rttvar + 1/4 new */
-+		m -= (tp_vars->cc.rttvar >> 2);
-+		tp_vars->cc.rttvar += m; /* mdev ~= 3/4 rttvar + 1/4 new */
- 	} else {
- 		/* first measure getting in */
--		tp_vars->srtt = m << 3;	/* take the measured time to be srtt */
--		tp_vars->rttvar = m << 1; /* new_rtt / 2 */
-+		tp_vars->cc.srtt = m << 3; /* take the measured time to be srtt */
-+		tp_vars->cc.rttvar = m << 1; /* new_rtt / 2 */
- 	}
- 
- 	/* rto = srtt + 4 * rttvar.
- 	 * rttvar is scaled by 4, therefore doesn't need to be multiplied
- 	 */
--	tp_vars->rto = (tp_vars->srtt >> 3) + tp_vars->rttvar;
-+	WRITE_ONCE(tp_vars->cc.rto, (tp_vars->cc.srtt >> 3) + tp_vars->cc.rttvar);
- }
- 
- /**
-@@ -452,11 +447,11 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
- 		   "Last timing stats: SRTT=%ums RTTVAR=%ums RTO=%ums\n",
--		   tp_vars->srtt >> 3, tp_vars->rttvar >> 2, tp_vars->rto);
-+		   tp_vars->cc.srtt >> 3, tp_vars->cc.rttvar >> 2, tp_vars->cc.rto);
- 
- 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
- 		   "Final values: cwnd=%u ss_threshold=%u\n",
--		   tp_vars->cwnd, tp_vars->ss_threshold);
-+		   tp_vars->cc.cwnd, tp_vars->cc.ss_threshold);
- 
- 	session_cookie = batadv_tp_session_cookie(tp_vars->common.session,
- 						  tp_vars->icmp_uid);
-@@ -522,7 +517,8 @@ static void batadv_tp_reset_sender_timer(struct batadv_tp_sender *tp_vars)
- 		/* timer ref will be dropped in batadv_tp_sender_cleanup */
- 		return;
- 
--	mod_timer(&tp_vars->common.timer, jiffies + msecs_to_jiffies(tp_vars->rto));
-+	mod_timer(&tp_vars->common.timer,
-+		  jiffies + msecs_to_jiffies(READ_ONCE(tp_vars->cc.rto)));
- }
- 
- /**
-@@ -541,8 +537,11 @@ static void batadv_tp_sender_timeout(struct timer_list *t)
- 	if (batadv_tp_sender_stopped(tp_vars))
- 		return;
- 
-+	spin_lock_bh(&tp_vars->cc_lock);
-+
- 	/* if the user waited long enough...shutdown the test */
--	if (unlikely(tp_vars->rto >= BATADV_TP_MAX_RTO)) {
-+	if (unlikely(tp_vars->cc.rto >= BATADV_TP_MAX_RTO)) {
-+		spin_unlock_bh(&tp_vars->cc_lock);
- 		batadv_tp_sender_shutdown(tp_vars,
- 					  BATADV_TP_REASON_DST_UNREACHABLE);
- 		return;
-@@ -551,25 +550,24 @@ static void batadv_tp_sender_timeout(struct timer_list *t)
- 	/* RTO exponential backoff
- 	 * Details in Section 5.5 of RFC6298
- 	 */
--	tp_vars->rto <<= 1;
-+	WRITE_ONCE(tp_vars->cc.rto, tp_vars->cc.rto * 2);
- 
--	spin_lock_bh(&tp_vars->cwnd_lock);
--
--	tp_vars->ss_threshold = tp_vars->cwnd >> 1;
--	if (tp_vars->ss_threshold < BATADV_TP_PLEN * 2)
--		tp_vars->ss_threshold = BATADV_TP_PLEN * 2;
-+	tp_vars->cc.ss_threshold = tp_vars->cc.cwnd >> 1;
-+	if (tp_vars->cc.ss_threshold < BATADV_TP_PLEN * 2)
-+		tp_vars->cc.ss_threshold = BATADV_TP_PLEN * 2;
- 
- 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
- 		   "Meter: RTO fired during test towards %pM! cwnd=%u new ss_thr=%u, resetting last_sent to %u\n",
--		   tp_vars->common.other_end, tp_vars->cwnd, tp_vars->ss_threshold,
--		   atomic_read(&tp_vars->last_acked));
-+		   tp_vars->common.other_end, tp_vars->cc.cwnd, tp_vars->cc.ss_threshold,
-+		   tp_vars->cc.last_acked);
- 
--	tp_vars->cwnd = BATADV_TP_PLEN * 3;
-+	tp_vars->cc.cwnd = BATADV_TP_PLEN * 3;
- 
--	spin_unlock_bh(&tp_vars->cwnd_lock);
-+	WRITE_ONCE(tp_vars->cc.last_sent, tp_vars->cc.last_acked);
-+
-+	spin_unlock_bh(&tp_vars->cc_lock);
- 
- 	/* resend the non-ACKed packets.. */
--	tp_vars->last_sent = atomic_read(&tp_vars->last_acked);
- 	wake_up(&tp_vars->more_bytes);
- 
- 	batadv_tp_reset_sender_timer(tp_vars);
-@@ -667,6 +665,115 @@ static int batadv_tp_send_msg(struct batadv_tp_sender *tp_vars, const u8 *src,
- 	return BATADV_TP_REASON_CANT_SEND;
- }
- 
-+/**
-+ * enum batadv_tp_ack_reaction - expected reaction to ack packet
-+ */
-+enum batadv_tp_ack_reaction {
-+	/** @BATADV_TP_ACK_REACTION_OLD_ACK: ignore old ack packet */
-+	BATADV_TP_ACK_REACTION_OLD_ACK,
-+
-+	/** @BATADV_TP_ACK_REACTION_IGNORE: ignore duplicated ack but reset timer */
-+	BATADV_TP_ACK_REACTION_IGNORE,
-+
-+	/** @BATADV_TP_ACK_REACTION_RESEND_WAKEUP: resend data and wakeup "more_bytes" */
-+	BATADV_TP_ACK_REACTION_RESEND_WAKEUP,
-+
-+	/** @BATADV_TP_ACK_REACTION_WAKEUP: wakeup "more_bytes" */
-+	BATADV_TP_ACK_REACTION_WAKEUP,
-+};
-+
-+/**
-+ * batadv_tp_handle_ack() - Calculate reaction to ACK and update congestion control
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tp_vars: the private data of the current TP meter session
-+ * @recv_ack: received ACK seqno
-+ * @mss: maximum segment size for transmission
-+ *
-+ * Return: expected reaction to this ack
-+ */
-+static enum batadv_tp_ack_reaction
-+batadv_tp_handle_ack(struct batadv_priv *bat_priv,
-+		     struct batadv_tp_sender *tp_vars,
-+		     u32 recv_ack, size_t mss)
-+	__must_hold(&tp_vars->cc_lock)
-+{
-+	static enum batadv_tp_ack_reaction reaction;
-+
-+	if (batadv_seq_before(recv_ack, tp_vars->cc.last_acked))
-+		return BATADV_TP_ACK_REACTION_OLD_ACK;
-+
-+	/* check if this ACK is a duplicate */
-+	if (tp_vars->cc.last_acked == recv_ack) {
-+		/* if this is the third duplicate ACK do Fast Retransmit */
-+		if (tp_vars->cc.dup_acks > 3)
-+			return BATADV_TP_ACK_REACTION_IGNORE;
-+
-+		tp_vars->cc.dup_acks++;
-+		if (tp_vars->cc.dup_acks != 3)
-+			return BATADV_TP_ACK_REACTION_IGNORE;
-+
-+		if (!batadv_seq_before(recv_ack, tp_vars->cc.recover))
-+			return BATADV_TP_ACK_REACTION_IGNORE;
-+
-+		/* Fast Recovery */
-+		tp_vars->cc.fast_recovery = true;
-+
-+		/* Set recover to the last outstanding seqno when Fast Recovery
-+		 * is entered. RFC6582, Section 3.2, step 1
-+		 */
-+		tp_vars->cc.recover = tp_vars->cc.last_sent;
-+		tp_vars->cc.ss_threshold = tp_vars->cc.cwnd >> 1;
-+		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
-+			   "Meter: Fast Recovery, (cur cwnd=%u) ss_thr=%u last_sent=%u recv_ack=%u\n",
-+			   tp_vars->cc.cwnd, tp_vars->cc.ss_threshold,
-+			   tp_vars->cc.last_sent, recv_ack);
-+		tp_vars->cc.cwnd = batadv_tp_cwnd(tp_vars->cc.ss_threshold, 3 * mss,
-+						  mss);
-+		tp_vars->cc.dec_cwnd = 0;
-+		WRITE_ONCE(tp_vars->cc.last_sent, recv_ack);
-+
-+		return BATADV_TP_ACK_REACTION_RESEND_WAKEUP;
-+	}
-+
-+	/* count the acked data */
-+	atomic64_add(recv_ack - tp_vars->cc.last_acked, &tp_vars->tot_sent);
-+
-+	/* reset the duplicate ACKs counter */
-+	tp_vars->cc.dup_acks = 0;
-+
-+	if (tp_vars->cc.fast_recovery) {
-+		/* partial ACK */
-+		if (batadv_seq_before(recv_ack, tp_vars->cc.recover)) {
-+			/* this is another hole in the window. React
-+			 * immediately as specified by NewReno (see
-+			 * Section 3.2 of RFC6582 for details)
-+			 */
-+			reaction = BATADV_TP_ACK_REACTION_RESEND_WAKEUP;
-+			tp_vars->cc.cwnd = batadv_tp_cwnd(tp_vars->cc.cwnd,
-+							  mss, mss);
-+		} else {
-+			tp_vars->cc.fast_recovery = false;
-+			/* set cwnd to the value of ss_threshold at the
-+			 * moment that Fast Recovery was entered.
-+			 * RFC6582, Section 3.2, step 3
-+			 */
-+			tp_vars->cc.cwnd = batadv_tp_cwnd(tp_vars->cc.ss_threshold,
-+							  0, mss);
-+			reaction = BATADV_TP_ACK_REACTION_WAKEUP;
-+		}
-+	} else {
-+		if (recv_ack - tp_vars->cc.last_acked >= mss)
-+			batadv_tp_update_cwnd(tp_vars, mss);
-+
-+		reaction = BATADV_TP_ACK_REACTION_WAKEUP;
-+	}
-+
-+	/* move the Transmit Window */
-+	WRITE_ONCE(tp_vars->cc.last_acked, recv_ack);
-+
-+	return reaction;
-+}
-+
- /**
-  * batadv_tp_recv_ack() - ACK receiving function
-  * @bat_priv: the bat priv with all the mesh interface information
-@@ -680,16 +787,19 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	const struct batadv_icmp_tp_packet *icmp;
-+	enum batadv_tp_ack_reaction reaction;
- 	struct batadv_tp_sender *tp_vars;
--	const unsigned char *dev_addr;
--	size_t packet_len, mss;
--	u32 rtt, recv_ack, cwnd;
-+	size_t packet_len;
-+	u32 recv_ack;
-+	size_t mss;
-+	u32 rtt;
- 
- 	packet_len = BATADV_TP_PLEN;
- 	mss = BATADV_TP_PLEN;
- 	packet_len += sizeof(struct batadv_unicast_packet);
- 
- 	icmp = (struct batadv_icmp_tp_packet *)skb->data;
-+	recv_ack = ntohl(icmp->seqno);
- 
- 	/* find the tp_vars */
- 	tp_vars = batadv_tp_list_find_sender_session(bat_priv, icmp->orig,
-@@ -701,8 +811,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	/* old ACK? silently drop it.. */
--	if (batadv_seq_before(ntohl(icmp->seqno),
--			      (u32)atomic_read(&tp_vars->last_acked)))
-+	if (batadv_seq_before(recv_ack, READ_ONCE(tp_vars->cc.last_acked)))
- 		goto out;
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
-@@ -713,93 +822,36 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
- 	if (unlikely(!orig_node))
- 		goto out;
- 
-+	spin_lock_bh(&tp_vars->cc_lock);
- 	/* update RTO with the new sampled RTT, if any */
- 	rtt = jiffies_to_msecs(jiffies) - ntohl(icmp->timestamp);
- 	if (icmp->timestamp && rtt)
- 		batadv_tp_update_rto(tp_vars, rtt);
- 
-+	reaction = batadv_tp_handle_ack(bat_priv, tp_vars, recv_ack, mss);
-+	spin_unlock_bh(&tp_vars->cc_lock);
-+
-+	if (reaction == BATADV_TP_ACK_REACTION_OLD_ACK)
-+		goto out;
-+
- 	/* ACK for new data... reset the timer */
- 	batadv_tp_reset_sender_timer(tp_vars);
- 
--	recv_ack = ntohl(icmp->seqno);
--
--	/* check if this ACK is a duplicate */
--	if (atomic_read(&tp_vars->last_acked) == recv_ack) {
--		atomic_inc(&tp_vars->dup_acks);
--		if (atomic_read(&tp_vars->dup_acks) != 3)
--			goto out;
--
--		if (recv_ack >= tp_vars->recover)
--			goto out;
--
--		/* if this is the third duplicate ACK do Fast Retransmit */
-+	switch (reaction) {
-+	default:
-+	case BATADV_TP_ACK_REACTION_IGNORE:
-+		goto out;
-+	case BATADV_TP_ACK_REACTION_RESEND_WAKEUP:
- 		batadv_tp_send_msg(tp_vars, primary_if->net_dev->dev_addr,
- 				   orig_node, recv_ack, packet_len,
- 				   icmp->session, icmp->uid,
- 				   jiffies_to_msecs(jiffies));
--
--		spin_lock_bh(&tp_vars->cwnd_lock);
--
--		/* Fast Recovery */
--		tp_vars->fast_recovery = true;
--		/* Set recover to the last outstanding seqno when Fast Recovery
--		 * is entered. RFC6582, Section 3.2, step 1
--		 */
--		tp_vars->recover = tp_vars->last_sent;
--		tp_vars->ss_threshold = tp_vars->cwnd >> 1;
--		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
--			   "Meter: Fast Recovery, (cur cwnd=%u) ss_thr=%u last_sent=%u recv_ack=%u\n",
--			   tp_vars->cwnd, tp_vars->ss_threshold,
--			   tp_vars->last_sent, recv_ack);
--		tp_vars->cwnd = batadv_tp_cwnd(tp_vars->ss_threshold, 3 * mss,
--					       mss);
--		tp_vars->dec_cwnd = 0;
--		tp_vars->last_sent = recv_ack;
--
--		spin_unlock_bh(&tp_vars->cwnd_lock);
--	} else {
--		/* count the acked data */
--		atomic64_add(recv_ack - atomic_read(&tp_vars->last_acked),
--			     &tp_vars->tot_sent);
--		/* reset the duplicate ACKs counter */
--		atomic_set(&tp_vars->dup_acks, 0);
--
--		if (tp_vars->fast_recovery) {
--			/* partial ACK */
--			if (batadv_seq_before(recv_ack, tp_vars->recover)) {
--				/* this is another hole in the window. React
--				 * immediately as specified by NewReno (see
--				 * Section 3.2 of RFC6582 for details)
--				 */
--				dev_addr = primary_if->net_dev->dev_addr;
--				batadv_tp_send_msg(tp_vars, dev_addr,
--						   orig_node, recv_ack,
--						   packet_len, icmp->session,
--						   icmp->uid,
--						   jiffies_to_msecs(jiffies));
--				tp_vars->cwnd = batadv_tp_cwnd(tp_vars->cwnd,
--							       mss, mss);
--			} else {
--				tp_vars->fast_recovery = false;
--				/* set cwnd to the value of ss_threshold at the
--				 * moment that Fast Recovery was entered.
--				 * RFC6582, Section 3.2, step 3
--				 */
--				cwnd = batadv_tp_cwnd(tp_vars->ss_threshold, 0,
--						      mss);
--				tp_vars->cwnd = cwnd;
--			}
--			goto move_twnd;
--		}
--
--		if (recv_ack - atomic_read(&tp_vars->last_acked) >= mss)
--			batadv_tp_update_cwnd(tp_vars, mss);
--move_twnd:
--		/* move the Transmit Window */
--		atomic_set(&tp_vars->last_acked, recv_ack);
-+		fallthrough;
-+	case BATADV_TP_ACK_REACTION_WAKEUP:
-+		wake_up(&tp_vars->more_bytes);
-+		break;
- 	}
- 
--	wake_up(&tp_vars->more_bytes);
- out:
- 	batadv_hardif_put(primary_if);
- 	batadv_orig_node_put(orig_node);
-@@ -818,8 +870,16 @@ static bool batadv_tp_avail(struct batadv_tp_sender *tp_vars,
- {
- 	u32 win_left, win_limit;
- 
--	win_limit = atomic_read(&tp_vars->last_acked) + tp_vars->cwnd;
--	win_left = win_limit - tp_vars->last_sent;
-+	spin_lock_bh(&tp_vars->cc_lock);
-+
-+	win_limit = tp_vars->cc.last_acked + tp_vars->cc.cwnd;
-+
-+	if (batadv_seq_before(tp_vars->cc.last_sent, win_limit))
-+		win_left = win_limit - tp_vars->cc.last_sent;
-+	else
-+		win_left = 0;
-+
-+	spin_unlock_bh(&tp_vars->cc_lock);
- 
- 	return win_left >= payload_len;
- }
-@@ -859,6 +919,7 @@ static int batadv_tp_send(void *arg)
- 	struct batadv_hard_iface *primary_if = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	size_t payload_len, packet_len;
-+	u32 last_sent;
- 	int err = 0;
- 
- 	orig_node = batadv_orig_hash_find(bat_priv, tp_vars->common.other_end);
-@@ -900,10 +961,10 @@ static int batadv_tp_send(void *arg)
- 		 * the size of the unicast header
- 		 */
- 		packet_len = payload_len + sizeof(struct batadv_unicast_packet);
-+		last_sent = READ_ONCE(tp_vars->cc.last_sent);
- 
- 		err = batadv_tp_send_msg(tp_vars, primary_if->net_dev->dev_addr,
--					 orig_node, tp_vars->last_sent,
--					 packet_len,
-+					 orig_node, last_sent, packet_len,
- 					 tp_vars->common.session, tp_vars->icmp_uid,
- 					 jiffies_to_msecs(jiffies));
- 
-@@ -918,8 +979,12 @@ static int batadv_tp_send(void *arg)
- 		}
- 
- 		/* right-shift the TWND */
--		if (!err)
--			tp_vars->last_sent += payload_len;
-+		if (!err) {
-+			spin_lock_bh(&tp_vars->cc_lock);
-+			if (tp_vars->cc.last_sent == last_sent)
-+				WRITE_ONCE(tp_vars->cc.last_sent, last_sent + payload_len);
-+			spin_unlock_bh(&tp_vars->cc_lock);
-+		}
- 
- 		cond_resched();
- 	}
-@@ -1036,27 +1101,27 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
- 	memcpy(tp_vars->common.session, session_id, sizeof(session_id));
- 	tp_vars->icmp_uid = icmp_uid;
- 
--	tp_vars->last_sent = BATADV_TP_FIRST_SEQ;
--	atomic_set(&tp_vars->last_acked, BATADV_TP_FIRST_SEQ);
--	tp_vars->fast_recovery = false;
--	tp_vars->recover = BATADV_TP_FIRST_SEQ;
-+	WRITE_ONCE(tp_vars->cc.last_sent, BATADV_TP_FIRST_SEQ);
-+	WRITE_ONCE(tp_vars->cc.last_acked, BATADV_TP_FIRST_SEQ);
-+	tp_vars->cc.fast_recovery = false;
-+	tp_vars->cc.recover = BATADV_TP_FIRST_SEQ;
- 
- 	/* initialise the CWND to 3*MSS (Section 3.1 in RFC5681).
- 	 * For batman-adv the MSS is the size of the payload received by the
- 	 * mesh_interface, hence its MTU
- 	 */
--	tp_vars->cwnd = BATADV_TP_PLEN * 3;
-+	tp_vars->cc.cwnd = BATADV_TP_PLEN * 3;
- 	/* at the beginning initialise the SS threshold to the biggest possible
- 	 * window size, hence the AWND size
- 	 */
--	tp_vars->ss_threshold = BATADV_TP_AWND;
-+	tp_vars->cc.ss_threshold = BATADV_TP_AWND;
- 
- 	/* RTO initial value is 3 seconds.
- 	 * Details in Section 2.1 of RFC6298
- 	 */
--	tp_vars->rto = 1000;
--	tp_vars->srtt = 0;
--	tp_vars->rttvar = 0;
-+	WRITE_ONCE(tp_vars->cc.rto, 1000);
-+	tp_vars->cc.srtt = 0;
-+	tp_vars->cc.rttvar = 0;
- 
- 	atomic64_set(&tp_vars->tot_sent, 0);
- 
-@@ -1072,7 +1137,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
- 	spin_lock_init(&tp_vars->common.unacked_lock);
- 	INIT_LIST_HEAD(&tp_vars->common.unacked_list);
- 
--	spin_lock_init(&tp_vars->cwnd_lock);
-+	spin_lock_init(&tp_vars->cc_lock);
- 
- 	tp_vars->prerandom_offset = 0;
- 	spin_lock_init(&tp_vars->prerandom_lock);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 4880bf3e..53dc42e7 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1328,6 +1328,45 @@ struct batadv_tp_vars_common {
- 	struct rcu_head rcu;
- };
- 
-+/** struct batadv_tp_sender_cc - congestion control variables */
-+struct batadv_tp_sender_cc {
-+	/** @fast_recovery: true if in Fast Recovery mode */
-+	bool fast_recovery:1;
-+
-+	/** @dup_acks: duplicate ACKs counter */
-+	u8 dup_acks;
-+
-+	/** @dec_cwnd: decimal part of the cwnd used during linear growth */
-+	u16 dec_cwnd;
-+
-+	/** @cwnd: current size of the congestion window */
-+	u32 cwnd;
-+
-+	/**
-+	 * @ss_threshold: Slow Start threshold. Once cwnd exceeds this value the
-+	 *  connection switches to the Congestion Avoidance state
-+	 */
-+	u32 ss_threshold;
-+
-+	/** @last_acked: last acked byte */
-+	u32 last_acked;
-+
-+	/** @last_sent: last sent byte, not yet acked */
-+	u32 last_sent;
-+
-+	/** @recover: last sent seqno when entering Fast Recovery */
-+	u32 recover;
-+
-+	/** @rto: sender timeout */
-+	u32 rto;
-+
-+	/** @srtt: smoothed RTT scaled by 2^3 */
-+	u32 srtt;
-+
-+	/** @rttvar: RTT variation scaled by 2^2 */
-+	u32 rttvar;
-+};
-+
- /**
-  * struct batadv_tp_sender - sender tp meter private variables per session
-  */
-@@ -1344,15 +1383,6 @@ struct batadv_tp_sender {
- 	 */
- 	atomic_t send_result;
- 
--	/** @last_sent: last sent byte, not yet acked */
--	u32 last_sent;
--
--	/** @fast_recovery: true if in Fast Recovery mode */
--	unsigned char fast_recovery:1;
--
--	/** @recover: last sent seqno when entering Fast Recovery */
--	u32 recover;
--
- 	/** @finish_work: work item for the finishing procedure */
- 	struct delayed_work finish_work;
- 
-@@ -1365,39 +1395,15 @@ struct batadv_tp_sender {
- 	/** @icmp_uid: local ICMP "socket" index */
- 	u8 icmp_uid;
- 
--	/** @dec_cwnd: decimal part of the cwnd used during linear growth */
--	u16 dec_cwnd;
-+	/** @cc: congestion control variables */
-+	struct batadv_tp_sender_cc cc;
- 
--	/** @cwnd: current size of the congestion window */
--	u32 cwnd;
--
--	/** @cwnd_lock: lock do protect @cwnd & @dec_cwnd */
--	spinlock_t cwnd_lock;
--
--	/**
--	 * @ss_threshold: Slow Start threshold. Once cwnd exceeds this value the
--	 *  connection switches to the Congestion Avoidance state
--	 */
--	u32 ss_threshold;
--
--	/** @last_acked: last acked byte */
--	atomic_t last_acked;
-+	/** @cc_lock: lock do protect @cc */
-+	spinlock_t cc_lock;
- 
- 	/** @tot_sent: amount of data sent/ACKed so far */
- 	atomic64_t tot_sent;
- 
--	/** @dup_acks: duplicate ACKs counter */
--	atomic_t dup_acks;
--
--	/** @rto: sender timeout */
--	u32 rto;
--
--	/** @srtt: smoothed RTT scaled by 2^3 */
--	u32 srtt;
--
--	/** @rttvar: RTT variation scaled by 2^2 */
--	u32 rttvar;
--
- 	/**
- 	 * @more_bytes: waiting queue anchor when waiting for more ack/retry
- 	 *  timeout
-
 -- 
-2.47.3
+2.43.0
 
