@@ -4,134 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC3BCCD5BD5
-	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 07:01:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E792ECD5BCF
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 07:30:47 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3878682FED
-	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 09:01:03 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id EB87F835FB
+	for <batman-adv@archiver.kernel.org>; Tue, 26 May 2026 09:30:45 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779778863;
- b=gLTlgnguvekEm5w4yPGgVedLfbmtRHus+4bfvik0fQC/XwyRFoJYGxVCg6JKcymknJ+sr
- TYhUB3kpE3o4Yv+H/DmOtOKKEfF4BiDymOxGsIOTX7WasqR+XffzCFIKPD4QOw2U6X6fDrX
- yht0lt6rEJJxmaaRRCsdx3syFkNCkUk=
+ t=1779780645;
+ b=nueqWABNJn0Y7kP6Ymo80uDov0nmXqHNcreXplAoaEr+JokWVjQCPhvX32jLfCC3NlYtS
+ zVqvw6qkfak7ua/vtpzrgKnmTx0Wd6pyJn5R/qRDwZ2HSrH9dzCVQJwx1TDJTkNNkvdJNh4
+ WWNJKg0bUJspfWNIddz26g1slO/DTqo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779778863; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779780645; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
- b=yWdXn8h316nDHTFQGEFhpueDnd0dpmwvF67UQlSivTVVezi7QFrU6/SHC+H4K+PTeSS3N
- 6GSwtclu1Uc6gOVU+MSbgF4HoM35b50I9zIKT+2TTfLJorq1v0G5KZbeChI6BrWsfE2pU0N
- pKnkSgDNo8IqKxI29V3wQRyRfq+v1Hc=
+ list-archive; bh=NvBuL1voqSEN0oLWaKKw+NjOufd3aAtSPxxpVUGOPIQ=;
+ b=iEmp/LYAmaoKDXN+U2Y6SM0AaVQU90n8rAxhr6rI2ioDj4wCjSirPu4CwSXVFtbbOWvE1
+ HuwCR9mSDMKXphoS6Tt4+SZrZajCqwoyhhIOqrE139q5X5MfWR4nFhkN1N8jMDVJffx3nEl
+ QEpVV2bDq0rJ2ATH6wc571Wzn2tiS/E=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=snu.ac.kr;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass header.from=snu.ac.kr policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=snu.ac.kr; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=snu.ac.kr policy.dmarc=none
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com
- [IPv6:2607:f8b0:4864:20::42a])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 055D380F29
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 26 May 2026 08:48:47 +0200 (CEST)
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 166EA807B0
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 26 May 2026 09:30:11 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779778140;
+	s=20121; t=1779780612;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
-	b=O6bPVRbVjcFUBnyt14grEJ0P4wCrRKW1YhO4AU8S47zXV5VbnBzSDyuhSBghTRB1mEAYvh
-	bsH7hsyXXRqnp85QpquPBjIj0wn0BfEfF7Wnhaq+w2OcaSinCqlOjoefg9FVY5ogPE6j9d
-	3zYl5IC8JZbvQWsVcg2FIUT2LBmf1Wk=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779778140;
-	b=cSXxHYmAzjwpk8/4LhUGZntEZxdSmJf9KQgcmZEN721Alp8b733dMvV2OUX/IFrfqZ4lZn
-	M9zUxjpq4fqBi0Mkikb/itYtIgZquAy+YDyDFAKe5DBffkDpzslDAY5WULZKOBegW++V/H
-	vRr9YtiZfaRdeE7XXnDS95rDCLS5iYE=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=NvBuL1voqSEN0oLWaKKw+NjOufd3aAtSPxxpVUGOPIQ=;
+	b=bbOhJdTClJ2jBEhrTwymt6su8ydn7BhIlmlTI7cM719AKO5i14eCDLhMHYZQegGVBjzeCR
+	xyphNQm/csPZAzL4ev1pKDN7Wh9D0QphqKyWv0Q1Si6qR7NCctnbyNsn5cJ8vwi2vPyr+M
+	1BRxbJStif6p2+//ND8InLiwL8IaZBY=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779780612;
+	b=UTpS8updxqilqBUtCK8WL+gm6/v9qUN9XNwrDoA9rjZTxSyWUrsE1Hc+KFt/S1XjOLCgUF
+	kqiDRLMG0DKMjTwZ53EUPXu2vlgpbpf2yi4KA+xspHZYsCEFtLrQVlzE+gz+PrkDXsEI+k
+	x6wnNhFafyxzcyOf19SWVytxwJ1wng0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=snu.ac.kr header.s=google header.b=bhCQFxin;
-	spf=pass (diktynna.open-mesh.org: domain of swan2718@snu.ac.kr designates
- 2607:f8b0:4864:20::42a as permitted sender) smtp.mailfrom=swan2718@snu.ac.kr;
-	dmarc=pass (policy=none) header.from=snu.ac.kr
-Received: by mail-pf1-x42a.google.com with SMTP id
- d2e1a72fcca58-82faf871346so7807281b3a.0
-        for <b.a.t.m.a.n@lists.open-mesh.org>;
- Mon, 25 May 2026 23:48:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=snu.ac.kr; s=google; t=1779778125; x=1780382925;
- darn=lists.open-mesh.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
-        b=bhCQFxinXZ7opoZDuPXm3dKIN4D5OOoOK7xU/1hDEt/a2KHKeumcHPP5kW2K/g4qZE
-         pekZeqPXbeq2LFiBFUVqaVrwG7DD+ciBIxS1pHIUHqnnqQ0iilk3D97FByrWFTQzaa+V
-         4GUFhE05rpisxlgtXcciZH+5K1Bmr6VxtQfS8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779778125; x=1780382925;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=O/iQlSdODyUFcZUiDfoqt+9/8YQPirYzjTroKpMrHK0=;
-        b=d7VPQqWjVRW6xB0MsCwWaXJilSTEl5XnHXPibn3YGlv9gtclVug2+VYZYKGXhTr5uH
-         X5+ZZxoNBew2zLshhjR4x3gXNKQP8OvC61E5ViN/kazZPvFMot9cesb6n+wHtCfqrx2V
-         oYwjyEXnMy24v++a86H89Jy8qB9Pg5xpYsBPLjUBIcLcYHN/BcsmN8eYOVxVxOWvRQcr
-         4Kkt/T4YciXpR0956VyJkRJMAJ2SPEHFZ9oJZgPgyYoQ8ZVfnqRIPAznDa0Yp/EpyJMS
-         wSMWb50ntREb6nN7PFKVZzky3UP8SYvr71Chx+tVlodrYBnGrFGkIVGVXLvNq+PyWjKM
-         tbSw==
-X-Gm-Message-State: AOJu0Yy0jsx5Z9kmorvktUKCvHDAsD4Cx09QOG1EPeHqU1JhjfwVTc3W
-	26vkcUXH8qS+ODarsQH2ptJt8EzP2OWKvhJiypmCJ75VyiNAhGkitAvipvZeCHuOw84djfbilyN
-	e+/EU5x/x5HzH
-X-Gm-Gg: Acq92OEQ20I1kelOHfnrKSxuKrB6+xlLn+wnNnGqbX5ENSE3w6WpeWonXc7Lr7sDsWz
-	awHSVq9h6IXI8M55QiYlgWg4SeyqoIcPsMVp4nzEl9VNx87kGXYdETgnlHhiwfQY2FpH+VjG1/s
-	AeXcRXIse5RNY8/gAn+l7oTYqaioNmv+KLpObGFiZD8HeJVoVl8nVVHAvJT3cTmaCJPftagYqIA
-	be7fBI4Rtp7tQlJrBcCuKvGK4jV8YVZuzJSHGJEWPwuDfXcrQ5/D5iunrfS23fp7jWZbl1xCdv1
-	d87iPJFq+6u9Kje+oqc1nuq680gaT6K9n4dUwYoqlocsmx8dZCNVWiop2LgkR8pclwdo2oarXZU
-	tVdn1jpJqod98Q5dwqtfu2R/8ai+UvGxPAFPcJTrx5CHsTvsXwtA6b88IE8nZDPjDkTtgNtSeo6
-	D76afx058ROUqrPuY5zDjl3oXNcVjVcXJoAqA6ZZy/lXumh872vA==
-X-Received: by 2002:a05:6a00:2da4:b0:82a:6ef8:cb43 with SMTP id
- d2e1a72fcca58-8415f53dbe4mr15892684b3a.19.1779778125518;
-        Mon, 25 May 2026 23:48:45 -0700 (PDT)
-Received: from ubuntu.. ([147.46.174.166])
-        by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-84164e9e7cdsm11909392b3a.34.2026.05.25.23.48.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 May 2026 23:48:44 -0700 (PDT)
-From: Soowan Park <swan2718@snu.ac.kr>
-To: b.a.t.m.a.n@lists.open-mesh.org,
-	netdev@vger.kernel.org
-Cc: marek.lindner@mailbox.org,
-	sw@simonwunderlich.de,
-	antonio@mandelbit.com,
-	sven@narfation.org,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	horms@kernel.org,
-	Soowan Park <swan2718@snu.ac.kr>
-Subject: [PATCH] batman-adv: fix DAT purge use-after-free on teardown
-Date: Tue, 26 May 2026 15:48:35 +0900
-Message-ID: <20260526064835.2233822-1-swan2718@snu.ac.kr>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass header.d=narfation.org header.s=20121 header.b=JtjTg5IY;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+Received: by dvalin.narfation.org (Postfix) id A520C1FE2A;
+	Tue, 26 May 2026 07:30:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1779780610;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=NvBuL1voqSEN0oLWaKKw+NjOufd3aAtSPxxpVUGOPIQ=;
+	b=JtjTg5IY5niVsR9IQBrb0/h/cOAmb0mBqCv0HPtFh+KU4iuBaSingsT5CFBe3Zr0EqjbJ3
+	1BqyK3Tmmn6iuUkfiEMxzSTNuXZ/amCyAeMiiYu8CAsEX9WI1VVu1dvu/kdjOqgpulq+8Z
+	sjY1NS2arWDN7DZRWtwjRArZi5XOBno=
+From: Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org,
+ Soowan Park <swan2718@snu.ac.kr>
+Cc: marek.lindner@mailbox.org, sw@simonwunderlich.de, antonio@mandelbit.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ horms@kernel.org, Soowan Park <swan2718@snu.ac.kr>, Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] batman-adv: fix DAT purge use-after-free on teardown
+Date: Tue, 26 May 2026 09:30:07 +0200
+Message-ID: <14018241.uLZWGnKmhe@ripper>
+In-Reply-To: <20260526064835.2233822-1-swan2718@snu.ac.kr>
+References: <20260526064835.2233822-1-swan2718@snu.ac.kr>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-MailFrom: swan2718@snu.ac.kr
-X-Mailman-Rule-Hits: nonmember-moderation
+Content-Type: multipart/signed; boundary="nextPart3046581.e9J7NaK4W3";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: SM4HJH7XQJAOZ6RZOOYNJ7DTZWPMUNPF
+X-Message-ID-Hash: SM4HJH7XQJAOZ6RZOOYNJ7DTZWPMUNPF
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID
-X-Message-ID-Hash: XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID
-X-Mailman-Approved-At: Tue, 26 May 2026 09:00:32 +0200
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
+ news-moderation; no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XWZWXES4YTMFBWYQNIX4M4A6CUEL56ID/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SM4HJH7XQJAOZ6RZOOYNJ7DTZWPMUNPF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -140,47 +104,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_dat_purge() is a periodic delayed work that re-queues itself via
-batadv_dat_start_timer() at the end of each run. When the mesh interface
-is torn down, batadv_dat_free() calls cancel_delayed_work_sync() to stop
-the purge work before freeing the DAT hash table.
+--nextPart3046581.e9J7NaK4W3
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 26 May 2026 09:30:07 +0200
+Message-ID: <14018241.uLZWGnKmhe@ripper>
+In-Reply-To: <20260526064835.2233822-1-swan2718@snu.ac.kr>
+References: <20260526064835.2233822-1-swan2718@snu.ac.kr>
+MIME-Version: 1.0
 
-However, cancel_delayed_work_sync() leaves the work in an enabled state.
-If the purge work is currently executing and re-queues itself before
-cancel_delayed_work_sync() internally marks it for cancellation, the
-newly queued work escapes cancellation. This re-queued work then fires
-after batadv_dat_hash_free() has already freed the hash table but before
-the pointer is set to NULL, causing __batadv_dat_purge() to operate on a
-dangling pointer that passes the NULL check, and spin indefinitely on a
-spinlock in freed memory.
+On Tuesday, 26 May 2026 08:48:35 CEST Soowan Park wrote:
+> batadv_dat_purge() is a periodic delayed work that re-queues itself via
+> batadv_dat_start_timer() at the end of each run. When the mesh interface
+> is torn down, batadv_dat_free() calls cancel_delayed_work_sync() to stop
+> the purge work before freeing the DAT hash table.
+>=20
+> However, cancel_delayed_work_sync() leaves the work in an enabled state.
+> If the purge work is currently executing and re-queues itself before
+> cancel_delayed_work_sync() internally marks it for cancellation, the
+> newly queued work escapes cancellation. This re-queued work then fires
+> after batadv_dat_hash_free() has already freed the hash table but before
+> the pointer is set to NULL, causing __batadv_dat_purge() to operate on a
+> dangling pointer that passes the NULL check, and spin indefinitely on a
+> spinlock in freed memory.
 
-Replace cancel_delayed_work_sync() with disable_delayed_work_sync(),
-which additionally disables the work so that any concurrent
-queue_delayed_work() call from the running batadv_dat_purge() is
-silently rejected. This guarantees no re-queued work can fire after
-disable_delayed_work_sync() returns.
 
-Found by syzkaller.
+You are talking about a re-queue by batadv_dat_start_timer(). This only=20
+happens when the DAT gets initialized or via the worker (batadv_dat_purge)=
+=20
+itself. How can the worker which is cancelled (with sync) re-queue itself?=
+=20
+Isn't this breaking a guarantee of cancel_delayed_work_sync() or did I=20
+misunderstand this part of the documentation?
 
-Fixes: 2f1dfbe18507 ("batman-adv: Distributed ARP Table - implement local storage")
-Signed-off-by: Soowan Park <swan2718@snu.ac.kr>
----
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 0a8bd95e2f99..9dce7da4282c 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -837,7 +837,7 @@ void batadv_dat_free(struct batadv_priv *bat_priv)
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 
--	cancel_delayed_work_sync(&bat_priv->dat.work);
-+	disable_delayed_work_sync(&bat_priv->dat.work);
- 
- 	batadv_dat_hash_free(bat_priv);
- }
--- 
-2.43.0
+"This is cancel_work_sync() for delayed works." [1]
+
+"Cancel work and wait for its execution to finish. This function can be use=
+d=20
+even if the work re-queues itself or migrates to another workqueue. On retu=
+rn=20
+from this function, work is guaranteed to be not pending or executing on an=
+y=20
+CPU as long as there aren=E2=80=99t racing enqueues." [2]
+
+(the part "This function can be used even if the work re-queues itself" is
+the important part here).
+
+
+> Replace cancel_delayed_work_sync() with disable_delayed_work_sync(),
+> which additionally disables the work so that any concurrent
+> queue_delayed_work() call from the running batadv_dat_purge() is
+> silently rejected. This guarantees no re-queued work can fire after
+> disable_delayed_work_sync() returns.
+
+I have no problem with using "disabled_*" everywhere (I even have a pending=
+=20
+patchset to use it - just to avoid problems with code changes in the future=
+).=20
+But since this is a fix which I don't get in the moment, I would like to=20
+understand the problem you are describing better before applying it.
+
+Regards,
+	Sven
+
+
+[1] https://www.kernel.org/doc/html/v7.0/core-api/workqueue.html#c.cancel_d=
+elayed_work_sync
+[2] https://www.kernel.org/doc/html/v7.0/core-api/workqueue.html#c.cancel_w=
+ork_sync
+--nextPart3046581.e9J7NaK4W3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCahVL/wAKCRBND3cr0xT1
+y38WAPwLlc/180rzpcmO7N4qmYg2RQ8w5oxAKnvdfgyknBNaKwEA8cOumQjNSrey
+d3jt9GblIoJWiBGN3V2wgfsHvDwVWAI=
+=KaNu
+-----END PGP SIGNATURE-----
+
+--nextPart3046581.e9J7NaK4W3--
+
+
 
