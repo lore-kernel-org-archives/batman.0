@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D459CD6E44
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 14:39:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9ABC0CD4F54
+	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 14:40:43 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B2F0684538
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 16:39:57 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2C0D68424F
+	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 16:40:42 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779979197;
- b=OLu3VFk8jcFU/7+1XGg7dhTXkEONmLSzINY2gt75bP3O5ZTOhcn9ahCYX1iq7H+4f2jMO
- HhhyZba4oyaArn8JoSa4atgWWinOwqG83OkGmsiJTCL0eMWca9m/Lb4NH6cDmPf4O2Xqj2p
- z7TKxfRujWfGl7rQcRz115dZBt20nQA=
+ t=1779979242;
+ b=SqbXSvGXrEb82Aq0cJm0eLdos7BuywKuofuMfWfGH756qmZ/gmLeu7HOdKffsHIwf+pkA
+ 5yD/mWKfKQu29u9HXe7a1l+tL1vdu+OtGQ1mboBi54byixkQQ22ZzwL/a2kALDooVZ9C6IP
+ geFpfrKi5Lq7a5dcTQ0TeCRTy7QZ5pI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779979197; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779979242; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
- b=RWWl1ymfPahCiOXM7ws914vAgDta2ejP5i6cTWh+RFQ33cChLKuUbC8ljmDxSJznkcejt
- 4DHdlux7TC8ppGbRDgrMxAiMauy1W7GUKy/yvcaGnE/3h0E5YwX+nEp2xeCoTAp7elxCDb3
- 3DjTRgLvsEBeCD6kkBMKGsku9tIo+Ik=
+ list-archive; bh=O6u6T781s7XK1jBUvRM4QJsBwZyvoXt3jBDZflyahKU=;
+ b=YfNKA6hjr3tlT469T/pZE4dK27O+Zkih0LtCbTyoJj20lsGO+6fKG4nCmQMRyNWGHAyYs
+ 5WMRAjNlJx9v86SzGD4/FAjGe0wzIca1uTIBn+K3JBmwbHvp2Mai+T9aQbMpda+O/U384TT
+ qzoxCLbpjGU3T40QPmOlNgbt4Knd0tE=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,8 +32,9 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 469A883E26
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id CAB67832B0
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 28 May 2026 16:29:36 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1779978576;
@@ -41,32 +42,33 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
-	b=nuGAPXthWR3ljhF99n3LpHUGpXY2Ak+GICf4v0dLoeAGK4EaKp2OQ4Qazl3dBXkvMO8jhw
-	xkjlt5eNmW0hfwavlBNn2EUeVOjUXfyFAXOYklr6OyTGLKVu5/wXqUoN49OTRC3VRsSPsp
-	wZZL25z/n0vHs8j1CxgYnwR2xyRrWj8=
+	bh=O6u6T781s7XK1jBUvRM4QJsBwZyvoXt3jBDZflyahKU=;
+	b=BnHSHsULzx8sHkTpqOxFknKXMg6olERJYD0Q/+ClaAztHngs15FeH0jMldYjP8ASuGaLU+
+	NLohchXB64DkAZV4TsNnGB81+zGJXaxZ0r/TNQhKdIls7xUIE5rTsnLm6SZZ9ftM76/HJ3
+	w5+qsWL5Us39ZBpY0mbTFUYRZM58H6g=
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779978576;
-	b=1VynTaXTqJuJ2SCw0HzWJVnoPMMXC7dXnfW2vXE01k6X8m6aBf4Gtc0B1kkHkUoZ9IY749
-	oDW0BvGgHtVhhAOcMFfjWWSXE7LwMd+5UO72jw2VDOF4IWet8nfS9VKsXiqEAdbvbbresN
-	AV8zSj3COVLTrDpkpKQh1aVbfbWx6qI=
+	b=gyEPOMflAhlgiuW1ZvyBjOisf4z4Jx9B9K3mMGMBvZvs5HITk2+mTp1CZgEFJawT1wzeLI
+	k7UUEXTlXMdVzWdh/LSDUMrH6/jLUczsmAWN861lwkUD1ftLwTtH4YGSwPy/KQRjxA2U/j
+	tF3TAVn3HVIkQv9DNjSY0882gOtGC0I=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=q5ZNYbkr;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=QEwPcJMG;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1779978575;
+	s=09092022; t=1779978576;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
-	b=q5ZNYbkrONDvLP63+NJIuAzoE7w7Y+6WbS+cLRKdfISEh93dx8CfV4KN7yoSb+1QnDqPds
-	jXQUmXgf/hN/QRXEUCOYaY+TD9DBKQG+NpLUWstLwj022725SYQnkCsygITwjH8PXSSjTe
-	IpfIyUWqSXbsn9kYRcj1HYKmJl2BonHL9KEnG8rYq9OZS8c6mwwJaVjdLvHE9gYskclmDA
-	2EQZM7oOc6u3NIOq21mucWkum/+jj0D9LldwNdhhx42pon1RA0PDgiQxqSNwhZKkqXo01v
-	bB6h3b+FAWQMOVpcjY3YIwdDHDfjRawyj6FYlUd3niSfzzst32HBjc44X2Cjow==
+	bh=O6u6T781s7XK1jBUvRM4QJsBwZyvoXt3jBDZflyahKU=;
+	b=QEwPcJMGaKR20EKZ2eHhTIJvml6JJxITWhGMubEmct0Qmu0npIgCM0aw8+Qtyzj6aNnpI8
+	bbf1vq8/uyLOgRNgEk9mvpyYDVv9dQ0E9EFP5mZ1lVJaBEC1ABIe/0pN9/y/NtRmssiZ1L
+	wgsmnRf/ITbEWAAAcKErf3HMDBfyouyrY85vM3b80u0ty9ADhHkYgESWu9w/M2G3d5hPF6
+	1I+WPEv8vs0g3cQOtVJcN7S6eqv9MJA2BGhewaRRkhveQe/nC9YObMHkj45II6d0VaRufN
+	LkLutVRtJhyp5ISK4gIRPgfrww6j4S4lsSHz4XPdyUZ9AV7ctmnzJDVOMlneFw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -76,19 +78,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Antonio Quartulli <antonio@mandelbit.com>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 13/15] batman-adv: tt: replace open-coded overflow
- check with helper
-Date: Thu, 28 May 2026 16:29:22 +0200
-Message-ID: <20260528142924.329658-14-sw@simonwunderlich.de>
+Subject: [PATCH net-next 14/15] batman-adv: tvlv: avoid unnecessary OGM buffer
+ reallocations
+Date: Thu, 28 May 2026 16:29:23 +0200
+Message-ID: <20260528142924.329658-15-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260528142924.329658-1-sw@simonwunderlich.de>
 References: <20260528142924.329658-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: SWV7FCBGG3REVEYGWVWPXRM4F7HSLE64
-X-Message-ID-Hash: SWV7FCBGG3REVEYGWVWPXRM4F7HSLE64
+Message-ID-Hash: TIBV5KRYZ35HJDAATWIVIQ3TISDR6F74
+X-Message-ID-Hash: TIBV5KRYZ35HJDAATWIVIQ3TISDR6F74
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SWV7FCBGG3REVEYGWVWPXRM4F7HSLE64/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TIBV5KRYZ35HJDAATWIVIQ3TISDR6F74/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,50 +114,432 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The commit 6043a632dd06 ("batman-adv: reject oversized global TT response
-buffers") introduced an open-coded check to ensure that the allocated
-buffer size can be stored in a u16. The check_add_overflow() helper can
-perform the addition and overflow check in one step, so use that instead.
+Both OGMv1 (on the primary interface) and OGM2 unconditionally reallocated
+their packet buffer on every transmission cycle, regardless of whether the
+required size had changed. This meant a kfree/kmalloc pair even when the
+TVLV payload size was identical to the previous send.
 
-Acked-by: Antonio Quartulli <antonio@mandelbit.com>
+Introduce struct batadv_ogm_buf to encapsulate the OGM packet buffer
+together with its current length, allocated capacity, and fixed header
+length. This consolidates the separate buf/len arguments that were
+previously threaded through each call site.
+
+In batadv_tvlv_realloc_packet_buff(), the capacity is rounded up to the
+next power of two so that small growth or shrinkage in TVLV data does not
+trigger a reallocation. When kmalloc fails but the existing buffer is large
+enough to hold the new data, the oversized buffer is reused rather than
+returning an error.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 35 ++++++++++++-----------
+ net/batman-adv/bat_v_ogm.c  | 30 ++++++++++----------
+ net/batman-adv/tvlv.c       | 56 ++++++++++++++++++++++---------------
+ net/batman-adv/tvlv.h       |  3 +-
+ net/batman-adv/types.h      | 31 +++++++++++++-------
+ 5 files changed, 88 insertions(+), 67 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 8903b2f84f512..5e134d08a80fd 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -799,10 +799,10 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- {
- 	u16 num_vlan = 0;
- 	u16 tvlv_len = 0;
--	unsigned int change_offset;
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
- 	struct batadv_orig_node_vlan *vlan;
- 	u16 total_entries = 0;
-+	size_t change_offset;
- 	u8 *tt_change_ptr;
- 	int vlan_entries;
- 	u16 sum_entries;
-@@ -826,14 +826,11 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
- 	if (*tt_len < 0)
- 		*tt_len = batadv_tt_len(total_entries);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index c436b77674a56..6f5a468c4084c 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -195,14 +195,17 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+ 	atomic_set(&hard_iface->bat_iv.ogm_seqno, random_seqno);
  
--	if (change_offset > U16_MAX || *tt_len > U16_MAX - change_offset) {
-+	if (check_add_overflow(*tt_len, change_offset, &tvlv_len)) {
- 		*tt_len = 0;
- 		goto out;
+-	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
+-	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
++	hard_iface->bat_iv.ogm_buff.len = BATADV_OGM_HLEN;
++	hard_iface->bat_iv.ogm_buff.capacity = BATADV_OGM_HLEN;
++	hard_iface->bat_iv.ogm_buff.header_length = BATADV_OGM_HLEN;
++
++	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff.capacity, GFP_ATOMIC);
+ 	if (!ogm_buff) {
+ 		mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 		return -ENOMEM;
  	}
  
--	tvlv_len = *tt_len;
--	tvlv_len += change_offset;
+-	hard_iface->bat_iv.ogm_buff = ogm_buff;
++	hard_iface->bat_iv.ogm_buff.buf = ogm_buff;
+ 
+ 	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
+ 	batadv_ogm_packet->packet_type = BATADV_IV_OGM;
+@@ -221,8 +224,9 @@ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
+ {
+ 	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+-	kfree(hard_iface->bat_iv.ogm_buff);
+-	hard_iface->bat_iv.ogm_buff = NULL;
++	kfree(hard_iface->bat_iv.ogm_buff.buf);
++	memset(&hard_iface->bat_iv.ogm_buff, 0,
++	       sizeof(hard_iface->bat_iv.ogm_buff));
+ 
+ 	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+@@ -236,7 +240,7 @@ static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
+ 
+ 	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+-	ogm_buff = hard_iface->bat_iv.ogm_buff;
++	ogm_buff = hard_iface->bat_iv.ogm_buff.buf;
+ 	if (!ogm_buff)
+ 		goto unlock;
+ 
+@@ -258,7 +262,7 @@ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ 
+ 	mutex_lock(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+-	ogm_buff = hard_iface->bat_iv.ogm_buff;
++	ogm_buff = hard_iface->bat_iv.ogm_buff.buf;
+ 	if (!ogm_buff)
+ 		goto unlock;
+ 
+@@ -796,10 +800,9 @@ batadv_iv_ogm_slide_own_bcast_window(struct batadv_hard_iface *hard_iface)
+ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
+-	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
++	struct batadv_ogm_buf *ogm_buff = &hard_iface->bat_iv.ogm_buff;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+ 	struct batadv_hard_iface *primary_if, *tmp_hard_iface;
+-	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
+ 	struct list_head *iter;
+ 	u32 seqno;
+ 	u16 tvlv_len = 0;
+@@ -811,7 +814,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 	lockdep_assert_held(&hard_iface->bat_iv.ogm_buff_mutex);
+ 
+ 	/* interface already disabled by batadv_iv_ogm_iface_disable */
+-	if (!*ogm_buff)
++	if (!ogm_buff->buf)
+ 		return;
+ 
+ 	/* the interface gets activated here to avoid race conditions between
+@@ -830,9 +833,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		 * appended as it may alter the tt tvlv container
+ 		 */
+ 		batadv_tt_local_commit_changes(bat_priv);
+-		ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff,
+-						       ogm_buff_len,
+-						       BATADV_OGM_HLEN);
++		ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff);
+ 		if (ret < 0) {
+ 			reschedule = true;
+ 			goto out;
+@@ -841,7 +842,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		tvlv_len = ret;
+ 	}
+ 
+-	batadv_ogm_packet = (struct batadv_ogm_packet *)(*ogm_buff);
++	batadv_ogm_packet = ogm_buff->buf;
+ 	batadv_ogm_packet->tvlv_len = htons(tvlv_len);
+ 
+ 	/* change sequence number to network order */
+@@ -857,7 +858,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		/* OGMs from secondary interfaces are only scheduled on their
+ 		 * respective interfaces.
+ 		 */
+-		scheduled = batadv_iv_ogm_queue_add(bat_priv, *ogm_buff, *ogm_buff_len,
++		scheduled = batadv_iv_ogm_queue_add(bat_priv, ogm_buff->buf, ogm_buff->len,
+ 						    hard_iface, hard_iface, 1, send_time);
+ 		if (!scheduled)
+ 			reschedule = true;
+@@ -873,8 +874,8 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		if (!kref_get_unless_zero(&tmp_hard_iface->refcount))
+ 			continue;
+ 
+-		scheduled = batadv_iv_ogm_queue_add(bat_priv, *ogm_buff,
+-						    *ogm_buff_len, hard_iface,
++		scheduled = batadv_iv_ogm_queue_add(bat_priv, ogm_buff->buf,
++						    ogm_buff->len, hard_iface,
+ 						    tmp_hard_iface, 1, send_time);
+ 		batadv_hardif_put(tmp_hard_iface);
+ 
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index b337bd8e58e7d..2c4dca639709c 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -270,10 +270,9 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_hard_iface *hard_iface;
+ 	struct batadv_ogm2_packet *ogm_packet;
++	struct batadv_ogm_buf *ogm_buff;
+ 	struct sk_buff *skb, *skb_tmp;
+-	unsigned char **ogm_buff;
+ 	struct list_head *iter;
+-	int *ogm_buff_len;
+ 	u16 tvlv_len;
+ 	int ret;
+ 
+@@ -283,26 +282,23 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
+ 		goto out;
+ 
+ 	ogm_buff = &bat_priv->bat_v.ogm_buff;
+-	ogm_buff_len = &bat_priv->bat_v.ogm_buff_len;
+ 
+ 	/* tt changes have to be committed before the tvlv data is
+ 	 * appended as it may alter the tt tvlv container
+ 	 */
+ 	batadv_tt_local_commit_changes(bat_priv);
+-	ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff,
+-					       ogm_buff_len,
+-					       BATADV_OGM2_HLEN);
++	ret = batadv_tvlv_container_ogm_append(bat_priv, ogm_buff);
+ 	if (ret < 0)
+ 		goto reschedule;
+ 
+ 	tvlv_len = ret;
+ 
+-	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + *ogm_buff_len);
++	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + ogm_buff->len);
+ 	if (!skb)
+ 		goto reschedule;
+ 
+ 	skb_reserve(skb, ETH_HLEN);
+-	skb_put_data(skb, *ogm_buff, *ogm_buff_len);
++	skb_put_data(skb, ogm_buff->buf, ogm_buff->len);
+ 
+ 	ogm_packet = (struct batadv_ogm2_packet *)skb->data;
+ 	ogm_packet->seqno = htonl(atomic_read(&bat_priv->bat_v.ogm_seqno));
+@@ -448,10 +444,10 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface)
+ 	struct batadv_ogm2_packet *ogm_packet;
+ 
+ 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
+-	if (!bat_priv->bat_v.ogm_buff)
++	if (!bat_priv->bat_v.ogm_buff.buf)
+ 		goto unlock;
+ 
+-	ogm_packet = (struct batadv_ogm2_packet *)bat_priv->bat_v.ogm_buff;
++	ogm_packet = bat_priv->bat_v.ogm_buff.buf;
+ 	ether_addr_copy(ogm_packet->orig, primary_iface->net_dev->dev_addr);
+ 
+ unlock:
+@@ -1052,12 +1048,15 @@ int batadv_v_ogm_init(struct batadv_priv *bat_priv)
+ 	unsigned char *ogm_buff;
+ 	u32 random_seqno;
+ 
+-	bat_priv->bat_v.ogm_buff_len = BATADV_OGM2_HLEN;
+-	ogm_buff = kzalloc(bat_priv->bat_v.ogm_buff_len, GFP_ATOMIC);
++	bat_priv->bat_v.ogm_buff.len = BATADV_OGM2_HLEN;
++	bat_priv->bat_v.ogm_buff.capacity = BATADV_OGM2_HLEN;
++	bat_priv->bat_v.ogm_buff.header_length = BATADV_OGM2_HLEN;
++
++	ogm_buff = kzalloc(bat_priv->bat_v.ogm_buff.capacity, GFP_ATOMIC);
+ 	if (!ogm_buff)
+ 		return -ENOMEM;
+ 
+-	bat_priv->bat_v.ogm_buff = ogm_buff;
++	bat_priv->bat_v.ogm_buff.buf = ogm_buff;
+ 	ogm_packet = (struct batadv_ogm2_packet *)ogm_buff;
+ 	ogm_packet->packet_type = BATADV_OGM2;
+ 	ogm_packet->version = BATADV_COMPAT_VERSION;
+@@ -1085,9 +1084,8 @@ void batadv_v_ogm_free(struct batadv_priv *bat_priv)
+ 
+ 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
+ 
+-	kfree(bat_priv->bat_v.ogm_buff);
+-	bat_priv->bat_v.ogm_buff = NULL;
+-	bat_priv->bat_v.ogm_buff_len = 0;
++	kfree(bat_priv->bat_v.ogm_buff.buf);
++	memset(&bat_priv->bat_v.ogm_buff, 0, sizeof(bat_priv->bat_v.ogm_buff));
+ 
+ 	mutex_unlock(&bat_priv->bat_v.ogm_buff_mutex);
+ }
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 8e8b54e2172ef..cd75daea478c5 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -17,6 +17,7 @@
+ #include <linux/limits.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
++#include <linux/log2.h>
+ #include <linux/netdevice.h>
+ #include <linux/pkt_sched.h>
+ #include <linux/rculist.h>
+@@ -267,32 +268,48 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ /**
+  * batadv_tvlv_realloc_packet_buff() - reallocate packet buffer to accommodate
+  *  requested packet size
+- * @packet_buff: packet buffer
+- * @packet_buff_len: packet buffer size
+- * @min_packet_len: requested packet minimum size
++ * @ogm_buff: ogm packet buffer
+  * @additional_packet_len: requested additional packet size on top of minimum
+  *  size
+  *
+  * Return: true of the packet buffer could be changed to the requested size,
+  * false otherwise.
+  */
+-static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+-					    int *packet_buff_len,
+-					    int min_packet_len,
+-					    int additional_packet_len)
++static bool batadv_tvlv_realloc_packet_buff(struct batadv_ogm_buf *ogm_buff,
++					    size_t additional_packet_len)
+ {
+ 	unsigned char *new_buff;
++	size_t newcapacity;
++	size_t newlen;
+ 
+-	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
++	newlen = ogm_buff->header_length + additional_packet_len;
++	newcapacity = roundup_pow_of_two(newlen);
++
++	/* nothing to reallocate */
++	if (newcapacity == ogm_buff->capacity) {
++		ogm_buff->len = newlen;
++		return true;
++	}
++
++	new_buff = kmalloc(newcapacity, GFP_ATOMIC);
+ 
+ 	/* keep old buffer if kmalloc should fail */
+-	if (!new_buff)
++	if (!new_buff) {
++		/* continue to use oversize buffer if new data fits */
++		if (newlen <= ogm_buff->capacity) {
++			ogm_buff->len = newlen;
++			return true;
++		}
++
+ 		return false;
++	}
++
++	memcpy(new_buff, ogm_buff->buf, ogm_buff->header_length);
++	kfree(ogm_buff->buf);
+ 
+-	memcpy(new_buff, *packet_buff, min_packet_len);
+-	kfree(*packet_buff);
+-	*packet_buff = new_buff;
+-	*packet_buff_len = min_packet_len + additional_packet_len;
++	ogm_buff->buf = new_buff;
++	ogm_buff->len = newlen;
++	ogm_buff->capacity = newcapacity;
+ 
+ 	return true;
+ }
+@@ -301,10 +318,7 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+  * batadv_tvlv_container_ogm_append() - append tvlv container content to given
+  *  OGM packet buffer
+  * @bat_priv: the bat priv with all the mesh interface information
+- * @packet_buff: ogm packet buffer
+- * @packet_buff_len: ogm packet buffer size including ogm header and tvlv
+- *  content
+- * @packet_min_len: ogm header size to be preserved for the OGM itself
++ * @ogm_buff: ogm packet buffer
+  *
+  * The ogm packet might be enlarged or shrunk depending on the current size
+  * and the size of the to-be-appended tvlv containers.
+@@ -313,8 +327,7 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+  *  if operation failed
+  */
+ int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+-				     unsigned char **packet_buff,
+-				     int *packet_buff_len, int packet_min_len)
++				     struct batadv_ogm_buf *ogm_buff)
+ {
+ 	struct batadv_tvlv_container *tvlv;
+ 	struct batadv_tvlv_hdr *tvlv_hdr;
+@@ -330,8 +343,7 @@ int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 		goto end;
+ 	}
+ 
+-	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
+-					      packet_min_len, tvlv_value_len);
++	ret = batadv_tvlv_realloc_packet_buff(ogm_buff, tvlv_value_len);
+ 	if (!ret) {
+ 		tvlv_len_ret = -ENOMEM;
+ 		goto end;
+@@ -342,7 +354,7 @@ int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 	if (!tvlv_value_len)
+ 		goto end;
+ 
+-	tvlv_value = (*packet_buff) + packet_min_len;
++	tvlv_value = (u8 *)ogm_buff->buf + ogm_buff->header_length;
+ 
+ 	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
+ 		tvlv_hdr = tvlv_value;
+diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
+index f96f6b3f44a00..fc97838504431 100644
+--- a/net/batman-adv/tvlv.h
++++ b/net/batman-adv/tvlv.h
+@@ -17,8 +17,7 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 				    u8 type, u8 version,
+ 				    void *tvlv_value, u16 tvlv_value_len);
+ int batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+-				     unsigned char **packet_buff,
+-				     int *packet_buff_len, int packet_min_len);
++				     struct batadv_ogm_buf *ogm_buff);
+ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
+ 			     struct batadv_ogm_packet *batadv_ogm_packet,
+ 			     struct batadv_orig_node *orig_node);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 5d4ad35c19636..c3b6af399110b 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -71,15 +71,29 @@ enum batadv_dhcp_recipient {
+  */
+ #define BATADV_TT_SYNC_MASK	0x00F0
+ 
++/**
++ * struct batadv_ogm_buf - Buffer to construct an OGM with TVLV
++ */
++struct batadv_ogm_buf {
++	/** @buf: buffer holding the OGM packet */
++	void *buf;
++
++	/** @len: length of the OGM packet buffer data */
++	size_t len;
++
++	/** @capacity: size of allocated buf */
++	size_t capacity;
++
++	/** @header_length: fixed size header length (must be <= len) */
++	size_t header_length;
++};
++
+ /**
+  * struct batadv_hard_iface_bat_iv - per hard-interface B.A.T.M.A.N. IV data
+  */
+ struct batadv_hard_iface_bat_iv {
+ 	/** @ogm_buff: buffer holding the OGM packet */
+-	unsigned char *ogm_buff;
 -
- 	*tt_data = kmalloc(tvlv_len, GFP_ATOMIC);
- 	if (!*tt_data) {
- 		*tt_len = 0;
+-	/** @ogm_buff_len: length of the OGM packet buffer */
+-	int ogm_buff_len;
++	struct batadv_ogm_buf ogm_buff;
+ 
+ 	/** @ogm_seqno: OGM sequence number - used to identify each OGM */
+ 	atomic_t ogm_seqno;
+@@ -87,7 +101,7 @@ struct batadv_hard_iface_bat_iv {
+ 	/** @reschedule_work: recover OGM schedule after schedule error */
+ 	struct delayed_work reschedule_work;
+ 
+-	/** @ogm_buff_mutex: lock protecting ogm_buff and ogm_buff_len */
++	/** @ogm_buff_mutex: lock protecting ogm_buff */
+ 	struct mutex ogm_buff_mutex;
+ };
+ 
+@@ -1481,15 +1495,12 @@ struct batadv_meshif_vlan {
+  */
+ struct batadv_priv_bat_v {
+ 	/** @ogm_buff: buffer holding the OGM packet */
+-	unsigned char *ogm_buff;
+-
+-	/** @ogm_buff_len: length of the OGM packet buffer */
+-	int ogm_buff_len;
++	struct batadv_ogm_buf ogm_buff;
+ 
+ 	/** @ogm_seqno: OGM sequence number - used to identify each OGM */
+ 	atomic_t ogm_seqno;
+ 
+-	/** @ogm_buff_mutex: lock protecting ogm_buff and ogm_buff_len */
++	/** @ogm_buff_mutex: lock protecting ogm_buff */
+ 	struct mutex ogm_buff_mutex;
+ 
+ 	/** @ogm_wq: workqueue used to schedule OGM transmissions */
 -- 
 2.47.3
 
