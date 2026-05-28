@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE502CD4F54
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 14:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 778FFCD4F54
+	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 14:31:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6F3BF83F09
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 16:30:42 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 075B784034
+	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 16:31:28 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779978642;
- b=sNn29wszpO7zRTOF1jVo6gUBZgJA+I9BLlgyEaV6zPHMdklYrhWdA1Uwyr7u/yyIZKXYA
- RcrXAQLzaFACRa5qn0lw0YLkGM8aRpcYbGZSxbsyBWlYDB/li+5H8Pe53SitGKQGZbNXE6E
- /AdSmqKvRzhetl7uo4SgrwSmd9FX9xE=
+ t=1779978688;
+ b=cKK8SvQKUsF60lyn/zxJmBz+qT79jr/Ox1KZj5YuKpNxXGf5zC0bck/YJRi8urS9Qj8Zt
+ ViBUz2Nhzq/zWbCSuE9d3Y4XvTCb16XPKgJvpLVUPgZYbF9epYlQBQHMKHV8pvXb+vkXGOy
+ 1+PuSXPe3TfVIrl4lRfUeBaBbGycSvQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779978642; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1779978688; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
- b=4ETUpABLKngti7rzDqhFGL67/TeYOf9R/Tn+eYh/yz8noOMgHs1OiL19UzepqsZNgOWDq
- ynvpc3/RcFEEDxGXzjSFupvCBjb5FBBVG9nyIw9jM/EKZTT9sLvEkJWS+hwbzghLXDnWBlh
- FftQEmmCv+6JkiBIPj5SSJInPdRW/t4=
+ list-archive; bh=X4kan7JCTkyF54L0yh5ItmlcUh6wLoQny/A5S6Qin7A=;
+ b=0sQ3mUx+VfCUYq+d9rEDP7xsUf5VTUVKu5XppQYoyQJ+DGSZiN4oyiAa2vuFtZ/9EJHtY
+ pJqqTaRVu+34kTV+qLmMbySQiI+KOECJyOsMFBbSWYPuIPQnTz2Y7oybh257WaoHv1+ertB
+ ul2AYlbkLhQrRZvRKILu/X8sWl+TU2E=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,41 +32,41 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A36C083B96
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 671EE80B5D
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 28 May 2026 16:29:29 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1779978569;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
-	b=RDotIiZ2L35APrrQl31+RX2jlULhAYq0iFlgrqGv3dDUeJZNFBh5k8IRZ/a1S5zShZta6k
-	GxwAysA5pm40pUy79a5u4ZrbvNbY9ofD+ElEwxCQ7RMRUQyzWPxerxGK9aBWktkx67lXbj
-	BP51/FbdC/g3oK6cE0wkPV5iR4rvyFg=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=X4kan7JCTkyF54L0yh5ItmlcUh6wLoQny/A5S6Qin7A=;
+	b=xaF2cbUPkoGKW04j2uPanRD+SNjZykL0/WJivdJdw0v3u9T/64JGmyk/NldkO3/jCWFQTu
+	ql7cZkjclZxw4+fB9LOKalFkgtaMYrskybTM8489hNnqZ+QvDEFipXDoSUzgBubUtL939B
+	T7I8UqcsCNxs/kc9EWDhdpfabgHI8S0=
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779978569;
-	b=bmI/S60EiFEm31+X0H6ZMpyD7hyMAyvA6lIBGgXsQ1gIDfZeMRzgvzaCXHCg3SNlO4CILM
-	tBqnO5wN+wfNNBZEnjDABrZWU6b+HWpNccOEfnLbeOWsExPJP6B8Co4ub41ZIExvSMSzlN
-	UCq1mv1Qhqxpel7HF23h8ozQNTMuyo8=
+	b=hIA8+i5Vw8UbNaogAd5xX5jCquzHywc2rud0yWSOhuZfV8VcbOgmLVK29b/K0ZVh/Wi8fm
+	MzXKY9AQ4fxVVcFIFmmJg6UKabLjwxBQOz3edNWva/1fm38+AX8HE6e1k5WlUsHy4RrvLp
+	GXQd6j6Tha/kRnyJ/ObAffuzQjrWCCU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=CJfeCqS7;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=ZlZVGjQD;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1779978568;
+	s=09092022; t=1779978566;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
-	b=CJfeCqS7qikt2c3LdpYPYqlxIpfI35QRvdNQbCtRbx3qLRoKQYosfz1XlptkxqR+/hNbmJ
-	OWP4C2GJuKA0O8jF4gOodEZZg7zzlOjtb1c5+IJif0tGhsmyuZdACesJrEnR2PF0OU+qNo
-	pJI1RRUsMbtGnO9qNBypEDQslQM6uKUbYiGraQ80MPlHEdRztpq66TQkRhXXzt3GM3K/NI
-	nNJn/KGK8K1SZBgr1HojXXDPKwhrwo9BMoKg4wi+7S1I3EvB4fezBGPYdRvd6mEhM2IYP4
-	1Qr2IUQn16zYIO1Ypa9kPk1kjmwC66nc2FsnHezoksBSz4whezDA3HzbkkR06A==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=X4kan7JCTkyF54L0yh5ItmlcUh6wLoQny/A5S6Qin7A=;
+	b=ZlZVGjQDXauEAjeKc/Nqzqj7ADPCwuAfjLxiA6L9Cs/A0jVrkJQMHRdOCJ0zYiWwRNa0b+
+	XjGbfgM3+ldDKopN0pNBgdbKI8jJ/MmU1DkWCksardACMTCHJvvlrNRQ4ZofSuepoumkaD
+	7JGxPmgps07E1fUrZXeosflYvFWXC4olQA1X6jv5oy4doC0K5rQ12QJmjGVR1Iw78rjshF
+	XoT66Wt1v/UnKWRYzwv9AMuoTr11ynvHBajqsOB02m6rHyOXzFAF+geUiSfZMeXL1Avrzh
+	VJwB++i5K9xdmR4b1xC+sDkd+W0cfLTNmIGt24q4n2MWlfG0NmXnT68JtSQ4Nw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -75,19 +75,16 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 03/15] MAINTAINERS: Don't send batman-adv patches to
- netdev
-Date: Thu, 28 May 2026 16:29:12 +0200
-Message-ID: <20260528142924.329658-4-sw@simonwunderlich.de>
+Subject: [PATCH net-next 00/15] pull request for net-next: batman-adv
+ 2026-05-28
+Date: Thu, 28 May 2026 16:29:09 +0200
+Message-ID: <20260528142924.329658-1-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260528142924.329658-1-sw@simonwunderlich.de>
-References: <20260528142924.329658-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: ZSOHABGQ2Q7HPHWN6YQF76YPUIQHAOFK
-X-Message-ID-Hash: ZSOHABGQ2Q7HPHWN6YQF76YPUIQHAOFK
+Message-ID-Hash: JCDYVU3Y67TZLVH3F4F5BCA5443IWD7L
+X-Message-ID-Hash: JCDYVU3Y67TZLVH3F4F5BCA5443IWD7L
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -101,7 +98,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZSOHABGQ2Q7HPHWN6YQF76YPUIQHAOFK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JCDYVU3Y67TZLVH3F4F5BCA5443IWD7L/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -110,43 +107,97 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+Dear net maintainers,
 
-Do not send batman-adv patches directly to the networking maintainers or
-the netdev mailing list for initial review. Keeping these patch iterations
-off netdev reduces review load, especially for patchsets that require
-multiple revisions before reaching consensus.
+here is a cleanup pull request of batman-adv to go into net-next.
 
-After the review was finished on the BATMAN ADVANCED mailing list, the
-patches will be queued up and then submitted to netdev as PR, including the
-full patchset in the same thread (for the last review).
+Please pull or let me know of any problem!
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
+Thank you,
+      Simon
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 741fb4166aa2b..75ff01377fc6f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -18635,6 +18635,7 @@ F:	net/
- F:	samples/pktgen/
- F:	tools/net/
- F:	tools/testing/selftests/net/
-+X:	Documentation/networking/batman-adv.rst
- X:	Documentation/networking/mac80211-injection.rst
- X:	Documentation/networking/mac80211_hwsim/
- X:	Documentation/networking/regulatory.rst
-@@ -18645,6 +18646,7 @@ X:	include/net/iw_handler.h
- X:	include/net/mac80211.h
- X:	include/net/wext.h
- X:	net/9p/
-+X:	net/batman-adv/
- X:	net/bluetooth/
- X:	net/can/
- X:	net/ceph/
--- 
-2.47.3
+The following changes since commit 68993ced0f618e36cf33388f1e50223e5e6e78cc:
 
+  Merge tag 'net-7.1-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net (2026-05-21 14:39:12 -0700)
+
+are available in the Git repository at:
+
+  https://git.open-mesh.org/batadv.git tags/batadv-next-pullrequest-20260528
+
+for you to fetch changes up to 5edff65367d064b217f4b692271c61a4db992de3:
+
+  batman-adv: use neigh_node's orig_node only as id (2026-05-22 18:24:20 +0200)
+
+----------------------------------------------------------------
+This batman-adv cleanup patchset includes the following patches, all by
+Sven Eckelmann:
+
+ - drop batman-adv specific version
+
+ - MAINTAINERS housekeeping for batman-adv (two patches)
+
+ - add missing includes
+
+ - use atomic_xchg() for gw.reselect check
+
+ - extract netdev wifi detection information object
+
+ - replace inappropriate atomic access with (READ|WRITE)_ONCE
+   (six patches)
+
+ - tt: replace open-coded overflow check with helper
+
+ - tvlv: avoid unnecessary OGM buffer reallocations
+
+ - use neigh_node's orig_node only as id
+
+----------------------------------------------------------------
+Sven Eckelmann (15):
+      batman-adv: drop batman-adv specific version
+      MAINTAINERS: Rename batman-adv T(ree)
+      MAINTAINERS: Don't send batman-adv patches to netdev
+      batman-adv: add missing includes
+      batman-adv: use atomic_xchg() for gw.reselect check
+      batman-adv: extract netdev wifi detection information object
+      batman-adv: replace non-atomic meshif config fields with (READ|WRITE)_ONCE
+      batman-adv: replace non-atomic hardif config fields with (READ|WRITE)_ONCE
+      batman-adv: replace non-atomic vlan config fields with (READ|WRITE)_ONCE
+      batman-adv: replace non-atomic mesh state with (READ|WRITE)_ONCE
+      batman-adv: replace non-atomic packet_size_max with (READ|WRITE)_ONCE
+      batman-adv: replace non-atomic last_ttvn with (READ|WRITE)_ONCE
+      batman-adv: tt: replace open-coded overflow check with helper
+      batman-adv: tvlv: avoid unnecessary OGM buffer reallocations
+      batman-adv: use neigh_node's orig_node only as id
+
+ MAINTAINERS                            |   4 +-
+ net/batman-adv/Makefile                |   1 +
+ net/batman-adv/bat_iv_ogm.c            |  65 ++++++-----
+ net/batman-adv/bat_v.c                 |  10 +-
+ net/batman-adv/bat_v_elp.c             |  15 ++-
+ net/batman-adv/bat_v_ogm.c             |  46 ++++----
+ net/batman-adv/bridge_loop_avoidance.c |  15 +--
+ net/batman-adv/distributed-arp-table.c |  17 +--
+ net/batman-adv/fragmentation.c         |   1 +
+ net/batman-adv/gateway_client.c        |   9 +-
+ net/batman-adv/gateway_common.c        |  14 +--
+ net/batman-adv/hard-interface.c        | 205 +++++++++++++++++++++++++++++----
+ net/batman-adv/hard-interface.h        |  34 +++++-
+ net/batman-adv/log.h                   |   2 +-
+ net/batman-adv/main.c                  |  42 ++++---
+ net/batman-adv/main.h                  |   4 -
+ net/batman-adv/mesh-interface.c        |  42 +++----
+ net/batman-adv/multicast.c             |   4 +-
+ net/batman-adv/netlink.c               |  80 ++++++-------
+ net/batman-adv/originator.c            |   8 +-
+ net/batman-adv/routing.c               |   6 +-
+ net/batman-adv/send.c                  |   6 +-
+ net/batman-adv/tp_meter.c              |   6 +-
+ net/batman-adv/translation-table.c     |  32 +++--
+ net/batman-adv/tvlv.c                  |  57 +++++----
+ net/batman-adv/tvlv.h                  |   3 +-
+ net/batman-adv/types.h                 | 138 ++++++++++++++--------
+ net/batman-adv/version.c               |  18 +++
+ net/batman-adv/version.h               |   8 ++
+ 29 files changed, 593 insertions(+), 299 deletions(-)
+ create mode 100644 net/batman-adv/version.c
+ create mode 100644 net/batman-adv/version.h
