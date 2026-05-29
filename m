@@ -4,106 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69182CD6E44
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 14:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB357CD6E43
+	for <batman-adv@archiver.kernel.org>; Fri, 29 May 2026 00:14:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E83D1845DB
-	for <batman-adv@archiver.kernel.org>; Thu, 28 May 2026 16:41:25 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 1675283F24
+	for <batman-adv@archiver.kernel.org>; Fri, 29 May 2026 02:14:54 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1779979285;
- b=Pfz3lUSUe1Pp0U4YToFUmG9tQR4JjMsj5hA8IRG3tIuE3qB1oZGgE1qLm1ECIHqTziDfv
- Xf9dJCfF5CfuAMv6+ZOIogmC0q+2dS4/sxxdHpWI9sWDTjPQOyrkwXwdzPY1Hy5YMmPww01
- 7EHJjRo8+DVpK5EnqASOm49A2KytWgQ=
+ t=1780013694;
+ b=r0EDAwnpbsRkYeVz+7cxuUb5ucD2UQRSqTr5u9c+4C4J8DFKtu85rVgu8v38APufYh6gg
+ 1VcuszafQsCp4wg5FU9NWKR+U1vJqX5UWET3M5TVbN/mBTOp/YI0Zfm48iVzIyDnq7UPDfy
+ 6pmI2EU/ohjP/k3Ysc5Ln88ng0CRGEc=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1779979285; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780013694; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=wU8EADN7q21SEHJNlOIBEzAVqEevDfMMQ8wP/p0bpp0=;
- b=oCm8vsvy04V+zeoy/GhKFA8ZQmHxheI8ELatBQAch2BNTMn+b5tTOZyjfO4VnIfyJMvCa
- Q5dESYHNXyeZFXSKh62XmH0+2S7AngOcav6Tb6UrW170lHZl6Gu/+olxfFJl8LPs9WlZWWd
- 42oZIDJ9Ssfka/9h8MQjaNmDm3XMUBs=
+ list-archive; bh=PZ80I4Q04V8uGwV2eqQomYAEzm5pmWHhpixyf6rW9JI=;
+ b=GPhHpgXADLW6k2TQh4qGO71/uqHjonihYJ2Wvs0cVB0TW1bZK4bASo5zc1KJX2ZgKKfGX
+ kw+yI+xz4wt+mdCtcFwcW9Y1HgaAmDZ0ZR9GQRXRg5uUzbW7YD+auFNx7HxgtgUtBusmrgB
+ EAZ7S66thGs/V5NCoWXoSXzF1enxqb0=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 61BD983E40
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 28 May 2026 16:29:37 +0200 (CEST)
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E170280DF2
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 29 May 2026 02:14:14 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1779978577;
+	s=20121; t=1780013665;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=wU8EADN7q21SEHJNlOIBEzAVqEevDfMMQ8wP/p0bpp0=;
-	b=sBCh49nhdKTRVWlonALYGwcKkB6fo/uzGH977k9HBwWSR+Eq19TBRwKseZJy/Ia0HOSrzs
-	Yyucdk0fB8L6HEQCqDjKnRXnRKropWFo3RKW/Ttt9hyPGcXHLgIVGFtR7vLWhZOF2NGRHx
-	lbjjjZgCJ4SER4ef2hkUL6yp0py8q+k=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1779978577;
-	b=RwQhQ+WJ3gOE3m84SgH3ylrshBKV1l6oPCSqI1zLy/3WDVGo9GvwDUq00tm5K6YBBXJAoq
-	pi7ESOyvZTZF3fyuO5Uix0OuI/lcWZjI2CpzeUbQlKB2YARRdXgO1fXW+8TVOUJJkxdTb7
-	iDpB9rlL7VoeQHGPALG5mQiP22hC/7U=
+	bh=PZ80I4Q04V8uGwV2eqQomYAEzm5pmWHhpixyf6rW9JI=;
+	b=i+LCREOn9JYo2JippFhSAoicuWXX59zLphETDXPI4EcHGS5wd4oaZsgW5PzBDtnDxEYxnh
+	k2JLUySU/YJ4zP/EEnL2y2tC0DE2RgUrmYWvrF1ore5bHu8RyQD7b3K1tyew1RQfMokGML
+	mXCYDzO0Sv52+hOGFEyFcwFzuH3JmbM=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780013665;
+	b=zn9+B1a4z0P3g2MbziAxAEo/SugY0EXtIbcc2BRwQsYjWDA3GAuRzfOi8wbPDiqU97+Hq4
+	EKCwO/Kli06p4J3VH/H1m6f5INPwqEmZmsbvvBJRgnhM9K2gB2qzOq9c0+CS/2OieVuzfY
+	Gmagb49dNeffpJny8FhP+M6LdSWeY8w=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=PM13G3G+;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1779978576;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=wU8EADN7q21SEHJNlOIBEzAVqEevDfMMQ8wP/p0bpp0=;
-	b=PM13G3G+giU1PJJeHHUZW31dWIsEbYdcRNPxuP8X/4ECXreF7QVEz4ZjaPHHx8VPJ/oaqm
-	/ie2Sm+EAQuu+nkWaYNKJ/8gLmU5zES4hRS6QUFuMVEXK3nqFhCwl11ZS13SyXc5JmJq8J
-	A3iOAJopH9qyPeUlte3uKSeWQRU53VZAlXwE9UqwsyvEoWND7IikXbV0BB6orTTe320kzN
-	LctYcfjqKjfwPhUK1zEw8IcBBSwVcJdArDVPVs2FAq9MGDGsAomHNs0Fx8jhILX7OT4bUO
-	cYAycRaeVsuQEHTGpkRy7s5xjvc2EI8cn7d07aoQV3J197+oXLu/RntD0N60uw==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: netdev@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
-	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 15/15] batman-adv: use neigh_node's orig_node only as
- id
-Date: Thu, 28 May 2026 16:29:24 +0200
-Message-ID: <20260528142924.329658-16-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260528142924.329658-1-sw@simonwunderlich.de>
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=hQF0kBZ6;
+	spf=pass (diktynna.open-mesh.org: domain of kuba@kernel.org designates
+ 172.105.4.254 as permitted sender) smtp.mailfrom=kuba@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id B6BA860213;
+	Fri, 29 May 2026 00:14:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 137561F000E9;
+	Fri, 29 May 2026 00:14:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780013653;
+	bh=PZ80I4Q04V8uGwV2eqQomYAEzm5pmWHhpixyf6rW9JI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=hQF0kBZ69s7CGcYpW8lZmNXXFoZ3kF6tBjGdGfBG74j1QpNh8VEsdvH17RQqKjnj0
+	 aVGWopYfLG12cukp3Am1w475DutCx7etmP+4dlK1MH3/U25itBofX3gq5zzK76Xwpr
+	 y+tHrCZUdh75q4TR7szGtOzVrkEMY8EWsI4TXu61oB1BMZuaP11Its48e3dEGw5oSN
+	 5kZYzU31cpjqLCDOKJLYRmtvvdK12myX89zpCMucPIb0TjDcPgRVx402mcQ9jE92e0
+	 JZ9te3VyEW55/XkhSUKvuOBrSvycmBj+BnTbnIzeAqtj7m/dLqb+vWmR9khQGyaK1g
+	 9RQawecTXPyVQ==
+Date: Thu, 28 May 2026 17:14:12 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Simon
+ Horman <horms@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann
+ <sven@narfation.org>
+Subject: Re: [PATCH net-next 01/15] batman-adv: drop batman-adv specific
+ version
+Message-ID: <20260528171412.7a60e8f7@kernel.org>
+In-Reply-To: <20260528142924.329658-2-sw@simonwunderlich.de>
 References: <20260528142924.329658-1-sw@simonwunderlich.de>
+	<20260528142924.329658-2-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Message-ID-Hash: SDVX36Y64MQC6QDH5JSRZ7FCAI7G46TI
-X-Message-ID-Hash: SDVX36Y64MQC6QDH5JSRZ7FCAI7G46TI
-X-MailFrom: sw@simonwunderlich.de
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Message-ID-Hash: NB5PXWE25UWI36YYOHJZ5L2KTYN2JJCX
+X-Message-ID-Hash: NB5PXWE25UWI36YYOHJZ5L2KTYN2JJCX
+X-MailFrom: kuba@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SDVX36Y64MQC6QDH5JSRZ7FCAI7G46TI/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NB5PXWE25UWI36YYOHJZ5L2KTYN2JJCX/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,80 +109,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+On Thu, 28 May 2026 16:29:10 +0200 Simon Wunderlich wrote:
+> +#define BATADV_SOURCE_VERSION "linux-" UTS_RELEASE
 
-The orig_node member of struct batadv_neigh_node is no longer used in
-B.A.T.M.A.N. IV. But batadv_neigh_node_create() is still storing it.
-Only batadv_v_ogm_route_update() uses it to check if we route toward
-it - not needing the data stored in the batadv_orig_node object itself,
-but merely a pointer to identify the originator.
+What purpose that does "linux-" prefix serve?
+The unwritten rule is that the OOT drivers have to append something 
+to their version to distinguish themselves. In-tree version is just
+the pure kernel version.
 
-The field cannot hold a proper reference because that would create a
-reference cycle, so it must never be dereferenced. Rename it to
-orig_node_id and mark it __private to make any future attempt to
-dereference it immediately noticeable.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bat_v_ogm.c  |  2 +-
- net/batman-adv/originator.c |  5 ++++-
- net/batman-adv/types.h      | 11 +++++++++--
- 3 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 2c4dca639709c..5936d0048be01 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -719,7 +719,7 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 	 * don't route towards it
- 	 */
- 	router = batadv_orig_router_get(orig_node, if_outgoing);
--	if (router && router->orig_node != orig_node && !orig_neigh_router) {
-+	if (router && ACCESS_PRIVATE(router, orig_node_id) != orig_node && !orig_neigh_router) {
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Drop packet: OGM via unknown neighbor!\n");
- 		goto out;
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index d05c8240426bd..15d660ca79376 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -693,9 +693,12 @@ batadv_neigh_node_create(struct batadv_orig_node *orig_node,
- 	kref_get(&hard_iface->refcount);
- 	ether_addr_copy(neigh_node->addr, neigh_addr);
- 	neigh_node->if_incoming = hard_iface;
--	neigh_node->orig_node = orig_node;
- 	neigh_node->last_seen = jiffies;
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	ACCESS_PRIVATE(neigh_node, orig_node_id) = orig_node;
-+#endif
-+
- 	/* increment unique neighbor refcount */
- 	kref_get(&hardif_neigh->refcount);
- 	neigh_node->hardif_neigh = hardif_neigh;
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c3b6af399110b..1fbdd58b59bd9 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -663,8 +663,15 @@ struct batadv_neigh_node {
- 	/** @list: list node for &batadv_orig_node.neigh_list */
- 	struct hlist_node list;
- 
--	/** @orig_node: pointer to corresponding orig_node */
--	struct batadv_orig_node *orig_node;
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	/**
-+	 * @orig_node_id: pointer to corresponding orig_node. It must only be used
-+	 * to identify the node but must NEVER be dereferenced. The reference counter
-+	 * was not increased when this was assigned because it would otherwise create
-+	 * a reference cycle.
-+	 */
-+	struct batadv_orig_node *__private orig_node_id;
-+#endif
- 
- 	/** @addr: the MAC address of the neighboring interface */
- 	u8 addr[ETH_ALEN];
--- 
-2.47.3
-
+To be clear, definitely a move in the right direction. I hope we can
+move _all the way_ in the right direction, tho, without still defining
+OOT-feeling version.h file with a dedicated BATADV_SOURCE_VERSION
