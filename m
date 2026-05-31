@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF452CD5BD1
-	for <batman-adv@archiver.kernel.org>; Sun, 31 May 2026 08:30:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D39A1CD5BD1
+	for <batman-adv@archiver.kernel.org>; Sun, 31 May 2026 08:31:25 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2C846821AE
-	for <batman-adv@archiver.kernel.org>; Sun, 31 May 2026 10:30:38 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5C32D84190
+	for <batman-adv@archiver.kernel.org>; Sun, 31 May 2026 10:31:24 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780216238;
- b=RAjD5aTsdMkuQfakHLvA4Mw4MOiljKmhP4FWtssOFaNIZuAQlSGWzxvyT17GLrPSyBRgL
- ALAWiFcqBJRSO4XVZuMAHaPo3cfIAFIUHrQ/mWfNFH4kGoi0ZNHr9UlMufvkCriZ1oD19t1
- jstVShHmGMomuREY40JLJts6hNb71ko=
+ t=1780216284;
+ b=KJ/hCM9ROk80Dk8Wgr1Lws6MLUUPQTz9ufHyaZl9OL7sPYdkQ2Pym9XYO71TZJx6lDfAV
+ WUcOqi9gq1rCU5y239QY9nj8im3Msm+9dZLEFRK4vhMK5/esTsFBxZ2nDT0ZINGpHNHD4q4
+ lIiF93+geNC6OBmn5Wkx7XiWkmiVgd4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780216238; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780216284; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=9NP1Wtbh6WWJlAadv/8GX2qlLinuAxlul46x+KM9jOw=;
- b=3+W2OqlHSnUVbNA/9soLfWV/kGQpLz2oR2Fco78pd9Ok9fPtEY2mUDpe4aKsH9JujKtIu
- lPgLcsD7paWGjBYvAlpd/Fss7QoDFJASzYSFoYlZ3rVXzhgJ2LJ53gDs/pV5CafOFQkXDTo
- x5j3tr+c3VAGXN7/PeY0KH6M/HqKIsw=
+ list-archive; bh=5L5QLbailTeHaawn1EL6gpD8HzEz1UTNWPbVAKefXI8=;
+ b=g30qQbY12OpW2Z5CnFSzHzrAS+Ddt2A1dnv6gtzB+fl4AqVNf5RYJjVdYlAlauaRC6oLM
+ 7I6azXaT3NaBFJZ52W5XtoiIYJEARhfA+khkf5TSBL2RwCw94b7AQCAV0H7PSuK+Ran88CU
+ wzEw0JOsM6Lt0+Tr8pCrbhQU0uayVro=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C6E0A81461
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 31 May 2026 10:29:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B5A3A83B32
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 31 May 2026 10:29:26 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780216165;
+	s=20121; t=1780216166;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=9NP1Wtbh6WWJlAadv/8GX2qlLinuAxlul46x+KM9jOw=;
-	b=08hSP3TLMoHTGF/CfcUidXSlELz6CfhDio9m2Ci/d9bhhH+jxkscZmic6P2n9V/1isCLMM
-	g42aFDxh5K1yM55X9DoK4EusuWUXT9NvINJVBPZPdD4Nlt/XrEQ5y0CaoX2Ravw+kIXnrA
-	k7ZHuD3dzR9KizrNL5eHQquUtLPg2hw=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780216165;
-	b=s0AoWECnM1hrP+va6mb95d8EoFpxUYf3BzV9xTEEOv/2r3as5IGmzjODKgOeU+zZ/e3gk+
-	uKrepK9NhcXP7wZnOTzw1URzpVMKjOQo8Ku0wE3HDLBvmteXA5Tb2XregtEnqR2lXacis8
-	lfIahlG6vJyO96+ZHqQi+wxz4G1Q9vM=
+	bh=5L5QLbailTeHaawn1EL6gpD8HzEz1UTNWPbVAKefXI8=;
+	b=pKctfOdMHEJdny55BmetMJVQege35l3y83GlEF8CQN7OWiN81X1sjrF86m0NLl3XaCNBqm
+	zIXHwxaj7t+3B7B1q6X5/yaTgaV9oGBtjX+ffdY9L1uwK9joRqs2TpsLtmVkmMLsgdCIM/
+	TtDFgbdzgvcYKYHeCtN52vst9rDEmDE=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780216166;
+	b=ic7Vt+9aqgFsaNGE4gIKqCJId9wkcNlIVhzdTtoLc/CdgojY4Z7/9B6fIS8lGTApBn6uDO
+	vgxCNBghHpJxOnxFZeZ6vKmt/as+JasEpof7OCUXOKQVH+1m+7dg2TFEbQhF44byfIc0al
+	1Owsp2nm0IWuah52AFrk0NIktV3ZULs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="tRk/WNnK";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=vqMnFfnx;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 580C520152;
-	Sun, 31 May 2026 08:29:19 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 5D43D20152;
+	Sun, 31 May 2026 08:29:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780216159;
+	s=20121; t=1780216166;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9NP1Wtbh6WWJlAadv/8GX2qlLinuAxlul46x+KM9jOw=;
-	b=tRk/WNnKDfQ30GCAH5WtEOvvzK/82VFrK3y1CuLx40UOSCxwXs7QJt3p4H3W9VcphhrEdB
-	9K+GU5qmwVG9PnW2PvWLzY0Nnn8nga9Gk6fGAG0fAyNI2RGfp9nLX0ohVtftl9cSBgCsVi
-	CY55KcalLXMqvbTHlvlFnva/sn66syk=
+	bh=5L5QLbailTeHaawn1EL6gpD8HzEz1UTNWPbVAKefXI8=;
+	b=vqMnFfnxpJ8Ds1seGz7Ct/3CywKroTSmSgrJ5JYSkkzR7oorGFE3KwUSYkCljsoiBL6RwD
+	pGuRhou7CuHdg12/Yvgqv6gYAohvljMYmS6J8Y5dVT1i7RjHKFLF6u+bZI2xLB5AOXn2ep
+	5UeIw6XKbGXzyVVs16Xxg9zIFoLbH0s=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 31 May 2026 10:28:51 +0200
-Subject: [PATCH batadv v4 1/6] batman-adv: tp_meter: keep unacked list in
- ascending ordered
+Date: Sun, 31 May 2026 10:28:54 +0200
+Subject: [PATCH batadv v4 4/6] batman-adv: tp_meter: split vars into sender
+ and receiver types
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260531-tp-reason-missing-v4-1-5d2556e00128@narfation.org>
+Message-Id: <20260531-tp-reason-missing-v4-4-5d2556e00128@narfation.org>
 References: <20260531-tp-reason-missing-v4-0-5d2556e00128@narfation.org>
 In-Reply-To: <20260531-tp-reason-missing-v4-0-5d2556e00128@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1312; i=sven@narfation.org;
- h=from:subject:message-id; bh=FNBDbdS1MXMPx1UoVJ1QWcN9UpWNhV3MQtn6eQTKg8w=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnSH8MPdn/bcqG5vu/3i5vfzSfoSx9qK1jlF3uM25nz3
- a8mvYXHOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATYXJmZJi7/IhJ2O3upWs1
- rltLTU06tjpb/NfCz4/EVz3fqvEwc2IJwx/uvS//3E07K2lSoCTxjD9ud8e6vMCpegnN19V/XRP
- fsZ4VAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=41364; i=sven@narfation.org;
+ h=from:subject:message-id; bh=+JHxdLhJLL62Z48kdCmV/Z7HMBttzG4YcSGo2DVu0hc=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnSHyMEu1mOz418b3v3eO2NnckVk/fqHNrT6VWzI8k47
+ 6eQ4bu6jlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEpGQZ/ocFTju2U2uV4iaP
+ Uw7RFdPcP+bIRP2ty68qFd370fnsPxNGhq3remRffqwKXB2W/3HStBhRhYOn39343nzyiNQj2/2
+ vnXkA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 3KHMW4ZEEZ2RJLW4AJV5DMPP4KZBNXTZ
-X-Message-ID-Hash: 3KHMW4ZEEZ2RJLW4AJV5DMPP4KZBNXTZ
+Message-ID-Hash: F7UB3ZA54BV2HSANI44FRRRN4QNMNV7H
+X-Message-ID-Hash: F7UB3ZA54BV2HSANI44FRRRN4QNMNV7H
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3KHMW4ZEEZ2RJLW4AJV5DMPP4KZBNXTZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/F7UB3ZA54BV2HSANI44FRRRN4QNMNV7H/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,36 +112,1134 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-When batadv_tp_handle_out_of_order inserts a new entry in the list of
-unacked (out of order) packets, it searches from the entry with the newest
-sequence number towards oldest sequence number. If an entry is found which
-is older than the newly entry, the new entry has to be added after the
-found one to keep the ascending order.
+The monolithic batadv_tp_vars struct holds fields for both sender and
+receiver roles, distinguished only by a runtime enum role. This makes it
+easy to accidentally access a field intended for the opposite role, since
+neither the compiler nor the type system provide any guard against such
+mistakes. The role check also adds unnecessary branching in several code
+paths.
 
-But for this operation list_add_tail() was used. But this function adds an
-entry _before_ another one. As result, the list would contain a lot of
-swapped sequence numbers. The consumer of this list
-(batadv_tp_ack_unordered()) would then fail to correctly ack packets.
+Introduce batadv_tp_vars_common to hold fields shared across both roles,
+then derive two separate types (sender/receiver) from it. The functions can
+operate on them without any ambiguity about the available fields. This also
+reduces the memory footprint of receiver sessions, which no longer carry
+the substantial sender-only fields.
 
-Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
+Care must be taken to prevent concurrent TP sessions between the same two
+peers in opposite directions, since sender and receiver sessions are now
+tracked in separate lists and a lookup in one list no longer detects a
+session in the other.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/tp_meter.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/main.c     |   3 +-
+ net/batman-adv/tp_meter.c | 396 ++++++++++++++++++++++++++--------------------
+ net/batman-adv/types.h    | 101 ++++++------
+ 3 files changed, 281 insertions(+), 219 deletions(-)
 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index a4d33ee0..fc80f958 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -181,7 +181,8 @@ int batadv_mesh_init(struct net_device *mesh_iface)
+ 	INIT_HLIST_HEAD(&bat_priv->tvlv.container_list);
+ 	INIT_HLIST_HEAD(&bat_priv->tvlv.handler_list);
+ 	INIT_HLIST_HEAD(&bat_priv->meshif_vlan_list);
+-	INIT_HLIST_HEAD(&bat_priv->tp_list);
++	INIT_HLIST_HEAD(&bat_priv->tp_sender_list);
++	INIT_HLIST_HEAD(&bat_priv->tp_receiver_list);
+ 
+ 	bat_priv->gw.generation = 0;
+ 
 diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 0fc4ca78..e8941f75 100644
+index 09e46b04..c8afd1e0 100644
 --- a/net/batman-adv/tp_meter.c
 +++ b/net/batman-adv/tp_meter.c
-@@ -1325,7 +1325,7 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
- 		 * one is attached _after_ it. In this way the list is kept in
- 		 * ascending order
+@@ -142,7 +142,7 @@ static u32 batadv_tp_cwnd(u32 base, u32 increment, u32 min)
+  * 2) if the session is in Congestion Avoidance, the CWND has to be
+  * increased by MSS * MSS / CWND for every unique received ACK
+  */
+-static void batadv_tp_update_cwnd(struct batadv_tp_vars *tp_vars, u32 mss)
++static void batadv_tp_update_cwnd(struct batadv_tp_sender *tp_vars, u32 mss)
+ {
+ 	spin_lock_bh(&tp_vars->cwnd_lock);
+ 
+@@ -173,7 +173,7 @@ static void batadv_tp_update_cwnd(struct batadv_tp_vars *tp_vars, u32 mss)
+  * @tp_vars: the private data of the current TP meter session
+  * @new_rtt: new roundtrip time in msec
+  */
+-static void batadv_tp_update_rto(struct batadv_tp_vars *tp_vars,
++static void batadv_tp_update_rto(struct batadv_tp_sender *tp_vars,
+ 				 u32 new_rtt)
+ {
+ 	long m = new_rtt;
+@@ -252,35 +252,30 @@ static void batadv_tp_batctl_error_notify(enum batadv_tp_meter_reason reason,
+ }
+ 
+ /**
+- * batadv_tp_list_find() - find a tp_vars object in the global list
++ * batadv_tp_list_find_sender() - find a sender tp_vars object in the global list
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @dst: the other endpoint MAC address to look for
+- * @role: role of the session
+  *
+  * Look for a tp_vars object matching dst as end_point and return it after
+  * having increment the refcounter. Return NULL is not found
+  *
+  * Return: matching tp_vars or NULL when no tp_vars with @dst was found
+  */
+-static struct batadv_tp_vars *batadv_tp_list_find(struct batadv_priv *bat_priv,
+-						  const u8 *dst,
+-						  enum batadv_tp_meter_role role)
++static struct batadv_tp_sender *
++batadv_tp_list_find_sender(struct batadv_priv *bat_priv, const u8 *dst)
+ {
+-	struct batadv_tp_vars *pos, *tp_vars = NULL;
++	struct batadv_tp_sender *pos, *tp_vars = NULL;
+ 
+ 	rcu_read_lock();
+-	hlist_for_each_entry_rcu(pos, &bat_priv->tp_list, list) {
+-		if (!batadv_compare_eth(pos->other_end, dst))
+-			continue;
+-
+-		if (pos->role != role)
++	hlist_for_each_entry_rcu(pos, &bat_priv->tp_sender_list, common.list) {
++		if (!batadv_compare_eth(pos->common.other_end, dst))
+ 			continue;
+ 
+ 		/* most of the time this function is invoked during the normal
+ 		 * process..it makes sens to pay more when the session is
+ 		 * finished and to speed the process up during the measurement
  		 */
--		list_add_tail(&new->list, &un->list);
-+		list_add(&new->list, &un->list);
- 		added = true;
- 		break;
+-		if (unlikely(!kref_get_unless_zero(&pos->refcount)))
++		if (unlikely(!kref_get_unless_zero(&pos->common.refcount)))
+ 			continue;
+ 
+ 		tp_vars = pos;
+@@ -301,10 +296,16 @@ static struct batadv_tp_vars *batadv_tp_list_find(struct batadv_priv *bat_priv,
+ static bool batadv_tp_list_active(struct batadv_priv *bat_priv, const u8 *dst)
+ 	__must_hold(&bat_priv->tp_list_lock)
+ {
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_receiver *tp_receiver;
++	struct batadv_tp_sender *tp_sender;
+ 
+-	hlist_for_each_entry_rcu(tp_vars, &bat_priv->tp_list, list) {
+-		if (batadv_compare_eth(tp_vars->other_end, dst))
++	hlist_for_each_entry_rcu(tp_sender, &bat_priv->tp_sender_list, common.list) {
++		if (batadv_compare_eth(tp_sender->common.other_end, dst))
++			return true;
++	}
++
++	hlist_for_each_entry_rcu(tp_receiver, &bat_priv->tp_receiver_list, common.list) {
++		if (batadv_compare_eth(tp_receiver->common.other_end, dst))
+ 			return true;
  	}
+ 
+@@ -312,12 +313,11 @@ static bool batadv_tp_list_active(struct batadv_priv *bat_priv, const u8 *dst)
+ }
+ 
+ /**
+- * batadv_tp_list_find_session() - find tp_vars session object in the global
+- *  list
++ * batadv_tp_list_find_sender_session() - find tp_vars sender session
++ *  object in the global list
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @dst: the other endpoint MAC address to look for
+  * @session: session identifier
+- * @role: role of the session
+  *
+  * Look for a tp_vars object matching dst as end_point, session as tp meter
+  * session and return it after having increment the refcounter. Return NULL
+@@ -325,28 +325,25 @@ static bool batadv_tp_list_active(struct batadv_priv *bat_priv, const u8 *dst)
+  *
+  * Return: matching tp_vars or NULL when no tp_vars was found
+  */
+-static struct batadv_tp_vars *
+-batadv_tp_list_find_session(struct batadv_priv *bat_priv, const u8 *dst,
+-			    const u8 *session, enum batadv_tp_meter_role role)
++static struct batadv_tp_sender *
++batadv_tp_list_find_sender_session(struct batadv_priv *bat_priv, const u8 *dst,
++				   const u8 *session)
+ {
+-	struct batadv_tp_vars *pos, *tp_vars = NULL;
++	struct batadv_tp_sender *pos, *tp_vars = NULL;
+ 
+ 	rcu_read_lock();
+-	hlist_for_each_entry_rcu(pos, &bat_priv->tp_list, list) {
+-		if (!batadv_compare_eth(pos->other_end, dst))
++	hlist_for_each_entry_rcu(pos, &bat_priv->tp_sender_list, common.list) {
++		if (!batadv_compare_eth(pos->common.other_end, dst))
+ 			continue;
+ 
+-		if (memcmp(pos->session, session, sizeof(pos->session)) != 0)
+-			continue;
+-
+-		if (pos->role != role)
++		if (memcmp(pos->common.session, session, sizeof(pos->common.session)) != 0)
+ 			continue;
+ 
+ 		/* most of the time this function is invoked during the normal
+ 		 * process..it makes sense to pay more when the session is
+ 		 * finished and to speed the process up during the measurement
+ 		 */
+-		if (unlikely(!kref_get_unless_zero(&pos->refcount)))
++		if (unlikely(!kref_get_unless_zero(&pos->common.refcount)))
+ 			continue;
+ 
+ 		tp_vars = pos;
+@@ -358,16 +355,16 @@ batadv_tp_list_find_session(struct batadv_priv *bat_priv, const u8 *dst,
+ }
+ 
+ /**
+- * batadv_tp_vars_release() - release batadv_tp_vars from lists and queue for
+- *  free after rcu grace period
++ * batadv_tp_vars_common_release() - release batadv_tp_vars_common from lists
++ *  and queue for free after rcu grace period
+  * @ref: kref pointer of the batadv_tp_vars
+  */
+-static void batadv_tp_vars_release(struct kref *ref)
++static void batadv_tp_vars_common_release(struct kref *ref)
+ {
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_vars_common *tp_vars;
+ 	struct batadv_tp_unacked *un, *safe;
+ 
+-	tp_vars = container_of(ref, struct batadv_tp_vars, refcount);
++	tp_vars = container_of(ref, struct batadv_tp_vars_common, refcount);
+ 
+ 	/* lock should not be needed because this object is now out of any
+ 	 * context!
+@@ -383,23 +380,25 @@ static void batadv_tp_vars_release(struct kref *ref)
+ }
+ 
+ /**
+- * batadv_tp_vars_put() - decrement the batadv_tp_vars refcounter and possibly
+- *  release it
++ * batadv_tp_sender_put() - decrement the batadv_tp_sender
++ *  refcounter and possibly release it
+  * @tp_vars: the private data of the current TP meter session to be free'd
+  */
+-static void batadv_tp_vars_put(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_sender_put(struct batadv_tp_sender *tp_vars)
+ {
+ 	if (!tp_vars)
+ 		return;
+ 
+-	kref_put(&tp_vars->refcount, batadv_tp_vars_release);
++	kref_put(&tp_vars->common.refcount, batadv_tp_vars_common_release);
+ }
+ 
+ /**
+- * batadv_tp_list_detach() - remove tp session from mesh session list once
++ * batadv_tp_list_detach() - remove tp receiver session from mesh session list once
+  * @tp_vars: the private data of the current TP meter session
++ *
++ * Return: whether tp_vars was detached from list and reference must be freed
+  */
+-static void batadv_tp_list_detach(struct batadv_tp_vars *tp_vars)
++static bool batadv_tp_list_detach(struct batadv_tp_vars_common *tp_vars)
+ {
+ 	bool detached = false;
+ 
+@@ -411,27 +410,27 @@ static void batadv_tp_list_detach(struct batadv_tp_vars *tp_vars)
+ 	spin_unlock_bh(&tp_vars->bat_priv->tp_list_lock);
+ 
+ 	if (!detached)
+-		return;
++		return false;
+ 
+ 	atomic_dec(&tp_vars->bat_priv->tp_num);
+ 
+-	/* drop list reference */
+-	batadv_tp_vars_put(tp_vars);
++	return true;
+ }
+ 
+ /**
+  * batadv_tp_sender_cleanup() - cleanup sender data and drop and timer
+  * @tp_vars: the private data of the current TP meter session to cleanup
+  */
+-static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_sender_cleanup(struct batadv_tp_sender *tp_vars)
+ {
+ 	cancel_delayed_work_sync(&tp_vars->finish_work);
+ 
+-	batadv_tp_list_detach(tp_vars);
++	if (batadv_tp_list_detach(&tp_vars->common))
++		batadv_tp_sender_put(tp_vars);
+ 
+ 	/* kill the timer and remove its reference */
+-	timer_shutdown_sync(&tp_vars->timer);
+-	batadv_tp_vars_put(tp_vars);
++	timer_shutdown_sync(&tp_vars->common.timer);
++	batadv_tp_sender_put(tp_vars);
+ }
+ 
+ /**
+@@ -440,7 +439,7 @@ static void batadv_tp_sender_cleanup(struct batadv_tp_vars *tp_vars)
+  * @tp_vars: the private data of the current TP meter session
+  */
+ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
+-				 struct batadv_tp_vars *tp_vars)
++				 struct batadv_tp_sender *tp_vars)
+ {
+ 	enum batadv_tp_meter_reason reason;
+ 	u32 session_cookie;
+@@ -449,7 +448,7 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
+ 
+ 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 		   "Test towards %pM finished..shutting down (reason=%d)\n",
+-		   tp_vars->other_end, reason);
++		   tp_vars->common.other_end, reason);
+ 
+ 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 		   "Last timing stats: SRTT=%ums RTTVAR=%ums RTO=%ums\n",
+@@ -459,11 +458,11 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
+ 		   "Final values: cwnd=%u ss_threshold=%u\n",
+ 		   tp_vars->cwnd, tp_vars->ss_threshold);
+ 
+-	session_cookie = batadv_tp_session_cookie(tp_vars->session,
++	session_cookie = batadv_tp_session_cookie(tp_vars->common.session,
+ 						  tp_vars->icmp_uid);
+ 
+ 	batadv_tp_batctl_notify(reason,
+-				tp_vars->other_end,
++				tp_vars->common.other_end,
+ 				bat_priv,
+ 				tp_vars->start_time,
+ 				atomic64_read(&tp_vars->tot_sent),
+@@ -475,7 +474,7 @@ static void batadv_tp_sender_end(struct batadv_priv *bat_priv,
+  * @tp_vars: the private data of the current TP meter session
+  * @reason: reason for tp meter session stop
+  */
+-static void batadv_tp_sender_shutdown(struct batadv_tp_vars *tp_vars,
++static void batadv_tp_sender_shutdown(struct batadv_tp_sender *tp_vars,
+ 				      enum batadv_tp_meter_reason reason)
+ {
+ 	atomic_cmpxchg(&tp_vars->send_result, 0, reason);
+@@ -487,7 +486,7 @@ static void batadv_tp_sender_shutdown(struct batadv_tp_vars *tp_vars,
+  *
+  * Return: whether stop reason was found
+  */
+-static bool batadv_tp_sender_stopped(struct batadv_tp_vars *tp_vars)
++static bool batadv_tp_sender_stopped(struct batadv_tp_sender *tp_vars)
+ {
+ 	return atomic_read(&tp_vars->send_result) != 0;
+ }
+@@ -499,10 +498,10 @@ static bool batadv_tp_sender_stopped(struct batadv_tp_vars *tp_vars)
+ static void batadv_tp_sender_finish(struct work_struct *work)
+ {
+ 	struct delayed_work *delayed_work;
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_sender *tp_vars;
+ 
+ 	delayed_work = to_delayed_work(work);
+-	tp_vars = container_of(delayed_work, struct batadv_tp_vars,
++	tp_vars = container_of(delayed_work, struct batadv_tp_sender,
+ 			       finish_work);
+ 
+ 	batadv_tp_sender_shutdown(tp_vars, BATADV_TP_REASON_COMPLETE);
+@@ -514,7 +513,7 @@ static void batadv_tp_sender_finish(struct work_struct *work)
+  *
+  * Reschedule the timer using tp_vars->rto as delay
+  */
+-static void batadv_tp_reset_sender_timer(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_reset_sender_timer(struct batadv_tp_sender *tp_vars)
+ {
+ 	/* most of the time this function is invoked while normal packet
+ 	 * reception...
+@@ -523,7 +522,7 @@ static void batadv_tp_reset_sender_timer(struct batadv_tp_vars *tp_vars)
+ 		/* timer ref will be dropped in batadv_tp_sender_cleanup */
+ 		return;
+ 
+-	mod_timer(&tp_vars->timer, jiffies + msecs_to_jiffies(tp_vars->rto));
++	mod_timer(&tp_vars->common.timer, jiffies + msecs_to_jiffies(tp_vars->rto));
+ }
+ 
+ /**
+@@ -536,8 +535,8 @@ static void batadv_tp_reset_sender_timer(struct batadv_tp_vars *tp_vars)
+  */
+ static void batadv_tp_sender_timeout(struct timer_list *t)
+ {
+-	struct batadv_tp_vars *tp_vars = timer_container_of(tp_vars, t, timer);
+-	struct batadv_priv *bat_priv = tp_vars->bat_priv;
++	struct batadv_tp_sender *tp_vars = timer_container_of(tp_vars, t, common.timer);
++	struct batadv_priv *bat_priv = tp_vars->common.bat_priv;
+ 
+ 	if (batadv_tp_sender_stopped(tp_vars))
+ 		return;
+@@ -562,7 +561,7 @@ static void batadv_tp_sender_timeout(struct timer_list *t)
+ 
+ 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 		   "Meter: RTO fired during test towards %pM! cwnd=%u new ss_thr=%u, resetting last_sent to %u\n",
+-		   tp_vars->other_end, tp_vars->cwnd, tp_vars->ss_threshold,
++		   tp_vars->common.other_end, tp_vars->cwnd, tp_vars->ss_threshold,
+ 		   atomic_read(&tp_vars->last_acked));
+ 
+ 	tp_vars->cwnd = BATADV_TP_PLEN * 3;
+@@ -582,7 +581,7 @@ static void batadv_tp_sender_timeout(struct timer_list *t)
+  * @buf: Buffer to fill with bytes
+  * @nbytes: amount of pseudorandom bytes
+  */
+-static void batadv_tp_fill_prerandom(struct batadv_tp_vars *tp_vars,
++static void batadv_tp_fill_prerandom(struct batadv_tp_sender *tp_vars,
+ 				     u8 *buf, size_t nbytes)
+ {
+ 	u32 local_offset;
+@@ -625,7 +624,7 @@ static void batadv_tp_fill_prerandom(struct batadv_tp_vars *tp_vars,
+  * not reachable, BATADV_TP_REASON_MEMORY_ERROR if the packet couldn't be
+  * allocated
+  */
+-static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
++static int batadv_tp_send_msg(struct batadv_tp_sender *tp_vars, const u8 *src,
+ 			      struct batadv_orig_node *orig_node,
+ 			      u32 seqno, size_t len, const u8 *session,
+ 			      int uid, u32 timestamp)
+@@ -681,7 +680,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	const struct batadv_icmp_tp_packet *icmp;
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_sender *tp_vars;
+ 	const unsigned char *dev_addr;
+ 	size_t packet_len, mss;
+ 	u32 rtt, recv_ack, cwnd;
+@@ -693,8 +692,8 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ 	icmp = (struct batadv_icmp_tp_packet *)skb->data;
+ 
+ 	/* find the tp_vars */
+-	tp_vars = batadv_tp_list_find_session(bat_priv, icmp->orig,
+-					      icmp->session, BATADV_TP_SENDER);
++	tp_vars = batadv_tp_list_find_sender_session(bat_priv, icmp->orig,
++						     icmp->session);
+ 	if (unlikely(!tp_vars))
+ 		return;
+ 
+@@ -804,7 +803,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+ out:
+ 	batadv_hardif_put(primary_if);
+ 	batadv_orig_node_put(orig_node);
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_sender_put(tp_vars);
+ }
+ 
+ /**
+@@ -814,7 +813,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
+  *
+  * Return: true when congestion window is not full, false otherwise
+  */
+-static bool batadv_tp_avail(struct batadv_tp_vars *tp_vars,
++static bool batadv_tp_avail(struct batadv_tp_sender *tp_vars,
+ 			    size_t payload_len)
+ {
+ 	u32 last_sent = tp_vars->last_sent;
+@@ -841,7 +840,7 @@ static bool batadv_tp_avail(struct batadv_tp_vars *tp_vars,
+  *  remaining jiffies (at least 1) if the condition evaluated to true before
+  *  the timeout elapsed, or -ERESTARTSYS if it was interrupted by a signal.
+  */
+-static int batadv_tp_wait_available(struct batadv_tp_vars *tp_vars, size_t plen)
++static int batadv_tp_wait_available(struct batadv_tp_sender *tp_vars, size_t plen)
+ {
+ 	int ret;
+ 
+@@ -860,20 +859,14 @@ static int batadv_tp_wait_available(struct batadv_tp_vars *tp_vars, size_t plen)
+  */
+ static int batadv_tp_send(void *arg)
+ {
+-	struct batadv_tp_vars *tp_vars = arg;
+-	struct batadv_priv *bat_priv = tp_vars->bat_priv;
++	struct batadv_tp_sender *tp_vars = arg;
++	struct batadv_priv *bat_priv = tp_vars->common.bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	size_t payload_len, packet_len;
+ 	int err = 0;
+ 
+-	if (unlikely(tp_vars->role != BATADV_TP_SENDER)) {
+-		err = BATADV_TP_REASON_DST_UNREACHABLE;
+-		batadv_tp_sender_shutdown(tp_vars, err);
+-		goto out;
+-	}
+-
+-	orig_node = batadv_orig_hash_find(bat_priv, tp_vars->other_end);
++	orig_node = batadv_orig_hash_find(bat_priv, tp_vars->common.other_end);
+ 	if (unlikely(!orig_node)) {
+ 		err = BATADV_TP_REASON_DST_UNREACHABLE;
+ 		batadv_tp_sender_shutdown(tp_vars, err);
+@@ -916,7 +909,7 @@ static int batadv_tp_send(void *arg)
+ 		err = batadv_tp_send_msg(tp_vars, primary_if->net_dev->dev_addr,
+ 					 orig_node, tp_vars->last_sent,
+ 					 packet_len,
+-					 tp_vars->session, tp_vars->icmp_uid,
++					 tp_vars->common.session, tp_vars->icmp_uid,
+ 					 jiffies_to_msecs(jiffies));
+ 
+ 		/* something went wrong during the preparation/transmission */
+@@ -944,7 +937,7 @@ static int batadv_tp_send(void *arg)
+ 	batadv_tp_sender_cleanup(tp_vars);
+ 	complete(&tp_vars->finished);
+ 
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_sender_put(tp_vars);
+ 
+ 	return 0;
+ }
+@@ -954,24 +947,24 @@ static int batadv_tp_send(void *arg)
+  *  sender
+  * @tp_vars: the private data of the current TP meter session
+  */
+-static void batadv_tp_start_kthread(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_start_kthread(struct batadv_tp_sender *tp_vars)
+ {
+ 	struct task_struct *kthread;
+-	struct batadv_priv *bat_priv = tp_vars->bat_priv;
++	struct batadv_priv *bat_priv = tp_vars->common.bat_priv;
+ 	u32 session_cookie;
+ 
+-	kref_get(&tp_vars->refcount);
++	kref_get(&tp_vars->common.refcount);
+ 	kthread = kthread_create(batadv_tp_send, tp_vars, "kbatadv_tp_meter");
+ 	if (IS_ERR(kthread)) {
+-		session_cookie = batadv_tp_session_cookie(tp_vars->session,
++		session_cookie = batadv_tp_session_cookie(tp_vars->common.session,
+ 							  tp_vars->icmp_uid);
+ 		pr_err("batadv: cannot create tp meter kthread\n");
+ 		batadv_tp_batctl_error_notify(BATADV_TP_REASON_MEMORY_ERROR,
+-					      tp_vars->other_end,
++					      tp_vars->common.other_end,
+ 					      bat_priv, session_cookie);
+ 
+ 		/* drop reserved reference for kthread */
+-		batadv_tp_vars_put(tp_vars);
++		batadv_tp_sender_put(tp_vars);
+ 
+ 		/* cleanup of failed tp meter variables */
+ 		batadv_tp_sender_cleanup(tp_vars);
+@@ -992,7 +985,7 @@ static void batadv_tp_start_kthread(struct batadv_tp_vars *tp_vars)
+ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 		     u32 test_length, u32 *cookie)
+ {
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_sender *tp_vars;
+ 	u8 session_id[2];
+ 	u8 icmp_uid;
+ 	u32 session_cookie;
+@@ -1042,11 +1035,10 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	}
+ 
+ 	/* initialize tp_vars */
+-	ether_addr_copy(tp_vars->other_end, dst);
+-	kref_init(&tp_vars->refcount);
+-	tp_vars->role = BATADV_TP_SENDER;
++	ether_addr_copy(tp_vars->common.other_end, dst);
++	kref_init(&tp_vars->common.refcount);
+ 	atomic_set(&tp_vars->send_result, 0);
+-	memcpy(tp_vars->session, session_id, sizeof(session_id));
++	memcpy(tp_vars->common.session, session_id, sizeof(session_id));
+ 	tp_vars->icmp_uid = icmp_uid;
+ 
+ 	tp_vars->last_sent = BATADV_TP_FIRST_SEQ;
+@@ -1074,25 +1066,25 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 
+ 	atomic64_set(&tp_vars->tot_sent, 0);
+ 
+-	kref_get(&tp_vars->refcount);
+-	timer_setup(&tp_vars->timer, batadv_tp_sender_timeout, 0);
++	kref_get(&tp_vars->common.refcount);
++	timer_setup(&tp_vars->common.timer, batadv_tp_sender_timeout, 0);
+ 
+-	tp_vars->bat_priv = bat_priv;
++	tp_vars->common.bat_priv = bat_priv;
+ 	tp_vars->start_time = jiffies;
+ 
+ 	init_waitqueue_head(&tp_vars->more_bytes);
+ 	init_completion(&tp_vars->finished);
+ 
+-	spin_lock_init(&tp_vars->unacked_lock);
+-	INIT_LIST_HEAD(&tp_vars->unacked_list);
++	spin_lock_init(&tp_vars->common.unacked_lock);
++	INIT_LIST_HEAD(&tp_vars->common.unacked_list);
+ 
+ 	spin_lock_init(&tp_vars->cwnd_lock);
+ 
+ 	tp_vars->prerandom_offset = 0;
+ 	spin_lock_init(&tp_vars->prerandom_lock);
+ 
+-	kref_get(&tp_vars->refcount);
+-	hlist_add_head_rcu(&tp_vars->list, &bat_priv->tp_list);
++	kref_get(&tp_vars->common.refcount);
++	hlist_add_head_rcu(&tp_vars->common.list, &bat_priv->tp_sender_list);
+ 	spin_unlock_bh(&bat_priv->tp_list_lock);
+ 
+ 	tp_vars->test_length = test_length;
+@@ -1112,7 +1104,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	batadv_tp_start_kthread(tp_vars);
+ 
+ 	/* don't return reference to new tp_vars */
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_sender_put(tp_vars);
+ }
+ 
+ /**
+@@ -1125,7 +1117,7 @@ void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
+ 		    u8 return_value)
+ {
+ 	struct batadv_orig_node *orig_node;
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_sender *tp_vars;
+ 
+ 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 		   "Meter: stopping test towards %pM\n", dst);
+@@ -1134,7 +1126,7 @@ void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
+ 	if (!orig_node)
+ 		return;
+ 
+-	tp_vars = batadv_tp_list_find(bat_priv, orig_node->orig, BATADV_TP_SENDER);
++	tp_vars = batadv_tp_list_find_sender(bat_priv, orig_node->orig);
+ 	if (!tp_vars) {
+ 		batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 			   "Meter: trying to interrupt an already over connection\n");
+@@ -1142,20 +1134,75 @@ void batadv_tp_stop(struct batadv_priv *bat_priv, const u8 *dst,
+ 	}
+ 
+ 	batadv_tp_sender_shutdown(tp_vars, return_value);
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_sender_put(tp_vars);
+ out_put_orig_node:
+ 	batadv_orig_node_put(orig_node);
+ }
+ 
++/**
++ * batadv_tp_list_find_receiver_session() - find tp_vars receiver session
++ *  object in the global list
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @dst: the other endpoint MAC address to look for
++ * @session: session identifier
++ *
++ * Look for a tp_vars object matching dst as end_point, session as tp meter
++ * session and return it after having increment the refcounter. Return NULL
++ * is not found
++ *
++ * Return: matching tp_vars or NULL when no tp_vars was found
++ */
++static struct batadv_tp_receiver *
++batadv_tp_list_find_receiver_session(struct batadv_priv *bat_priv, const u8 *dst,
++				     const u8 *session)
++{
++	struct batadv_tp_receiver *pos, *tp_vars = NULL;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(pos, &bat_priv->tp_receiver_list, common.list) {
++		if (!batadv_compare_eth(pos->common.other_end, dst))
++			continue;
++
++		if (memcmp(pos->common.session, session, sizeof(pos->common.session)) != 0)
++			continue;
++
++		/* most of the time this function is invoked during the normal
++		 * process..it makes sense to pay more when the session is
++		 * finished and to speed the process up during the measurement
++		 */
++		if (unlikely(!kref_get_unless_zero(&pos->common.refcount)))
++			continue;
++
++		tp_vars = pos;
++		break;
++	}
++	rcu_read_unlock();
++
++	return tp_vars;
++}
++
++/**
++ * batadv_tp_receiver_put() - decrement the batadv_tp_receiver
++ *  refcounter and possibly release it
++ * @tp_vars: the private data of the current TP meter session to be free'd
++ */
++static void batadv_tp_receiver_put(struct batadv_tp_receiver *tp_vars)
++{
++	if (!tp_vars)
++		return;
++
++	kref_put(&tp_vars->common.refcount, batadv_tp_vars_common_release);
++}
++
+ /**
+  * batadv_tp_reset_receiver_timer() - reset the receiver shutdown timer
+  * @tp_vars: the private data of the current TP meter session
+  *
+  * start the receiver shutdown timer or reset it if already started
+  */
+-static void batadv_tp_reset_receiver_timer(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_reset_receiver_timer(struct batadv_tp_receiver *tp_vars)
+ {
+-	mod_timer(&tp_vars->timer,
++	mod_timer(&tp_vars->common.timer,
+ 		  jiffies + msecs_to_jiffies(BATADV_TP_RECV_TIMEOUT));
+ }
+ 
+@@ -1166,11 +1213,11 @@ static void batadv_tp_reset_receiver_timer(struct batadv_tp_vars *tp_vars)
+  */
+ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ {
+-	struct batadv_tp_vars *tp_vars = timer_container_of(tp_vars, t, timer);
++	struct batadv_tp_receiver *tp_vars = timer_container_of(tp_vars, t, common.timer);
+ 	struct batadv_tp_unacked *un, *safe;
+ 	struct batadv_priv *bat_priv;
+ 
+-	bat_priv = tp_vars->bat_priv;
++	bat_priv = tp_vars->common.bat_priv;
+ 
+ 	/* if there is recent activity rearm the timer */
+ 	if (!batadv_has_timed_out(tp_vars->last_recv_time,
+@@ -1182,22 +1229,23 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ 
+ 	batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 		   "Shutting down for inactivity (more than %dms) from %pM\n",
+-		   BATADV_TP_RECV_TIMEOUT, tp_vars->other_end);
++		   BATADV_TP_RECV_TIMEOUT, tp_vars->common.other_end);
+ 
+-	batadv_tp_list_detach(tp_vars);
++	if (batadv_tp_list_detach(&tp_vars->common))
++		batadv_tp_receiver_put(tp_vars);
+ 
+-	spin_lock_bh(&tp_vars->unacked_lock);
+-	list_for_each_entry_safe(un, safe, &tp_vars->unacked_list, list) {
++	spin_lock_bh(&tp_vars->common.unacked_lock);
++	list_for_each_entry_safe(un, safe, &tp_vars->common.unacked_list, list) {
+ 		list_del(&un->list);
+ 		kfree(un);
+ 	}
+-	spin_unlock_bh(&tp_vars->unacked_lock);
++	spin_unlock_bh(&tp_vars->common.unacked_lock);
+ 
+ 	/* drop reference of timer */
+ 	if (WARN_ON(atomic_xchg(&tp_vars->receiving, 0) != 1))
+ 		return;
+ 
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_receiver_put(tp_vars);
+ }
+ 
+ /**
+@@ -1281,7 +1329,7 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
+  *
+  * Return: true if the packed has been successfully processed, false otherwise
+  */
+-static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
++static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
+ 					  const struct sk_buff *skb)
+ {
+ 	const struct batadv_icmp_tp_packet *icmp;
+@@ -1299,10 +1347,10 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
+ 	payload_len = skb->len - sizeof(struct batadv_unicast_packet);
+ 	new->len = payload_len;
+ 
+-	spin_lock_bh(&tp_vars->unacked_lock);
++	spin_lock_bh(&tp_vars->common.unacked_lock);
+ 	/* if the list is empty immediately attach this new object */
+-	if (list_empty(&tp_vars->unacked_list)) {
+-		list_add(&new->list, &tp_vars->unacked_list);
++	if (list_empty(&tp_vars->common.unacked_list)) {
++		list_add(&new->list, &tp_vars->common.unacked_list);
+ 		goto out;
+ 	}
+ 
+@@ -1313,7 +1361,7 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
+ 	 * the last received packet (the one being processed now) has a bigger
+ 	 * seqno than all the others already stored.
+ 	 */
+-	list_for_each_entry_reverse(un, &tp_vars->unacked_list, list) {
++	list_for_each_entry_reverse(un, &tp_vars->common.unacked_list, list) {
+ 		/* check for duplicates */
+ 		if (new->seqno == un->seqno) {
+ 			if (new->len > un->len)
+@@ -1338,10 +1386,10 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
+ 
+ 	/* received packet with smallest seqno out of order; add it to front */
+ 	if (!added)
+-		list_add(&new->list, &tp_vars->unacked_list);
++		list_add(&new->list, &tp_vars->common.unacked_list);
+ 
+ out:
+-	spin_unlock_bh(&tp_vars->unacked_lock);
++	spin_unlock_bh(&tp_vars->common.unacked_lock);
+ 
+ 	return true;
+ }
+@@ -1351,7 +1399,7 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_vars *tp_vars,
+  *  without gaps
+  * @tp_vars: the private data of the current TP meter session
+  */
+-static void batadv_tp_ack_unordered(struct batadv_tp_vars *tp_vars)
++static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
+ {
+ 	struct batadv_tp_unacked *un, *safe;
+ 	u32 to_ack;
+@@ -1359,8 +1407,8 @@ static void batadv_tp_ack_unordered(struct batadv_tp_vars *tp_vars)
+ 	/* go through the unacked packet list and possibly ACK them as
+ 	 * well
+ 	 */
+-	spin_lock_bh(&tp_vars->unacked_lock);
+-	list_for_each_entry_safe(un, safe, &tp_vars->unacked_list, list) {
++	spin_lock_bh(&tp_vars->common.unacked_lock);
++	list_for_each_entry_safe(un, safe, &tp_vars->common.unacked_list, list) {
+ 		/* the list is ordered, therefore it is possible to stop as soon
+ 		 * there is a gap between the last acked seqno and the seqno of
+ 		 * the packet under inspection
+@@ -1376,7 +1424,7 @@ static void batadv_tp_ack_unordered(struct batadv_tp_vars *tp_vars)
+ 		list_del(&un->list);
+ 		kfree(un);
+ 	}
+-	spin_unlock_bh(&tp_vars->unacked_lock);
++	spin_unlock_bh(&tp_vars->common.unacked_lock);
+ }
+ 
+ /**
+@@ -1386,18 +1434,18 @@ static void batadv_tp_ack_unordered(struct batadv_tp_vars *tp_vars)
+  *
+  * Return: corresponding tp_vars or NULL on errors
+  */
+-static struct batadv_tp_vars *
++static struct batadv_tp_receiver *
+ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 		    const struct batadv_icmp_tp_packet *icmp)
+ {
+-	struct batadv_tp_vars *tp_vars = NULL;
++	struct batadv_tp_receiver *tp_vars = NULL;
+ 
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto out_unlock;
+ 
+-	tp_vars = batadv_tp_list_find_session(bat_priv, icmp->orig,
+-					      icmp->session, BATADV_TP_RECEIVER);
++	tp_vars = batadv_tp_list_find_receiver_session(bat_priv, icmp->orig,
++						       icmp->session);
+ 	if (tp_vars)
+ 		goto out_unlock;
+ 
+@@ -1413,22 +1461,21 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 		goto out_unlock;
+ 	}
+ 
+-	ether_addr_copy(tp_vars->other_end, icmp->orig);
+-	tp_vars->role = BATADV_TP_RECEIVER;
++	ether_addr_copy(tp_vars->common.other_end, icmp->orig);
+ 	atomic_set(&tp_vars->receiving, 1);
+-	memcpy(tp_vars->session, icmp->session, sizeof(tp_vars->session));
++	memcpy(tp_vars->common.session, icmp->session, sizeof(tp_vars->common.session));
+ 	tp_vars->last_recv = BATADV_TP_FIRST_SEQ;
+-	tp_vars->bat_priv = bat_priv;
+-	kref_init(&tp_vars->refcount);
++	tp_vars->common.bat_priv = bat_priv;
++	kref_init(&tp_vars->common.refcount);
+ 
+-	spin_lock_init(&tp_vars->unacked_lock);
+-	INIT_LIST_HEAD(&tp_vars->unacked_list);
++	spin_lock_init(&tp_vars->common.unacked_lock);
++	INIT_LIST_HEAD(&tp_vars->common.unacked_list);
+ 
+-	kref_get(&tp_vars->refcount);
+-	hlist_add_head_rcu(&tp_vars->list, &bat_priv->tp_list);
++	kref_get(&tp_vars->common.refcount);
++	hlist_add_head_rcu(&tp_vars->common.list, &bat_priv->tp_receiver_list);
+ 
+-	kref_get(&tp_vars->refcount);
+-	timer_setup(&tp_vars->timer, batadv_tp_receiver_shutdown, 0);
++	kref_get(&tp_vars->common.refcount);
++	timer_setup(&tp_vars->common.timer, batadv_tp_receiver_shutdown, 0);
+ 
+ 	batadv_tp_reset_receiver_timer(tp_vars);
+ 
+@@ -1449,7 +1496,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ 			       const struct sk_buff *skb)
+ {
+ 	const struct batadv_icmp_tp_packet *icmp;
+-	struct batadv_tp_vars *tp_vars;
++	struct batadv_tp_receiver *tp_vars;
+ 	size_t packet_size;
+ 	u32 seqno;
+ 
+@@ -1467,8 +1514,8 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ 			goto out;
+ 		}
+ 	} else {
+-		tp_vars = batadv_tp_list_find_session(bat_priv, icmp->orig,
+-						      icmp->session, BATADV_TP_RECEIVER);
++		tp_vars = batadv_tp_list_find_receiver_session(bat_priv, icmp->orig,
++							       icmp->session);
+ 		if (!tp_vars) {
+ 			batadv_dbg(BATADV_DBG_TP_METER, bat_priv,
+ 				   "Unexpected packet from %pM!\n",
+@@ -1512,7 +1559,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
+ 	batadv_tp_send_ack(bat_priv, icmp->orig, tp_vars->last_recv,
+ 			   icmp->timestamp, icmp->session, icmp->uid);
+ out:
+-	batadv_tp_vars_put(tp_vars);
++	batadv_tp_receiver_put(tp_vars);
+ }
+ 
+ /**
+@@ -1552,45 +1599,58 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
+  */
+ void batadv_tp_stop_all(struct batadv_priv *bat_priv)
+ {
+-	struct batadv_tp_vars *tp_vars[BATADV_TP_MAX_NUM];
+-	struct batadv_tp_vars *tp_var;
+-	size_t count = 0;
++	struct batadv_tp_receiver *tp_receivers[BATADV_TP_MAX_NUM];
++	struct batadv_tp_sender *tp_senders[BATADV_TP_MAX_NUM];
++	struct batadv_tp_receiver *tp_receiver;
++	struct batadv_tp_sender *tp_sender;
++	size_t receiver_count = 0;
++	size_t sender_count = 0;
+ 	size_t i;
+ 
+ 	spin_lock_bh(&bat_priv->tp_list_lock);
+-	hlist_for_each_entry(tp_var, &bat_priv->tp_list, list) {
+-		if (WARN_ON_ONCE(count >= BATADV_TP_MAX_NUM))
++	hlist_for_each_entry(tp_receiver, &bat_priv->tp_receiver_list, common.list) {
++		if (WARN_ON_ONCE(receiver_count >= BATADV_TP_MAX_NUM))
+ 			break;
+ 
+-		if (!kref_get_unless_zero(&tp_var->refcount))
++		if (!kref_get_unless_zero(&tp_receiver->common.refcount))
+ 			continue;
+ 
+-		tp_vars[count++] = tp_var;
++		tp_receivers[receiver_count++] = tp_receiver;
++	}
++
++	hlist_for_each_entry(tp_sender, &bat_priv->tp_sender_list, common.list) {
++		if (WARN_ON_ONCE(sender_count >= BATADV_TP_MAX_NUM))
++			break;
++
++		if (!kref_get_unless_zero(&tp_sender->common.refcount))
++			continue;
++
++		tp_senders[sender_count++] = tp_sender;
+ 	}
+ 	spin_unlock_bh(&bat_priv->tp_list_lock);
+ 
+-	for (i = 0; i < count; i++) {
+-		tp_var = tp_vars[i];
++	for (i = 0; i < receiver_count; i++) {
++		tp_receiver = tp_receivers[i];
+ 
+-		switch (tp_var->role) {
+-		case BATADV_TP_SENDER:
+-			batadv_tp_sender_shutdown(tp_var,
+-						  BATADV_TP_REASON_CANCEL);
+-			wake_up(&tp_var->more_bytes);
+-			wait_for_completion(&tp_var->finished);
+-			break;
+-		case BATADV_TP_RECEIVER:
+-			batadv_tp_list_detach(tp_var);
+-			timer_shutdown_sync(&tp_var->timer);
++		if (batadv_tp_list_detach(&tp_receiver->common))
++			batadv_tp_receiver_put(tp_receiver);
+ 
+-			if (atomic_xchg(&tp_var->receiving, 0) != 1)
+-				break;
++		timer_shutdown_sync(&tp_receiver->common.timer);
+ 
+-			batadv_tp_vars_put(tp_var);
+-			break;
+-		}
++		if (atomic_xchg(&tp_receiver->receiving, 0) != 0)
++			batadv_tp_receiver_put(tp_receiver);
+ 
+-		batadv_tp_vars_put(tp_var);
++		batadv_tp_receiver_put(tp_receiver);
++	}
++
++	for (i = 0; i < sender_count; i++) {
++		tp_sender = tp_senders[i];
++
++		batadv_tp_sender_shutdown(tp_sender, BATADV_TP_REASON_CANCEL);
++		wake_up(&tp_sender->more_bytes);
++		wait_for_completion(&tp_sender->finished);
++
++		batadv_tp_sender_put(tp_sender);
+ 	}
+ 
+ 	synchronize_net();
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index a01ee46d..4880bf3e 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1297,21 +1297,10 @@ struct batadv_tp_unacked {
+ };
+ 
+ /**
+- * enum batadv_tp_meter_role - Modus in tp meter session
++ * struct batadv_tp_vars_common - common tp meter private variables per session
+  */
+-enum batadv_tp_meter_role {
+-	/** @BATADV_TP_RECEIVER: Initialized as receiver */
+-	BATADV_TP_RECEIVER,
+-
+-	/** @BATADV_TP_SENDER: Initialized as sender */
+-	BATADV_TP_SENDER
+-};
+-
+-/**
+- * struct batadv_tp_vars - tp meter private variables per session
+- */
+-struct batadv_tp_vars {
+-	/** @list: list node for &bat_priv.tp_list */
++struct batadv_tp_vars_common {
++	/** @list: list node for &bat_priv.tp_sender_list/&bat_priv.tp_receiver_list */
+ 	struct hlist_node list;
+ 
+ 	/** @timer: timer for ack (receiver) and retry (sender) */
+@@ -1320,14 +1309,34 @@ struct batadv_tp_vars {
+ 	/** @bat_priv: pointer to the mesh object */
+ 	struct batadv_priv *bat_priv;
+ 
+-	/** @start_time: start time in jiffies */
+-	unsigned long start_time;
+-
+ 	/** @other_end: mac address of remote */
+ 	u8 other_end[ETH_ALEN];
+ 
+-	/** @role: receiver/sender modi */
+-	enum batadv_tp_meter_role role;
++	/** @session: TP session identifier */
++	u8 session[2];
++
++	/** @unacked_list: list of unacked packets (meta-info only) */
++	struct list_head unacked_list;
++
++	/** @unacked_lock: protect unacked_list */
++	spinlock_t unacked_lock;
++
++	/** @refcount: number of context where the object is used */
++	struct kref refcount;
++
++	/** @rcu: struct used for freeing in an RCU-safe manner */
++	struct rcu_head rcu;
++};
++
++/**
++ * struct batadv_tp_sender - sender tp meter private variables per session
++ */
++struct batadv_tp_sender {
++	/** @common: common batadv_tp_vars (best be first member) */
++	struct batadv_tp_vars_common common;
++
++	/** @start_time: start time in jiffies */
++	unsigned long start_time;
+ 
+ 	/**
+ 	 * @send_result: 0 when sending is ongoing and otherwise
+@@ -1335,8 +1344,14 @@ struct batadv_tp_vars {
+ 	 */
+ 	atomic_t send_result;
+ 
+-	/** @receiving: receiving binary semaphore: 1 if receiving, 0 is not */
+-	atomic_t receiving;
++	/** @last_sent: last sent byte, not yet acked */
++	u32 last_sent;
++
++	/** @fast_recovery: true if in Fast Recovery mode */
++	unsigned char fast_recovery:1;
++
++	/** @recover: last sent seqno when entering Fast Recovery */
++	u32 recover;
+ 
+ 	/** @finish_work: work item for the finishing procedure */
+ 	struct delayed_work finish_work;
+@@ -1347,14 +1362,9 @@ struct batadv_tp_vars {
+ 	/** @test_length: test length in milliseconds */
+ 	u32 test_length;
+ 
+-	/** @session: TP session identifier */
+-	u8 session[2];
+-
+ 	/** @icmp_uid: local ICMP "socket" index */
+ 	u8 icmp_uid;
+ 
+-	/* sender variables */
+-
+ 	/** @dec_cwnd: decimal part of the cwnd used during linear growth */
+ 	u16 dec_cwnd;
+ 
+@@ -1373,21 +1383,12 @@ struct batadv_tp_vars {
+ 	/** @last_acked: last acked byte */
+ 	atomic_t last_acked;
+ 
+-	/** @last_sent: last sent byte, not yet acked */
+-	u32 last_sent;
+-
+ 	/** @tot_sent: amount of data sent/ACKed so far */
+ 	atomic64_t tot_sent;
+ 
+ 	/** @dup_acks: duplicate ACKs counter */
+ 	atomic_t dup_acks;
+ 
+-	/** @fast_recovery: true if in Fast Recovery mode */
+-	unsigned char fast_recovery:1;
+-
+-	/** @recover: last sent seqno when entering Fast Recovery */
+-	u32 recover;
+-
+ 	/** @rto: sender timeout */
+ 	u32 rto;
+ 
+@@ -1408,26 +1409,23 @@ struct batadv_tp_vars {
+ 
+ 	/** @prerandom_lock: spinlock protecting access to prerandom_offset */
+ 	spinlock_t prerandom_lock;
++};
+ 
+-	/* receiver variables */
++/**
++ * struct batadv_tp_receiver - receiver tp meter private variables per session
++ */
++struct batadv_tp_receiver {
++	/** @common: common batadv_tp_vars (best be first member) */
++	struct batadv_tp_vars_common common;
++
++	/** @receiving: receiving binary semaphore: 1 if receiving, 0 is not */
++	atomic_t receiving;
+ 
+ 	/** @last_recv: last in-order received packet */
+ 	u32 last_recv;
+ 
+-	/** @unacked_list: list of unacked packets (meta-info only) */
+-	struct list_head unacked_list;
+-
+-	/** @unacked_lock: protect unacked_list */
+-	spinlock_t unacked_lock;
+-
+ 	/** @last_recv_time: time (jiffies) a msg was received */
+ 	unsigned long last_recv_time;
+-
+-	/** @refcount: number of context where the object is used */
+-	struct kref refcount;
+-
+-	/** @rcu: struct used for freeing in an RCU-safe manner */
+-	struct rcu_head rcu;
+ };
+ 
+ /**
+@@ -1607,8 +1605,11 @@ struct batadv_priv {
+ 	 */
+ 	struct hlist_head forw_bcast_list;
+ 
+-	/** @tp_list: list of tp sessions */
+-	struct hlist_head tp_list;
++	/** @tp_sender_list: list of tp sender sessions */
++	struct hlist_head tp_sender_list;
++
++	/** @tp_receiver_list: list of tp receiver sessions */
++	struct hlist_head tp_receiver_list;
+ 
+ 	/** @orig_hash: hash table containing mesh participants (orig nodes) */
+ 	struct batadv_hashtable *orig_hash;
 
 -- 
 2.47.3
