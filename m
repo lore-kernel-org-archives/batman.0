@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 707CBCD5BD1
-	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8394CD6E56
+	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:38:00 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C7303807F7
-	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:37:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 80E6180972
+	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:37:59 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780317435;
- b=dFLOcbJdwz0NsWpOI7/RiYwBWDsCjDCdv9chwKXtFWURixWbr7gs3bBGsmQ1eihrRb8+p
- XbDp/LeYytIHA21usa1CkyAQeCzARbQae4lDYDQ3MPEbuga7X9w2Kws1csBtomBlJfjgt3T
- fIsv5rWSSbetdsP1wf+cxt53+/yH3Z0=
+ t=1780317479;
+ b=1J0TkXVfygf0ArP+hyw/jJit1XMrAzMQBonE0OIEGIa9FHETNQW0b9SrGIRQUPmVWAFBn
+ yYucDLYTyvSoOrXM8tcakWfkDmSgVIKn9uOWAglcSp4W6Qjz3HaqqrxhvrbKEOWl9b2Ng9R
+ LhQCiUtnCDV7j1A+kTfxcvXnRhaR0kM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780317435; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780317479; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=/EL+qJ6WKHkjBQeLQM+rO68NQsJGkz6Soatl6PUjU/0=;
- b=kOOV7ihfb+2XGV4fuUPWgG+ApDCaQ/NDtZIycB03CgU0el824dBtlBGc1NcMlhmB26PwJ
- YFrxldbnAun8GL+zXwKvRWoTnxwyUUjQC6O9MQwzd7oIoxKj9HfP8u3GcYrb6JYiTRVFUUq
- u214rlcE+J9vX4Qa3U6kXvGJ9TnS3YQ=
+ list-archive; bh=XZBeP4vTh8Sd5u/6vckDGuUugLl6SDqKxF32VE0ES0g=;
+ b=mZ2Qb3wpGYu0q6xCtXMomThQROwnVzc3Sghl8IAuyt0SdyofsEUifGdgl4NQIA1Ws5RhW
+ IUaXCJMXpwUBw6sm2ZtVm7TNMXsczw6rDzsE7neIO20Xi0e9oFu+5LXWv3abNaxREgUtlqP
+ 99SHYM1QGzTm+HEcWYJYLPrcb0LEHNk=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,41 +34,41 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 01FD080453
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Jun 2026 14:36:45 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6AA8E80454
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Jun 2026 14:36:46 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1780317406;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=/EL+qJ6WKHkjBQeLQM+rO68NQsJGkz6Soatl6PUjU/0=;
-	b=QyAY9Uf8XUqGI/YSpuqFQxoBtbNYipt1lByHB/UtC35loe0jAOjA8Fa4RLom87FkLxPzsI
-	3waNwUO8keyQ0xN8g/hKfAl6ydLuCEhVf6XIdxce6JOgRiHQILtn6y+2L8p5VS27n+JBgX
-	PTZBltZlagYv/BSjA7uyX5NOQrc4lXA=
+	bh=XZBeP4vTh8Sd5u/6vckDGuUugLl6SDqKxF32VE0ES0g=;
+	b=u5ydD0gnkMr+TFTTCuSOWYaq+ZrUPM77TUCYcDTfUH4e8q4hT64Yy9VJrjVNg20HHbhRmT
+	aUyTHFJEcZIfjmEUxQRzzFyvYZS8Jc8hrsQEAIgYEXcGWDPExa/ff+BWNRto+6EncNZqNS
+	9n/7VgnM7FrHs/8PmbNibX35IbmXGO8=
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780317406;
-	b=xbWjT2cD7t32vfBe0upO1Yj2awS4XC0ve5ka9AACAdAEjIHC4k00CdUH/mmNeSKkMctItn
-	Z1YF15XEgEGW86/wKkPALYaviQFS5L2ijyWLf30wLcEWf6tEIW4O+N5bGDET/A9jNajQuV
-	6XBifsksVQwzVxpz4X0pmUC9vLtikW4=
+	b=n74JwsTBkzGW0MncH5sVx1edISGWwuwol3gOge+FadW9Fe1qauRZR8rvprYBbrtAEJZKjZ
+	YoeGs9bYK8xwnliGb8ZIeNsyxwpbVhWVJsjAExvs+RkS680RGA+ce7jnMw30Z9Ruu6ZDGG
+	z4Re7NVlScDiRIceM7+W4yX70ZXEq9A=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=Z1ZFqRCf;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=FzN9pYCL;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1780317404;
+	s=09092022; t=1780317405;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=/EL+qJ6WKHkjBQeLQM+rO68NQsJGkz6Soatl6PUjU/0=;
-	b=Z1ZFqRCfm3iRNubQWgFchAw3a+Q4BDDbE6kxXMJRWgHDFmbuEnA0mEdLEEgqBDGQvd/aob
-	gVVirkCIPaZ8c2gkIN6HbsxmvdQw1olmag2PIB8j+h9gmgAtzLANfpNgDOwH/N6wdtd4i4
-	j1tcRpLqvojUQZaD//y2arZ6Yikk59pjRfGZwhqgs4BcIaF8bSFRiXI+db8pdmqDZKUSsl
-	WTgcX8uWFQjhO/FvkPTHSeMgexx6kcYfIRzCLA+EIsMM8EVCBf6jeEyDJzVrogNhGpj9Nr
-	lQWqLQyi+2M9IiOi4Th872bguTKMMjT2+Pl4XrSN+boT/witeFD4taAf3sZDKw==
+	bh=XZBeP4vTh8Sd5u/6vckDGuUugLl6SDqKxF32VE0ES0g=;
+	b=FzN9pYCLJjjbehNl/y/wsoCRLmUIfLlnYuVI+KtYMhwZmnSRIQNEfCQQnCYgFd+R0HMuu/
+	sX6yS4Pxy7xfOe2LvJJ9PcM8t2eJBMIYJCxlnA9DLO8x1dpJJ3vBo1mMRfBoLN8GubvoSY
+	NMdGSFaqIejgE3sQpOTPlI3nmPlbOCOi0RiN0t5ZoZQ6mj4ds/tYMjkqSsK0SCgiDJ6VB0
+	0B0/mVq/qif3Pj9/oorTn52/rJAX7STj2UBavTuEEjp/gxb7KXF0Y0Q1DdquK1roGRmVaL
+	ZzbEmZTaBzXDZRwSThoSWY45j3EnKiwb8F3EZiC3eoNNPRBUaQXyoN0lm/aANw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -79,16 +79,16 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 02/15] MAINTAINERS: Rename batman-adv T(ree)
-Date: Mon,  1 Jun 2026 14:36:16 +0200
-Message-ID: <20260601123629.707089-3-sw@simonwunderlich.de>
+Subject: [PATCH net-next 04/15] batman-adv: add missing includes
+Date: Mon,  1 Jun 2026 14:36:18 +0200
+Message-ID: <20260601123629.707089-5-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260601123629.707089-1-sw@simonwunderlich.de>
 References: <20260601123629.707089-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: PWGE6ND2IDFOESB4PSFLZ35JBMVFMURS
-X-Message-ID-Hash: PWGE6ND2IDFOESB4PSFLZ35JBMVFMURS
+Message-ID-Hash: 7RRTK75IJLUU3P7MAWPE3JC6HT73RB7K
+X-Message-ID-Hash: 7RRTK75IJLUU3P7MAWPE3JC6HT73RB7K
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PWGE6ND2IDFOESB4PSFLZ35JBMVFMURS/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7RRTK75IJLUU3P7MAWPE3JC6HT73RB7K/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,31 +113,134 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Replace the batman-adv tree name "linux-merge" with "batadv" to match the
-patch prefix convention used in subject lines (e.g. "[PATCH batadv 1/10]").
-The previous name "linux-merge" was ambiguous and was not suitable as a
-easy-to-recognize prefix. Routing of patches to net-next vs. net remains at
-maintainer discretion.
+Some of the recent fixes required features from new header files. There is
+currently no build problem because transitive includes take care of it. But
+the batman-adv source code tries to avoid the dependency to
+transitive/implicite includes because it has no control over them and they
+might get removed at some point.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_v_ogm.c             | 1 +
+ net/batman-adv/bridge_loop_avoidance.c | 1 +
+ net/batman-adv/distributed-arp-table.c | 1 +
+ net/batman-adv/fragmentation.c         | 1 +
+ net/batman-adv/gateway_client.c        | 1 +
+ net/batman-adv/hard-interface.c        | 1 +
+ net/batman-adv/mesh-interface.c        | 1 +
+ net/batman-adv/translation-table.c     | 1 +
+ net/batman-adv/tvlv.c                  | 1 +
+ 9 files changed, 9 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f1d2a924d53dc..741fb4166aa2b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4440,7 +4440,7 @@ W:	https://www.open-mesh.org/
- Q:	https://patchwork.open-mesh.org/project/batman/list/
- B:	https://www.open-mesh.org/projects/batman-adv/issues
- C:	ircs://irc.hackint.org/batadv
--T:	git https://git.open-mesh.org/linux-merge.git
-+T:	git https://git.open-mesh.org/batadv.git
- F:	Documentation/networking/batman-adv.rst
- F:	include/uapi/linux/batadv_packet.h
- F:	include/uapi/linux/batman_adv.h
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index d66ca77b1aaa3..6436e9bc079b6 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/errno.h>
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index ffe854018bd3a..f6ca69252ff7c 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/compiler.h>
+ #include <linux/container_of.h>
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 0a8bd95e2f99e..c6084ae6760c5 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/err.h>
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index e9553db423491..14ccf7811bf62 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index a9d0346e8332e..ec743ce39be47 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/err.h>
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index d6732c34aeafc..4b3804ef70b6f 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/compiler.h>
+ #include <linux/container_of.h>
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index f25b861029575..d6f40ae3c815a 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -8,6 +8,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 9f6e67771ffa8..28869f65ada09 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
++#include <linux/bug.h>
+ #include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index cc6ac580c6208..8e8b54e2172ef 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -6,6 +6,7 @@
+ 
+ #include "main.h"
+ 
++#include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/container_of.h>
+ #include <linux/errno.h>
 -- 
 2.47.3
 
