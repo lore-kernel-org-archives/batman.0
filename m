@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77309CD6E56
-	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:38:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEE36CD5BD1
+	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:39:28 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1C3C580070
-	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:38:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3DB14809B1
+	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:39:27 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780317523;
- b=1IBFMOy4ENuObSta92DbB1RFpyON1V8t11b058CU6tWfEV0PZHIiUhAL77IxcYsP0BOiJ
- 1/3Pxgkd1qFdH+Dcrs3kqVUXyOeO+bPQdTNR0zjXxKf3ixkaY9t+jGFbxJNgio+fJsnIIRU
- lI7W2c5KbjgUWjNd1wpWJiR2qcIMOHI=
+ t=1780317567;
+ b=Egh1bEcOTBqj9owmH3GSfAGtZPBsDJ2olJaKOxw7xIIQeBMiROnzT8q8/+ILPmbq39AqM
+ cxLGGiUJsXml2p2o0emcBWGHTsIpI5EcWnmCYscs2fZn+WfqTW2XlhiE8enpCvlbR31S4c8
+ 5CONNbxh6/9hfkHhXsL637K7+wbX5fo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780317523; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780317567; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
- b=xKTP/gXk7fdfA3jOLySFPLGtxRxdTysfxJrtVJ+qoKaf/JHlvWfet7Bntv/uFWB8Y1xo0
- wjNknZS0jLdGR34pe7NLgeL6cQd8PPQHWfv+WAwKRr1eCPKFuJgfQD6G5ec/SjLnqLZhndg
- tVW0lagRhiZZ5Iknb7bV2PTyF+BNXsM=
+ list-archive; bh=+kR+lMVzOxfZfBB0GtzI2JSUQ02eAqwdJHqeWDaTCYY=;
+ b=ImTcNbapdaHkKyWDMGe2Rmcctmmif+PWG2EMJ/hUu8HYC0sno7RAW+iZu8n3LDAacI09Z
+ djyibBbsEJorvPN5uyS/18d5kf1OfSfvhJHg5vdyH2avpkyvMfDkOyW2VdNIRlirefygR/p
+ PWRvy2FijTzupU1Vwrtrdtb81hbTJMk=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,41 +34,41 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id EEF7480452
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Jun 2026 14:36:45 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id D520080468
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Jun 2026 14:36:47 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780317406;
+	s=20121; t=1780317407;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
-	b=zPIVJcVMlp7M0Tue9BMvQ0ImH9OsCK9V7e0gH2NcjyyEyH3/msbf8djVXAhCGGHlB0eMnM
-	TWfIqC2P29AkdXyRQJXXBga3U7K/vKHmTkF4R/crcZYhmTm7nqHDXBk44Q6bIIe5OWmDDp
-	w/feGArDGjgsIl0RQHsRCO/s9H5OmPg=
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780317406;
-	b=1+F7BoMdOswspKgCSrqvLwU7YYoNpiOh25Idcrx1lOAoE6yQTNoDT7LJmOqTS/vcj/G6zz
-	agBwZXFsudrrGnFi/HVQa1bFI1hSEiKd8/VbfWIkzOUVAQl8pBTPWZfDv73CtLVbgRCymE
-	0h/PNeD/8hLr678So9jh/GGDdUiHavY=
+	bh=+kR+lMVzOxfZfBB0GtzI2JSUQ02eAqwdJHqeWDaTCYY=;
+	b=A+KqNKNjSp9MELg7fB8aSXn+h0WoByN1AsdbCC+vz5nBMltpm5PgZVIflsamNWbyOo23+o
+	1vQkS5a7UC0sVbeodxqnAVwARmxpo/sMwJ6Lu2XOMa4uyCkX1hFhB1/llyJOu2a1NyAw9g
+	58OFcd5tz6ZfmlSV+l0QhFru8OHF68E=
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780317407;
+	b=gUku6HtfZFPA6JOkT6albbDcnW5tcKMp+SwJ9yejE/C12KcexOxW67cdZRYvYGd9fID3+l
+	xdemQkufvJkfaZkrtmPbZIZm1nJyxEen2G6xkTZ25I2CP+I2JPRPLMgH1ihluXoqzdxQWD
+	GPYT2LabjGHhIATHa8uMnWvDAHSim7w=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=vz759esL;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="eTH/ew4X";
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1780317405;
+	s=09092022; t=1780317407;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JIEy8VIPaknF5zTeIk9SKJnqfASk5vwCPb0ma2Lo9dw=;
-	b=vz759esLIN3EOkBpyGzcOP/frAJ/4SSguFrP7K1GpzZ84AIU/KuPm9nfsov1MvC8HjUeb0
-	qIAQXCQtCWrhn3VQiK00Z46TYhc1M6EYHus5k0qoh5dq3Iah19hwZsnCiPjUob80w15Y3k
-	If+gJBWj7o1w9da9BXnqZUKWYzmxMew5asxh6A5hQ4N4Hps5EkhDYqBEWf5lwGZztmDHty
-	8x7glnvUtKVBX0C+D0UWWJqXnRY5VWwJaoAD5u2mEKc154JPFk7jvkyNYPKX3+sc7Yzafu
-	z/5d+IIigtrg5zLRRs8yUo2b6K3Gz33hlUcGuUwR5W+VTxQLPthAN1oGH0sqzw==
+	bh=+kR+lMVzOxfZfBB0GtzI2JSUQ02eAqwdJHqeWDaTCYY=;
+	b=eTH/ew4X5/ScMH5D5VdCeroiRUmlIQNU7/lAnAbGSrYbWDr5AFNBltRbxAMOWH6PjjspMF
+	jhGtf44JTvuq8sKApZfAzANeT+TNsjAqKelLvCcyOpgdiSXrpm4Syv7RLQ8oEPRZcX6GMe
+	rAPJo7e4ZDUY5VGfPX8ifw67yGLXOV2xgVPvg/opWZ43QDuSpl7DR6vG1gHnH/v/mWH4pV
+	TQNGT57ihkgDDUxg9SXoe8iVFs0+R/Lr4hMiiLBPadNmn1w4crP5ZbX8TSFDTxjElCRItL
+	t0oCcn5j+KrN58ElOSOZSfVplbeiQ1WEQFqLucICPFunoZXyAVitLmXA1R/K5w==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -79,17 +79,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 03/15] MAINTAINERS: Don't send batman-adv patches to
- netdev
-Date: Mon,  1 Jun 2026 14:36:17 +0200
-Message-ID: <20260601123629.707089-4-sw@simonwunderlich.de>
+Subject: [PATCH net-next v2 06/15] batman-adv: extract netdev wifi detection
+ information object
+Date: Mon,  1 Jun 2026 14:36:20 +0200
+Message-ID: <20260601123629.707089-7-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260601123629.707089-1-sw@simonwunderlich.de>
 References: <20260601123629.707089-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: WNS4UHXKWETN4L6APCYIPQXFGUVMQAR4
-X-Message-ID-Hash: WNS4UHXKWETN4L6APCYIPQXFGUVMQAR4
+Message-ID-Hash: 75GEXTCV57OEL6IGS7W2F74WUU55UW62
+X-Message-ID-Hash: 75GEXTCV57OEL6IGS7W2F74WUU55UW62
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WNS4UHXKWETN4L6APCYIPQXFGUVMQAR4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/75GEXTCV57OEL6IGS7W2F74WUU55UW62/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,41 +114,487 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Do not send batman-adv patches directly to the networking maintainers or
-the netdev mailing list for initial review. Keeping these patch iterations
-off netdev reduces review load, especially for patchsets that require
-multiple revisions before reaching consensus.
+Previously, wifi_flags were stored directly in batadv_hard_iface, which is
+created for every network interface on the system (including those never
+attached to a mesh interface). This wastes memory and complicates the
+long-term goal of lazily allocating batadv_hard_iface only for interfaces
+that actually join a mesh.
 
-After the review was finished on the BATMAN ADVANCED mailing list, the
-patches will be queued up and then submitted to netdev as PR, including the
-full patchset in the same thread (for the last review).
+The problem is that several batman-adv features need wifi detection for
+net_devices (and their underlying devices) regardless of whether a
+batadv_hard_iface exists for them:
+
+* B.A.T.M.A.N. IV TQ hop penalty calculation
+* B.A.T.M.A.N. V ELP probing / throughput estimation
+* AP isolation
+
+To decouple wifi detection from batadv_hard_iface lifetime, introduce a
+global rhashtable (batadv_wifi_net_devices) mapping net_device pointers to
+batadv_wifi_net_device_state objects. Only net_devices that are actually
+detected as (indirect) wifi interfaces occupy an entry, keeping the common
+(non-wifi) case allocation-free.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/bat_v_elp.c      |   6 +-
+ net/batman-adv/hard-interface.c | 191 +++++++++++++++++++++++++++++---
+ net/batman-adv/hard-interface.h |  34 +++++-
+ net/batman-adv/main.c           |  16 ++-
+ net/batman-adv/types.h          |  30 ++++-
+ 5 files changed, 252 insertions(+), 25 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 741fb4166aa2b..75ff01377fc6f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -18635,6 +18635,7 @@ F:	net/
- F:	samples/pktgen/
- F:	tools/net/
- F:	tools/testing/selftests/net/
-+X:	Documentation/networking/batman-adv.rst
- X:	Documentation/networking/mac80211-injection.rst
- X:	Documentation/networking/mac80211_hwsim/
- X:	Documentation/networking/regulatory.rst
-@@ -18645,6 +18646,7 @@ X:	include/net/iw_handler.h
- X:	include/net/mac80211.h
- X:	include/net/wext.h
- X:	net/9p/
-+X:	net/batman-adv/
- X:	net/bluetooth/
- X:	net/can/
- X:	net/ceph/
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index fdc2abe96d777..e207093de79fe 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -85,6 +85,7 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
+ 	struct ethtool_link_ksettings link_settings;
+ 	struct net_device *real_netdev;
+ 	struct station_info sinfo;
++	u32 wifi_flags;
+ 	u32 throughput;
+ 	int ret;
+ 
+@@ -106,8 +107,9 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
+ 	/* if this is a wireless device, then ask its throughput through
+ 	 * cfg80211 API
+ 	 */
+-	if (batadv_is_wifi_hardif(hard_iface)) {
+-		if (!batadv_is_cfg80211_hardif(hard_iface))
++	wifi_flags = batadv_hardif_get_wifi_flags(hard_iface);
++	if (batadv_is_wifi(wifi_flags)) {
++		if (!batadv_is_cfg80211(wifi_flags))
+ 			/* unsupported WiFi driver version */
+ 			goto default_throughput;
+ 
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 4b3804ef70b6f..647fda1898e55 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -26,6 +26,8 @@
+ #include <linux/notifier.h>
+ #include <linux/printk.h>
+ #include <linux/rculist.h>
++#include <linux/rhashtable-types.h>
++#include <linux/rhashtable.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+@@ -43,6 +45,15 @@
+ #include "send.h"
+ #include "translation-table.h"
+ 
++static const struct rhashtable_params batadv_wifi_net_devices_params = {
++	.key_len		= sizeof(struct net_device *),
++	.key_offset		= offsetof(struct batadv_wifi_net_device_state, netdev),
++	.head_offset		= offsetof(struct batadv_wifi_net_device_state, l),
++	.automatic_shrinking	= true,
++};
++
++static struct rhashtable batadv_wifi_net_devices;
++
+ /**
+  * batadv_hardif_release() - release hard interface from lists and queue for
+  *  free after rcu grace period
+@@ -356,21 +367,28 @@ static u32 batadv_wifi_flags_evaluate(struct net_device *net_device)
+ }
+ 
+ /**
+- * batadv_is_cfg80211_hardif() - check if the given hardif is a cfg80211 wifi
+- *  interface
++ * batadv_hardif_get_wifi_flags() - retrieve wifi flags for hard_iface
+  * @hard_iface: the device to check
+  *
+- * Return: true if the net device is a cfg80211 wireless device, false
+- *  otherwise.
++ * Return: batadv_hard_iface_wifi_flags flags of the device
+  */
+-bool batadv_is_cfg80211_hardif(struct batadv_hard_iface *hard_iface)
++u32 batadv_hardif_get_wifi_flags(struct batadv_hard_iface *hard_iface)
+ {
+-	u32 allowed_flags = 0;
++	struct batadv_wifi_net_device_state *device_state;
++	u32 wifi_flags = 0;
++
++	if (!hard_iface)
++		return 0;
+ 
+-	allowed_flags |= BATADV_HARDIF_WIFI_CFG80211_DIRECT;
+-	allowed_flags |= BATADV_HARDIF_WIFI_CFG80211_INDIRECT;
++	rcu_read_lock();
++	device_state = rhashtable_lookup_fast(&batadv_wifi_net_devices,
++					      &hard_iface->net_dev,
++					      batadv_wifi_net_devices_params);
++	if (device_state)
++		wifi_flags = READ_ONCE(device_state->wifi_flags);
++	rcu_read_unlock();
+ 
+-	return !!(hard_iface->wifi_flags & allowed_flags);
++	return wifi_flags;
+ }
+ 
+ /**
+@@ -381,10 +399,9 @@ bool batadv_is_cfg80211_hardif(struct batadv_hard_iface *hard_iface)
+  */
+ bool batadv_is_wifi_hardif(struct batadv_hard_iface *hard_iface)
+ {
+-	if (!hard_iface)
+-		return false;
++	u32 wifi_flags = batadv_hardif_get_wifi_flags(hard_iface);
+ 
+-	return hard_iface->wifi_flags != 0;
++	return batadv_is_wifi(wifi_flags);
+ }
+ 
+ /**
+@@ -890,7 +907,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	kref_init(&hard_iface->refcount);
+ 
+ 	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
+-	hard_iface->wifi_flags = batadv_wifi_flags_evaluate(net_dev);
+ 	if (batadv_is_wifi_hardif(hard_iface))
+ 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 
+@@ -942,6 +958,131 @@ static int batadv_hard_if_event_meshif(unsigned long event,
+ 	return NOTIFY_DONE;
+ }
+ 
++/**
++ * batadv_wifi_net_device_insert() - save information about wifi net_device
++ * @net_dev: net_device to add to batadv_wifi_net_devices
++ * @wifi_flags: net_device which generated an event
++ *
++ * Return: 0 on result, negative value on error
++ */
++static int
++batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
++{
++	struct batadv_wifi_net_device_state *device_state;
++	int ret;
++
++	ASSERT_RTNL();
++
++	device_state = kzalloc_obj(*device_state, GFP_ATOMIC);
++	if (!device_state)
++		return -ENOMEM;
++
++	device_state->wifi_flags = wifi_flags;
++	netdev_hold(net_dev, &device_state->dev_tracker, GFP_ATOMIC);
++	device_state->netdev = net_dev;
++	WRITE_ONCE(device_state->wifi_flags, wifi_flags);
++
++	ret = rhashtable_insert_fast(&batadv_wifi_net_devices, &device_state->l,
++				     batadv_wifi_net_devices_params);
++	if (ret < 0)
++		goto err_free;
++
++	return 0;
++
++err_free:
++	netdev_put(device_state->netdev, &device_state->dev_tracker);
++	kfree(device_state);
++	return ret;
++}
++
++/**
++ * batadv_wifi_net_device_remove() - remove information about wifi net_device
++ * @device_state: wifi net_device state to remove from batadv_wifi_net_device_state
++ */
++static void
++batadv_wifi_net_device_remove(struct batadv_wifi_net_device_state *device_state)
++{
++	ASSERT_RTNL();
++
++	rhashtable_remove_fast(&batadv_wifi_net_devices, &device_state->l,
++			       batadv_wifi_net_devices_params);
++	netdev_put(device_state->netdev, &device_state->dev_tracker);
++	kfree_rcu(device_state, rcu);
++}
++
++/**
++ * batadv_wifi_net_device_update() - update wifi state of net_device
++ * @net_dev: net_device to update in batadv_wifi_net_devices
++ *
++ * The device will only be stored in batadv_wifi_net_devices when
++ * it could be identified as wifi device. If the net_device is no
++ * longer a wifi device, it is automatically removed from
++ * batadv_wifi_net_devices.
++ */
++static void
++batadv_wifi_net_device_update(struct net_device *net_dev)
++{
++	struct batadv_wifi_net_device_state *device_state;
++	u32 wifi_flags;
++
++	ASSERT_RTNL();
++
++	wifi_flags = batadv_wifi_flags_evaluate(net_dev);
++	device_state = rhashtable_lookup_fast(&batadv_wifi_net_devices,
++					      &net_dev,
++					      batadv_wifi_net_devices_params);
++
++	if (device_state) {
++		if (batadv_is_wifi(wifi_flags))
++			WRITE_ONCE(device_state->wifi_flags, wifi_flags);
++		else
++			batadv_wifi_net_device_remove(device_state);
++	} else if (batadv_is_wifi(wifi_flags)) {
++		batadv_wifi_net_device_insert(net_dev, wifi_flags);
++	}
++}
++
++/**
++ * batadv_wifi_net_device_unregister() - remove wifi state of net_device
++ * @net_dev: net_device to remove from batadv_wifi_net_devices
++ */
++static void
++batadv_wifi_net_device_unregister(struct net_device *net_dev)
++{
++	struct batadv_wifi_net_device_state *device_state;
++
++	ASSERT_RTNL();
++
++	device_state = rhashtable_lookup_fast(&batadv_wifi_net_devices,
++					      &net_dev,
++					      batadv_wifi_net_devices_params);
++	if (!device_state)
++		return;
++
++	batadv_wifi_net_device_remove(device_state);
++}
++
++/**
++ * batadv_wifi_net_device_event() - handle network events for batadv_wifi_net_devices
++ * @event: enum netdev_cmd event to handle
++ * @net_dev: net_device to update in batadv_wifi_net_devices
++ */
++static void batadv_wifi_net_device_event(unsigned long event,
++					 struct net_device *net_dev)
++{
++	switch (event) {
++	case NETDEV_REGISTER:
++	case NETDEV_POST_TYPE_CHANGE:
++	case NETDEV_CHANGEUPPER:
++		batadv_wifi_net_device_update(net_dev);
++		break;
++	case NETDEV_UNREGISTER:
++	case NETDEV_PRE_TYPE_CHANGE:
++		batadv_wifi_net_device_unregister(net_dev);
++		break;
++	}
++}
++
+ static int batadv_hard_if_event(struct notifier_block *this,
+ 				unsigned long event, void *ptr)
+ {
+@@ -953,6 +1094,8 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 	if (batadv_meshif_is_valid(net_dev))
+ 		return batadv_hard_if_event_meshif(event, net_dev);
+ 
++	batadv_wifi_net_device_event(event, net_dev);
++
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface && (event == NETDEV_REGISTER ||
+ 			    event == NETDEV_POST_TYPE_CHANGE))
+@@ -996,8 +1139,9 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ 		if (hard_iface == primary_if)
+ 			batadv_primary_if_update_addr(bat_priv, NULL);
+ 		break;
++	case NETDEV_REGISTER:
++	case NETDEV_POST_TYPE_CHANGE:
+ 	case NETDEV_CHANGEUPPER:
+-		hard_iface->wifi_flags = batadv_wifi_flags_evaluate(net_dev);
+ 		if (batadv_is_wifi_hardif(hard_iface))
+ 			hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 		break;
+@@ -1015,3 +1159,22 @@ static int batadv_hard_if_event(struct notifier_block *this,
+ struct notifier_block batadv_hard_if_notifier = {
+ 	.notifier_call = batadv_hard_if_event,
+ };
++
++/**
++ * batadv_wifi_net_devices_init() - Initialize wifi devices cache
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int __init batadv_wifi_net_devices_init(void)
++{
++	return rhashtable_init(&batadv_wifi_net_devices,
++			       &batadv_wifi_net_devices_params);
++}
++
++/**
++ * batadv_wifi_net_devices_deinit() - Deinitialize wifi devices cache
++ */
++void batadv_wifi_net_devices_deinit(void)
++{
++	rhashtable_destroy(&batadv_wifi_net_devices);
++}
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index 9ba8fb2bdceb4..089e65c8a4817 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -10,6 +10,7 @@
+ #include "main.h"
+ 
+ #include <linux/compiler.h>
++#include <linux/init.h>
+ #include <linux/kref.h>
+ #include <linux/netdevice.h>
+ #include <linux/rcupdate.h>
+@@ -69,7 +70,7 @@ extern struct notifier_block batadv_hard_if_notifier;
+ 
+ struct net_device *__batadv_get_real_netdev(struct net_device *net_device);
+ struct net_device *batadv_get_real_netdev(struct net_device *net_device);
+-bool batadv_is_cfg80211_hardif(struct batadv_hard_iface *hard_iface);
++u32 batadv_hardif_get_wifi_flags(struct batadv_hard_iface *hard_iface);
+ bool batadv_is_wifi_hardif(struct batadv_hard_iface *hard_iface);
+ struct batadv_hard_iface*
+ batadv_hardif_get_by_netdev(const struct net_device *net_dev);
+@@ -81,6 +82,8 @@ void batadv_update_min_mtu(struct net_device *mesh_iface);
+ void batadv_hardif_release(struct kref *ref);
+ int batadv_hardif_no_broadcast(struct batadv_hard_iface *if_outgoing,
+ 			       u8 *orig_addr, u8 *orig_neigh);
++int __init batadv_wifi_net_devices_init(void);
++void batadv_wifi_net_devices_deinit(void);
+ 
+ /**
+  * batadv_hardif_put() - decrement the hard interface refcounter and possibly
+@@ -119,4 +122,33 @@ batadv_primary_if_get_selected(struct batadv_priv *bat_priv)
+ 	return hard_iface;
+ }
+ 
++/**
++ * batadv_is_cfg80211() - check if the given hardif is a cfg80211
++ *  wifi interface
++ * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
++ *
++ * Return: true if the net device is a cfg80211 wireless device, false
++ *  otherwise.
++ */
++static inline bool batadv_is_cfg80211(u32 wifi_flags)
++{
++	u32 allowed_flags = 0;
++
++	allowed_flags |= BATADV_HARDIF_WIFI_CFG80211_DIRECT;
++	allowed_flags |= BATADV_HARDIF_WIFI_CFG80211_INDIRECT;
++
++	return !!(wifi_flags & allowed_flags);
++}
++
++/**
++ * batadv_is_wifi() - check if flags belong to wifi interface
++ * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
++ *
++ * Return: true if the net device is a 802.11 wireless device, false otherwise.
++ */
++static inline bool batadv_is_wifi(u32 wifi_flags)
++{
++	return wifi_flags != 0;
++}
++
+ #endif /* _NET_BATMAN_ADV_HARD_INTERFACE_H_ */
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 82bba34893788..d529014857c90 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -105,8 +105,14 @@ static int __init batadv_init(void)
+ 	batadv_tp_meter_init();
+ 
+ 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
+-	if (!batadv_event_workqueue)
++	if (!batadv_event_workqueue) {
++		ret = -ENOMEM;
+ 		goto err_create_wq;
++	}
++
++	ret = batadv_wifi_net_devices_init();
++	if (ret < 0)
++		goto err_init_wifi;
+ 
+ 	register_netdevice_notifier(&batadv_hard_if_notifier);
+ 	rtnl_link_register(&batadv_link_ops);
+@@ -117,10 +123,15 @@ static int __init batadv_init(void)
+ 
+ 	return 0;
+ 
++err_init_wifi:
++	destroy_workqueue(batadv_event_workqueue);
++	batadv_event_workqueue = NULL;
++	rcu_barrier();
++
+ err_create_wq:
+ 	batadv_tt_cache_destroy();
+ 
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ static void __exit batadv_exit(void)
+@@ -134,6 +145,7 @@ static void __exit batadv_exit(void)
+ 
+ 	rcu_barrier();
+ 
++	batadv_wifi_net_devices_deinit();
+ 	batadv_tt_cache_destroy();
+ }
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index a01ee46d97f34..16fe843577421 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -21,6 +21,7 @@
+ #include <linux/mutex.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
++#include <linux/rhashtable-types.h>
+ #include <linux/sched.h> /* for linux/wait.h */
+ #include <linux/skbuff.h>
+ #include <linux/spinlock.h>
+@@ -166,6 +167,29 @@ enum batadv_hard_iface_wifi_flags {
+ 	BATADV_HARDIF_WIFI_CFG80211_INDIRECT = BIT(3),
+ };
+ 
++/**
++ * struct batadv_wifi_net_device_state - cache of wifi information of net_devices
++ */
++struct batadv_wifi_net_device_state {
++	/** @l: anchor in rhashtable */
++	struct rhash_head l;
++
++	/** @netdev: pointer to the net_device */
++	struct net_device *netdev;
++
++	/** @dev_tracker: device tracker for @netdev */
++	netdevice_tracker dev_tracker;
++
++	/**
++	 * @wifi_flags: flags whether this is (directly or indirectly) a wifi
++	 *  interface
++	 */
++	u32 wifi_flags;
++
++	/** @rcu: struct used for freeing in an RCU-safe manner */
++	struct rcu_head rcu;
++};
++
+ /**
+  * struct batadv_hard_iface - network device known to batman-adv
+  */
+@@ -181,12 +205,6 @@ struct batadv_hard_iface {
+ 	 */
+ 	u8 num_bcasts;
+ 
+-	/**
+-	 * @wifi_flags: flags whether this is (directly or indirectly) a wifi
+-	 *  interface
+-	 */
+-	u32 wifi_flags;
+-
+ 	/** @net_dev: pointer to the net_device */
+ 	struct net_device *net_dev;
+ 
 -- 
 2.47.3
 
