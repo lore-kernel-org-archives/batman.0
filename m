@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 520ABCD6E56
-	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:46:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85A7ECD5BD1
+	for <batman-adv@archiver.kernel.org>; Mon,  1 Jun 2026 12:47:26 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DF9B6854D7
-	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:46:40 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 34320855B2
+	for <batman-adv@archiver.kernel.org>; Mon, 01 Jun 2026 14:47:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780318000;
- b=osIBYpBF80Yn4+BCPd38NdAqjCDAQ+YS6QkV3Sl+oz74O9+2wFC5ESJqevCoF89NRNsgF
- QjPlMkT7eufIWkalYifRZD+glUryKITeWFyikPXrgqrFQ1B2Fjcz5IwepQYJBGV3eK+DMjl
- +NpKJRb49jXeA0O3UnD4q96DKXTYNEc=
+ t=1780318045;
+ b=e1KzKe4wi/hzyxPaL9QPk//bVYkdMgnLEBHA3S68eCvkQLYmUeLO2R5PorWkvilKDvIRJ
+ sRaROyyS3lvLU35+Vj1+TnugdXZVBmV7IPWNG3rwrB1SBIXCQ+yUGfW84R08CMMHf0WyC4F
+ jMS6vCe7mM0yGHou2XWFkp5+GLOTwbQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780318000; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780318045; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=8A5w0xIo4rLSdRB3PLSrQ6/v/1ZK1IUV4y6Ze/ayENE=;
- b=T/hwCJxa/HNTUseoHVYQbi756DToKyDvEhV1H34fYOQVhIpuqOfql90zcEJ4QDbgAjVrr
- BJ8J+2bEqrhdONh51Ag4+O0OIO4mD5phh6rYTwUTatPz3fkTdxY4GPmqNRHOlqFrw5TtOWQ
- F4MnIYSzpvQHeXT8qvQX1jO5zO7he5Y=
+ list-archive; bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
+ b=oFxzG2X17lxxUUtXVmL2OO20JvNDEDjqYbPCyoyD2v57zbGPQfdOPWfU4e04A49bN3Kzs
+ Wt2HBhL5+rLh7MyuaT1QQyH369Z7riQ2qmBejqie58tX3FS/PUUh2sy7iESFyjlphZmx4Oo
+ hByP8qMRR6BvZALUz3FO7IdOKyK6R40=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,9 +32,8 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 49D598066D
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E2381806CD
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 01 Jun 2026 14:36:53 +0200 (CEST)
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1780317413;
@@ -42,33 +41,32 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=8A5w0xIo4rLSdRB3PLSrQ6/v/1ZK1IUV4y6Ze/ayENE=;
-	b=GRRDvgNVkvzC6bVUEYxPJAF/vUOd1Zt1AjPemhRrszQVpkWZumOa/9uCSXhdyH2DUBuhP9
-	nTq0qfJpDxI86129KvxxVcfVdKDtJBS2sxEgMEehjlJCmPdmMHeAnlEP2X+xnLaMaZmlZC
-	VxlO7w4xIRQPK1MAAX2yc9Hl7CVZX2M=
+	bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
+	b=o5rLtap9/788ROzT4aHTlWD5v2XT+OCiBrewuxkeZy2sMKYLieIC41XLv6HyEo6xJqNxXY
+	mUl3EBpcrIkeqxehCbaaujRdP7UMio48ucOR4gZ9Y0NxzVAOouYByPcYZjBPaqkT3D9+WI
+	nuSg4KiI2kpJT8K1evcX55l+qTAu/DU=
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780317413;
-	b=r0XD1IQDQViXyfJPGwEyxKgyAnhpPO4JtIB7EWuypzPTN2Uc2FGfquLtfW8KXHW0ezy6So
-	ZgK0yNpRSZsKPoLnHI/wi1rDs19oeDFLnLEp4+4MfAzaPfCmgIgO+CX0sTs2hb7KOrpbZP
-	rzCGU4Ds9gynIxjkGifBDPV0IENLBoI=
+	b=K2VjcjBKTez91w43sZ2odZPGw17vBrl36iqazXEV1MbNT82Tl6PUuw69r128aAZWpRac18
+	iRw0btK8CCophQfhgc10C1kgTBKYeZvlHlln8+dvWqO7YOYPcvEImKP0Kjm/vx1t18J54H
+	KfXPb8QfAxHq4jAGCQ8slbEsPAS7kDI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=ZnwRar6f;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=BKokBU8l;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1780317412;
+	s=09092022; t=1780317413;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8A5w0xIo4rLSdRB3PLSrQ6/v/1ZK1IUV4y6Ze/ayENE=;
-	b=ZnwRar6fY46gqeNH/vnEx1oRhJ9eW7MW/57HSLWEodw1hDkKnzxjrVaYe/WK3kaynJniZ5
-	qKk8poQJMOeQxwU0OoReW3/pMeGHTKPt5f5dygtFoRXNEpyseRfpCl6x7ZY94/uom6VbTu
-	9V2EM3HOo1EM1/r0Uq0Wprca/8Ua3M/FfRut11e6vNct8OcMfo6G7VQdpP1Xoy1aRnjai0
-	mQpKRQ3tb2GbDVbDao8l3YOlToCTa6CW/VqFkKhFEOKg3PLc69aeQDBM2RyFWwg0/ro8FI
-	QnGUE8xjTl017oEvehoVUNRV885/PL8bjssTXmRSC1HXyaF4j5iJmi6qS0obcA==
+	bh=4x7fYtKt6TJrTs4d6ISmPTw7WCMg1rpDK5hrgQIb/fw=;
+	b=BKokBU8lE+K6Fe0Io/S+cQ/6Z3y6DMKYCm7vopirP7gGxGzR4TAczIXlwwEHxNeoSD5iiK
+	C0AGnsAvKo7cBcQjXlxDKEQ4EqSTwIhBYPoCU1agIr03HP25Lzr3KV75kZDfiv18/jeeYs
+	Fl/FaTkJ+6DJtJkxbssOsXF0vwTY4lhz8j3jL7T8UFCWatJonfGPhfA709PkJgRqV0V3T0
+	3Nn16WhBs4qs4Zo+JJZBwjEStjhgf7bwLV10IANPn90fBzRvvyClB8MCic1vdqLb4reYNd
+	kInv+M0+fUTCZ3Fx2mDY6iNG46/xaTpNlPbK9Z03crHKm7u/zmRElkkyMbldaw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -78,18 +76,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
+	Antonio Quartulli <antonio@mandelbit.com>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 12/15] batman-adv: replace non-atomic last_ttvn with
- (READ|WRITE)_ONCE
-Date: Mon,  1 Jun 2026 14:36:26 +0200
-Message-ID: <20260601123629.707089-13-sw@simonwunderlich.de>
+Subject: [PATCH net-next 13/15] batman-adv: tt: replace open-coded overflow
+ check with helper
+Date: Mon,  1 Jun 2026 14:36:27 +0200
+Message-ID: <20260601123629.707089-14-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260601123629.707089-1-sw@simonwunderlich.de>
 References: <20260601123629.707089-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: MZ4YJJKVY26ADSNYWJD6JY5PKHPODMPK
-X-Message-ID-Hash: MZ4YJJKVY26ADSNYWJD6JY5PKHPODMPK
+Message-ID-Hash: 6DGAVREWYCM57QWT4CYHVBCATOTU6LHO
+X-Message-ID-Hash: 6DGAVREWYCM57QWT4CYHVBCATOTU6LHO
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MZ4YJJKVY26ADSNYWJD6JY5PKHPODMPK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6DGAVREWYCM57QWT4CYHVBCATOTU6LHO/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,158 +113,50 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The last TT version number of an meshif is only accessed as plain
-loads/stores and does not require full atomic_t semantics. Convert to an
-native integer and replace its users with READ_ONCE()/WRITE_ONCE() to avoid
-load/store tearing.
+The commit 6043a632dd06 ("batman-adv: reject oversized global TT response
+buffers") introduced an open-coded check to ensure that the allocated
+buffer size can be stored in a u16. The check_add_overflow() helper can
+perform the addition and overflow check in one step, so use that instead.
 
+Acked-by: Antonio Quartulli <antonio@mandelbit.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/originator.c        |  2 +-
- net/batman-adv/routing.c           |  4 ++--
- net/batman-adv/send.c              |  2 +-
- net/batman-adv/translation-table.c | 16 ++++++++--------
- net/batman-adv/types.h             |  2 +-
- 5 files changed, 13 insertions(+), 13 deletions(-)
+ net/batman-adv/translation-table.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 0ce07bfdade59..d05c8240426bd 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -965,7 +965,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	orig_node->bat_priv = bat_priv;
- 	ether_addr_copy(orig_node->orig, addr);
- 	batadv_dat_init_orig_node_addr(orig_node);
--	atomic_set(&orig_node->last_ttvn, 0);
-+	WRITE_ONCE(orig_node->last_ttvn, 0);
- 	orig_node->tt_buff = NULL;
- 	orig_node->tt_buff_len = 0;
- 	orig_node->last_seen = jiffies;
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 1dd295d934f49..cd4368b846add 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -765,7 +765,7 @@ batadv_reroute_unicast_packet(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 			goto out;
- 
- 		orig_addr = orig_node->orig;
--		orig_ttvn = (u8)atomic_read(&orig_node->last_ttvn);
-+		orig_ttvn = READ_ONCE(orig_node->last_ttvn);
- 	}
- 
- 	/* update the packet header */
-@@ -845,7 +845,7 @@ static bool batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 		if (!orig_node)
- 			return false;
- 
--		curr_ttvn = (u8)atomic_read(&orig_node->last_ttvn);
-+		curr_ttvn = READ_ONCE(orig_node->last_ttvn);
- 		batadv_orig_node_put(orig_node);
- 	}
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index c7e86c83242a2..5f9da3606a8f5 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -222,7 +222,7 @@ batadv_send_skb_push_fill_unicast(struct sk_buff *skb, int hdr_size,
- 				  struct batadv_orig_node *orig_node)
- {
- 	struct batadv_unicast_packet *unicast_packet;
--	u8 ttvn = (u8)atomic_read(&orig_node->last_ttvn);
-+	u8 ttvn = READ_ONCE(orig_node->last_ttvn);
- 
- 	if (batadv_skb_head_push(skb, hdr_size) < 0)
- 		return false;
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index e319b0796f7c8..8903b2f84f512 100644
+index 8903b2f84f512..5e134d08a80fd 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -841,7 +841,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+@@ -799,10 +799,10 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ {
+ 	u16 num_vlan = 0;
+ 	u16 tvlv_len = 0;
+-	unsigned int change_offset;
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	struct batadv_orig_node_vlan *vlan;
+ 	u16 total_entries = 0;
++	size_t change_offset;
+ 	u8 *tt_change_ptr;
+ 	int vlan_entries;
+ 	u16 sum_entries;
+@@ -826,14 +826,11 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	if (*tt_len < 0)
+ 		*tt_len = batadv_tt_len(total_entries);
+ 
+-	if (change_offset > U16_MAX || *tt_len > U16_MAX - change_offset) {
++	if (check_add_overflow(*tt_len, change_offset, &tvlv_len)) {
+ 		*tt_len = 0;
+ 		goto out;
  	}
  
- 	(*tt_data)->flags = BATADV_NO_FLAGS;
--	(*tt_data)->ttvn = atomic_read(&orig_node->last_ttvn);
-+	(*tt_data)->ttvn = READ_ONCE(orig_node->last_ttvn);
- 	(*tt_data)->num_vlan = htons(num_vlan);
- 
- 	tt_vlan = (*tt_data)->vlan_data;
-@@ -1822,7 +1822,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
- 	if (!hdr)
- 		return -ENOBUFS;
- 
--	last_ttvn = atomic_read(&orig->orig_node->last_ttvn);
-+	last_ttvn = READ_ONCE(orig->orig_node->last_ttvn);
- 
- 	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
- 	    nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
-@@ -3013,7 +3013,7 @@ static bool batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 	if (!res_dst_orig_node)
- 		goto out;
- 
--	orig_ttvn = (u8)atomic_read(&req_dst_orig_node->last_ttvn);
-+	orig_ttvn = READ_ONCE(req_dst_orig_node->last_ttvn);
- 	req_ttvn = tt_data->ttvn;
- 
- 	/* this node doesn't have the requested data */
-@@ -3300,7 +3300,7 @@ static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
- 	orig_node->tt_buff = NULL;
- 	spin_unlock_bh(&orig_node->tt_buff_lock);
- 
--	atomic_set(&orig_node->last_ttvn, ttvn);
-+	WRITE_ONCE(orig_node->last_ttvn, ttvn);
- 
- out:
- 	batadv_orig_node_put(orig_node);
-@@ -3316,7 +3316,7 @@ static void batadv_tt_update_changes(struct batadv_priv *bat_priv,
- 
- 	batadv_tt_save_orig_buffer(bat_priv, orig_node, tt_change,
- 				   batadv_tt_len(tt_num_changes));
--	atomic_set(&orig_node->last_ttvn, ttvn);
-+	WRITE_ONCE(orig_node->last_ttvn, ttvn);
- }
- 
- /**
-@@ -3769,7 +3769,7 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
- 				  struct batadv_tvlv_tt_change *tt_change,
- 				  u16 tt_num_changes, u8 ttvn)
- {
--	u8 orig_ttvn = (u8)atomic_read(&orig_node->last_ttvn);
-+	u8 orig_ttvn = READ_ONCE(orig_node->last_ttvn);
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
- 	bool full_table = true;
- 	bool has_tt_init;
-@@ -3911,7 +3911,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 
- 	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vid,
- 				  BATADV_TT_CLIENT_TEMP,
--				  atomic_read(&orig_node->last_ttvn)))
-+				  READ_ONCE(orig_node->last_ttvn)))
- 		return false;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
-@@ -4125,7 +4125,7 @@ static int batadv_roam_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 
- 	batadv_tt_global_add(bat_priv, orig_node, roaming_adv->client,
- 			     ntohs(roaming_adv->vid), BATADV_TT_CLIENT_ROAM,
--			     atomic_read(&orig_node->last_ttvn) + 1);
-+			     READ_ONCE(orig_node->last_ttvn) + 1);
- 
- out:
- 	batadv_orig_node_put(orig_node);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 7533d71b73725..c188ec1cfb748 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -464,7 +464,7 @@ struct batadv_orig_node {
- 	unsigned long capa_initialized;
- 
- 	/** @last_ttvn: last seen translation table version number */
--	atomic_t last_ttvn;
-+	u8 last_ttvn;
- 
- 	/** @tt_buff: last tt changeset this node received from the orig node */
- 	unsigned char *tt_buff;
+-	tvlv_len = *tt_len;
+-	tvlv_len += change_offset;
+-
+ 	*tt_data = kmalloc(tvlv_len, GFP_ATOMIC);
+ 	if (!*tt_data) {
+ 		*tt_len = 0;
 -- 
 2.47.3
 
