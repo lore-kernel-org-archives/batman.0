@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A1F0CD6E55
-	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 07:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E89C5CD6E4A
+	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 07:29:16 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AB41B820D6
-	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 09:28:30 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9666584647
+	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 09:29:15 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780471710;
- b=mYqEsuP5AWKx+guhrth9T4WyVBo7btEEoyHx7/gzdTye6F6v6EyWMejt7Vz6M64YLsdZn
- Cxp41UABi46sRnhkmBDNoGw54+IHTQmWZznkzYQpkQ3kHo++667ZTXrY6WWWjfy/lz2Gi6b
- xl2otT2cOm8i1N6lH9KYeyYqneduYsQ=
+ t=1780471755;
+ b=obOs6BWg5EWK+2xWRKusoSCg3ECu21/DJe994ZYepEJvLAPgDr43AftEuzuwMpg5MAakw
+ t2zyJC2YmJ+E3xTtxv7FFablmh10CNyuVCORHg7vVqX6Zy3gn+g77VTCobHHE3B1hoTRHjj
+ tvBc6Io4Cd6oa/Ji+ap0NIiI/2yoHy0=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780471710; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780471755; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=96Nbx6bAVzeKTA6R/GleQHJzDenzuYQWFEjEGNd0ev0=;
- b=DhXZY4Edf4Gq6Ts611mkmuL8LrkIzs4Ke1PiptkqQUWgvpbQPOi86yHXFbDQcIX17SSo1
- h4M4k5fHW/3LpK0oCb460HIWshhyQovgJPNWJoSz0HYqr88SvRMTj37woJ4VYGgQPCr8Z4F
- IA6KiBJJj1rBRR+E+q/PUcIbdM0alvI=
+ list-archive; bh=BuVoWFd4W/HCKuFvrohKZQ0oO4kQS41DcVZ6puYOLXs=;
+ b=M0YSiP/A4n1J6GjVaOVNUEFcepeJQxxIsncI1ZsWCqzgsk6xnG6eu5sCShgZiWCmp3i8t
+ R7zxxfgqDKMxHqz4Ih1aJoDTAChh77DQRSWft9rceWNh5UFSztUN0CiySiKKEs1SLIV7f8E
+ 1GPJxCUHrK+I20IR9IhaVO+GVrL4tuM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,40 +33,40 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id A18938461A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 09:25:32 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780471532;
-	b=zy7Q7wRViPwRrXTJDJMfyP59HJLAAtVxRK28Y+fyna9+zLkaDvSy8nPgKSWndhmzFa1xp4
-	wVAat9i9f8mbD31vXK8Gd9ZJCIiL+6i59dazKYlu6Lft1sp5hLy7L3EYU2A24LjI6ebdmf
-	BNS9BwynOTKmIbLaFY05HQIdCw7MEPw=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 563D88462A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 09:25:33 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780471533;
+	b=bt9v8HN1ZV7+1n9u+q447b4/TnZ3/y1x5a6K7U845+nHvImJcl4061rIRpiTIJI1tfjUOQ
+	8X3YOxGdhjvxvv/uI6FjgYAMhfcz5jqRUpl7+ywFbVQHyzbjigiP/nfAPRgir9XuERLXwA
+	Eda3CutvCzcdOQuWAlCwaOpD5MOxD1I=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=Z0lGF4A5;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=hQITO+zl;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780471532;
+	s=20121; t=1780471533;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=96Nbx6bAVzeKTA6R/GleQHJzDenzuYQWFEjEGNd0ev0=;
-	b=r5CYEv794FVrQWl0nKpifNDDhAvCVYS9MkdnPCAZEqUaH8p8AleRVmefdzaKTF/ufgIUB3
-	gVOBF8k5hpI9szdcY9vUjgNpieqI10D6lodc//75NbuI3aMBshxQdTSdD2AbGuBLcBNQMD
-	+GRWFcjJarmdc/G8/8+jnGA/Zi6iGEg=
+	bh=BuVoWFd4W/HCKuFvrohKZQ0oO4kQS41DcVZ6puYOLXs=;
+	b=oTIor69W5EsHck2qDjFr7p0VNBFrckRJCW3ASMaduDb8EdenVdLzXAKuacsd5G/2TqGkin
+	NtfFNCr913FE/W82YWZxN9NcdFz59H8OCpcK27LRXWwsPpoWsUJwijmMx3MOH9RRSFox/u
+	XGYMQixjaPL/vMkuuFRU6FLm+nUz8mc=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1780471531;
+	s=09092022; t=1780471532;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=96Nbx6bAVzeKTA6R/GleQHJzDenzuYQWFEjEGNd0ev0=;
-	b=Z0lGF4A5TC2xwt+eNwBO3lmq32S4rutfP051xvUwkGov3IcTVXM3Mm7TmPd1rcfqj+kF4x
-	ijjyUNpE4JZhwItqYaL1y5G8Xq7ak/JN43Ev4mbXzVJtutsI4xhyZNIQjRIve8kN1d9Evn
-	PDSwb4ZSqhiwFFu3/CB3d22qm3FFxFVGg43BHT1ZKYlkP03Ve7H79plPnhiahTcFBYqXjc
-	uJQieXGnUeJ3SS+6kBe2NYMAGjq4JIKu3jgL2we3MV4dK/6+OwfP7tg0urt05OcihkdHMK
-	3w09nFcpftyg+SPChIXY4oKV1z8EgO0Y2bOevE02X/QwBHTAtK1Ji5nCNt9LyQ==
+	bh=BuVoWFd4W/HCKuFvrohKZQ0oO4kQS41DcVZ6puYOLXs=;
+	b=hQITO+zlB026UQ0gfElumiFC5rm2dl/jMZi5uk18hoBfwA2Y61SeKZCC8uSZ1JOu/LgJ91
+	zd6UhU2/MJHa4ajwFjjbAMmvdJjPXE/qIKd4Hzut4FgI0OYZRZXBPoJzqyMsPhhTxY0PIl
+	ZQG+SXXkpN0wI0io5HwcDxFswVnpfFxfJDEX5dJUGJldZXF3DfTD2UyDVwsricX24To0ij
+	LwskrR3rPblKC9qfdErPUubo36Ok21ZoZV87dahZzLiOF7HdZ2Pv7t8jV1lMNbuEuKlTqV
+	fOnwd2+RquUKMXcmRZa31OsLLXe1JI7BONQmK3kQdetykvh4WhDbe2/ZKugbPw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -78,16 +78,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@kernel.org,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 04/15] batman-adv: tp_meter: avoid window underflow
-Date: Wed,  3 Jun 2026 09:25:15 +0200
-Message-ID: <20260603072527.174487-5-sw@simonwunderlich.de>
+Subject: [PATCH net-next 05/15] batman-adv: tp_meter: avoid divide-by-zero for
+ dec_cwnd
+Date: Wed,  3 Jun 2026 09:25:16 +0200
+Message-ID: <20260603072527.174487-6-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260603072527.174487-1-sw@simonwunderlich.de>
 References: <20260603072527.174487-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: BPVMSIIN5OPCUPKF6AX5Y52NIX5MQCDO
-X-Message-ID-Hash: BPVMSIIN5OPCUPKF6AX5Y52NIX5MQCDO
+Message-ID-Hash: NOVQAUOPM6RLQNRTYKDOICFM3KTZHGV2
+X-Message-ID-Hash: NOVQAUOPM6RLQNRTYKDOICFM3KTZHGV2
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -101,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BPVMSIIN5OPCUPKF6AX5Y52NIX5MQCDO/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NOVQAUOPM6RLQNRTYKDOICFM3KTZHGV2/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,50 +113,58 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-In batadv_tp_avail(), win_left is calculated with 32-bit unsigned
-arithmetic: win_left = win_limit - tp_vars->last_sent;
+The cwnd is always MSS <= cwnd <= 0x20000000. But the calculation in
+batadv_tp_update_cwnd() assumes unsigned 32 bit arithmetics.
 
-During Fast Recovery, cwnd is inflated and last_sent advances rapidly. When
-Fast Recovery ends, cwnd drops abruptly back to ss_threshold. If the newly
-shrunk win_limit is less than last_sent, the unsigned subtraction will
-underflow, wrapping to a massive positive value. Instead of returning that
-the window is full (unavailable), it returns that the sender can continue
-sending.
+    ((mss * 8) ** 2) / (cwnd * 8)
 
-To handle this situation, it must be checked whether the windows end
-sequence number (win_limit) has to be compared with the last sent sequence
-number. If it would be before the last sent sequence number, then more acks
-are needed before the transmission can be started again.
+In case cwnd is actually 0x20000000, it will be shifted by 3 bit to the
+left end up at 0x100000000 or U32_MAX + 1. It will therefore wrap around
+and be 0 - resulting in:
+
+    ((mss * 8) ** 2) / 0
+
+This is of course invalid and cannot be calculated. The calculation should
+must be simplified to avoid this overflow:
+
+   (mss ** 2) * 8 / cwnd
+
+It will keep the precision enhancement from the scaling (by 8) but avoid
+the overflow in the divisor.
+
+In theory, there could still be an overflow in the dividend. It is at the
+moment fixed to BATADV_TP_PLEN in batadv_tp_recv_ack() - so it is not an
+imminent problem. But allowing it to use the whole u32 bit range, would
+mean that it can still use up to 67 bits. To keep this calculation safe for
+32 bit arithmetic, mss must never use more than floor((32 - 3) / 2) bits -
+or in other words: must never be larger than 16383.
 
 Cc: stable@kernel.org
 Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tp_meter.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ net/batman-adv/tp_meter.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index beabc264a4f16..9ecbc6023cfc9 100644
+index 9ecbc6023cfc9..1655f181c9293 100644
 --- a/net/batman-adv/tp_meter.c
 +++ b/net/batman-adv/tp_meter.c
-@@ -817,10 +817,15 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
- static bool batadv_tp_avail(struct batadv_tp_vars *tp_vars,
- 			    size_t payload_len)
- {
-+	u32 last_sent = READ_ONCE(tp_vars->last_sent);
- 	u32 win_left, win_limit;
+@@ -154,9 +154,12 @@ static void batadv_tp_update_cwnd(struct batadv_tp_vars *tp_vars, u32 mss)
+ 		return;
+ 	}
  
- 	win_limit = atomic_read(&tp_vars->last_acked) + tp_vars->cwnd;
--	win_left = win_limit - tp_vars->last_sent;
++	/* prevent overflow in (mss * mss) << 3 */
++	mss = min_t(u32, mss, (1U << 14) - 1);
 +
-+	if (batadv_seq_before(last_sent, win_limit))
-+		win_left = win_limit - last_sent;
-+	else
-+		win_left = 0;
- 
- 	return win_left >= payload_len;
- }
+ 	/* increment CWND at least of 1 (section 3.1 of RFC5681) */
+ 	tp_vars->dec_cwnd += max_t(u32, 1U << 3,
+-				   ((mss * mss) << 6) / (tp_vars->cwnd << 3));
++				   ((mss * mss) << 3) / tp_vars->cwnd);
+ 	if (tp_vars->dec_cwnd < (mss << 3)) {
+ 		spin_unlock_bh(&tp_vars->cwnd_lock);
+ 		return;
 -- 
 2.47.3
 
