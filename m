@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C3A4CD6E4A
-	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 04:27:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 169FACD6E4A
+	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 04:28:26 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 96D588495C
-	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 06:27:41 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A3D3280D7D
+	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 06:28:24 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780460861;
- b=R9LmvQ1U4mxi5UkMLOMbA0maGLispGAZwu/JPrTVLOdbAZ7hdMzYRoXBuAusp3BSSwdzX
- 2bePSjsEE0fa8LCD6EC1qGRifb7ldSP5KSoBS7fBtAKi2OY80e+256+Hucvw55z6JUjJE9Q
- /0dyYCqJfnFXDf3ZLHSUOgNjNcLevWM=
+ t=1780460904;
+ b=I8zNy/qI6s6JzFPLMqFCCOtPewbUJZXLPJfc+wyP3/X/G4drR0f7BnVYQH+PvakinXqZL
+ oCqmcgi1jjsvH70tfl4pz7tOxpNwlno80/n7jPhdY3riLndj5srsSQPfY3xJe2zqDagLB+T
+ 5OZX1cAOv4+3+/8ztgB8qriQLXPderI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780460861; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780460904; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=i+GpR9suaB3xuRk5A7baU+Z+Spf9X1Y/0BjWrXFmY48=;
- b=OHGTibxnMwhxYOvlcA9CFBvG0QMZlvhqDFo5zrqxVU5JLsVkEZk/EDf7dne1BYVXJzWMX
- QyIWYZ99Fs4kNzv14QUX11fWWaqc2Rb4tEVTqY5D3YJqctmXrwLBN1RAKXfXLnstrR2T+1n
- +AwObZI3Hi+Jg3M3Oi6ZlQzD8FNEkgk=
+ list-archive; bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
+ b=RNgCaYW4GhW1jeXHhPQVxZXG2GkVwq2TrFf82+CXtk7iMZOIWeavR9NjHQ50B2iNh1V/J
+ BtLEd3Q7BWqD+LyfEZojD8cej9T7c80OBgZo1D3bvGz81pKyUWNATYikOcR/APD+zrKiTEz
+ OaYjR+LiXjkhtd3hDE6wePmRos7/lEw=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,62 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1265A8430F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 06:21:43 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780460503;
-	b=uXJlHHCTv0n9K9Tk555Qqahp49QLZVIR8cnjZtNTFuKWF8om2zrUT5ugE5n/3av0fGI4YG
-	dJ5SF9t7mtgtEYdeiySBUS7ZgxvLw1eyUxAx1woobQ5vIpfbqI/jyPTmQk0KklLmdCXrFL
-	HMMQs/VaTIUoeAI2K/WEAfZ5RYqddKE=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 040F5845B0
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 06:21:45 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780460505;
+	b=rXASdApbQVXWVv2aZxcxsCzH3YADieXGYj5F9nCyQzsYTt6xvGCuIpTDy/QHAOReL9B7sP
+	H3s6rSCHbITe/HCzmKYj8dOzp3YTdH7+AlTVVVnGwGqQa2I0HtmcHDQHoASAVql1CyVUPv
+	EV0Vsqiy7O2H6JxNTCfQz3oU1IAsX8U=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=QeWxqH86;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=l0Vq+yQL;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780460503;
+	s=20121; t=1780460505;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=i+GpR9suaB3xuRk5A7baU+Z+Spf9X1Y/0BjWrXFmY48=;
-	b=bkx1q1JA5kTawvJ+VfP6X1ZpOnZ/Khd44pQmQmdh9h5GYGYoHDAQwuj6ACMkMi+oDoeYev
-	Rtge2vnvjrakKEezwctgaAjlpuz+ClAYgSclDonRY25yiuJt4b9RljOhpvq6JLana6jLXx
-	nyZ94nPoPAAd5vXj53Sd/D005Kdeo+Q=
-Received: by dvalin.narfation.org (Postfix) id 1C7A61FEA4;
-	Wed, 03 Jun 2026 04:21:42 +0000 (UTC)
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
+	b=YopbHJD88tI1em2pgIPq/eGDEJd3322LRx5tVc48kN8MhsphQzrVOuPyf1L2rf4I0w2v8S
+	a/mErZegsf09ifvXqK8Kw/evVykwzzYQYVgn1aGD5+W/C1ZCkOGqjdRlLrAvCUk34AkSM2
+	8bgmeIQx7jGIfZmTSO0nMw6aHwkpGzo=
+Received: by dvalin.narfation.org (Postfix) id BA0861FEA4;
+	Wed, 03 Jun 2026 04:21:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780460502;
+	s=20121; t=1780460504;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=i+GpR9suaB3xuRk5A7baU+Z+Spf9X1Y/0BjWrXFmY48=;
-	b=QeWxqH86h5wWLvoMLxsnVbblFmt0iNnVf8GaxyO5jXdCj4SX32JYr42M6RtbfYWMRLwNYj
-	wyvIWaUqrVYwmwjxe4I3I0E/9HffXT6Z7kEiPOuiYvfmWDO+cG0QY0PtExibUmtCcjl7i1
-	xoSmF/ZBHycaBWwmRfLHewAj9CXaITc=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
+	b=l0Vq+yQLD1ao5ILgzDfCsxhdjRygAvmNtmumTnBuFIbOS2x5oejxAdFFEr7vOQRiZC2njJ
+	3OamwrdwttKFqZ1XOI605AxqA5w9VDNgP2HN2NRz1rFRybpmGxK29Be2ZHLAituLUeA0/t
+	l2DWTpyeae8R8Yghcw2sHqHStsZ58nA=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv 0/3] batman-adv: wifi flags cache cleanup
-Date: Wed, 03 Jun 2026 06:21:37 +0200
-Message-Id: <20260603-wifi-cache-cleanup-v1-0-d5ed08075c96@narfation.org>
+Date: Wed, 03 Jun 2026 06:21:38 +0200
+Subject: [PATCH batadv 1/3] batman-adv: correct batadv_wifi_* kernel-doc
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIANKrH2oC/yWMywqDQAxFf0WybmAcNND+inQRY6wpZSozvkD8d
- 8d2ee7lnB2SRtMEj2KHqIsl+4YM5a0AGTi8FK3LDN55cuQ8rtYbCsugKB/lMI9INen1yb0iyOI
- YtbftF22g5Ym7BZ7/Pc3tW2W6inAcJ0Q6rLF+AAAA
-X-Change-ID: 20260602-wifi-cache-cleanup-656e0602c946
+Message-Id: <20260603-wifi-cache-cleanup-v1-1-d5ed08075c96@narfation.org>
+References: <20260603-wifi-cache-cleanup-v1-0-d5ed08075c96@narfation.org>
+In-Reply-To: <20260603-wifi-cache-cleanup-v1-0-d5ed08075c96@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=767; i=sven@narfation.org;
- h=from:subject:message-id; bh=/dmWkJHjXsKmVetgv19Y4KY4shEAnRq99lHDym3X3jQ=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnyqy9PTOJdnzQ/JdHt2dJDjUKXpnoc0so6zNRn+PXwm
- +KUZeZLO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATearN8E+9MtGQh/Pep0CW
- CWdKZXrZ/je//XOwQahR8HVoVrFE6zaGv3Lmd88xrpT3zUj7yHitd095R19YuZbD/vi5xzTSwrI
- 2sQEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2544; i=sven@narfation.org;
+ h=from:subject:message-id; bh=hyeE92+NF0eEObKCoFVRsTnYPXaEhaw7MjKd6ce7IHc=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnyqy/3LzL8tKIgOrvdRenLbpXlNy/emPFRZOtOHQemz
+ Cv3fBhXdJSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAmojyZkeElz7tVepmhX3es
+ nhQWuT/93YdZMUxVPDrfNVac79sziXU9w1/hB013v1edifOUXq3x5bp+p61s4cV/h5fvW/6RSd1
+ u5wRGAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: WMRG43CGZLKBGTTSEAFXLCPQGZGHC7JP
-X-Message-ID-Hash: WMRG43CGZLKBGTTSEAFXLCPQGZGHC7JP
+Message-ID-Hash: MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3
+X-Message-ID-Hash: MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WMRG43CGZLKBGTTSEAFXLCPQGZGHC7JP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,25 +111,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Unfortunately, the new wifi flags cache had some problems in the kernel
-doc and non-optimal code in batadv_wifi_net_device_insert(). Let us just
-fix this while the code is fresh :)
+The original kernel documentation for the batadv_wifi_* functions contained
+copy+paste errors. Correct them to make it easier understandable.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Sven Eckelmann (3):
-      batman-adv: correct batadv_wifi_* kernel-doc
-      batman-adv: drop duplicated wifi_flags assigned
-      batman-adv: use GFP_KERNEL allocations for the wifi detection cache
+ net/batman-adv/hard-interface.c | 6 +++---
+ net/batman-adv/hard-interface.h | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
- net/batman-adv/hard-interface.c | 11 +++++------
- net/batman-adv/hard-interface.h |  4 ++--
- 2 files changed, 7 insertions(+), 8 deletions(-)
----
-base-commit: bba80ddd693e6d82a0b1f456511904cfefd5df24
-change-id: 20260602-wifi-cache-cleanup-656e0602c946
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index bb3c31b5..213d4609 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -960,9 +960,9 @@ static int batadv_hard_if_event_meshif(unsigned long event,
+ /**
+  * batadv_wifi_net_device_insert() - save information about wifi net_device
+  * @net_dev: net_device to add to batadv_wifi_net_devices
+- * @wifi_flags: net_device which generated an event
++ * extracted batadv_hard_iface_wifi_flags of a net_device
+  *
+- * Return: 0 on result, negative value on error
++ * Return: 0 on success, negative value on error
+  */
+ static int
+ batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
+@@ -996,7 +996,7 @@ batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
+ 
+ /**
+  * batadv_wifi_net_device_remove() - remove information about wifi net_device
+- * @device_state: wifi net_device state to remove from batadv_wifi_net_device_state
++ * @device_state: wifi net_device state to remove from batadv_wifi_net_devices
+  */
+ static void
+ batadv_wifi_net_device_remove(struct batadv_wifi_net_device_state *device_state)
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index 089e65c8..41ef2944 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -125,7 +125,7 @@ batadv_primary_if_get_selected(struct batadv_priv *bat_priv)
+ /**
+  * batadv_is_cfg80211() - check if the given hardif is a cfg80211
+  *  wifi interface
+- * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
++ * @wifi_flags: extracted batadv_hard_iface_wifi_flags of a net_device
+  *
+  * Return: true if the net device is a cfg80211 wireless device, false
+  *  otherwise.
+@@ -142,7 +142,7 @@ static inline bool batadv_is_cfg80211(u32 wifi_flags)
+ 
+ /**
+  * batadv_is_wifi() - check if flags belong to wifi interface
+- * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
++ * @wifi_flags: extracted batadv_hard_iface_wifi_flags of a net_device
+  *
+  * Return: true if the net device is a 802.11 wireless device, false otherwise.
+  */
 
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
