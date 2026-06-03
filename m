@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 169FACD6E4A
-	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 04:28:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDBAACD6E55
+	for <batman-adv@archiver.kernel.org>; Wed,  3 Jun 2026 04:29:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A3D3280D7D
-	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 06:28:24 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4DEA283E78
+	for <batman-adv@archiver.kernel.org>; Wed, 03 Jun 2026 06:29:08 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780460904;
- b=I8zNy/qI6s6JzFPLMqFCCOtPewbUJZXLPJfc+wyP3/X/G4drR0f7BnVYQH+PvakinXqZL
- oCqmcgi1jjsvH70tfl4pz7tOxpNwlno80/n7jPhdY3riLndj5srsSQPfY3xJe2zqDagLB+T
- 5OZX1cAOv4+3+/8ztgB8qriQLXPderI=
+ t=1780460948;
+ b=cfka3tD0Um1SXqO5pKk9sRSmi24VM6u9a6jpEgQZrorz1J4AIT41nVB+QlKznCrVzrEKr
+ X4HMlEtkdegVAqFICFgYnGKD1/rRmcM0xLR7ZG2GtRSZ0B/NWrEGtZIyDB8a9gwQQgMoPLi
+ dA2IuLimJLQ7KFh4waiqm1j9+lNZW8U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780460904; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780460948; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
- b=RNgCaYW4GhW1jeXHhPQVxZXG2GkVwq2TrFf82+CXtk7iMZOIWeavR9NjHQ50B2iNh1V/J
- BtLEd3Q7BWqD+LyfEZojD8cej9T7c80OBgZo1D3bvGz81pKyUWNATYikOcR/APD+zrKiTEz
- OaYjR+LiXjkhtd3hDE6wePmRos7/lEw=
+ list-archive; bh=LPRDAnkz2Z38ljkyNOSbudooO/LtAKRvep0wyYjcCHE=;
+ b=UukOs67gOBqjtPWM3JDOLxe38S5YYEjq0mOAk/3lpiGsvjJW4O9l6M88SDVKQ+oYXH7Av
+ uJ84j3BxBCU2MQ1gC8wqaoAPCXSSPA5rYtWqtpdO4G+74B5JMWKXQOKD/LgHc1yR1gPIFzv
+ XgfFo5TZrT5jIbe9jTdx8ckpZTJRiuU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,63 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 040F5845B0
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 06:21:45 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780460505;
-	b=rXASdApbQVXWVv2aZxcxsCzH3YADieXGYj5F9nCyQzsYTt6xvGCuIpTDy/QHAOReL9B7sP
-	H3s6rSCHbITe/HCzmKYj8dOzp3YTdH7+AlTVVVnGwGqQa2I0HtmcHDQHoASAVql1CyVUPv
-	EV0Vsqiy7O2H6JxNTCfQz3oU1IAsX8U=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3E1B380794
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 03 Jun 2026 06:21:58 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780460518;
+	b=U8WBzDLrGLwhyLRddH6QS2L9Shbdw6baCIeRLJEImRvK/uIVbR+S2X2Tzcba6BcAPMYipy
+	h0rZZoPUm+/7SwhZKHVW6++AsrPgVEPm+qP5DBHCKKBzBnsNz8ANxG25JL1HTp2qgXSRVS
+	Lx9Ux4aei+XBOahUtbr1H98aQ4bV0G8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=l0Vq+yQL;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=M2OIuUPy;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780460505;
+	s=20121; t=1780460518;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
-	b=YopbHJD88tI1em2pgIPq/eGDEJd3322LRx5tVc48kN8MhsphQzrVOuPyf1L2rf4I0w2v8S
-	a/mErZegsf09ifvXqK8Kw/evVykwzzYQYVgn1aGD5+W/C1ZCkOGqjdRlLrAvCUk34AkSM2
-	8bgmeIQx7jGIfZmTSO0nMw6aHwkpGzo=
-Received: by dvalin.narfation.org (Postfix) id BA0861FEA4;
-	Wed, 03 Jun 2026 04:21:44 +0000 (UTC)
+	bh=LPRDAnkz2Z38ljkyNOSbudooO/LtAKRvep0wyYjcCHE=;
+	b=aXSZfF6yFBa8laNtmiY8xvreJIu/OgQuvVSYQeea+0PB2cdJdTKg8GXcbSpkV6o63oflZE
+	baBEaWCMb08PrVF8QSWkm10jyp+/xDz1/FwiZw8MgHnVTVvSgaGqBwZfTSVIbY8/UL+Utr
+	APfaTS8fF7Aa7xRhawqU00Azn1IW3vE=
+Received: by dvalin.narfation.org (Postfix) id D851F1FEA4;
+	Wed, 03 Jun 2026 04:21:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780460504;
+	s=20121; t=1780460517;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=aLAZGWSGHWOPPmpapwc9n1rnYWxM8djJvnz7r/kmO0Q=;
-	b=l0Vq+yQLD1ao5ILgzDfCsxhdjRygAvmNtmumTnBuFIbOS2x5oejxAdFFEr7vOQRiZC2njJ
-	3OamwrdwttKFqZ1XOI605AxqA5w9VDNgP2HN2NRz1rFRybpmGxK29Be2ZHLAituLUeA0/t
-	l2DWTpyeae8R8Yghcw2sHqHStsZ58nA=
+	bh=LPRDAnkz2Z38ljkyNOSbudooO/LtAKRvep0wyYjcCHE=;
+	b=M2OIuUPyJI/3TUOeoMsw2BPYbaZ3i2+Khx6gFSdlME0xDaKTywUinmvWpUVv8ixlX6fjPC
+	QggSNN1ypQuCIqtu9YUu0/a8GvUdmHNsQzimw4art+icvaiXySKgDk6dyIn2YlKQX3h1Fd
+	6UAz/vQzOOlZcUqE+HOHFufzRxNuW+4=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 03 Jun 2026 06:21:38 +0200
-Subject: [PATCH batadv 1/3] batman-adv: correct batadv_wifi_* kernel-doc
+Date: Wed, 03 Jun 2026 06:21:39 +0200
+Subject: [PATCH batadv 2/3] batman-adv: drop duplicated wifi_flags assigned
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260603-wifi-cache-cleanup-v1-1-d5ed08075c96@narfation.org>
+Message-Id: <20260603-wifi-cache-cleanup-v1-2-d5ed08075c96@narfation.org>
 References: <20260603-wifi-cache-cleanup-v1-0-d5ed08075c96@narfation.org>
 In-Reply-To: <20260603-wifi-cache-cleanup-v1-0-d5ed08075c96@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2544; i=sven@narfation.org;
- h=from:subject:message-id; bh=hyeE92+NF0eEObKCoFVRsTnYPXaEhaw7MjKd6ce7IHc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnyqy/3LzL8tKIgOrvdRenLbpXlNy/emPFRZOtOHQemz
- Cv3fBhXdJSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAmojyZkeElz7tVepmhX3es
- nhQWuT/93YdZMUxVPDrfNVac79sziXU9w1/hB013v1edifOUXq3x5bp+p61s4cV/h5fvW/6RSd1
- u5wRGAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=874; i=sven@narfation.org;
+ h=from:subject:message-id; bh=w+JT++rAte7ImM+EsHFRVDvS9hgXrT7yZuDeUElH5e4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnyqy9Pll36/YiNr3iI4ZZCh+B0af1FOrGXz59WOxMbo
+ Mdz5GldRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAia+oY/pc8PRnGwSXYGVpc
+ ry5jYcFkWW307lXWysyr6z46bL/nN5Xhr4SRzm/Thv/5/050O9ZPPazaupxjusWCc6kbw9TeOKz
+ XYgcA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3
-X-Message-ID-Hash: MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3
+Message-ID-Hash: PU3YYPMDAQFBDBYYM5MPJ6K7XCTPPKRZ
+X-Message-ID-Hash: PU3YYPMDAQFBDBYYM5MPJ6K7XCTPPKRZ
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MXCBWXSGPW7C3QMIW4LUNCZ6P6ZOKHH3/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PU3YYPMDAQFBDBYYM5MPJ6K7XCTPPKRZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,62 +112,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The original kernel documentation for the batadv_wifi_* functions contained
-copy+paste errors. Correct them to make it easier understandable.
+During the initialization of the batadv_wifi_net_device_state, it is enough
+to write the wifi_flags once before the batadv_wifi_net_device_state is
+added to the batadv_wifi_net_devices rhashtable.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hard-interface.c | 6 +++---
- net/batman-adv/hard-interface.h | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/hard-interface.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index bb3c31b5..213d4609 100644
+index 213d4609..80eaac0e 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -960,9 +960,9 @@ static int batadv_hard_if_event_meshif(unsigned long event,
- /**
-  * batadv_wifi_net_device_insert() - save information about wifi net_device
-  * @net_dev: net_device to add to batadv_wifi_net_devices
-- * @wifi_flags: net_device which generated an event
-+ * extracted batadv_hard_iface_wifi_flags of a net_device
-  *
-- * Return: 0 on result, negative value on error
-+ * Return: 0 on success, negative value on error
-  */
- static int
- batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
-@@ -996,7 +996,7 @@ batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
+@@ -976,7 +976,6 @@ batadv_wifi_net_device_insert(struct net_device *net_dev, u32 wifi_flags)
+ 	if (!device_state)
+ 		return -ENOMEM;
  
- /**
-  * batadv_wifi_net_device_remove() - remove information about wifi net_device
-- * @device_state: wifi net_device state to remove from batadv_wifi_net_device_state
-+ * @device_state: wifi net_device state to remove from batadv_wifi_net_devices
-  */
- static void
- batadv_wifi_net_device_remove(struct batadv_wifi_net_device_state *device_state)
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 089e65c8..41ef2944 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -125,7 +125,7 @@ batadv_primary_if_get_selected(struct batadv_priv *bat_priv)
- /**
-  * batadv_is_cfg80211() - check if the given hardif is a cfg80211
-  *  wifi interface
-- * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
-+ * @wifi_flags: extracted batadv_hard_iface_wifi_flags of a net_device
-  *
-  * Return: true if the net device is a cfg80211 wireless device, false
-  *  otherwise.
-@@ -142,7 +142,7 @@ static inline bool batadv_is_cfg80211(u32 wifi_flags)
- 
- /**
-  * batadv_is_wifi() - check if flags belong to wifi interface
-- * @wifi_flags: extracted batadv_hard_iface_wifi_flagss of an net_device
-+ * @wifi_flags: extracted batadv_hard_iface_wifi_flags of a net_device
-  *
-  * Return: true if the net device is a 802.11 wireless device, false otherwise.
-  */
+-	device_state->wifi_flags = wifi_flags;
+ 	netdev_hold(net_dev, &device_state->dev_tracker, GFP_ATOMIC);
+ 	device_state->netdev = net_dev;
+ 	WRITE_ONCE(device_state->wifi_flags, wifi_flags);
 
 -- 
 2.47.3
