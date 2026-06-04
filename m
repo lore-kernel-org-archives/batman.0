@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 037B5CD6E75
-	for <batman-adv@archiver.kernel.org>; Thu,  4 Jun 2026 20:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11186CD6E77
+	for <batman-adv@archiver.kernel.org>; Thu,  4 Jun 2026 20:12:02 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 7C10984A3B
-	for <batman-adv@archiver.kernel.org>; Thu, 04 Jun 2026 22:11:16 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B1AE1853DF
+	for <batman-adv@archiver.kernel.org>; Thu, 04 Jun 2026 22:12:00 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780603876;
- b=zkIsQheMVHkz8CeLHP7xMSQBQdaQNp/pZJ+pHhia1O49eXKPPo5r7sORgNJqJjh2Eqzgn
- Vt+JCWSvw6J8TUtzlo4UvDaCaFYfXh1WABM17znjxslDm9avT/Z8gUa4mFarUWCuneIV59Y
- Uj5NhlPvxVWlsLVqA+JsBuDqxaWTI+o=
+ t=1780603920;
+ b=TjP/7Ow4myBh2YiFOEL71ZizUgUJjJMsM+9ATPdB6TxGfW8zE2CfyCdLcDPGn+/pXwkA/
+ 25iqAKd+9/0XDFKDt0VC8I19kurXu/sR1hXZyR2ALp/FlFC1ulRoqdNG8a1dN2ONYnGdMAc
+ jpM2aFd/WDATU5/33flSs8pr/7zgx5U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780603876; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780603920; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=O1exFvQ+1G8Twm+1FYsYA7KMMFjDl1DN1aCxGfSOSI4=;
- b=zSwcMV8B7qCzM9gwzEPON4jLa9nQPtK0q6y3UULQz7tF23dMQfUW5vxI5vFUF+JUZmbMe
- uW3qgBEVWEDBDejIve9Ha8c7VzW+R5q4ATMAeErsbbkW7hBeXMHW8o+HQuK4EBO2IHagj6p
- 5bV7LnO31ZBc2u2p+58eSxXWoN5f1lE=
+ list-archive; bh=IMfP8JYXIWQ74usOgmVWM2wBGlEqAMUuXRZGcehS4qM=;
+ b=n2K2vJPuHEupY6J+LVp+cpvZBO6g6r6EEco819Edt1iU0t8PWYHgYNpN9MrOGFvdZQz1U
+ 5NqtDh+FaX8Quz9ki3ETOhCnzSCdiOMG7R0UMfAsi4IEVEA6KubWuunjCymZHoyXAWVhYB4
+ IxVdKSUHVohRHVHV2K3ncTnWJIi+GUg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,63 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3516282587
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 04 Jun 2026 22:08:52 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780603737;
-	b=wBOVWxnS0hTrWUXAiy3LKdqhL5NLxsMsKUbR+94Va8RkwuH5copX+Oz/A8mSkjxi12vx4+
-	UcrrBtmVoqWWfk42rVRluInk6weXJHkxTkeuMNpKfHdoP4s0ugm0TDVMB/oMM7qr4BK+O2
-	yrCPVwWyRWKBaliqVQkGsk+3NoQj+vk=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2E7FD844FD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 04 Jun 2026 22:08:48 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780603738;
+	b=VKn8KKWTWAIIHlyTNC7Ohw4CpfvPN0SQZvd0ij+7igoB5711ekPNF6jKOkkoIeJUBbGb/t
+	Q4hUAE6dLqdf6LDcxB5i1Oh2ukD5x4BAIkEWHY6q9nbx3bsjTnsNKSG5/u/o8/3dRqSKJv
+	V462GTHS46/0f8wEZHiiwq5LEJEBdGw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=taVr8UCz;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=kChADJkR;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780603737;
+	s=20121; t=1780603738;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=O1exFvQ+1G8Twm+1FYsYA7KMMFjDl1DN1aCxGfSOSI4=;
-	b=0yPDZyzTBxknLZy0fKRgJn/4Q4Q5pbpADOK4X7D7upwFL7E49GQ4e6ed1srCPyvWd2ZRmH
-	3P2d04El/Sr6B0okEhQDSTftmazNJAtsKEZMxX0jqVOhXDvgGuqW1ivqtiP0KSgVQtpkmg
-	BiUPg9ckzmxw8+tOq70p2vipyO6mQF4=
-Received: by dvalin.narfation.org (Postfix) id CFC4420267;
-	Thu, 04 Jun 2026 20:08:51 +0000 (UTC)
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=IMfP8JYXIWQ74usOgmVWM2wBGlEqAMUuXRZGcehS4qM=;
+	b=TdQ/HJQk+mBpbsKiJRHG8+Tpr0XUBnz3L+937+Zg7sgeTTNkHPHeKOD+WYEOsxxBhMImgF
+	YVB5wcviUMIqc6G4aOXdkeVNiMNyOwpwNm99A9K290BS+zEfuc5+xfhcdaqiTV+odUYjBC
+	ZGOk8t3WukmGjjDWYSEn5F48F6vsKZ0=
+Received: by dvalin.narfation.org (Postfix) id 0F1901FEA8;
+	Thu, 04 Jun 2026 20:08:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780603731;
+	s=20121; t=1780603727;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=O1exFvQ+1G8Twm+1FYsYA7KMMFjDl1DN1aCxGfSOSI4=;
-	b=taVr8UCz4bJtoGatV5Bx6/qVvXf51K8CXPXQsYeZxYtCvz043EAxaFspcqrMq/BOKDfSwX
-	Ppzfl/fiaXRTbzKl2XHqQ2wwlL2snH1y1XiN9VlhElIx4J3f02uAqhIlDpiWMNOt5ThK0+
-	rcGqjVdgeAAd7tPNHUgirxmRYiUuY10=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=IMfP8JYXIWQ74usOgmVWM2wBGlEqAMUuXRZGcehS4qM=;
+	b=kChADJkRg9fuU0qejRDnZPzBpaz4Gl4pgjzcpk9RbJajjz7jISRMfy3JZLQrQZ8OaPA/rd
+	/QtIHD+JQa5UWkfub4gyt9LokI7qJT2zn/PgFq4Qn5Klptb6RhZSSMRM1L5Y+YsfJ7GTEH
+	bFO73JfaeuUKcqnSQ8uJuhFX0csb9NU=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 04 Jun 2026 22:08:44 +0200
-Subject: [PATCH batadv 2/5] batman-adv: bla: update stale kernel-doc
+Subject: [PATCH batadv 0/5] batman-adv: kernel-doc fixes 2026.2
+Date: Thu, 04 Jun 2026 22:08:42 +0200
+Message-Id: <20260604-kernel-doc-cleanup-v1-0-c4c4d4a77c31@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260604-kernel-doc-cleanup-v1-2-c4c4d4a77c31@narfation.org>
-References: <20260604-kernel-doc-cleanup-v1-0-c4c4d4a77c31@narfation.org>
-In-Reply-To: <20260604-kernel-doc-cleanup-v1-0-c4c4d4a77c31@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAErbIWoC/yWM0QqDMBAEf0XuuQcxioX+SulDclnbayVKoiKI/
+ 27a7tsszOyUkRSZbtVOCatmHWOB+lKRvFx8gjUUJmtsZzrT8gcpYuAwCssAF5eJUWZ9018bqam
+ IU0Kv2y96J+9mF1Z6/P+8+Ddk/hbpOE6s3CYRfgAAAA==
+X-Change-ID: 20260604-kernel-doc-cleanup-eeee2b3f73c1
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2811; i=sven@narfation.org;
- h=from:subject:message-id; bh=q4Po5jMiD9k4zDNoLj2olAjN1guYjh/U0qEy4Cfyb3Q=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmKt71nzPx4/Mj8gvc/VP8zzH0x3ePlvXkWfkH5Hlali
- g07ecUkOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATub2H4Z/B6q6LRSxzApo3
- HVQMyHgW6zldZde2LR6Z06dKP3rVnlvIyNB1NnEp16eFst+Eji9fu7R3v14U4+nsTVOem/Ddbef
- I+cECAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1818; i=sven@narfation.org;
+ h=from:subject:message-id; bh=b07xgeDQ97MdiLNgl2oYALAaf+t5g5bfDtjeKJFRg9k=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmKt72rH6uG8XGbnW3J8V+xmeW+tWFowPpazedfG29oT
+ rxw+/GFjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEthUz/LNeOD2xTDQy99vr
+ dQtZfootufJdgr3ayt28QUrC/dYBgUUMv5h//C9+Hf5GaHm0ETOP5F6DzX/1GmN/+2Ws49jBIBb
+ owggA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: XQL52XIIE6ZJRIVNO6JY3WA4LW2ZQVC5
-X-Message-ID-Hash: XQL52XIIE6ZJRIVNO6JY3WA4LW2ZQVC5
+Message-ID-Hash: ZPBIZJJ2RFZ2ATASSG6WFKXDZVJOTCMU
+X-Message-ID-Hash: ZPBIZJJ2RFZ2ATASSG6WFKXDZVJOTCMU
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XQL52XIIE6ZJRIVNO6JY3WA4LW2ZQVC5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZPBIZJJ2RFZ2ATASSG6WFKXDZVJOTCMU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,78 +111,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The bridge-loop-avoidance code was changed recently to avoid inconsistent
-state and race condition problems. The kernel-doc addded in these commits
-(and related code) has various minor deficits which are now resolved.
+During the (recent) integration of various fixes and cleanups, some of the
+kernel-docs weren't correctly updated. This patchset should sync the
+kernel-doc again with the actual implementation. But at the same time, I've
+noticed other (older) kernel-doc problems and just added fixes for these in
+this patchset too.
+
+The only common thing these patches have - they are kernel-doc changes :)
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+Sven Eckelmann (5):
+      batman-adv: tp_meter: update stale kernel-doc after refactoring
+      batman-adv: bla: update stale kernel-doc
+      batman-adv: uapi: keep kernel-doc in struct member order
+      batman-adv: fix batadv_v_ogm_packet_recv error handling kernel-doc
+      batman-adv: fix kernel-doc typos and grammar errors
+
+ include/uapi/linux/batadv_packet.h     |  6 +++---
+ net/batman-adv/bat_v.c                 |  2 +-
+ net/batman-adv/bat_v_ogm.c             | 10 +++++-----
+ net/batman-adv/bitarray.c              |  2 +-
+ net/batman-adv/bitarray.h              |  2 +-
  net/batman-adv/bridge_loop_avoidance.c |  2 +-
  net/batman-adv/bridge_loop_avoidance.h |  2 +-
- net/batman-adv/types.h                 | 10 +++++++---
- 3 files changed, 9 insertions(+), 5 deletions(-)
+ net/batman-adv/fragmentation.c         |  3 ++-
+ net/batman-adv/hash.h                  |  4 ++--
+ net/batman-adv/mesh-interface.c        |  6 +++---
+ net/batman-adv/netlink.c               |  4 ++--
+ net/batman-adv/originator.c            |  4 ++--
+ net/batman-adv/tp_meter.c              | 16 ++++++++--------
+ net/batman-adv/tvlv.c                  |  4 ++--
+ net/batman-adv/types.h                 | 24 +++++++++++++++---------
+ 15 files changed, 49 insertions(+), 42 deletions(-)
+---
+base-commit: 7fb5fc7265f6ce4962357c5383873fd2ef9d50d4
+change-id: 20260604-kernel-doc-cleanup-eeee2b3f73c1
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 0461f112..36421f76 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -123,7 +123,7 @@ static bool batadv_compare_backbone_gw(const struct hlist_node *node,
-  * @node: list node of the first entry to compare
-  * @data2: pointer to the second claims
-  *
-- * Return: true if the claim have the same data, 0 otherwise
-+ * Return: true if the claims have the same data, false otherwise
-  */
- static bool batadv_compare_claim(const struct hlist_node *node,
- 				 const void *data2)
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 8673a265..06c7dfb8 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -21,7 +21,7 @@
-  *  detect frame sent by bridge loop avoidance
-  * @mac: mac address to check
-  *
-- * Return: true if the it looks like a loop detect frame
-+ * Return: true if it looks like a loop detect frame
-  * (mac starts with BA:BE), false otherwise
-  */
- static inline bool batadv_bla_is_loopdetect_mac(const uint8_t *mac)
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index a7fa0d9e..5fd5bd35 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1723,22 +1723,26 @@ struct batadv_priv {
- 
- #ifdef CONFIG_BATMAN_ADV_BLA
- 
-+/**
-+ * enum batadv_bla_backbone_gw_state - state of a bridge loop avoidance
-+ *  backbone gateway
-+ */
- enum batadv_bla_backbone_gw_state {
- 	/**
- 	 * @BATADV_BLA_BACKBONE_GW_STOPPED: backbone gw is being removed
--	 * and it must not longer work on requests
-+	 * and it must no longer work on requests
- 	 */
- 	BATADV_BLA_BACKBONE_GW_STOPPED,
- 
- 	/**
- 	 * @BATADV_BLA_BACKBONE_GW_UNSYNCED: backbone was detected out
--	 * of sync and a request was send. No traffic is forwarded until the
-+	 * of sync and a request was sent. No traffic is forwarded until the
- 	 * situation is resolved
- 	 */
- 	BATADV_BLA_BACKBONE_GW_UNSYNCED,
- 
- 	/**
--	 * @BATADV_BLA_BACKBONE_GW_SYNCED: backbone is consider to be in
-+	 * @BATADV_BLA_BACKBONE_GW_SYNCED: backbone is considered to be in
- 	 * sync. traffic can be forwarded
- 	 */
- 	BATADV_BLA_BACKBONE_GW_SYNCED,
-
--- 
-2.47.3
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
