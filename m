@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C30FCD6E5D
-	for <batman-adv@archiver.kernel.org>; Fri,  5 Jun 2026 07:24:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2386CD6E6B
+	for <batman-adv@archiver.kernel.org>; Fri,  5 Jun 2026 07:24:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id CE8D483EAA
-	for <batman-adv@archiver.kernel.org>; Fri, 05 Jun 2026 09:24:09 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 77165841DC
+	for <batman-adv@archiver.kernel.org>; Fri, 05 Jun 2026 09:24:54 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780644249;
- b=SHr9ZjWIwK05sxS+hCFDU/f26ioqatETVZuatlLv22Xg15Xg7prxNZbVHFXm1mz+SfRvh
- Nb0KPUc3M0P9UO/3nLAyGHTeAheBqoYtW4le+VUjFovSN6loxZ6vyceLMc7utidVsL1a2xm
- 63ykSYmUwiymJobvOHyM7gR/xXnKyG4=
+ t=1780644294;
+ b=xz7+k2HwznRWe3W+TpW/O0OgNOVZR6r69Oarj8j/QLnmz3UmF6qoKBd90yeKRU3mB5K7B
+ jv+ymR2nQysT7Iz6tuzbVV6NrcQzNkdEzHgvfB7nkCm7GWia4f/SgHQi3Ok8gCK/5bJERT4
+ Sea1fC5+SNcfwhhFswGpre+TkUY88Sg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780644249; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780644294; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=XayUOr0ee7YPv+5l8yPXIocEHJrmBbPJHkDKJCahM0w=;
- b=m8wMPXYU6QPrU3lUqnwfhfQKPwCqNsfnOOIMaskdSSxLoljfSYNhyvRESRxdsM0sMJwZU
- THAgma65AXT//9CrtSkMGIUGmy2rI6S4DKYDUxeiAKUgG+24X19uJsSm1W2IGPodSKA1kpv
- 2bYvbRmvuGNMdRitdrS30vOlHVJYbTc=
+ list-archive; bh=8JwYgpPGj+vXgN7oOZfclO+SwAYin1aQSzciPTokuxk=;
+ b=2FUNUCIQaxx+5q3NjrVrVY9Klakk8b6Wc13qkEtoV7kVMkFqIO/CjyCfJg0MNvkTYbcFJ
+ udV5QNlNEe63/wVY2idbRFXrKzM6bPNOA/Jl6kHjvHcj8MMK4ABtOhdKSs27t6iqh/apndU
+ AwiFso3WlBZwWljmzdqPpFUTEmjtZP4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,18 +32,20 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id B4FD081096
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 05 Jun 2026 09:20:12 +0200 (CEST)
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id B904C8109D
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 05 Jun 2026 09:20:17 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780644017;
-	b=bVyDa3WZBi4XZf5X2Kbgqjalq+SRkAROkeNyb/bNAm+vsQ4CbdpqOCH0tC3Lb2KRuiOLKy
-	nQchPoFU5+n38tvLg+SHPbycbLYq3TwxCu2U7cHRnXm0lU1KBQ6Kq7OnnzBkmPm5NiXKsm
-	Ytph9wlXBjFm4lou6s0yHOC/cGBdaqY=
+	b=rw1qTB8ep/NM/lPUu8DAHGnYKBqo56gWENT32r7UGNZw94kcLX68SSXaPKEPADR9rCgfoe
+	lQOoFUyV/iHHpf+I9RbqiGjo6a58rJ+eJ92kPFmlaSU7vKp9+hS6cgrOUD3yY9jpHjmaqf
+	1N+14N3Vdt3Q69Nkq3ZLyhX5d3eVSmg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=F6OsP8ML;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=w1GDLF2t;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1780644017;
@@ -51,22 +53,22 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=XayUOr0ee7YPv+5l8yPXIocEHJrmBbPJHkDKJCahM0w=;
-	b=L9i4gTYWl4yBjcFxVVYqsPUCS6wsOngt0+pSO/V8gjq7sKLva9dA7/tuYRx3tueS1hyccv
-	bPc77hTPxhvLmzT6cp5OHI4mHHVtcgabQIcEmNUY1eB9UUKN8WORXfZs21dIlEs1dTIJuE
-	349mb8mWn6My1sEoqmwhhxrf/sEo9mk=
+	bh=8JwYgpPGj+vXgN7oOZfclO+SwAYin1aQSzciPTokuxk=;
+	b=e58IkfhjMpv1s4Gho27YFXtNQACugDmktbPK3omMr4EULpxuNtOZNaPZCNZ5siQLYGWwTC
+	s6k2Nl8vqSVH5ZVVEy+k6nx5md6HMmcEYzfB2mR5AQx5fNNfKDRz1iVgveK4V7t1nAc6CO
+	8Lydv0WVlQbxKcIPAARrXGdUV9qo8Ms=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1780644011;
+	s=09092022; t=1780644016;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XayUOr0ee7YPv+5l8yPXIocEHJrmBbPJHkDKJCahM0w=;
-	b=F6OsP8ML4T0t0AuyENeYKkY0QWxRdUEm6tshcPh/drduvkPek/+JyGlWxz5P9wot2zobei
-	8xLnfMcj3SLLckicq4d70F0x1xuV6I13hVg5crTmf3IPxpKw/sFfW3kGKZZw5EkJ8aOxv0
-	FbLANQPUa8MKxxedwyiuVlYcnB/FvGCbwnYit6FHk6oBiQvgN7/+CXu7bb3OVfD8S65L1O
-	TG9XwDpqyPjpVXjnZ7hAtpAqOPs4XWMf2dC85M5bhU6KJ9JUAvR1wwZDxEsZAvia8t4EVx
-	HsN7IqbAbR9DDoCRn7L8YY2GTCCqoPpmWQD4V0oB4S2S/h5d56cZ8dAL/yKDvA==
+	bh=8JwYgpPGj+vXgN7oOZfclO+SwAYin1aQSzciPTokuxk=;
+	b=w1GDLF2t3VGcrkDgrUcMHn2iQelb6ktbar4gRzbMv1qeJ3xZ87vMuWkwnEyNdgVmpqpHD0
+	6IgHjKUg7eSYtyEO0Wc9mnbFAj+L413hsR2k5UyO145iJMc7O4DQzCWJrungqSNcp2Rxir
+	eJKACQRtPpNFZsqxMHEZHt1Oxa6PKQgvPe5DtKoJKWby8/AINHyqmRlhh21HFbDaJk9+oz
+	zkYbjyszIQYiosW+8JUY4ALUC42B5jtJ6j8nKn5Lpjy8chE33phzHxrHfh8mclGdfbb1CR
+	2aDcevlC9rKC0+CgpW5mk8NMGmbwEyPLrwWidXHC7nJL6CtxatPzvsTntEcrAA==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -77,17 +79,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 02/11] batman-adv: convert cancellation of work items
- to disable helper
-Date: Fri,  5 Jun 2026 09:19:56 +0200
-Message-ID: <20260605072005.490368-3-sw@simonwunderlich.de>
+Subject: [PATCH net-next 07/11] batman-adv: tp_meter: update stale kernel-doc
+ after refactoring
+Date: Fri,  5 Jun 2026 09:20:01 +0200
+Message-ID: <20260605072005.490368-8-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260605072005.490368-1-sw@simonwunderlich.de>
 References: <20260605072005.490368-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: B4JNF7WNENNAMRAK7FCBLEMDMNUS3MGX
-X-Message-ID-Hash: B4JNF7WNENNAMRAK7FCBLEMDMNUS3MGX
+Message-ID-Hash: CHXKRO3TBCDT532IXSM5KECRJ7YEZBNJ
+X-Message-ID-Hash: CHXKRO3TBCDT532IXSM5KECRJ7YEZBNJ
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -101,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/B4JNF7WNENNAMRAK7FCBLEMDMNUS3MGX/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CHXKRO3TBCDT532IXSM5KECRJ7YEZBNJ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,220 +114,143 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-With commit 86898fa6b8cd ("workqueue: Implement disable/enable for
-(delayed) work items"), work queues gained the ability to permanently
-disallow re-queuing of work items. This is particularly important during
-object teardown, where a work item must not be re-armed after shutdown
-begins.
+The tp_meter codebase was recently refactored:
 
-Convert all cancel_work_sync() and cancel_delayed_work_sync() call sites to
-their disable_* equivalents to clarify the intent to prevent re-arming
-after teardown.
+* throughput meter sender and receiver variables were split into
+  two different structures
+* the congestion control variables were extracted in a separate structure
+
+But the kernel-doc was not updated everywhere to reflect these changes.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c            | 2 +-
- net/batman-adv/bat_v.c                 | 2 ++
- net/batman-adv/bat_v_elp.c             | 6 +++---
- net/batman-adv/bat_v_ogm.c             | 6 ++++--
- net/batman-adv/bridge_loop_avoidance.c | 4 ++--
- net/batman-adv/distributed-arp-table.c | 2 +-
- net/batman-adv/multicast.c             | 2 +-
- net/batman-adv/originator.c            | 2 +-
- net/batman-adv/send.c                  | 2 +-
- net/batman-adv/tp_meter.c              | 2 +-
- net/batman-adv/translation-table.c     | 2 +-
- 11 files changed, 18 insertions(+), 14 deletions(-)
+ net/batman-adv/tp_meter.c | 16 ++++++++--------
+ net/batman-adv/types.h    | 14 ++++++++------
+ 2 files changed, 16 insertions(+), 14 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 6f5a468c4084c..7588e64e7ba6f 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -230,7 +230,7 @@ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- 
- 	mutex_unlock(&hard_iface->bat_iv.ogm_buff_mutex);
- 
--	cancel_delayed_work_sync(&hard_iface->bat_iv.reschedule_work);
-+	disable_delayed_work_sync(&hard_iface->bat_iv.reschedule_work);
- }
- 
- static void batadv_iv_ogm_iface_update_mac(struct batadv_hard_iface *hard_iface)
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index ac2932da5472d..cb081038d14f5 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -819,6 +819,8 @@ void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
- 	skb_queue_head_init(&hard_iface->bat_v.aggr_list);
- 	INIT_DELAYED_WORK(&hard_iface->bat_v.aggr_wq,
- 			  batadv_v_ogm_aggr_work);
-+	/* make sure it doesn't run until interface gets enabled */
-+	disable_delayed_work(&hard_iface->bat_v.aggr_wq);
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index a404d70e053e2..7e98cbfbbb70d 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -289,7 +289,7 @@ batadv_tp_list_find_sender(struct batadv_priv *bat_priv, const u8 *dst)
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @dst: the other endpoint MAC address to look for
+  *
+- * Return: if matching session with @dst was found
++ * Return: true if a matching session with @dst was found, false otherwise
+  */
+ static bool batadv_tp_list_active(struct batadv_priv *bat_priv, const u8 *dst)
+ 	__must_hold(&bat_priv->tp_list_lock)
+@@ -355,7 +355,7 @@ batadv_tp_list_find_sender_session(struct batadv_priv *bat_priv, const u8 *dst,
+ /**
+  * batadv_tp_vars_common_release() - release batadv_tp_vars_common from lists
+  *  and queue for free after rcu grace period
+- * @ref: kref pointer of the batadv_tp_vars
++ * @ref: kref pointer of the batadv_tp_vars_common
+  */
+ static void batadv_tp_vars_common_release(struct kref *ref)
+ {
+@@ -391,7 +391,7 @@ static void batadv_tp_sender_put(struct batadv_tp_sender *tp_vars)
  }
  
  /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index d53485d17220e..4841f0f1a9b13 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -115,7 +115,7 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
- 			goto default_throughput;
- 
- 		/* only use rtnl_trylock because the elp worker will be cancelled while
--		 * the rntl_lock is held. the cancel_delayed_work_sync() would otherwise
-+		 * the rntl_lock is held. the disable_delayed_work_sync() would otherwise
- 		 * wait forever when the elp work_item was started and it is then also
- 		 * trying to rtnl_lock
- 		 */
-@@ -162,7 +162,7 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
- 	}
- 
- 	/* only use rtnl_trylock because the elp worker will be cancelled while
--	 * the rntl_lock is held. the cancel_delayed_work_sync() would otherwise
-+	 * the rntl_lock is held. the disable_delayed_work_sync() would otherwise
- 	 * wait forever when the elp work_item was started and it is then also
- 	 * trying to rtnl_lock
- 	 */
-@@ -447,7 +447,7 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+- * batadv_tp_list_detach() - remove tp receiver session from mesh session list once
++ * batadv_tp_list_detach() - remove tp session from mesh session list once
+  * @tp_vars: the private data of the current TP meter session
+  *
+  * Return: whether tp_vars was detached from list and reference must be freed
+@@ -509,7 +509,7 @@ static void batadv_tp_sender_finish(struct work_struct *work)
+  * batadv_tp_reset_sender_timer() - reschedule the sender timer
+  * @tp_vars: the private TP meter data for this session
+  *
+- * Reschedule the timer using tp_vars->rto as delay
++ * Reschedule the timer using tp_vars->cc.rto as delay
   */
- void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
+ static void batadv_tp_reset_sender_timer(struct batadv_tp_sender *tp_vars)
  {
--	cancel_delayed_work_sync(&hard_iface->bat_v.elp_wq);
-+	disable_delayed_work_sync(&hard_iface->bat_v.elp_wq);
- 
- 	dev_kfree_skb(hard_iface->bat_v.elp_skb);
- 	hard_iface->bat_v.elp_skb = NULL;
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 5936d0048be01..72ae8ffc9db65 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -415,6 +415,8 @@ int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
- 
-+	enable_delayed_work(&hard_iface->bat_v.aggr_wq);
-+
- 	batadv_v_ogm_start_queue_timer(hard_iface);
- 	batadv_v_ogm_start_timer(bat_priv);
- 
-@@ -427,7 +429,7 @@ int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+@@ -621,9 +621,9 @@ static void batadv_tp_fill_prerandom(struct batadv_tp_sender *tp_vars,
+  *
+  * Create and send a single TP Meter message.
+  *
+- * Return: 0 on success, BATADV_TP_REASON_DST_UNREACHABLE if the destination is
+- * not reachable, BATADV_TP_REASON_MEMORY_ERROR if the packet couldn't be
+- * allocated
++ * Return: 0 on success, BATADV_TP_REASON_MEMORY_ERROR if the packet couldn't
++ * be allocated, BATADV_TP_REASON_CANT_SEND if the packet could not be
++ * transmitted
   */
- void batadv_v_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
- {
--	cancel_delayed_work_sync(&hard_iface->bat_v.aggr_wq);
-+	disable_delayed_work_sync(&hard_iface->bat_v.aggr_wq);
- 
- 	spin_lock_bh(&hard_iface->bat_v.aggr_list.lock);
- 	batadv_v_ogm_aggr_list_free(hard_iface);
-@@ -1080,7 +1082,7 @@ int batadv_v_ogm_init(struct batadv_priv *bat_priv)
+ static int batadv_tp_send_msg(struct batadv_tp_sender *tp_vars, const u8 *src,
+ 			      struct batadv_orig_node *orig_node,
+@@ -913,7 +913,7 @@ static int batadv_tp_wait_available(struct batadv_tp_sender *tp_vars, size_t ple
+  * batadv_tp_send() - main sending thread of a tp meter session
+  * @arg: address of the related tp_vars
+  *
+- * Return: nothing, this function never returns
++ * Return: 0
   */
- void batadv_v_ogm_free(struct batadv_priv *bat_priv)
+ static int batadv_tp_send(void *arg)
  {
--	cancel_delayed_work_sync(&bat_priv->bat_v.ogm_wq);
-+	disable_delayed_work_sync(&bat_priv->bat_v.ogm_wq);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 5eb0371def83a..a7fa0d9e09288 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1331,7 +1331,7 @@ struct batadv_tp_unacked {
+ 	/** @len: length of the packet */
+ 	u16 len;
  
- 	mutex_lock(&bat_priv->bat_v.ogm_buff_mutex);
+-	/** @list: list node for &batadv_tp_vars.unacked_list */
++	/** @list: list node for &batadv_tp_vars_common.unacked_list */
+ 	struct list_head list;
+ };
  
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 0461f11227d06..0bd24a19ff202 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1282,7 +1282,7 @@ static void batadv_bla_purge_backbone_gw(struct batadv_priv *bat_priv, int now)
+@@ -1367,7 +1367,9 @@ struct batadv_tp_vars_common {
+ 	struct rcu_head rcu;
+ };
  
- 			if (purged) {
- 				/* reference for pending report_work */
--				if (cancel_work_sync(&backbone_gw->report_work))
-+				if (disable_work_sync(&backbone_gw->report_work))
- 					batadv_backbone_gw_put(backbone_gw);
- 
- 				/* reference for hash_entry */
-@@ -1850,7 +1850,7 @@ void batadv_bla_free(struct batadv_priv *bat_priv)
- {
- 	struct batadv_hard_iface *primary_if;
- 
--	cancel_delayed_work_sync(&bat_priv->bla.work);
-+	disable_delayed_work_sync(&bat_priv->bla.work);
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 
- 	if (bat_priv->bla.claim_hash) {
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 0b02018c5b850..aaea155b94038 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -838,7 +838,7 @@ void batadv_dat_free(struct batadv_priv *bat_priv)
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_DAT, 1);
- 
--	cancel_delayed_work_sync(&bat_priv->dat.work);
-+	disable_delayed_work_sync(&bat_priv->dat.work);
- 
- 	batadv_dat_hash_free(bat_priv);
- }
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 3274e2ac4f4a7..1c5315e55c046 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -2161,7 +2161,7 @@ int batadv_mcast_flags_dump(struct sk_buff *msg, struct netlink_callback *cb)
+-/** struct batadv_tp_sender_cc - congestion control variables */
++/**
++ * struct batadv_tp_sender_cc - congestion control variables
++ */
+ struct batadv_tp_sender_cc {
+ 	/** @fast_recovery: true if in Fast Recovery mode */
+ 	bool fast_recovery:1;
+@@ -1410,7 +1412,7 @@ struct batadv_tp_sender_cc {
+  * struct batadv_tp_sender - sender tp meter private variables per session
   */
- void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
--	cancel_delayed_work_sync(&bat_priv->mcast.work);
-+	disable_delayed_work_sync(&bat_priv->mcast.work);
+ struct batadv_tp_sender {
+-	/** @common: common batadv_tp_vars (best be first member) */
++	/** @common: common batadv_tp_vars_common (must be first member) */
+ 	struct batadv_tp_vars_common common;
  
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST_TRACKER, 1);
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 15d660ca79376..b161232c10885 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -908,7 +908,7 @@ void batadv_originator_free(struct batadv_priv *bat_priv)
- 	if (!hash)
- 		return;
+ 	/** @start_time: start time in jiffies */
+@@ -1437,7 +1439,7 @@ struct batadv_tp_sender {
+ 	/** @cc: congestion control variables */
+ 	struct batadv_tp_sender_cc cc;
  
--	cancel_delayed_work_sync(&bat_priv->orig_work);
-+	disable_delayed_work_sync(&bat_priv->orig_work);
+-	/** @cc_lock: lock do protect @cc */
++	/** @cc_lock: lock to protect @cc */
+ 	spinlock_t cc_lock;
  
- 	bat_priv->orig_hash = NULL;
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 5f9da3606a8f5..7f449338a4909 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -629,7 +629,7 @@ static void batadv_forw_packet_list_free(struct hlist_head *head)
- 
- 	hlist_for_each_entry_safe(forw_packet, safe_tmp_node, head,
- 				  cleanup_list) {
--		cancel_delayed_work_sync(&forw_packet->delayed_work);
-+		disable_delayed_work_sync(&forw_packet->delayed_work);
- 
- 		hlist_del(&forw_packet->cleanup_list);
- 		batadv_forw_packet_free(forw_packet, true);
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index cc72468ca2abe..a404d70e053e2 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -421,7 +421,7 @@ static bool batadv_tp_list_detach(struct batadv_tp_vars_common *tp_vars)
+ 	/** @tot_sent: amount of data sent/ACKed so far */
+@@ -1460,7 +1462,7 @@ struct batadv_tp_sender {
+  * struct batadv_tp_receiver - receiver tp meter private variables per session
   */
- static void batadv_tp_sender_cleanup(struct batadv_tp_sender *tp_vars)
- {
--	cancel_delayed_work_sync(&tp_vars->finish_work);
-+	disable_delayed_work_sync(&tp_vars->finish_work);
+ struct batadv_tp_receiver {
+-	/** @common: common batadv_tp_vars (best be first member) */
++	/** @common: common batadv_tp_vars_common (must be first member) */
+ 	struct batadv_tp_vars_common common;
  
- 	if (batadv_tp_list_detach(&tp_vars->common))
- 		batadv_tp_sender_put(tp_vars);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index c346e43d47b9b..8b6c49c32c892 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3574,7 +3574,7 @@ void batadv_tt_free(struct batadv_priv *bat_priv)
- 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_TT, 1);
- 	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_TT, 1);
+ 	/** @receiving: receiving binary semaphore: 1 if receiving, 0 is not */
+@@ -1662,7 +1664,7 @@ struct batadv_priv {
+ 	/** @forw_bcast_list_lock: lock protecting forw_bcast_list */
+ 	spinlock_t forw_bcast_list_lock;
  
--	cancel_delayed_work_sync(&bat_priv->tt.work);
-+	disable_delayed_work_sync(&bat_priv->tt.work);
+-	/** @tp_list_lock: spinlock protecting @tp_list */
++	/** @tp_list_lock: spinlock protecting @tp_sender_list + @tp_receiver_list */
+ 	spinlock_t tp_list_lock;
  
- 	batadv_tt_local_table_free(bat_priv);
- 	batadv_tt_global_table_free(bat_priv);
+ 	/** @tp_num: number of currently active tp sessions */
 -- 
 2.47.3
 
