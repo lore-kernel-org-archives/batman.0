@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69429CD8C88
-	for <batman-adv@archiver.kernel.org>; Sun,  7 Jun 2026 11:57:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88856CD8C8C
+	for <batman-adv@archiver.kernel.org>; Sun,  7 Jun 2026 11:58:39 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DB86780D6D
-	for <batman-adv@archiver.kernel.org>; Sun, 07 Jun 2026 13:57:53 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2C227808AE
+	for <batman-adv@archiver.kernel.org>; Sun, 07 Jun 2026 13:58:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780833473;
- b=o6g4UfmrcKFC2et1zoD+XweeARLOZodECfBAvP51QCe+oCY5+JjJiEGmnI6uah/Ki0Rs6
- GyNDoo23YG1NZJseSy7BqSWmf1fNjcLAaNdN82Lg42p3g92o1hsRJ/0DMbRc4tUilGSZCg/
- CsNTjWjgiOybx62RzLQ5/5eUPgvLQ5A=
+ t=1780833518;
+ b=bNoQ3gtVNgwo3cgseT+GkWvNmvt4ShAJCOovwqnQLGpDTs4925QsczStW91/r+mWzaPpo
+ UUPAyIGKv4BoV5Gtuaymh+c0i593JQU7SOnoyoW4HOnSZ7+LTRfJCAw/z/5Wq4AQtL4WGbE
+ WkOYkaAI8YehAoXVT2yL2wQI/SqxZag=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780833473; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780833518; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=qv3rIXY38o7WMYACcnAztWVGjhGvLKWgHlqLpTD0ghQ=;
- b=fQguovFjAGViqboWibwG4g5CYbrwy7t2Jge4XQzJHM4CwxPupY14xhRwfSevkwgvUetCF
- amIaBzOqc78lgcGh6LVyk7SgSCnXdz8T8EPQYKyAwiQpqUyxpDSRstpZc0MKfVVtpoIN7V0
- BIoAIVhGS9I+iA/EGeINWKaytp0zGa8=
+ list-archive; bh=Fk19Py/rv2T5DWrlh1lXQ3FKfVoClL8SaSYNWkFdpEo=;
+ b=aK91uybl4iFpGhRry2xSjpPrzO1KGhJD/Kb9vx+41CWPXKUyPRqfuNBg+RsaaZMbzP2au
+ 1hvb+fO1iXeCJVh6Y42H8olbtiQhaDQZ45XmMSbjTleCw/J/+P+GJ3y7iobHZ7bB2pGCXpK
+ o9KrYBz9KyDVJpmRdxAtQrq1jZZRrEY=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,15 +34,15 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 222D5842F8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 07 Jun 2026 13:54:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 13C85842D4
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 07 Jun 2026 13:54:33 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780833283;
-	b=zID9j0lpqQ+Qbx8OE90ggglu/urcMrJSzeZjSadkuwWfJ7qkkiF0YQUH4BjNhUiVRmgJnu
-	27fHf8rKAylX80PWuOe/VTGHAXKcqT8lxkT+Vpgrbopz1aiId9IsBQIyZCG6i0+HdmaJaM
-	no7hjEHm5h0h+cWJKywtQyV6giRmA40=
+	b=28RrhiXTcX40k434ghi9WLlUHmQB1JcshaefMhfLn/TMqhemCQb+2dPNpu9/cWYnYBiacB
+	D1C2htr8KMbMVnoCXvzjyEO0le1gCGWJMH1sqmmJ4U7YPe3TKwDtx89SURDoUaVwLDquoo
+	j5Nc62bNdzfwjm1xoFYaJl/Z7RpHPQo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=L1G+66gP;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=J59GDobK;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
@@ -50,47 +50,51 @@ ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1780833283;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=qv3rIXY38o7WMYACcnAztWVGjhGvLKWgHlqLpTD0ghQ=;
-	b=opUYAwDZe+nmhWPVch+fd046YLVBkYyFTD0WdY6euxG3VJj38IT7vkcPK5aEnr0ccyhjK9
-	wFiOICpxmF3LZnC2Iy1l+Hcpwt0AazJ4b/BRKGMPndJUH6coOsLZgu2FtgohXJqucEhagd
-	9FQcZ6+aWxBZPTtklNhPZIs7pBtZSik=
-Received: by dvalin.narfation.org (Postfix) id CA8DC200D3;
-	Sun, 07 Jun 2026 11:54:42 +0000 (UTC)
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=Fk19Py/rv2T5DWrlh1lXQ3FKfVoClL8SaSYNWkFdpEo=;
+	b=ZZYXDHE2QYmNsfkgvyNVNQffMce6nsDt+4bgvegW2PAi2TqIxnrJTSPaBHqi1CXmkQH8vt
+	7ig7sSJeutFUS6pYEiZTOS2eF0Z6QRVgjyA8GnUT/jM4MlFxLGOTye79P0tFc7maPXiQrI
+	zdmzByP13Snvj22EljBQo48uDgtlpKg=
+Received: by dvalin.narfation.org (Postfix) id 103051FDF9;
+	Sun, 07 Jun 2026 11:54:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780833282;
+	s=20121; t=1780833271;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qv3rIXY38o7WMYACcnAztWVGjhGvLKWgHlqLpTD0ghQ=;
-	b=L1G+66gPUaxYrcp/b2a0MiFW/QTc3QddaZ290DWIL7y3ryrrtFqaxRg4ZmmgvjWuDwOyFV
-	eJ/2X1XkmzaKPc3zqZdi5/Mj1c9lcXQkqNSijSkwHi4OjU+MROivpYTQPe+xWO4hRE016Z
-	21WBBVusStbygn9BMKoVf+w4LWj278c=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Fk19Py/rv2T5DWrlh1lXQ3FKfVoClL8SaSYNWkFdpEo=;
+	b=J59GDobKcnLTnlNCfy4KI+DX6QzfLnu1RmZ3xS1QdUmQAEmgrZGtOvvoUCdnQOfQ+aEb9G
+	0CAc/OOWO+MuMJv7KrBdYFM92hzyY1K4YqfCxWfWVjXiUMkmOOkgCOMnH3k3BP6jWD15Nv
+	4cZIncOUf/Rue31I/TjWlKMICD+q4ew=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 07 Jun 2026 13:53:59 +0200
-Subject: [PATCH RFC batadv v4 5/7] batman-adv: drop NULL check for
- immutable hardif->mesh_iface
+Subject: [PATCH RFC batadv v4 0/7] batman-adv: drop global hard interface
+ list
+Date: Sun, 07 Jun 2026 13:53:54 +0200
+Message-Id: <20260607-drop-hardif-list-v4-0-ade2931db295@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260607-drop-hardif-list-v4-5-ade2931db295@narfation.org>
-References: <20260607-drop-hardif-list-v4-0-ade2931db295@narfation.org>
-In-Reply-To: <20260607-drop-hardif-list-v4-0-ade2931db295@narfation.org>
+X-B4-Tracking: v=1; b=H4sIANJbJWoC/22QwU7DMBBEf6XyGUeOHccOp0pIfABXxGFj7zaua
+ FLZbgSq8u845oKA4+xq38zsnSWMARN7PNxZxDWksMxFdA8H5iaYT8iDL5pJIXuhVct9XK58gug
+ D8feQMh8d2VZ66AfvWTm7RqTwUZGv7OX5aZ+NkMGv7O17nW7jGV3esfuS4nLheYoI1UmMste6A
+ 0LQUigrBQFS62nsBgtktFIwjNo3relMb40WXXMKubkkNwUijMfbHFaMCTmBy0v8bGbMu9FU4hZ
+ Zu66y5qu1eqH+1lolF1yTGaxsHSiljjNEglz+0yzxVLus6iek+weiCgSFJ7DO+F7I35Bt274An
+ he/kYMBAAA=
+X-Change-ID: 20260531-drop-hardif-list-bcf812da69dd
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>,
+ Nora Schiffer <neocturne@universe-factory.net>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4228; i=sven@narfation.org;
- h=from:subject:message-id; bh=haQfKr7dULE9A6T2t59HUy5qw5reIUDJPDUP4WGgIEc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmq0bdy3STXb7gvtbtGXLH48f0bio0ZNx+KCqbOX2A+3
- Ya7VMWlo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjARlieMDFc4TJXvfLlt6mxm
- r3OgdcGWRw3dWlyx+4XSJSTFfR2FljIyXLolmrDdbaOGlfmprlShhdcY3+Vt5DxldzLFS0J48XI
- JDgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4148; i=sven@narfation.org;
+ h=from:subject:message-id; bh=HPv1hUNuWeA/HsT3oSmD9BC81w8/E5BFHc7p9QU7xMM=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmq0TfrJh5p7SwwO7V/w+EXJ8qN9/TMLdeKd36T9OZsU
+ h/TsTP7O0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQAT6X7NyPB3RYt91fWavh32
+ kwPDFH+VSLzb2mNSbbnn16ofVz9VemkxMlyYMUVw5u1mB1GfJIvd4bXlosznC9Ksus4ekLHgamv
+ N5gYA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: MWU2X2CQXXM4IU7DM2W2XRFRFL4T3YIG
-X-Message-ID-Hash: MWU2X2CQXXM4IU7DM2W2XRFRFL4T3YIG
+Message-ID-Hash: NZVO5MSUFLFY2DUPSYBC6PTDOIKDUSUV
+X-Message-ID-Hash: NZVO5MSUFLFY2DUPSYBC6PTDOIKDUSUV
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +108,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MWU2X2CQXXM4IU7DM2W2XRFRFL4T3YIG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NZVO5MSUFLFY2DUPSYBC6PTDOIKDUSUV/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,121 +117,96 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The batadv_hard_iface->mesh_iface became immutable after the global
-batadv_hardif_list was removed and batadv_hard_iface only exists when it is
-assigned to an mesh_iface. This member can never become NULL and thus a
-check is now unnecessary.
+The global hard interface list was used in the past to provide and sysfs
+(debugfs, procfs) based configuration interface. This requirement is gone
+after it was switched to generic netlink and NETLINK_ROUTE. And after the
+wifi-flags cache was introduced, it is also no longer used to get
+non-batman-adv attached interface information (for ap_isolation and
+re-broadcast configuration).
+
+But this odd net_devices list (batadv_hardif_list) stayed and caused some
+headaches:
+
+* memory requirement increased (useless) for each network interface of the
+  system
+* massive increase of various ethernet operations due to the O(n) nature of
+  this global list
+* the code had to handle switch of a batadv_hard_iface from one mesh_iface
+  to either NULL or a different mesh_iface
+
+Just get rid of it now and start to simplify the code around it.
+
+This RFC is on purpose not Signed-off-by because I just want to restart the
+discussion but didn't discuss this with the original author (nor documented
+the changes in each patch in detail). And it is also not meant to look like
+I've reviewed the changes and Ack it - this is unfortunately something
+which I have to do again with this rebased version.
+
+I will later post an range-diff which contains all the changes.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v_elp.c             | 6 ------
- net/batman-adv/bridge_loop_avoidance.c | 9 ++-------
- net/batman-adv/hard-interface.c        | 8 ++------
- net/batman-adv/main.c                  | 3 ---
- 4 files changed, 4 insertions(+), 22 deletions(-)
+Changes in v4:
+- rebase
+- don't double-netdev_put in batadv_hardif_enable_interface() error path
+  (just let batadv_hardif_put()/batadv_hardif_release() deal with it)
+- add patches which cleanup the code after batadv_hard_iface->mesh_iface
+  became immutable
+- Link to v3: https://patch.msgid.link/20260604-drop-hardif-list-v3-0-e0dfa8c7d602@narfation.org
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index bc3e4f26..262e4004 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -90,12 +90,6 @@ static bool batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh,
- 	u32 throughput;
- 	int ret;
- 
--	/* don't query throughput when no longer associated with any
--	 * batman-adv interface
--	 */
--	if (!mesh_iface)
--		return false;
--
- 	/* if the user specified a customised value for this interface, then
- 	 * return it directly
- 	 */
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 5c73f6ba..f9a1fadf 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -344,7 +344,6 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, const u8 *mac,
- 	struct sk_buff *skb;
- 	struct ethhdr *ethhdr;
- 	struct batadv_hard_iface *primary_if;
--	struct net_device *mesh_iface;
- 	u8 *hw_src;
- 	struct batadv_bla_claim_dst local_claim_dest;
- 	__be32 zeroip = 0;
-@@ -357,14 +356,10 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, const u8 *mac,
- 	       sizeof(local_claim_dest));
- 	local_claim_dest.type = claimtype;
- 
--	mesh_iface = READ_ONCE(primary_if->mesh_iface);
--	if (!mesh_iface)
--		goto out;
--
- 	skb = arp_create(ARPOP_REPLY, ETH_P_ARP,
- 			 /* IP DST: 0.0.0.0 */
- 			 zeroip,
--			 mesh_iface,
-+			 primary_if->mesh_iface,
- 			 /* IP SRC: 0.0.0.0 */
- 			 zeroip,
- 			 /* Ethernet DST: Broadcast */
-@@ -442,7 +437,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, const u8 *mac,
- 	}
- 
- 	skb_reset_mac_header(skb);
--	skb->protocol = eth_type_trans(skb, mesh_iface);
-+	skb->protocol = eth_type_trans(skb, primary_if->mesh_iface);
- 	batadv_inc_counter(bat_priv, BATADV_CNT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 92ae497e..11013408 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -246,7 +246,7 @@ struct net_device *__batadv_get_real_netdev(struct net_device *netdev)
- 	}
- 
- 	hard_iface = batadv_hardif_get_by_netdev(netdev);
--	if (!hard_iface || !hard_iface->mesh_iface)
-+	if (!hard_iface)
- 		goto out;
- 
- 	net = dev_net(hard_iface->mesh_iface);
-@@ -540,9 +540,6 @@ static void batadv_check_known_mac_addr(const struct batadv_hard_iface *hard_ifa
- 	const struct batadv_hard_iface *tmp_hard_iface;
- 	struct list_head *iter;
- 
--	if (!mesh_iface)
--		return;
--
- 	netdev_for_each_lower_private(mesh_iface, tmp_hard_iface, iter) {
- 		if (tmp_hard_iface == hard_iface)
- 			continue;
-@@ -1081,8 +1078,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
- 		batadv_hardif_disable_interface(hard_iface);
- 		break;
- 	case NETDEV_CHANGEMTU:
--		if (hard_iface->mesh_iface)
--			batadv_update_min_mtu(hard_iface->mesh_iface);
-+		batadv_update_min_mtu(hard_iface->mesh_iface);
- 		break;
- 	case NETDEV_CHANGEADDR:
- 		batadv_check_known_mac_addr(hard_iface);
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index badc1df0..04bb030e 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -444,9 +444,6 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (unlikely(skb->mac_len != ETH_HLEN || !skb_mac_header(skb)))
- 		goto err_free;
- 
--	if (!hard_iface->mesh_iface)
--		goto err_free;
--
- 	bat_priv = netdev_priv(hard_iface->mesh_iface);
- 
- 	if (READ_ONCE(bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+Changes in v3:
+- fix return kernel-doc for batadv_hardif_enable_interface
+- drop merged first patch
+- really switch to RFC
+- in merged batadv_hardif_enable_interface (as intermediate step), only add
+  the hard_iface to the batadv_hardif_list when hard_iface is really
+  initialized
+  + this list is dropped anyway with the patch "remove global hardif list"
+- stop setting "mesh_iface" to NULL on error. it is now only important that
+  the hard_iface gets unlinked from the mesh_iface
+- first drop the batadv_hardif_list before removing the "safety" state
+  BATADV_IF_NOT_IN_USE
+- Link to v2: https://patch.msgid.link/20260603-drop-hardif-list-v2-0-5f79821ca333@narfation.org
 
--- 
-2.47.3
+Changes in v2:
+- rebased
+- submit as RFC to get the discussion started again
+- drop already merged "batman-adv: store hard_iface as iflink private data"
+- switch from kzalloc to kzalloc_obj
+- update author's mail and name
+- fix reference counting for batman_adv_ptype
+- Link to v1: https://patch.msgid.link/0b26554afea5203820faef1dfb498af7533a9b5d.1747687504.git.mschiffer@universe-factory.net
+
+---
+Nora Schiffer (4):
+      batman-adv: only create hardif while a netdev is part of a mesh
+      batman-adv: remove global hardif list
+      batman-adv: remove BATADV_IF_NOT_IN_USE hardif state
+      batman-adv: move hardif generation counter into batadv_priv
+
+Sven Eckelmann (3):
+      batman-adv: drop NULL check for immutable hardif->mesh_iface
+      Revert "batman-adv: v: stop OGMv2 on disabled interface"
+      batman-adv: iv: drop migration check for batadv_hard_iface
+
+ net/batman-adv/bat_iv_ogm.c            |   8 +-
+ net/batman-adv/bat_v_elp.c             |   9 +-
+ net/batman-adv/bat_v_ogm.c             |  33 +++----
+ net/batman-adv/bridge_loop_avoidance.c |   9 +-
+ net/batman-adv/hard-interface.c        | 155 +++++++++++----------------------
+ net/batman-adv/hard-interface.h        |  10 +--
+ net/batman-adv/main.c                  |   9 --
+ net/batman-adv/main.h                  |   3 -
+ net/batman-adv/mesh-interface.c        |  13 +--
+ net/batman-adv/netlink.c               |   4 +-
+ net/batman-adv/originator.c            |   4 -
+ net/batman-adv/types.h                 |   6 +-
+ 12 files changed, 75 insertions(+), 188 deletions(-)
+---
+base-commit: 385b248dd4e46c4ce022adeb1b13e547d1954901
+change-id: 20260531-drop-hardif-list-bcf812da69dd
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
