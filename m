@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A0F8CD6E79
-	for <batman-adv@archiver.kernel.org>; Mon,  8 Jun 2026 18:23:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 708E1CD8CA4
+	for <batman-adv@archiver.kernel.org>; Mon,  8 Jun 2026 19:01:00 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A217383F28
-	for <batman-adv@archiver.kernel.org>; Mon, 08 Jun 2026 20:23:03 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id D079C83F86
+	for <batman-adv@archiver.kernel.org>; Mon, 08 Jun 2026 21:00:58 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1780942983;
- b=mlzBxalojCmEG6Qbq2ZmGLslCejssWHbrtApX7G5kCJ2kuuAaLd2ZQA0ECSnNLsoiN+2E
- QmlEyGJeAfgMFn1u8Oy5sj9MKVesRxR76Vhn85TXhwjvFuASdpEU7QgdP97dAUhSNCT2tVS
- yjvy+4xxGPecQD+l4wNOHFHb1v4X3kE=
+ t=1780945258;
+ b=I+X/QBEvF6fCo0kWnxszct2XfQUKTpc35/YNn/AKgD6EFvTyliVipwMfjbv6uPfFbq8Xk
+ P7GAn/eBtlTxTuj9UVMaNr7w0PsE/ygpxBgosn3IgeR6PucMlZjKjzINyESP+rlfScADIhT
+ SS8Qs++WadgkEmVv1J9G37Og4ptPzF4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1780942983; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1780945258; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=NPtu36b5tIki7NGaKbAd3aUpljvp7CzumLQdE3jBCvk=;
- b=VQtJ3zD4DeZC4KPzJsnx1lvLnZUqUe2RWGaAi80PR5JuDtFxDfVqs50mW5nK+dN8uhwtY
- 1iOuTwga1ysrL8jq4a8a71wfzdj7LJ3hr++CEK1Xuiq8w88j1PUChdQcpOlO0GZ+C2ZcCJv
- Rz3JDMalm4QBHpfRdPdZ7F5fjVtFCt4=
+ list-archive; bh=CsboIp49WG3MEO78r/OaBKfetcHlnwcWowzadBSLNhA=;
+ b=dZNPGAU3oUrIgzj3b4+dPvBWxLLviabEjZgyR4ItfYwm2JwGZw0urNnbJhUq2ttVXrHfD
+ CIQO25qEC3iLR6bAXzGXvW0aCmit2n4MJrkQt5BP2x9s7p7SfliOo44sG2ZvQXJFZAZQh4v
+ S2m9OBDSCdCdYbwFemg2NJeH/k5Ib6A=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,63 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D6A7783E82
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 08 Jun 2026 20:22:53 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780942973;
-	b=bRBV4v+k+0ryuPVy7rWCkRypgO1/NkYjozs9a35n7vq3K4mpvZey/bFLxzwUi9asfoJyUa
-	HTxE1MRRV4Ek+SV7+eNfXk55HHCC96B3uErSxsRo+/mMiA3AixKt6y9v7cEie2VJj8pulH
-	ItIcGMg2+uj6B+6EWLM8BSkoiEMkrRs=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id A28B3804D3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 08 Jun 2026 21:00:38 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1780945248;
+	b=qmMlfxHYPU4oaJVDh9rzPtO2vn8pItGB38J9wG7RWNHOv7cCBTQQJ6ID+Zu+UMcthvVQ3H
+	CbvnZpdfpF/9VISOQOCApdcNhrlhV+OhYzOm9V6KfO5Fs6jORC5bZhW000eUqpA8ZCntbJ
+	XxXz/vnZQa5+rkZYpjyz6SJY7hoSuAs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=GuxSjT+7;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=fB9GCn2m;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1780942973;
+	s=20121; t=1780945248;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=NPtu36b5tIki7NGaKbAd3aUpljvp7CzumLQdE3jBCvk=;
-	b=Sqre3mXif5Ng8NDwFP1IpXEiWqb524IlkaRPWgLyZiMK+vHyQbDsTJjcmyZNWGtOc7PjXN
-	zSchZP2OanZmkyTBqG2+qdGWPkzIpn1ZhwXzbYNm/P1dXf9US5ag3O+6cIHhKTjbdJJMUV
-	2XOvfk1VNjDyONQ/lA/JR2w/cxg2eAM=
-Received: by dvalin.narfation.org (Postfix) id 682061FEF0;
-	Mon, 08 Jun 2026 18:22:51 +0000 (UTC)
+	bh=CsboIp49WG3MEO78r/OaBKfetcHlnwcWowzadBSLNhA=;
+	b=jemw4TGtxllSyD7emlckh4XhytW3jY8M3d8V184F0PbfXa+rKKtvFjgxKNTC5SFGePQKim
+	O98cyZZU6Y/RxIuRZ05+H3ksVa+l6Wt2w4JAeMYjA4KOJRqLpQQr/l7HSVH2kmngV+YFVn
+	OK3OL53ZzQxV4vaDULq5WCqfdqeCxBs=
+Received: by dvalin.narfation.org (Postfix) id B46511FF8D;
+	Mon, 08 Jun 2026 19:00:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1780942971;
+	s=20121; t=1780945237;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=NPtu36b5tIki7NGaKbAd3aUpljvp7CzumLQdE3jBCvk=;
-	b=GuxSjT+787pMqVRZ6YZAzTnumGaCUuIikeFFYyNGX2uVC6fjIzbxvg2/LKj5BvYjx7z8nh
-	SW5IJaNXtC4plPZidF0TvnxM3tLJKmJdWm9nOEF+oowYp2JXYWK5xT5xvMDrsIMOZsj8aY
-	azkF36GFD5JCvI0xmwzF+g7XlAxI1dM=
+	bh=CsboIp49WG3MEO78r/OaBKfetcHlnwcWowzadBSLNhA=;
+	b=fB9GCn2mLrljNTDcvtMX/eTET2XF2DVhdQIFm+nRxuL9sbhlWXyPdDft79HNWKnDfUdeTb
+	bPTNTMU9xK4n06fKNAk+pgW/Z2HrR5a0QdJW4DVXKzn01uArN9oan1EjJFW7WhGSuNQfU1
+	d9WGVIOAZoy4Jr6HO/4sf8pSdCCGHbM=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 08 Jun 2026 20:22:44 +0200
-Subject: [PATCH] batctl: use reverse xmas tree declaration order
+Date: Mon, 08 Jun 2026 21:00:30 +0200
+Subject: [PATCH] alfred: use reverse xmas tree declaration order
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260608-reverse-xmas-v1-1-8860cdae43ac@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAHMIJ2oC/yXMywqAIBCF4VeJWSeYlFSvEi3MppqgC06FIL17V
- ssPzvkDMDpChjoJ4PAipm2NyNIE7GTWEQX10aCk0lLLUsQROkbhF8PCKlOZzBa57DXEy+5wIP/
- lmvY3n92M9ngbcN8P4jR0uHAAAAA=
-X-Change-ID: 20260608-reverse-xmas-c2a9a1c540d6
+Message-Id: <20260608-reverse-xmas-v1-1-4598617e49f9@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAE4RJ2oC/yXMywqAIBCF4VeJWSeYhUWvEi3UppqgC05FIL17V
+ ssPzvkDMHpChjoJ4PEkpnWJyNIE3GiWAQV10aCk0lLLSsQRekZxzYZFkbm+tMpIlVcQL5vHnq4
+ v17S/+bATuv1twH0/1W1ngHAAAAA=
+X-Change-ID: 20260608-reverse-xmas-41cf7b2a0238
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=25592; i=sven@narfation.org;
- h=from:subject:message-id; bh=rs9Wr341hWDob/aDRTytsJ8eFBcb+STovdFBnXzN4Hk=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnqHCU/IxarTLW8fdDC8ZD01T1Zy1fI/3lvHt4uqq7ic
- f2umYJARykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAif1kZGR5ovn42s/I76/2/
- a0uO7u5Kn3Tv+qK2M06aPccrgtI+r+Vn+CvON2vWDzUlZ8mnH6W9Vm/e5H47mKNOwoj/1a1ldod
- lspgA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=33664; i=sven@narfation.org;
+ h=from:subject:message-id; bh=NwJWVmuvbvWZ5q5ZbTsXRDWSc1Ux5ahlLm6vf+ztNXI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnqgoGxvbptzT7pmx49C32kHmCSVHKNv0DIMuGFzq2fS
+ gc1uT50lLIwiHExyIopsuy5kn9+M/tb+c/TPh6FmcPKBDKEgYtTACZy7REjw42/hx3C5u39uo1B
+ 8taHa+/0viyw/fR9e/9N11g3lTCprLmMDMdrCtbfLnLzF9Ev37lb4MfuSze/SJ3iiKps7citlXH
+ /zQ8A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: MGCC2N7ZFQ25LLIX7MIVXJC3SQUBICCF
-X-Message-ID-Hash: MGCC2N7ZFQ25LLIX7MIVXJC3SQUBICCF
+Message-ID-Hash: EATUG3RXDK3TZCRAVSFKYYBWM4UIEMWQ
+X-Message-ID-Hash: EATUG3RXDK3TZCRAVSFKYYBWM4UIEMWQ
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MGCC2N7ZFQ25LLIX7MIVXJC3SQUBICCF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EATUG3RXDK3TZCRAVSFKYYBWM4UIEMWQ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -119,423 +118,403 @@ userspace and kernelspace code, also use the same for userspace.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- aggregation.c           |  6 ++++--
- ap_isolation.c          |  6 ++++--
- bisect_iv.c             |  6 ++++--
- bonding.c               |  6 ++++--
- bridge_loop_avoidance.c |  6 ++++--
- dat_cache.c             |  4 +++-
- distributed_arp_table.c |  6 ++++--
- elp_interval.c          |  6 ++++--
- fragmentation.c         |  6 ++++--
- functions.c             | 12 ++++++------
- gateways.c              |  2 +-
- genl.c                  |  2 +-
- gw_mode.c               |  8 ++++----
- hop_penalty.c           | 12 ++++++++----
- icmp_helper.c           |  5 +++--
- interface.c             |  2 +-
- isolation_mark.c        |  9 ++++++---
- list.h                  |  4 ++--
- main.c                  | 10 +++++-----
- multicast_fanout.c      |  9 ++++++---
- multicast_forceflood.c  |  6 ++++--
- multicast_mode.c        |  6 ++++--
- neighbors.c             |  3 ++-
- orig_interval.c         |  6 ++++--
- sys.c                   | 14 ++++++++------
- tcpdump.c               |  8 ++++----
- throughput_override.c   |  9 ++++++---
- throughputmeter.c       |  4 ++--
- transglobal.c           |  6 +++++-
- 29 files changed, 117 insertions(+), 72 deletions(-)
+ batadv_query.c     | 10 ++++++----
+ batadv_querynl.c   |  6 +++---
+ bitops.h           | 12 ++++++------
+ client.c           | 41 ++++++++++++++++++++++++++++-------------
+ gpsd/alfred-gpsd.c | 38 ++++++++++++++++++++++----------------
+ hash.c             | 12 +++++++-----
+ list.h             |  4 ++--
+ main.c             | 15 +++++++++------
+ netsock.c          | 31 +++++++++++++++++++------------
+ recv.c             | 33 +++++++++++++++++++--------------
+ send.c             | 20 ++++++++++----------
+ server.c           | 27 +++++++++++++++------------
+ unix_sock.c        | 43 +++++++++++++++++++++++++++----------------
+ util.c             |  9 +++++----
+ vis/vis.c          | 45 ++++++++++++++++++++++++++-------------------
+ 15 files changed, 204 insertions(+), 142 deletions(-)
 
-diff --git a/aggregation.c b/aggregation.c
-index 245b0d3..b80c3de 100644
---- a/aggregation.c
-+++ b/aggregation.c
-@@ -32,10 +32,12 @@ static int get_aggregated_ogms(struct state *state)
+diff --git a/batadv_query.c b/batadv_query.c
+index d1853b7..d59db34 100644
+--- a/batadv_query.c
++++ b/batadv_query.c
+@@ -28,9 +28,9 @@ static int enable_net_admin_capability(int enable)
+ 	int ret = 0;
  
- static int set_attrs_aggregated_ogms(struct nl_msg *msg, void *arg)
+ #ifdef CONFIG_ALFRED_CAPABILITIES
+-	cap_t cap_cur;
+-	cap_flag_value_t cap_flag;
+ 	cap_value_t cap_net_admin = CAP_NET_ADMIN;
++	cap_flag_value_t cap_flag;
++	cap_t cap_cur;
+ 
+ 	if (enable)
+ 		cap_flag = CAP_SET;
+@@ -143,7 +143,8 @@ int batadv_interface_check(const char *mesh_iface)
+ 
+ static int tg_compare(void *d1, void *d2)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
+-	struct tg_entry *s1 = d1, *s2 = d2;
++	struct tg_entry *s1 = d1;
++	struct tg_entry *s2 = d2;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_AGGREGATED_OGMS_ENABLED, data->val);
+ 	if (memcmp(&s1->mac, &s2->mac, sizeof(s1->mac)) == 0)
+ 		return 1;
+@@ -227,7 +228,8 @@ struct ether_addr *translate_mac(struct hashtable_t *tg_hash,
  
- 	return 0;
-diff --git a/ap_isolation.c b/ap_isolation.c
-index a9a5d24..470d29d 100644
---- a/ap_isolation.c
-+++ b/ap_isolation.c
-@@ -47,10 +47,12 @@ static int get_ap_isolation(struct state *state)
- 
- static int set_attrs_ap_isolation(struct nl_msg *msg, void *arg)
+ static int orig_compare(void *d1, void *d2)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
+-	struct orig_entry *s1 = d1, *s2 = d2;
++	struct orig_entry *s1 = d1;
++	struct orig_entry *s2 = d2;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION_ENABLED, data->val);
- 
- 	if (state->selector == SP_VLAN)
-diff --git a/bisect_iv.c b/bisect_iv.c
-index 6c7de24..d4d507a 100644
---- a/bisect_iv.c
-+++ b/bisect_iv.c
-@@ -1147,7 +1147,8 @@ static int seqno_trace_fix_leaf(struct seqno_trace_neigh *seqno_trace_mom,
+ 	if (memcmp(&s1->mac, &s2->mac, sizeof(s1->mac)) == 0)
+ 		return 1;
+diff --git a/batadv_querynl.c b/batadv_querynl.c
+index abb500b..199fe9d 100644
+--- a/batadv_querynl.c
++++ b/batadv_querynl.c
+@@ -39,12 +39,12 @@ struct translate_mac_netlink_opts {
+ static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
  {
- 	struct seqno_trace_neigh *seqno_trace_neigh;
- 	struct seqno_trace_neigh **data_ptr;
--	int i, j = 0;
-+	int j = 0;
-+	int i;
- 
- 	data_ptr = calloc(seqno_trace_old_mom->num_neighbors - 1, sizeof(*data_ptr));
- 	if (!data_ptr)
-@@ -1174,7 +1175,8 @@ static int seqno_trace_check_leaves(struct seqno_trace *seqno_trace,
- 				    struct seqno_trace_neigh *seqno_trace_neigh_new)
- {
- 	struct seqno_trace_neigh *seqno_trace_neigh_tmp;
--	int i, res;
-+	int res;
-+	int i;
- 
- 	for (i = 0; i < seqno_trace->seqno_trace_neigh.num_neighbors; i++) {
- 		seqno_trace_neigh_tmp = seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i];
-diff --git a/bonding.c b/bonding.c
-index 947f22b..bcf68e3 100644
---- a/bonding.c
-+++ b/bonding.c
-@@ -31,10 +31,12 @@ static int get_bonding(struct state *state)
- 
- static int set_attrs_bonding(struct nl_msg *msg, void *arg)
- {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
- 
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_BONDING_ENABLED, data->val);
- 
- 	return 0;
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 6e883bc..af317dd 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -32,10 +32,12 @@ static int get_bridge_loop_avoidance(struct state *state)
- 
- static int set_attrs_bridge_loop_avoidance(struct nl_msg *msg, void *arg)
- {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
- 
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED, data->val);
- 
- 	return 0;
-diff --git a/dat_cache.c b/dat_cache.c
-index 4c72360..2dee27a 100644
---- a/dat_cache.c
-+++ b/dat_cache.c
-@@ -33,13 +33,15 @@ static const int dat_cache_mandatory[] = {
- 
- static int dat_cache_callback(struct nl_msg *msg, void *arg)
- {
--	int last_seen_msecs, last_seen_secs, last_seen_mins;
  	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
++	struct translate_mac_netlink_opts *opts;
  	struct nlmsghdr *nlh = nlmsg_hdr(msg);
- 	struct print_opts *opts = arg;
- 	struct bat_host *bat_host;
+ 	struct nlquery_opts *query_opts = arg;
+-	struct translate_mac_netlink_opts *opts;
+-	struct genlmsghdr *ghdr;
+ 	struct ether_addr mac_addr;
+ 	struct ether_addr mac_orig;
++	struct genlmsghdr *ghdr;
+ 	uint8_t *addr;
+ 	uint8_t *orig;
+ 
+@@ -118,8 +118,8 @@ static int get_tq_netlink_cb(struct nl_msg *msg, void *arg)
+ 	struct nlquery_opts *query_opts = arg;
+ 	struct get_tq_netlink_opts *opts;
  	struct genlmsghdr *ghdr;
- 	struct in_addr in_addr;
-+	int last_seen_msecs;
-+	int last_seen_mins;
-+	int last_seen_secs;
- 	uint8_t *hwaddr;
- 	int16_t vid;
- 	char *addr;
-diff --git a/distributed_arp_table.c b/distributed_arp_table.c
-index 43e9fbc..c9731f2 100644
---- a/distributed_arp_table.c
-+++ b/distributed_arp_table.c
-@@ -32,10 +32,12 @@ static int get_distributed_arp_table(struct state *state)
+-	uint8_t *orig;
+ 	struct ether_addr mac;
++	uint8_t *orig;
+ 	uint8_t tq;
  
- static int set_attrs_distributed_arp_table(struct nl_msg *msg, void *arg)
+ 	opts = container_of(query_opts, struct get_tq_netlink_opts,
+diff --git a/bitops.h b/bitops.h
+index 582a1f2..bc87c24 100644
+--- a/bitops.h
++++ b/bitops.h
+@@ -260,12 +260,12 @@ static __inline__ void set_bit(size_t bit, unsigned long *bitmap)
+ static __inline__ size_t find_next_bit(unsigned long *bitmap, size_t bits,
+ 				       size_t start)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
+-	size_t i;
+-	size_t pos;
+-	unsigned long t;
+-	size_t l = BITS_TO_LONGS(bits);
+-	size_t first_long = start / BITS_PER_LONG;
+ 	size_t long_lower = start - (start % BITS_PER_LONG);
++	size_t first_long = start / BITS_PER_LONG;
++	size_t l = BITS_TO_LONGS(bits);
++	unsigned long t;
++	size_t pos;
++	size_t i;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED, data->val);
- 
- 	return 0;
-diff --git a/elp_interval.c b/elp_interval.c
-index b294eaf..7dcfa5f 100644
---- a/elp_interval.c
-+++ b/elp_interval.c
-@@ -81,10 +81,12 @@ static int get_elp_interval(struct state *state)
- 
- static int set_attrs_elp_interval(struct nl_msg *msg, void *arg)
+ 	if (start >= bits)
+ 		return bits;
+@@ -325,8 +325,8 @@ static __inline__ size_t find_next_bit(unsigned long *bitmap, size_t bits,
+ static __inline__ size_t bitmap_weight(const unsigned long *bitmap, size_t bits)
  {
-+	struct settings_data *settings;
-+	struct elp_interval_data *data;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct elp_interval_data *data = settings->data;
+ 	size_t l = BITS_TO_LONGS(bits);
+-	size_t i;
+ 	size_t sum = 0;
++	size_t i;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
- 	nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL, data->elp_interval);
+ 	for (i = 0; i < l - 1; i++)
+ 		sum += hweight_long(bitmap[i]);
+diff --git a/client.c b/client.c
+index 2676e32..9fa9f00 100644
+--- a/client.c
++++ b/client.c
+@@ -22,14 +22,18 @@
  
-diff --git a/fragmentation.c b/fragmentation.c
-index 2f3d3b9..c0f84d9 100644
---- a/fragmentation.c
-+++ b/fragmentation.c
-@@ -32,10 +32,12 @@ static int get_fragmentation(struct state *state)
- 
- static int set_attrs_fragmentation(struct nl_msg *msg, void *arg)
+ int alfred_client_request_data(struct globals *globals)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
+-	unsigned char buf[MAX_PAYLOAD], *pos;
+ 	struct alfred_request_v0 request;
+ 	struct alfred_push_data_v0 *push;
+ 	struct alfred_status_v0 *status;
+-	struct alfred_tlv *tlv;
++	unsigned char buf[MAX_PAYLOAD];
+ 	struct alfred_data *data;
+-	int ret, len, data_len, i;
+ 	const size_t buf_data_len = sizeof(buf) - sizeof(*push) - sizeof(*data);
++	struct alfred_tlv *tlv;
++	unsigned char *pos;
++	int data_len;
++	int ret;
++	int len;
++	int i;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_FRAGMENTATION_ENABLED, data->val);
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -135,10 +139,11 @@ int alfred_client_request_data(struct globals *globals)
  
- 	return 0;
-diff --git a/functions.c b/functions.c
-index 771b065..5e1cb40 100644
---- a/functions.c
-+++ b/functions.c
-@@ -135,8 +135,8 @@ static bool ether_addr_valid(const uint8_t *addr)
- int read_file(const char *full_path, int read_opt)
+ int alfred_client_set_data(struct globals *globals)
  {
- 	int res = EXIT_FAILURE;
--	size_t len = 0;
- 	FILE *fp = NULL;
-+	size_t len = 0;
+-	unsigned char buf[MAX_PAYLOAD];
+ 	struct alfred_push_data_v0 *push;
++	unsigned char buf[MAX_PAYLOAD];
+ 	struct alfred_data *data;
+-	int ret, len;
++	int ret;
++	int len;
  
- 	fp = fopen(full_path, "r");
- 	if (!fp) {
-@@ -580,11 +580,6 @@ struct rtnl_link_iface_data {
- 
- static int query_rtnl_link_single_parse(struct nl_msg *msg, void *arg)
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -178,7 +183,8 @@ int alfred_client_set_data(struct globals *globals)
+ int alfred_client_modeswitch(struct globals *globals)
  {
--	static struct nla_policy link_policy[IFLA_MAX + 1] = {
--		[IFLA_LINKINFO] = { .type = NLA_NESTED },
--		[IFLA_MASTER] = { .type = NLA_U32 },
--		[IFLA_LINK] = { .type = NLA_U32 },
--	};
- 	static struct nla_policy link_info_policy[IFLA_INFO_MAX + 1] = {
- 		[IFLA_INFO_KIND] = { .type = NLA_STRING },
- 		[IFLA_INFO_DATA] = { .type = NLA_NESTED },
-@@ -592,6 +587,11 @@ static int query_rtnl_link_single_parse(struct nl_msg *msg, void *arg)
- 	static struct nla_policy vlan_policy[IFLA_VLAN_MAX + 1] = {
- 		[IFLA_VLAN_ID] = { .type = NLA_U16 },
- 	};
-+	static struct nla_policy link_policy[IFLA_MAX + 1] = {
-+		[IFLA_LINKINFO] = { .type = NLA_NESTED },
-+		[IFLA_MASTER] = { .type = NLA_U32 },
-+		[IFLA_LINK] = { .type = NLA_U32 },
-+	};
+ 	struct alfred_modeswitch_v0 modeswitch;
+-	int ret, len;
++	int ret;
++	int len;
  
- 	struct rtnl_link_iface_data *link_data = arg;
- 	struct nlattr *li[IFLA_INFO_MAX + 1];
-diff --git a/gateways.c b/gateways.c
-index b0cc938..19d8373 100644
---- a/gateways.c
-+++ b/gateways.c
-@@ -39,8 +39,8 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
- 	struct print_opts *opts = arg;
- 	struct bat_host *bat_host;
- 	struct genlmsghdr *ghdr;
--	const char *primary_if;
- 	uint32_t bandwidth_down;
-+	const char *primary_if;
- 	uint32_t bandwidth_up;
- 	uint32_t throughput;
- 	uint8_t *router;
-diff --git a/genl.c b/genl.c
-index d2e54c1..8a218b8 100644
---- a/genl.c
-+++ b/genl.c
-@@ -45,9 +45,9 @@ struct mcast_handler_args {
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -213,8 +219,8 @@ int alfred_client_modeswitch(struct globals *globals)
  
- static int mcast_family_handler(struct nl_msg *msg, void *arg)
+ static int check_interface(const char *iface)
  {
-+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
- 	struct mcast_handler_args *grp = arg;
- 	struct nlattr *tb[CTRL_ATTR_MAX + 1];
--	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
- 	struct nlattr *mcgrp;
- 	int rem_mcgrp;
+-	int sock = -1;
+ 	struct ifreq ifr;
++	int sock = -1;
  
-diff --git a/gw_mode.c b/gw_mode.c
-index 996ca08..767a7f8 100644
---- a/gw_mode.c
-+++ b/gw_mode.c
-@@ -154,9 +154,7 @@ static int parse_gw(struct state *state, int argc, char *argv[])
- 
- static int print_gw(struct nl_msg *msg, void *arg)
+ 	if (strlen(iface) > IFNAMSIZ) {
+ 		fprintf(stderr, "%s: interface name list too long, not changing\n",
+@@ -245,9 +251,12 @@ static int check_interface(const char *iface)
+ int alfred_client_change_interface(struct globals *globals)
  {
--	static const int mandatory[] = {
--		BATADV_ATTR_GW_MODE,
--	};
-+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
- 	static const int mandatory_client[] = {
- 		BATADV_ATTR_ALGO_NAME,
- 		BATADV_ATTR_GW_SEL_CLASS,
-@@ -165,8 +163,10 @@ static int print_gw(struct nl_msg *msg, void *arg)
- 		BATADV_ATTR_GW_BANDWIDTH_DOWN,
- 		BATADV_ATTR_GW_BANDWIDTH_UP,
- 	};
--	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
- 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	static const int mandatory[] = {
-+		BATADV_ATTR_GW_MODE,
-+	};
- 	struct genlmsghdr *ghdr;
- 	int *result = arg;
- 	const char *algo;
-diff --git a/hop_penalty.c b/hop_penalty.c
-index 11f30ae..f22d36c 100644
---- a/hop_penalty.c
-+++ b/hop_penalty.c
-@@ -88,10 +88,12 @@ static int get_hop_penalty_if(struct state *state)
+ 	struct alfred_change_interface_v0 change_interface;
+-	int ret, len;
+-	char *input, *token, *saveptr;
+ 	size_t interface_len;
++	char *saveptr;
++	char *input;
++	char *token;
++	int ret;
++	int len;
  
- static int set_attrs_hop_penalty(struct nl_msg *msg, void *arg)
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -294,8 +303,9 @@ int alfred_client_change_interface(struct globals *globals)
+ int alfred_client_change_bat_iface(struct globals *globals)
  {
-+	struct settings_data *settings;
-+	struct hop_penalty_data *data;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct hop_penalty_data *data = settings->data;
+ 	struct alfred_change_bat_iface_v0 change_bat_iface;
+-	int ret, len;
+ 	size_t interface_len;
++	int ret;
++	int len;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY, data->hop_penalty);
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -331,11 +341,15 @@ int alfred_client_server_status(struct globals *globals)
+ 	struct alfred_server_status_net_iface_v0 *status_net_iface;
+ 	struct alfred_server_status_bat_iface_v0 *status_bat_iface;
+ 	struct alfred_server_status_op_mode_v0 *status_op_mode;
+-	struct alfred_server_status_req_v0 status_req;
+ 	struct alfred_server_status_rep_v0 *status_rep;
+-	int ret, tlvsize, headsize, len, consumed;
++	struct alfred_server_status_req_v0 status_req;
+ 	struct alfred_tlv *status_tlv;
+ 	uint8_t buf[MAX_PAYLOAD];
++	int headsize;
++	int consumed;
++	int tlvsize;
++	int ret;
++	int len;
  
- 	return 0;
-@@ -105,10 +107,12 @@ static int set_hop_penalty(struct state *state)
- 
- static int set_attrs_hop_penalty_if(struct nl_msg *msg, void *arg)
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+@@ -457,7 +471,8 @@ int alfred_client_event_monitor(struct globals *globals)
  {
-+	struct settings_data *settings;
-+	struct hop_penalty_data *data;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct hop_penalty_data *data = settings->data;
+ 	struct alfred_event_register_v0 event_register;
+ 	struct alfred_event_notify_v0 event_notify;
+-	int ret, len;
++	int ret;
++	int len;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
- 	nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY, data->hop_penalty);
+ 	if (unix_sock_open_client(globals))
+ 		return -1;
+diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+index fd87e0b..04f7a46 100644
+--- a/gpsd/alfred-gpsd.c
++++ b/gpsd/alfred-gpsd.c
+@@ -40,7 +40,8 @@ static int alfred_open_sock(struct globals *globals)
  
-diff --git a/icmp_helper.c b/icmp_helper.c
-index 459ea63..8b4fad7 100644
---- a/icmp_helper.c
-+++ b/icmp_helper.c
-@@ -83,7 +83,6 @@ void icmp_interface_destroy(struct icmp_interface *iface)
- 
- static int icmp_interface_filter(int sock, int uid)
+ static int gpsd_publish_data(struct globals *globals)
  {
--	struct sock_fprog filter;
- 	struct sock_filter accept_icmp[] = {
- 		/* load ethernet proto */
- 		BPF_STMT(BPF_LD + BPF_H + BPF_ABS,
-@@ -146,6 +145,7 @@ static int icmp_interface_filter(int sock, int uid)
- 		BPF_STMT(BPF_RET + BPF_K,
- 			 0),
- 	};
-+	struct sock_fprog filter;
- 
- 	memset(&filter, 0, sizeof(filter));
- 	filter.len = sizeof(accept_icmp) / sizeof(*accept_icmp);
-@@ -303,7 +303,8 @@ static void icmp_interface_unmark(void)
- 
- static void icmp_interface_sweep(void)
- {
--	struct icmp_interface *iface, *safe;
-+	struct icmp_interface *iface;
-+	struct icmp_interface *safe;
- 
- 	list_for_each_entry_safe(iface, safe, &interface_list, list) {
- 		if (iface->mark)
-diff --git a/interface.c b/interface.c
-index dc77ad4..7d3897c 100644
---- a/interface.c
-+++ b/interface.c
-@@ -182,8 +182,8 @@ static int count_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
- 	struct count_interfaces_rtnl_arg *count_arg = arg;
- 	struct nlattr *attrs[IFLA_MAX + 1];
- 	struct ifinfomsg *ifm;
--	int ret;
- 	int master;
+-	int len, ret;
++	int len;
 +	int ret;
  
- 	ifm = nlmsg_data(nlmsg_hdr(msg));
- 	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,
-diff --git a/isolation_mark.c b/isolation_mark.c
-index 10ba243..cef4de0 100644
---- a/isolation_mark.c
-+++ b/isolation_mark.c
-@@ -22,7 +22,7 @@ static struct isolation_mark_data {
- static int parse_isolation_mark(struct state *state, int argc, char *argv[])
+ 	/* to push data we have to add a push header, the header for the data
+ 	 * and our own data type.
+@@ -135,11 +136,12 @@ static int gpsd_request_data(struct globals *globals)
+ static struct gpsd_v1 *gpsd_receive_answer_packet(int sock, uint16_t *len,
+ 						  uint8_t *source)
  {
- 	struct settings_data *settings = state->cmd->arg;
--	struct isolation_mark_data *data = settings->data;
-+	struct isolation_mark_data *data;
- 	char *mask_ptr;
- 	char buff[256];
- 	uint32_t mark;
-@@ -59,6 +59,7 @@ static int parse_isolation_mark(struct state *state, int argc, char *argv[])
- 	if (!endptr || *endptr != '\0')
- 		goto inval_format;
+-	static uint8_t buf[65536];
+-	struct alfred_tlv *tlv;
+ 	struct alfred_push_data_v0 *push;
++	static uint8_t buf[65536];
+ 	struct alfred_data *data;
+-	int l, ret;
++	struct alfred_tlv *tlv;
++	int ret;
++	int l;
  
-+	data = settings->data;
- 	data->isolation_mask = mask;
- 	/* erase bits not covered by the mask */
- 	data->isolation_mark = mark & mask;
-@@ -110,10 +111,12 @@ static int get_isolation_mark(struct state *state)
- 
- static int set_attrs_isolation_mark(struct nl_msg *msg, void *arg)
+ 	ret = read(sock, buf, sizeof(*tlv));
+ 	if (ret < 0)
+@@ -184,9 +186,9 @@ static struct gpsd_v1 *gpsd_receive_answer_packet(int sock, uint16_t *len,
+ static int gpsd_read_answer(struct globals *globals)
  {
-+	struct isolation_mark_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct isolation_mark_data *data = settings->data;
+ 	struct gpsd_v1 *gpsd_data;
+-	uint16_t len;
+ 	uint8_t source[ETH_ALEN];
+ 	bool first_line = true;
++	uint16_t len;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MARK, data->isolation_mark);
- 	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MASK, data->isolation_mask);
+ 	printf("[\n");
  
+@@ -301,14 +303,14 @@ static void gpsd_connect_gpsd(struct globals *globals)
+ 
+ static void gpsd_read_gpsd(struct globals *globals)
+ {
+-	ssize_t ret;
+-	size_t cnt;
+-	bool eol = false;
+-	char buf[4096];
+ 	const size_t tpv_size = sizeof(globals->buf) -
+ 				sizeof(*globals->push) -
+ 				sizeof(struct alfred_data) -
+ 				sizeof(*globals->gpsd_data);
++	bool eol = false;
++	char buf[4096];
++	ssize_t ret;
++	size_t cnt;
+ 
+ 	cnt = 0;
+ 	do {
+@@ -360,8 +362,10 @@ static void gpsd_usage(void)
+ static void gpsd_parse_location(struct globals *globals,
+ 				const char * optarg)
+ {
++	float lat;
++	float lon;
++	float alt;
+ 	int n;
+-	float lat, lon, alt;
+ 
+ 	n = sscanf(optarg, "%f,%f,%f", &lat, &lon, &alt);
+ 	if (n != 3) {
+@@ -396,9 +400,6 @@ static void gpsd_parse_location(struct globals *globals,
+ 
+ static struct globals *gpsd_init(int argc, char *argv[])
+ {
+-	bool have_source = false;
+-	int opt, opt_ind;
+-	struct globals *globals;
+ 	struct option long_options[] = {
+ 		{"server",	no_argument,		NULL,	's'},
+ 		{"location",    required_argument,	NULL,	'l'},
+@@ -408,6 +409,10 @@ static struct globals *gpsd_init(int argc, char *argv[])
+ 		{"version",	no_argument,		NULL,	'v'},
+ 		{NULL,		0,			NULL,	0},
+ 	};
++	bool have_source = false;
++	struct globals *globals;
++	int opt_ind;
++	int opt;
+ 
+ 	globals = &gpsd_globals;
+ 	memset(globals, 0, sizeof(*globals));
+@@ -455,16 +460,17 @@ static struct globals *gpsd_init(int argc, char *argv[])
+ 
+ static int gpsd_server(struct globals *globals)
+ {
+-	struct timeval tv;
+-	fd_set fds;
+-	int max_fd, ret;
+ 	const size_t overhead = sizeof(*globals->push) +
+ 		sizeof(struct alfred_data);
+ 	const size_t tpv_size = sizeof(globals->buf) -
+ 				sizeof(*globals->push) -
+ 				sizeof(struct alfred_data) -
+ 				sizeof(*globals->gpsd_data);
++	struct timeval tv;
+ 	long interval;
++	fd_set fds;
++	int max_fd;
++	int ret;
+ 
+ 	globals->push = (struct alfred_push_data_v0 *) globals->buf;
+ 	globals->gpsd_data = (struct gpsd_v1 *)
+diff --git a/hash.c b/hash.c
+index 006d7ef..2715fa2 100644
+--- a/hash.c
++++ b/hash.c
+@@ -27,7 +27,8 @@ void hash_init(struct hashtable_t *hash)
+  * if you don't remove the elements, memory might be leaked. */
+ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
+ {
+-	struct element_t *bucket, *last_bucket;
++	struct element_t *last_bucket;
++	struct element_t *bucket;
+ 	int i;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+@@ -51,8 +52,9 @@ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
+ static int hash_add_bucket(struct hashtable_t *hash, void *data,
+ 			   struct element_t *bucket, int check_duplicate)
+ {
++	struct element_t *prev_bucket = NULL;
++	struct element_t *bucket_it;
+ 	int index;
+-	struct element_t *bucket_it, *prev_bucket = NULL;
+ 
+ 	index = hash->choose(data, hash->size);
+ 	bucket_it = hash->table[index];
+@@ -198,8 +200,8 @@ struct hashtable_t *hash_new(int size, hashdata_compare_cb compare,
+ /* adds data to the hashtable. returns 0 on success, -1 on error */
+ int hash_add(struct hashtable_t *hash, void *data)
+ {
+-	int ret;
+ 	struct element_t *bucket;
++	int ret;
+ 
+ 	/* found the tail of the list, add new element */
+ 	bucket = debugMalloc(sizeof(struct element_t), 304);
+@@ -218,8 +220,8 @@ int hash_add(struct hashtable_t *hash, void *data)
+  * or NULL on error */
+ void *hash_find(struct hashtable_t *hash, void *keydata)
+ {
+-	int index;
+ 	struct element_t *bucket;
++	int index;
+ 
+ 	index = hash->choose(keydata, hash->size);
+ 	bucket = hash->table[index];
+@@ -316,8 +318,8 @@ struct hashtable_t *hash_resize(struct hashtable_t *hash, int size)
+ 
+ /* print the hash table for debugging */
+ /* void hash_debug(struct hashtable_t *hash) {
+-	int i;
+ 	struct element_t *bucket;
++	int i;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		printf("[%d] ", i);
 diff --git a/list.h b/list.h
 index a8bd44b..12d3ee0 100644
 --- a/list.h
@@ -561,329 +540,677 @@ index a8bd44b..12d3ee0 100644
  	if (pprev)
  		*pprev = next;
 diff --git a/main.c b/main.c
-index 921b3af..da4cbb6 100644
+index 71a6260..9c38fd7 100644
 --- a/main.c
 +++ b/main.c
-@@ -57,18 +57,18 @@ static void print_usage(void)
- 		"meshif <netdev> ",
- 		NULL,
+@@ -67,11 +67,11 @@ static int reduce_capabilities(void)
+ 	int ret = 0;
+ 
+ #ifdef CONFIG_ALFRED_CAPABILITIES
++	cap_value_t cap_net_admin = CAP_NET_ADMIN;
++	cap_value_t cap_net_raw = CAP_NET_RAW;
++	cap_flag_value_t cap_flag;
+ 	cap_t cap_cur;
+ 	cap_t cap_new;
+-	cap_flag_value_t cap_flag;
+-	cap_value_t cap_net_raw = CAP_NET_RAW;
+-	cap_value_t cap_net_admin = CAP_NET_ADMIN;
+ 
+ 	/* get current process capabilities */
+ 	cap_cur = cap_get_proc();
+@@ -149,9 +149,6 @@ static int reduce_capabilities(void)
+ 
+ static struct globals *alfred_init(int argc, char *argv[])
+ {
+-	int opt, opt_ind, i, ret;
+-	double sync_period = 0.0;
+-	struct globals *globals;
+ 	struct option long_options[] = {
+ 		{"set-data",		required_argument,	NULL,	's'},
+ 		{"request",		required_argument,	NULL,	'r'},
+@@ -173,6 +170,12 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"force",		no_argument,		NULL,	'f'},
+ 		{NULL,			0,			NULL,	0},
  	};
-+	static const char * const hardif_prefixes[] = {
-+		"hardif <netdev> ",
-+		NULL,
-+	};
- 	static const char * const vlan_prefixes[] = {
- 		"vlan <vdev> ",
- 		"meshif <netdev> vid <vid> ",
- 		NULL,
- 	};
--	static const char * const hardif_prefixes[] = {
--		"hardif <netdev> ",
--		NULL,
--	};
--	const struct command **p;
- 	const char * const *prefixes;
- 	const char * const *prefix;
-+	const struct command **p;
- 	char buf[64];
- 	size_t i;
++	double sync_period = 0.0;
++	struct globals *globals;
++	int opt_ind;
++	int opt;
++	int ret;
++	int i;
  
-diff --git a/multicast_fanout.c b/multicast_fanout.c
-index 7b8b595..97d5e0a 100644
---- a/multicast_fanout.c
-+++ b/multicast_fanout.c
-@@ -21,7 +21,7 @@ static struct multicast_fanout_data {
- static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
+ 	ret = reduce_capabilities();
+ 	if (ret < 0)
+diff --git a/netsock.c b/netsock.c
+index 95dbf5e..60b2285 100644
+--- a/netsock.c
++++ b/netsock.c
+@@ -40,7 +40,9 @@ alfred_addr alfred_mcast = {
+ 
+ static int server_compare(void *d1, void *d2)
  {
- 	struct settings_data *settings = state->cmd->arg;
--	struct multicast_fanout_data *data = settings->data;
-+	struct multicast_fanout_data *data;
- 	char *endptr;
+-	struct server *s1 = d1, *s2 = d2;
++	struct server *s1 = d1;
++	struct server *s2 = d2;
++
+ 	/* compare source and type */
+ 	if (memcmp(&s1->hwaddr, &s2->hwaddr, sizeof(s1->hwaddr)) == 0)
+ 		return 1;
+@@ -69,7 +71,8 @@ static int server_choose(void *d1, int size)
  
- 	if (argc != 2) {
-@@ -29,6 +29,7 @@ static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
- 		return -EINVAL;
- 	}
- 
-+	data = settings->data;
- 	data->multicast_fanout = strtoul(argv[1], &endptr, 0);
- 	if (!endptr || *endptr != '\0') {
- 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
-@@ -72,10 +73,12 @@ static int get_multicast_fanout(struct state *state)
- 
- static int set_attrs_multicast_fanout(struct nl_msg *msg, void *arg)
+ void netsock_close_all(struct globals *globals)
  {
-+	struct multicast_fanout_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct multicast_fanout_data *data = settings->data;
+-	struct interface *interface, *is;
++	struct interface *interface;
++	struct interface *is;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_MULTICAST_FANOUT, data->multicast_fanout);
+ 	list_for_each_entry_safe(interface, is, &globals->interfaces, list) {
+ 		if (interface->netsock >= 0)
+@@ -112,8 +115,10 @@ static struct interface *netsock_find_interface(struct globals *globals,
  
- 	return 0;
-diff --git a/multicast_forceflood.c b/multicast_forceflood.c
-index 20e1792..0fc1e87 100644
---- a/multicast_forceflood.c
-+++ b/multicast_forceflood.c
-@@ -53,10 +53,12 @@ static int get_multicast_forceflood(struct state *state)
- 
- static int set_attrs_multicast_forceflood(struct nl_msg *msg, void *arg)
+ int netsock_set_interfaces(struct globals *globals, char *interfaces)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
+-	char *input, *saveptr, *token;
+ 	struct interface *interface;
++	char *saveptr;
++	char *input;
++	char *token;
  
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, data->val);
+ 	netsock_close_all(globals);
  
- 	return 0;
-diff --git a/multicast_mode.c b/multicast_mode.c
-index a21ccd5..a960a38 100644
---- a/multicast_mode.c
-+++ b/multicast_mode.c
-@@ -53,10 +53,12 @@ static int get_multicast_mode(struct state *state)
+@@ -170,9 +175,9 @@ static int enable_raw_bind_capability(int enable)
+ 	int ret = 0;
  
- static int set_attrs_multicast_mode(struct nl_msg *msg, void *arg)
+ #ifdef CONFIG_ALFRED_CAPABILITIES
+-	cap_t cap_cur;
+-	cap_flag_value_t cap_flag;
+ 	cap_value_t cap_net_raw = CAP_NET_RAW;
++	cap_flag_value_t cap_flag;
++	cap_t cap_cur;
+ 
+ 	if (enable)
+ 		cap_flag = CAP_SET;
+@@ -252,12 +257,13 @@ static void netsock_mcast_handle_event(struct globals *globals,
+ 
+ static int netsock_open(struct globals *globals, struct interface *interface)
  {
-+	struct simple_boolean_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
- 
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, !data->val);
- 
- 	return 0;
-diff --git a/neighbors.c b/neighbors.c
-index bed903d..8e35cb3 100644
---- a/neighbors.c
-+++ b/neighbors.c
-@@ -33,13 +33,14 @@ static int neighbors_callback(struct nl_msg *msg, void *arg)
- {
- 	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
- 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
--	int last_seen_msecs, last_seen_secs;
- 	struct print_opts *opts = arg;
- 	unsigned int throughput_mbits;
- 	unsigned int throughput_kbits;
- 	char ifname_buf[IF_NAMESIZE];
- 	struct bat_host *bat_host;
- 	struct genlmsghdr *ghdr;
-+	int last_seen_msecs;
-+	int last_seen_secs;
- 	uint32_t ifindex;
- 	uint8_t *neigh;
- 	char *ifname;
-diff --git a/orig_interval.c b/orig_interval.c
-index 4e13016..970c752 100644
---- a/orig_interval.c
-+++ b/orig_interval.c
-@@ -72,10 +72,12 @@ static int get_orig_interval(struct state *state)
- 
- static int set_attrs_orig_interval(struct nl_msg *msg, void *arg)
- {
-+	struct orig_interval_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct orig_interval_data *data = settings->data;
- 
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_ORIG_INTERVAL, data->orig_interval);
- 
- 	return 0;
-diff --git a/sys.c b/sys.c
-index 0b38677..35a026e 100644
---- a/sys.c
-+++ b/sys.c
-@@ -27,7 +27,7 @@
- int parse_simple_boolean(struct state *state, int argc, char *argv[])
- {
- 	struct settings_data *settings = state->cmd->arg;
--	struct simple_boolean_data *data = settings->data;
-+	struct simple_boolean_data *data;
+-	int sock;
+-	int sock_mc;
+-	struct sockaddr_in6 sin6, sin6_mc;
++	struct sockaddr_in6 sin6_mc;
++	struct sockaddr_in6 sin6;
+ 	struct ipv6_mreq mreq;
+ 	struct epoll_event ev;
+ 	struct ifreq ifr;
++	int sock_mc;
++	int sock;
  	int ret;
  
- 	if (argc != 2) {
-@@ -35,6 +35,7 @@ int parse_simple_boolean(struct state *state, int argc, char *argv[])
- 		return -EINVAL;
- 	}
+ 	interface->netsock = -1;
+@@ -410,12 +416,13 @@ static int netsock_open(struct globals *globals, struct interface *interface)
  
-+	data = settings->data;
- 	ret = parse_bool(argv[1], &data->val);
- 	if (ret < 0) {
- 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
-@@ -154,15 +155,15 @@ static void settings_usage(struct state *state)
- 		"meshif <netdev> ",
- 		NULL,
- 	};
-+	static const char * const hardif_prefixes[] = {
-+		"hardif <netdev> ",
-+		NULL,
-+	};
- 	static const char * const vlan_prefixes[] = {
- 		"vlan <vdev> ",
- 		"meshif <netdev> vid <vid> ",
- 		NULL,
- 	};
--	static const char * const hardif_prefixes[] = {
--		"hardif <netdev> ",
--		NULL,
--	};
- 	const char *linestart = "Usage:";
- 	const char * const *prefixes;
- 	const char * const *prefix;
-@@ -229,7 +230,8 @@ static int sys_write_setting(struct state *state)
- int handle_sys_setting(struct state *state, int argc, char **argv)
+ static int netsock_open4(struct globals *globals, struct interface *interface)
  {
- 	struct settings_data *settings = state->cmd->arg;
--	int optchar, res = EXIT_FAILURE;
-+	int res = EXIT_FAILURE;
-+	int optchar;
+-	int sock;
+-	int sock_mc;
+-	struct sockaddr_in sin4, sin_mc;
++	struct sockaddr_in sin_mc;
++	struct sockaddr_in sin4;
+ 	struct epoll_event ev;
+ 	struct ip_mreq mreq;
+ 	struct ifreq ifr;
++	int sock_mc;
++	int sock;
+ 	int ret;
  
- 	while ((optchar = getopt(argc, argv, "h")) != -1) {
- 		switch (optchar) {
-diff --git a/tcpdump.c b/tcpdump.c
-index c89b5a7..eb7524e 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -114,7 +114,8 @@ static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len,
- 				    int read_opt __maybe_unused)
+ 	interface->netsock = -1;
+@@ -559,9 +566,9 @@ static int netsock_open4(struct globals *globals, struct interface *interface)
+ 
+ int netsock_open_all(struct globals *globals)
  {
- 	struct batadv_tvlv_gateway_data *tvlv = buff;
--	uint32_t down, up;
-+	uint32_t down;
-+	uint32_t up;
++	struct interface *interface;
+ 	int num_socks = 0;
+ 	int ret;
+-	struct interface *interface;
  
- 	if (buff_len != sizeof(*tvlv)) {
- 		fprintf(stderr,
-@@ -590,9 +591,9 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 		      int time_printed)
+ 	list_for_each_entry(interface, &globals->interfaces, list) {
+ 		if (globals->ipv4mode)
+diff --git a/recv.c b/recv.c
+index 75e3faf..76bfb30 100644
+--- a/recv.c
++++ b/recv.c
+@@ -28,10 +28,11 @@ static int finish_alfred_push_data(struct globals *globals,
+ 				   struct ether_addr mac,
+ 				   struct alfred_push_data_v0 *push)
  {
- 	struct nd_neighbor_solicit *nd_neigh_sol;
-+	static const char ip_string[] = "IP6";
- 	struct nd_neighbor_advert *nd_advert;
- 	char nd_nas_target[INET6_ADDRSTRLEN];
--	static const char ip_string[] = "IP6";
- 	char ipsrc[INET6_ADDRSTRLEN];
- 	char ipdst[INET6_ADDRSTRLEN];
- 	struct icmp6_hdr *icmphdr;
-@@ -833,8 +834,8 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
- static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len,
- 			       int read_opt, int time_printed)
+-	unsigned int len, data_len;
+-	bool new_entry_created;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
++	bool new_entry_created;
++	unsigned int data_len;
++	unsigned int len;
+ 	uint8_t *pos;
+ 
+ 	/* test already done in process_alfred_push_data */
+@@ -141,7 +142,8 @@ transaction_add(struct globals *globals, struct ether_addr mac, uint16_t id)
+ struct transaction_head *transaction_clean(struct globals *globals,
+ 					   struct transaction_head *head)
  {
--	struct ether_header *ether_header;
- 	struct batadv_ogm_packet *batman_ogm_packet;
-+	struct ether_header *ether_header;
- 	ssize_t check_len;
- 	ssize_t tvlv_len;
+-	struct transaction_packet *transaction_packet, *safe;
++	struct transaction_packet *transaction_packet;
++	struct transaction_packet *safe;
  
-@@ -944,7 +945,6 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len,
+ 	list_for_each_entry_safe(transaction_packet, safe, &head->packet_list,
+ 				 list) {
+@@ -158,7 +160,8 @@ static int finish_alfred_transaction(struct globals *globals,
+ 				     struct transaction_head *head,
+ 				     struct ether_addr mac)
  {
- 	struct batadv_icmp_packet *icmp_packet;
- 	struct batadv_icmp_tp_packet *tp;
--
- 	char *name;
+-	struct transaction_packet *transaction_packet, *safe;
++	struct transaction_packet *transaction_packet;
++	struct transaction_packet *safe;
  
- 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");
-diff --git a/throughput_override.c b/throughput_override.c
-index 6c316ff..e548b1f 100644
---- a/throughput_override.c
-+++ b/throughput_override.c
-@@ -22,7 +22,7 @@ static struct throughput_override_data {
- static int parse_throughput_override(struct state *state, int argc, char *argv[])
+ 	/* finish when all packets received */
+ 	if (!transaction_finished(head))
+@@ -188,12 +191,13 @@ static int process_alfred_push_data(struct globals *globals,
+ 				    alfred_addr *source,
+ 				    struct alfred_push_data_v0 *push)
  {
- 	struct settings_data *settings = state->cmd->arg;
--	struct throughput_override_data *data = settings->data;
-+	struct throughput_override_data *data;
- 	bool ret;
- 
- 	if (argc != 2) {
-@@ -30,6 +30,7 @@ static int parse_throughput_override(struct state *state, int argc, char *argv[]
- 		return -EINVAL;
- 	}
- 
-+	data = settings->data;
- 	ret = parse_throughput(argv[1], "throughput override",
- 			       &data->throughput_override);
- 	if (!ret)
-@@ -84,10 +85,12 @@ static int get_throughput_override(struct state *state)
- 
- static int set_attrs_throughput_override(struct nl_msg *msg, void *arg)
- {
-+	struct throughput_override_data *data;
-+	struct settings_data *settings;
- 	struct state *state = arg;
--	struct settings_data *settings = state->cmd->arg;
--	struct throughput_override_data *data = settings->data;
- 
-+	settings = state->cmd->arg;
-+	data = settings->data;
- 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
- 	nla_put_u32(msg, BATADV_ATTR_THROUGHPUT_OVERRIDE, data->throughput_override);
- 
-diff --git a/throughputmeter.c b/throughputmeter.c
-index 4f3dc50..bfd59a5 100644
---- a/throughputmeter.c
-+++ b/throughputmeter.c
-@@ -67,9 +67,9 @@ static int tpmeter_nl_print_error(struct sockaddr_nl *nla __maybe_unused,
- 
- static int tp_meter_result_callback(struct nl_msg *msg, void *arg)
- {
--	struct tp_result *result = arg;
- 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
- 	struct nlattr *attrs[NUM_BATADV_ATTR];
-+	struct tp_result *result = arg;
- 	struct genlmsghdr *ghdr;
- 	uint32_t cookie;
- 
-@@ -242,8 +242,8 @@ static struct nl_sock *tp_prepare_listening_sock(void)
- {
- 	struct nl_sock *sock;
- 	int family;
+-	unsigned int len;
+-	struct ether_addr mac;
 -	int ret;
- 	int mcid;
+-	struct transaction_head search, *head;
+ 	struct transaction_packet *transaction_packet;
++	struct transaction_head search;
++	struct transaction_head *head;
++	struct ether_addr mac;
++	unsigned int len;
+ 	int found;
 +	int ret;
  
- 	sock = nl_socket_alloc();
- 	if (!sock)
-diff --git a/transglobal.c b/transglobal.c
-index f87fc65..f749e0d 100644
---- a/transglobal.c
-+++ b/transglobal.c
-@@ -39,7 +39,6 @@ static int transglobal_callback(struct nl_msg *msg, void *arg)
- 	struct print_opts *opts = arg;
- 	struct bat_host *bat_host;
- 	struct genlmsghdr *ghdr;
--	char c, r, w, i, t;
- 	uint8_t last_ttvn;
- 	uint32_t crc32;
- 	uint32_t flags;
-@@ -47,6 +46,11 @@ static int transglobal_callback(struct nl_msg *msg, void *arg)
- 	uint8_t *orig;
- 	uint8_t ttvn;
- 	int16_t vid;
-+	char c;
-+	char r;
-+	char w;
-+	char i;
-+	char t;
+ 	if (globals->ipv4mode)
+ 		ret = ipv4_to_mac(interface, source, &mac);
+@@ -325,7 +329,8 @@ static int process_alfred_status_txend(struct globals *globals,
+ 				       alfred_addr *source,
+ 				       struct alfred_status_v0 *request)
+ {
+-	struct transaction_head search, *head;
++	struct transaction_head search;
++	struct transaction_head *head;
+ 	struct ether_addr mac;
+ 	unsigned int len;
+ 	int ret;
+@@ -376,14 +381,14 @@ static int process_alfred_status_txend(struct globals *globals,
+ int recv_alfred_packet(struct globals *globals, struct interface *interface,
+ 		       int recv_sock)
+ {
+-	uint8_t buf[MAX_PAYLOAD];
+-	ssize_t length;
+-	struct alfred_tlv *packet;
++	struct sockaddr_in6 source6;
+ 	struct sockaddr_in *source;
+ 	struct sockaddr_in source4;
+-	struct sockaddr_in6 source6;
+-	socklen_t sourcelen;
++	struct alfred_tlv *packet;
+ 	alfred_addr alfred_source;
++	uint8_t buf[MAX_PAYLOAD];
++	socklen_t sourcelen;
++	ssize_t length;
  
- 	if (!genlmsg_valid_hdr(nlh, 0)) {
- 		fputs("Received invalid data from kernel.\n", stderr);
+ 	if (interface->netsock < 0)
+ 		return -1;
+diff --git a/send.c b/send.c
+index 10094ba..8290c98 100644
+--- a/send.c
++++ b/send.c
+@@ -40,15 +40,15 @@ int push_data(struct globals *globals, struct interface *interface,
+ 	      alfred_addr *destination, enum data_source max_source_level,
+ 	      int type_filter, uint16_t tx_id)
+ {
+-	struct hash_it_t *hashit = NULL;
+-	uint8_t buf[MAX_PAYLOAD];
+-	struct alfred_push_data_v0 *push;
+-	struct alfred_data *data;
+-	uint16_t total_length = 0;
+-	size_t tlv_length;
+-	uint16_t seqno = 0;
+-	uint16_t length;
+ 	struct alfred_status_v0 status_end;
++	struct alfred_push_data_v0 *push;
++	struct hash_it_t *hashit = NULL;
++	uint16_t total_length = 0;
++	uint8_t buf[MAX_PAYLOAD];
++	struct alfred_data *data;
++	uint16_t seqno = 0;
++	size_t tlv_length;
++	uint16_t length;
+ 
+ 	push = (struct alfred_push_data_v0 *)buf;
+ 	push->header.type = ALFRED_PUSH_DATA;
+@@ -160,11 +160,11 @@ int push_local_data(struct globals *globals)
+ ssize_t send_alfred_packet(struct globals *globals, struct interface *interface,
+ 			   const alfred_addr *dest, void *buf, int length)
+ {
+-	ssize_t ret;
+-	struct sockaddr *dest_addr;
+ 	struct sockaddr_in6 dest_addr6;
+ 	struct sockaddr_in dest_addr4;
++	struct sockaddr *dest_addr;
+ 	socklen_t slen;
++	ssize_t ret;
+ 
+ 	if (globals->ipv4mode) {
+ 		memset(&dest_addr4, 0, sizeof(dest_addr4));
+diff --git a/server.c b/server.c
+index c3d32a0..cb3fcfe 100644
+--- a/server.c
++++ b/server.c
+@@ -71,10 +71,11 @@ static int tx_compare(void *d1, void *d2)
+ static int tx_choose(void *d1, int size)
+ {
+ 	struct transaction_head *txh1 = d1;
+-	unsigned char *key = (unsigned char *)&txh1->server_addr;
++	unsigned char *key;
+ 	uint32_t hash = 0;
+ 	size_t i;
+ 
++	key = (unsigned char *)&txh1->server_addr;
+ 	for (i = 0; i < ETH_ALEN; i++) {
+ 		hash += key[i];
+ 		hash += (hash << 10);
+@@ -104,10 +105,10 @@ static int create_hashes(struct globals *globals)
+ 
+ static int set_best_server(struct globals *globals)
+ {
+-	struct hash_it_t *hashit = NULL;
+ 	struct server *best_server = NULL;
+-	int best_tq = -1;
++	struct hash_it_t *hashit = NULL;
+ 	struct interface *interface;
++	int best_tq = -1;
+ 
+ 	list_for_each_entry(interface, &globals->interfaces, list) {
+ 		while (NULL != (hashit = hash_iterate(interface->server_hash,
+@@ -137,8 +138,9 @@ void changed_data_type(struct globals *globals, uint8_t arg)
+ static int purge_data(struct globals *globals)
+ {
+ 	struct hash_it_t *hashit = NULL;
+-	struct timespec now, diff;
+ 	struct interface *interface;
++	struct timespec diff;
++	struct timespec now;
+ 
+ 	clock_gettime(CLOCK_MONOTONIC, &now);
+ 
+@@ -196,11 +198,11 @@ static int purge_data(struct globals *globals)
+ 
+ static void update_server_info(struct globals *globals)
+ {
++	struct hashtable_t *orig_hash = NULL;
++	struct hashtable_t *tg_hash = NULL;
+ 	struct hash_it_t *hashit = NULL;
+ 	struct interface *interface;
+ 	struct ether_addr *macaddr;
+-	struct hashtable_t *tg_hash = NULL;
+-	struct hashtable_t *orig_hash = NULL;
+ 
+ 	/* TQ is not used for primary sync mode */
+ 	if (globals->opmode == OPMODE_PRIMARY)
+@@ -249,8 +251,8 @@ static void update_server_info(struct globals *globals)
+ 
+ static void check_if_socket(struct interface *interface, struct globals *globals)
+ {
+-	int sock;
+ 	struct ifreq ifr;
++	int sock;
+ 
+ 	if (interface->netsock < 0)
+ 		return;
+@@ -299,8 +301,9 @@ static void check_if_socket(struct interface *interface, struct globals *globals
+ 
+ static void check_if_sockets(struct globals *globals)
+ {
+-	struct timespec now, diff;
+ 	struct interface *interface;
++	struct timespec diff;
++	struct timespec now;
+ 
+ 	clock_gettime(CLOCK_MONOTONIC, &now);
+ 	time_diff(&now, &globals->if_check, &diff);
+@@ -316,11 +319,11 @@ static void check_if_sockets(struct globals *globals)
+ 
+ static void execute_update_command(struct globals *globals)
+ {
+-	pid_t script_pid;
+-	size_t command_len;
+-	char *command;
+-	size_t data_type;
+ 	size_t changed_data_type_count;
++	size_t command_len;
++	pid_t script_pid;
++	size_t data_type;
++	char *command;
+ 	/* data type is limited by ALFRED_NUM_TYPES to 255 (3 chars), plus
+ 	 * 1x space for appending + terminating null byte
+ 	 */
+diff --git a/unix_sock.c b/unix_sock.c
+index e6208ef..e6b44da 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -103,10 +103,12 @@ static int unix_sock_add_data(struct globals *globals,
+ 			      int client_sock)
+ {
+ 	bool new_entry_created = false;
++	struct interface *interface;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
+-	int len, data_len, ret = -1;
+-	struct interface *interface;
++	int data_len;
++	int ret = -1;
++	int len;
+ 
+ 	len = ntohs(push->header.length);
+ 
+@@ -201,11 +203,12 @@ static int unix_sock_add_data(struct globals *globals,
+ static int unix_sock_req_data_reply(struct globals *globals, int client_sock,
+ 				    uint16_t id, uint8_t requested_type)
+ {
+-	int len;
+ 	struct alfred_push_data_v0 *push;
+ 	struct hash_it_t *hashit = NULL;
+ 	uint8_t buf[MAX_PAYLOAD];
+-	uint16_t seqno = 0, ret = 0;
++	uint16_t seqno = 0;
++	uint16_t ret = 0;
++	int len;
+ 
+ 	/* send some data back through the unix socket */
+ 
+@@ -252,10 +255,10 @@ static int unix_sock_req_data(struct globals *globals,
+ 			      struct alfred_request_v0 *request,
+ 			      int client_sock)
+ {
+-	int len;
+-	uint16_t id;
+ 	struct transaction_head *head = NULL;
+ 	struct interface *interface;
++	uint16_t id;
++	int len;
+ 
+ 	len = ntohs(request->header.length);
+ 
+@@ -293,10 +296,11 @@ int unix_sock_req_data_finish(struct globals *globals,
+ 			      struct transaction_head *head)
+ {
+ 	struct alfred_status_v0 status;
+-	int ret = 0, send_data = 1;
++	uint8_t requested_type;
++	int send_data = 1;
+ 	int client_sock;
+ 	uint16_t id;
+-	uint8_t requested_type;
++	int ret = 0;
+ 
+ 	requested_type = head->requested_type;
+ 	id = head->id;
+@@ -328,7 +332,8 @@ static int unix_sock_modesw(struct globals *globals,
+ 			    struct alfred_modeswitch_v0 *modeswitch,
+ 			    int client_sock)
+ {
+-	int len, ret = -1;
++	int ret = -1;
++	int len;
+ 
+ 	len = ntohs(modeswitch->header.length);
+ 
+@@ -360,7 +365,8 @@ unix_sock_change_iface(struct globals *globals,
+ 		       struct alfred_change_interface_v0 *change_iface,
+ 		       int client_sock)
+ {
+-	int len, ret = -1;
++	int ret = -1;
++	int len;
+ 
+ 	len = ntohs(change_iface->header.length);
+ 
+@@ -390,7 +396,8 @@ unix_sock_change_bat_iface(struct globals *globals,
+ 			   struct alfred_change_bat_iface_v0 *change_bat_iface,
+ 			   int client_sock)
+ {
+-	int len, ret = -1;
++	int ret = -1;
++	int len;
+ 
+ 	len = ntohs(change_bat_iface->header.length);
+ 
+@@ -514,13 +521,15 @@ static void unix_sock_read(struct globals *globals,
+ 			   struct epoll_handle *handle __unused,
+ 			   struct epoll_event *ev __unused)
+ {
+-	int client_sock;
+ 	struct sockaddr_un sun_addr;
+-	socklen_t sun_size = sizeof(sun_addr);
+ 	struct alfred_tlv *packet;
+ 	uint8_t buf[MAX_PAYLOAD];
+-	int length, headsize;
++	socklen_t sun_size;
++	int client_sock;
++	int headsize;
++	int length;
+ 
++	sun_size = sizeof(sun_addr);
+ 	client_sock = accept(globals->unix_sock, (struct sockaddr *)&sun_addr,
+ 			     &sun_size);
+ 	if (client_sock < 0) {
+@@ -698,7 +707,8 @@ static void unix_sock_event_notify_listener(struct event_listener *listener,
+ 
+ void unix_sock_events_close_all(struct globals *globals)
+ {
+-	struct event_listener *listener, *tmp;
++	struct event_listener *listener;
++	struct event_listener *tmp;
+ 
+ 	list_for_each_entry_safe(listener, tmp,
+ 				 &globals->event_listeners, list) {
+@@ -709,7 +719,8 @@ void unix_sock_events_close_all(struct globals *globals)
+ void unix_sock_event_notify(struct globals *globals, uint8_t type,
+ 			    const uint8_t source[ETH_ALEN])
+ {
+-	struct event_listener *listener, *tmp;
++	struct event_listener *listener;
++	struct event_listener *tmp;
+ 
+ 	/* if event notify is unsuccessful, listener socket is closed */
+ 	list_for_each_entry_safe(listener, tmp,
+diff --git a/util.c b/util.c
+index eabef57..b00b953 100644
+--- a/util.c
++++ b/util.c
+@@ -35,10 +35,11 @@ int time_diff(struct timespec *tv1, struct timespec *tv2,
+ void time_random_seed(void)
+ {
+ 	struct timespec now;
+-	uint8_t *c = (uint8_t *)&now;
+-	size_t i;
+ 	unsigned int s = 0;
++	uint8_t *c;
++	size_t i;
+ 
++	c = (uint8_t *)&now;
+ 	clock_gettime(CLOCK_REALTIME, &now);
+ 
+ 	for (i = 0; i < sizeof(now); i++) {
+@@ -83,8 +84,8 @@ static void ipv4_request_mac_resolve(const alfred_addr *addr)
+ 	const struct sockaddr *sockaddr;
+ 	struct sockaddr_in inet4;
+ 	size_t sockaddr_len;
+-	int sock;
+ 	char t = 0;
++	int sock;
+ 
+ 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+ 	if (sock < 0)
+@@ -104,8 +105,8 @@ static void ipv4_request_mac_resolve(const alfred_addr *addr)
+ int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
+ 		     struct ether_addr *mac)
+ {
+-	struct arpreq arpreq;
+ 	struct sockaddr_in *sin;
++	struct arpreq arpreq;
+ 	int retries = 1;
+ 
+ 	memset(&arpreq, 0, sizeof(arpreq));
+diff --git a/vis/vis.c b/vis/vis.c
+index b3366bc..4642227 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -47,7 +47,8 @@ static char *mac_to_str(uint8_t *mac)
+ static int get_if_mac(char *ifname, uint8_t *mac)
+ {
+ 	struct ifreq ifr;
+-	int sock, ret;
++	int sock;
++	int ret;
+ 
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+ 	ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+@@ -111,8 +112,8 @@ static int get_if_index_byname(struct globals *globals, char *ifname)
+ static int get_if_index_devindex(struct globals *globals, int devindex)
+ {
+ 	struct iface_list_entry *i_entry;
+-	char *ifname;
+ 	char ifnamebuf[IF_NAMESIZE];
++	char *ifname;
+ 	int i;
+ 
+ 	if (!devindex)
+@@ -182,9 +183,9 @@ static int parse_transtable_local_netlink_cb(struct nl_msg *msg, void *arg)
+ 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+ 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+ 	struct nlquery_opts *query_opts = arg;
++	struct vis_list_entry *v_entry;
+ 	struct vis_netlink_opts *opts;
+ 	struct genlmsghdr *ghdr;
+-	struct vis_list_entry *v_entry;
+ 	uint8_t *addr;
+ 
+ 	opts = container_of(query_opts, struct vis_netlink_opts,
+@@ -243,8 +244,10 @@ static int parse_transtable_local(struct globals *globals)
+ 
+ static void clear_lists(struct globals *globals)
+ {
+-	struct vis_list_entry *v_entry, *v_entry_safe;
+-	struct iface_list_entry *i_entry, *i_entry_safe;
++	struct iface_list_entry *i_entry_safe;
++	struct vis_list_entry *v_entry_safe;
++	struct iface_list_entry *i_entry;
++	struct vis_list_entry *v_entry;
+ 
+ 	list_for_each_entry_safe(v_entry, v_entry_safe, &globals->entry_list,
+ 				 list) {
+@@ -514,13 +517,13 @@ static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
+ 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+ 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+ 	struct nlquery_opts *query_opts = arg;
++	struct vis_list_entry *v_entry;
+ 	struct vis_netlink_opts *opts;
+ 	struct genlmsghdr *ghdr;
+-	struct vis_list_entry *v_entry;
+-	uint8_t *orig;
+-	uint8_t *neigh;
+-	uint8_t tq;
+ 	uint32_t hardif;
++	uint8_t *neigh;
++	uint8_t *orig;
++	uint8_t tq;
+ 
+ 	opts = container_of(query_opts, struct vis_netlink_opts,
+ 			    query_opts);
+@@ -589,7 +592,8 @@ static int parse_orig_list(struct globals *globals)
+ 
+ static int vis_publish_data(struct globals *globals)
+ {
+-	int len, ret;
++	int len;
++	int ret;
+ 
+ 	/* to push data we have to add a push header, the header for the data
+ 	 * and our own data type.
+@@ -620,7 +624,8 @@ static int compile_vis_data(struct globals *globals)
+ 	struct iface_list_entry *i_entry;
+ 	struct vis_list_entry *v_entry;
+ 	struct vis_entry *vis_entries;
+-	int iface_n = 0, entries_n = 0;
++	int entries_n = 0;
++	int iface_n = 0;
+ 
+ 	list_for_each_entry(i_entry, &globals->iface_list, list) {
+ 		memcpy(&globals->vis_data->ifaces[iface_n], i_entry->mac, ETH_ALEN);
+@@ -684,11 +689,12 @@ static int vis_request_data(struct globals *globals)
+ 
+ static struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
+ {
+-	static uint8_t buf[65536];
+-	struct alfred_tlv *tlv;
+ 	struct alfred_push_data_v0 *push;
++	static uint8_t buf[65536];
+ 	struct alfred_data *data;
+-	int l, ret;
++	struct alfred_tlv *tlv;
++	int ret;
++	int l;
+ 
+ 	ret = read(sock, buf, sizeof(*tlv));
+ 	if (ret < 0)
+@@ -836,8 +842,8 @@ static void vis_jsondoc_preamble(void)
+ 
+ static void vis_jsondoc_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
+ {
+-	int i;
+ 	static bool first_interface = true;
++	int i;
+ 
+ 	if (first_interface)
+ 		first_interface = false;
+@@ -954,10 +960,10 @@ static const struct vis_print_ops vis_jsondoc_ops =
+ static int vis_read_answer(struct globals *globals)
+ {
+ 	const struct vis_print_ops *ops;
++	struct vis_entry *vis_entries;
++	struct vis_iface *ifaces;
+ 	struct vis_v1 *vis_data;
+ 	uint16_t len;
+-	struct vis_iface *ifaces;
+-	struct vis_entry *vis_entries;
+ 
+ 	switch (globals->vis_format) {
+ 	case FORMAT_DOT:
+@@ -1029,8 +1035,6 @@ static void vis_usage(void)
+ 
+ static struct globals *vis_init(int argc, char *argv[])
+ {
+-	int opt, opt_ind;
+-	struct globals *globals;
+ 	struct option long_options[] = {
+ 		{"server",	no_argument,		NULL,	's'},
+ 		{"interface",	required_argument,	NULL,	'i'},
+@@ -1040,6 +1044,9 @@ static struct globals *vis_init(int argc, char *argv[])
+ 		{"version",	no_argument,		NULL,	'v'},
+ 		{NULL,		0,			NULL,	0},
+ 	};
++	struct globals *globals;
++	int opt_ind;
++	int opt;
+ 
+ 	globals = &vis_globals;
+ 	memset(globals, 0, sizeof(*globals));
 
 ---
-base-commit: 8e67af37f812ac1fa2020033342693d63b6a4756
-change-id: 20260608-reverse-xmas-c2a9a1c540d6
+base-commit: 88db36d4c50cda4665809fe8da0d7a975b5596aa
+change-id: 20260608-reverse-xmas-41cf7b2a0238
 
 Best regards,
 --  
