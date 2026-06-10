@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89F3FCD8CB9
-	for <batman-adv@archiver.kernel.org>; Wed, 10 Jun 2026 12:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB3D1CD8CB2
+	for <batman-adv@archiver.kernel.org>; Wed, 10 Jun 2026 12:57:56 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id CEFA383D1C
-	for <batman-adv@archiver.kernel.org>; Wed, 10 Jun 2026 14:57:10 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4856B8402A
+	for <batman-adv@archiver.kernel.org>; Wed, 10 Jun 2026 14:57:55 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1781096230;
- b=g13t+Lwzb3uKbeytX7JjZRpUU9ep/HrWLFbag7iCdJw8Fn7VtGBr92wHg164oajUQCojf
- yr4HtToHxLmXnmOidBQRa72uRqWhchWUm6vffuDgdQYWK9Kfmw7ikwFNviAeHDmVUt7q7+c
- 7jMoMcTvclTsbzE/p8kXur9s1xsdcxo=
+ t=1781096275;
+ b=DZKTq4+HZUQfZm7KS7Yz6wa4Jte1k5iHMe+bQ6px/JKiYgSYi3HBLj9CXLII7jrhQQ50K
+ QUa47rkhvH1qjpYj43f9/yJ25BtfJ6V8oFf2u5DtN6FmcDx6BztrqmnxHfQ3KN8XCsRK6nV
+ cigLCBBfXyPWGfDGUqTP41B2/02qojM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1781096230; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1781096275; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fEGQUqIxQSkkXc0K6O0QAsqwICJox2DC/5C6qahz+1M=;
- b=rb3FjubMTwgLgzDctdTnFVOMdtuyCXJpJBaxrd6RM2b5VhGmEPJaaQqdQ4u/fkPjJv4hR
- oVawgm79WZDvyOIzcFn7x8vULy9QuEeEoj/YgIAT1e/EEZoK2p7p05gZjnrCNuBKaun/3sp
- ANoy86rlcdAhoR8UVUPNerFjUyNiPZk=
+ list-archive; bh=sQu+UR0wPdUJqTKMQ3FnFKDsQvN939+GDRdzOwHoxJU=;
+ b=xWhPItLMJ9NkjFUZ0/BnPBq/h3PMXvOOa8eGsW7mD/mGRwtCMylSIUmFygkOMGHjtpEzZ
+ Rd7XY3RgX1AjljvibB1QMx2VYT0ZwWvULHzdLrDuuOYdwblGj097+4ud+LS5SxMw8KIRoVc
+ uvlZcFiTtvO+Zl2677+EU64q/DBAvkQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8298883B11
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 10 Jun 2026 14:56:12 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781096177;
-	b=smFj2kiGkqhjmB+UtoKtI8AigbNdE5f5MjK76C7fcyDso+56ukjWVvG3wsT3SU/5OJjElQ
-	N0Gt73etggOwLcbhZUU6dz/fgMi25mlhpb4fdmI7tar/UKe9i/8+gTVQGPgVEByZGrvKa0
-	DeTQkwyxyi0LSchdbGgwQhrzy22m7G8=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EC44483C54
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 10 Jun 2026 14:56:08 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781096179;
+	b=znolI+Jwn+oZ4leat/4NtrJu3/yePkVHExC8DG7EbSfoHMS2Jd2rj7Nzalwyuw9C0UWnXy
+	qg7FiaI7bVc69/uVeoqJn7+PlFTtF4vDJySUBLP5BSZZ6Fvnih0NkyWqQ7tPaWLXvYFffM
+	GXugcX8Mn3Y/99czna9+UtcgPn4n/9w=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1781096177;
+	s=20121; t=1781096179;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=fEGQUqIxQSkkXc0K6O0QAsqwICJox2DC/5C6qahz+1M=;
-	b=uzD0KEBQv9OEF3XkZdfWAFBMQY8DZxvYMraawfGTOQIBz3/+SbfhUpAAsykYX+Q5cZTa4U
-	lZEdNvZqP6lMXwbEJZkllWSE6RKHsOMibSx9CbAz9Q9Gg3ocxTKDl7vw0Fxm1fTKc22oAD
-	jxYRVO8XWfqStK3IqrpnmWDFzCIoVzo=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=sQu+UR0wPdUJqTKMQ3FnFKDsQvN939+GDRdzOwHoxJU=;
+	b=0gG7xbludpNjEUHjbBigq87zskTL3JhkkTAKQXi6qO6QWxg10KJkZVz0IuosGJRPTGrjzK
+	KIAPu+juT8ZoD98IWR63W7et9inOBtebMHlXozyivgVQ1JdsTTrfN2U8LCAdKI62L8JhXN
+	93gWPdKQLXhjfwpb93Uszlcbqm01gqM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=JUXp1Mzr;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xQ8BrS4K;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
-Received: by dvalin.narfation.org (Postfix) id B6599201CF;
-	Wed, 10 Jun 2026 12:56:11 +0000 (UTC)
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
+Received: by dvalin.narfation.org (Postfix) id 3D97E1FD32;
+	Wed, 10 Jun 2026 12:56:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1781096171;
+	s=20121; t=1781096167;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fEGQUqIxQSkkXc0K6O0QAsqwICJox2DC/5C6qahz+1M=;
-	b=JUXp1MzrdnIOoz+9nUDIzIXi2/34uE/DJBTY48KM16yZ30VZiINTDSUBV2o0uHUs2dfYlu
-	vyhuFreFYHIgUZggoOY8X330XNdE2BPXtqAQemmubWb1kK7/eA8VqzWNyqxGNnVagSguVT
-	jGShxXG77kZ/ukbku7TorBdyDQFtqiA=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=sQu+UR0wPdUJqTKMQ3FnFKDsQvN939+GDRdzOwHoxJU=;
+	b=xQ8BrS4KmJ0mEqUZXA2XK1dvAEFre04EZANFxZfJ1T5BJTM0NvRSWWhdb9p/Q+5h6woqq6
+	uo+E9Cm6Jw/f/WUWGPcCdEtxuxSH3mdpbCxSFf67oawLtc0+UhiddyLcq/J5WrHw5IC6M4
+	co6k5j6M60zLmXTs+l7LcwV5dQzPVDk=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 10 Jun 2026 14:56:04 +0200
-Subject: [PATCH batadv 2/2] batman-adv: fix (m|b)cast csum after
- decrementing TTL
+Subject: [PATCH batadv 0/2] batman-adv: fix broadcast/multicast "hw csum
+ failure"
+Date: Wed, 10 Jun 2026 14:56:02 +0200
+Message-Id: <20260610-ip_checksum-v1-0-0fd7f471dca3@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260610-ip_checksum-v1-2-0fd7f471dca3@narfation.org>
-References: <20260610-ip_checksum-v1-0-0fd7f471dca3@narfation.org>
-In-Reply-To: <20260610-ip_checksum-v1-0-0fd7f471dca3@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAOJeKWoC/yWMXQqDMBAGryLfcwNJagP2KqWU/Ky6llrJqhTEu
+ zetjzMws0EoMwmu1YZMKwu/xwLmVCH2fuxIcSoMq63TzmjF0yP2FJ+yvFTduCadja1NuKAUU6a
+ WP//bDcHPPq24H16WMFCcfyvs+xefjjtKdwAAAA==
+X-Change-ID: 20260610-ip_checksum-4969d31241b5
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4522; i=sven@narfation.org;
- h=from:subject:message-id; bh=PD4OP2UsHtxVWHTxCwUMZw+4OlCMxqOvveS24pbK2EA=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmacU/aFi6etVrx6I3LxTM9ZXu9ym7e+9Zw0e/siovv5
- t2cXHLoa0cpC4MYF4OsmCLLniv55zezv5X/PO3jUZg5rEwgQxi4OAVgImqMDP9M9lq/ty/8mt09
- z4ltU5zkHDbWzgfJq1J1V1s4XH65i4mH4X/OfxbXavbvk9dkH989Pbhiyb25ZrdluZsV7sR3/+W
- KW8QAAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1921; i=sven@narfation.org;
+ h=from:subject:message-id; bh=fIJSL6aFNtymk2zTyw6D7XiX6W0MKUa3Wx+TgPLupuI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmacY8Fr/v1pLWqbPe2/9uxYdeU/B1t6v7vfIv698bsa
+ eAUVuDsKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAEwkmI3hD5dyrPH+zOjp3ro/
+ ngoEmS7ecSr17aavdZK5qg9/uNq4yjL8d2X/wZBpNMnfPlC/uXYPH+8t72v3OspKd6/eKLhtqfo
+ jZgA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: QICGCGZK4H4S2CCXKURKLAHKCQNUIAK7
-X-Message-ID-Hash: QICGCGZK4H4S2CCXKURKLAHKCQNUIAK7
+Message-ID-Hash: EWV6RP3KZGKLNZRNGUHLGFFVFEBOUX7N
+X-Message-ID-Hash: EWV6RP3KZGKLNZRNGUHLGFFVFEBOUX7N
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QICGCGZK4H4S2CCXKURKLAHKCQNUIAK7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EWV6RP3KZGKLNZRNGUHLGFFVFEBOUX7N/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,120 +113,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The broadcast and multicast packets can be received at the same time by the
-local system and forwarded to other nodes. Both are simply decrementing the
-TTL at the beginning of the receive path - independent of chosen paths
-(receive/forward). But such a modification of the data conflicts with the
-hw csum. This is not a problem when the packet is directly forwarded but
-can cause errors in the local receive path.
+Yesterday, I wanted to test the pending fixes for the next release on the
+Freifunk Vogtland server. It was noticed that there was a
 
-Such a problem can then trigger a "hw csum failure". The receiver path must
-therefore ensure that the csum is fixed for each modification of the
-payload before batadv_interface_rx() is reached.
+    bat-rc: hw csum failure
+    skb len=96 headroom=304 headlen=96 tailroom=1328
+    mac=(290,14) mac_len=14 net=(304,40) trans=344
+    shinfo(txflags=0 nr_frags=0 gso(size=0 type=0 segs=0))
+    csum(0xfffffb8a start=64394 offset=65535 ip_summed=2 complete_sw=0 valid=1 level=0)
+    hash(0x0 sw=0 l4=0) proto=0x86dd pkttype=2 iif=32
+    priority=0x100 mark=0x0 alloc_cpu=1 vlan_all=0x0
+    encapsulation=0 inner(proto=0x0000, mac=0, net=0, trans=0)
+    dev name=bat-rc feat=0x0000000000004200
 
-Since all batman-adv packet types with a ttl have it as u8 at offset 2, a
-helper can be used for all of them. But it is only used at the moment for
-batadv_bcast_packet and batadv_mcast_packet because they are the only ones
-which deliver the packet locally but unconditionally modify the TTL.
+during the start of the server. The shown packet (removed here) was just a
+simple broadcast packet. A quick check of the logs showed that this problem
+was already present before the fixes. The most likely culprit was a
+modification of the packets before the local delivery path was received
+(see commit 798174b15153 ("batman-adv: fix packet checksum in receive
+path") for a better explanation). The steps are
 
-Fixes: 5e399a8a6b09 ("batman-adv: bcast: queue per interface, if needed")
-Fixes: 8ed36122d709 ("batman-adv: mcast: implement multicast packet reception and forwarding")
+* actually make sure that broadcast packet is unshared before trying to
+  write to it
+* unchecksum area before modying it and afterwards rechecksum it
+
+This is tested successfully on our servers without any new Oops. And the AI
+overlords only complained (until now) about an unrelated [1] TTL
+modification.
+
+[1] https://www.open-mesh.org/issues/442
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 56 insertions(+), 2 deletions(-)
+Sven Eckelmann (2):
+      batman-adv: ensure bcast is writable before modifying TTL
+      batman-adv: fix (m|b)cast csum after decrementing TTL
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 7b4acd1a..8786b66c 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -8,6 +8,7 @@
- #include "main.h"
- 
- #include <linux/atomic.h>
-+#include <linux/build_bug.h>
- #include <linux/byteorder/generic.h>
- #include <linux/compiler.h>
- #include <linux/errno.h>
-@@ -204,6 +205,59 @@ bool batadv_check_management_packet(struct sk_buff *skb,
- 	return true;
- }
- 
-+/**
-+ * batadv_skb_decrement_ttl() - decrement ttl in a batman-adv header, csum-safe
-+ * @skb: the received packet with @skb->data pointing to the batman-adv header
-+ *
-+ * Supports the following packet types, all of which carry the TTL at offset 2:
-+ *
-+ * - batadv_ogm_packet
-+ * - batadv_ogm2_packet
-+ * - batadv_icmp_header
-+ * - batadv_icmp_packet
-+ * - batadv_icmp_tp_packet
-+ * - batadv_icmp_packet_rr
-+ * - batadv_unicast_packet
-+ * - batadv_frag_packet
-+ * - batadv_bcast_packet
-+ * - batadv_mcast_packet
-+ * - batadv_coded_packet
-+ * - batadv_unicast_tvlv_packet
-+ *
-+ * Return: true if the packet may be forwarded (ttl decremented),
-+ *  false if it must be dropped (ttl would expire)
-+ */
-+static bool batadv_skb_decrement_ttl(struct sk_buff *skb)
-+{
-+	static const size_t ttl_offset = 2;
-+	u8 *ttl_pos;
-+
-+	BUILD_BUG_ON(offsetof(struct batadv_ogm_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_ogm2_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_icmp_header, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_icmp_tp_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_frag_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_bcast_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_mcast_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_coded_packet, ttl) != ttl_offset);
-+	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, ttl) != ttl_offset);
-+
-+	ttl_pos = skb->data + ttl_offset;
-+
-+	/* would expire on this hop -> drop, leave header + csum untouched */
-+	if (*ttl_pos < 2)
-+		return false;
-+
-+	skb_postpull_rcsum(skb, ttl_pos, 1);
-+	(*ttl_pos)--;
-+	skb_postpush_rcsum(skb, ttl_pos, 1);
-+
-+	return true;
-+}
-+
- /**
-  * batadv_recv_my_icmp_packet() - receive an icmp packet locally
-  * @bat_priv: the bat priv with all the mesh interface information
-@@ -1197,7 +1251,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	bcast_packet = (struct batadv_bcast_packet *)skb->data;
- 
--	if (bcast_packet->ttl-- < 2)
-+	if (!batadv_skb_decrement_ttl(skb))
- 		goto free_skb;
- 
- 	orig_node = batadv_orig_hash_find(bat_priv, bcast_packet->orig);
-@@ -1304,7 +1358,7 @@ int batadv_recv_mcast_packet(struct sk_buff *skb,
- 		goto free_skb;
- 
- 	mcast_packet = (struct batadv_mcast_packet *)skb->data;
--	if (mcast_packet->ttl-- < 2)
-+	if (!batadv_skb_decrement_ttl(skb))
- 		goto free_skb;
- 
- 	tvlv_buff = (unsigned char *)(skb->data + hdr_size);
+ net/batman-adv/routing.c | 64 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 62 insertions(+), 2 deletions(-)
+---
+base-commit: 385b248dd4e46c4ce022adeb1b13e547d1954901
+change-id: 20260610-ip_checksum-4969d31241b5
 
--- 
-2.47.3
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
