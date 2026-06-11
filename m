@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFBB9CD98C7
-	for <batman-adv@archiver.kernel.org>; Thu, 11 Jun 2026 17:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D707CD98CE
+	for <batman-adv@archiver.kernel.org>; Thu, 11 Jun 2026 17:26:50 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2C86F84250
-	for <batman-adv@archiver.kernel.org>; Thu, 11 Jun 2026 19:26:05 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 85FF084335
+	for <batman-adv@archiver.kernel.org>; Thu, 11 Jun 2026 19:26:49 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1781198765;
- b=Bfwyu0cWArzSuixnJqIrPbVQrNHhCHRERwB3VYJOiav7cxL0fd2toJGX8vHniEEeIZTv4
- u1vC//pKLTbK6Ujblks13t8gSkNSFuOmAP7q9LSZ/I6k+PbH7Fo4XUI9ndqmzGRgeSsqmQT
- mtEA+o5U4gsY4c7iuMPRQp8NKNajXuA=
+ t=1781198809;
+ b=mq/9bG0msbYdTr++1T55tv9Pm6kc4iwB7Q2S95UHIH4X+Uin/kDrGg0llEdGSwbbyx2cX
+ Ylyiv4wJ2P8VQWcQHWwqrRllyVIfFa2fc3zLZxOuJywwyzSug1VHDfJG3H8SFLSe5K7xZlQ
+ uOhmVXHi80hXYMV5QBZYPV6SFieJqOA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1781198765; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1781198809; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=rNz1k/0Gbh8K7uLoiWVV2NBZcmAGJu4+y3e6spM3ftA=;
- b=luNuNa96qd6+dQOfJUD6w3cEp1TLZs3RNIv0YajuJBXj1vgpN8xEBfkoUP9+a8y/LSfP+
- oWNAZN9pb15h03Cfx04d8VCmdW4yu44Z6gLEr/8RGEmSxPd7mrIX5sxUsYRUTUeiWLn6atP
- j5p9bgUjWJUrAbbYppfQUiVlSXlqVj8=
+ list-archive; bh=HO4LnxNR5zkyhmurto2jhEY+2WuYyuBPbePygB1iZ1w=;
+ b=bUcosfGd0gfl6q0rpkxxlRwI7usPCSwLaSgipm3LHZSgPiheTe5JPPPDTdz71jX34tYSy
+ MZrsnx4okJbWKE0guSoLwoeFDrWk+RyT6wdp+04f33h1xECws0/9bM7GGdlvpF0voFKQHN7
+ Dxx3pqfD1dcgie7hDlh12V1v4eS+2UU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7888D83BF3
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 11 Jun 2026 19:24:37 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id A8C0183E09
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 11 Jun 2026 19:24:32 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781198677;
-	b=IafK9zJ3S5KX7rhdDKaGuqjHJ7bURGHvPX6iYBu0yUwxq3N0U7NeBuQ1rf1mhF41WqlqW+
-	aaETyc5cwWhMeD5jbSHFqJYU2AR4mujVIsU3HiqhiML0o+xgYnqSzBlr/yMQMp83khGpvB
-	Zfezy39IK78x6+ZUOYKg5XFBfjwZz8o=
+	b=omEcJ4J5LWLWJM6iDmWFg5536RLZ+qhPpevovBiExbytOvo6nPAM+is9167zPdmeVlvKwN
+	6rH40E/oNPBxkVX4IYUylWpgIEDNlhdV2Zm4hPZxJcl6atIrPHcCtKq47Ctnqh+tmNryMA
+	RRMsIJ48RRUtbGmGYECq526W83Vmlms=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1781198677;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=rNz1k/0Gbh8K7uLoiWVV2NBZcmAGJu4+y3e6spM3ftA=;
-	b=rpNzJ/qH4xUmSarBAAjP0gdGpTavTulAd432NdqEwHtw5gPp9sohXBWdAT5AOYkAC9YAlT
-	qfFdQ+3WKTjfYISsYhbfDK5RN9IH6v9TYscot+wlZk8r/ktAYrzoWRwKOU4JuzLv2xa102
-	8umN8BzO1x1xnJFFzczhYzutP6RTYYo=
+	bh=HO4LnxNR5zkyhmurto2jhEY+2WuYyuBPbePygB1iZ1w=;
+	b=vACwr+LnRWBlyVdlokyyQvSmTQ4Asx/spIcRYa+xmGBUrRBvZ3UsTAN9lev5qw5fNpAjHH
+	6t6E0rsf+c8u4Ce4En/HAdNv0Z04wcol52oiRUhheNY8JtAgNVnNY6pLvAp3LHNEVL2dKU
+	taC+UOJqJdVM9uo3860FArQj/abb5AI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=GJw0VGBW;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=MumQC2x7;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3299D20019;
-	Thu, 11 Jun 2026 17:24:37 +0000 (UTC)
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+Received: by dvalin.narfation.org (Postfix) id 3A2E720280;
+	Thu, 11 Jun 2026 17:24:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1781198677;
+	s=20121; t=1781198672;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rNz1k/0Gbh8K7uLoiWVV2NBZcmAGJu4+y3e6spM3ftA=;
-	b=GJw0VGBWO+Ad4ZGgO2wFOWmx6xGqGWWir9IyfJoYgKIjbDGoFSzIsS6hZtquOTKQAoI4OE
-	lmBCIQbDqqGYQ5n6z0ij3CDdhVVx/3z22Cs7sKHkOQ8qOMtrODYDUK27ZL+PcXiTJxNcAb
-	Lv3vchFsLqaBbwCUHwrmecbQbSTP2z8=
+	bh=HO4LnxNR5zkyhmurto2jhEY+2WuYyuBPbePygB1iZ1w=;
+	b=MumQC2x7d+/HYNKF1GNCxY00C27wxJoQejz+rWVGkpLlIsri6t98qG0+/cCaFnsLnz1KSc
+	2uoyM0AyhYvRH6txk03ux0V9gR7M5518r+Nu6X23RqZfwyaB+7wKX+Z8Nq5uh2Gy8KXR60
+	QOldYcy6l4iMUnXf9anjj6Q1pHwpjyQ=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 11 Jun 2026 19:24:08 +0200
-Subject: [PATCH batadv v2 3/9] batman-adv: tp_meter: prevent parallel
- modifications of last_recv
+Date: Thu, 11 Jun 2026 19:24:07 +0200
+Subject: [PATCH batadv v2 2/9] batman-adv: tp_meter: annotate
+ last_recv_time access with READ/WRITE_ONCE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260611-tp-unacked-list-v2-3-47389466c5c1@narfation.org>
+Message-Id: <20260611-tp-unacked-list-v2-2-47389466c5c1@narfation.org>
 References: <20260611-tp-unacked-list-v2-0-47389466c5c1@narfation.org>
 In-Reply-To: <20260611-tp-unacked-list-v2-0-47389466c5c1@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5526; i=sven@narfation.org;
- h=from:subject:message-id; bh=jskhQpuKCjqjOYTOAeSCsC3UVmONNbaIFBkbzZyMeHA=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFla760k5Cr0DTYK9NfXXlHe+JqB4ee7sD6PH0Kr395Tf
- lhZIOnfUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZiIQArDf7fOOzIX4h+sSC+6
- J+6zb8d67laWyWk7pm+VD5TM7Of4u5ORYdnml8m5K1Z3rHgrlZVqpKO339vYIPPFz7Y1P9e67PH
- ayAoA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2100; i=sven@narfation.org;
+ h=from:subject:message-id; bh=JTzGOSGFFGXjYHTB0Csmyqtzi5OaUERQcU4qAdS7zBo=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFla763YX2/ZvbBO+vHqO1nRz3eVfC/zvRvCJ+1cFWlQa
+ tlnISDWUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZiImx7Df6/9pm9Mrzkway7Y
+ Mm/trY4tZZU7jkrWnChsWH/zx583v38x/I9MOqzNmMN0NmLf6cdpiZv0rxz14bn/Urtnfl/f1UW
+ RexkB
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: SBWWCQJQDTY7XGMCF4JGHCCGMK4RPCHT
-X-Message-ID-Hash: SBWWCQJQDTY7XGMCF4JGHCCGMK4RPCHT
+Message-ID-Hash: RGWRXVQZDXA22XJXFZEHJGWUHMWIOH7J
+X-Message-ID-Hash: RGWRXVQZDXA22XJXFZEHJGWUHMWIOH7J
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SBWWCQJQDTY7XGMCF4JGHCCGMK4RPCHT/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RGWRXVQZDXA22XJXFZEHJGWUHMWIOH7J/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,148 +112,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-When last_recv is updated to store the last receive sequence number, it is
-assuming that nothing is modifying in parallel while:
-
-* check for outdated packets is done
-* out of order check is performed (and packets are stored in out-of-order
-  queue)
-* the out-of-order queue was searched for closed gaps
-* sequence number for next ack is calculated
-
-Nothing of that was actually protected. It could therefore happen that the
-last_recv was updated multiple times in parallel and the final sequence
-number was calculated with deltas which had no connection to the sequence
-number they were added to.
-
-Lock this whole region with the same lock which was already used to protect
-the unacked (out-of-order) list.
+The last_recv_time field for batadv_tp_receiver tracks the jiffies value of
+the most recent activity and is used to detect timeouts. These accesses are
+not consistently protected by a lock, so READ_ONCE/WRITE_ONCE must be used
+to prevent data races caused by compiler optimizations.
 
 Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/tp_meter.c | 22 +++++++++++++---------
- net/batman-adv/types.h    |  2 +-
- 2 files changed, 14 insertions(+), 10 deletions(-)
+ net/batman-adv/tp_meter.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index fb87fa14..055aa1ee 100644
+index 259ac8c3..fb87fa14 100644
 --- a/net/batman-adv/tp_meter.c
 +++ b/net/batman-adv/tp_meter.c
-@@ -1402,6 +1402,7 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
-  */
- static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
- 					  const struct sk_buff *skb)
-+	__must_hold(&tp_vars->common.unacked_lock)
- {
- 	const struct batadv_icmp_tp_packet *icmp;
- 	struct batadv_tp_unacked *un, *new;
-@@ -1418,12 +1419,11 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
- 	payload_len = skb->len - sizeof(struct batadv_unicast_packet);
- 	new->len = payload_len;
+@@ -1290,7 +1290,7 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ 	bat_priv = tp_vars->common.bat_priv;
  
--	spin_lock_bh(&tp_vars->common.unacked_lock);
- 	/* if the list is empty immediately attach this new object */
- 	if (list_empty(&tp_vars->common.unacked_list)) {
- 		list_add(&new->list, &tp_vars->common.unacked_list);
- 		tp_vars->common.unacked_count++;
--		goto out;
-+		return true;
+ 	/* if there is recent activity rearm the timer */
+-	if (!batadv_has_timed_out(tp_vars->last_recv_time,
++	if (!batadv_has_timed_out(READ_ONCE(tp_vars->last_recv_time),
+ 				  BATADV_TP_RECV_TIMEOUT)) {
+ 		/* reset the receiver shutdown timer */
+ 		batadv_tp_reset_receiver_timer(tp_vars);
+@@ -1532,7 +1532,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	tp_vars = batadv_tp_list_find_receiver_session(bat_priv, icmp->orig,
+ 						       icmp->session);
+ 	if (tp_vars) {
+-		tp_vars->last_recv_time = jiffies;
++		WRITE_ONCE(tp_vars->last_recv_time, jiffies);
+ 		goto out_unlock;
  	}
  
- 	/* otherwise loop over the list and either drop the packet because this
-@@ -1472,9 +1472,6 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
- 		tp_vars->common.unacked_count--;
- 	}
+@@ -1562,7 +1562,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	kref_get(&tp_vars->common.refcount);
+ 	timer_setup(&tp_vars->common.timer, batadv_tp_receiver_shutdown, 0);
  
--out:
--	spin_unlock_bh(&tp_vars->common.unacked_lock);
--
- 	return true;
- }
+-	tp_vars->last_recv_time = jiffies;
++	WRITE_ONCE(tp_vars->last_recv_time, jiffies);
  
-@@ -1484,6 +1481,7 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
-  * @tp_vars: the private data of the current TP meter session
-  */
- static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
-+	__must_hold(&tp_vars->common.unacked_lock)
- {
- 	struct batadv_tp_unacked *un, *safe;
- 	u32 to_ack;
-@@ -1491,7 +1489,6 @@ static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
- 	/* go through the unacked packet list and possibly ACK them as
- 	 * well
- 	 */
--	spin_lock_bh(&tp_vars->common.unacked_lock);
- 	list_for_each_entry_safe(un, safe, &tp_vars->common.unacked_list, list) {
- 		/* the list is ordered, therefore it is possible to stop as soon
- 		 * there is a gap between the last acked seqno and the seqno of
-@@ -1509,7 +1506,6 @@ static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
- 		kfree(un);
- 		tp_vars->common.unacked_count--;
- 	}
--	spin_unlock_bh(&tp_vars->common.unacked_lock);
- }
- 
- /**
-@@ -1588,6 +1584,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
- 	const struct batadv_icmp_tp_packet *icmp;
- 	struct batadv_tp_receiver *tp_vars;
- 	size_t packet_size;
-+	u32 to_ack;
- 	u32 seqno;
- 
- 	icmp = (struct batadv_icmp_tp_packet *)skb->data;
-@@ -1616,6 +1613,8 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
- 		WRITE_ONCE(tp_vars->last_recv_time, jiffies);
- 	}
- 
-+	spin_lock_bh(&tp_vars->common.unacked_lock);
-+
- 	/* if the packet is a duplicate, it may be the case that an ACK has been
- 	 * lost. Resend the ACK
- 	 */
-@@ -1627,8 +1626,10 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
- 		/* exit immediately (and do not send any ACK) if the packet has
- 		 * not been enqueued correctly
- 		 */
--		if (!batadv_tp_handle_out_of_order(tp_vars, skb))
-+		if (!batadv_tp_handle_out_of_order(tp_vars, skb)) {
-+			spin_unlock_bh(&tp_vars->common.unacked_lock);
+ 	kref_get(&tp_vars->common.refcount);
+ 	hlist_add_head_rcu(&tp_vars->common.list, &bat_priv->tp_receiver_list);
+@@ -1613,7 +1613,7 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
  			goto out;
-+		}
+ 		}
  
- 		/* send a duplicate ACK */
- 		goto send_ack;
-@@ -1642,11 +1643,14 @@ static void batadv_tp_recv_msg(struct batadv_priv *bat_priv,
- 	batadv_tp_ack_unordered(tp_vars);
+-		tp_vars->last_recv_time = jiffies;
++		WRITE_ONCE(tp_vars->last_recv_time, jiffies);
+ 	}
  
- send_ack:
-+	to_ack = tp_vars->last_recv;
-+	spin_unlock_bh(&tp_vars->common.unacked_lock);
-+
- 	/* send the ACK. If the received packet was out of order, the ACK that
- 	 * is going to be sent is a duplicate (the sender will count them and
- 	 * possibly enter Fast Retransmit as soon as it has reached 3)
- 	 */
--	batadv_tp_send_ack(bat_priv, icmp->orig, tp_vars->last_recv,
-+	batadv_tp_send_ack(bat_priv, icmp->orig, to_ack,
- 			   icmp->timestamp, icmp->session, icmp->uid);
- out:
- 	batadv_tp_receiver_put(tp_vars);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 057c5e5d..efb46347 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1357,7 +1357,7 @@ struct batadv_tp_vars_common {
- 	/** @unacked_list: list of unacked packets (meta-info only) */
- 	struct list_head unacked_list;
- 
--	/** @unacked_lock: protect unacked_list */
-+	/** @unacked_lock: protect unacked_list + &batadv_tp_receiver.last_recv */
- 	spinlock_t unacked_lock;
- 
- 	/** @unacked_count: number of unacked entries */
+ 	/* if the packet is a duplicate, it may be the case that an ACK has been
 
 -- 
 2.47.3
