@@ -1,97 +1,97 @@
-Return-Path: <b.a.t.m.a.n-bounces+batman-adv=archiver.kernel.org@lists.open-mesh.org>
+Return-Path: <b.a.t.m.a.n-bounces+batman=archiver.kernel.org@lists.open-mesh.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4181CD98CE
-	for <batman-adv@archiver.kernel.org>; Mon, 15 Jun 2026 04:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B941BCD98F6
+	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 07:01:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2CF6984035
-	for <batman-adv@archiver.kernel.org>; Mon, 15 Jun 2026 06:43:37 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 18D2683ED0
+	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 09:01:08 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1781498617;
- b=3DQDJNGZPpJHQFxWQmmSi0d+Z6yv6C3vPTM04vtaiE5YbfZ3yI8Yf/YldlKChgjjlWHEA
- RVr4NF00rK10tG3aknmWXpu3up5uZCmM6Rjnv4QPqfYNcSqPsEi9ekzgdWuO+ivD2wqpnck
- 4/keG6bSG4Z5yJzMzkPJvJUNO2NOpLQ=
+ t=1781852468;
+ b=czw47pXycNpJRVdX//eAzn4/jOCVPNYmCwYdytw+mFfWIeuagP3eYytuxE9T6ZGgQs5CX
+ IL/JWba2S+JGw95mQ5CXc9SNncZVdRbmMmEC9lULmmG1pOBhSW20BEXlek0F/D3OSiSINnD
+ 2/73jRkFII3/oHY81wZD1pT3IT1kFAs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1781498617; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1781852468; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=OTvnH6FUoSBk1x6oouRwj1/xWiUN/i+RlaBLS3fv12c=;
- b=qmWPdMAINU5b6RJlQepsrupmvjP8oyURPakVXwPCFnvDoE96YTugsgRracBXBqdlAMMIa
- VaymTzeD1GEVlZH5ap3U2nu3YNfZvN8ZaN2yWO9o3OpUgEuEeWtEA86epuxdXhq2DPIlphs
- dpmY7gbqFP0HMj3wxrs/NZBuPH4mt3M=
+ list-archive; bh=qo0iYtAoCh7dGR3yHCIMed/owbEgbIwKhpDMlELxzWw=;
+ b=Vd6DGRxgGgTo0Rj4T6oRvFdBtTWlKxnxTVDpr9z8O+mi7b35V3AnTsXyeR0vGO+2tLqdz
+ fiXaITOBedw1ZFlaMQNMgNK/AEAw81XkucLo3sTVvTlHwg6+VDQCzdBivE7DCuRbZ6krFSX
+ LagImdnGwP2vHlWPgE08FdGQ5D3dVeU=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EEE6683DA9
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 15 Jun 2026 06:43:02 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781498593;
-	b=mSHqHTJZdOzJBicMSjcIXLBWEZvtI3Dyel3P0yFKHMiLcXxdFvaitLYJ6EbFvr5O1Hjf75
-	WtkTjk+RYD4/2IpMZE9vA1ory9rg07FyWQpFT/HqeX93MPXuXzIjDnf2TANB/lgpf1hC3K
-	NbVtnc2bJrit5sW2Wx7+foYCakiK5JQ=
+ dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 997BB8081E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 19 Jun 2026 09:00:48 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781852453;
+	b=yWWXyE0l46iaapw7jDxXt9yErW1KmgMiq6g1Kr76MTakfdVJN6/3VeT7XqnPI+UgPzafoF
+	er1KSVXfuffo8NcOxSOIp0/K/r51jb/Vr91yd5o9KnP9gLwuKrCsDAUm6DJrT47TGTcl7d
+	LhGDp5xZiiJeHy1lxq5W05ZJzwXcJHI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1781498593;
+	s=20121; t=1781852453;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=OTvnH6FUoSBk1x6oouRwj1/xWiUN/i+RlaBLS3fv12c=;
-	b=MS7AZzmCcPt6ajEGQos6WkTrSE8hR7iffF0RQng30d+7FaBMAvUWrzOswE/PFsnMZz8QsX
-	ILA+AbnEScI91x/ycurvnxlx1NTZXmWEV7OiK+g4i402Nzu9mq49reaAlEuaGomvgonePS
-	D3DtndL5AZ4pUhS+i+ZEgYPpusMv/xw=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=qo0iYtAoCh7dGR3yHCIMed/owbEgbIwKhpDMlELxzWw=;
+	b=1idcBbtqrxCKPpHDu2JxpF9MLOP9I8xiwcRfCs3bff/Wu2EdGxEu3w9XWZ6Hfi99TgehyU
+	VgNaQPGHfIQGnQci3/9oDCHK73A2uA6HoOA8YXEG/JkhIYVFOswHM0gYQrq4DHtpcaJ93o
+	rGrQmt0bBTfLMBpWtq9ZjCBWqWOLCxs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=imSmhM2f;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 45BCD1FF92;
-	Mon, 15 Jun 2026 04:43:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1781498581;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=bEJhaM3t;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
+	s=09092022; t=1781852447;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=OTvnH6FUoSBk1x6oouRwj1/xWiUN/i+RlaBLS3fv12c=;
-	b=imSmhM2fvyPHWMrs0Bz33kfSdoJBZsfDzaTc94RnwUP4bqM4i6nOGI1yXwjuWz6OQO4h1H
-	wdyoKF2Anwol3nNTAPUHrvb3T8xJvIXw1dhwer2wF4WdddN7fF5wkJbT2n0TwhZJr0lIt9
-	IDzxsqbwmP6lmiXI4iwlDx/fnmk/tUk=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 15 Jun 2026 06:42:53 +0200
-Subject: [PATCH batadv v2] batman-adv: tvlv: enforce 2-byte alignment
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qo0iYtAoCh7dGR3yHCIMed/owbEgbIwKhpDMlELxzWw=;
+	b=bEJhaM3tV3Ir745fax8850NlyCjwpARi0UXkyIOjVWuXppiz+t8EinUOx9Ph2rO54kaGgT
+	LSe17krS+6Q7q3qHw7VCrw+6KhQv9qMxu++tIzpVvAI99pvf0cMXUE7h1XRyHk91+qIsSB
+	NxJQqfiw+pIJa75F9uMOloZcLD4egBGMV3fVlSrrZse197OX9JSyGzKZ/83sB/7jJ0kT6R
+	bw7QiDOJ39kO+lmyjLQUpwKqQ9ipBjqiQcEt9bqANLeNffpnWj52eL0W1SYcQjPfE76vMH
+	Ow5u3YRSWzy3Qvwy3NTs8DVuZ2Yl+Sej66yAVhgVCzzzwdI+Zd+1oSfiSSl4oA==
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Sven Eckelmann <sven@narfation.org>,
+	stable@kernel.org,
+	Nora Schiffer <neocturne@universe-factory.net>,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 01/15] batman-adv: gw: don't deselect gateway with active
+ hardif
+Date: Fri, 19 Jun 2026 09:00:31 +0200
+Message-ID: <20260619070045.438101-2-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260619070045.438101-1-sw@simonwunderlich.de>
+References: <20260619070045.438101-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260615-tvlv-2b-align-v2-1-a48a8d5f73db@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAMyCL2oC/3WOTQ6CMBCFr0JmbQ2dkkpceQ/Doi0DjCHFtLXRE
- O5uwbXL9/K9nxUiBaYI12qFQJkjL74IPFXgJuNHEtwXDVijrrVsRMpzFmiFmXn0YpDSuga1Ug1
- CyTwDDfw++u5gTTJ9hu7nx5d9kEt72U5OHNMSPsdwlgf/ZyNLIYUmlKpVrsf2cvMmDCaVp+clj
- NBt2/YFE5CcmMgAAAA=
-X-Change-ID: 20260614-tvlv-2b-align-f11bc4263342
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4232; i=sven@narfation.org;
- h=from:subject:message-id; bh=IHdGukbqELV3m4hCrvY/8FDMP8XA8JbACmI/e7HeS+Q=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFn6TWcrHU1mZx4xEX0r6aBcajN7exX7s6uyIv8j/D786
- ov1mPO/o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRhOsMfwXqunc6932Sc7zu
- ty0ob8o7n/ks6876nHL+X7a26+CXa7cZ/pcKxmxcFvNh9Rn91+YPrcsWBezf1X9bv/ZN2fUFzx5
- uqeEDAA==
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 2BSBEHKKJZP4UTWCW2IPGDSW3ZBRI5IX
-X-Message-ID-Hash: 2BSBEHKKJZP4UTWCW2IPGDSW3ZBRI5IX
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: 4K3E3ACKNPUC6G2MIIYHDDFO2QCZW5YB
+X-Message-ID-Hash: 4K3E3ACKNPUC6G2MIIYHDDFO2QCZW5YB
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2BSBEHKKJZP4UTWCW2IPGDSW3ZBRI5IX/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4K3E3ACKNPUC6G2MIIYHDDFO2QCZW5YB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,126 +113,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The fields of an aggregated OGM(v2) are accessed assuming (at least) 2-byte
-alignment, so a following OGM must start at an even offset. As the header
-length is even, an odd tvlv_len would misalign it and trigger unaligned
-accesses on strict-alignment architectures.
+From: Sven Eckelmann <sven@narfation.org>
 
-Such a misaligned TVLV/OGM/OGMv2/MCAST is not created by a normal
-participant in the mesh. Therefore, reject such malformed packets.
+The batadv_hardif_cnt() was previously checking if there is an
+batadv_hard_iface->mesh_iface which is has the same mesh_iface. And since
+batadv_hardif_disable_interface() was resetting the
+batadv_hard_iface->mesh_iface after this check, it had to verify whether
+*1* interface was still part of the mesh_iface before it started the
+gateway deselection.
 
-Fixes: 0b6aa0d43767 ("batman-adv: tvlv - basic infrastructure")
+But after batadv_hardif_cnt() is now checking the lower interfaces of
+mesh_iface and batadv_hardif_disable_interface() already removed the
+interface via netdev_upper_dev_unlink() earlier in this function, the check
+must now make sure that *0* interfaces can be found by batadv_hardif_cnt()
+before selected gateway must be deselected. Otherwise the deselection would
+already happen one batadv_hard_iface too early.
+
+Because a 0 hardif count from batadv_hardif_cnt() is equal to an empty
+list, it is possible to replace the counting with a simple list_empty().
+
+Cc: stable@kernel.org
+Fixes: 7dc284702bcd ("batman-adv: store hard_iface as iflink private data")
+Reviewed-by: Nora Schiffer <neocturne@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
-Changes in v2:
-- also handle batadv_recv_mcast_packet()
-- remove RFC
-- Link to v1: https://patch.msgid.link/20260614-tvlv-2b-align-v1-1-6e21383cd287@narfation.org
----
- net/batman-adv/bat_iv_ogm.c | 11 ++++++++++-
- net/batman-adv/bat_v_ogm.c  | 11 ++++++++++-
- net/batman-adv/routing.c    |  6 ++++++
- net/batman-adv/tvlv.c       |  6 ++++++
- 4 files changed, 32 insertions(+), 2 deletions(-)
+ net/batman-adv/hard-interface.c | 28 ++--------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 7588e64e..bb2f012b 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -316,14 +316,23 @@ batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
- 			  const struct batadv_ogm_packet *ogm_packet)
- {
- 	int next_buff_pos = 0;
-+	u16 tvlv_len;
- 
- 	/* check if there is enough space for the header */
- 	next_buff_pos += buff_pos + sizeof(*ogm_packet);
- 	if (next_buff_pos > packet_len)
- 		return false;
- 
-+	tvlv_len = ntohs(ogm_packet->tvlv_len);
-+
-+	/* the fields of an aggregated OGM are accessed assuming (at least)
-+	 * 2-byte alignment, so a following OGM must start at an even offset.
-+	 */
-+	if (tvlv_len & 1)
-+		return false;
-+
- 	/* check if there is enough space for the optional TVLV */
--	next_buff_pos += ntohs(ogm_packet->tvlv_len);
-+	next_buff_pos += tvlv_len;
- 
- 	return next_buff_pos <= packet_len;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 60cee2c2f2f41..03d01c20a9548 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -814,30 +814,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	return ret;
  }
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 95efd8a4..037921aa 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -849,14 +849,23 @@ batadv_v_ogm_aggr_packet(int buff_pos, int packet_len,
- 			 const struct batadv_ogm2_packet *ogm2_packet)
- {
- 	int next_buff_pos = 0;
-+	u16 tvlv_len;
  
- 	/* check if there is enough space for the header */
- 	next_buff_pos += buff_pos + sizeof(*ogm2_packet);
- 	if (next_buff_pos > packet_len)
- 		return false;
+-/**
+- * batadv_hardif_cnt() - get number of interfaces enslaved to mesh interface
+- * @mesh_iface: mesh interface to check
+- *
+- * This function is only using RCU for locking - the result can therefore be
+- * off when another function is modifying the list at the same time. The
+- * caller can use the rtnl_lock to make sure that the count is accurate.
+- *
+- * Return: number of connected/enslaved hard interfaces
+- */
+-static size_t batadv_hardif_cnt(struct net_device *mesh_iface)
+-{
+-	struct batadv_hard_iface *hard_iface;
+-	struct list_head *iter;
+-	size_t count = 0;
+-
+-	rcu_read_lock();
+-	netdev_for_each_lower_private_rcu(mesh_iface, hard_iface, iter)
+-		count++;
+-	rcu_read_unlock();
+-
+-	return count;
+-}
+-
+ /**
+  * batadv_hardif_disable_interface() - Remove hard interface from mesh interface
+  * @hard_iface: hard interface to be removed
+@@ -878,8 +854,8 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
+ 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->mesh_iface);
+ 	batadv_hardif_recalc_extra_skbroom(hard_iface->mesh_iface);
  
-+	tvlv_len = ntohs(ogm2_packet->tvlv_len);
-+
-+	/* the fields of an aggregated OGMv2 are accessed assuming (at least)
-+	 * 2-byte alignment, so a following OGMv2 must start at an even offset.
-+	 */
-+	if (tvlv_len & 1)
-+		return false;
-+
- 	/* check if there is enough space for the optional TVLV */
--	next_buff_pos += ntohs(ogm2_packet->tvlv_len);
-+	next_buff_pos += tvlv_len;
+-	/* nobody uses this interface anymore */
+-	if (batadv_hardif_cnt(hard_iface->mesh_iface) <= 1)
++	/* nobody uses this mesh interface anymore */
++	if (list_empty(&hard_iface->mesh_iface->adj_list.lower))
+ 		batadv_gw_check_client_stop(bat_priv);
  
- 	return next_buff_pos <= packet_len;
- }
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 9db57fd3..c05fcc92 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1366,6 +1366,12 @@ int batadv_recv_mcast_packet(struct sk_buff *skb,
- 	if (tvlv_buff_len > skb->len - hdr_size)
- 		goto free_skb;
- 
-+	/* the fields of an multicast payload are accessed assuming (at least)
-+	 * 2-byte alignment, so a following packet must start at an even offset.
-+	 */
-+	if (tvlv_buff_len & 1)
-+		goto free_skb;
-+
- 	ret = batadv_tvlv_containers_process(bat_priv, BATADV_MCAST, NULL, skb,
- 					     tvlv_buff, tvlv_buff_len);
- 	if (ret >= 0) {
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 403c8545..a957555d 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -477,6 +477,12 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 		if (tvlv_value_cont_len > tvlv_value_len)
- 			break;
- 
-+		/* the next tvlv header is accessed assuming (at least) 2-byte
-+		 * alignment, so it must start at an even offset.
-+		 */
-+		if (tvlv_value_cont_len & 1)
-+			break;
-+
- 		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
- 						       tvlv_hdr->type,
- 						       tvlv_hdr->version);
-
----
-base-commit: c7518adb8b6ebdc481f6ed1fc42c7f45099806af
-change-id: 20260614-tvlv-2b-align-f11bc4263342
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+ 	hard_iface->mesh_iface = NULL;
+-- 
+2.47.3
 
