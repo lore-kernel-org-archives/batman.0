@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C74ECD98F6
-	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 07:03:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 920FBCD98E6
+	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 07:04:06 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DE39A841DE
-	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 09:03:21 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4074F80F3E
+	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 09:04:05 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1781852601;
- b=1qC/n9g9bLGLiQ28pWF1da06ELd8bac3jESDiWSIjAoOI9Cz5QzruH92Sz5C+PQeMllOw
- JxkWpZrPKnWeI6FQh+RSvHU0WKbvtZFgGWLgNGLKpzrGEDwkHBAjVgeBdiLN7TlFXVMlVsM
- cANIjM2FG7k3uCxSyFIZ2QQUu3syEqs=
+ t=1781852645;
+ b=cqfPY6wwSoc455kbETcclFy8Rns880b5eukQr5MkSo9h0V1+VFKyjJ464c125XRyGh+ev
+ abROhQ26Wm+DNGwMx/AwRdACV+aJcacXwY/aneSkVJXWwZPwlbfU2Ff0cEUSLQx6Y4//hjo
+ BPlDYpRqdgIiD6n2B7s26dQuLAmvLlI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1781852601; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1781852645; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2kBmYM7cKZK+VnBuVFOAYovV9CgsOEsRM5SEqnA1Xz0=;
- b=D+ym+6XxM8ZIX28dvgznxad7zFnLfljCQy20Nb3HQn8GGWF/XrYSNKGLXwGnGNhZ4ca5k
- KhdFO+xJyhs6mlrokgyLjuMTfGhb6XXFprnQ+Y5/vsDnpCZim71aA+B2aqmO0SR4uCLe7jz
- aP1V10Cwukm/s/FNpaAdTRop4R8W860=
+ list-archive; bh=i1TkLzyUd1JwPopxOLN6MeiT5+G1+YihcZtxk0na7ro=;
+ b=IyDO5ba6F8O6oAW1qwPiRcNxm4DOeJ6nj2RJxBvfNyDA3u27PPwPd82PT3OA/F1CassNI
+ LqkQiZaDmXecQg3dJdg7QZBF/oeTXmj6GsxILikCjkKfpsuNJiEUOXs4PENVzdqXA7O898s
+ Nk2ssYeDuSqTjUUh0ybo8sl2RVmxhXQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,40 +34,38 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4110583258
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 19 Jun 2026 09:00:54 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E89C48308A
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 19 Jun 2026 09:00:48 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781852454;
-	b=m781+Ku88lX7Fdy7RIEJBvTrnkhxYjihQhJ/ozSMzswiZpT3GKSX7zmJbsEWTiXLzWYTLx
-	erCWYsWBCPmr6jMudhjiLVFTUspfgrIiMVO290F9Cg9u0rxIeoW8WUPgBKagLjTd9slfe4
-	Xtd1cTd7AZn4Y32h2Az31SWc5ZEm0gI=
+	b=zOkhg7TFS5Y/qUoZN7Vm4XaiUZUjW36YYSjoKobxICjhQ+ZxLZMyECu3g6Jrjhs4HGrZVr
+	iXf9nEEZvpzUM3RWYi7r7WGWqEDJnT4/qlUOz0ug+W3gXhOERas1kVq1iShcyingwFXbDT
+	2sRn19dtk4iwWFeP6wabEd/iVkkxqLw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1781852454;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=2kBmYM7cKZK+VnBuVFOAYovV9CgsOEsRM5SEqnA1Xz0=;
-	b=Ghp+iPm+nvnGBfjUetWEZpPUmkRIzbmzP0KOpcu4e40+ZY2CXX/20IY4dW5s8ZfO8tACwC
-	ZFaexlQFj1E7JfqTsu4fP+LRnMGgmQoSpCoV0wu+iDBbK27QE93dxUTvEDGXeIhTocnIJK
-	sOVBwABMjYYECvPlAuuoivYxGm3wo/A=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=i1TkLzyUd1JwPopxOLN6MeiT5+G1+YihcZtxk0na7ro=;
+	b=nxpwc2x7ii9SraA9XK+hnZw3m6tO12ImKhLD1XOfUHBGRzlS3evqPnyTY+Lal8nVlwcYNn
+	CZMzvRFwFE1yyAuh7EHD2BZQFxZ+eZlY0gAxFxaVIRAgqy3bvGzxiX8oZWOATJV5+PRup9
+	z9mngBu39qMq/OKg3SL3FF20iBKd8ws=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=xih1w9Ds;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=h6ql4ZWx;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1781852452;
+	s=09092022; t=1781852446;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2kBmYM7cKZK+VnBuVFOAYovV9CgsOEsRM5SEqnA1Xz0=;
-	b=xih1w9DscKlEeeP/K1YS57wWF1iTZZIASHTXIFui/mHEcuSr33VHknvnEuX+EkYzf6dJ9H
-	Zeu6KLHPENAv/a+SsW9ZMVhZnsJsVDbftxyeLMjYVbz6EoD0ORpTeOB1xZz7KxVG7X9jm2
-	4v2yY2XWmXVIYLvUBSeeqx1mE5MEfHpiuTkS1fZvSj4WQX14r3Vwayqbzvatn0nOjv6B1X
-	uhzn5ik68qCyzmfTVmPzMWoTWSdmwesu9zyEV+t5hfMhDivKfQg1TOW8wZtr3/1ADd3mNZ
-	jRK0GcyH9Resot8DUUyW3MfQebSz4FGVoR/FloEF2scA/VUQAhQFKbWnRQnAng==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=i1TkLzyUd1JwPopxOLN6MeiT5+G1+YihcZtxk0na7ro=;
+	b=h6ql4ZWxeEWdYnFm1M3mQeM7XLANR3/OrTo0BibVg5XKaA2jrGcDTlCfhrKDHsCGM4eskA
+	a9GGheNn3gp+OsmVgfmuiebwqXbiI8kpxye54C3HydJeN4e3InzAHzSY2zT4zJenVSVB4K
+	x9oaLAI0T3zQckgdydd6ntHJayiEigiU4X5hbU6ds8yDF/154BdOV0kQiqXJKt1sgupeXi
+	Dei5CEQEAgYm93WS0Ix+pOzBLeqSnAXj/Pid0bz1/l/5a/mnKeqIW5agmHxiy/hPlNvYYJ
+	dGPfagCKL/JowiAPmRrqqIOXuQXWf1z3Du4PTzav9WqJARxfT/0QBDOO7DPlqw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -76,20 +74,15 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
-	stable@kernel.org,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 07/15] batman-adv: tp_meter: restrict number of unacked
- list entries
-Date: Fri, 19 Jun 2026 09:00:37 +0200
-Message-ID: <20260619070045.438101-8-sw@simonwunderlich.de>
+Subject: [PATCH net 00/15] pull request: batman-adv 2026-06-19
+Date: Fri, 19 Jun 2026 09:00:30 +0200
+Message-ID: <20260619070045.438101-1-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260619070045.438101-1-sw@simonwunderlich.de>
-References: <20260619070045.438101-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: NNGDIBXTNZUIUTOIXSZ3VQ6LMR4Q562J
-X-Message-ID-Hash: NNGDIBXTNZUIUTOIXSZ3VQ6LMR4Q562J
+Message-ID-Hash: 7MVIMRBGAFQ5SASZ5UUV7YTOWL3BBMN4
+X-Message-ID-Hash: 7MVIMRBGAFQ5SASZ5UUV7YTOWL3BBMN4
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +96,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NNGDIBXTNZUIUTOIXSZ3VQ6LMR4Q562J/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7MVIMRBGAFQ5SASZ5UUV7YTOWL3BBMN4/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,119 +105,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+Dear net maintainers,
 
-When the unacked_list is unbound, an attacker could send messages with
-small lengths and appropriated seqno + gaps to force the receiver to
-allocate more and more unacked_list entries. And the end either causing an
-out-of-memory situation or increase the management overhead for the (large)
-list that significant portions of CPU cycles are wasted in searching
-through the list.
+here are some bugfixes for batman-adv which we would like to have integrated into net.
 
-When limiting the list to a specific number, it is important to still
-correctly add a new entry to the list. But if the list became larger than
-the limit, the last entry of the list (with the highest seqno) must be
-dropped to still allow the earlier seqnos to finish and therefore to
-continue the process. Otherwise, the process might get stuck with too high
-seqnos which are not handled by batadv_tp_ack_unordered().
+Please pull or let me know of any problem!
 
-Cc: stable@kernel.org
-Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/tp_meter.c | 23 ++++++++++++++++++++++-
- net/batman-adv/types.h    |  3 +++
- 2 files changed, 25 insertions(+), 1 deletion(-)
+Thank you,
+      Simon
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 7e98cbfbbb70d..259ac8c307359 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -87,6 +87,11 @@
- #define BATADV_TP_PLEN (BATADV_TP_PACKET_LEN - ETH_HLEN - \
- 			sizeof(struct batadv_unicast_packet))
- 
-+/**
-+ * BATADV_TP_MAX_UNACKED - maximum number of packets a receiver didn't yet ack
-+ */
-+#define BATADV_TP_MAX_UNACKED 100
-+
- static u8 batadv_tp_prerandom[4096] __read_mostly;
- 
- /**
-@@ -1303,6 +1308,7 @@ static void batadv_tp_receiver_shutdown(struct timer_list *t)
- 	list_for_each_entry_safe(un, safe, &tp_vars->common.unacked_list, list) {
- 		list_del(&un->list);
- 		kfree(un);
-+		tp_vars->common.unacked_count--;
- 	}
- 	spin_unlock_bh(&tp_vars->common.unacked_lock);
- 
-@@ -1416,6 +1422,7 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
- 	/* if the list is empty immediately attach this new object */
- 	if (list_empty(&tp_vars->common.unacked_list)) {
- 		list_add(&new->list, &tp_vars->common.unacked_list);
-+		tp_vars->common.unacked_count++;
- 		goto out;
- 	}
- 
-@@ -1446,12 +1453,24 @@ static bool batadv_tp_handle_out_of_order(struct batadv_tp_receiver *tp_vars,
- 		 */
- 		list_add(&new->list, &un->list);
- 		added = true;
-+		tp_vars->common.unacked_count++;
- 		break;
- 	}
- 
- 	/* received packet with smallest seqno out of order; add it to front */
--	if (!added)
-+	if (!added) {
- 		list_add(&new->list, &tp_vars->common.unacked_list);
-+		tp_vars->common.unacked_count++;
-+	}
-+
-+	/* remove the last (biggest) unacked seqno when list is too large */
-+	if (tp_vars->common.unacked_count > BATADV_TP_MAX_UNACKED) {
-+		un = list_last_entry(&tp_vars->common.unacked_list,
-+				     struct batadv_tp_unacked, list);
-+		list_del(&un->list);
-+		kfree(un);
-+		tp_vars->common.unacked_count--;
-+	}
- 
- out:
- 	spin_unlock_bh(&tp_vars->common.unacked_lock);
-@@ -1488,6 +1507,7 @@ static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
- 
- 		list_del(&un->list);
- 		kfree(un);
-+		tp_vars->common.unacked_count--;
- 	}
- 	spin_unlock_bh(&tp_vars->common.unacked_lock);
- }
-@@ -1537,6 +1557,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
- 
- 	spin_lock_init(&tp_vars->common.unacked_lock);
- 	INIT_LIST_HEAD(&tp_vars->common.unacked_list);
-+	tp_vars->common.unacked_count = 0;
- 
- 	kref_get(&tp_vars->common.refcount);
- 	timer_setup(&tp_vars->common.timer, batadv_tp_receiver_shutdown, 0);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 5e81c93b8217d..9fa8e73ff6e59 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1366,6 +1366,9 @@ struct batadv_tp_vars_common {
- 	/** @unacked_lock: protect unacked_list */
- 	spinlock_t unacked_lock;
- 
-+	/** @unacked_count: number of unacked entries */
-+	size_t unacked_count;
-+
- 	/** @refcount: number of context where the object is used */
- 	struct kref refcount;
- 
--- 
-2.47.3
+The following changes since commit dad4d4b92a9b9f0edb8c66deda049da1b62f6089:
 
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net (2026-06-11 14:33:35 -0700)
+
+are available in the Git repository at:
+
+  https://git.open-mesh.org/batadv.git tags/batadv-net-pullrequest-20260619
+
+for you to fetch changes up to edb557b2ba38fea2c5eb710cf366c797e187218c:
+
+  batman-adv: tvlv: avoid race of cifsnotfound handler state (2026-06-14 12:33:18 +0200)
+
+----------------------------------------------------------------
+Here are some batman-adv bugfixes, all by Sven Eckelmann:
+
+- gw: don't deselect gateway with active hardif
+
+- TTL fixes in bcast/mcast and fragmentation handling (4 patches)
+
+- BATMAN V: prevent OGM aggregation on disabled hardif
+
+- tp_meter: concurrency and range fixes, add cap to unacked list
+  (4 patches)
+
+- tt: fix unchecked VLAN ID in tt for local add and roam (2 patches)
+
+- dat: check VLAN ID in the hash
+
+- tvlv: enforce 2-byte alignment
+
+- tvlv: avoid race of cifsnotfound handler state
+
+----------------------------------------------------------------
+Sven Eckelmann (15):
+      batman-adv: gw: don't deselect gateway with active hardif
+      batman-adv: ensure bcast is writable before modifying TTL
+      batman-adv: fix (m|b)cast csum after decrementing TTL
+      batman-adv: frag: ensure fragment is writable before modifying TTL
+      batman-adv: frag: avoid underflow of TTL
+      batman-adv: v: prevent OGM aggregation on disabled hardif
+      batman-adv: tp_meter: restrict number of unacked list entries
+      batman-adv: tp_meter: annotate last_recv_time access with READ/WRITE_ONCE
+      batman-adv: tp_meter: prevent parallel modifications of last_recv
+      batman-adv: tp_meter: handle overlapping packets
+      batman-adv: tt: don't merge change entries with different VIDs
+      batman-adv: tt: track roam count per VID
+      batman-adv: dat: prevent false sharing between VLANs
+      batman-adv: tvlv: enforce 2-byte alignment
+      batman-adv: tvlv: avoid race of cifsnotfound handler state
+
+ net/batman-adv/bat_iv_ogm.c            | 11 ++++-
+ net/batman-adv/bat_v.c                 |  1 +
+ net/batman-adv/bat_v_ogm.c             | 23 ++++++++++-
+ net/batman-adv/distributed-arp-table.c | 12 ++++--
+ net/batman-adv/fragmentation.c         | 22 +++++++++-
+ net/batman-adv/fragmentation.h         |  3 +-
+ net/batman-adv/hard-interface.c        | 28 +------------
+ net/batman-adv/routing.c               | 73 +++++++++++++++++++++++++++++++--
+ net/batman-adv/tp_meter.c              | 74 ++++++++++++++++++++++------------
+ net/batman-adv/translation-table.c     | 12 +++++-
+ net/batman-adv/tvlv.c                  | 69 ++++++++++++++++++++++++++++---
+ net/batman-adv/types.h                 | 21 ++++++----
+ 12 files changed, 270 insertions(+), 79 deletions(-)
