@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9701CCD98E6
-	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 07:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE56BCD98F2
+	for <batman@archiver.kernel.org>; Sun, 21 Jun 2026 11:02:39 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 425CF85AF1
-	for <batman@archiver.kernel.org>; Fri, 19 Jun 2026 09:12:22 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4824083F40
+	for <batman@archiver.kernel.org>; Sun, 21 Jun 2026 13:02:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1781853142;
- b=boFY1IYhi0oOgiCk3Z06N4zeNNILcl+oDTetNuHTeNCkacNR6W5XXffvy08mwslGU0VUm
- gfjPkbqY3C1nFZh+nD+fcUScmvaMXS1on5kJqdMHTsYQGm8h0CurLFYnY3lIu9Wr6qgH8A6
- e7LVF0l6e3/onSDD6cBfUGDsfBQI5oM=
+ t=1782039758;
+ b=LZnaRxJwn2l0aExdGslPr/qol5CMxPfK05XIpfYMSjQTeXI+mLNNgYQ87lQacaLLjA/fM
+ HN0ncQDJYaZWMPkrXPm3SFyip0HiA9s9FP17NbOGmoizKIFwPlGcFjp5Y2q89js3uxb8h8n
+ ihyDveje/lS8uHDBiKbIqyilt76/Gfc=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1781853142; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782039758; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=txph5b6EzyWcZoZ25nYE+Zhi1YekIIHjAUHC8G/RctA=;
- b=FBOqiwU2l/1+6yPQneFyPTm2xnXcppazSxXdBkeHQzPrwIrEgES4PrCkjd/+csCP5Rly8
- 1/o6wBz2QYMvtdMfYlD5dSZG5CGJ0Y5hr6gKBME4Neu9hdk9zMg07Stfz3Aru5aP6UsVVt8
- cvZ1R7bZIJgc0EbDxiOd7Hz1y76XcbI=
+ list-archive; bh=31o1PkNX/UXG8Bq78l4SycLtkbws0dfHf4wBQfU15gY=;
+ b=0FirFh6ObRXuGFBJSAt1Q6QqDFVhJG9XsbBMur5giKB4IiXB6IBbJBUQ+YBLhQdAeZpSb
+ fG+KaQsDjQ8Byv+7s7u97tKSolQ6nS73TY37HCMJomTo5W/XS8fpXwh5LEbgh6lpEUVvbRK
+ RGczpoLmKzgxVBAIc7eXSr+JM2vfLto=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=simonwunderlich.de;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id DD77D83D5F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 19 Jun 2026 09:00:57 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1781852457;
-	b=TFbfmH7Z/msPFBL85z+tYEwby34cPjfZNTlJfeU57e4G9AWve77PCg8m1U/oPewdf0jKoj
-	BgTSbW10mSf91K2Ty79tamh+gQJwBKicwIQ2XY9AmClvfA+FFnGykSMlPaVw3hL/EHm89w
-	mQZcIxfxvBOx25pq3hx3hTbiYW9X+Do=
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 220F980BC1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 21 Jun 2026 13:02:14 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782039744;
+	b=JEhHL7zPt3xhqpZRFxuvoDhfww0E8t7pJRL9kgdltAdxvdfXswPy+v6XWPr5f657J3NWKd
+	dpIWVOZcSLES73buzrI3lv6JHcTppGgFxrRK0UGXC33aaqoXLZ+LZhHGWee3a3WEVkYZDw
+	1uRmtpCGGm+yFCeXgyY1XAMXz7KMtaY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1781852457;
+	s=20121; t=1782039744;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=txph5b6EzyWcZoZ25nYE+Zhi1YekIIHjAUHC8G/RctA=;
-	b=VoDuG256U+rvGMEm89o8cmFSoJ9UmIlvjdST8ntxHgJY9I4QyUO0YiqDQSLDz994rQMWpn
-	eNSvRKWj1TR2jFuEdecbAqYHbSzd79MdTb9zuNVu+Su3Bpj2yKgB97chYLPd8odcGi0Js8
-	rAsVgeb682YWSsujoOtcHfVx1TY39tc=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=31o1PkNX/UXG8Bq78l4SycLtkbws0dfHf4wBQfU15gY=;
+	b=RZJxnXkvU5stKvq4ZlGQxnUUkKn1urtp6kCo+YUKBuFeBIRSohOxH0og3vV+qWdtwqgVsG
+	Us6jOfI/UKF1KJ2SvfZVKMaFxfneKWOn3UTxh1rwCOVZDy6XR22S5454o39INK8/CB4is+
+	uvs3ruHRvjgS8ro+2NFoov526AfH3ko=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=VZfdNlO1;
-	dmarc=pass (policy=none) header.from=simonwunderlich.de;
-	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1781852457;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=DROj09ad;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+Received: by dvalin.narfation.org (Postfix) id 3029A1FEC5;
+	Sun, 21 Jun 2026 11:02:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1782039733;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=txph5b6EzyWcZoZ25nYE+Zhi1YekIIHjAUHC8G/RctA=;
-	b=VZfdNlO1cGA75UOkcEhEK1GDxK1UE3LQxdD4Rntjk0girfh8htDCQPhV3BpylOacPGw77z
-	Xadkeq6/0tnRld+dsWmE+dOtN5tuQpwYVAuZCTyTK2UYPcUD+C0JLXIisr+2M/EiDOdJDj
-	i1AYbc8cIHfbCDJBcbD1JLjd/YmrXeJcGixJNM8UGN9JEk/pJ5kL9ysMtkEX3NYe3XKqcb
-	enH8OZbPss/q6VVHEFtdR3zfK3DZUdixLD2VgdsQxt8ZBpo0OdvZwRWMbe+peAP/3ufz/2
-	Yfv+zeeeNqo097DuWEpM/VZJinkY1WneKvKKj9oO6pLcwagLVIOLImhnS0JhWA==
-From: Simon Wunderlich <sw@simonwunderlich.de>
-To: netdev@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
-	stable@kernel.org,
-	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 15/15] batman-adv: tvlv: avoid race of cifsnotfound
- handler state
-Date: Fri, 19 Jun 2026 09:00:45 +0200
-Message-ID: <20260619070045.438101-16-sw@simonwunderlich.de>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260619070045.438101-1-sw@simonwunderlich.de>
-References: <20260619070045.438101-1-sw@simonwunderlich.de>
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=31o1PkNX/UXG8Bq78l4SycLtkbws0dfHf4wBQfU15gY=;
+	b=DROj09adW3h0JCSjUZBB7dkuKqMaPLoL3TuVy0ONqqd2ryJjoIJs/tDxisoNpC686uV8PY
+	zyfbB+hNQq0ifJI2qglEVeV+/4h0y34wOWsiXHKC3Ej9XOekcamoPCCJ3Q4JEChj2LBqUR
+	D7uAzhrdT1evo8ZrZ93v+uEJ7dq61tg=
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 21 Jun 2026 13:02:09 +0200
+Subject: [PATCH] batctl: switch to native getrandom
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Message-ID-Hash: WGRORE7ZDBJEFEBSZRTTK6WSCU2ZT3AU
-X-Message-ID-Hash: WGRORE7ZDBJEFEBSZRTTK6WSCU2ZT3AU
-X-MailFrom: sw@simonwunderlich.de
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260621-native-random-v1-1-4af35a65a8a9@narfation.org>
+X-B4-Tracking: v=1; b=H4sIALDEN2oC/yXMQQqAIBBA0avErBNUMqKrRAvTsSZIQyuC6O5ZL
+ d/i/wsSRsIEbXFBxIMSBZ8hygLMpP2IjGw2SC5rXkvBvN7oQBa1t2FhxjjXVEIrpSzkZo3o6Px
+ +Xf877cOMZnsncN8PQfIrq3EAAAA=
+X-Change-ID: 20260621-native-random-ccff841a555d
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4593; i=sven@narfation.org;
+ h=from:subject:message-id; bh=2T+GFPVYqEsRPUPyg1/5iwIOkgvrsSmlMu2WZ9imHI4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnmRzaulfGaGuK/hbFp7mWu7c8L5RuftPi08t3WUN64P
+ HnNgSmNHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ3FFlZHhxIkIwJffLtkWp
+ iyRKeHQs78dkxhj3Lpk84d0ZjZ5s1q2MDAfd/L4arzw/u+DRbweuP04Kv4LZ61unn2B081JdoC+
+ 3jgcA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: 3TLQWMPX3HVLFTGAI2ZPVTWFFQHMU3CM
+X-Message-ID-Hash: 3TLQWMPX3HVLFTGAI2ZPVTWFFQHMU3CM
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WGRORE7ZDBJEFEBSZRTTK6WSCU2ZT3AU/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3TLQWMPX3HVLFTGAI2ZPVTWFFQHMU3CM/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,150 +111,180 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+When the commit 98541a89ff99 ("batctl: Add helper to generate instant
+random bytes") was added, getrandom() was not available on all systems
+which batctl should support. This changed and all the fallback code can now
+be removed and getrandom() can be used directly
 
-TVLV handlers can have the flag BATADV_TVLV_HANDLER_OGM_CIFNOTFND set to
-signal that the OGM handler should be called (with NULL for data) when the
-specific TVLV container was not found in the OGM. This is used by:
-
-* DAT
-* GW
-* Multicast (OGM + Tracker)
-
-The state whether the handler was executed was stored in the struct
-batadv_tvlv_handler. But the TVLV processing is started without any lock.
-Multiple parallel contexts processing TVLVs would therefore overwrite each
-others BATADV_TVLV_HANDLER_OGM_CALLED flag in the shared
-batadv_tvlv_handler.
-
-Drop the shared BATADV_TVLV_HANDLER_OGM_CALLED flag and instead determine,
-per TVLV buffer, whether a matching container was present by scanning the
-packet's buffer.
-
-Cc: stable@kernel.org
-Fixes: ef26157747d4 ("batman-adv: tvlv - basic infrastructure")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tvlv.c  | 63 ++++++++++++++++++++++++++++++++++++++----
- net/batman-adv/types.h |  7 -----
- 2 files changed, 57 insertions(+), 13 deletions(-)
+ functions.c   | 65 -----------------------------------------------------------
+ functions.h   |  2 --
+ icmp_helper.c | 10 ++++++++-
+ ping.c        |  8 +++++++-
+ traceroute.c  |  7 ++++++-
+ 5 files changed, 22 insertions(+), 70 deletions(-)
 
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index a957555d8958d..1c9fb21985f6a 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -411,7 +411,6 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
- 		tvlv_handler->ogm_handler(bat_priv, orig_node,
- 					  BATADV_NO_FLAGS,
- 					  tvlv_value, tvlv_value_len);
--		tvlv_handler->flags |= BATADV_TVLV_HANDLER_OGM_CALLED;
- 		break;
- 	case BATADV_UNICAST_TVLV:
- 		if (!skb)
-@@ -443,6 +442,48 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
- 	return NET_RX_SUCCESS;
+diff --git a/functions.c b/functions.c
+index 5e1cb40..170a1ff 100644
+--- a/functions.c
++++ b/functions.c
+@@ -869,71 +869,6 @@ int check_mesh_iface_ownership(struct state *state, char *hard_iface)
+ 	return EXIT_SUCCESS;
  }
  
-+/**
-+ * batadv_tvlv_containers_contain() - check if a tvlv buffer holds a container
-+ * @tvlv_value: tvlv content
-+ * @tvlv_value_len: tvlv content length
-+ * @type: tvlv container type to look for
-+ * @version: tvlv container version to look for
-+ *
-+ * Return: true if a container of the given type and version is present in the
-+ * tvlv buffer, false otherwise.
-+ */
-+static bool batadv_tvlv_containers_contain(void *tvlv_value,
-+					   u16 tvlv_value_len, u8 type,
-+					   u8 version)
-+{
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	u16 tvlv_value_cont_len;
+-static int get_random_bytes_syscall(void *buf __maybe_unused,
+-				    size_t buflen __maybe_unused)
+-{
+-#ifdef SYS_getrandom
+-	return syscall(SYS_getrandom, buf, buflen, 0);
+-#else
+-	return -EOPNOTSUPP;
+-#endif
+-}
+-
+-static int get_random_bytes_urandom(void *buf, size_t buflen)
+-{
+-	ssize_t r;
+-	int fd;
+-
+-	fd = open("/dev/urandom", O_RDONLY);
+-	if (fd < 0)
+-		return -EOPNOTSUPP;
+-
+-	r = read(fd, buf, buflen);
+-	close(fd);
+-	if (r < 0)
+-		return -EOPNOTSUPP;
+-
+-	if ((size_t)r != buflen)
+-		return -EOPNOTSUPP;
+-
+-	return 0;
+-}
+-
+-static int get_random_bytes_fallback(void *buf, size_t buflen)
+-{
+-	static int initialized;
+-	struct timespec now;
+-	uint8_t *bufc = buf;
+-	size_t i;
+-
+-	/* this is not a good source for randomness */
+-	if (!initialized) {
+-		clock_gettime(CLOCK_MONOTONIC, &now);
+-		srand(now.tv_sec ^ now.tv_nsec);
+-		initialized = 1;
+-	}
+-
+-	for (i = 0; i < buflen; i++)
+-		bufc[i] = rand() & 0xff;
+-
+-	return 0;
+-}
+-
+-void get_random_bytes(void *buf, size_t buflen)
+-{
+-	int ret;
+-
+-	ret = get_random_bytes_syscall(buf, buflen);
+-	if (ret != -EOPNOTSUPP)
+-		return;
+-
+-	ret = get_random_bytes_urandom(buf, buflen);
+-	if (ret != -EOPNOTSUPP)
+-		return;
+-
+-	get_random_bytes_fallback(buf, buflen);
+-}
+-
+ int parse_bool(const char *val, bool *res)
+ {
+ 	if (strcasecmp(val, "0") == 0 ||
+diff --git a/functions.h b/functions.h
+index c2ce1b8..19334df 100644
+--- a/functions.h
++++ b/functions.h
+@@ -58,8 +58,6 @@ int get_algoname(struct state *state, unsigned int mesh_ifindex,
+ int check_mesh_iface(struct state *state);
+ int check_mesh_iface_ownership(struct state *state, char *hard_iface);
+ 
+-void get_random_bytes(void *buf, size_t buflen);
+-
+ int parse_bool(const char *val, bool *res);
+ bool parse_throughput(char *buff, const char *description,
+ 		      uint32_t *throughput);
+diff --git a/icmp_helper.c b/icmp_helper.c
+index 8b4fad7..33fe535 100644
+--- a/icmp_helper.c
++++ b/icmp_helper.c
+@@ -21,6 +21,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
++#include <sys/random.h>
+ #include <sys/select.h>
+ #include <sys/socket.h>
+ #include <sys/uio.h>
+@@ -226,7 +227,14 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
+ 
+ int icmp_interfaces_init(void)
+ {
+-	get_random_bytes(&uid, 1);
++	ssize_t r;
 +
-+	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
-+		tvlv_hdr = tvlv_value;
-+		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
-+		tvlv_value = tvlv_hdr + 1;
-+		tvlv_value_len -= sizeof(*tvlv_hdr);
++	r = getrandom(&uid, sizeof(uid), 0);
++	if (r < 0)
++		return -errno;
 +
-+		if (tvlv_value_cont_len > tvlv_value_len)
-+			break;
-+
-+		/* the next tvlv header is accessed assuming (at least) 2-byte
-+		 * alignment, so it must start at an even offset.
-+		 */
-+		if (tvlv_value_cont_len & 1)
-+			break;
-+
-+		if (tvlv_hdr->type == type && tvlv_hdr->version == version)
-+			return true;
-+
-+		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
-+		tvlv_value_len -= tvlv_value_cont_len;
++	if (r != sizeof(uid))
++		return -EIO;
+ 
+ 	return 0;
+ }
+diff --git a/ping.c b/ping.c
+index b61bca4..dfe99c4 100644
+--- a/ping.c
++++ b/ping.c
+@@ -170,7 +170,13 @@ static int ping(struct state *state, int argc, char **argv)
+ 	signal(SIGINT, sig_handler);
+ 	signal(SIGTERM, sig_handler);
+ 
+-	icmp_interfaces_init();
++	res = icmp_interfaces_init();
++	if (res < 0) {
++		fprintf(stderr, "Error - unable to initialize ICMP interface: %s\n",
++			strerror(-res));
++		goto out;
 +	}
 +
-+	return false;
-+}
-+
- /**
-  * batadv_tvlv_containers_process() - parse the given tvlv buffer to call the
-  *  appropriate handlers
-@@ -462,7 +503,9 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 				   struct sk_buff *skb, void *tvlv_value,
- 				   u16 tvlv_value_len)
- {
-+	u16 tvlv_value_start_len = tvlv_value_len;
- 	struct batadv_tvlv_handler *tvlv_handler;
-+	void *tvlv_value_start = tvlv_value;
- 	struct batadv_tvlv_hdr *tvlv_hdr;
- 	u16 tvlv_value_cont_len;
- 	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
-@@ -506,12 +549,20 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 		if (!tvlv_handler->ogm_handler)
- 			continue;
+ 	packet_len = sizeof(struct batadv_icmp_packet);
  
--		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
--		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CALLED))
--			tvlv_handler->ogm_handler(bat_priv, orig_node,
--						  cifnotfound, NULL, 0);
-+		if (!(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND))
-+			continue;
+ 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
+diff --git a/traceroute.c b/traceroute.c
+index a0fb925..9748151 100644
+--- a/traceroute.c
++++ b/traceroute.c
+@@ -106,7 +106,12 @@ static int traceroute(struct state *state, int argc, char **argv)
  
--		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_OGM_CALLED;
-+		/* if the corresponding container was present then the handler
-+		 * was already called from the loop above
-+		 */
-+		if (batadv_tvlv_containers_contain(tvlv_value_start,
-+						   tvlv_value_start_len,
-+						   tvlv_handler->type,
-+						   tvlv_handler->version))
-+			continue;
-+
-+		tvlv_handler->ogm_handler(bat_priv, orig_node,
-+					  cifnotfound, NULL, 0);
- 	}
- 	rcu_read_unlock();
+ 	mac_string = ether_ntoa_long(dst_mac);
  
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 3de3c1ac0244f..b1f9f8964c3fd 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -2294,13 +2294,6 @@ enum batadv_tvlv_handler_flags {
- 	 *  will call this handler even if its type was not found (with no data)
- 	 */
- 	BATADV_TVLV_HANDLER_OGM_CIFNOTFND = BIT(1),
--
--	/**
--	 * @BATADV_TVLV_HANDLER_OGM_CALLED: interval tvlv handling flag - the
--	 *  API marks a handler as being called, so it won't be called if the
--	 *  BATADV_TVLV_HANDLER_OGM_CIFNOTFND flag was set
--	 */
--	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
- };
+-	icmp_interfaces_init();
++	res = icmp_interfaces_init();
++	if (res < 0) {
++		fprintf(stderr, "Error - unable to initialize ICMP interface: %s\n",
++			strerror(-res));
++		goto out;
++	}
  
- #endif /* _NET_BATMAN_ADV_TYPES_H_ */
--- 
-2.47.3
+ 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
+ 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
+
+---
+base-commit: ea57436f665805a6e93f496617e44dab8a2f33a4
+change-id: 20260621-native-random-ccff841a555d
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
