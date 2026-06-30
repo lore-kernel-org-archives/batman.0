@@ -4,94 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BA11C43458
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Jun 2026 19:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54628C43458
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 13:44:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B57E281499
-	for <batman-adv@archiver.kernel.org>; Sun, 28 Jun 2026 21:50:38 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id AFE8A83E6F
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 15:44:53 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1782676238;
- b=Q0MXlaP712U0T0768GjnxxLnH5PgPy3XW1cOT0qVmD7lDVNov/98mGubgJSfu3cZ8h5hI
- IqKHbp6mkQKVuPKC2k2Dy65Cw20HKsPIQhvCGrmVSkThH+O5ecvUvENA47L3uI1X7MfAZt7
- 78ScvmRRnh9n9vvmmvCD/eS3Z+Tlf84=
+ t=1782827093;
+ b=qousqidi08q2ix5bhDHjIbw76iOLe0XXCgNDtc4NCAmyVJoldKBPDEAw57ULh7m8v09lQ
+ AHo0uKU79qnHOzGVacs4DbPdZLI9EPjO0koqw9StIcdn4lNfy78nHjrEY3I2gCoFJAqYtl5
+ 7oSBRDZaS12s8V9+UV97QhE2JQtUw6w=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1782676238; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782827093; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=WhAaJlXT0e4z+Vb2fI7sdvRfERjmZoFYu4jmPVCdCAU=;
- b=HnBYi8+WmpcwXMZnX40jfI4RFKGfCHYlCkrlbV5kId/9lBlz8K0weEzcic3txu9dTFwdH
- phD4NPeScgIMnnZij7qdwuyVTb3jDpVBnH7rIOGlaYxCKueSGvFEpwquVbyRy81pm7HP3ru
- Vkw8rQHe0AxxoAs8wo8v7pt4+j1K3cs=
+ list-archive; bh=SOjchQvhacxvYrMble3BHRhvtECYrwp0WDh1TmLB26c=;
+ b=0/Wv3YgJIuBt0pEKKkw45PDWcFtYyu/JQJsRdJg8Q5fwCqtevzfntYAFUDGnfhp6DokSf
+ 1mNOHGraf5bNe5uO6pQHeFY+9LSKkUUXFLdwjwQZpHSudqvd4bFKKnNNvAVL2KTbnImhBm5
+ 8XuLx0zNa3hGgVppzT0idODDxihGEeY=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=simonwunderlich.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DE2D180517
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 28 Jun 2026 21:50:08 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782676219;
-	b=UfFZni5r0qEOdNN/mpBz5LfZGF3i3tmFOWc9CW0nC9XRyYNED+ykVepsh+op7TELKF3TVQ
-	5jyViFTdnH75CiOxJbI0UJ0FG5SuRUKBdDweC/47yZnvBkaHA8YEWnSlNJCf3Qov+Wz9KT
-	746ZKGhxL5TJhgEZJZsl9manE8wzmKQ=
+ dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id DDDA5826A9
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 15:44:33 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782827073;
+	b=O1Cxypt849G2oX2M7MZwfKYbnTeZLhf8TZWxs8ixWqw58NhbUzD15PObsnXGLAYCAaqW1g
+	IEnUoJQrdhoeNccF8D7QXlU4yJnUiPCB4o2zXmQiVEytf+K+7yF4jllZDp65aXTe7RNxWK
+	EzGQOHrHRw1z4IcjFWGXWFkK31msqL8=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1782676219;
+	s=20121; t=1782827073;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=WhAaJlXT0e4z+Vb2fI7sdvRfERjmZoFYu4jmPVCdCAU=;
-	b=2UhykKl0WiB7kVWQYW/nLnosza3Otm7Q5/5DwyIAda9e9fHROehgfFgRidk0+crQoP+e+v
-	vJRWQBsLH547w6mzVDZZZZ6/lVPmq9FXkw6serrIrTLaQ+dmRVgCiSGPwN8EVcbWCUton4
-	U5G0CZkWdiG9IWaolFc5jd1+sNwhQ4E=
+	bh=SOjchQvhacxvYrMble3BHRhvtECYrwp0WDh1TmLB26c=;
+	b=XtRZmRXKcB1H7CjEiJM/QgnGL6ExHouYGKzIGBg8jEWwf3ZJeEj6sbvFt4xPhTRCDOM5Kf
+	p3VQGWp6EcN2X2++652gER1hnDyScT4kEYzu7aLzpqk+W8ig7uXOrYNUIel0bauJu/skR/
+	8spxSElGscgnyYDs2ES5zt9t8JRzDQ8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=FxMX8hrE;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id B0C78207F5;
-	Sun, 28 Jun 2026 19:50:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1782676207;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=gSGup5cP;
+	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
+	dmarc=pass (policy=none) header.from=simonwunderlich.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
+	s=09092022; t=1782827072;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=WhAaJlXT0e4z+Vb2fI7sdvRfERjmZoFYu4jmPVCdCAU=;
-	b=FxMX8hrEs4mSoryrnPMjEGVQNHa8DycWZzISdT6NRLuB8NeS2CnighjA9PqpEXUJJr4aTo
-	kpd/XvdGkPUyn8WaO4jAybmHpzBdu8tbTbIJ42grEZTNc6rCyDDlQ68vwdj5G3N5iCMrxP
-	wwKw8vTnugSolO3D1nYcQs2z9q+CWAA=
-From: Sven Eckelmann <sven@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org,
- Nora Schiffer <neocturne@universe-factory.net>
-In-Reply-To: <cover.1782658366.git.neocturne@universe-factory.net>
-References: <cover.1782658366.git.neocturne@universe-factory.net>
-Subject: Re: [PATCH batadv v5 0/6] batman-adv: drop global hard interface
- list
-Message-Id: <178267611077.406239.4674024353226372101.b4-ty@b4>
-Date: Sun, 28 Jun 2026 21:48:30 +0200
+	bh=SOjchQvhacxvYrMble3BHRhvtECYrwp0WDh1TmLB26c=;
+	b=gSGup5cPIGZra0Xv5mvac2TW7IAkfBMTTDmKokVrMFVTdIcQX4RTZQB4da1DRBJk69tbNw
+	OmXD0uvyEiF3ZcmlgHScJd8qtLwGlnTk+R4JgIrJ3GNybfVJKxBVedtauHfaMAA+aXFcGC
+	iF+MzJyAZm4oq9VyYtAcv/PgWiUhnCUdZhlNN86N6c9ZLH/QBMUicyeRpqa+GxMlTPdIV4
+	Bo9fc1Fp3QYFkUKi8WpRu522oW3xrXHb2TrHreFhdcwwzVqcmwEj4TrTpfyaU4xKX+9WqV
+	XGj59EcKqkbDY/b3aZxRO2q19+2j7DTTD869zlUBGfj2NI9Kl49bcBvF3mNxhw==
+From: Simon Wunderlich <sw@simonwunderlich.de>
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	b.a.t.m.a.n@lists.open-mesh.org,
+	Sven Eckelmann <sven@narfation.org>,
+	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>,
+	Simon Wunderlich <sw@simonwunderlich.de>
+Subject: [PATCH net 1/6] batman-adv: retrieve ethhdr after potential skb
+ realloc on RX
+Date: Tue, 30 Jun 2026 15:44:25 +0200
+Message-ID: <20260630134430.85786-2-sw@simonwunderlich.de>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260630134430.85786-1-sw@simonwunderlich.de>
+References: <20260630134430.85786-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1370; i=sven@narfation.org;
- h=from:subject:message-id; bh=clf2DqttHmKPxc3L7mCFlzwLeLMwzJGc/HEP8j49CCU=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmOVadyZbf852+S2hSp+4/79TLmw5pLjqyY/u70oXLHS
- ypbt4Tf7ShlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMJCSQkWFVuMnOwkcrDBbs
- ysiM1rb3XuDNtWb+xpBl6RYO84/XJB1iZJi85G3XleLLfk3WKR/t5GXUTN5POdYg+nHilexYtcW
- 9PbwA
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: HCAOJYRDMB37M3FXRYPJ4S2IDBM65SJ2
-X-Message-ID-Hash: HCAOJYRDMB37M3FXRYPJ4S2IDBM65SJ2
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+Message-ID-Hash: IE7MOAHGQ2LPJ3JR4BPUPKOEQF7IZ5NI
+X-Message-ID-Hash: IE7MOAHGQ2LPJ3JR4BPUPKOEQF7IZ5NI
+X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -104,7 +105,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HCAOJYRDMB37M3FXRYPJ4S2IDBM65SJ2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/IE7MOAHGQ2LPJ3JR4BPUPKOEQF7IZ5NI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,37 +114,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
+From: Sven Eckelmann <sven@narfation.org>
 
-On Sun, 28 Jun 2026 17:07:27 +0200, Nora Schiffer wrote:
-> batman-adv: drop global hard interface list
-> 
-> Cover letter from Sven's v4:
-> 
-> The global hard interface list was used in the past to provide and sysfs
-> (debugfs, procfs) based configuration interface. This requirement is gone
-> after it was switched to generic netlink and NETLINK_ROUTE. And after the
-> wifi-flags cache was introduced, it is also no longer used to get
-> non-batman-adv attached interface information (for ap_isolation and
-> re-broadcast configuration).
-> 
-> [...]
+pskb_may_pull() in batadv_interface_rx() could reallocate the buffer behind
+the skb. Variables which were pointing to the old buffer need to be
+reassigned to avoid an use-after-free.
 
-Applied, thanks!
+This was done correctly for the VLAN header but missed for the ethernet
+header which is later used for the TT and AP isolation handling.
 
-[1/6] batman-adv: create hardif only for netdevs that are part of a mesh
-      https://git.open-mesh.org/batadv/c/fcba102e0e4a
-[2/6] batman-adv: remove global hardif list
-      https://git.open-mesh.org/batadv/c/49e9de6e124f
-[3/6] batman-adv: make hard_iface->mesh_iface immutable
-      https://git.open-mesh.org/batadv/c/f846e779532e
-[4/6] batman-adv: remove BATADV_IF_NOT_IN_USE hardif state
-      https://git.open-mesh.org/batadv/c/48ea7b6b7b94
-[5/6] batman-adv: move hardif generation counter into batadv_priv
-      https://git.open-mesh.org/batadv/c/cbda6a6cf2a5
-[6/6] batman-adv: drop unneeded goto and initialization from batadv_hardif_disable_interface()
-      https://git.open-mesh.org/batadv/c/2b429dbc50b4
+Cc: stable@vger.kernel.org
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+Fixes: c78296665c3d ("batman-adv: Check skb size before using encapsulated ETH+VLAN header")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/mesh-interface.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 44026810b99ce..511f70e0706a7 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -434,6 +434,7 @@ void batadv_interface_rx(struct net_device *mesh_iface,
+ 		if (!pskb_may_pull(skb, VLAN_ETH_HLEN))
+ 			goto dropped;
+ 
++		ethhdr = eth_hdr(skb);
+ 		vhdr = skb_vlan_eth_hdr(skb);
+ 
+ 		/* drop batman-in-batman packets to prevent loops */
 -- 
-Sven Eckelmann <sven@narfation.org>
+2.47.3
 
