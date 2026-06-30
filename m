@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DBD1C43458
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 13:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77549C43458
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 13:47:05 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id EC1E384228
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 15:46:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id F06E280837
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 15:47:03 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1782827180;
- b=RDj7IFCNTs1/nma/qoHrRwctxOSPGOQD+7WO3NQzc7FjNceOL/nyJOUGol4ElR4KxWmVt
- fr6XKpD1lFJCif0EVivG6v36qoMI94j6Wji+S4QNlY28wai/V0bnJtEJhEVMNsr48WfR5Kx
- SFqe3oDSlrJbYg5vxfsV/cLZiYrjHC8=
+ t=1782827223;
+ b=TRsvVlO8FM8ionplk8IEuNszSdB7+e7GcD88Q1HXQ9+e6rV8FAP+umV2vYjar/dd0Zijx
+ 3i4s4NriOz71H6YWH5WvObsY6McCfSYOUXEmthHW0Tli5pP22sw+IG3IgAoS12gHteS6+OP
+ PEX8F3tuE9jjO3xxXL6Qa9Sjs8L0MgE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1782827180; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782827223; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=RDZ3PHvn8kVTKOAlVFvdCUxJ/aGwbeZvfumNwXha63c=;
- b=z1X2QJvr9rnEvKgvbZzJDpjMECF2BEs804Jo/RZP/ei5Rb9sG1ZoX07casEx9DC7gSUAh
- +ZmXOd04SVwBGra5XnCleQvNm/eTTCmVerr+sq6F2B2d+8t/9IoZgCjZjIgn4udSH+BHnyN
- dUCX7/x5gQWLezUMDVG/eP4qGxyOFXI=
+ list-archive; bh=JBuHPZ3Gw+mxEmOkIIjrkJNU1dKRnB7h3kisH349Hag=;
+ b=aTsHk6KP5KwApwWFXw820YsrQXeeEY/4c6/Cv1UyVBW46jKCMsCWk/PVnufkOIFNwqW81
+ HsA12H1u9LEYJTQDVwF+lD7Lc+iZSX+jMdCrEhc1ZGqR1Y8MeCe0VTviQhJ33QGzrphqrXP
+ /b0kccpG1kgd6T4Cvy+GywFoepkUhHA=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,40 +33,40 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C446E80C21
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 15:44:34 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782827074;
-	b=mn/MhCrOfkLUJ4Ght3xISHBI+7BUu7Lr27kaP8kbxm5py/oiVvYjtXPHcibEJdTc2bzWyx
-	yo0QmyM884j3e7GXE2xBsPL2mfoTcE7ReMRucLf09GwwuwlY3u+2kGJF+FHDPRbI02ZzCx
-	0Z9GS34WA9jBjPK7cue+kIONHTOdTzY=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 5780680C21
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 15:44:35 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782827075;
+	b=quNYa3RaLTa7vWdEoqsK/ZZoKYmrHHSArZqC+LyfV0p0ffT3oRM3dVCrgqIO25IFLwaKz7
+	iJjuXXXxoX6HCnLMwxfoMi4wuzAbpP2XzK5g5CHNc5Lz+tSTmL9BwxPtR5N8O0/VFXi1If
+	6jTjBWQQM+xI9NMKmsdF2WTMY5LBY2g=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1782827074;
+	s=20121; t=1782827075;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=RDZ3PHvn8kVTKOAlVFvdCUxJ/aGwbeZvfumNwXha63c=;
-	b=agnnoUpAB1QspDfiVwwqSNUGTqQ4gVwQEQlwSrWh0eojyxZ5886hmDIfHMllhVJqXgdOxx
-	V4j48is8p5L6az6ciwHyMa/ihMlEcWCvCrbdpRFszJ+Hf7MpTZUfjWdhb2eTTV5znezJGH
-	Rxb7UVcO0uYQtBZ7NYBNx0coDGRUhYs=
+	bh=JBuHPZ3Gw+mxEmOkIIjrkJNU1dKRnB7h3kisH349Hag=;
+	b=FDYXQZGfXJ4UzZaHSjme80oNmOORoz3Pyc6yepLhgC1cDoTmAIc1P6tno+gtNTeCAcbYGB
+	Xca0UD0hwJcdET3Xy6HvZMO20ziZdxucG0eybo88wk1a4mBnFPPA2aNRo+6wDMRIDdm8q+
+	4egrugkCCRq+05kHUgI8MGHkjJ58TTE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=N0Qy26RZ;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=InxosmK1;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1782827073;
+	s=09092022; t=1782827074;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=RDZ3PHvn8kVTKOAlVFvdCUxJ/aGwbeZvfumNwXha63c=;
-	b=N0Qy26RZxx693ZUJkuy7Wm71ywlmlhnK2NXjhMCVgrcNRYLLup5LDJkJIPUT24H4LusegP
-	SE1ntiSDgZdlVU1bTbjfaWqhL4xgJ2cz7Uclon6jUBzUm4vprVKqTpEEwWtXdg3kW/HRum
-	ZuWoFZ1AZCshTGoiipIfzyyb4tToDHQjgPZSvNmGeNMxxvHZmqryG4spnGbfpak67hbwBy
-	CXA3tvncZmuaPrlpMawcmxg/c5Klu9iI+ODV1uDnU0mMT7dPeJ3lA0wFC34FjnB9wOgf/M
-	YsY6rvYjqh2pZaWe2luT+qOaAHj3mngn3cIRAwMneF5LG0HkrTmtoQtSkLdwjw==
+	bh=JBuHPZ3Gw+mxEmOkIIjrkJNU1dKRnB7h3kisH349Hag=;
+	b=InxosmK1H4dBLqnjRvXv8/9FIZjpGJzRKYs6i7DJrTtsB0sA9lDmbj6mQVVUb1ruxDE9SN
+	I/ETKihQZlImJOidz2lWiDk/tBdPM076Jzg6dxEerRixHCo2BAUoVM5IzhT/ig8VCVL7br
+	v+hRDptzhwlKxAQvOmJkt8ybClTmNbgVGx8hUiyj1jr0kLczS76lNsUxhE7bITB4zrN3Sq
+	iudM3agVD3ZQ1AhCweabAxgLuJScwlPCFv+m96ypwxk+VEF5Kt8lr20/dDZjs2SsU22sAq
+	rz47rE7gIxGqoIFQxOCd18hUgpHpOFp3X5Z3ci3tYPuPoSl3qs0Yhoa04IXpkA==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -77,19 +77,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 2/6] batman-adv: access unicast_ttvn skb->data only after
+Subject: [PATCH net 3/6] batman-adv: gw: acquire ethernet header only after
  skb realloc
-Date: Tue, 30 Jun 2026 15:44:26 +0200
-Message-ID: <20260630134430.85786-3-sw@simonwunderlich.de>
+Date: Tue, 30 Jun 2026 15:44:27 +0200
+Message-ID: <20260630134430.85786-4-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260630134430.85786-1-sw@simonwunderlich.de>
 References: <20260630134430.85786-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: KC4B7IFUR2WRIRMYVO2JXBCA4EU3R6GG
-X-Message-ID-Hash: KC4B7IFUR2WRIRMYVO2JXBCA4EU3R6GG
+Message-ID-Hash: PCCJ3QBRJNZJCTTVN2HDBOWP4R4WZCIK
+X-Message-ID-Hash: PCCJ3QBRJNZJCTTVN2HDBOWP4R4WZCIK
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/KC4B7IFUR2WRIRMYVO2JXBCA4EU3R6GG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PCCJ3QBRJNZJCTTVN2HDBOWP4R4WZCIK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -118,32 +117,33 @@ The pskb_may_pull() called by batadv_get_vid() could reallocate the buffer
 behind the skb. Variables which were pointing to the old buffer need to be
 reassigned to avoid an use-after-free.
 
-This was done correctly for the ethernet header but missed for the
-unicast_packet pointer.
-
 Cc: stable@vger.kernel.org
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Fixes: c018ad3de61a ("batman-adv: add the VLAN ID attribute to the TT entry")
+Fixes: 6c413b1c22a2 ("batman-adv: send every DHCP packet as bat-unicast")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/routing.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/gateway_client.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index c05fcc9241add..2cc2307a41702 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -855,8 +855,8 @@ static bool batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	if (skb_cow(skb, sizeof(*unicast_packet)) < 0)
- 		return false;
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 305488a74a256..a5ac82eabd250 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -684,12 +684,13 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ 	struct batadv_gw_node *gw_node = NULL;
+ 	struct batadv_gw_node *curr_gw = NULL;
+ 	struct batadv_neigh_ifinfo *curr_ifinfo, *old_ifinfo;
+-	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
++	struct ethhdr *ethhdr;
+ 	bool out_of_range = false;
+ 	u8 curr_tq_avg;
+ 	unsigned short vid;
  
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 	vid = batadv_get_vid(skb, hdr_len);
-+	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 	ethhdr = (struct ethhdr *)(skb->data + hdr_len);
+ 	vid = batadv_get_vid(skb, 0);
++	ethhdr = (struct ethhdr *)skb->data;
  
- 	/* do not reroute multicast frames in a unicast header */
+ 	if (is_multicast_ether_addr(ethhdr->h_dest))
+ 		goto out;
 -- 
 2.47.3
 
