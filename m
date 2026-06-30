@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03FCCC43458
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:11:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6AE8C43602
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:12:04 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A039B83FD5
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:11:19 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4142A8200C
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:12:03 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1782828679;
- b=s1cUQkWLUCrN370HfJYqyZD+d+JUUarV8WQ/JlbPb8+WrWZOmA5PRVroI0wF/OnngzCj8
- 8c/JJVmEqw6BnUgL48CvTs1JBHdtFEk0cu0XGEH/DIRP3nbrvtnNODqFK4vzhiTRo9QGsAf
- 7OvyGSAF80GH1yodZ3hdwAoM6afn7Zg=
+ t=1782828723;
+ b=DKCawhMug4BxgRXqpKy1mDVWFxTQSaXGPdOHxpz4uoSTaqllXCgL4Wstr8nA6pzWLlTpp
+ lllEQlCtbRcXtn7VyNr4ugjqT+QmweakEWDJkPzihes2tp0RiX8MxdHzsSHiee0Uv5w0Gmu
+ kYfeye3GzumUs2OQFZKu6lCtixb6KH8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1782828679; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782828723; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=FnvUe6Opebjp4crldOSLq+segpIbxB7KcINVcKbi988=;
- b=vsJEebVccl9koiMMam850r6l8exEJCpa75+Tq4w9LhwpNYdlPUnH1+4I83rWHD6QIGIkI
- hYCKnzj6In2/Lh4GJq48LafSNGd236E+kTXIGuAxgJQxVyEEvGAEtuAs6LwK26bh+oGycr1
- /Vh4X4u/MlTHvZyGgFnoLyEoYs+J/vU=
+ list-archive; bh=x55SrCjE/SAYM0tW2OsEVN1MHMkSWNA2sDpn+Zqq0i8=;
+ b=VrFgsVSVcPLA5LaeVh1XAG5UGD0G2o5VZvyL8wjUHP/2Tgv4eMvHLH2EbPugpGf+sapVr
+ rLWmeeWNvZSk/F0+QlaSEwuzeLbEi8xV9qIIXSx0ykaM8p7R/Io8/CD4alpE+lIwFm7WlhX
+ cqszC43NpOS3T7rn6oVtRcorwBrQsiw=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,43 +32,41 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 758E1810A7
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 16:06:31 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782828391;
-	b=UM1c5UQ/yAA6Mh71bXHj2nvpEKSU/UGJjMbrsBX2iR9D+smKnjbvqJm4mA+grNiEjnskgQ
-	ciq3fNDIgm0jbpNT9EK8UrQrVFVuDpVdZCWvdxDwkIB+Rk1qnHpxao3BfJcSJkP5DYzDVF
-	ToJlKhWZjoPpYJ05sLSDbM4CBaJx//w=
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7F21E810BD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 16:06:27 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782828392;
+	b=1vDS26YFW6VL7lXnEa25IRmVX/DgXqcEcT4+r5Ic3h9xdRpckP8CgTx2yw9EVi9UcZOPNK
+	vbYczHgiGHBqzSQ+AY2JPAcWNYY6uylllAB00OCgfWILVp6jSDiPZlZjPL/xGgN6l3eotC
+	RkSg/o66EbEbPaVgTTq/F3j/5mhj9Gc=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1782828391;
+	s=20121; t=1782828392;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=FnvUe6Opebjp4crldOSLq+segpIbxB7KcINVcKbi988=;
-	b=Sxxe8R4vllAAxj1tcD3OV0HkTAWEHmNKz2c8PSntrKOUisdE9rlSoWAc9kDHgHFY8QgJCP
-	a04M8DRvQ298gY9E1FKBz3bhbx63n0el+n+wC4AAImdtbq9+peKmctTxYExf8B8UjWs71Y
-	SR33PQrUqy9Ritiet95vEY4RZJLwyqU=
+	bh=x55SrCjE/SAYM0tW2OsEVN1MHMkSWNA2sDpn+Zqq0i8=;
+	b=ydvrr98Gboagpy+4qLwHOal55+8PsDAaHNBr1BOSktnp4OBge5HZDMVycInUOtaqLBYUZ8
+	sZ1h7faLTCDPafEoQ0uEVUcn63PC14t/X+Xlz13V/iFiR5G6KEaGNgs4xYHfpPjGpb7fHt
+	8j4KsK8nooTv3Br3GlMeflpm/sr+1SU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=SKTFjl3M;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=oyfmNBYO;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1782828390;
+	s=09092022; t=1782828386;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=FnvUe6Opebjp4crldOSLq+segpIbxB7KcINVcKbi988=;
-	b=SKTFjl3Ms0ChEgAsHn86Nb4VmGcqFWSfGsZpfpZLpAJ/a/nYvVLsVXE6t23xaWtIkEwAtY
-	RhaVAtHJi1fGAaFxcTROeddqeTe9mUZFxEEkteKtBlDNhcqcDtMG5L9Z8+jBqKhgvMKczL
-	OkGuSwC4IM69z9xYNzQ4qNdwdHQTz49LsZITaFKBL+aUlOfD74aNY/p6jURZ+CIBgnE1V8
-	0arhCbEtpFenn/9i+uw3c5q3mIlP+jFm4ro/nzp9BLor0PIlxUBlasOWE2rOtS+neMWH6H
-	usEx6/uhB1GvT1lPXmdSYlPpa09YaZKkSm5dqZ38KHR85N6Gn2WxkHbJmv/Oig==
+	bh=x55SrCjE/SAYM0tW2OsEVN1MHMkSWNA2sDpn+Zqq0i8=;
+	b=oyfmNBYOelpb2+oJ+tbASaJuyE1ot7iP7/vszpMDARk4uCXW9Ey54IcCIEBhcs+5iekfNl
+	sdxRvq+GdzIWzBvp8q7sfKPbL9XBJ3AqMBobxVnVY6MpVET8vsQREtZTu0wQA6wHJk5hgL
+	MlEy4aYSCtUWcbVV6iKjIqC2CmwGVCe8+hQymaCKyZsDW5c1lnqjD9oNlcCqYfxiQpbhCV
+	kwUP7J4TOMs67J998CZKLajdnH0hYbQVkI5E9MilGaUSIfHVhmIAHoE24mPQSBMTtsvilp
+	mxZS6MjyebwTJw8ne8J9ziIXP5F2Errh/XIDWrjuTZkhHP7CoezlKtUmO2NinQ==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -77,19 +75,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
+	Nora Schiffer <neocturne@universe-factory.net>,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 08/15] Revert "batman-adv: v: stop OGMv2 on disabled
- interface"
-Date: Tue, 30 Jun 2026 16:06:16 +0200
-Message-ID: <20260630140623.88431-9-sw@simonwunderlich.de>
+Subject: [PATCH net-next 02/15] batman-adv: remove global hardif list
+Date: Tue, 30 Jun 2026 16:06:10 +0200
+Message-ID: <20260630140623.88431-3-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260630140623.88431-1-sw@simonwunderlich.de>
 References: <20260630140623.88431-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: AHCH5FJEOFHAIGEVL2RMZNRALAZDJQPV
-X-Message-ID-Hash: AHCH5FJEOFHAIGEVL2RMZNRALAZDJQPV
+Message-ID-Hash: BCTLA5GPWKM4ATG7VFPUJCXRJ47AMRNP
+X-Message-ID-Hash: BCTLA5GPWKM4ATG7VFPUJCXRJ47AMRNP
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +101,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AHCH5FJEOFHAIGEVL2RMZNRALAZDJQPV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BCTLA5GPWKM4ATG7VFPUJCXRJ47AMRNP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,135 +110,181 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Nora Schiffer <neocturne@universe-factory.net>
 
-With the immutability guarantee of batadv_hard_iface->mesh_iface, the check
-for "changed" (or NULL) mesh_iface doesn't work anymore and is also no
-longer necessary. The extra (complicated) code for the sending of OGMv2s
-can therefore be removed and the original code can be used again.
+With interfaces being kept track of as iflink private data, there is no
+need for the global list anymore. batadv_hardif_get_by_netdev() can now
+use netdev_master_upper_dev_get()+netdev_lower_dev_get_private() to find
+the hardif corresponding to a netdev.
 
-This reverts commit f8ce8b8331a1bc44ad4905886a482214d428b253.
-
+Signed-off-by: Nora Schiffer <neocturne@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v_ogm.c | 33 ++++++++++++---------------------
- 1 file changed, 12 insertions(+), 21 deletions(-)
+ net/batman-adv/hard-interface.c | 29 ++++++++++++-----------------
+ net/batman-adv/hard-interface.h |  2 +-
+ net/batman-adv/main.c           |  5 -----
+ net/batman-adv/main.h           |  1 -
+ net/batman-adv/netlink.c        |  2 ++
+ net/batman-adv/types.h          |  3 ---
+ 6 files changed, 15 insertions(+), 27 deletions(-)
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 037921aad35d5..e921d49f7eced 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -115,14 +115,14 @@ static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
- 
- /**
-  * batadv_v_ogm_send_to_if() - send a batman ogm using a given interface
-- * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the OGM to send
-  * @hard_iface: the interface to use to send the OGM
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 9c9a892d22c6b..ace81348ddef7 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -75,21 +75,21 @@ void batadv_hardif_release(struct kref *ref)
+  * Return: batadv_hard_iface of net_dev (with increased refcnt), NULL on errors
   */
--static void batadv_v_ogm_send_to_if(struct batadv_priv *bat_priv,
--				    struct sk_buff *skb,
-+static void batadv_v_ogm_send_to_if(struct sk_buff *skb,
- 				    struct batadv_hard_iface *hard_iface)
+ struct batadv_hard_iface *
+-batadv_hardif_get_by_netdev(const struct net_device *net_dev)
++batadv_hardif_get_by_netdev(struct net_device *net_dev)
  {
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
+ 	struct batadv_hard_iface *hard_iface;
++	struct net_device *mesh_iface;
+ 
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
+-		if (hard_iface->net_dev == net_dev &&
+-		    kref_get_unless_zero(&hard_iface->refcount))
+-			goto out;
+-	}
++	ASSERT_RTNL();
+ 
+-	hard_iface = NULL;
++	mesh_iface = netdev_master_upper_dev_get(net_dev);
++	if (!mesh_iface || !batadv_meshif_is_valid(mesh_iface))
++		return NULL;
 +
- 	if (hard_iface->if_status != BATADV_IF_ACTIVE) {
- 		kfree_skb(skb);
- 		return;
-@@ -189,7 +189,6 @@ static void batadv_v_ogm_aggr_list_free(struct batadv_hard_iface *hard_iface)
++	hard_iface = netdev_lower_dev_get_private(mesh_iface, net_dev);
++	if (!kref_get_unless_zero(&hard_iface->refcount))
++		return NULL;
  
- /**
-  * batadv_v_ogm_aggr_send() - flush & send aggregation queue
-- * @bat_priv: the bat priv with all the mesh interface information
-  * @hard_iface: the interface with the aggregation queue to flush
-  *
-  * Aggregates all OGMv2 packets currently in the aggregation queue into a
-@@ -199,8 +198,7 @@ static void batadv_v_ogm_aggr_list_free(struct batadv_hard_iface *hard_iface)
-  *
-  * Caller needs to hold the hard_iface->bat_v.aggr_list.lock.
-  */
--static void batadv_v_ogm_aggr_send(struct batadv_priv *bat_priv,
--				   struct batadv_hard_iface *hard_iface)
-+static void batadv_v_ogm_aggr_send(struct batadv_hard_iface *hard_iface)
- {
- 	unsigned int aggr_len = hard_iface->bat_v.aggr_len;
- 	struct sk_buff *skb_aggr;
-@@ -230,26 +228,21 @@ static void batadv_v_ogm_aggr_send(struct batadv_priv *bat_priv,
- 		consume_skb(skb);
- 	}
- 
--	batadv_v_ogm_send_to_if(bat_priv, skb_aggr, hard_iface);
-+	batadv_v_ogm_send_to_if(skb_aggr, hard_iface);
+-out:
+-	rcu_read_unlock();
+ 	return hard_iface;
  }
  
- /**
-  * batadv_v_ogm_queue_on_if() - queue a batman ogm on a given interface
-- * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the OGM to queue
-  * @hard_iface: the interface to queue the OGM on
+@@ -761,7 +761,6 @@ int batadv_hardif_enable_interface(struct net_device *net_dev,
+ 
+ 	hard_iface->if_status = BATADV_IF_INACTIVE;
+ 
+-	INIT_LIST_HEAD(&hard_iface->list);
+ 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
+ 
+ 	mutex_init(&hard_iface->bat_iv.ogm_buff_mutex);
+@@ -780,6 +779,7 @@ int batadv_hardif_enable_interface(struct net_device *net_dev,
+ 	hard_iface->mesh_iface = mesh_iface;
+ 	bat_priv = netdev_priv(hard_iface->mesh_iface);
+ 
++	batadv_hardif_generation++;
+ 	ret = netdev_master_upper_dev_link(hard_iface->net_dev,
+ 					   mesh_iface, hard_iface, NULL, NULL);
+ 	if (ret)
+@@ -824,9 +824,6 @@ int batadv_hardif_enable_interface(struct net_device *net_dev,
+ 	if (bat_priv->algo_ops->iface.enabled)
+ 		bat_priv->algo_ops->iface.enabled(hard_iface);
+ 
+-	list_add_tail_rcu(&hard_iface->list, &batadv_hardif_list);
+-	batadv_hardif_generation++;
+-
+ 	return 0;
+ 
+ err_upper:
+@@ -854,9 +851,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
+ 	if (hard_iface->if_status != BATADV_IF_INACTIVE)
+ 		goto out;
+ 
+-	list_del_rcu(&hard_iface->list);
+-	batadv_hardif_generation++;
+-
+ 	batadv_info(hard_iface->mesh_iface, "Removing interface: %s\n",
+ 		    hard_iface->net_dev->name);
+ 	dev_remove_pack(&hard_iface->batman_adv_ptype);
+@@ -879,6 +873,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_purge_outstanding_packets(bat_priv, hard_iface);
+ 	netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
+ 
++	batadv_hardif_generation++;
+ 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->mesh_iface);
+ 	batadv_hardif_recalc_extra_skbroom(hard_iface->mesh_iface);
+ 
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index 6d72dbdd5c203..aa9275dec0976 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -74,7 +74,7 @@ u32 batadv_netdev_get_wifi_flags(struct net_device *net_dev);
+ u32 batadv_hardif_get_wifi_flags(struct batadv_hard_iface *hard_iface);
+ bool batadv_is_wifi_hardif(struct batadv_hard_iface *hard_iface);
+ struct batadv_hard_iface*
+-batadv_hardif_get_by_netdev(const struct net_device *net_dev);
++batadv_hardif_get_by_netdev(struct net_device *net_dev);
+ int batadv_hardif_enable_interface(struct net_device *net_dev,
+ 				   struct net_device *mesh_iface);
+ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface);
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 3c4572284b532..1d82f3a841a1b 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -59,10 +59,6 @@
+ #include "tp_meter.h"
+ #include "translation-table.h"
+ 
+-/* List manipulations on hardif_list have to be rtnl_lock()'ed,
+- * list traversals just rcu-locked
+- */
+-struct list_head batadv_hardif_list;
+ unsigned int batadv_hardif_generation;
+ static int (*batadv_rx_handler[256])(struct sk_buff *skb,
+ 				     struct batadv_hard_iface *recv_if);
+@@ -95,7 +91,6 @@ static int __init batadv_init(void)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	INIT_LIST_HEAD(&batadv_hardif_list);
+ 	batadv_algo_init();
+ 
+ 	batadv_recv_handler_init();
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index f68fc8b7239cd..e34145047a341 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -226,7 +226,6 @@ static inline int batadv_print_vid(unsigned short vid)
+ 		return -1;
+ }
+ 
+-extern struct list_head batadv_hardif_list;
+ extern unsigned int batadv_hardif_generation;
+ 
+ extern struct workqueue_struct *batadv_event_workqueue;
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 4cf9e3c54ad3b..62ea91aa3ead6 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -1211,7 +1211,9 @@ batadv_netlink_get_hardif_from_ifindex(struct batadv_priv *bat_priv,
+ 	if (!hard_dev)
+ 		return ERR_PTR(-ENODEV);
+ 
++	rtnl_lock();
+ 	hard_iface = batadv_hardif_get_by_netdev(hard_dev);
++	rtnl_unlock();
+ 	if (!hard_iface)
+ 		goto err_put_harddev;
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index b1f9f8964c3fd..1671380b37929 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -214,9 +214,6 @@ struct batadv_wifi_net_device_state {
+  * struct batadv_hard_iface - network device known to batman-adv
   */
--static void batadv_v_ogm_queue_on_if(struct batadv_priv *bat_priv,
--				     struct sk_buff *skb,
-+static void batadv_v_ogm_queue_on_if(struct sk_buff *skb,
- 				     struct batadv_hard_iface *hard_iface)
- {
--	if (hard_iface->mesh_iface != bat_priv->mesh_iface) {
--		kfree_skb(skb);
--		return;
--	}
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->mesh_iface);
+ struct batadv_hard_iface {
+-	/** @list: list node for batadv_hardif_list */
+-	struct list_head list;
+-
+ 	/** @if_status: status of the interface for batman-adv */
+ 	char if_status;
  
- 	if (!READ_ONCE(bat_priv->aggregated_ogms)) {
--		batadv_v_ogm_send_to_if(bat_priv, skb, hard_iface);
-+		batadv_v_ogm_send_to_if(skb, hard_iface);
- 		return;
- 	}
- 
-@@ -260,7 +253,7 @@ static void batadv_v_ogm_queue_on_if(struct batadv_priv *bat_priv,
- 	}
- 
- 	if (!batadv_v_ogm_queue_left(skb, hard_iface))
--		batadv_v_ogm_aggr_send(bat_priv, hard_iface);
-+		batadv_v_ogm_aggr_send(hard_iface);
- 
- 	hard_iface->bat_v.aggr_len += batadv_v_ogm_len(skb);
- 	__skb_queue_tail(&hard_iface->bat_v.aggr_list, skb);
-@@ -357,7 +350,7 @@ static void batadv_v_ogm_send_meshif(struct batadv_priv *bat_priv)
- 			break;
- 		}
- 
--		batadv_v_ogm_queue_on_if(bat_priv, skb_tmp, hard_iface);
-+		batadv_v_ogm_queue_on_if(skb_tmp, hard_iface);
- 		batadv_hardif_put(hard_iface);
- 	}
- 	rcu_read_unlock();
-@@ -397,14 +390,12 @@ void batadv_v_ogm_aggr_work(struct work_struct *work)
- {
- 	struct batadv_hard_iface_bat_v *batv;
- 	struct batadv_hard_iface *hard_iface;
--	struct batadv_priv *bat_priv;
- 
- 	batv = container_of(work, struct batadv_hard_iface_bat_v, aggr_wq.work);
- 	hard_iface = container_of(batv, struct batadv_hard_iface, bat_v);
--	bat_priv = netdev_priv(hard_iface->mesh_iface);
- 
- 	spin_lock_bh(&hard_iface->bat_v.aggr_list.lock);
--	batadv_v_ogm_aggr_send(bat_priv, hard_iface);
-+	batadv_v_ogm_aggr_send(hard_iface);
- 	spin_unlock_bh(&hard_iface->bat_v.aggr_list.lock);
- 
- 	batadv_v_ogm_start_queue_timer(hard_iface);
-@@ -601,7 +592,7 @@ static void batadv_v_ogm_forward(struct batadv_priv *bat_priv,
- 		   if_outgoing->net_dev->name, ntohl(ogm_forward->throughput),
- 		   ogm_forward->ttl, if_incoming->net_dev->name);
- 
--	batadv_v_ogm_queue_on_if(bat_priv, skb, if_outgoing);
-+	batadv_v_ogm_queue_on_if(skb, if_outgoing);
- 
- out:
- 	batadv_orig_ifinfo_put(orig_ifinfo);
 -- 
 2.47.3
 
