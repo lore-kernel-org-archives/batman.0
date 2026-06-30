@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99DD0C43327
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:14:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80DE2C43327
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:15:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3F06684064
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:14:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2E10384432
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:15:06 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1782828860;
- b=lnghmrVphLAU2TNkmPhPF4c/gt/gi1MeVcVj0PQm93JulyPdqCQRcRpfbhvu1bVedF6l8
- EUBYqdzj9sTpKs9UAR0q5cgyaX6U4L91VYpYxX+TOE5q00XRzL69VjrmtCBsN584RKIiEoD
- jMz/oVAXb6Tl/bsVpDOo5Mt2z/bC39I=
+ t=1782828906;
+ b=tzBhISUzzh4cefhX3rrgbra11K1Z51w1UJ0wRYeeKa1OTCaN7FyR0e29ZKjXy+DDZdfG7
+ FmEuYSYzbPKvNHPGPh2bafoE3jWvVxY3Tf4GYlxUNfqPjwkTGORJ2tZ5DE7PsC+AjnCJnG/
+ vAokz3zZCah1Tk7HEbQme0QJj9fVif4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1782828860; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782828906; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
- b=3ewtZbYSw3k486+vmhJxJa7GGiKAMjHBETzJ1KNqQ+M81/lZrBq5ftEBxiufqsvpCWPG4
- vq4hs683UOcEEhYcUqyaJWtK9M6ZJxT936nMq85Rux3uzxsTH7KdWqKIG+KAJhXFzcId9Xl
- SSzCCcX9hH1dCwK/ZdZbJD+oCxj3aLE=
+ list-archive; bh=OE7kaThEXzmWHJ+vL8/Sll0PpMgBMOG7wZO9WyyOoi0=;
+ b=HBuZtRav7acljETnkcHckJ9Vajkn3nTn0T1WFMxg7hMFCLtsPJ9rI6IDo1hMVWgjjZYvV
+ Z3Wip3h4/Zh3BkIhDXM/uedjEQUwoqM34TSOnZ/ofvGQvfk1x6rmVw6VdBNYM9F6aNdVVwU
+ lNkS/UtV/ABhOusCrNR+ALToIE5XTio=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,25 +34,25 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3DDE58110E
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id CDB9481124
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 16:06:33 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782828393;
-	b=qJuDU7ZtTuby7Hd0fUl1Mtc6kGAtBS+6DTJhUXbtfUgwAL6d2EvWDdFnlj33lo4qL9cR66
-	FuRCuW2cpfyGFbwKOEjnv3LMiIZ0p71XGjCvx24pDIXXfjgWkqDSjz+zLc7SelLhHcjfVT
-	qRzMu6mdSZTaTV+cCyA5rgokL3n8hMQ=
+	b=typVZUfj7In8aRlOxjVzEcqad+nLh+djpdjHWkJC24B5sVAxPLKj4qBd4BzOyrQL09H5ik
+	qDfWcqkIX2Z46+ToB0dBwantdqOYqYjzOBb/+F0rO+PWEjejQpoOfcWTe9gk5OgwYdpEfG
+	WCZE1WxBzo2S2uIgJC6XgOz288AUpNE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1782828393;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
-	b=NKnsbk17ONvQcKpKkO1g9qlRc7FAEga6Kc9uwm52yIlkLEc9Z13kfQNIEVMuk130FQhyFo
-	B+KY4Wb9kYILJeVx2Ndv2WY1ZukIEoyXUhslwxpk7jVPaotS01rpCsJjEIws0WlRlyqbwD
-	Co8rOgJYNXlqF++Za3F1o6ptJm0aeRk=
+	bh=OE7kaThEXzmWHJ+vL8/Sll0PpMgBMOG7wZO9WyyOoi0=;
+	b=I+cMqYzuSp/BdjTBaZaEN6SLw/1ojYJ1Ylv4SXyQGwJS3Fq5lRNdtz03f2sWmKHofOr7zh
+	/ZWlpcXvJ8VF4gKIoK4Hhk/ojAypKUiwzM+ROPsAFn2LpbjRMI2vLI04P+I85QCjEv3JwT
+	lLuyf554NE7+Sgtf2b+qudAP8mupjic=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=F1SjhFgo;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=R78WvwtA;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
@@ -63,12 +63,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
-	b=F1SjhFgorajQuLw1hBE/7t6k8QR1AH1GMD1zBCegXqAddqVw20wPiQ0s1cZENV+mdzuavJ
-	pzFCBWFAJtgNnk+aZJcXzHHMFW+/QiX4VMlYsTiGLrv6V0wwBqsoqJMtrFxazHOcRU8Med
-	41WHxV6P+Lcb9hV6HK0Bx6OL4TG1cxfzeO/T1cHDQxzBkjSSAUd7LT1JmqnY6lSs5QAOtk
-	PKPQ23+dDEKx4VZVGGnDqc0dZpk5EVJ6J3ShD41t7dEZLa61Orrsaiy2vSYIqdKfr7KOlK
-	6lqYEMnpqcLPYXbJFU8Tuh38IfgaCtLobqMDICvH0TCJ06QXNQa2v2VTyC9Fhg==
+	bh=OE7kaThEXzmWHJ+vL8/Sll0PpMgBMOG7wZO9WyyOoi0=;
+	b=R78WvwtAhpCvWYI04JrJvK9a/3wQdA/xlEyEfxVDslavU/7H2wCDgFVkAN2AheZ/uanrQX
+	yzHgTGr+/LMKDIHBZI1ZRNweenkZhHy82D7KPke+hT4q1a0fT/UG+Z0K0Jxy1kijgBHj0X
+	6MY4uWrCw7/s+C3zh4OKtDUrJ6+9qijtkyZHVvrTHkU4KoL6FVrbsoCIN+m0Fuu+st6bCL
+	OlxrmNImdhkq4JL4sm+IOP/C20iTAFlNZTrIiXBbMIvCFc9hwDkx4bYMs+E+95YxnSwUz6
+	3Igq4U5uT84QUFCdpQuQuvXDWJJLah6WEDDbKBeM0H2DNeA4EYdlvnmpoE7aGw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -79,16 +79,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 10/15] batman-adv: tvlv: extract tvlv header iterator
-Date: Tue, 30 Jun 2026 16:06:18 +0200
-Message-ID: <20260630140623.88431-11-sw@simonwunderlich.de>
+Subject: [PATCH net-next 11/15] batman-adv: tp_meter: simplify unordered ack
+ calculation
+Date: Tue, 30 Jun 2026 16:06:19 +0200
+Message-ID: <20260630140623.88431-12-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260630140623.88431-1-sw@simonwunderlich.de>
 References: <20260630140623.88431-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT
-X-Message-ID-Hash: VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT
+Message-ID-Hash: FI7GUW72DCZNXSCZ7SLSQTUBJITZM23A
+X-Message-ID-Hash: FI7GUW72DCZNXSCZ7SLSQTUBJITZM23A
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FI7GUW72DCZNXSCZ7SLSQTUBJITZM23A/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,140 +114,37 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_tvlv_containers_contain() and batadv_tvlv_containers_process() are
-using the same code to iterate through the TVLV containers. To simplify the
-code, extract the shared portions of both functions.
+When batadv_tp_ack_unordered() goes through the list of unacked sequence
+numbers and checks for now closed gaps, it is first calculating a delta of
+the sequence numbers which could be acked. Just to revert this calculation
+in the next steps to the sequence number which would be ackable.
+
+Skip the delta step and directly work with the sequence numbers.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tvlv.c | 86 +++++++++++++++++++++++++------------------
- 1 file changed, 51 insertions(+), 35 deletions(-)
+ net/batman-adv/tp_meter.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 1c9fb21985f6a..49bf2ed9ecdc3 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -442,6 +442,54 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
- 	return NET_RX_SUCCESS;
- }
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index c2eea7dbc4883..b7fee6e55f032 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -1493,10 +1493,10 @@ static void batadv_tp_ack_unordered(struct batadv_tp_receiver *tp_vars)
+ 		if (batadv_seq_before(tp_vars->last_recv, un->seqno))
+ 			break;
  
-+/**
-+ * batadv_tvlv_hdr_next() - move a tvlv buffer cursor to the next container
-+ * @tvlv_value: cursor into the tvlv buffer, advanced past the returned
-+ *  container's content on success
-+ * @tvlv_value_len: remaining length of the tvlv buffer, reduced by the returned
-+ *  container's size on success
-+ *
-+ * Parses a single container header at the current cursor position and, if a
-+ * complete container is available, advances the cursor and remaining length
-+ * past it. The returned header stays valid; its content is located at
-+ * (returned header + 1) and is ntohs(hdr->len) bytes long.
-+ *
-+ * Return: pointer to the next tvlv container header, or NULL if no further
-+ * complete container is present in the buffer.
-+ */
-+static struct batadv_tvlv_hdr *batadv_tvlv_hdr_next(void **tvlv_value, u16 *tvlv_value_len)
-+{
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	u16 tvlv_value_cont_len;
-+	void *tvlv_value_cont;
-+	u16 tvlv_len;
-+
-+	tvlv_value_cont = *tvlv_value;
-+	tvlv_len = *tvlv_value_len;
-+
-+	if (tvlv_len < sizeof(*tvlv_hdr))
-+		return NULL;
-+
-+	tvlv_hdr = tvlv_value_cont;
-+	tvlv_value_cont_len = ntohs(tvlv_hdr->len);
-+	tvlv_value_cont = tvlv_hdr + 1;
-+	tvlv_len -= sizeof(*tvlv_hdr);
-+
-+	if (tvlv_value_cont_len > tvlv_len)
-+		return NULL;
-+
-+	/* the next tvlv header is accessed assuming (at least) 2-byte
-+	 * alignment, so it must start at an even offset.
-+	 */
-+	if (tvlv_value_cont_len & 1)
-+		return NULL;
-+
-+	*tvlv_value = (u8 *)tvlv_value_cont + tvlv_value_cont_len;
-+	*tvlv_value_len = tvlv_len - tvlv_value_cont_len;
-+
-+	return tvlv_hdr;
-+}
-+
- /**
-  * batadv_tvlv_containers_contain() - check if a tvlv buffer holds a container
-  * @tvlv_value: tvlv content
-@@ -457,28 +505,10 @@ static bool batadv_tvlv_containers_contain(void *tvlv_value,
- 					   u8 version)
- {
- 	struct batadv_tvlv_hdr *tvlv_hdr;
--	u16 tvlv_value_cont_len;
--
--	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
--		tvlv_hdr = tvlv_value;
--		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
--		tvlv_value = tvlv_hdr + 1;
--		tvlv_value_len -= sizeof(*tvlv_hdr);
--
--		if (tvlv_value_cont_len > tvlv_value_len)
--			break;
--
--		/* the next tvlv header is accessed assuming (at least) 2-byte
--		 * alignment, so it must start at an even offset.
--		 */
--		if (tvlv_value_cont_len & 1)
--			break;
+-		to_ack = un->seqno + un->len - tp_vars->last_recv;
++		to_ack = un->seqno + un->len;
  
-+	while ((tvlv_hdr = batadv_tvlv_hdr_next(&tvlv_value, &tvlv_value_len))) {
- 		if (tvlv_hdr->type == type && tvlv_hdr->version == version)
- 			return true;
--
--		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
--		tvlv_value_len -= tvlv_value_cont_len;
- 	}
+-		if (batadv_seq_before(tp_vars->last_recv, un->seqno + un->len))
+-			tp_vars->last_recv += to_ack;
++		if (batadv_seq_before(tp_vars->last_recv, to_ack))
++			tp_vars->last_recv = to_ack;
  
- 	return false;
-@@ -511,20 +541,8 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
- 	int ret = NET_RX_SUCCESS;
- 
--	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
--		tvlv_hdr = tvlv_value;
-+	while ((tvlv_hdr = batadv_tvlv_hdr_next(&tvlv_value, &tvlv_value_len))) {
- 		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
--		tvlv_value = tvlv_hdr + 1;
--		tvlv_value_len -= sizeof(*tvlv_hdr);
--
--		if (tvlv_value_cont_len > tvlv_value_len)
--			break;
--
--		/* the next tvlv header is accessed assuming (at least) 2-byte
--		 * alignment, so it must start at an even offset.
--		 */
--		if (tvlv_value_cont_len & 1)
--			break;
- 
- 		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
- 						       tvlv_hdr->type,
-@@ -532,11 +550,9 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 
- 		ret |= batadv_tvlv_call_handler(bat_priv, tvlv_handler,
- 						packet_type, orig_node, skb,
--						tvlv_value,
-+						tvlv_hdr + 1,
- 						tvlv_value_cont_len);
- 		batadv_tvlv_handler_put(tvlv_handler);
--		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
--		tvlv_value_len -= tvlv_value_cont_len;
- 	}
- 
- 	if (packet_type != BATADV_IV_OGM &&
+ 		list_del(&un->list);
+ 		kfree(un);
 -- 
 2.47.3
 
