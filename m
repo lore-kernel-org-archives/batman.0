@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 918A9C43458
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99DD0C43327
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 14:14:21 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2E2878115C
-	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:13:37 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3F06684064
+	for <batman-adv@archiver.kernel.org>; Tue, 30 Jun 2026 16:14:20 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1782828817;
- b=Bu3kgMqHGNopXJgZMxOfUHRQePmRzd4+KwlrLBl4uMI2zUQIk+xsjIdpCGqDZQXnZYum9
- p22k5m8JOlS5AlQUMEzR+klaPn8G+letqVLdCmWnziKgdVyKoCwCEAGL/bxYbax1IEJaCcz
- HF2ITQOhi5zI1nt0Qskzqd4o7/W+q8I=
+ t=1782828860;
+ b=lnghmrVphLAU2TNkmPhPF4c/gt/gi1MeVcVj0PQm93JulyPdqCQRcRpfbhvu1bVedF6l8
+ EUBYqdzj9sTpKs9UAR0q5cgyaX6U4L91VYpYxX+TOE5q00XRzL69VjrmtCBsN584RKIiEoD
+ jMz/oVAXb6Tl/bsVpDOo5Mt2z/bC39I=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1782828817; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1782828860; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=QXJeX55aPHneDee3MRppeZCCDxksy2cihw5wER1FZrE=;
- b=dDpSBRBK8uN+rCjJB+3a/9oIOXvvap2kBbN9hnFhHcPpl7nxbJY3CND4fOeNj0D3WTu56
- Uvnfe+aWKVNc+XRx4EjKN584ythy7mflq2HqnbfJkGv7Ct4QpV7t3nhSa75qes29wF/AWu0
- dJj9lK+rVQjtrvPAE5QIs0WVES6mlkc=
+ list-archive; bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
+ b=3ewtZbYSw3k486+vmhJxJa7GGiKAMjHBETzJ1KNqQ+M81/lZrBq5ftEBxiufqsvpCWPG4
+ vq4hs683UOcEEhYcUqyaJWtK9M6ZJxT936nMq85Rux3uzxsTH7KdWqKIG+KAJhXFzcId9Xl
+ SSzCCcX9hH1dCwK/ZdZbJD+oCxj3aLE=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,41 +34,41 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 1C71C81091
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 16:06:28 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3DDE58110E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 30 Jun 2026 16:06:33 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1782828393;
-	b=aCgynXrYy/UnlZGkjBlcoqmM4Hv2aAJ69Dk/GCpv7oGalNwPf6oWqKUYqr/0ZV2C3giq4u
-	nYa7jbW8w3041YpBo5RY72IANNfDFm/aEeb0vtC5KWqVRnl0/cfF/ar/bjnKHeKB4Knwed
-	1UpwOE5/6Ei9WYos8jvbdscXN11l9NE=
+	b=qJuDU7ZtTuby7Hd0fUl1Mtc6kGAtBS+6DTJhUXbtfUgwAL6d2EvWDdFnlj33lo4qL9cR66
+	FuRCuW2cpfyGFbwKOEjnv3LMiIZ0p71XGjCvx24pDIXXfjgWkqDSjz+zLc7SelLhHcjfVT
+	qRzMu6mdSZTaTV+cCyA5rgokL3n8hMQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1782828393;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=QXJeX55aPHneDee3MRppeZCCDxksy2cihw5wER1FZrE=;
-	b=KcK+Zkl8/7/6+teuAtSwT8kZDpYLU9y73GdAWe8GISZE7FKJxpaS5rqTHeJor9+wozojHW
-	TkERrTclHUc0yTJ7h1N0ErBOPTNUhHY3+7tTxDIUvLE1DrzTXVmCH7Wn8yg0KZECF5B9GA
-	Q+khS79iOL5GKPuLrAJjKsuuhT06yTU=
+	bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
+	b=NKnsbk17ONvQcKpKkO1g9qlRc7FAEga6Kc9uwm52yIlkLEc9Z13kfQNIEVMuk130FQhyFo
+	B+KY4Wb9kYILJeVx2Ndv2WY1ZukIEoyXUhslwxpk7jVPaotS01rpCsJjEIws0WlRlyqbwD
+	Co8rOgJYNXlqF++Za3F1o6ptJm0aeRk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=mK2r2nAn;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=F1SjhFgo;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1782828387;
+	s=09092022; t=1782828392;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=QXJeX55aPHneDee3MRppeZCCDxksy2cihw5wER1FZrE=;
-	b=mK2r2nAnU16thNu3idBKmFf1HwjqU4xBrkZPAkvS2o9L+TwCGtprtZjtwklXuS84qdwarP
-	2sAb3WbryzLaE3hyedDMgZyC7Yh27pJOea7Aikq9f77lwyddePYT5bP3N9P+LwgfVZVMGg
-	cJAUDrX86I3lpVNxYYHyxeKhzKdYci4sixgcL6UAZcFBdfpmPeyE6AOlwcA0fVbK9DM1P7
-	Y14Et9+xmBEE+jbVsHWJcY3bOpMCr8fl4CV2Ka9d+AFxuh7NDtOJryOueqO0ig1GzZyiKE
-	HaNjwgacN2Ae/H1VOt8C/qZx+4kfstz8JvcAPvmFuSYm1S1SOoHe3ue4ohpZdQ==
+	bh=q3ZGFfO0pQVo955cy4QHxZ8eqU7mZNLw3Z/Xfs0q5Gs=;
+	b=F1SjhFgorajQuLw1hBE/7t6k8QR1AH1GMD1zBCegXqAddqVw20wPiQ0s1cZENV+mdzuavJ
+	pzFCBWFAJtgNnk+aZJcXzHHMFW+/QiX4VMlYsTiGLrv6V0wwBqsoqJMtrFxazHOcRU8Med
+	41WHxV6P+Lcb9hV6HK0Bx6OL4TG1cxfzeO/T1cHDQxzBkjSSAUd7LT1JmqnY6lSs5QAOtk
+	PKPQ23+dDEKx4VZVGGnDqc0dZpk5EVJ6J3ShD41t7dEZLa61Orrsaiy2vSYIqdKfr7KOlK
+	6lqYEMnpqcLPYXbJFU8Tuh38IfgaCtLobqMDICvH0TCJ06QXNQa2v2VTyC9Fhg==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -78,19 +78,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Nora Schiffer <neocturne@universe-factory.net>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 03/15] batman-adv: make hard_iface->mesh_iface
- immutable
-Date: Tue, 30 Jun 2026 16:06:11 +0200
-Message-ID: <20260630140623.88431-4-sw@simonwunderlich.de>
+Subject: [PATCH net-next 10/15] batman-adv: tvlv: extract tvlv header iterator
+Date: Tue, 30 Jun 2026 16:06:18 +0200
+Message-ID: <20260630140623.88431-11-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260630140623.88431-1-sw@simonwunderlich.de>
 References: <20260630140623.88431-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: PCUFFVEZ53D2QEGE22LUCG3RNWETSDWF
-X-Message-ID-Hash: PCUFFVEZ53D2QEGE22LUCG3RNWETSDWF
+Message-ID-Hash: VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT
+X-Message-ID-Hash: VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PCUFFVEZ53D2QEGE22LUCG3RNWETSDWF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VCO6MKTSJZSONOZZ5EYYMZSOWV2BJGJT/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,58 +113,140 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-With the hard_iface now being created for a specific mesh_iface, it is
-beneficial not to set mesh_iface to NULL when the interface is disabled,
-but instead keeping it immutable after the initial setup of the
-hard_iface. By also holding the reference to the mesh_iface until the
-hard_iface is released, hard_ifaces iterated over under RCU will always
-point to a valid mesh_iface.
+batadv_tvlv_containers_contain() and batadv_tvlv_containers_process() are
+using the same code to iterate through the TVLV containers. To simplify the
+code, extract the shared portions of both functions.
 
-Co-developed-by: Nora Schiffer <neocturne@universe-factory.net>
-Signed-off-by: Nora Schiffer <neocturne@universe-factory.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/hard-interface.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ net/batman-adv/tvlv.c | 86 +++++++++++++++++++++++++------------------
+ 1 file changed, 51 insertions(+), 35 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index ace81348ddef7..a0b8b06f9a644 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -63,6 +63,7 @@ void batadv_hardif_release(struct kref *ref)
- 	struct batadv_hard_iface *hard_iface;
- 
- 	hard_iface = container_of(ref, struct batadv_hard_iface, refcount);
-+	netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
- 	netdev_put(hard_iface->net_dev, &hard_iface->dev_tracker);
- 
- 	kfree_rcu(hard_iface, rcu);
-@@ -829,8 +830,6 @@ int batadv_hardif_enable_interface(struct net_device *net_dev,
- err_upper:
- 	netdev_upper_dev_unlink(hard_iface->net_dev, mesh_iface);
- err_dev:
--	hard_iface->mesh_iface = NULL;
--	netdev_put(mesh_iface, &hard_iface->meshif_dev_tracker);
- 	batadv_hardif_put(hard_iface);
- 	return ret;
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 1c9fb21985f6a..49bf2ed9ecdc3 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -442,6 +442,54 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
+ 	return NET_RX_SUCCESS;
  }
-@@ -871,7 +870,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
- 	/* delete all references to this hard_iface */
- 	batadv_purge_orig_ref(bat_priv);
- 	batadv_purge_outstanding_packets(bat_priv, hard_iface);
--	netdev_put(hard_iface->mesh_iface, &hard_iface->meshif_dev_tracker);
  
- 	batadv_hardif_generation++;
- 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->mesh_iface);
-@@ -881,7 +879,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface)
- 	if (list_empty(&hard_iface->mesh_iface->adj_list.lower))
- 		batadv_gw_check_client_stop(bat_priv);
++/**
++ * batadv_tvlv_hdr_next() - move a tvlv buffer cursor to the next container
++ * @tvlv_value: cursor into the tvlv buffer, advanced past the returned
++ *  container's content on success
++ * @tvlv_value_len: remaining length of the tvlv buffer, reduced by the returned
++ *  container's size on success
++ *
++ * Parses a single container header at the current cursor position and, if a
++ * complete container is available, advances the cursor and remaining length
++ * past it. The returned header stays valid; its content is located at
++ * (returned header + 1) and is ntohs(hdr->len) bytes long.
++ *
++ * Return: pointer to the next tvlv container header, or NULL if no further
++ * complete container is present in the buffer.
++ */
++static struct batadv_tvlv_hdr *batadv_tvlv_hdr_next(void **tvlv_value, u16 *tvlv_value_len)
++{
++	struct batadv_tvlv_hdr *tvlv_hdr;
++	u16 tvlv_value_cont_len;
++	void *tvlv_value_cont;
++	u16 tvlv_len;
++
++	tvlv_value_cont = *tvlv_value;
++	tvlv_len = *tvlv_value_len;
++
++	if (tvlv_len < sizeof(*tvlv_hdr))
++		return NULL;
++
++	tvlv_hdr = tvlv_value_cont;
++	tvlv_value_cont_len = ntohs(tvlv_hdr->len);
++	tvlv_value_cont = tvlv_hdr + 1;
++	tvlv_len -= sizeof(*tvlv_hdr);
++
++	if (tvlv_value_cont_len > tvlv_len)
++		return NULL;
++
++	/* the next tvlv header is accessed assuming (at least) 2-byte
++	 * alignment, so it must start at an even offset.
++	 */
++	if (tvlv_value_cont_len & 1)
++		return NULL;
++
++	*tvlv_value = (u8 *)tvlv_value_cont + tvlv_value_cont_len;
++	*tvlv_value_len = tvlv_len - tvlv_value_cont_len;
++
++	return tvlv_hdr;
++}
++
+ /**
+  * batadv_tvlv_containers_contain() - check if a tvlv buffer holds a container
+  * @tvlv_value: tvlv content
+@@ -457,28 +505,10 @@ static bool batadv_tvlv_containers_contain(void *tvlv_value,
+ 					   u8 version)
+ {
+ 	struct batadv_tvlv_hdr *tvlv_hdr;
+-	u16 tvlv_value_cont_len;
+-
+-	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
+-		tvlv_hdr = tvlv_value;
+-		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
+-		tvlv_value = tvlv_hdr + 1;
+-		tvlv_value_len -= sizeof(*tvlv_hdr);
+-
+-		if (tvlv_value_cont_len > tvlv_value_len)
+-			break;
+-
+-		/* the next tvlv header is accessed assuming (at least) 2-byte
+-		 * alignment, so it must start at an even offset.
+-		 */
+-		if (tvlv_value_cont_len & 1)
+-			break;
  
--	hard_iface->mesh_iface = NULL;
- 	batadv_hardif_put(hard_iface);
++	while ((tvlv_hdr = batadv_tvlv_hdr_next(&tvlv_value, &tvlv_value_len))) {
+ 		if (tvlv_hdr->type == type && tvlv_hdr->version == version)
+ 			return true;
+-
+-		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
+-		tvlv_value_len -= tvlv_value_cont_len;
+ 	}
  
- out:
+ 	return false;
+@@ -511,20 +541,8 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
+ 	int ret = NET_RX_SUCCESS;
+ 
+-	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
+-		tvlv_hdr = tvlv_value;
++	while ((tvlv_hdr = batadv_tvlv_hdr_next(&tvlv_value, &tvlv_value_len))) {
+ 		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
+-		tvlv_value = tvlv_hdr + 1;
+-		tvlv_value_len -= sizeof(*tvlv_hdr);
+-
+-		if (tvlv_value_cont_len > tvlv_value_len)
+-			break;
+-
+-		/* the next tvlv header is accessed assuming (at least) 2-byte
+-		 * alignment, so it must start at an even offset.
+-		 */
+-		if (tvlv_value_cont_len & 1)
+-			break;
+ 
+ 		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
+ 						       tvlv_hdr->type,
+@@ -532,11 +550,9 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 
+ 		ret |= batadv_tvlv_call_handler(bat_priv, tvlv_handler,
+ 						packet_type, orig_node, skb,
+-						tvlv_value,
++						tvlv_hdr + 1,
+ 						tvlv_value_cont_len);
+ 		batadv_tvlv_handler_put(tvlv_handler);
+-		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
+-		tvlv_value_len -= tvlv_value_cont_len;
+ 	}
+ 
+ 	if (packet_type != BATADV_IV_OGM &&
 -- 
 2.47.3
 
