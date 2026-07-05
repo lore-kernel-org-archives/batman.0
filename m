@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A43FC43458
-	for <batman-adv@archiver.kernel.org>; Sun,  5 Jul 2026 18:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 550BAC43458
+	for <batman-adv@archiver.kernel.org>; Sun,  5 Jul 2026 20:35:12 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E1B3283FE1
-	for <batman-adv@archiver.kernel.org>; Sun, 05 Jul 2026 20:42:06 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9B51D83FF3
+	for <batman-adv@archiver.kernel.org>; Sun, 05 Jul 2026 22:35:10 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783276926;
- b=TRvD183SFz7pM9w5zTCsCyNWWeYjWfzkb8aPDKet4v8GUuQZvpa93NvLBMFR2W8bZfoFG
- Lypr9IPgQYDbZWuyI90uBT/m/p09qjSxXMdfYRaYAB4rCwofpIGxkWbG9HxORJdSgwcWcQ7
- rAbKtJO9R2F1z9orwb11LLizN0WoYD4=
+ t=1783283710;
+ b=LXX0lH5FVFcFCIRg+le+YcA5dWNoTg7B0LoA1d9nDTdmmUMl0+Whtjr7W1MXXFFcBu2r3
+ le27BX5PuEaNrMopkz+L078LzmOA3jIpvhe8RQqK4e/db8lODNLKgFilz7632PcFNLYb9Z3
+ PJc/YkhTpcZIQlqhP9S/8hIz+pr518A=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783276926; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783283710; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=uW6niyKd3zYXPxWCgV5RL+iFZwPERvAL7psWWCRV9W8=;
- b=KnPGyt/cJRGNN+QVZafNsb5ubEBoxWSFXx2pgOuPdsUCTHzjGlAdKq/OTUDMRxBy57j+1
- JHSCl3gv4VQ7xrSeRhNg0GNPPsyyS4MM7+Zncwz6ShSNdxvpZLfUtLA9xwLY6zlvXMYZS7J
- cUNi+LoUQ9nYFEYhGgsi1VRF/J56nQg=
+ list-archive; bh=Mlk/zKCeGPRDRox60VAFR5T1tXiDSK+Od7IjBAG+yys=;
+ b=ovJZlSZ9V7Eoq7Lq/Pxtjg8xdgnEJS7g6R73Taxi/jw2Mof1CPkjeG50fKbxhuXHcJvML
+ cjQXS1hzMFXBQpMklnp3HiGvlJpz3/v0K9cU6zHgJfpCXU/he97fYMg0t2wasU7tfgCnrdg
+ +4TiL4hqn0Stil5Lu9PiUv6W+km315w=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 41114809EE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 05 Jul 2026 20:41:37 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783276907;
-	b=sRpBAKx8MwLI7PtoKQNF1AcnVWSa4FMURJ/PARvO6gxCyvRExvPFhrQQqt7juo4V0InNDQ
-	QYcbdKzN7S69L9bUiE2wt00GnXMsZLbIYlCqPTnI7gRRxbhq23TO7C0CPmI26SQJAtNCSH
-	/t0JskTa1wORvOoHQ/gH8LsclLvPWsE=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 17A5D809EE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 05 Jul 2026 22:34:39 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783283690;
+	b=n2Kd66Ee/4L6CovTycxlPKU9faqgJd9swQhQ891mk7pFfo0cb9729TwVEFvw3xqjpHexnd
+	nygNA9SnFyf1lNp0N8z5VeUcr0qy7bHTOaJJTZ2jH+s8NFYxD5Y9Jh8XhSJVv8aDVVmqjL
+	qyH+dXJ3SsjoM+t5rI1kvzvYt/dafPw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783276907;
+	s=20121; t=1783283690;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=uW6niyKd3zYXPxWCgV5RL+iFZwPERvAL7psWWCRV9W8=;
-	b=MXDHKUwPgZs38cjUc6hpvb42Eutvleu/IPVDFtnyHVx22TcrGo83DHuiYKVnoAiHO9jsa2
-	3I39D1w9mPHT6EIK1C4cOvbkYL3ea3EzXBENXqsOY+mMLkgbN2vxez5xWyRtk8v45F51Kr
-	2IfgI8dVs9T6nU1iJx2em1149sGDiiU=
+	bh=Mlk/zKCeGPRDRox60VAFR5T1tXiDSK+Od7IjBAG+yys=;
+	b=ClIkjj4IYQ2bshyhS8rHr5mY+1CH/niCm8oCd5xo0j9ffIqhUtImUlzd3+ZcAPVfLtLgpY
+	wSfuSazFOwbprZUK7L91eewR20g4S/HI1sI/QYugGPHNQZJwoWhQjZyu1RwJS8ww49RT43
+	YkmHGch3Lv/U3osZDdYb++TiXG6WatM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=qPLqLQeU;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=HiMX1mYw;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id DAD061FEF7;
-	Sun, 05 Jul 2026 18:41:34 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id E9AED20267;
+	Sun, 05 Jul 2026 20:34:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783276895;
+	s=20121; t=1783283679;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=uW6niyKd3zYXPxWCgV5RL+iFZwPERvAL7psWWCRV9W8=;
-	b=qPLqLQeUUWtavqf7QW54TaPm8kWBU5sCk6q/VPNJN8MTd7l+ucQBAze2c25l3mVXRvVK2n
-	16+HX3LiuWduXFjfK81cApgwSqqtLnuQRL9lKtfACFZKsDW1cvqCYjxOjAPzQXk800593T
-	F3BfATkbMLFhLE6mGAoOQmjWSKUG8v8=
+	bh=Mlk/zKCeGPRDRox60VAFR5T1tXiDSK+Od7IjBAG+yys=;
+	b=HiMX1mYw++7+c0y5MCVH8aO5t+3i+BRnHKDpSJjlYmDrEsmeQ/Y4djLQn45mP2konpwvXZ
+	5hwtHefImcAJOSipnQ24puA2gDNErvAad+cS/yBBcIPbieYcqMWF6zf3BWe0NyJmcYBnjh
+	dNhxb+vmrvhAxe7XG1kBdiERpY6ZBww=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 05 Jul 2026 20:41:20 +0200
-Subject: [PATCH batadv] batman-adv: dat: fix tie-break for candidate
- selection
+Date: Sun, 05 Jul 2026 22:34:34 +0200
+Subject: [PATCH batadv] batman-adv: bla: prevent CRC corruptions after
+ claim flush
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260705-dat-tie-break-v1-1-5d06df5cd9e7@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAE+lSmoC/yWMwQrCMBAFf6W8swvbgpX4K+Jhk111FaoksQil/
- 26qxxmYWVAsuxUcuwXZZi/+nBr0uw7pJtPVyLUxBh5GPvCeVCpVN4rZ5EEWOIReNAVltOaV7eK
- f3++EKFV0xvnvyzveLdVthnX9Au288Ul5AAAA
-X-Change-ID: 20260705-dat-tie-break-e90991adc9d0
+Message-Id: 
+ <20260705-bla-parallel-crc-corruption-v1-1-6d9e89075449@narfation.org>
+X-B4-Tracking: v=1; b=H4sIANm/SmoC/yXMQQrCMBCF4auUWTsQg23Uq0gXk+mokdCGSVqE0
+ rsb2+X/4H0rZNEgGe7NCipLyGEaa5xPDfCbxpdgGGqDNbYzzrToI2EipRglIisjT6pzKvWH1xt
+ 31l2cMa2FKiSVZ/ju+gM8FRoW6I89z/4jXP40bNsPwePJhocAAAA=
+X-Change-ID: 20260705-bla-parallel-crc-corruption-89c627470052
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1656; i=sven@narfation.org;
- h=from:subject:message-id; bh=zmJGhaqnSGv08WQHKOEodAYvaVWBtJntC2qyWeKmjn8=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFleS0PiLf7JZ6b0pyrf3PF+yp7Tnb9mm7louzrFae633
- vt2UfTbjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBE/kxkZFj5NuEY86ep92YF
- 8afM2/U1PNDiwq2Vkk2/pd6fSNolwLCe4X/s2hAPuxkpjOnvuLa123/48XnDBAeHpW/n7vKq/3/
- Ot5EZAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1691; i=sven@narfation.org;
+ h=from:subject:message-id; bh=oE0QWeFGzednMFIOgAJ7ft27yoHoIi7PSdzdXnGY/bc=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFle+29vrtiz50hl4urL9ROqg4I+zwybeFnimm5pfs7sr
+ 1G+/CYpHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ/Jdj+J/dXnanaGl1qKVs
+ /33RgH3ZMoe7i1l3TFtr3/HsrZdSRwsjw0+t1ANPbZ96LnjbbegUOpNl2SH18InHjZuO6q0Um/l
+ VggUA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: DM3UIITU3TGT265X4UKJPYMLHPQV252L
-X-Message-ID-Hash: DM3UIITU3TGT265X4UKJPYMLHPQV252L
+Message-ID-Hash: 5LYC2CUSNWQ3MIKWXIPODMGWYSSOE6ME
+X-Message-ID-Hash: 5LYC2CUSNWQ3MIKWXIPODMGWYSSOE6ME
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DM3UIITU3TGT265X4UKJPYMLHPQV252L/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5LYC2CUSNWQ3MIKWXIPODMGWYSSOE6ME/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,43 +113,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The original version of the candidate selection for DAT attempted to
-compare both candidate and max_orig_node to identify which has the smaller
-MAC address. This comparison is required as tie-break when a hash collision
-happened.
+When batadv_bla_del_backbone_claims() tried to remove all claims of a
+backbone, it sets the CRC to 0. It assumes that the it had the last
+reference of the claims because batadv_claim_release() (which runs after
+the last reference was released), is XORing the crc16 of the claim address
+with the backbone CRC.
 
-But the used function returned 0 when the function was not equal and a
-non-zero value when it was equal. As result, the actually selected
-node was dependent on the order of entries in the orig_hash and not
-actually on the mac addresses. The last originator in the hash collision
-would always win.
+If there would be a parallel holder of any of these references, it could
+happen that the backbone CRC is (0 ^ crc16(delayed_released_claim)). Which
+is the wrong starting point for the new claims it may receive when the
+remote answers the claim request from batadv_bla_send_request().
 
-To have a proper ordering, it must diff the actual MAC address bytes and
-reject the candidate when the diff is not smaller than 0.
+This reinitializations can be completely dropped to avoid this problem.
+batadv_claim_release() will take care of fixing the backbone CRC.
 
-Fixes: 34b3c3850e7d ("batman-adv: Distributed ARP Table - create DHT helper functions")
+Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bridge_loop_avoidance.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index a5c9b6d0..30cb1e93 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -615,7 +615,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
- 	 * the one with the lowest address
- 	 */
- 	if (tmp_max == max && max_orig_node &&
--	    batadv_compare_eth(candidate->orig, max_orig_node->orig))
-+	    memcmp(candidate->orig, max_orig_node->orig, ETH_ALEN) >= 0)
- 		goto out;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index e18e9885..146ead5c 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -325,11 +325,6 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+-
+-	/* all claims gone, initialize CRC */
+-	spin_lock_bh(&backbone_gw->crc_lock);
+-	backbone_gw->crc = BATADV_BLA_CRC_INIT;
+-	spin_unlock_bh(&backbone_gw->crc_lock);
+ }
  
- 	ret = true;
+ /**
 
 ---
 base-commit: e281f6726677f7e8950dad1640d5386867e6d2e6
-change-id: 20260705-dat-tie-break-e90991adc9d0
+change-id: 20260705-bla-parallel-crc-corruption-89c627470052
 
 Best regards,
 --  
