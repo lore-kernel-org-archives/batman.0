@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44CF9C43458
-	for <batman-adv@archiver.kernel.org>; Sun,  5 Jul 2026 15:54:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DFD5C43458
+	for <batman-adv@archiver.kernel.org>; Sun,  5 Jul 2026 15:55:20 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A4BC382080
-	for <batman-adv@archiver.kernel.org>; Sun, 05 Jul 2026 17:54:34 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7B89E83DDC
+	for <batman-adv@archiver.kernel.org>; Sun, 05 Jul 2026 17:55:18 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783266874;
- b=wMhzJ05t9/zPPQo7hOXf6Y2vcEwqVAt0rbcrXKr5NahByitO2DOkX/GjribQc7DYEfUkR
- 4T4lejBCr4ITIPrCi37RzfxEx3RF5Q6z0z108RlPkF3DtHS03njOQBNqqY7yY4waa/UH/wU
- prh/l1vPNXkBlTLhhawX97pFi0znhQQ=
+ t=1783266918;
+ b=a4nZwRBi6RqxfIVFgpgjUTQCxZyhuNjHMmP9OadLS/g+viLVr0IsiSNrCuYhqA4hPRP5F
+ M6XZdC2BQfxge5V4uBJnofjVyllHhll29oWtfRJU0CdRExtU/xWfdZu2Z8rCFiGj9A3+tCM
+ 9LRkmCjaM4w9Tq6+WN38GT2UGOZqGOM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783266874; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783266918; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=h71XnDTPNIJnW6lSnl/+SzEr19zoJW39v+ybRY3tVlE=;
- b=EzQ5NUzo9asS3Kieu697iRZqRUk/k1a/Szgi8PylGhGj05O7ibv3epiGHGoyq3Z9zFIyc
- k4CyjI98eNZQlQrYE8VESYlLtftDdurxI3GUCga4RfO8PSE5xeL/aMux07hIkckRb40u8we
- ttdRkDeDUoniUQxIoPvwaTxJZEeT4A8=
+ list-archive; bh=07Xusib/tRUzDLRjg/lDQ4D/ZfnR68emeD+ovgQaECk=;
+ b=toiZo6r6ZWfhshQ8OaBHiF/WdQgPEFFAgh56czdxYLmVgG4Pxok9YfGqVXStST72QWqf4
+ 4ggdhHtKWXgRkKSfk0WnmuKOwjc8lD47XeXo04hA8sy2MjJkuz2WGWtsMSlTRhtc/107ojx
+ H7qZdcvsQOpvGHr9pv7/Nt+CguuYv7Q=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C6FAE818CD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 05 Jul 2026 17:54:08 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B5FB5818C3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 05 Jul 2026 17:54:13 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783266853;
-	b=WbtFFu7bR/I1ZORMJZgKMEs/FAqrgEg6bHpn81rasoc7TL90BU6ybGWgIiWKAkx+8rEex/
-	hiI8GNJsWBu37MnJMtLxpa8jmcAm6rTjefhJgfaEN8ho1+m/fIplQWPT+3+jCA5cwU9Tzi
-	p2+UVVM7pr9S1HuYYB4dLbFTkptrWBM=
+	b=M0NPISQUCGTvZpUPdTWOW6heLFMplcqcaD3vMV3KcRNtsX/n1O+eNmt6YPBQWyqpVMPvwT
+	2fQYY+1V8oqHblY+6BAD5lZ8YiLosgUV7rDu3kcIT9cxs9GVPLp6a/2WK9crhCEvOo67di
+	Y3dlRMfRifK8ZMf5Z/oK/TBzgR7aST0=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1783266853;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=h71XnDTPNIJnW6lSnl/+SzEr19zoJW39v+ybRY3tVlE=;
-	b=AhTewaJFpWxVz86kNJvf5a3dOaMhilL42m3ueDSuvbG3fAscAbkjvnNJX4UVndjGMW/o+a
-	HX0Jmu598BHKt/uc3wg7EuEWkvFL3K6zfteG2AQAcfJLKW/iXo9368jhm8OnufFwuJbldW
-	T29QIYxk4jcIyfoHEfmSJ1Utyba9mck=
+	bh=07Xusib/tRUzDLRjg/lDQ4D/ZfnR68emeD+ovgQaECk=;
+	b=yZiT9qn4fO1npT0xx8TLTzQv7WS8fPVAeYnBmVvmFbcLeHbYVQ5p942GgrZ0Da5znrs8Pb
+	3W8PywfkAop1uc9Jjc8g43HluDHwMTGTrxk8E4sMFKO/lpOrtoE7wbl8GoMD5wyOXqJN5q
+	EGIyc8N8iblEEMBCVtgW8XNyAXnLkak=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=H350XlPN;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=mSQI4nww;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 6AE2120539;
-	Sun, 05 Jul 2026 15:54:08 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id F3FED2054D;
+	Sun, 05 Jul 2026 15:54:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783266848;
+	s=20121; t=1783266853;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=h71XnDTPNIJnW6lSnl/+SzEr19zoJW39v+ybRY3tVlE=;
-	b=H350XlPNzfW0IuLDSHYH7ygzExEa7MlOKhS4qVSwHIaOs2xC11Kn5x2u6q59vvrZCGHdIA
-	VkJHKXWta+MdkeCjtwov45KC6cZtDQWJZTmGAC0mN6olnyzA0w/4QLXT7wdPAPAouVatU8
-	ezJEhoRF7F1uRcLGd8M/oIv+2NOAgiQ=
+	bh=07Xusib/tRUzDLRjg/lDQ4D/ZfnR68emeD+ovgQaECk=;
+	b=mSQI4nww4cRDgHrT+d03M0Q5Fpxg+iK3xVKlho6KhlTKCEaL4JU7vg5kBgEOWndhnAICcd
+	U6Kma5lEVoV2qvn0jeMG+BW8FXwPi4IodOWwmfRsQJCpnp4El14m11m79+V4c4A5utbpUU
+	JMc/V3tq3V/UHsjT5/eP8ZSARgQ/LIw=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 05 Jul 2026 17:53:35 +0200
-Subject: [PATCH 1/5] batctl: genl_json: avoid negative chars in
- sanitize_string
+Date: Sun, 05 Jul 2026 17:53:37 +0200
+Subject: [PATCH 3/5] batctl: genl_json: don't return negative error codes
+ to main
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260705-bugfixes-genl_json-v1-1-8cc79129012c@narfation.org>
+Message-Id: <20260705-bugfixes-genl_json-v1-3-8cc79129012c@narfation.org>
 References: <20260705-bugfixes-genl_json-v1-0-8cc79129012c@narfation.org>
 In-Reply-To: <20260705-bugfixes-genl_json-v1-0-8cc79129012c@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1095; i=sven@narfation.org;
- h=from:subject:message-id; bh=DAfZJAlk1DBVgywL44vy3fIHnyvpWfPR28eGRHiYhj8=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFledfy63S8OZsrpzZnQ+r80KeBE0GTpeiVLRcYjD9x8W
- u7GMlZ2lLIwiHExyIopsuy5kn9+M/tb+c/TPh6FmcPKBDKEgYtTACby4g0jw6PLmRF1yUzHeO8t
- +dwWkbdHX6D1dFVCdbraofrz99PP8jP899s/iWHtx5/z9Y8emvlcLNvxVZlvw9xJa+781yg64/J
- hEh8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=872; i=sven@narfation.org;
+ h=from:subject:message-id; bh=L0x9JXX6mWcMEZ6PDiChob+hSMmzJSY1VowVKskihrs=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFledfz2Em7/D71ucxPt7bv+6vR5xrtbrFnymQu4LLRsV
+ zuHeSV1lLIwiHExyIopsuy5kn9+M/tb+c/TPh6FmcPKBDKEgYtTACaips7IMDvo1pQfooZK8o+T
+ vy+LKk1Q2T499vqp/rUbPBy1Z3I7JTL8j5FesJOzbcW6CMXItC2zjzbdvyx3Z+my6XPu3Tp53fx
+ MEgcA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ZMXYCD43SUEKCLEIJYNTXMWEQCMHZELP
-X-Message-ID-Hash: ZMXYCD43SUEKCLEIJYNTXMWEQCMHZELP
+Message-ID-Hash: QKBJUKV3ZWA4OFYAPRYGZ2EEV56WYPYV
+X-Message-ID-Hash: QKBJUKV3ZWA4OFYAPRYGZ2EEV56WYPYV
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZMXYCD43SUEKCLEIJYNTXMWEQCMHZELP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QKBJUKV3ZWA4OFYAPRYGZ2EEV56WYPYV/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,46 +112,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-char is signed on common platforms. Passing a "negative" string byte to
-isprint() is undefined behavior when it is not EOF. The manpage for isprint
-is therefore requesting to provide the argument as unsigned char.
+handle_json_query() returns the result of netlink_print_query_json()
+directly. This is a negative errno code on failure and main() passes it
+straight to exit(). The process then terminates with a mangled exit status
+like 161 (-95 & 0xff).
 
-Fixes: ae1a3d3f0bb7 ("batctl: genl_json: Add generic JSON interface")
+Limit the return codes to EXIT_SUCCESS and EXIT_FAILURE.
+
+Fixes: 57cc3c472a7d ("batctl: Introduce handler for JSON_* command types")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- genl_json.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ genl_json.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/genl_json.c b/genl_json.c
-index 8aa97b4..ee83ab2 100644
+index 356c5d7..917b255 100644
 --- a/genl_json.c
 +++ b/genl_json.c
-@@ -33,16 +33,18 @@ struct nla_policy_json {
- 
- static void sanitize_string(const char *str)
- {
--	while (*str) {
--		if (*str == '"' || *str == '\\') {
-+	const unsigned char *c = (const unsigned char *)str;
-+
-+	while (*c) {
-+		if (*c == '"' || *c == '\\') {
- 			putchar('\\');
--			putchar(*str);
--		} else if (!isprint(*str)) {
--			printf("\\x%02x", *str);
-+			putchar(*c);
-+		} else if (!isprint(*c)) {
-+			printf("\\x%02x", *c);
- 		} else {
--			putchar(*str);
-+			putchar(*c);
- 		}
--		str++;
-+		c++;
+@@ -600,6 +600,8 @@ int handle_json_query(struct state *state, int argc, char **argv)
  	}
- }
  
+ 	err = netlink_print_query_json(state, json_query);
++	if (err < 0)
++		return EXIT_FAILURE;
+ 
+-	return err;
++	return EXIT_SUCCESS;
+ }
 
 -- 
 2.47.3
