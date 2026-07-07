@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2973CC43458
-	for <batman-adv@archiver.kernel.org>; Tue,  7 Jul 2026 18:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC218C43458
+	for <batman-adv@archiver.kernel.org>; Tue,  7 Jul 2026 19:17:26 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id BB4E680C65
-	for <batman-adv@archiver.kernel.org>; Tue, 07 Jul 2026 20:55:11 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 75E678418B
+	for <batman-adv@archiver.kernel.org>; Tue, 07 Jul 2026 21:17:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783450511;
- b=uUTsaUVmc8/Qi3SQkj3EHze2hcIQSZMfZR7kI0EWTYucB3OIDBTX+mA7Gqx+Lp2Go4RH6
- 0dw22ybW3b8o0pOc28KBSLwCOpdVxpSXkee2u8pZZI9OrkMjsBhxU91ID72Z5rE/Sqr9Puh
- jEz60yjJoIwGdeiXsZeaXPGrfD+8+Pk=
+ t=1783451845;
+ b=HDAlVtofHWLCFnrGlOasYz7B9ACK3logwZzchAHsvJTpntqIVjM5o+Ej3gmFqwsESkFJb
+ cs48QpK8rTwZGMU8oYKpxeAl9mw5i1WUbRBJBOVMyyVvzEFq/JNnJb22B3CkH9pkY/D5K9R
+ siL4NmbdseOJQHafBT2J92SDtE/Nx6c=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783450511; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783451845; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=XVb43KfsVvFcg9k+EQvJqROneRDZ+avzaHbPo/cGfr0=;
- b=DU36dsVXQ2MoPcPlCZfRq/jxpRwKICNfK3Dwy1tCOQcan1dOZvg7B+7kKFYz6nWRYF8xH
- Z28yMBevLHjO92a9wBEjgm/13lFko7MsuzVulyQ8snWgqiurmTjjI3P887xEfMpu/X/vHXo
- icGCzyP+upsIq35lvSS0b225iU6mMyE=
+ list-archive; bh=mlyYN2ITz27DyS+4fzIUdcDnxVrUySv+RPaK6ujp5wA=;
+ b=ePMM4IA0JhjwO0g44OtzphiSRbiqSr4G4OxelFk8uNRjzbvNnTF4i6b6P0NyXV9CODCfA
+ CnSl/QhvcHx8hm7fCBVtu95sPUNfXZR10Im6Yf5wUOVxzk0ya05qEnBg3RDvvUZWd+HfzUO
+ KnUJZq8siFNVWyETZNgCSbFPGJPNl/Y=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,63 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 55E3684228
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 07 Jul 2026 20:47:16 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783450036;
-	b=kLpekI45LXTVPFzlGv85Ri/vGc2u4OQzIxaeiDMyUqR6ib5gBvZe9k8saUGetsr50pSX52
-	9x+n1+FNOacnbXBlBTbT5QCimuApM5ileszG87Vlajvq4xJjSU2v6oMyhTLsduJhHkkQ65
-	OfVnSSe6985bUoI7Tumn3Fz13URG0RQ=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2833680740
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 07 Jul 2026 21:17:14 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783451835;
+	b=ASS16sThBIM9Mqw7kYm05CvaavQ0BhiJFAMnqx9ulz7Ybvc8iktatS3XQXIFkTJb0C1ZEV
+	owK8o5UaHpQH7o3vAdd/KkYqlNXO8TmbnLL3paX4Hjv7l/M+dzaBWptmwOEmrT1U6+Yg4I
+	+NhNvZaRbliAuLDIYsFIW9pubq37OXo=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783450036;
+	s=20121; t=1783451835;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=XVb43KfsVvFcg9k+EQvJqROneRDZ+avzaHbPo/cGfr0=;
-	b=QFPf5NKq+pt7A+JTlGzCgaQ07+AVvfhYMLsCC/VJ+DtGsREpgAZqN/9+jRwwVET3W6ZCYW
-	FMdzmEIfO06cdRdg8nVHoQ4NlsrUAX+BzRHLpRX1Pe+6qa5hyjfnf9HHdopXplIn82Tgny
-	OIWamMGhkHrY3J67TkYjCyDTBi9DSP4=
+	bh=mlyYN2ITz27DyS+4fzIUdcDnxVrUySv+RPaK6ujp5wA=;
+	b=l0EqlYa4HxVME+rygPt6CVCWa3WIzYDulErN/LL/UAsW2h5qCPMiTi5TtRO2eg/M7R+zHe
+	CIL7uZ9QvCBN34yD/hD90hvTTRr9w6b4mrrbGMy1sHKBa4UTA5tGFEtInD/68Eu4UwdwDG
+	OZrAR24WX17Bo1c60Dxp+N8WxWAoTpY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=BTZvdDTT;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=r5MVnzvQ;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id CCD64202D1;
-	Tue, 07 Jul 2026 18:47:15 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 2ACB920636;
+	Tue, 07 Jul 2026 19:17:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783450036;
+	s=20121; t=1783451834;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XVb43KfsVvFcg9k+EQvJqROneRDZ+avzaHbPo/cGfr0=;
-	b=BTZvdDTTZZsy9XA/uxmr9GsyQtX++zIpPukrOlsxqC9ykGP87NCXYMOr4/bygPILxBLS68
-	WQ6SBnnfQgWpbbUu1T8hflD9d6tkZAT5TD51mywlZmoDY7iZRzAroJWWmMo+QfO9AyiR0K
-	iZ+j1Oio/hDzXBMwwmTLNrZhToonxZE=
+	bh=mlyYN2ITz27DyS+4fzIUdcDnxVrUySv+RPaK6ujp5wA=;
+	b=r5MVnzvQJigHW+CBg1Fartm9fwiIeIZbuP7nxf0D9Fy8PwbjRAJprq/A3Gbn9rpKqlO81m
+	Ry9w+mqLlJqa1k5jf9qY9XyusvpHrYXekd1JrsZsRiN5WrpHsGC2qtglikgRe+wzRqIs9E
+	iM0nnwTkVkRIgPO46V1+mFhFfhCj3cg=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 07 Jul 2026 20:46:53 +0200
-Subject: [PATCH 11/11] batctl: icmp_helper: attach socket filter before
- packets can arrive
+Date: Tue, 07 Jul 2026 21:17:02 +0200
+Subject: [PATCH 3/5] batctl: tpmeter: reject invalid test duration argument
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260707-bugfixes-icmp-v1-11-ee563a984acf@narfation.org>
-References: <20260707-bugfixes-icmp-v1-0-ee563a984acf@narfation.org>
-In-Reply-To: <20260707-bugfixes-icmp-v1-0-ee563a984acf@narfation.org>
+Message-Id: <20260707-bugfixes-tpmeter-v1-3-78d96fb7b36c@narfation.org>
+References: <20260707-bugfixes-tpmeter-v1-0-78d96fb7b36c@narfation.org>
+In-Reply-To: <20260707-bugfixes-tpmeter-v1-0-78d96fb7b36c@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2481; i=sven@narfation.org;
- h=from:subject:message-id; bh=6qsfORjjC9hs3/5EI7UUpfJq3WpI+v+xQAkgIBfitXU=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFm+ntNKvtSyhP2c2VLeZLcs/WqO9uygT1dcvmk7PvqmG
- ez2QPFRRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAi4jKMDNdn/ecQf2q9fnWw
- Ymflo2dXi+N1Nqb/kD09yd34Z6txnjTD/5wLG3exHVfdLs0WnT9Hyqxuu+wFkzkVaWpN4Ux/vnV
- sZAMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1418; i=sven@narfation.org;
+ h=from:subject:message-id; bh=iGPDE1igLVOTNsbqcT5nKyZuiAIhpIbjmgclSHdd9Yo=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFm+AeuXXlv7WC7hu4JxclRmyel12Qu2RHyWrKrP17Dz3
+ lH6nOFjRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAi8sGMDN+MNY/Zlnr7xL7f
+ dbxVzqP0+HO9AyxBe6+Ia57ib28+/5Dhr+DPxYH+R7tOLwryzXMS9tReV3Iw+kNqxEOVpvIfeqb
+ pbAA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ORHLUXLOXE4MWIKGHRI2KSAFOWTC4MNV
-X-Message-ID-Hash: ORHLUXLOXE4MWIKGHRI2KSAFOWTC4MNV
+Message-ID-Hash: DSZGMAJXMDJRIKRAEFPH6675WANJSHCH
+X-Message-ID-Hash: DSZGMAJXMDJRIKRAEFPH6675WANJSHCH
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ORHLUXLOXE4MWIKGHRI2KSAFOWTC4MNV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DSZGMAJXMDJRIKRAEFPH6675WANJSHCH/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,71 +111,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The raw packet socket is created with ETH_P_ALL as protocol, which
-registers the ethernet packet hook immediately. Frames from every interface
-start queuing the moment the socket exists. The BPF filter that restricts
-the socket to batman-adv ICMP packets with our uid is only attached after
-bind(). Frames received in the window between socket() and SO_ATTACH_FILTER
-are therefore queued unfiltered.
+The -t option parses its argument with strtoul and
+assigns the result straight into the uint32_t test length without any
+validation.
 
-Delay the start of the capture by:
+Use the same strto* validation as the rest of batctl and print a user
+readable error in case of an parsing error.
 
-* create the socket with protocol 0 (no capture)
-* attach the filter while the queue is guaranteed empty
-* then bind() with sll_protocol = htons(ETH_P_ALL)
-
-Only after the bind, packets will be captured.
-
-Fixes: 4bd751eed4dc ("batctl: Implement non-routing batadv_icmp in userspace")
+Fixes: f109b3473f86 ("batctl: introduce throughput meter support")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- icmp_helper.c | 19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ throughputmeter.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/icmp_helper.c b/icmp_helper.c
-index 52ac22d..570f0b3 100644
---- a/icmp_helper.c
-+++ b/icmp_helper.c
-@@ -176,7 +176,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 	strncpy(iface->name, ifname, IFNAMSIZ);
- 	iface->name[sizeof(iface->name) - 1] = '\0';
+diff --git a/throughputmeter.c b/throughputmeter.c
+index fd4165c..7d41c10 100644
+--- a/throughputmeter.c
++++ b/throughputmeter.c
+@@ -329,15 +329,26 @@ static int throughputmeter(struct state *state, int argc, char **argv)
+ 	};
+ 	struct bat_host *bat_host;
+ 	int ret = EXIT_FAILURE;
++	unsigned long time_arg;
+ 	uint64_t throughput;
+ 	uint32_t time = 0;
+ 	char *dst_string;
++	char *endptr;
+ 	int optchar;
  
--	iface->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-+	/* create the socket with protocol 0 so the kernel does not start
-+	 * capturing yet - otherwise frames would queue unfiltered between
-+	 * socket() and SO_ATTACH_FILTER. Delivery only starts at bind() below,
-+	 * by which time the filter is already installed.
-+	 */
-+	iface->sock = socket(PF_PACKET, SOCK_RAW, 0);
- 	if (iface->sock < 0) {
- 		perror("Error - can't create raw socket");
- 		ret = -errno;
-@@ -194,6 +199,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 		goto close_sock;
- 	}
- 
-+	ret = icmp_interface_filter(iface->sock, uid);
-+	if (ret < 0) {
-+		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
-+		goto close_sock;
-+	}
-+
- 	memset(&sll, 0, sizeof(sll));
- 	sll.sll_family = AF_PACKET;
- 	sll.sll_protocol = htons(ETH_P_ALL);
-@@ -207,12 +218,6 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 		goto close_sock;
- 	}
- 
--	ret = icmp_interface_filter(iface->sock, uid);
--	if (ret < 0) {
--		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
--		goto close_sock;
--	}
--
- 	list_add(&iface->list, &interface_list);
- 
- 	return 0;
+ 	while ((optchar = getopt(argc, argv, "t:n")) != -1) {
+ 		switch (optchar) {
+ 		case 't':
+-			time = strtoul(optarg, NULL, 10);
++			time_arg = strtoul(optarg, &endptr, 10);
++			if (!endptr || *endptr != '\0' || endptr == optarg ||
++			    time_arg > UINT32_MAX) {
++				fprintf(stderr,
++					"Error - the supplied test duration is invalid: %s\n",
++					optarg);
++				tp_meter_usage();
++				return EXIT_FAILURE;
++			}
++			time = time_arg;
+ 			break;
+ 		case 'n':
+ 			read_opt &= ~USE_BAT_HOSTS;
 
 -- 
 2.47.3
