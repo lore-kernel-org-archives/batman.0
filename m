@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5B09C43458
-	for <batman-adv@archiver.kernel.org>; Mon,  6 Jul 2026 18:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74689C43458
+	for <batman-adv@archiver.kernel.org>; Tue,  7 Jul 2026 18:47:12 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6E3BA83F73
-	for <batman-adv@archiver.kernel.org>; Mon, 06 Jul 2026 20:09:06 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A7B258403D
+	for <batman-adv@archiver.kernel.org>; Tue, 07 Jul 2026 20:47:10 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783361346;
- b=0iDwU9dRQHvVcEdhUHGCvsd6UTIcJnlyoUT8CDaAljdloTNFOrMgRJg2Gfx6tcDLhFXo2
- OyyoBaqGT3QnzvNjSvzFgRrOKDg206vzvUhujRi4+hPSt9dSlRXW8C5c3Z+2INlfzifTTIt
- vQvfS7D+qhYtckWS76g+bptDVcyv290=
+ t=1783450030;
+ b=aSy4iiTUpn5JfvuOE5yMZuS20Cww2cmzAzRxXM4Ch3tSWXb5/CPMPENwm7U9PR7ign03D
+ GpoaxppYITC1eu8TVz1n98fATliPEr1OKLYxLs8UY7ePrvf6bKeixaemtZqt/zCMYTL09lS
+ caKHIgVxbOzjcJ0MoIBSMNUkBm3xsf8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783361346; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783450030; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=+zXgTP4EoRuyMLfnSNaac8+SrcqdEtr5jQ86S+RKK6g=;
- b=eztX1g1AZHoS5G7boCfCsjFe0pELy8OnSWfvu5nIqdKePSYqrniAZooB6SYhDhOKonSRm
- QAVFyt7H0UXFRM5wLaE9xTxprqBl7gfionqoIz+HX1WS+xlQ2WvvbHGgRPWZ0Rzpz3po+A8
- NcDRX8XIdecsQNv5W9NcUgPXIukJUJc=
+ list-archive; bh=rCF4Nj7j6MccVQh3k1tDqJNozvQvX6d5n8wC4iBJYaw=;
+ b=edm6qRTY0Ti4Q40qtgBK9+5B6Wk7tTZXjtUSYI+nwO14s7mWuVGZcDsutNPVizIH3EO0y
+ MwnKNG9th9sePbJHmKSY3Sk0MwTa75PwcMk9Nr4bL5RkHAoFJcsB/pRl3Uxsb4S02AqzvO1
+ MTn9fCpT0J+28AY+Im9QYZ6aj6YYxzQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C95F3818CD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 06 Jul 2026 20:08:44 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783361334;
-	b=3GSo1GYY143ChWxQ1AKHueVrHFEi5WjbWvQiATAjOIsBpuenHcpFe+FryrKY5Ba09tm2Ck
-	DTw8nxgznYIPTJVREmcFKUzGQe02EoqGloQgvwooLXAouc7ijVcPqt8bXtTcc8PH03Fx3H
-	m0j/Mr7lxKCOEZW8OcQkF382wx/4DDE=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2E9C580C7B
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 07 Jul 2026 20:47:00 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783450020;
+	b=DzQDdB5lFWVwIyw6aTfeCYJbp8FSFCajPGZXAsBf+y1cEzRgX6bEHCFkmnwsEVw5xgoTtY
+	QWf78hBB5R/oxepeZCDZkFlRC4trbcVRt8hSwBWxvifDGmK1eq8JMOc/AH2ZNoYdUpvesd
+	BVwaLeG8F7hb8Q8u25x2UuzBIuV/3Ow=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783361334;
+	s=20121; t=1783450020;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=+zXgTP4EoRuyMLfnSNaac8+SrcqdEtr5jQ86S+RKK6g=;
-	b=wTHljXwq1zt0+vtrrOPCf9spj1p9o9IYVgmvGOaki9NP3VIbhVrvWQFEBx88Lw/8yFFUvt
-	NEJ5PJK+v3Nj+6hO87/tQo8fazCUFs7ZNIETBDV1l7/dWAgMIfGqe68WXTPBw8jhSx44qV
-	/K9QVe/gB4Ju20ctefAd4WYrgHaxl0k=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=rCF4Nj7j6MccVQh3k1tDqJNozvQvX6d5n8wC4iBJYaw=;
+	b=laoptigOgSULMWyPQriDFaVE0nbw/Ti8z2qdU+OTwhTN5ZmUy/7XYyGUlDDWUchbDOzXkO
+	zYU8DkHsJU5LueDo6kd0moSDxKavbm89qTqxha8fszFL2d5YX0+3zX+d7TvaOqghtJmxAA
+	lW84IFCQWvE4SuNrheTN7cJZ18he488=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=FuFemNrh;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=V0jSiMjf;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 2E45E2026A;
-	Mon, 06 Jul 2026 18:08:43 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 7AC2C20636;
+	Tue, 07 Jul 2026 18:46:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783361323;
+	s=20121; t=1783450019;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=+zXgTP4EoRuyMLfnSNaac8+SrcqdEtr5jQ86S+RKK6g=;
-	b=FuFemNrhfcugXKJJOkSYlV0D2K1PrtFmney+Jxzmpc30S4ODc39CnWeL2Xkm3eep+jYCkT
-	SFrFM/oKLF8OJclhTl7uITe3fDDO79vlH5X22eKZ1DtrCJgJ5K+3bkgpSvPfGGcHfp/Qtc
-	Tel6aBiEHq9xxI4a6nBvrLlPcqvzL2E=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rCF4Nj7j6MccVQh3k1tDqJNozvQvX6d5n8wC4iBJYaw=;
+	b=V0jSiMjfRCcpS32bOSTMGlzKpwyIgyQsO6ap2YC4yZA7x+0SNKYWaPyRqhTCjc2QPq7VFx
+	8zr52qJJryHykVeQpHYaqiJcxILaic8acdSYS9VOyrUtCK2hUNHWLxQKa/KQ4B61peALgE
+	O6J4NHAesHSkAtKyoVxLY1+fSP+tzeg=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 06 Jul 2026 20:08:35 +0200
-Subject: [PATCH batadv] batman-adv: dat: avoid unaligned fault in IP
- extraction
+Date: Tue, 07 Jul 2026 20:46:45 +0200
+Subject: [PATCH 03/11] batctl: ping: count sent and not received pings
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260706-dat-unaligned-ip-access-v1-1-c86e560cc47b@narfation.org>
-X-B4-Tracking: v=1; b=H4sIACLvS2oC/yWMQQrCMBAAv1L27EIMklS/Ih42yVpXJJZsWgqlf
- ze2xxmYWUG5CCvcuhUKz6LyzQ3Opw7ii/LAKKkxWGOd8cZhoopTpo8MmRPKiBQjq6IPV2+od73
- lC7R6LPyUZT/fIVClNMPj8DqFN8f638K2/QCkjrUwgwAAAA==
-X-Change-ID: 20260706-dat-unaligned-ip-access-7b970a8682e4
+Message-Id: <20260707-bugfixes-icmp-v1-3-ee563a984acf@narfation.org>
+References: <20260707-bugfixes-icmp-v1-0-ee563a984acf@narfation.org>
+In-Reply-To: <20260707-bugfixes-icmp-v1-0-ee563a984acf@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1685; i=sven@narfation.org;
- h=from:subject:message-id; bh=7Q4XpOSOK0NVaVHJL4NTCrfHSr5zfJJmdvjlPFDD4gI=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFne71W4i3tUn0XkuFzdoWnxImDz5q0/z+tlHf9XZRm1b
- I9x4dGvHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJcBQwMmxvCl09w6M1JevE
- 6U9HDil9Xyww3aH+J6/t2lO39tT+Y1Bn+GedYvlEgEm3/cFNdU3BtvMxlZ5he4070zSm7u6+eP2
- QJwcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1026; i=sven@narfation.org;
+ h=from:subject:message-id; bh=jlrUU+4i1tzsxI282vMtxiuvE2eLkmZLVEBhFKyCeCI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFm+nlPvPuputZ0y5+m6pW+W+qQe5Ytk9P9d+8lM7PzK8
+ iDeyWnzO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATOXqakWHqy467XKcXsvz1
+ CJnyyLjN+qXls7O652/yBDs+Xa5+LkyI4X/sg+ygxfGtn+a3bA1Z3u71ecpspic287YdEea61/O
+ rRokPAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: HIB7KI2GUCMP6EQWGHMQBDOLDKQI6IDJ
-X-Message-ID-Hash: HIB7KI2GUCMP6EQWGHMQBDOLDKQI6IDJ
+Message-ID-Hash: 33DOBUUSIXMA26RWAR3SXHMSEBQMGEX5
+X-Message-ID-Hash: 33DOBUUSIXMA26RWAR3SXHMSEBQMGEX5
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HIB7KI2GUCMP6EQWGHMQBDOLDKQI6IDJ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/33DOBUUSIXMA26RWAR3SXHMSEBQMGEX5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,52 +111,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Independent of the alignment of the ARP packet in the SKB, either the
-batadv_arp_ip_src or the batadv_arp_ip_dst will have an unaligned access
-(on HW without native unaligned read support).
+packets_out was increased whenever a read of a packet was started. But the
+read was repeated whenever the sequence number of a received packet was
+incorrect. The packets_out would then be higher then the actual sent ones.
 
-Use get_unaligned() to handle this properly on all architectures.
-
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Fixes: 0591c25abca9 ("batman-adv: Distributed ARP Table - add ARP parsing functions")
+Fixes: 2474249a6312 ("[batctl] ping utility updated to latest batman adv")
+Fixes: 2ecb2c8b060b ("batctl: tr / ping - ignore packets with wrong sequence number")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/distributed-arp-table.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ ping.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index a5c9b6d0..9e48077a 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -316,7 +316,10 @@ static u8 *batadv_arp_hw_src(struct sk_buff *skb, int hdr_size)
-  */
- static __be32 batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
- {
--	return *(__force __be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
-+	u8 *src = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN;
-+	__be32 *ip = (__force __be32 *)src;
+diff --git a/ping.c b/ping.c
+index 9eb73c1..5eafdad 100644
+--- a/ping.c
++++ b/ping.c
+@@ -213,6 +213,8 @@ static int ping(struct state *state, int argc, char **argv)
+ 			goto sleep;
+ 		}
+ 
++		packets_out++;
 +
-+	return get_unaligned(ip);
- }
+ read_packet:
+ 		start_timer();
  
- /**
-@@ -341,8 +344,9 @@ static u8 *batadv_arp_hw_dst(struct sk_buff *skb, int hdr_size)
- static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
- {
- 	u8 *dst = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4;
-+	__be32 *ip = (__force __be32 *)dst;
+@@ -222,8 +224,6 @@ static int ping(struct state *state, int argc, char **argv)
+ 		if (is_aborted)
+ 			break;
  
--	return *(__force __be32 *)dst;
-+	return get_unaligned(ip);
- }
- 
- /**
+-		packets_out++;
+-
+ 		if (read_len == 0) {
+ 			printf("Reply from host %s timed out\n", dst_string);
+ 			goto sleep;
 
----
-base-commit: e281f6726677f7e8950dad1640d5386867e6d2e6
-change-id: 20260706-dat-unaligned-ip-access-7b970a8682e4
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
