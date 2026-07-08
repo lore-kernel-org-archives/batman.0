@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03913C43458
-	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 09:19:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 896A3C43458
+	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 09:20:39 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8ADFD846A1
-	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 11:19:55 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 36BAE84B63
+	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 11:20:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783502395;
- b=aIWl6f766SKrO9vuG5ABRcjWWAC6qU2rKVgnTvNbl+O460Ck+1rUxrAXn0ThivM0vsFYy
- kGSeZCOTwRO3CdiQylquldJqoPsx2WERBBBsqhwru50K22AQJtJ+SzeS7Pc2CJ5bwvJCOpP
- zkEtzMbN2uO28+lpRDao3GOfdFuoYWM=
+ t=1783502438;
+ b=lmpBvh4WRulx0Afi+uBf0jZTNNAKVjN8ukZd3shCJVoZJ5EvZ0YRB56k5yQWxpObve6Ln
+ 2sWyL06DPsw61RjvRWmI9rBS6ZLb8r6bM0o4rWNu2JbsGNzfyySen023AhMtQo9DhXOLEOV
+ AWl9z7kDX9vuLsqh68Zai1XjI4gTZ5Q=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783502395; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783502438; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=GKgYyF6RXM0vULAsGu0pR6G/eWYQjyyVfdhlWFhcPgw=;
- b=ENnfOiUiN9tWKtvd6UFibnw7xksx3bZMVrVVBG9X5NW0WQJIKfJpcASv6+0p+J091gocB
- wgtFIeU0uRDiho7i/D/lsU06GISHhPTXwovSxYuutTbOLk5DJz27aT2QFZXqfcaCqrQH3Ef
- HjsvyaIiLYk+zu07gbKiqTd9768LS1I=
+ list-archive; bh=ZFpl7pK3uTWz21nbIM7Bm6WBFUQXvhGQVbOYY5GDip8=;
+ b=10cWtOFkYHeRlGRp8zUffif/ZZPHSZUdH1V6Bra0PNNiByd2wRQ1MEpycQbNT04symnIM
+ oxZFL95hbmExxH7SuOFIfuoDht7O1IQfwE6K/7eu/cBWmdu9EuejN//9e70o8PM9429j5yl
+ riKH0ftclKWgFbfalt6ceGg8z9Nbp0Q=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,41 +32,43 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7422C83174
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
+ [IPv6:2a01:4f8:c17:e8c0::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 64BB7802A2
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Jul 2026 11:18:44 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783502324;
-	b=RlCKiButc6moPQ8Z5XFPKgN57Fc+cIVjJsx+cIAb1CpTQ4PM61QKPYJ23b0cJWa433SULL
-	S44/gk8RFjqDfqyb2IP2M82E3F1/0slMoLNnfZHkOVWqeCS2aTARa9go/POaVrUJb635bV
-	vcku3gNk54Wf6QHpAS7JrDdnirRVz6k=
+	b=lv8JXTB5wUWaHy2Wu4K8HxV6RfwWxQnAvb3THmv5HUUKGRrVemNxEs6CuuQxjmKf2HaRlH
+	QNvipIMjoKq15XNaD08BDPULsv94vhb+Y7zHezO4HGENpkKTQasnTCYt4NzzTM16udzTL2
+	8pNIaOEJo0w8Y/sJ60vF1kntjcYdu5A=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1783502324;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=GKgYyF6RXM0vULAsGu0pR6G/eWYQjyyVfdhlWFhcPgw=;
-	b=VGX2pJC/g+oM0zbHcDkc3Ul9eStuzbzwFn9d+f2IVgWfGxg3yhjscTaTevhfq8KezwAfke
-	mavkQach7t3+uXAIsxhY3lcmSRRJNFpGC5XiMGPYgoTarl6quMWWvj51t0NgyAZqTSNne4
-	9N2einSnSi7ik37h18eCa9sbzptB7Rw=
+	bh=ZFpl7pK3uTWz21nbIM7Bm6WBFUQXvhGQVbOYY5GDip8=;
+	b=kE6aGEuXyAgeMwGA25LGDw2/wde1aBC/P+OLSV5y0UgPUS3cI17/Ki0oJuTmEoXqJ6QTKv
+	us5TEUEMkbn9ZwvpPTitjHzPaOFyby8/AfRjKk/2o6zRBC2Ba+UngbExZpX6ypxcXkZnrX
+	/m5aR7hWtOM/NfTMCPsYsbomQMpkwac=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=HUkddEM8;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=nqnZQX4z;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
+ 2a01:4f8:c17:e8c0::1 as permitted sender)
+ smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1783502322;
+	s=09092022; t=1783502321;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=GKgYyF6RXM0vULAsGu0pR6G/eWYQjyyVfdhlWFhcPgw=;
-	b=HUkddEM8pEutJmcLkpywE8+mpQeIi/PvNIrVE8Upos6kAjOAWvwWfatriY4PCC8kdqNOak
-	V56lj8QMFitkVs/13GOAPIdB6wUcNidS9EZAmH1LR8XLuIEKukrqShJEM37iCqihTCcrOB
-	PgrtdFlGRVAeu8qrefZv+FOorz7FiGM3sFtfki5fOoTHOunJRVDxV0ZInahNR5xyJHXCT9
-	pBXyk4KgZ0gRDf8vXymiZ5L3CFn9E3wvwyx3RsbMoGseGq5RJhk9JJwN7cwQjFxcNoPp88
-	IoTAsX4AIDx9WIaPY7PvG39LUiGssE2ihF3MXQVWLv/f/352pe6xL784l/lurQ==
+	bh=ZFpl7pK3uTWz21nbIM7Bm6WBFUQXvhGQVbOYY5GDip8=;
+	b=nqnZQX4z5ROHJ+k22LirLdDuCstF4g31h8fMI0/Nbgter3bg7D6mJ3zwo92wWyivEtJfWP
+	FiA8o8zt5b/A5SRdTOCKDPiTa3k+h5vGMtb9X31J9a2PnY+/fEUmYnfGGIvnYN5JuDyfuz
+	SiwcZLdw39gKp3Kxzed/isMmWEnCiig0a78U6GKeNk+tzVjTBOUb1d7H03laG2ZESaudNp
+	4PEjOv/ubsMckI5Me+UMvU6NTSVRQ0kNhxEcW117t/cKlGy2ASCBuF5xloEI6NFbR+JZ+F
+	M4O/zWLem6VFyk7YV+wZYdDtvGItGSSiFzKU6U3KRMJrczVs/UXfd8g3xUzr3g==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -78,16 +80,16 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 6/9] batman-adv: frag: free unfragmentable packet
-Date: Wed,  8 Jul 2026 11:18:18 +0200
-Message-ID: <20260708091821.314516-7-sw@simonwunderlich.de>
+Subject: [PATCH net 5/9] batman-adv: tt: prevent TVLV OOB check overflow
+Date: Wed,  8 Jul 2026 11:18:17 +0200
+Message-ID: <20260708091821.314516-6-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260708091821.314516-1-sw@simonwunderlich.de>
 References: <20260708091821.314516-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: QQ2TSLNAZ5VI3G6PVEVPIW7MCUBPDUHK
-X-Message-ID-Hash: QQ2TSLNAZ5VI3G6PVEVPIW7MCUBPDUHK
+Message-ID-Hash: 5M3TTRW2JQTVQXCPN5HDJR4YSCLNYGLF
+X-Message-ID-Hash: 5M3TTRW2JQTVQXCPN5HDJR4YSCLNYGLF
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -101,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QQ2TSLNAZ5VI3G6PVEVPIW7MCUBPDUHK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5M3TTRW2JQTVQXCPN5HDJR4YSCLNYGLF/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,38 +114,37 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The caller of batadv_frag_send_packet() assume that the skb provided to the
-function are always consumed. But the pre-check for an empty payload or the
-zero fragment size returned an error without any further actions.
+A TT unicast TVLV contains the number of VLANs stored in it. This number is
+an u16 and gets multiplied by the size of the struct
+batadv_tvlv_tt_vlan_data (8 bytes). The size can therefore overflow the u16
+used to store the tt_vlan_len. All additional safety checks to prevent
+out-of-bounds access of the TVLV buffer are invalid due to this overflow.
 
-A failed pre-check must use the same error handling code as the rest of the
-function.
+Using size_t prevents this overflow and ensures that the safety checks
+compare against the actual buffer requirements.
 
 Cc: stable@vger.kernel.org
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Fixes: 7ea7b4a14275 ("batman-adv: make the TT CRC logic VLAN specific")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/fragmentation.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/batman-adv/translation-table.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 8a006a0473a87..13d4689d332dc 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -518,8 +518,10 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
- 	max_fragment_size = mtu - header_size;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index aae72015645a4..dae5e1d8c0385 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -4033,7 +4033,8 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
+ 					     u16 tvlv_value_len)
+ {
+ 	struct batadv_tvlv_tt_data *tt_data;
+-	u16 tt_vlan_len, tt_num_entries;
++	u16 tt_num_entries;
++	size_t tt_vlan_len;
+ 	char tt_flag;
+ 	bool ret;
  
--	if (skb->len == 0 || max_fragment_size == 0)
--		return -EINVAL;
-+	if (skb->len == 0 || max_fragment_size == 0) {
-+		ret = -EINVAL;
-+		goto free_skb;
-+	}
- 
- 	num_fragments = (skb->len - 1) / max_fragment_size + 1;
- 	max_fragment_size = (skb->len - 1) / num_fragments + 1;
 -- 
 2.47.3
 
