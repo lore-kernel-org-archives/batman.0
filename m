@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A15EC43458
-	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 20:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202ADC43458
+	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 20:09:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id D4872855BB
-	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 22:08:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B1C3685823
+	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 22:09:05 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783541295;
- b=TDQmKoj6l3AVcWdQzTsYdvJZmxWWhUJ5qoJnCOIYlAupY8LwZWN04uW+0Kx1vnrJzgyQU
- cAHu5tYcc+zzROlV+0f1EqwVhlouku6K8RKz4SRzlkmdM8hm70s55pts19znuRjppTdd79t
- ZO9ahUR2WXvgL1sOguIy77EEbHYIbuM=
+ t=1783541345;
+ b=mdH3AKGmWHUHJ0ChaXosNbvOJQWR86zeQ4dtXISCFWtpBX0+QS0ea1kJrIHfrVYoryTdn
+ 82dzQqgUa6/YOGM5tKfYYDbCk0Fl2+WFRX1mUpM/7y0yO2X2JX30HUCm0mruRRGXPqiyz7y
+ uepPgCS+6rnHq3aXAmA3ZKSscFTrWcE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783541295; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783541345; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=7nZPGCReblucpjmIEGz6KNld42AVgmaUicFohXF3KPk=;
- b=r0Mezs+3Z7hIL0SYtsohR69fxKH36RP7F+eQ8f1q06LPpyK9mfAxF5susYKZY4lNgv4Lx
- ojqgLKSZ8z/MdAH3gn1J/jzmKRxKEUlGf8bzEMfx6a47grtkV0iqPWjUNoq/7TgZUYOSYp9
- RobWwirEqYR3/DzDqoX4P/dR1dV9Jgs=
+ list-archive; bh=nF84nEKPwtQl0J6Ix6DY57HxIsdnNjlZzjOYRZjNaOA=;
+ b=dGtM+ecCwQn24SWHppPz8Ew9z7DL12fQS7owKQi+wUgWHKIpNZYmOZceiMh+/pClCMREn
+ heg9yYLK3/eCuy7eGwrdGvH6j7Sp4gqgUNa0En4eYv+LvRn9koe0dofCTCG9w1opJrGN85M
+ tY+g1e6tCDAuHo46GgTWuNcAWl5M6fg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0B42B847F2
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Jul 2026 22:01:05 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783540865;
-	b=qPgWjFobCqvYxudqJ4sAJFMXBC3pYIig/NkMCXzEqWM77yGGKLwnjPMSGH3z72JRLdu1Ny
-	jDfYFRDQ0LxcrabddAn4O2KVo1l9QiYgriTIh6H9wYpbf9t9CcAB/kfyiwYeaZ2BQ+/mxj
-	apijTwBWFC6xljOJTK1GWLV2KTJDI0k=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0708C848AE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Jul 2026 22:01:07 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783540867;
+	b=jiBPzizLn+2rbtWBzUyRc2c6zRJLHJdBdP9W5RBgKn8AmDq8VifzLtGqFrx5288PAnb2as
+	xMFZ+eUovyD2vxKQ4BJaIL6tCpaaCe2l8/vEirm3TmJTRr1NTa4I1FBEr5UpOLk4ZfN37W
+	6nIP7KSVc1gJnqfKti5e2odz1sj0AiY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783540865;
+	s=20121; t=1783540867;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=7nZPGCReblucpjmIEGz6KNld42AVgmaUicFohXF3KPk=;
-	b=cUngO26x7eCsf8EuHEEWou/RYfKoWkSbn3WP6qltYtRv8O9Yo3Eq+nyh/r2ywrdbam7PSS
-	797Jwk/qawwqkzpkyqjNVwtLt8xBdZPSYz/xhtyWm34m5fifeul1onuDznS8fW4Nb6nYIt
-	RaBoYAdCtZ9KtSgskFcj08W+4AtwpQ4=
+	bh=nF84nEKPwtQl0J6Ix6DY57HxIsdnNjlZzjOYRZjNaOA=;
+	b=Zq3zodG6tQWlIEMrU9A5CsmvkTybBY+MvdbO8mYNv32aCbKj8E6uNU29GI+cUBuse0mVCA
+	Xxvqy5BdARNgPPmKxUvovnmH6zXQR1WraIT3TWaDnWjWlsugrqJ8nUfkLC23t020KzRQzT
+	JrpTqTRrdofA0nSvTQpY9kMyfkzaFsg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=Su04FdzU;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=IKns1qRC;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 9D37220019;
-	Wed, 08 Jul 2026 20:01:04 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id B575F20019;
+	Wed, 08 Jul 2026 20:01:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783540864;
+	s=20121; t=1783540866;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7nZPGCReblucpjmIEGz6KNld42AVgmaUicFohXF3KPk=;
-	b=Su04FdzUxjoCSzFBRDB7Z+ySYQ4H2mYgV89HPZQWcgu+/rHQnsadoayG/RQEAC7I6VCcqi
-	h9kQb1h3vvgB2qwfXMtV/YpSqi0/Kc1+JucmAbf340NjxpiKPOGaL8Q7AE9aDvoKOiDJFY
-	eM/m4wurx+AfViu6hNQyYbIBqKTadms=
+	bh=nF84nEKPwtQl0J6Ix6DY57HxIsdnNjlZzjOYRZjNaOA=;
+	b=IKns1qRCdH6PmAeIzYsYn+rJvYbFVlKF2OusKtCxiHbyvcDpb8AsTM6OscWXyDpnQanw2C
+	WQk1iCPEu2qMO/Qc/g9bTLZGEAX1lbkJcRIfnO1giPNj5HFfhBYu0kHcw6IgL4Msa9tTpU
+	6V2RhTQmo1P9gYOCj3lBscOpdLo1T+Q=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 08 Jul 2026 22:00:16 +0200
-Subject: [PATCH 10/12] batctl: netlink: detect receive errors in
- query_rtnl_link_single
+Date: Wed, 08 Jul 2026 22:00:17 +0200
+Subject: [PATCH 11/12] batctl: netlink: report error on query_rtnl_link
+ send failure
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260708-bugfixes-netlink-v1-10-8ce03e37f17b@narfation.org>
+Message-Id: <20260708-bugfixes-netlink-v1-11-8ce03e37f17b@narfation.org>
 References: <20260708-bugfixes-netlink-v1-0-8ce03e37f17b@narfation.org>
 In-Reply-To: <20260708-bugfixes-netlink-v1-0-8ce03e37f17b@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4123; i=sven@narfation.org;
- h=from:subject:message-id; bh=31xLegGk8US39pT7VbL3QBzRh+rwoGgvFaqBNu48F1s=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFl+azx9uG2/JS+ZFcva0bjH8v6deUyfA8X03t/pLktyY
- ONYEmjWUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZgISxUjwxX+9pYufZ6j0ZM6
- E6LVlS4JLru14jSH5Etxp16ujZn9fIwMM2PNtcKvf1RY4uc3Jy5GV3BtZt1nDtMcd7bKYM9q6wo
- GAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=728; i=sven@narfation.org;
+ h=from:subject:message-id; bh=MdfjJOU6wXMuGlJ/5adx03q8asasEWS6Q85/sgliTPA=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFl+azxdlP5Wfs2fVW90LOLXprJ6vR9/7+ew2Ib/OF1QO
+ XnWRoMLHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ3NNj+Kd29CLHpWnFV3/Y
+ bL657qhrINt9parrR1/o3nievjJ/ipgQI8N+LmajaR8PhF1+N/HtKsFWs4OMR9+cCjwt91D7i57
+ XxmomAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: TMTHMMRGGEQJEY6DPQUC6TFOTZRE23NK
-X-Message-ID-Hash: TMTHMMRGGEQJEY6DPQUC6TFOTZRE23NK
+Message-ID-Hash: B2DOEJGT3FGG5L53MGHGY3THDPBENEJG
+X-Message-ID-Hash: B2DOEJGT3FGG5L53MGHGY3THDPBENEJG
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TMTHMMRGGEQJEY6DPQUC6TFOTZRE23NK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/B2DOEJGT3FGG5L53MGHGY3THDPBENEJG/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,162 +112,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-With the exception of nl_socket_alloc(), query_rtnl_link_single() always
-returns 0, no matter what happens. All callers rely solely on the *_found
-flags in link_data to decide what an interface is.
+When nl_send_auto_complete() fails, an explicit error must be set or
+otherwise query_rtnl_link() will return 0 (no error).
 
-Return proper negative errno codes from the setup error paths, mirroring
-the sibling helper query_rtnl_link(). These need to be handled also by the
-callers.
-
-Fixes: 07967cd19702 ("batctl: Support checking of meshif without sysfs")
+Fixes: 60e519bfeaa3 ("batctl: Use rtnl to query list of softif devices")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 51 ++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 40 insertions(+), 11 deletions(-)
+ functions.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/functions.c b/functions.c
-index 36cae49..56bacdf 100644
+index 56bacdf..213ba83 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -667,6 +667,7 @@ static int query_rtnl_link_single(int mesh_ifindex,
- 	};
- 	struct nl_cb *cb = NULL;
- 	struct nl_sock *sock;
-+	int err = 0;
- 	int ret;
+@@ -493,8 +493,10 @@ int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg)
+ 	}
  
- 	link_data->kind_found = false;
-@@ -676,42 +677,55 @@ static int query_rtnl_link_single(int mesh_ifindex,
- 
- 	sock = nl_socket_alloc();
- 	if (!sock)
--		return -1;
-+		return -ENOMEM;
- 
- 	ret = nl_connect(sock, NETLINK_ROUTE);
--	if (ret < 0)
-+	if (ret < 0) {
-+		err = -ENOMEM;
- 		goto free_sock;
-+	}
- 
- 	ret = nl_send_simple(sock, RTM_GETLINK, NLM_F_REQUEST,
- 			     &ifinfo, sizeof(ifinfo));
+ 	ret = nl_send_auto_complete(sock, msg);
 -	if (ret < 0)
 +	if (ret < 0) {
 +		err = -EIO;
- 		goto free_sock;
+ 		goto err_free_msg;
 +	}
  
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
--	if (!cb)
-+	if (!cb) {
-+		err = -ENOMEM;
- 		goto free_sock;
-+	}
- 
- 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, query_rtnl_link_single_parse,
- 		  link_data);
--	nl_recvmsgs(sock, cb);
-+
-+	ret = nl_recvmsgs(sock, cb);
-+	if (ret < 0)
-+		err = -EIO;
- 
- 	nl_cb_put(cb);
- free_sock:
- 	nl_socket_free(sock);
- 
--	return 0;
-+	return err;
- }
- 
- int translate_vlan_iface(struct state *state, const char *vlandev)
- {
- 	struct rtnl_link_iface_data link_data;
- 	unsigned int arg_ifindex;
-+	int ret;
- 
- 	arg_ifindex = if_nametoindex(vlandev);
- 	if (arg_ifindex == 0)
- 		return -ENODEV;
- 
--	query_rtnl_link_single(arg_ifindex, &link_data);
-+	ret = query_rtnl_link_single(arg_ifindex, &link_data);
-+	if (ret < 0)
-+		return ret;
-+
- 	if (!link_data.vid_found)
- 		return -ENODEV;
- 
-@@ -785,12 +799,16 @@ int translate_hard_iface(struct state *state, const char *hardif)
- {
- 	struct rtnl_link_iface_data link_data;
- 	unsigned int arg_ifindex;
-+	int ret;
- 
- 	arg_ifindex = if_nametoindex(hardif);
- 	if (arg_ifindex == 0)
- 		return -ENODEV;
- 
--	query_rtnl_link_single(arg_ifindex, &link_data);
-+	ret = query_rtnl_link_single(arg_ifindex, &link_data);
-+	if (ret < 0)
-+		return ret;
-+
- 	if (!link_data.master_found)
- 		return -ENOLINK;
- 
-@@ -806,8 +824,12 @@ int translate_hard_iface(struct state *state, const char *hardif)
- static int check_mesh_iface_netlink(unsigned int ifindex)
- {
- 	struct rtnl_link_iface_data link_data;
-+	int ret;
-+
-+	ret = query_rtnl_link_single(ifindex, &link_data);
-+	if (ret < 0)
-+		return ret;
- 
--	query_rtnl_link_single(ifindex, &link_data);
- 	if (!link_data.kind_found)
- 		return -1;
- 
-@@ -821,12 +843,15 @@ int guess_netdev_type(const char *netdev, enum selector_prefix *type)
- {
- 	struct rtnl_link_iface_data link_data;
- 	unsigned int netdev_ifindex;
-+	int ret;
- 
- 	netdev_ifindex = if_nametoindex(netdev);
- 	if (netdev_ifindex == 0)
- 		return -ENODEV;
- 
--	query_rtnl_link_single(netdev_ifindex, &link_data);
-+	ret = query_rtnl_link_single(netdev_ifindex, &link_data);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (link_data.kind_found && strcmp(link_data.kind, "batadv") == 0) {
- 		*type = SP_MESHIF;
-@@ -860,12 +885,16 @@ int check_mesh_iface_ownership(struct state *state, char *hard_iface)
- {
- 	struct rtnl_link_iface_data link_data;
- 	unsigned int hardif_index;
-+	int ret;
- 
- 	hardif_index = if_nametoindex(hard_iface);
- 	if (hardif_index == 0)
- 		return EXIT_FAILURE;
- 
--	query_rtnl_link_single(hardif_index, &link_data);
-+	ret = query_rtnl_link_single(hardif_index, &link_data);
-+	if (ret < 0)
-+		return EXIT_FAILURE;
-+
- 	if (!link_data.master_found)
- 		return EXIT_FAILURE;
- 
+ 	ret = nl_recvmsgs(sock, cb);
+ 	if (ret < 0)
 
 -- 
 2.47.3
