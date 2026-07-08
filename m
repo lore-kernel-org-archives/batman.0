@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEF98C43458
-	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 09:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 764F1C43458
+	for <batman-adv@archiver.kernel.org>; Wed,  8 Jul 2026 09:23:29 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 737B9853B5
-	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 11:22:45 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 1C55581F41
+	for <batman-adv@archiver.kernel.org>; Wed, 08 Jul 2026 11:23:28 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783502565;
- b=GFfhbmZaRIPv0nNXeMcbq9qz1uc6yJrTJbDxp+E/B/WHy0mbl4yRk0dKEzjoHMEAZFA6W
- 61QwRh5nROl2PwIqFjr8y+owJRCEfzzKk77Bpx4BlFV84wTAcyYp+XYtgg2/Cy8WwN6Is0E
- fh7k5V99Re7qo6YHQxkCZvaGvtAsJPs=
+ t=1783502608;
+ b=R0vg0TJChDeX9Rm3JFh0bScCLE7kb/z3wzXYpsXKK3+MeGMl2rnEFHrV1rSJBzp4+n7qK
+ QcQiY6L0shsHxbHormyBth7VTjfRlaF7K42xeCl9WOrcD0BuKRuwdL6oBiwW0cN9ODmX1wN
+ CQwQ5jj8sUCQ18pZF1ovjIvFnLQ3ubY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783502565; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783502608; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=iKVr6k89o6c2SMn62B3acIsRyxHbKZyCo6kVHh2xDwU=;
- b=3or5BrKU2Ul/KzYDf6ov+0mdbVKkZgqfxoTmHGhAvT6lpXXMjC1JXSxAEux1id1Aqf4RD
- 5Za5WCuzL+KJYeY2V7mzbYC9ihsChtRHOp4fJlGLNcvP7ca+ZPktcOyyxxvp7Cwe8vCw6hG
- /yfWAXWTdgq+LAwqecx5qaMXw9mYtYc=
+ list-archive; bh=OCuwXId2v7DqeCQJa2ngxjQ154iwoRqGBdMHJgjMJ0g=;
+ b=Dvv8frTB9iuyRMwwVbi7SoCex7IAlod+534E6V00SpZCdYvP8hOCS1fVXjNOJ0SObTnhQ
+ yM7wEhzIrSt+BTBWlCfhpXvbV5k4b90UoME7gv9AHKZhaBev+b+LllaVs7HV2cbO4YRlH5u
+ oXCpXUdmI3uWT5fWm6cg88q6ye7Zshs=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,41 +34,41 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id C0DC381E8C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Jul 2026 11:18:39 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783502324;
-	b=DNOt+UnEpzjBb6dcbR0xz90Az6QhNT7oVrCwcO2gaFSnr6e1BlP4bHv0uRZK/rZpS5BO6V
-	Sg9cPh6OTIHMfPEyZd03zJZ7xwj0xTffmVs3ycnKmLjYIpMZHYG7gwCUrrd6Qchz+ZLtH1
-	/w1y9AAdPf13pKcCmeZhKYtm+lMBfF0=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 510B983454
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 08 Jul 2026 11:18:45 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783502325;
+	b=iuq8O4U2xakmyp99OkxmZYxY/LTiJasdMoPvsu1CLHxfw6c3ys0g9l4fsWUT9GZzPBknKa
+	/Yn2rBKjYiaOzlcz2Rv4U0VALkBjNcEew5qvqMSvoXUUWbNXodYI5HbkCaIwac1o+UhqNr
+	EW9H/cmQckU6M0E7t2zX7/9wq9+0K74=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783502324;
+	s=20121; t=1783502325;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=iKVr6k89o6c2SMn62B3acIsRyxHbKZyCo6kVHh2xDwU=;
-	b=MM4PO2zK7Ca/7p1tgPet5setc1n9tYLIz3AaSDuWogkM/4URw3/u0w0W7ezkyWb3wR27NN
-	k1Ca2TJvMKxuaMU4r1wPUAE8fqkZxPs32l6wtKp3zAbTFWXH6cBn/IbfUWPivnAp/KIr4i
-	r11/ws2tnGQ53idTYqCXrj6m1X3dtIY=
+	bh=OCuwXId2v7DqeCQJa2ngxjQ154iwoRqGBdMHJgjMJ0g=;
+	b=nJBn5vHmxk/s9HEOCGDRVKmlJxzRioHE6QDE5p6pLvWaYEV8fcqtIG0Ey1Qm0Pgv4pesAZ
+	/XL1Wos8zw2ObQBDy37MgZyQHjmrHyMI3ofjiXJ5VoYHTDaBYBqxfZN3nw9GQUjCuxSRj8
+	OSWaV/1Z/GsgYciVBxTTrSF+oZFtxzE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=yR0X5FCa;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=iEMFPxTV;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1783502318;
+	s=09092022; t=1783502324;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iKVr6k89o6c2SMn62B3acIsRyxHbKZyCo6kVHh2xDwU=;
-	b=yR0X5FCaJ/Pz0v6Ak83gzmOdsOjnN4BYXXJ0lzqjd1nym7vRWHa/cmSCaM/nJ3KPulJ7A8
-	nIGLvaOlOLOqxCR2DcVUypCBUN5xAIqLlhshWNy/tDcDdy+I9h8uqazQwuzXd/x2SdHSSq
-	ZWu8Zs/qypEas5HNpN07N77oqv2AVXpLgEB213NnBtCdkB6ZmG3VZgzrZLV3E5L+B+uUzp
-	bgngvfjJBK1Kj/d4cJr0kC3eJAtv04tlZJ+k6VG5hzZvXTU/CJ7xDfnrUCDpdKcyPw1W5P
-	hca30uz/2LYvg8NkKYYMMYPXIASjODIC4aH2a0IZWFQfb1qhSKhoFtftKOvIhA==
+	bh=OCuwXId2v7DqeCQJa2ngxjQ154iwoRqGBdMHJgjMJ0g=;
+	b=iEMFPxTV6sLsxPX2IPpL2EVdoyPo87/ewUWZdWebm8ROvWiQCtLSUTsiAV8F/gLkITAkxO
+	J+JO0obTTMS2zelB0BgXU3322PJxSmte5jT6KJ+KKCE5XwTQkqvRZrHZtOcG3+VnFSXfB9
+	AL3t0nEiCx4EIDXhFHrgTDoA860VxVGL+G65LctT82Ig3KJZrFgzoIFRi5PZZnBaU6Yul8
+	ac75RDyN3eF5lNt08uBJ4kO1aRSwAJ8eG0n2RQcZUEnBTz+Mbs+tyqKK+gBysHhR8j+DDV
+	A1q9y4zFDx0uAnsruju6BXs+MOzxl73JFTWyaD9olG4U8NwIV3ecp+3MtSC4/g==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -80,16 +80,16 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 2/9] batman-adv: fix VLAN priority offset
-Date: Wed,  8 Jul 2026 11:18:14 +0200
-Message-ID: <20260708091821.314516-3-sw@simonwunderlich.de>
+Subject: [PATCH net 8/9] batman-adv: mcast: avoid OOB read of num_dests header
+Date: Wed,  8 Jul 2026 11:18:20 +0200
+Message-ID: <20260708091821.314516-9-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260708091821.314516-1-sw@simonwunderlich.de>
 References: <20260708091821.314516-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: CF43S52SRYXP7S52GX35G6EY7GBKQOT5
-X-Message-ID-Hash: CF43S52SRYXP7S52GX35G6EY7GBKQOT5
+Message-ID-Hash: MMUVOJ6KN4CSAIQL3KOBOBFBVY3XAIP2
+X-Message-ID-Hash: MMUVOJ6KN4CSAIQL3KOBOBFBVY3XAIP2
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CF43S52SRYXP7S52GX35G6EY7GBKQOT5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MMUVOJ6KN4CSAIQL3KOBOBFBVY3XAIP2/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,37 +114,53 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The batadv_skb_set_priority() receives an SKB with the inner ethernet
-header at position "offset". When it tries to extract the IPv4 and IPv6
-header, it needs to skip the ethernet header to get access to the IP
+Before the access to struct batadv_tvlv_mcast_tracker's num_dests, it is
+attempted to check whether enough space is actually in the network header.
+But instead of using offsetofend() to check for the whole size (2) which
+must be accessible, offsetof() of is called. The latter is always returning
+0. The comparison with the network header length will always return that
+enough data is available - even when only 1 or 0 bytes are accessible.
+
+Instead of using offsetofend(), use the more common check for the whole
 header.
 
-But for VLAN header, it performs the access with the struct vlan_ethhdr.
-This struct contains both both the ethernet header and the VLAN header. It
-is therefore incorrect to skip over the whole vlan_ethhdr size to get
-access to the vlan_ethhdr.
-
 Cc: stable@vger.kernel.org
-Fixes: c54f38c9aa22 ("batman-adv: set skb priority according to content")
+Fixes: 07afe1ba288c ("batman-adv: mcast: implement multicast packet reception and forwarding")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/multicast_forw.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 4d3807a645b78..8844e40e6a803 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -368,7 +368,7 @@ void batadv_skb_set_priority(struct sk_buff *skb, int offset)
+diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
+index b8668a80b94a1..1404a3b7adfb1 100644
+--- a/net/batman-adv/multicast_forw.c
++++ b/net/batman-adv/multicast_forw.c
+@@ -927,11 +927,11 @@ static int batadv_mcast_forw_packet(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_tvlv_mcast_tracker *mcast_tracker;
+ 	struct batadv_neigh_node *neigh_node;
+-	unsigned long offset, num_dests_off;
+ 	struct sk_buff *nexthop_skb;
+ 	unsigned char *skb_net_hdr;
+ 	bool local_recv = false;
+ 	unsigned int tvlv_len;
++	unsigned long offset;
+ 	bool xmitted = false;
+ 	u8 *dest, *next_dest;
+ 	u16 num_dests;
+@@ -940,9 +940,8 @@ static int batadv_mcast_forw_packet(struct batadv_priv *bat_priv,
+ 	/* (at least) TVLV part needs to be linearized */
+ 	SKB_LINEAR_ASSERT(skb);
  
- 	switch (ethhdr->h_proto) {
- 	case htons(ETH_P_8021Q):
--		vhdr = skb_header_pointer(skb, offset + sizeof(*vhdr),
-+		vhdr = skb_header_pointer(skb, offset,
- 					  sizeof(*vhdr), &vhdr_tmp);
- 		if (!vhdr)
- 			return;
+-	/* check if num_dests is within skb length */
+-	num_dests_off = offsetof(struct batadv_tvlv_mcast_tracker, num_dests);
+-	if (num_dests_off > skb_network_header_len(skb))
++	/* check if batadv_tvlv_mcast_tracker header is within skb length */
++	if (sizeof(*mcast_tracker) > skb_network_header_len(skb))
+ 		return -EINVAL;
+ 
+ 	skb_net_hdr = skb_network_header(skb);
 -- 
 2.47.3
 
