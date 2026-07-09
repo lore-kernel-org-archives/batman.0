@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1FF2C43458
-	for <batman-adv@archiver.kernel.org>; Thu,  9 Jul 2026 19:46:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56FB4C43458
+	for <batman-adv@archiver.kernel.org>; Thu,  9 Jul 2026 19:47:37 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E4D47841D8
-	for <batman-adv@archiver.kernel.org>; Thu, 09 Jul 2026 21:46:52 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id EF0BF817C4
+	for <batman-adv@archiver.kernel.org>; Thu, 09 Jul 2026 21:47:35 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783626412;
- b=MdSo57hr4tBkq2LDUMkqP35uS4evZ4CrMoLU83HlX8qv5G27gj8FbCxtTn7H/KEkVnnSb
- Ri94zdrfG5uM2HoDK90RI0F3MQ/RsX30URiQCCJ9W0awhUHhWpqX8QNAIgdtmXl0I/Azosi
- o0W5PYUAfauUDT1Gx6QFA3uSkCh3bQg=
+ t=1783626455;
+ b=rkhkmvbY8cVJYfrAs875HfH65k4wcgs0F1/bMJj5TMzcs4dykJGP29NwBs+mmi9JKSXJW
+ XOMJBpZJnrQ7Ay7YqTljpv//8r5okFPN/EmZzTvTKCryQExf9XiL0LixovrsDSUAiJYpOBF
+ L6PuEIMHVIa4BAwIl4v1Zdti6LZuEgk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783626412; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783626455; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=+Pd7siZNQttYgtwNfylG/g6MOvey4Wt0dvkyGMo0LBI=;
- b=vXh+E4rEKfroC2RkoiLL9gytJgS4tZLqlSsCUOtoYyQd/Hs3XAEv3s+kenmLDG59i2Zez
- CFOTviljfCxapfdBiD4df1XceU/AtQEa7xTmAaet9ERIObLkvossYq1OD74WPgPbyV42l3C
- nmwKo8pZgY7/dOtcIhpX7OGW9SZ3cec=
+ list-archive; bh=YXIz1hYiz0lr/xtOufy8wl1ky0U0QAO9oX4d5+y4rqI=;
+ b=hwomEp+ynMVJkjUbYGNk9Vb8xmXVLVNQAbToHoDs0bZH05ZfDMChZo9QR3B1TJmizQpLX
+ rnO8VUZvSo80q4KN6/rvw4hEX/RAxsIktQGRo/qybEDuLvVyJzRfSBOA7eue/GF+xdclAe+
+ +5XWcAvcTWB6qoo3y+7eQHa9N2mqFiw=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,67 +32,68 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 48C1A83E95
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 09 Jul 2026 21:46:17 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783626383;
-	b=UPVGdiv31Vy5elztnE1Q/ehAC6/lIgdZOZC0/AMt9b7/aA1Ufu3u28Gn6zYMi6gvOJazjG
-	Tm16DpWQRYg2tZlCJPqLEiDgnsNhO69E0bSF7pFCfHbN3gmFdYGTqr6ir3w9/bf40YIpBF
-	HBkVgegW8LUVvCUeBPc2NpwT8/VoBw0=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 45C1E80454
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 09 Jul 2026 21:46:24 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783626384;
+	b=P6sfWYVMmHgLnFbrx9ACS8Jk9t2VUdBeCfPGN/rY3FgGgZSgdzWWZrLvxJF6/q2WzPl6zz
+	3x3IuMFS+C79ASF2gVT5H8bCgCVbNZJZ0eNlhjZMW9uIrVQOt/CH8yof98SqxPXOKGEBKh
+	7OlV+Bw9dnMryVPwk9+SPQzEyXu+wHo=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783626383;
+	s=20121; t=1783626384;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=+Pd7siZNQttYgtwNfylG/g6MOvey4Wt0dvkyGMo0LBI=;
-	b=IeBjWsI7X7t8zpx22pF6ncdR8cl2zDillwJ/5lTPgmfIsSoBrThFqs9p7BRasV5gjT5Tfy
-	sKEp3w8ZRg1jLe6lxTAJiz4IQ/qv7NP0gxdlaeqqSukXueMlJo0aGEy4iZdhPIAjkAYKg4
-	qhqOFPhmGNqbNaBtE4yQyr7dpdeUqH8=
+	bh=YXIz1hYiz0lr/xtOufy8wl1ky0U0QAO9oX4d5+y4rqI=;
+	b=WUVG8CSE/adAoodgqPkx/WLUAhV2qLiv0j/KWODhSBsT/7fqIqk0E0onwHXCL/0lU4HByG
+	qYlFdaV9IazsDY2UIrwPIj2zbaZvDccNx3FENLFFFXBVNXjCfKSknxAITZaE2+0oQdCuI5
+	yM3HQLuTg3ymnGkLNkaExwhfwoHNpds=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=Sc3f0I9y;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="tCt/Lz6Z";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 7C3B82052D;
-	Thu, 09 Jul 2026 19:46:17 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 461502055F;
+	Thu, 09 Jul 2026 19:46:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783626377;
+	s=20121; t=1783626383;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=+Pd7siZNQttYgtwNfylG/g6MOvey4Wt0dvkyGMo0LBI=;
-	b=Sc3f0I9yaNo2DvI3xOnSCgo/d2KBtZ1mc4VzcKVSJdpn2ObcN9G7o4YT4D7/KyVOkHGHSU
-	ZNb4iItZebBeWqx0+lRO19xDT0woaH+AN9/qB67gXa+k82xQf0roWK7SG87bcGSRWf/UFh
-	FMD0I/lKj+UmwH1X0DjcRDu7PN2qbng=
+	bh=YXIz1hYiz0lr/xtOufy8wl1ky0U0QAO9oX4d5+y4rqI=;
+	b=tCt/Lz6Zn1JXuQOOilVnX0kQoy/1SnYIN1zsm2vpKjyeuQ67axpwKcdH2r60ud0Ss0H5mU
+	oPI60pFgKtRyKqi7NVb2wKHAZl9Z7Wq4tKnbNZZm//MQHXkxjN0P0b7jQWfLfCf3OC4Ui5
+	qxNCi2YzKMK24bfdRiqLcsd//RNKAa0=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 09 Jul 2026 21:45:55 +0200
-Subject: [PATCH batadv 1/3] batman-adv: fix TX priority extraction for
- BATADV_FORW_MCAST
+Date: Thu, 09 Jul 2026 21:45:57 +0200
+Subject: [PATCH batadv 3/3] batman-adv: mcast: linearize skbuff for packet
+ generation
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Message-Id: 
- <20260709-mcast-header-generation-bugs-v1-1-c7c111fa45b6@narfation.org>
+ <20260709-mcast-header-generation-bugs-v1-3-c7c111fa45b6@narfation.org>
 References: 
  <20260709-mcast-header-generation-bugs-v1-0-c7c111fa45b6@narfation.org>
 In-Reply-To: 
  <20260709-mcast-header-generation-bugs-v1-0-c7c111fa45b6@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1901; i=sven@narfation.org;
- h=from:subject:message-id; bh=2cUZAvVE4i4/sPDy3k4WENqil0KhFCKgAZXH4XOaXuQ=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFn+v0rX55b8ML7M0DF/wYrEPe9C6g4Ynpl8cs2vjXIMZ
- b932x7c2VHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYyLfPDP/jJCOPan1gP7La
- QFlU7/3Znyuv1TbJb439znjziP/Gff+VGf5K8Pat+xmpk377v/CM24IRhma2Ev87GLId1utJbpp
- 02IQPAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1307; i=sven@narfation.org;
+ h=from:subject:message-id; bh=GJ06g5NQW3AZJoDt5PX9eJ0DGsP3S2GySD5ccxiCA2c=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFn+v8q4fE9eupxysMxjxtWq5d//Mk0OEdWJ3mLb0rU4s
+ ljV8PHWjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEInYw/JWIlOwP26Jo/u/4
+ 7X9zBB8/uVi0aKtm9d15GQl3Xp5pDC5mZOgX0eicfcc47dJj48NSy7Q5tf7+i3Zb02W3flWdY4d
+ JAj8A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: AHIQ7QCCGNTAPLHDV5WI4FLWKRL5MB7C
-X-Message-ID-Hash: AHIQ7QCCGNTAPLHDV5WI4FLWKRL5MB7C
+Message-ID-Hash: DYJLSLR5FTWIWJDW22XAWBCTWBODDCUP
+X-Message-ID-Hash: DYJLSLR5FTWIWJDW22XAWBCTWBODDCUP
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -106,7 +107,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AHIQ7QCCGNTAPLHDV5WI4FLWKRL5MB7C/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DYJLSLR5FTWIWJDW22XAWBCTWBODDCUP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,53 +116,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_mcast_forw_mode_by_count() pushs the skb->data for BATADV_FORW_MCAST
-forwarding via batadv_mcast_forw_mcsend(). But the
-batadv_skb_set_priority() expects the ethernet header directly before
-(skb->data + offset). With the moved skb->data, just some random data would
-be accessed to get the priority data.
+batadv_mcast_forw_packet() is not only called by the unsharing+linearizing
+batadv_recv_mcast_packet() handler. When it is called by
+batadv_mcast_forw_mcsend() then it will be unshared but not linearized. The
+SKB_LINEAR_ASSERT() can therefore cause a fatal BUG().
 
-Move the batadv_skb_set_priority() before the decision about the handling
-multicast packets and potential header modifications.
+The batadv_mcast_forw_packet() must handle the linearization itself.
 
-Fixes: be9b0169c840 ("batman-adv: mcast: implement multicast packet generation")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Fixes: 8ed36122d709 ("batman-adv: mcast: implement multicast packet reception and forwarding")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/mesh-interface.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ net/batman-adv/multicast_forw.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index b2c8febe..20582fe0 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -300,6 +300,8 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
- 	if (batadv_compare_eth(ethhdr->h_dest, ectp_addr))
- 		goto dropped;
+diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
+index c5b8e2e3..9fbd2876 100644
+--- a/net/batman-adv/multicast_forw.c
++++ b/net/batman-adv/multicast_forw.c
+@@ -937,8 +937,10 @@ static int batadv_mcast_forw_packet(struct batadv_priv *bat_priv,
+ 	u8 *dest;
+ 	int ret;
  
-+	batadv_skb_set_priority(skb, 0);
-+
- 	gw_mode = READ_ONCE(bat_priv->gw.mode);
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
- 		/* if gw mode is off, broadcast every packet */
-@@ -333,6 +335,9 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+-	/* (at least) TVLV part needs to be linearized */
+-	SKB_LINEAR_ASSERT(skb);
++	/* packet needs to be linearized to access the tvlv content */
++	ret = skb_linearize(skb);
++	if (ret < 0)
++		return -ENOMEM;
  
- send:
- 		if (do_bcast && !is_broadcast_ether_addr(ethhdr->h_dest)) {
-+			/* WARNING batadv_mcast_forw_mode might add more headers
-+			 * in front of the skb. and might even reallocate the skb
-+			 */
- 			forw_mode = batadv_mcast_forw_mode(bat_priv, skb, vid,
- 							   &mcast_is_routable);
- 			switch (forw_mode) {
-@@ -350,8 +355,6 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
- 		}
- 	}
- 
--	batadv_skb_set_priority(skb, 0);
--
- 	/* ethernet packet should be broadcasted */
- 	if (do_bcast) {
- 		primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	/* check if batadv_tvlv_mcast_tracker header is within skb length */
+ 	if (sizeof(*mcast_tracker) > skb_network_header_len(skb))
 
 -- 
 2.47.3
