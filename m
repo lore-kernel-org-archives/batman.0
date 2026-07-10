@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C53BC43458
-	for <batman-adv@archiver.kernel.org>; Fri, 10 Jul 2026 20:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30E84C43458
+	for <batman-adv@archiver.kernel.org>; Fri, 10 Jul 2026 20:32:27 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1A7CA83FB7
-	for <batman-adv@archiver.kernel.org>; Fri, 10 Jul 2026 22:20:38 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id BAA0684000
+	for <batman-adv@archiver.kernel.org>; Fri, 10 Jul 2026 22:32:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783714838;
- b=PzP7unjY+nVHcyXBPtcoKVTfpSYSYySuhCN4ac1Yc6ByVCnPQTfrmA0XpF5zhdnvL3dyO
- jwsRqLrL8qqCN22iiBBeMW+Xo7tYELneYRwehIJaF53+hvHUS1UMsukqqiuAash06uoK5d8
- 3j3tMcQLc7v8F5yFnny0NQpmfSXZuf4=
+ t=1783715545;
+ b=JZiADLgNN9RFqq+wr+Ibp4QAq6EayLShpE/tku38Ksdq49OPPBHk0eI9eaFW+dV6Rqp8L
+ BaNDrdYjY8B3JJzNAakg/qVlFZ7h3MhNDEPzY2dJHEgVyCYuPH2Q/eNmGlvTkE/1u1+iaF2
+ XsrrUfbD+7CZa8iB9XMcai2OTtJ8b60=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783714838; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783715545; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=aM47CtHpF9NsdqAvAoGPQbP0IgygXroyR3Qq1oGk4MQ=;
- b=TXZxcSNW1xNVTcWeosNPt2U6wU9QBI9gP9qhM6updphRG2ov8Ibm0s8kk1caFuowUaPBU
- Y8Z76Kxs12600YUvfwrkOnarpsbSf4IBrsYMBQjUmsmGlfO6GKV3gJpGKZ1NkzqQqDUf9se
- R3i07LA33M625Ghw5qAPZTC3HEzL2vE=
+ list-archive; bh=ctU/GAFEI8TGfmIi6/D5cPnslnEYhGl6Uuqxxt1qJcw=;
+ b=keb6Pkyhy1s/r9Iy5j/G8D7pPYo/9ZbEn5NBbeeYAvy4Ss9a7oVFW15drKFqzyYTxZg8s
+ tIHVxNix5YHivVu4wGRuEWhc2Zaa0lUt8TgSMYSMi5Q0+ywkOqSOtLE/0jgaKvM3gKrU25R
+ xFNFFxEXDtiZ1C724B3EvODJhTuCx8c=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DA2C18103E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 10 Jul 2026 22:20:08 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783714808;
-	b=osOrsWXjY3TXz1GA7jcOdl/xcb6aoiOBlDqihFOzurzJh1wuntMOOOlIJz8qwSYPJw9DL9
-	6+3rJsqHpZabYbc2mZte06NEHzyZk0AaOCjoacjTnbtktCKKt501C8ATW2gcyQNop4TeM5
-	GoboHBNyf0YNcnjHbHnZrogtdwvRe5Q=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 11FEF81405
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 10 Jul 2026 22:31:57 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783715518;
+	b=ZgAUy3KPwJsGu2jXvF+u1054IrqlYtEvJSy1OhRsc5QU8Fo7XFHj74Q7fv1ewF6OYFky9R
+	UvwnHGU/0QmzJQgKNfNUFkzQCJ+iGQK9v58qMMtvHYAV2rnEB3LUsNXzZGNvLR6AAGy1d8
+	NWYflNQ5k8rT/CwBTSXf2h/yhoC5qIM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783714808;
+	s=20121; t=1783715518;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=aM47CtHpF9NsdqAvAoGPQbP0IgygXroyR3Qq1oGk4MQ=;
-	b=eOulPhKAsrDLkAFktenyxxax0wBO0CVCPrJlWGoyQuY8iLKRsadGHq6zKyrjJIa6qt23j2
-	GdrxxXqruyqR0oabPqJPqJxecHwe11T/0MSN/lQAHrHFmxtDRE4lWmj72ow9sUt2scd9oj
-	2xvgyiftcHNyVCy65xBkAYlkI49/GdU=
+	bh=ctU/GAFEI8TGfmIi6/D5cPnslnEYhGl6Uuqxxt1qJcw=;
+	b=yLFNy0qiPojxF9AL8OQ3YtUrP0XoVF3DUXOpQoUKJIMWB2E5PpAl7UUylWZNUqlnigIAJI
+	04A0vJKaRXcpbNGby/sKrkZhvaxMbbdpzbr+Pdx09wd5BQpsgFqaIp2GH3HvwV1myZCBIv
+	FxAZjJyxQX7V7VnclUx/HxP1aphjOQ0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=YP0QizeG;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=d4YfmX9L;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3522220536;
-	Fri, 10 Jul 2026 20:20:08 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id F02A620536;
+	Fri, 10 Jul 2026 20:31:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1783714808;
+	s=20121; t=1783715517;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=aM47CtHpF9NsdqAvAoGPQbP0IgygXroyR3Qq1oGk4MQ=;
-	b=YP0QizeGLi+zce2k/Iahto5/yYRjDRYyLdlhXXb7G6MKqQGdDqYpNDYtiG8oZGU+fUPVx3
-	/jExrqJ8qqCDLnaagjVgp+ozU9etDf8BgIkHzI5hK2uMsIJmszvWgCAgV1PD3vyq3rT+c4
-	QDOp9sXElqi6muaLOQt3PtX91N9r3X4=
+	bh=ctU/GAFEI8TGfmIi6/D5cPnslnEYhGl6Uuqxxt1qJcw=;
+	b=d4YfmX9LqKjtjt/3yoeQouDS5z7OlXypEOb3v0+nNG3c87co0WMnBGSWD7RUmoMM1mKGMu
+	acm6ahR6eEd+s8h1rXBQffdA54ypjqPSDgyKMiQCqIotdbUx3pkQmEbjXh0dJEJc+yVODj
+	IDJfGt/62boSEu/yDnGJYEq79Yp4jnY=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 10 Jul 2026 22:19:58 +0200
-Subject: [PATCH batadv] batman-adv: annotate functions which may cow
- reallocate the skbuff
+Date: Fri, 10 Jul 2026 22:31:38 +0200
+Subject: [PATCH batadv] batman-adv: fix kernel-doc for functions holding
+ ownership of the skb
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260710-realloc-kernel-doc-v1-1-3a45842b3a13@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAO1TUWoC/yWMywrCMBBFf6XM2sA0C9v4K+Iij1sdDalMahFK/
- 92ou3sunLNRhQoqnbqNFKtUmUuD/tBRvPlyhZHUmCzbIw89G4XPeY7mAS3IJrU5DpNzyXEY2VI
- Tn4pJ3r/omYJffFrp8v/rK9wRl2+R9v0DAGql/n4AAAA=
-X-Change-ID: 20260710-realloc-kernel-doc-87f99d90b802
+Message-Id: <20260710-consuming-kernel-doc-v1-1-159abdc5149f@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAKlWUWoC/yWMywqDMBAAf0X23IVE1Jb+Sukhj9VuH5uSVRHEf
+ zetxxmYWUEpMylcqxUyzaycpIA9VRAeTgZCjoWhNnVnztZgSKLTh2XAF2WhN8YU0PnW2Nbbprk
+ QlPSbqeflv72Bd6OLM9wPr5N/Uhh/T9i2HUhLxX2AAAAA
+X-Change-ID: 20260710-consuming-kernel-doc-ab5015b1448e
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3668; i=sven@narfation.org;
- h=from:subject:message-id; bh=gJSyf/lH7n05Sp7hxP+irhdmdGMIhUuqPuhUNesbwSE=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmBwR8ZtWc+dP8194v8ggOBXtnvM+bci9nCLB8W3+zWc
- aF36uSmjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBE3goyMuyrmT/zsYUDw3Pf
- 96qnd+fdOLPoxTmVL80nmc49V695JDyRkeGEfpinzN8PVycYNMzQD7/munvu6TnTVn099XJu34a
- O0lh+AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2625; i=sven@narfation.org;
+ h=from:subject:message-id; bh=8ya1umFDOpvTzak3IxhxqPpkjPcYAHXIvhh5wQIEsBs=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmBYRs47wQwnBZwjtl+9F7j6ugP/zLEWT7dXdPBPfXQN
+ t+E+kSujlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEjhUwMkzdPEljvt3Ku63y
+ t1IUVXY0WUj8X81woeVHmtXCqBbDAy6MDDem6gZHCJ5Zc0n1w5FvCY8zb8+MmskxNS3vbPG1M7l
+ 7c1kB
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ZVC636KUFLDUV3HU4ZX3FQREOU42WVUI
-X-Message-ID-Hash: ZVC636KUFLDUV3HU4ZX3FQREOU42WVUI
+Message-ID-Hash: ESNZMSJ6UO7VXZXGWBCPITNP7A3XC7XO
+X-Message-ID-Hash: ESNZMSJ6UO7VXZXGWBCPITNP7A3XC7XO
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZVC636KUFLDUV3HU4ZX3FQREOU42WVUI/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ESNZMSJ6UO7VXZXGWBCPITNP7A3XC7XO/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,84 +113,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-When a function is called which reallocated the skbuff, it is necessary to
-reacquire the pointers into the skb data. Otherwise they might cause an
-use-after-free.
-
-But is hard to identify such case when it is not clear that helpers are
-actually using skb-reallocating functions.
+Most functions in batman-adv will take the ownership of an skb when they
+receive it as argument.  Their NET_RX_DROP return value is only indicating
+whether there was direct visible problem while processing it. The caller
+must not try to also free the skb when such a negative return code was
+received.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/mesh-interface.c |  5 +++++
- net/batman-adv/multicast_forw.c | 10 ++++++++++
- net/batman-adv/routing.c        |  5 +++++
- 3 files changed, 20 insertions(+)
+ net/batman-adv/routing.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index 20582fe0..f1bfe2a5 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -57,6 +57,11 @@
-  * @skb: packet buffer which should be modified
-  * @len: number of bytes to add
-  *
-+ * Warning: This function may reallocate the skb data buffer via
-+ * skb_cow_head(). Any pointer into the skb data (e.g. obtained
-+ * from skb->data or eth_hdr()) before this call must be considered
-+ * invalid afterwards and has to be reacquired.
-+ *
-  * Return: 0 on success or negative error number in case of failure
-  */
- int batadv_skb_head_push(struct sk_buff *skb, unsigned int len)
-diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
-index d8374ef5..ccd4ae15 100644
---- a/net/batman-adv/multicast_forw.c
-+++ b/net/batman-adv/multicast_forw.c
-@@ -1080,6 +1080,11 @@ unsigned int batadv_mcast_forw_packet_hdrlen(unsigned int num_dests)
-  * Tries to expand an skb's headroom so that its head to tail is 1298
-  * bytes (minimum IPv6 MTU + vlan ethernet header size) large.
-  *
-+ * Warning: This function may reallocate the skb data buffer via
-+ * skb_cow() / skb_linearize(). Any pointer into the skb data (e.g.
-+ * obtained from skb->data or eth_hdr()) before this call must be
-+ * considered invalid afterwards and has to be reacquired.
-+ *
-  * Return: -EINVAL if the given skb's length is too large or -ENOMEM on memory
-  * allocation failure. Otherwise, on success, zero is returned.
-  */
-@@ -1123,6 +1128,11 @@ static int batadv_mcast_forw_expand_head(struct batadv_priv *bat_priv,
-  * that signaled interest in it, that is either via the translation table or the
-  * according want-all flags, is attached accordingly.
-  *
-+ * Warning: This function may reallocate the skb data buffer via
-+ * batadv_mcast_forw_expand_head(). Any pointer into the skb data (e.g.
-+ * obtained from skb->data or eth_hdr()) before this call must be
-+ * considered invalid afterwards and has to be reacquired.
-+ *
-  * Return: true on success, false otherwise.
-  */
- bool batadv_mcast_forw_push(struct batadv_priv *bat_priv, struct sk_buff *skb,
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index cd290a7b..5193e370 100644
+index cd290a7b..55a88431 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -172,6 +172,11 @@ bool batadv_window_protected(struct batadv_priv *bat_priv, s32 seq_num_diff,
-  * @hard_iface: incoming hard interface
-  * @header_len: minimal header length of packet type
+@@ -263,8 +263,7 @@ static bool batadv_skb_decrement_ttl(struct sk_buff *skb)
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @skb: icmp packet to process
   *
-+ * Warning: This function may reallocate the skb data buffer via
-+ * skb_cow() / skb_linearize(). Any pointer into the skb data (e.g.
-+ * obtained from skb->data or eth_hdr()) before this call must be
-+ * considered invalid afterwards and has to be reacquired.
-+ *
-  * Return: true when management preconditions are met, false otherwise
+- * Return: NET_RX_SUCCESS if the packet has been consumed or NET_RX_DROP
+- * otherwise.
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
   */
- bool batadv_check_management_packet(struct sk_buff *skb,
+ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 				      struct sk_buff *skb)
+@@ -999,8 +998,7 @@ static bool batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+  * @skb: unicast tvlv packet to process
+  * @recv_if: pointer to interface this packet was received on
+  *
+- * Return: NET_RX_SUCCESS if the packet has been consumed or NET_RX_DROP
+- * otherwise.
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
+  */
+ int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
+ 					 struct batadv_hard_iface *recv_if)
+@@ -1138,8 +1136,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+  * @skb: unicast tvlv packet to process
+  * @recv_if: pointer to interface this packet was received on
+  *
+- * Return: NET_RX_SUCCESS if the packet has been consumed or NET_RX_DROP
+- * otherwise.
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
+  */
+ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if)
+@@ -1383,7 +1380,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+  * contents of its TVLV forwards it and/or decapsulates it to hand it to the
+  * mesh interface.
+  *
+- * Return: NET_RX_DROP if the skb is not consumed, NET_RX_SUCCESS otherwise.
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
+  */
+ int batadv_recv_mcast_packet(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if)
 
 ---
 base-commit: e8d6ecd5b27bf4ab6dfef96e01cd0057065ed396
-change-id: 20260710-realloc-kernel-doc-87f99d90b802
+change-id: 20260710-consuming-kernel-doc-ab5015b1448e
 
 Best regards,
 --  
