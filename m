@@ -4,245 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7D6BC43458
-	for <batman-adv@archiver.kernel.org>; Sun, 12 Jul 2026 11:04:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15D18C43458
+	for <batman-adv@archiver.kernel.org>; Sun, 12 Jul 2026 18:46:51 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 25D28840CF
-	for <batman-adv@archiver.kernel.org>; Sun, 12 Jul 2026 13:04:06 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4A1BE841B5
+	for <batman-adv@archiver.kernel.org>; Sun, 12 Jul 2026 20:46:50 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1783854246;
- b=KQm9xvZDjMk3YeVfsCszQkFHhox0liN35N/U30ZRswuQi5uOZ5PkOtI6Eh133nDRZ341Z
- sfvXrQR4rSbULR+cOFHTiJSDCgZXuzMSneGyp6hYGL+1CYVfsS894+hssmCMmjOrTLjgzHv
- T4AUtWySYszYYnXdf3hfhvi6JyZJTRs=
+ t=1783882010;
+ b=idAKTM1/c76AztqgviZ7vbteAyca5kDI3TDKKyX6uOfEZByvu45wHbMBr+p+VOiDyCD25
+ DBK2zmteCiOXl04mPqlG3ZyzXnhTljqcF6PuRNA7CSjGaF8vMaf9fiS8y+6FuUkdbz+D5L/
+ RwXzKy+S7IfRdZKflnj+qHS8TGAr5WQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1783854246; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1783882010; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=;
- b=PeZ78r6bD5WBUwz35BbXeM7yBsV05hq2gN+D3z4l/xhrKnNkoyFHYoLkb2biaz3iIy7Ct
- EPOBO63kIk5MIsDT4m00N7OBGcfx+CoNad6b9dPBtNTHAtrq8lQoh/jNMmUjbkn1D+oiC6P
- C/TJ/25it20Hxe3Wd1eH2T6WD+acHDs=
+ list-archive; bh=/jod1urt9MgExeP/iRttWTlByc6CiEShCNM90+0AmT8=;
+ b=1T0XTyEoqazxlwVVOKAcWWcwPCZP1QMOlMbPquj5JLD3xKSr0eXjKW8B7G2h3JX1Emz30
+ iHGnaY9W52/PAz0/HIRrr1e4TRJNAkG7g9Je02JoRJbp3OFNNdpMNAgB6wLF+ab3WJ0JzmN
+ D/IeVJxLfB8+rEsKbovQo6qheH5WDqM=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=arndb.de;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass header.from=arndb.de policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=arndb.de; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=arndb.de policy.dmarc=none
-Received: from flow-a4-smtp.messagingengine.com
- (flow-a4-smtp.messagingengine.com [103.168.172.139])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9FF3A8028A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 12 Jul 2026 13:02:47 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783854178;
-	b=VRKoento4HaBpu0py211+6wsGy68UeaEC4aryOnTV/8pGBTdHH/oWhdfldtVkeNYbayvWN
-	dxczBg9wfbhv8Q1xxSI9TFTgb6KkdhgdudpMUrJLhuNF/oFIVUFYUqaDo0GnmcBpgOizhK
-	sFl2FHbHjLJWd6OveG8o+ks/H9MySQ8=
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 01D8E803DF
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 12 Jul 2026 20:46:09 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1783881980;
+	b=llGo5Up7JzIQA2nS1RySLqZANiJy2/AzlPBETMfSZud0PuMNYRA2Bn4Zq1o7vLlqlLpOzz
+	hyZ91tPAts9nX2y1lgVE3dA/6VW7CpzMuGIxUddE1JeawmGggM1dq3ndgr0T+nS7Xf7C6C
+	YwH5Qg4FxruQtoAWA02ArD4UhpLrJBg=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1783854178;
+	s=20121; t=1783881980;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=;
-	b=TtaaByACo+dtGxTtPn6CnDjyQbAXIQzkFubeOoYD91C9ffRePkWr/yuPsuEbRvjR1Pfj+s
-	nkuU+XxTc1e04gLFcdTnTvsPNQIZ/pquTLoUXANBRGzSA0orI/sulT3FVrMacLc/c3HE9m
-	i1GoG/SIQcGUFNraKffglU3plM9dAQg=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=/jod1urt9MgExeP/iRttWTlByc6CiEShCNM90+0AmT8=;
+	b=i8urDCLialw4IbQzWAcl+5aa/jZ8wYmUD42v7nhy+xhuokesjCpt3RxKtFplO0CJEDl0p6
+	n05Hw6S+tu3cN7ZoOI2EII/a+US38uqWIq7Rt4s9RGtpugyfqbCVCsU3qL4IjI5g1i8vEf
+	r6eo9PkA22YuiAnodID4Q5Xz7x+9Blg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=arndb.de header.s=fm1 header.b=WxzzMJFR;
-	dkim=pass header.d=messagingengine.com header.s=fm2 header.b="U jYqDSe";
-	spf=pass (diktynna.open-mesh.org: domain of arnd@arndb.de designates
- 103.168.172.139 as permitted sender) smtp.mailfrom=arnd@arndb.de;
-	dmarc=pass (policy=none) header.from=arndb.de
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.phl.internal (Postfix) with ESMTP id 0B75A138025E;
-	Sun, 12 Jul 2026 07:02:45 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
-  by phl-compute-04.internal (MEProxy); Sun, 12 Jul 2026 07:02:45 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1783854165;
-	 x=1783861365; bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=; b=
-	WxzzMJFRBMefM70b/YtDS4TGQzae1Lt/rly/upptZh5fiBQ/fgL1t0EVfjBFGBN8
-	y3oHExa9YWDQRMyr7UQAu8Svx/w4tjxqi8/PSOMY6DvjDwL0TZKwHwZA9Ozd2pYf
-	s0ypipZNS8YGe2m4DOJe+38aDBHK+jcODlukRpagOVHD9KEJkdoQqgev21V8Bgb3
-	TCdD201xrmKe4YIQ1qTBGr8mMYvetvHkQoCSb6jHBr01wyoKlmdhQmLjG7/Wa4aa
-	rs8eKVjx7yIIkxGCiHi9M1kuHiEPyUx1LiHzPOCzYk3arkdLbjWPxJP8Byp5TUOQ
-	GxF66xEjwQreUjXukLkCxg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1783854165; x=
-	1783861365; bh=VmtnK3tqoDU1aIaol+aWaActTb6DTRuQA5S8IlUXC6U=; b=U
-	jYqDSeLxMU5ePSUGPDE9I0O+Exrzvenmm34qVl7yGd9kO5OjZM4Nba5EIOkF9dv3
-	xbKJusquIu/RrdrD6CtBzIv0EDEmxbAhThdwGvQHTnpo2TDIjQEKyKCx0zVgVG4v
-	MwbaQlaY/YSKqvHcswOF7zPh5R8hrBjf645qkfqkcQmWRXgi/k7HA1iEQiok67Xm
-	69YEfw3juGlJftC0DsXryuUIhIaOjq2ddjeAdhPFtfFc045xVKuzffiJ8QKSF2UW
-	O7Asl8sBFDCyqLasMb974+9PXhLP/sU+LeqELU777jCsaUXHy5EIQlONJRbvQD0l
-	nsD4pCYVBIlHyFjN/7Jsw==
-X-ME-Sender: <xms:SXRTagVsyQ8TX1iEIAxFTrUnBBvg3ouWIpLBpPooAqGRyR2NZALW9Q>
-    <xme:SXRTavZP-nXVqS1pChO9GStBCMnL0eeMY-iAfuLUn6Dud2aygQe_POwJXvQ-rGkj1
-    899by3cZoizkZNHBE50WoNoIx-Ocnc8el2ENhnhSOyttQHye1fMY64>
-X-ME-Proxy-Cause: 
- dmFkZTFFbWNFV8UtK7PJ0YbSmA1A6l1wZb8N5iMZiv4PmzggaXO+c+HZuMN5dbOW4/LwO4
-    YrukvejgOijtkueKJtcp4wgn4EhO63TCyyzHULfYQ2kFzWvDfUC3HWcVgv98a9p3wmqOoP
-    w4qayiqS0HMo3Jap3E4pumgiQ3lyrAKF9DlQo0/x7Vy2uECt+Jy4NACfXefBg4WHXnMK2A
-    UENjemuL/g1YRCyXvDovMaGyHuMBa5JymL5nwjoOE3I2qwrEWoBlVH7JlrO1b+WcK48apy
-    0bh/8MaX95lIq8caXuYf9xgC2zt9vvdMfjxFmpJdLGcSI6sCp93t5lGDrR6djFw1SGbSH9
-    DJwEGK6oflC0+CJsijysvViaYJFn3czJOJ8wT4taro4O3sdXQE4YW1tubTULU31gMU6HDI
-    npWKA0QFVWKK3PC5QuzFhriKLeIyPk0XlEhysD/nSStZ7x0lKeUDYwnJvvSAIigLSn8nWf
-    PyAidznJn1v5eQA/hAL2gj9KhOqesySOSlWonQ+mNx9JRj+A/jnejg8SlNlhLkce3uj5+O
-    /r9MtC7Kknkp+lg03SNpnmqr8+d7VdpV/I/EEDURuqzaOT8bFhRzha5fO5kjgbTdv/NvEG
-    LeDxahJFEmmzScN38liLw+1/3K9JakxlQk2CYCzd0cMpr9LXzeOrR/yxM4wA
-X-ME-Proxy: <xmx:UXRTaj0sSmZd0VqAg1Ab8vc217-LONz6IRtUmshppkUdvY60mSRlZw>
-    <xmx:UXRTaork14UHHg7w8fqQyE86kpW_mANgES-srmAP6Z44K5DH5HjSwg>
-    <xmx:UXRTahF3AcH9RhNQsb3uaMj_kkgPVZA8vLCVaaE8_vKD1PG-G4UdyA>
-    <xmx:UXRTaq7ZeQ01Sj7O-hgfgLPJxURhNMS9O3pblaTcSMXqSYfUUfP1Rg>
-    <xmx:VXRTajwxpExOzP0me6ntckPmhFUoyUd4EPzl75I2G2v1oTlEJtNxvefy>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 29B00182007E; Sun, 12 Jul 2026 07:02:33 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Nnbyp5H8;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+Received: by dvalin.narfation.org (Postfix) id C784E1FD15;
+	Sun, 12 Jul 2026 18:46:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1783881968;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/jod1urt9MgExeP/iRttWTlByc6CiEShCNM90+0AmT8=;
+	b=Nnbyp5H8e2OgGreGKy+dcovpcv7XDslln2QTts4KbAUgRybMZmKtZHIV41Z7GNLKCyOWXs
+	PdFWiR//jmFx5/yB4Ad8ircMsNJipQZo8QZ/LYEwony6hKLEg06YoIrNk7ge6RLunNNiEz
+	x/VagNc25iuP6ue9M2pXl5O5/z6Jsls=
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 12 Jul 2026 20:45:43 +0200
+Subject: [PATCH] batctl: add subcommand to limit number of learned objects
 MIME-Version: 1.0
-X-ThreadId: ARmmoW1aQeCk
-Date: Sun, 12 Jul 2026 13:01:52 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Fernando Fernandez Mancera" <fmancera@suse.de>,
- Netdev <netdev@vger.kernel.org>
-Cc: "David S . Miller" <davem@davemloft.net>,
- "Eric Dumazet" <edumazet@google.com>, "Jakub Kicinski" <kuba@kernel.org>,
- "Paolo Abeni" <pabeni@redhat.com>, "David Ahern" <dsahern@kernel.org>,
- "Simon Horman" <horms@kernel.org>, "Ido Schimmel" <idosch@nvidia.com>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Andrew Lunn" <andrew+netdev@lunn.ch>,
- "Anthony L Nguyen" <anthony.l.nguyen@intel.com>,
- "Przemek Kitszel" <przemyslaw.kitszel@intel.com>,
- "Elad Nachman" <enachman@marvell.com>,
- "Saeed Mahameed" <saeedm@nvidia.com>, "Tariq Toukan" <tariqt@nvidia.com>,
- "Mark Bloch" <mbloch@nvidia.com>, "Petr Machata" <petrm@nvidia.com>,
- "Edward Cree" <ecree.xilinx@gmail.com>,
- "Maxime Coquelin" <mcoquelin.stm32@gmail.com>,
- "Alexandre Torgue" <alexandre.torgue@foss.st.com>,
- "Arend van Spriel" <arend.vanspriel@broadcom.com>,
- "Miri Korenblit" <miriam.rachel.korenblit@intel.com>,
- "Keith Busch" <kbusch@kernel.org>, "Jens Axboe" <axboe@kernel.dk>,
- "Christoph Hellwig" <hch@lst.de>, "Sagi Grimberg" <sagi@grimberg.me>,
- "Chaitanya Kulkarni" <kch@nvidia.com>,
- "Saurav Kashyap" <skashyap@marvell.com>,
- "Javed Hasan" <jhasan@marvell.com>,
- GR-QLogic-Storage-Upstream@marvell.com,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Nilesh Javali" <njavali@marvell.com>,
- "Manish Rangankar" <mrangankar@marvell.com>,
- "Varun Prakash" <varun@chelsio.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>, "Jan Kara" <jack@suse.cz>,
- "David Howells" <dhowells@redhat.com>,
- "Marc Dionne" <marc.dionne@auristor.com>,
- "Trond Myklebust" <trondmy@kernel.org>,
- "Anna Schumaker" <anna@kernel.org>, "Chuck Lever" <cel@kernel.org>,
- "Jeff Layton" <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
- "Olga Kornievskaia" <okorniev@redhat.com>,
- "Dai Ngo" <Dai.Ngo@oracle.com>, "Tom Talpey" <tom@talpey.com>,
- "Marek Lindner" <marek.lindner@mailbox.org>,
- "Simon Wunderlich" <sw@simonwunderlich.de>,
- "Antonio Quartulli" <antonio@mandelbit.com>,
- "Sven Eckelmann" <sven@narfation.org>,
- "Nikolay Aleksandrov" <razor@blackwall.org>,
- "Pablo Neira Ayuso" <pablo@netfilter.org>,
- "Florian Westphal" <fw@strlen.de>, "Phil Sutter" <phil@nwl.cc>,
- "Johannes Berg" <johannes@sipsolutions.net>,
- "Matthieu Baerts" <matttbe@kernel.org>,
- "Mat Martineau" <martineau@kernel.org>,
- "Geliang Tang" <geliang@kernel.org>, "Julian Anastasov" <ja@ssi.bg>,
- "Aaron Conole" <aconole@redhat.com>,
- "Eelco Chaudron" <echaudro@redhat.com>,
- "Ilya Maximets" <i.maximets@ovn.org>,
- "Allison Henderson" <achender@kernel.org>,
- "Jamal Hadi Salim" <jhs@mojatatu.com>, "Jiri Pirko" <jiri@resnulli.us>,
- "Marcelo Ricardo Leitner" <marcelo.leitner@gmail.com>,
- "Xin Long" <lucien.xin@gmail.com>,
- "D. Wythe" <alibuda@linux.alibaba.com>,
- "Dust Li" <dust.li@linux.alibaba.com>,
- "Sidraya Jayagond" <sidraya@linux.ibm.com>,
- "Wenjia Zhang" <wenjia@linux.ibm.com>,
- "Mahanta Jambigi" <mjambigi@linux.ibm.com>,
- "Tony Lu" <tonylu@linux.alibaba.com>, "Wen Gu" <guwen@linux.alibaba.com>,
- "Jon Maloy" <jmaloy@redhat.com>,
- "Steffen Klassert" <steffen.klassert@secunet.com>,
- "Herbert Xu" <herbert@gondor.apana.org.au>,
- "Vikas Gupta" <vikas.gupta@broadcom.com>,
- "Rajashekar Hudumula" <rajashekar.hudumula@broadcom.com>,
- "Justin Chen" <justin.chen@broadcom.com>,
- "Bhargava Marreddy" <bhargava.marreddy@broadcom.com>,
- "Nicolai Buchwitz" <nb@tipi-net.de>,
- "Florian Fainelli" <florian.fainelli@broadcom.com>,
- "Heiner Kallweit" <hkallweit1@gmail.com>,
- "Krzysztof Kozlowski" <krzk@kernel.org>,
- "Russell King" <rmk+kernel@armlinux.org.uk>, "Yao Zi" <me@ziyao.cc>,
- "Yanteng Si" <siyanteng@cqsoftware.com.cn>,
- "Maxime Chevallier" <maxime.chevallier@bootlin.com>,
- "Julian Braha" <julianbraha@gmail.com>,
- "Joey Lu" <a0987203069@gmail.com>,
- "Shangjuan Wei" <weishangjuan@eswincomputing.com>,
- "Chen-Yu Tsai" <wens@kernel.org>, "Inochi Amaoto" <inochiama@gmail.com>,
- "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- "Qingfang Deng" <qingfang.deng@linux.dev>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Eric Biggers" <ebiggers@kernel.org>,
- "Ethan Nelson-Moore" <enelsonmoore@gmail.com>,
- "Ard Biesheuvel" <ardb@kernel.org>,
- "Dmitry Safonov" <0x7f454c46@gmail.com>,
- "Kuniyuki Iwashima" <kuniyu@google.com>, "Alyssa Ross" <hi@alyssa.is>,
- linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "open list:NETRONOME ETHERNET DRIVERS" <oss-drivers@corigine.com>,
- linux-net-drivers@amd.com, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-wireless@vger.kernel.org,
- brcm80211@lists.linux.dev, brcm80211-dev-list.pdl@broadcom.com,
- linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-afs@lists.infradead.org, linux-nfs@vger.kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org,
- "open list:ETHERNET BRIDGE" <bridge@lists.linux.dev>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- mptcp@lists.linux.dev, lvs-devel@vger.kernel.org, dev@openvswitch.org,
- rds-devel@oss.oracle.com, linux-sctp@vger.kernel.org,
- linux-s390@vger.kernel.org,
- "open list:TIPC NETWORK LAYER" <tipc-discussion@lists.sourceforge.net>
-Message-Id: <12ffac6a-649a-4e4a-8d12-0b48171e1d95@app.fastmail.com>
-In-Reply-To: <20260712013941.4570-2-fmancera@suse.de>
-References: <20260712013941.4570-1-fmancera@suse.de>
- <20260712013941.4570-2-fmancera@suse.de>
-Subject: Re: [PATCH 01/13 RFC net-next] net: ipv4: introduce CONFIG_IPV4 to
- decouple
- the IPv4 stack
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-MailFrom: arnd@arndb.de
-X-Mailman-Rule-Hits: max-recipients
+Message-Id: <20260712-limit-v1-1-618b113a9da0@narfation.org>
+X-B4-Tracking: v=1; b=H4sIANbgU2oC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDc0Mj3ZzM3MwSXXMzS4vURCOjNCNLCyWg2oKi1LTMCrA50bEQfnFpUlZ
+ qcglIs1JtLQBUD/yTaQAAAA==
+X-Change-ID: 20260712-limit-7698ea22f298
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=12491; i=sven@narfation.org;
+ h=from:subject:message-id; bh=XUy/9NOWeP02vFllEqiRAB/Ye5M78wUU7JeJo1g7shE=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnBD25Mvf9n68UKkcNTvxhsOap77rLd0WW/a+s2SK15a
+ fjJf+mW6I5SFgYxLgZZMUWWPVfyz29mfyv/edrHozBzWJlAhjBwcQrARGZcYfink3CqfPKXzOhd
+ syJkjKJmuiSefam67vYR47zP4qVslcrdjAzP12q+Zyo0aOSSMNhj5hy2M2q+Wn7H6dZQ4evn34R
+ x/GcCAA==
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: O4F4PDY5MDRQRWD5ASFLFEH54LKGL3CE
+X-Message-ID-Hash: O4F4PDY5MDRQRWD5ASFLFEH54LKGL3CE
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-size;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
  news-moderation; no-subject; digests; suspicious-header
-Message-ID-Hash: N3FLL7XPBCPW2N6WFHMEVQJH2RKD5FUY
-X-Message-ID-Hash: N3FLL7XPBCPW2N6WFHMEVQJH2RKD5FUY
-X-Mailman-Approved-At: Sun, 12 Jul 2026 13:03:37 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/N3FLL7XPBCPW2N6WFHMEVQJH2RKD5FUY/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/O4F4PDY5MDRQRWD5ASFLFEH54LKGL3CE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -251,33 +111,438 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Sun, Jul 12, 2026, at 03:38, Fernando Fernandez Mancera wrote:
-> Historically, the IPv4 protocol has been linked to the core INET
-> subsystem. Because shared infrastructure like the TCP/UDP engine,
-> routing or INET hashtables live inside net/ipv4/, it has been impossible
-> to compile a kernel with only IPv6 support.
->
-> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
-> 'def_bool y' for now. This does not allow to completely disable the
-> IPv4 stack yet but it lays the necessary build-system work for that
-> goal.
+A malicious actor connected to the mesh network or the client interface
+could cause batman-adv to learn more and more objects (originators,
+neighbors, (Distributed) ARP table entries, bridge loop avoidance
+backbones/claims, ...). For each learned object, memory is used by
+batman-adv. The malicious actor could trigger an out-of-memory situation or
+cause slow-downs.
 
-I expect this will cause additional (trivial) build regression in the
-next step when randconfig builds run into obscure corner cases, either
-with INET=y IPV4=n IPV6=y or with INET=y IPV4=n IPV6=n.
+The limit subcommand can be used to configure limits for these
+automatically learned objects or to read the out the available object
+types.
 
-I can probably give your patch (with IPV4 visible or disabled) an
-early go on the randconfig tree to find these more quickly.
-If I run into regressions, should I just add more 'depends on IPV4',
-or do you have other plans?
+If no parameter is given the current limits for remote learned objects are
+displayed. Otherwise the parameters are interpreted as pairs of limit name
+and value and are used to set the given limits. Limits which are not
+specified as parameter are left unmodified. A limit of 0 disables the limit
+for this object type.
 
-Should we have some logic to ensure that at least one of IPV4 or
-IPV6 is enabled? I think this would work
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ Makefile     |   1 +
+ README.rst   |  31 +++++++++++
+ batman_adv.h |  30 ++++++++++
+ event.c      |  20 +++++++
+ genl_json.c  |  20 +++++++
+ limit.c      | 176 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ man/batctl.8 |   7 +++
+ netlink.c    |  15 +++++
+ 8 files changed, 300 insertions(+)
 
-config IPV4
-      bool "The IPv4 protocol" if IPV6
-      default INET
+diff --git a/Makefile b/Makefile
+index a1cde20..3c4e8a3 100755
+--- a/Makefile
++++ b/Makefile
+@@ -59,6 +59,7 @@ $(eval $(call add_command,hardifs_json,y))
+ $(eval $(call add_command,hop_penalty,y))
+ $(eval $(call add_command,interface,y))
+ $(eval $(call add_command,isolation_mark,y))
++$(eval $(call add_command,limit,y))
+ $(eval $(call add_command,loglevel,y))
+ $(eval $(call add_command,mcast_flags,y))
+ $(eval $(call add_command,mcast_flags_json,y))
+diff --git a/README.rst b/README.rst
+index d3cfe0e..fe22534 100644
+--- a/README.rst
++++ b/README.rst
+@@ -626,6 +626,37 @@ Usage::
+ * Example 4: ``batctl mark 0x0f``
+ 
+ 
++batctl limit
++------------
++
++display or modify the limits for remote learned objects
++
++If no parameter is given the current limits are displayed. Otherwise the
++parameters are interpreted as pairs of limit name and value and are used
++to set the given limits. Limits which are not specified as parameter are
++left unmodified. A limit of 0 disables the limit for this object type.
++
++Usage::
++
++  batctl limit|lt [limit value]...
++
++Example::
++
++  $ batctl limit
++  neighbors: 0
++  originators: 0
++  dat: 0
++  bla_backbones: 0
++  bla_claims: 0
++  $ batctl limit neighbors 64 originators 128
++  $ batctl limit
++  neighbors: 64
++  originators: 128
++  dat: 0
++  bla_backbones: 0
++  bla_claims: 0
++
++
+ batctl loglevel
+ ---------------
+ 
+diff --git a/batman_adv.h b/batman_adv.h
+index 936bcac..94ef2af 100644
+--- a/batman_adv.h
++++ b/batman_adv.h
+@@ -481,6 +481,36 @@ enum batadv_nl_attrs {
+ 	 */
+ 	BATADV_ATTR_MULTICAST_FANOUT,
+ 
++	/**
++	 * @BATADV_ATTR_NEIGH_MAX_LEARNED: defines the maximum number of neighbors
++	 * which can be learned in parallel
++	 */
++	BATADV_ATTR_NEIGH_MAX_LEARNED,
++
++	/**
++	 * @BATADV_ATTR_ORIG_MAX_LEARNED: defines the maximum number of originator
++	 * which can be learned in parallel
++	 */
++	BATADV_ATTR_ORIG_MAX_LEARNED,
++
++	/**
++	 * @BATADV_ATTR_DAT_MAX_LEARNED: defines the maximum number of DAT entries
++	 * which can be learned in parallel
++	 */
++	BATADV_ATTR_DAT_MAX_LEARNED,
++
++	/**
++	 * @BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED: defines the maximum number of BLA backbones
++	 * which can be learned in parallel
++	 */
++	BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED,
++
++	/**
++	 * @BATADV_ATTR_BLA_CLAIM_MAX_LEARNED: defines the maximum number of BLA claim
++	 * which can be learned in parallel
++	 */
++	BATADV_ATTR_BLA_CLAIM_MAX_LEARNED,
++
+ 	/* add attributes above here, update the policy in netlink.c */
+ 
+ 	/**
+diff --git a/event.c b/event.c
+index 4a1085d..af25c11 100644
+--- a/event.c
++++ b/event.c
+@@ -205,10 +205,22 @@ static void event_parse_set_mesh(struct nlattr **attrs, const char *prefix)
+ 		printf("* bonding %s\n",
+ 		       u8_to_boolstr(attrs[BATADV_ATTR_BONDING_ENABLED]));
+ 
++	if (attrs[BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED])
++		printf("* bla_backbone_max_learned %u\n",
++		       nla_get_u32(attrs[BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED]));
++
++	if (attrs[BATADV_ATTR_BLA_CLAIM_MAX_LEARNED])
++		printf("* bla_claim_max_learned %u\n",
++		       nla_get_u32(attrs[BATADV_ATTR_BLA_CLAIM_MAX_LEARNED]));
++
+ 	if (attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED])
+ 		printf("* bridge_loop_avoidance %s\n",
+ 		       u8_to_boolstr(attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]));
+ 
++	if (attrs[BATADV_ATTR_DAT_MAX_LEARNED])
++		printf("* dat_max_learned %u\n",
++		       nla_get_u32(attrs[BATADV_ATTR_DAT_MAX_LEARNED]));
++
+ 	if (attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED])
+ 		printf("* distributed_arp_table %s\n",
+ 		       u8_to_boolstr(attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]));
+@@ -282,9 +294,17 @@ static void event_parse_set_mesh(struct nlattr **attrs, const char *prefix)
+ 		printf("* multicast_forceflood %s\n",
+ 		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));
+ 
++	if (attrs[BATADV_ATTR_NEIGH_MAX_LEARNED])
++		printf("* neigh_max_learned %u\n",
++		       nla_get_u32(attrs[BATADV_ATTR_NEIGH_MAX_LEARNED]));
++
+ 	if (attrs[BATADV_ATTR_ORIG_INTERVAL])
+ 		printf("* orig_interval %u ms\n",
+ 		       nla_get_u32(attrs[BATADV_ATTR_ORIG_INTERVAL]));
++
++	if (attrs[BATADV_ATTR_ORIG_MAX_LEARNED])
++		printf("* orig_max_learned %u\n",
++		       nla_get_u32(attrs[BATADV_ATTR_ORIG_MAX_LEARNED]));
+ }
+ 
+ static void event_parse_set_hardif(struct nlattr **attrs, const char *prefix)
+diff --git a/genl_json.c b/genl_json.c
+index c3ef83a..ec34b57 100644
+--- a/genl_json.c
++++ b/genl_json.c
+@@ -461,6 +461,26 @@ static const struct nla_policy_json batadv_genl_json[NUM_BATADV_ATTR] = {
+ 		.name = "multicast_fanout",
+ 		.cb = nljson_print_uint32,
+ 	},
++	[BATADV_ATTR_NEIGH_MAX_LEARNED] = {
++		.name = "neigh_max_learned",
++		.cb = nljson_print_uint32,
++	},
++	[BATADV_ATTR_ORIG_MAX_LEARNED] = {
++		.name = "orig_max_learned",
++		.cb = nljson_print_uint32,
++	},
++	[BATADV_ATTR_DAT_MAX_LEARNED] = {
++		.name = "dat_max_learned",
++		.cb = nljson_print_uint32,
++	},
++	[BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED] = {
++		.name = "bla_backbone_max_learned",
++		.cb = nljson_print_uint32,
++	},
++	[BATADV_ATTR_BLA_CLAIM_MAX_LEARNED] = {
++		.name = "bla_claim_max_learned",
++		.cb = nljson_print_uint32,
++	},
+ };
+ 
+ void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_opts)
+diff --git a/limit.c b/limit.c
+new file mode 100644
+index 0000000..6643d1f
+--- /dev/null
++++ b/limit.c
+@@ -0,0 +1,176 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) B.A.T.M.A.N. contributors
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ */
++
++#include <errno.h>
++#include <stdbool.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "main.h"
++#include "sys.h"
++
++struct limit_setting {
++	const char *name;
++	enum batadv_nl_attrs attr;
++	bool set:1;
++	uint32_t value;
++};
++
++static struct limit_setting limit_settings[] = {
++	{
++		.name = "neighbors",
++		.attr = BATADV_ATTR_NEIGH_MAX_LEARNED,
++	},
++	{
++		.name = "originators",
++		.attr = BATADV_ATTR_ORIG_MAX_LEARNED,
++	},
++	{
++		.name = "dat",
++		.attr = BATADV_ATTR_DAT_MAX_LEARNED,
++	},
++	{
++		.name = "bla_backbones",
++		.attr = BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED,
++	},
++	{
++		.name = "bla_claims",
++		.attr = BATADV_ATTR_BLA_CLAIM_MAX_LEARNED,
++	},
++};
++
++static struct limit_setting *parse_limit_name(const char *name)
++{
++	struct limit_setting *setting;
++	size_t i;
++
++	for (i = 0; i < ARRAY_SIZE(limit_settings); i++) {
++		setting = &limit_settings[i];
++
++		if (strcmp(setting->name, name) != 0)
++			continue;
++
++		return setting;
++	}
++
++	return NULL;
++}
++
++static int parse_limit(struct state *state __maybe_unused, int argc,
++		       char *argv[])
++{
++	struct limit_setting *setting;
++	unsigned long value;
++	char *endptr;
++	int i;
++
++	if ((argc - 1) % 2 != 0) {
++		fprintf(stderr,
++			"Error - arguments must be pairs of limit name and value\n");
++		return -EINVAL;
++	}
++
++	for (i = 1; i < argc; i += 2) {
++		setting = parse_limit_name(argv[i]);
++		if (!setting) {
++			fprintf(stderr, "Error - unknown limit name: %s\n",
++				argv[i]);
++			return -EINVAL;
++		}
++
++		value = strtoul(argv[i + 1], &endptr, 0);
++		if (!endptr || *endptr != '\0' || endptr == argv[i + 1] ||
++		    value > UINT32_MAX) {
++			fprintf(stderr,
++				"Error - the supplied argument is invalid: %s\n",
++				argv[i + 1]);
++			return -EINVAL;
++		}
++
++		setting->value = value;
++		setting->set = true;
++	}
++
++	return 0;
++}
++
++static int print_limit(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	const struct limit_setting *setting;
++	struct genlmsghdr *ghdr;
++	int *result = arg;
++	size_t i;
++
++	if (!genlmsg_valid_hdr(nlh, 0))
++		return NL_OK;
++
++	ghdr = nlmsg_data(nlh);
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), batadv_netlink_policy)) {
++		return NL_OK;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(limit_settings); i++) {
++		setting = &limit_settings[i];
++
++		if (!attrs[setting->attr])
++			continue;
++
++		printf("%s: %u\n", setting->name,
++		       nla_get_u32(attrs[setting->attr]));
++
++		*result = 0;
++	}
++
++	return NL_STOP;
++}
++
++static int get_limit(struct state *state)
++{
++	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH, NULL,
++				  print_limit);
++}
++
++static int set_attrs_limit(struct nl_msg *msg, void *arg __maybe_unused)
++{
++	const struct limit_setting *setting;
++	size_t i;
++
++	for (i = 0; i < ARRAY_SIZE(limit_settings); i++) {
++		setting = &limit_settings[i];
++
++		if (!setting->set)
++			continue;
++
++		nla_put_u32(msg, setting->attr, setting->value);
++	}
++
++	return 0;
++}
++
++static int set_limit(struct state *state)
++{
++	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH, set_attrs_limit,
++				  NULL);
++}
++
++static struct settings_data batctl_settings_limit = {
++	.data = &limit_settings,
++	.parse = parse_limit,
++	.netlink_get = get_limit,
++	.netlink_set = set_limit,
++};
++
++COMMAND_NAMED(SUBCOMMAND_MIF, limit, "lt", handle_sys_setting,
++	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
++	      &batctl_settings_limit,
++	      "[limit value ...] \tdisplay or modify the limits for remote learned objects");
+diff --git a/man/batctl.8 b/man/batctl.8
+index c0f3aa0..356ead7 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -321,6 +321,13 @@ Example 2: 0x00040000/0xffff0000
+ Example 3: 16 or 0x0F
+ .br
+ .TP
++[\fBmeshif\fP \fInetdev\fP] \fBlimit\fP|\fBlt\fP [\fIlimit\fP \fIvalue\fP ...]
++If no parameter is given the current limits for remote learned objects are displayed. Otherwise the parameters are
++interpreted as pairs of limit name and value and are used to set the given limits. Limits which are not specified as
++parameter are left unmodified. A limit of 0 disables the limit for this object type. Valid limit names are
++\fBneighbors\fP, \fBoriginators\fP, \fBdat\fP, \fBbla_backbones\fP and
++\fBbla_claims\fP.
++.TP
+ [\fBmeshif\fP \fInetdev\fP] \fBloglevel\fP|\fBll\fP [\fIlevel\fP ...]
+ If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
+ level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
+diff --git a/netlink.c b/netlink.c
+index 8198533..043efc4 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -227,6 +227,21 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_MULTICAST_FANOUT] = {
+ 		.type = NLA_U32,
+ 	},
++	[BATADV_ATTR_NEIGH_MAX_LEARNED] = {
++		.type = NLA_U32,
++	},
++	[BATADV_ATTR_ORIG_MAX_LEARNED] = {
++		.type = NLA_U32,
++	},
++	[BATADV_ATTR_DAT_MAX_LEARNED] = {
++		.type = NLA_U32,
++	},
++	[BATADV_ATTR_BLA_BACKBONE_MAX_LEARNED] = {
++		.type = NLA_U32,
++	},
++	[BATADV_ATTR_BLA_CLAIM_MAX_LEARNED] = {
++		.type = NLA_U32,
++	},
+ };
+ 
+ int netlink_create(struct state *state)
 
-which only allows turning IPV4 off if IPV6 has enabled.
+---
+base-commit: 48c3e05b3d7f3a135e2d8c3460f0f4d0411cf58e
+change-id: 20260712-limit-7698ea22f298
 
-       Arnd
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
+
