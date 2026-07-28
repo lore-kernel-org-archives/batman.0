@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 456ABC53219
-	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 22:22:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CE0AC54F51
+	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 22:46:22 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 407788321B
-	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 00:22:52 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2B63380B7F
+	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 00:46:17 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785277372;
- b=YlEjl8gOhRaRYuTrFTEqkF6Kw6mTz9qcm+zFmZkc1LXzof+Z5gvyzju9LBmPENTHNAEX+
- WcdlRnjughgQJAdpyfeyz+CXwjyKc4uvfJG/3iFqF537KHeGsTP+6JNrpoduu68/zdt0gB5
- ouNbkUBIT1W2j8CFbbTNEvTgnLsrILY=
+ t=1785278777;
+ b=fFUNZAICdBXMTkW8zJqggf5SLtdQm0inBZ/Ox5EyWLP3dUY7fw545IvGw5axxTBhgNvvO
+ AJFQEr7GtO+57W8sFW8sJA4JMT6mfdEuzFIxX86z9QZRNw/hm2/ZBuWwgrR4W+VJtGaIG8M
+ sMP8iNKLQfdN/a8B9/pY3YZK/k/Az94=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785277372; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785278777; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=xrfOy2vV/JiOtss7SqyCbDZv4xn9FrZJhC39W708LDg=;
- b=N9iUekPNHwz8lYhNeDyEDPLzc4X1DzwNDPpvqgGXQpOZW14xM044RVu/di8jzml0877Q4
- YCxZaDgSlhyztU8mglBdMssLbWDtcrSQpY4EwxlIjC7+VA2k9sq+xOHdIWwS44GI3xop3A3
- Ea2SUs6tAv4rGIeo+Kh/YR4vbKbbIu4=
+ list-archive; bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
+ b=wujj9+7l61FTkmHAeHJpWU9pqKwwaUY9hMD9ykhtwnty9HauCbs7T2+l4ibMf+XZJf9Pz
+ NfqEXris3GKM4FPAj3AdhZZrzvERK9a1dy4BqQFPI9eH/lLGNaORaenNAg9fPS4UiHUmXno
+ z2kIw1nbAMcOrfSPo0iGKr3/G7rIl9k=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,62 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 481A083704
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 28 Jul 2026 19:29:17 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785259758;
-	b=YjfHgTR6sLXavG/ze1FACiWcWcEqSc8oBQq98bJXR6bcZ16QF7alnBt7MtoVeOd+bftZNi
-	yzGEF/PzKvdWZ++NRCoo60gkrNQNiRWH/Wa6fsB5jZBKdDakU3VvfQAGnxqX8CZSc/+IeV
-	UyJXqC4oHY3nNLsLk02mt8vYo/DW6CY=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 49A9A81044
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 28 Jul 2026 19:29:43 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785259783;
+	b=X5SlV2a7d8fcEXCzNt5kdJgVSWA/YRCkojyauQdTSmPuU692f5QpBiz/TQBhXIjVXy0vKR
+	wPn2IoYLrVeFrvBEhDUIn5l+WdE6WAcY2iXpbM/eED8p/nkwR3kcWXhk8QuUblFSiZoYz4
+	zolgjXKl7S00QtAvdARIKD9bpWVoOSE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785259758;
+	s=20121; t=1785259783;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=xrfOy2vV/JiOtss7SqyCbDZv4xn9FrZJhC39W708LDg=;
-	b=lBFpoe7exncESf5c4SCq2beqK070jUg/ExBbwRJ0TPJ/9qI4XNIOVK89ZffqWQiiHtmO+s
-	wdcnOi+oYZZ6jgwK0Wt8se4CPxKgeFk5RzKvYaxFFeiaSKG63nPEkm1Guud2dCspD5weXl
-	qbDY8ykPJdbAkiOO6+ok3M1YZrGlwQI=
+	bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
+	b=gb3r8tcfS2Zp8II9Cte+RMuagujQItgulvjwwBJXxB61GYNKwSjfk5RQ3q+aUGjLvqW7XB
+	NqLrZihNwpgpcInztL4kyz+Xk0lKVsmYLjsifaMzahM7tvKPTmucKwTAtpdwsq7ZdXPo36
+	MlOzxxAPMc2YfgCQk48GP1abUWo3NBo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=rG14iE5h;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=TzH9p48E;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 4EFBA200C7;
-	Tue, 28 Jul 2026 17:29:13 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id D91D7200D8;
+	Tue, 28 Jul 2026 17:29:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785259753;
+	s=20121; t=1785259778;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xrfOy2vV/JiOtss7SqyCbDZv4xn9FrZJhC39W708LDg=;
-	b=rG14iE5hyqH/i+2ioUDATByp1kBPvgRaBpAh+HbECs9VrLIvKrHqLbfMWSpxcL050N9P17
-	d3sUHc7HrGqYqciSNiAEnIMNFEEl7lF2MM2dlV7HKzGQp9xd37xsGvHhCPJPlghCkAMMh1
-	aAFyQ+7yXWwh+SL7xi3J2uvYL0/Xa6w=
+	bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
+	b=TzH9p48EW6dGOiwFmHO29xWISz4kIZK09fuLwYCJ9N8SXDmur+K1IeEoexjEAFxmlNfYoO
+	WaJJIRrLhozjurjGkiogiJBK93YtJM1wzyQWFsuwbzAtiSF3Vj1exmwSIogDJaC6xHJ5Bu
+	IJZUYLhL8oER1KlSe6I4zdsvAvbRrOY=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 28 Jul 2026 19:26:18 +0200
-Subject: [PATCH 1/2] alfred: import batadv_netlink_policy from batctl
+Date: Tue, 28 Jul 2026 19:26:19 +0200
+Subject: [PATCH 2/2] alfred: don't stop translation table dump after first
+ entry
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260728-bugfixes-netlink-v1-1-d338671f316b@narfation.org>
+Message-Id: <20260728-bugfixes-netlink-v1-2-d338671f316b@narfation.org>
 References: <20260728-bugfixes-netlink-v1-0-d338671f316b@narfation.org>
 In-Reply-To: <20260728-bugfixes-netlink-v1-0-d338671f316b@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8750; i=sven@narfation.org;
- h=from:subject:message-id; bh=tjNOEOOQY06SiQRM6qsAkEHAraai22doUrRjmO/28HQ=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkZz6zleScdK4yuqurOP+I8s8BEc9Ueo+8STuybxC9qt
- 09Yddqso4SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRhx2MDAd3ey8UK1vziO2x
- /dWEjlXLk99u5WB8rLY+6s656U7dfgYMn9l5dt+Tl/GcLVT4waZl7YWi04ffu3tweFYy9r6oSQ5
- lAwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1149; i=sven@narfation.org;
+ h=from:subject:message-id; bh=Dsm5VnJSDxz5AsZCQpHieXJPkhOv5uf3OmAlJJAF10Q=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkZz6zPLuxNsdi/WcuM1Xx+zIFL3kX3zQv9PF/cf8fLV
+ XjfjMu8o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRHbIMv9nbXC3O1Tke7vi6
+ pWGZb//+5bEbX15sNilZ++Nq1NKMdE2GP1yzpLhO94Y/qRF6cXThjSKXh+dEeX/JLLHaeXjTrA6
+ ZhywA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: MTPQ2JH2OMSAA6LSO5Q5DFHKGC475Z7W
-X-Message-ID-Hash: MTPQ2JH2OMSAA6LSO5Q5DFHKGC475Z7W
+Message-ID-Hash: 3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH
+X-Message-ID-Hash: 3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MTPQ2JH2OMSAA6LSO5Q5DFHKGC475Z7W/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,302 +113,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The batcl policy is more complete and is cleaner formatted than the alfred
-version. Just import then new one to keep them in sync.
+translate_mac_netlink_cb() is handling the response for
+BATADV_CMD_GET_TRANSTABLE_GLOBAL dump. It returns NL_STOP and cause the
+dump to be aborted.
 
+As result, the MAC addresses of all other alfred servers could no longer be
+translated to their originator address and their TQ was considered to be 0.
+The selection algorithm might then not select the actual best originator
+for the data sync.
+
+Continue the dump with NL_OK to fill the translation hash with all (best)
+originator entries.
+
+Fixes: a7bc3d9a2b3f ("alfred: Cache the global translation table entries")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- netlink.c | 277 ++++++++++++++++++++++++++++++++++++++++++++------------------
- 1 file changed, 197 insertions(+), 80 deletions(-)
+ batadv_querynl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/netlink.c b/netlink.c
-index fe5e749..d2cccfb 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -27,86 +27,203 @@
- #endif
+diff --git a/batadv_querynl.c b/batadv_querynl.c
+index 199fe9d..9e372d9 100644
+--- a/batadv_querynl.c
++++ b/batadv_querynl.c
+@@ -79,7 +79,7 @@ static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
+ 	tg_hash_add(opts->tg_hash, &mac_addr, &mac_orig);
+ 	opts->query_opts.err = 0;
  
- struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
--	[BATADV_ATTR_VERSION]			= { .type = NLA_STRING },
--	[BATADV_ATTR_ALGO_NAME]			= { .type = NLA_STRING },
--	[BATADV_ATTR_MESH_IFINDEX]		= { .type = NLA_U32 },
--	[BATADV_ATTR_MESH_IFNAME]		= { .type = NLA_STRING,
--						    .maxlen = IFNAMSIZ },
--	[BATADV_ATTR_MESH_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_HARD_IFINDEX]		= { .type = NLA_U32 },
--	[BATADV_ATTR_HARD_IFNAME]		= { .type = NLA_STRING,
--						    .maxlen = IFNAMSIZ },
--	[BATADV_ATTR_HARD_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_ORIG_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_TPMETER_RESULT]		= { .type = NLA_U8 },
--	[BATADV_ATTR_TPMETER_TEST_TIME]		= { .type = NLA_U32 },
--	[BATADV_ATTR_TPMETER_BYTES]		= { .type = NLA_U64 },
--	[BATADV_ATTR_TPMETER_COOKIE]		= { .type = NLA_U32 },
--	[BATADV_ATTR_PAD]			= { .type = NLA_UNSPEC },
--	[BATADV_ATTR_ACTIVE]			= { .type = NLA_FLAG },
--	[BATADV_ATTR_TT_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_TT_TTVN]			= { .type = NLA_U8 },
--	[BATADV_ATTR_TT_LAST_TTVN]		= { .type = NLA_U8 },
--	[BATADV_ATTR_TT_CRC32]			= { .type = NLA_U32 },
--	[BATADV_ATTR_TT_VID]			= { .type = NLA_U16 },
--	[BATADV_ATTR_TT_FLAGS]			= { .type = NLA_U32 },
--	[BATADV_ATTR_FLAG_BEST]			= { .type = NLA_FLAG },
--	[BATADV_ATTR_LAST_SEEN_MSECS]		= { .type = NLA_U32 },
--	[BATADV_ATTR_NEIGH_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_TQ]			= { .type = NLA_U8 },
--	[BATADV_ATTR_THROUGHPUT]		= { .type = NLA_U32 },
--	[BATADV_ATTR_BANDWIDTH_UP]		= { .type = NLA_U32 },
--	[BATADV_ATTR_BANDWIDTH_DOWN]		= { .type = NLA_U32 },
--	[BATADV_ATTR_ROUTER]			= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_BLA_OWN]			= { .type = NLA_FLAG },
--	[BATADV_ATTR_BLA_ADDRESS]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_BLA_VID]			= { .type = NLA_U16 },
--	[BATADV_ATTR_BLA_BACKBONE]		= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_BLA_CRC]			= { .type = NLA_U16 },
--	[BATADV_ATTR_DAT_CACHE_IP4ADDRESS]	= { .type = NLA_U32 },
--	[BATADV_ATTR_DAT_CACHE_HWADDRESS]	= { .type = NLA_UNSPEC,
--						    .minlen = ETH_ALEN,
--						    .maxlen = ETH_ALEN },
--	[BATADV_ATTR_DAT_CACHE_VID]		= { .type = NLA_U16 },
--	[BATADV_ATTR_MCAST_FLAGS]		= { .type = NLA_U32 },
--	[BATADV_ATTR_MCAST_FLAGS_PRIV]		= { .type = NLA_U32 },
--	[BATADV_ATTR_VLANID]			= { .type = NLA_U16 },
--	[BATADV_ATTR_AGGREGATED_OGMS_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_AP_ISOLATION_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_ISOLATION_MARK]		= { .type = NLA_U32 },
--	[BATADV_ATTR_ISOLATION_MASK]		= { .type = NLA_U32 },
--	[BATADV_ATTR_BONDING_ENABLED]		= { .type = NLA_U8 },
--	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_FRAGMENTATION_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_GW_BANDWIDTH_DOWN]		= { .type = NLA_U32 },
--	[BATADV_ATTR_GW_BANDWIDTH_UP]		= { .type = NLA_U32 },
--	[BATADV_ATTR_GW_MODE]			= { .type = NLA_U8 },
--	[BATADV_ATTR_GW_SEL_CLASS]		= { .type = NLA_U32 },
--	[BATADV_ATTR_HOP_PENALTY]		= { .type = NLA_U8 },
--	[BATADV_ATTR_LOG_LEVEL]			= { .type = NLA_U32 },
--	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_MULTICAST_FANOUT]		= { .type = NLA_U32 },
--	[BATADV_ATTR_NETWORK_CODING_ENABLED]	= { .type = NLA_U8 },
--	[BATADV_ATTR_ORIG_INTERVAL]		= { .type = NLA_U32 },
--	[BATADV_ATTR_ELP_INTERVAL]		= { .type = NLA_U32 },
--	[BATADV_ATTR_THROUGHPUT_OVERRIDE]	= { .type = NLA_U32 },
-+	[BATADV_ATTR_VERSION] = {
-+		.type = NLA_STRING,
-+	},
-+	[BATADV_ATTR_ALGO_NAME] = {
-+		.type = NLA_STRING,
-+	},
-+	[BATADV_ATTR_MESH_IFINDEX] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_MESH_IFNAME] = {
-+		.type = NLA_STRING,
-+		.maxlen = IFNAMSIZ,
-+	},
-+	[BATADV_ATTR_MESH_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_HARD_IFINDEX] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_HARD_IFNAME] = {
-+		.type = NLA_STRING,
-+		.maxlen = IFNAMSIZ,
-+	},
-+	[BATADV_ATTR_HARD_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_ORIG_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_TPMETER_RESULT] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_TPMETER_TEST_TIME] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_TPMETER_BYTES] = {
-+		.type = NLA_U64,
-+	},
-+	[BATADV_ATTR_TPMETER_COOKIE] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_PAD] = {
-+		.type = NLA_UNSPEC,
-+	},
-+	[BATADV_ATTR_ACTIVE] = {
-+		.type = NLA_FLAG,
-+	},
-+	[BATADV_ATTR_TT_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_TT_TTVN] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_TT_LAST_TTVN] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_TT_CRC32] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_TT_VID] = {
-+		.type = NLA_U16,
-+	},
-+	[BATADV_ATTR_TT_FLAGS] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_FLAG_BEST] = {
-+		.type = NLA_FLAG,
-+	},
-+	[BATADV_ATTR_LAST_SEEN_MSECS] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_NEIGH_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_TQ] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_THROUGHPUT] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_BANDWIDTH_UP] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_BANDWIDTH_DOWN] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_ROUTER] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_BLA_OWN] = {
-+		.type = NLA_FLAG,
-+	},
-+	[BATADV_ATTR_BLA_ADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_BLA_VID] = {
-+		.type = NLA_U16,
-+	},
-+	[BATADV_ATTR_BLA_BACKBONE] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_BLA_CRC] = {
-+		.type = NLA_U16,
-+	},
-+	[BATADV_ATTR_DAT_CACHE_IP4ADDRESS] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_DAT_CACHE_HWADDRESS] = {
-+		.type = NLA_UNSPEC,
-+		.minlen = ETH_ALEN,
-+		.maxlen = ETH_ALEN,
-+	},
-+	[BATADV_ATTR_DAT_CACHE_VID] = {
-+		.type = NLA_U16,
-+	},
-+	[BATADV_ATTR_MCAST_FLAGS] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_MCAST_FLAGS_PRIV] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_VLANID] = {
-+		.type = NLA_U16,
-+	},
-+	[BATADV_ATTR_AGGREGATED_OGMS_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_AP_ISOLATION_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_ISOLATION_MARK] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_ISOLATION_MASK] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_BONDING_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_FRAGMENTATION_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_GW_BANDWIDTH_DOWN] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_GW_BANDWIDTH_UP] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_GW_MODE] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_GW_SEL_CLASS] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_HOP_PENALTY] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_LOG_LEVEL] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED] = {
-+		.type = NLA_U8,
-+	},
-+	[BATADV_ATTR_ORIG_INTERVAL] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_ELP_INTERVAL] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_THROUGHPUT_OVERRIDE] = {
-+		.type = NLA_U32,
-+	},
-+	[BATADV_ATTR_MULTICAST_FANOUT] = {
-+		.type = NLA_U32,
-+	},
- };
+-	return NL_STOP;
++	return NL_OK;
+ }
  
- int missing_mandatory_attrs(struct nlattr *attrs[],  const int mandatory[],
+ int translate_mac_netlink(const char *mesh_iface, struct hashtable_t *tg_hash)
 
 -- 
 2.47.3
