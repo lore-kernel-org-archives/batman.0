@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0616AC53219
-	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 13:40:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B11D0C54F4C
+	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 13:41:36 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6A3E1843F8
-	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 15:40:51 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 36CF4847E4
+	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 15:41:35 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785246051;
- b=H/kuKoRibEZzkSt4M717YTAgvKtpU5WW4H1XGlM3q65GkfKVhPgjscOWXlQ21A1TJWp5H
- KwZ8SRo0v/GBqnjzbi/kCvqX5oQYEjre2dQJRwwmnwH4HMt/NlcGD+KsfZAY/JEpOUyl0lt
- Xz4ZZaRSJWSKa7QOehk2ucFYydhflOM=
+ t=1785246095;
+ b=jTEEIpnmJ/rzaHOnHqMoM9X9iraLFRs29kNCH+zC38n/a1sSj7WrXnu6EMvR1A6vgsXb/
+ e4ho8q8GK0G+Tl1sp88ePyJ65XI3HZCUE5y2i3aeYzleYH/mbTHLiFa1JOkwJsakMr7IebR
+ tXJol2uxpfDcEEKXRdT1QOmvUSCst2g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785246051; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785246095; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Ej5s2OSRHvIZjLqvBiyT+YuhTjdxsPjo3tAk5Fud2lw=;
- b=U87kzhSRd1cPi4kwF9/rCdatUcchC/A59zbo+U2wARlU1gW1DuFh+dnd0fKLgC3t7ZMHD
- vkvfhw3/dOmjciLQSOqME6XNmh/G6qY2u9fKvFuKNLQi/eC+DKl++Li7hKcaV/hPjZWO1CB
- /ry2+zN7Ks5p0FWDCaR54Qyx2rc1bcs=
+ list-archive; bh=TmQ7fQlONHEgVx0Gw+msyhzZDojDssIc4WPgzl5MRv8=;
+ b=astQyw62QIldcGvnJE2kdXDYFC8QALDinnLlmcUndGi9boUl3hW2ticix8BoVrBSuESQV
+ +Y9jz4mx7KfBj0hixKNm8DEPqKlu+6N9JFoPn5tBrmyFKURu0HNSHjuhKJ0ZcqLKG1l8v5M
+ Ege7RY+LRaaqBY2VLiuBzogS/ZNJlZI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,25 +33,25 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 505CB8453F
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E2C14843B2
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 28 Jul 2026 15:39:21 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785245961;
-	b=L/TD8Uxlh6J7G+8dPAWc2rpvVVNr/sUncZ6lvNp4qKPwoEXZ3J2abdFBXw4vmtR4T7FToI
-	v6wh73efR+ngt1IBekUwCHLmTD5oNGz1wgc1u1cQcNpPWZwUfu1U/iSVLCo9fmdKserHk/
-	DynZGW7TrCPu+WV4nMzD9xceYhTAhb0=
+	b=kSc5AcY4s7sbWW8/neLElVzy5mWYA9jvi5ZEJVDhCxhSTSReJaPoOATYAfMzJrFdiCAmU9
+	JKczkofQgjWI3RpCYGa3d1jZeJ36+6+F31lZQ6gjcqvRaBBkFZcoWY8LWwGK9iF9LDnylP
+	SYwvgCsBADFwZ0d2NuRtYyg5F/h6r+U=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1785245961;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Ej5s2OSRHvIZjLqvBiyT+YuhTjdxsPjo3tAk5Fud2lw=;
-	b=juP44KGA7yleZwX9Ry/Ealkd48doUu7KnKal7Fq3LIXpEwNXWQJTGZGjhkHLbz0RybJOxI
-	0GdrvrIuCoM2ud6+A2ukRpe//7rUAR6T7Io0SF1JwlMsx4PRoAS1st9Z4auXA6+8jDabGl
-	+cyKaqMtIxjGSXEhwt+DZOGEXtm3r+M=
+	bh=TmQ7fQlONHEgVx0Gw+msyhzZDojDssIc4WPgzl5MRv8=;
+	b=BlGCN7T+2v7LTEiHTEosgCcl+diqdfAb8yoPW41pTjl0IGrtQo7kUGpKYv9QK62GjvIgMa
+	XrfmCdMWgbs/X8xGxtyj8vkeDW5OYhpVut8QG1DjhrUZ4mxBePIQypYfLX8VpBHcqQpryh
+	IWJFNKvb8Z9M+Et00UrB13l/LUwt+4I=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=UTfsJxeb;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="hTv0S/p3";
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
@@ -62,20 +62,20 @@ Received: from kero.packetmixer.de
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id B3ADAFA03C;
-	Tue, 28 Jul 2026 15:39:20 +0200 (CEST)
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 6A12DFA03D;
+	Tue, 28 Jul 2026 15:39:21 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1785245960;
+	s=09092022; t=1785245961;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ej5s2OSRHvIZjLqvBiyT+YuhTjdxsPjo3tAk5Fud2lw=;
-	b=UTfsJxebQ2IK86DRs+eGMNdjQQ3beetuBKBJjEMKfmK/FmS1Oxjlrm200KS/HHlxMPloSn
-	5GBVwbky6iplqQn2M0l+FKB5/H7SRc2Ub5/l3CGNng9dP1nwuBoh2p25aO4QXGJ1Q37HZU
-	/5ScNNkpJox4WnY+edBqMjWv/+0TGoN9AAffWGI8f3QeCeFpMtUw3TpeI763jiDCCteI2Y
-	aDfs6NmkFF+vgHWWrG2r8E5tW3wGfkgTxb0Q8SwF9y8K4RsysoktyuwA2kfx/E0uyA0wMh
-	k/qG2pp6SGpbIJEuzrDRnBaNjI7qFb4kk6Xq42vQ/N1BkTENBKX+3V3tkBi0HQ==
+	bh=TmQ7fQlONHEgVx0Gw+msyhzZDojDssIc4WPgzl5MRv8=;
+	b=hTv0S/p3Vqp2xmSG1axnWLGhpE/G13DLr+tNGvG33kY4y6X7tyv/xqHWFbr0WsIGpMl8K2
+	TAuwTd+lzRkROXgsIyQioQV0SiN2x48b1qxYBR7gQE0ZszB2XV36QcGz9dmEeldu+1mZBg
+	ynXftJ/LMjWSdHi3GQz20tNDBn1TE2GAInP6NK2tl6fvnqb9FlWSREleOxEH6V3txY0Dyf
+	kMe0syy5GuJC4ER+Byuxack84AgT/9x2UxzYYQsOVEcs832xi7UvmoDdRZd8G+dx1YVXUN
+	1dBrIZ7qCgEVx6IX2aLjH/NWA+BVg63U49PeZxaSEZ0OwmzdV5Xa+MF8ppq73Q==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,18 +86,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 02/15] batman-adv: bla: prevent CRC corruptions after
- claim flush
-Date: Tue, 28 Jul 2026 15:39:05 +0200
-Message-ID: <20260728133918.643267-3-sw@simonwunderlich.de>
+Subject: [PATCH net-next 03/15] batman-adv: dat: avoid unaligned fault in IP
+ extraction
+Date: Tue, 28 Jul 2026 15:39:06 +0200
+Message-ID: <20260728133918.643267-4-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260728133918.643267-1-sw@simonwunderlich.de>
 References: <20260728133918.643267-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: SOZZFCLEWDVNGN6UG2XBVICEXGGB5L3G
-X-Message-ID-Hash: SOZZFCLEWDVNGN6UG2XBVICEXGGB5L3G
+Message-ID-Hash: PBVOD3SJQEU5WRNYCMHW2KRZMXCP6AF6
+X-Message-ID-Hash: PBVOD3SJQEU5WRNYCMHW2KRZMXCP6AF6
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -111,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SOZZFCLEWDVNGN6UG2XBVICEXGGB5L3G/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PBVOD3SJQEU5WRNYCMHW2KRZMXCP6AF6/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -122,41 +123,45 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-When batadv_bla_del_backbone_claims() tried to remove all claims of a
-backbone, it sets the CRC to 0. It assumes that the it had the last
-reference of the claims because batadv_claim_release() (which runs after
-the last reference was released), is XORing the crc16 of the claim address
-with the backbone CRC.
+Independent of the alignment of the ARP packet in the SKB, either the
+batadv_arp_ip_src or the batadv_arp_ip_dst will have an unaligned access
+(on HW without native unaligned read support).
 
-If there would be a parallel holder of any of these references, it could
-happen that the backbone CRC is (0 ^ crc16(delayed_released_claim)). Which
-is the wrong starting point for the new claims it may receive when the
-remote answers the claim request from batadv_bla_send_request().
-
-This reinitializations can be completely dropped to avoid this problem.
-batadv_claim_release() will take care of fixing the backbone CRC.
+Use get_unaligned() to handle this properly on all architectures.
 
 Cc: stable@vger.kernel.org
-Fixes: 23721387c409 ("batman-adv: add basic bridge loop avoidance code")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Fixes: 5c3a0e553593 ("batman-adv: Distributed ARP Table - add ARP parsing functions")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 5 -----
- 1 file changed, 5 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 79c482d24d9e3..8ee3ec5eb2c5e 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -324,11 +324,6 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
--
--	/* all claims gone, initialize CRC */
--	spin_lock_bh(&backbone_gw->crc_lock);
--	backbone_gw->crc = BATADV_BLA_CRC_INIT;
--	spin_unlock_bh(&backbone_gw->crc_lock);
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index a6fe4820f65b9..6ca946da92758 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -250,7 +250,10 @@ static u8 *batadv_arp_hw_src(struct sk_buff *skb, int hdr_size)
+  */
+ static __be32 batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
+ {
+-	return *(__force __be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
++	u8 *src = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN;
++	__be32 *ip = (__force __be32 *)src;
++
++	return get_unaligned(ip);
+ }
+ 
+ /**
+@@ -275,8 +278,9 @@ static u8 *batadv_arp_hw_dst(struct sk_buff *skb, int hdr_size)
+ static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
+ {
+ 	u8 *dst = batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4;
++	__be32 *ip = (__force __be32 *)dst;
+ 
+-	return *(__force __be32 *)dst;
++	return get_unaligned(ip);
  }
  
  /**
