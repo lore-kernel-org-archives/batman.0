@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CE0AC54F51
-	for <batman@archiver.kernel.org>; Tue, 28 Jul 2026 22:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46A28C53200
+	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 06:27:36 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 2B63380B7F
-	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 00:46:17 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 084C3817DA
+	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 08:27:34 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785278777;
- b=fFUNZAICdBXMTkW8zJqggf5SLtdQm0inBZ/Ox5EyWLP3dUY7fw545IvGw5axxTBhgNvvO
- AJFQEr7GtO+57W8sFW8sJA4JMT6mfdEuzFIxX86z9QZRNw/hm2/ZBuWwgrR4W+VJtGaIG8M
- sMP8iNKLQfdN/a8B9/pY3YZK/k/Az94=
+ t=1785306454;
+ b=GZFkC7Emci6RIKz2tOBmulWnH+X1i2KD+ApFgOHHA0g9ctsmwB1dSDVmJX/wRXccGgD97
+ EtdPVLu6imKMtLJ9QQika97PQpLn/5XO8++xCniq/4NQIbSGRBZ+oKFzhRK3dhI0eGQh8tC
+ o0JUZ2RLuuxsQTmnqMGJ1HKryNn1hKk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785278777; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785306454; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
- b=wujj9+7l61FTkmHAeHJpWU9pqKwwaUY9hMD9ykhtwnty9HauCbs7T2+l4ibMf+XZJf9Pz
- NfqEXris3GKM4FPAj3AdhZZrzvERK9a1dy4BqQFPI9eH/lLGNaORaenNAg9fPS4UiHUmXno
- z2kIw1nbAMcOrfSPo0iGKr3/G7rIl9k=
+ list-archive; bh=jacbRSOvQvaNzszTIciTH6Vcms6pgwJIAVtr7y5dYGg=;
+ b=nAAwMM4gqj7QJgsPhG68cXknDIwAl+ELWu9MHzOQQIAEsiqj2psbbN8DqQhaEX0yVequE
+ 6qXDNU+dQEz66+Ei72+WGRy5Uji5Lfldw4zg7/SVPWVfVU8b0Zyj+DYllWBFMdd3JuYomye
+ 9dKXBK6ijzHjM6rHvTclQJJbTfBBtPs=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,63 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 49A9A81044
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 28 Jul 2026 19:29:43 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785259783;
-	b=X5SlV2a7d8fcEXCzNt5kdJgVSWA/YRCkojyauQdTSmPuU692f5QpBiz/TQBhXIjVXy0vKR
-	wPn2IoYLrVeFrvBEhDUIn5l+WdE6WAcY2iXpbM/eED8p/nkwR3kcWXhk8QuUblFSiZoYz4
-	zolgjXKl7S00QtAvdARIKD9bpWVoOSE=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B985A80C84
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 29 Jul 2026 08:27:01 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785306431;
+	b=S2KXgg/JSQyA48y3FWiQITCDvHXciZ7NLI++fzniSMeoKAKLK+fPNji6qOCIW0NO5Rri6G
+	+vqDqQT5d1OF1em3t4er+p//hS+2HPKJvfFqM37gN7jU5nwMkpUknLeqLnglj2EEf0HUwF
+	C5fILvnennVztG2IRVA3rxuBxHNZLsY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785259783;
+	s=20121; t=1785306431;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
-	b=gb3r8tcfS2Zp8II9Cte+RMuagujQItgulvjwwBJXxB61GYNKwSjfk5RQ3q+aUGjLvqW7XB
-	NqLrZihNwpgpcInztL4kyz+Xk0lKVsmYLjsifaMzahM7tvKPTmucKwTAtpdwsq7ZdXPo36
-	MlOzxxAPMc2YfgCQk48GP1abUWo3NBo=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=jacbRSOvQvaNzszTIciTH6Vcms6pgwJIAVtr7y5dYGg=;
+	b=j5VmN3g7QFv25KX2/UlUleYU/f8DsxgMWK88NKuhDDdqz4/9b2BmiD/g55CoRW+tBLfnKd
+	WG4G+oyPBiLK/59qH+OpCrsgkKezyh/vUU8MrkaqtwgW3YJoyNue5qCYdKQbLdYbpvWgFJ
+	gKTkhcRL0FgU8bwhxuXk0koLtV8+2FU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=TzH9p48E;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=b8a+nvL0;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id D91D7200D8;
-	Tue, 28 Jul 2026 17:29:38 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 7F1D8200C4;
+	Wed, 29 Jul 2026 06:26:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785259778;
+	s=20121; t=1785306416;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=b4YpHldeIVkPM44yJ56xJlj4REPKn+s+ewNjb03voXs=;
-	b=TzH9p48EW6dGOiwFmHO29xWISz4kIZK09fuLwYCJ9N8SXDmur+K1IeEoexjEAFxmlNfYoO
-	WaJJIRrLhozjurjGkiogiJBK93YtJM1wzyQWFsuwbzAtiSF3Vj1exmwSIogDJaC6xHJ5Bu
-	IJZUYLhL8oER1KlSe6I4zdsvAvbRrOY=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jacbRSOvQvaNzszTIciTH6Vcms6pgwJIAVtr7y5dYGg=;
+	b=b8a+nvL0COnfKkegM0Ewyh6uAY7pAebJO2066xvFof1X7RPRav4X0EedldqZrdwlpPWpoS
+	5a9d1Cs8aFLRlwttMmkjGHmyn9YkDRhq5O1P3Hcp9FuiRUt+/YNn7BShQEJq9FJgS3Yd1H
+	2gJGo1x0b95rTnyZAkIgIJWLROJmnLY=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 28 Jul 2026 19:26:19 +0200
-Subject: [PATCH 2/2] alfred: don't stop translation table dump after first
- entry
+Subject: [PATCH 0/2] alfred: libcap: random fixes
+Date: Wed, 29 Jul 2026 08:26:27 +0200
+Message-Id: <20260729-bugfixes-libcap-v1-0-23529745c828@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260728-bugfixes-netlink-v1-2-d338671f316b@narfation.org>
-References: <20260728-bugfixes-netlink-v1-0-d338671f316b@narfation.org>
-In-Reply-To: <20260728-bugfixes-netlink-v1-0-d338671f316b@narfation.org>
+X-B4-Tracking: v=1; b=H4sIABOdaWoC/yXMyw5AMBCF4VeRWWuidfcqYqE1GBGkoyIR765Yf
+ jn5zwWMlpChCi6weBDTunjIMAAztsuAgjpvUJHKolyVQruhpxNZzKRNu4lSplmh+qQzsQRfbRa
+ /3Ud185udntDs7w3c9wPN9aX3cwAAAA==
+X-Change-ID: 20260729-bugfixes-libcap-915682f4dc31
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1149; i=sven@narfation.org;
- h=from:subject:message-id; bh=Dsm5VnJSDxz5AsZCQpHieXJPkhOv5uf3OmAlJJAF10Q=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkZz6zPLuxNsdi/WcuM1Xx+zIFL3kX3zQv9PF/cf8fLV
- XjfjMu8o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRHbIMv9nbXC3O1Tke7vi6
- pWGZb//+5bEbX15sNilZ++Nq1NKMdE2GP1yzpLhO94Y/qRF6cXThjSKXh+dEeX/JLLHaeXjTrA6
- ZhywA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=741; i=sven@narfation.org;
+ h=from:subject:message-id; bh=CsrtpraB0oy0mhn8L1nr2PpPu0CBiPm/6iQwVQ0z520=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmZc5XKnwZ5MJ40b7pZkbX75sJJ83777bZa+cfyxyyhv
+ 99eVZ/17ShlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMJOwQw/+iQ3M+RwYvf3ya
+ wZxf4rrRnCVsK/naPsYuqLI9635Qh9GNkeHBBPUJXJ8arjQcCExxd298/5Zr0kK+eIu3xbEms7Y
+ /M2UDAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH
-X-Message-ID-Hash: 3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH
+Message-ID-Hash: GZA4QC7LIGM7EGZQHADHWVI77KIHA6Q5
+X-Message-ID-Hash: GZA4QC7LIGM7EGZQHADHWVI77KIHA6Q5
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3QH4MV4XUHYBJNFSETYHB3OWFLZOXICH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GZA4QC7LIGM7EGZQHADHWVI77KIHA6Q5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,38 +111,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-translate_mac_netlink_cb() is handling the response for
-BATADV_CMD_GET_TRANSTABLE_GLOBAL dump. It returns NL_STOP and cause the
-dump to be aborted.
+Similar to the batctl fixes, I have now compiled a list of potential fixes
+for alfred. Instead of posting everything at once, I will be posted in
+smaller chunks. They are just various (mostly minor) problems which should
+be tackled at some point.
 
-As result, the MAC addresses of all other alfred servers could no longer be
-translated to their originator address and their TQ was considered to be 0.
-The selection algorithm might then not select the actual best originator
-for the data sync.
-
-Continue the dump with NL_OK to fill the translation hash with all (best)
-originator entries.
-
-Fixes: a7bc3d9a2b3f ("alfred: Cache the global translation table entries")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batadv_querynl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sven Eckelmann (2):
+      alfred: drop CAP_NET_RAW when binding to the device fails
+      alfred: free the correct capability set when cap_init() fails
 
-diff --git a/batadv_querynl.c b/batadv_querynl.c
-index 199fe9d..9e372d9 100644
---- a/batadv_querynl.c
-+++ b/batadv_querynl.c
-@@ -79,7 +79,7 @@ static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
- 	tg_hash_add(opts->tg_hash, &mac_addr, &mac_orig);
- 	opts->query_opts.err = 0;
- 
--	return NL_STOP;
-+	return NL_OK;
- }
- 
- int translate_mac_netlink(const char *mesh_iface, struct hashtable_t *tg_hash)
+ main.c    |  2 +-
+ netsock.c | 14 ++++++++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+---
+base-commit: 462a0cf40615f62e0912c36d72a75accbb26f5ee
+change-id: 20260729-bugfixes-libcap-915682f4dc31
 
--- 
-2.47.3
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
