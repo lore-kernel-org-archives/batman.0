@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24F19C54F51
-	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 06:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE5B1C54F51
+	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 07:24:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 707B980C84
-	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 08:28:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 224C282213
+	for <batman@archiver.kernel.org>; Wed, 29 Jul 2026 09:24:06 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785306523;
- b=UorSQLoWMkqx+Wu1WWW9bMdNSdqKHCe0t8EChcVMKjVa8OKFsPrUYpqO4z7hsgWdP+VOq
- s60ZuNOXBeGApBcTD0ZyC1Wn+iLlenxAQrnPpdF6jRgUbO+cHaUHGz/EZUz9j30P6PcURLn
- LW1AvhjWLSWZJh3ZbyCWnTnB5z/uZQ8=
+ t=1785309846;
+ b=eMKM0LCsQv+9GjVPcJBmCb/KWcpb8/VlIM2+91Zlt4bWGnbvOwg2W6QWi24T+V9hyS+PD
+ CKgPzlF7TLKfiTznD9h71o1kfoMaARHzq9ba1Bb6Qazp88IvaT1aq5n8hzmfWYj/qGkQkz3
+ OCJsvXFHlv9n2CEUKbi71qZrPReE5aU=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785306523; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785309846; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=cruTMziJsubL85vElblFp4jmu/eHVzMx6TetjEM7fdY=;
- b=btQYq8qK2A89QOGOIOQ0kKOxkY+uA9K+3nqZkhnPj9XBC4RBzYf6DV9XY/EdqtVdV+yUY
- ez1gHUKCuiMzyBZtzPtjMD+fo45jA56ZwRyPyRVRiv5mucBYyFIoNhhE4BujrRaUByvRiMo
- t+55jv2unWTFJZc6Z22nQbIhLrGBopc=
+ list-archive; bh=8D2gSfTQ6A5kCQF5mLIENmIhFLceSt8cWvgR7bQO3ps=;
+ b=aIUB5Z+lmIAbN8SWp0QqQmXxnKxrI2J6ATlAoYwXsJgnWESbGKPIWc5sjtKP48V6TPd2a
+ qS/Bi3DRdyNcJHOIAE4+7IzVLn2c72ENSSluUzsjVHyGFI28VAsWpZcdF1zIh1oJHdCxMpm
+ emWexaln+hNEdR/8QK61YPa/RdXv+MM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EA29E8236A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 29 Jul 2026 08:27:38 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785306459;
-	b=Z0oxTWX200NJ8f2EYYu1GTmCUp6MdtXa+Qg4pAQ9SmoQUbjGVS+ZYE9WDm6/I7f2o1b/nG
-	a/ICYcONcOIgeAb5LC86HnHBEpfYgQ+uYbQmGtQ72XJMvFaKU6bt2kIfi7GYovqr4y7UBX
-	WngO1wvYz0plrTkKFKaWN5wPVV1a7j8=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id A6CD480283
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 29 Jul 2026 09:23:36 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785309826;
+	b=dyifoO3eZAlTtv994WwtPTj/byr9LzvC8Tiqz1x12S2dDkGPOpwmMpgBXYHSd8mShD00dR
+	4ELrrme1uHZrfZRDLRnL0isIDTss7AwMwHq73ui9BAZW3y02pAL8u2SLG1eobFVCSwWEZh
+	PGsLfHF5jiUWTyr7CsZH7coHNppCvRQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785306459;
+	s=20121; t=1785309826;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=cruTMziJsubL85vElblFp4jmu/eHVzMx6TetjEM7fdY=;
-	b=Fg1C+IEx0DvAoKadTk9VbHnRzu8GWSw8KApXAmGRW0btK5P5WWiD2u/uSyyOZARuCEXAGs
-	EcZeo0T9P9jV/ajJ1hCTB8F+8y7RG1HUcKbr/k0hzM/GQvt0+2+RqJp3gQURzTKd1HUlxl
-	CuRO5s+a1TeUsRVnkqXtEV9PuF5GPUQ=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=8D2gSfTQ6A5kCQF5mLIENmIhFLceSt8cWvgR7bQO3ps=;
+	b=H7yGICVtPkEKNz7V7k46M6McR1Q7n1M/4QiCMfIZbkTLI/GmCj1AWXmsgOrnuBqsn3pibn
+	13Y5KWWW1g9Yp+UvJK/7RG6LDyXcs2nJwrqb9tHqCaSmftWlRD0kimTmR4UlRdrQHBWwiL
+	GwEKWeOiBklDVVeXRcgh0WEUBvvlvNM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=AmCtrsKG;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=X8u22i8p;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 77080200C4;
-	Wed, 29 Jul 2026 06:27:34 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id EB3991FDFF;
+	Wed, 29 Jul 2026 07:23:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785306454;
+	s=20121; t=1785309812;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cruTMziJsubL85vElblFp4jmu/eHVzMx6TetjEM7fdY=;
-	b=AmCtrsKGt0GzRsAvzO6CurmCZgTjp0RA7SjUZlJsflvomishNQd2C5JoAtTjG+JulwONjX
-	lML0aCEtOTdEu5sj0QyvdSNTOlVIlDaNCJyuxYq45bqheD4dxMHROGP9Fc0z2ke5H6+RoT
-	cOR4LS3LoFelV40JwBmc2h7qr5k5uKE=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8D2gSfTQ6A5kCQF5mLIENmIhFLceSt8cWvgR7bQO3ps=;
+	b=X8u22i8pkdrR7MPxuCw73xFMuzis+mkJMDqUQ4k7pCQ0ZaVIDg8sJic+tVMz4FdIE2/G2O
+	lMI2e2RAb/x6z+OsxqV1k9WZ0OluJUyzqZxRaHaTLVoF1cPZwnY1k1nc9mY4WgDq+K3RQw
+	/axohXxpuNNKlRSYQ2sKeUZ4Uihzujs=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 29 Jul 2026 08:26:29 +0200
-Subject: [PATCH 2/2] alfred: free the correct capability set when
- cap_init() fails
+Subject: [PATCH 0/2] alfred: txrx-warnings: random fixes
+Date: Wed, 29 Jul 2026 09:23:26 +0200
+Message-Id: <20260729-bugfixes-txrx-warn-v1-0-cf9beb8de0bd@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260729-bugfixes-libcap-v1-2-23529745c828@narfation.org>
-References: <20260729-bugfixes-libcap-v1-0-23529745c828@narfation.org>
-In-Reply-To: <20260729-bugfixes-libcap-v1-0-23529745c828@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAG6qaWoC/yXMSw6DMAxF0a0gj2spiSiUbqViQMCAOwjI5hMJs
+ feGMjzSu+8AJWFSeGcHCG2sPIUE+8igHZswEHKXDM64wpSuQr8OPUdSXKJE3BsJaCtvbJe//JN
+ ySOEs9J+k7lPf1tV/qV2uJzjPHw7QsRt2AAAA
+X-Change-ID: 20260729-bugfixes-txrx-warn-19b01d48b5e4
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=769; i=sven@narfation.org;
- h=from:subject:message-id; bh=UASMUHQHJdsU0b6gERDVDcIEH2St/yYgvHxEWD7eR08=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmZc5WkCmtYvXfVHGW783fdIoaqFxZVmz6r8bLZL+d7c
- arE/vH0jlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEtJcy/A+R6ij88GFd9Juq
- HzNVp2u4KTrZnNZ6qHGGVzku6kuPWxQjw/zdVYVXnbs5DlopH341dSJj6vdl3P2SDzdGips9Y9b
- rYgUA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=698; i=sven@narfation.org;
+ h=from:subject:message-id; bh=d3bqRtc77jhh0wyfuPnU+z2qbFK6JWmNtmYlqmusgl4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmZqwpSDJieVoZK/lc4NfFkUu3mJ7mXVO9da1h8vuEg0
+ 5mmqN9/O0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQAT+afI8D+hTUf6deWvNIGr
+ 6+9N++m3Isa65Hex74zuu2vceKObg9QYGe6LTLul3TL78Quv1Z4v+sT+NKcb7lvXcaNeS+bIP7n
+ 795kB
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: NFNANYNDPUKOVGYSG4DLDDQKF435FN4Q
-X-Message-ID-Hash: NFNANYNDPUKOVGYSG4DLDDQKF435FN4Q
+Message-ID-Hash: TVIXP66OGIGRT3MT4ZRCABPX6LC35QFI
+X-Message-ID-Hash: TVIXP66OGIGRT3MT4ZRCABPX6LC35QFI
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NFNANYNDPUKOVGYSG4DLDDQKF435FN4Q/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TVIXP66OGIGRT3MT4ZRCABPX6LC35QFI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,33 +111,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-reduce_capabilities() first allocates the current capability state with
-cap_get_proc() into cap_cur and then allocates a fresh capability set
-with cap_init() into cap_new. When the latter fails it tries to deallocate
-the NULL cap_new.
+Similar to the batctl fixes, I have now compiled a list of potential fixes
+for alfred. Instead of posting everything at once, I will be posted in
+smaller chunks. They are just various (mostly minor) problems which should
+be tackled at some point.
 
-Free cap_cur instead to avoid a leak.
-
-Fixes: b0877b387ba1 ("alfred: Drop capabilities when not needed")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sven Eckelmann (2):
+      alfred: don't treat empty datagrams as a socket read error
+      alfred: fix type of sendto() return
 
-diff --git a/main.c b/main.c
-index 9c38fd7..07e3cca 100644
---- a/main.c
-+++ b/main.c
-@@ -84,7 +84,7 @@ static int reduce_capabilities(void)
- 	cap_new = cap_init();
- 	if (!cap_new) {
- 		perror("cap_init");
--		cap_free(cap_new);
-+		cap_free(cap_cur);
- 		return -1;
- 	}
- 
+ recv.c | 2 +-
+ send.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+---
+base-commit: 462a0cf40615f62e0912c36d72a75accbb26f5ee
+change-id: 20260729-bugfixes-txrx-warn-19b01d48b5e4
 
--- 
-2.47.3
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
