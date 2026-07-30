@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47E34C531D0
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 06:24:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE73CC54FDF
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 06:44:31 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 11C10808C2
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 08:24:02 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C9CA4835E8
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 08:44:29 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785392642;
- b=2sn65uoqWTqfb9TgS83HFGb605Y6JfFlC0Zic/dqK9P9Zv9FVXhV+Pygsbk3YQjLlMy/M
- O60hKpmFaowRgoUJq1J/7IOmD5yypmckteb3StlfYc/37IxZTOwqtsvUseNUJBbxvgdw/K7
- U9OFtoSumXJT2Qzsz+jmYchyt43jD4k=
+ t=1785393869;
+ b=Af+0j0Gwo8flMc+1gg8D7chBgFmO5Gf/f1mMLd3lSK4C2rVtwBaQ85ttKDBqF1/TDim8s
+ KE2RabhW7ykcHVAlOLQmy0Qr5JnjHLXQCSmVYnAU+lG4OK90b34TdJCx4BOMRBe2XVm5odL
+ 8jF16f0T1dhIGmnFiU9nlLsnu5WstmE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785392642; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785393869; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ehRkeWLcdpIWzXZ3Ay2FSQuYl4p/Nb6C997u+/GfnfI=;
- b=q9Ad4mv63X3SGMbxUlxQP2EL3AfO+GuIVqhrHjOhw7cKM/U/d0M9vPnk3UFyjx7OUvkO6
- 4qRURlUk+Cu49OQFC21oNaT9J62Ih09uswwV/qcEK0MbJQ+BLmIeOdyNawE0oMH1yRazrbG
- R4FEfA/LhZkzUVkxzqVHi8bxIj5A8ls=
+ list-archive; bh=sF9Afm1O/2fOBc2HIWoConnw/GcHabvVGmtIUt2VXQo=;
+ b=abCsiqI4zMw7YDorC1O1vNn0dpPiJRVKQdveDnsuPTrwmou3RJKbN6GZoLL4D3QMx4PUK
+ ipKb+D/SEIIBUo1NlUW3JE2JmT08rlP9gyzsBMV+BVYMeE507mgydXRCawIsTybuH8KNJD6
+ f8P7gym30l7YU4WUZPSU+QH2rfBwL7A=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,65 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 20D0780C1F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 08:23:40 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785392621;
-	b=nnOtuJGj0A+GYX6Wq0CGfjRzQY3FhJjCPOySsyoLzYeglCQdkAZqwCoI26CZF9ie8vqb4z
-	EGsr9eahLaaUl6k3W9dUX5QguFzK4C5/18EIenjS19KEj+AdVBT+k073ve0Lvfn+f5qquk
-	43BMzB9J6+BmOH3XbKmroaGM8K+J2cc=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 798D080C1F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 08:44:00 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785393850;
+	b=xJKR9owy+XwSG7vjy0p4QQGrljdwkOR/vAsTEHV1uKxf+Zc0IWTfJq4h7XJaDjRPv52FHO
+	iPpjUUB9KINKh/oh4HzeiQGgQ0AxFcQZYTvDxQBD0M3CMOTvSAIhHj81SB4c4jnBsKCbPo
+	gcWaaNiMR7aaocPBqHQWIFmf8KtmY8s=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785392621;
+	s=20121; t=1785393850;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=ehRkeWLcdpIWzXZ3Ay2FSQuYl4p/Nb6C997u+/GfnfI=;
-	b=sbAuX0MxCiF6Xov+n6max8JiT7KM4Dvu8V54bqnwa/AZNNFIQOhAtqsDMcwQR9wVoeZi3a
-	GeZwFwFLNZPFqVdIa8+8dCHa7uEdVs2TFs4h4wmAtB7OnBS3UpLdp4KMypKf457aAeow4a
-	mdzxfFN++PPjqCSpiPgNztzUjBu15PY=
+	bh=sF9Afm1O/2fOBc2HIWoConnw/GcHabvVGmtIUt2VXQo=;
+	b=xPXtHHeGKhXCkMf8KC2H/wPuM7D33av3U9D92Po36CFrlLXfSyulX45hnYI6/90MILefeB
+	x4tNwLy+7KaJebFJsXD6bwoAZn0UJB2ztkJaJD5j0mgQ15dNVQCXosgDNhssmoFui92pXQ
+	Ou5oQMykpnfISvnQkI3MaTbRvGwGgi4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="SXAA3UU/";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=LdLVXMF0;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 365931FD3C;
-	Thu, 30 Jul 2026 06:23:36 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 7DA381FE7E;
+	Thu, 30 Jul 2026 06:43:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785392616;
+	s=20121; t=1785393835;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=ehRkeWLcdpIWzXZ3Ay2FSQuYl4p/Nb6C997u+/GfnfI=;
-	b=SXAA3UU/qokwENkdpEsM9xqiPkJkBhIsuIxkM9VMm3CHiTP2+HzWnEHCvU66bWXh6qwSfL
-	IRFaDXGIcD+gH/CDirytLQNIwf0JuOy7HGvm8zgg3LPdxtErC5+XnWIoYynVvClm2TQJLL
-	s0qmYC5ax/sSGHshSc4MGWMQijKICwg=
+	bh=sF9Afm1O/2fOBc2HIWoConnw/GcHabvVGmtIUt2VXQo=;
+	b=LdLVXMF0HHTs7iiTphIa8b5as4FBbqPfYffXFTPDWxYZIDn+9LRyQU5zRhszeMEnC4SVUP
+	LVwRQ7Wl8zuPg0fsW8c36r/5AWGNPAAQ6vWdlTgGz8gPX/tj2AQaesaB9w7zVYxqtPe1KK
+	F7AiR4ju+TKCgxmNRCXBRU1WSaLYto8=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jul 2026 08:23:28 +0200
-Subject: [PATCH batadv v2] batman-adv: remove negative returns for
- batadv_send_skb_unicast
+Date: Thu, 30 Jul 2026 08:43:53 +0200
+Subject: [PATCH batadv] batman-adv: correct NET_RX_* NET_XMIT_* confusion
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: 
- <20260730-ucast-send-restrict-return-v2-1-0a40eca7803d@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAN/tamoC/42PwQ6CMBBEf4Xs2ZrSUFBP/ofhUNot1EMxu6XRE
- P7dgj/gbWczeTOzAiMFZLhVKxDmwGGORahTBXYycUQRXNGgpGplp65isYaTYIxOEHKiYFM50kJ
- R+OairUR0uhmgAF6EPrwP+AMGk4zL0P/+vAxPtGkn784pcJrpc7TI9eH/JzDXohays751Cq32+
- h4NeZPKhvNMI/Tbtn0BmowcquIAAAA=
-X-Change-ID: 20260729-ucast-send-restrict-return-f485c0eed54b
+Message-Id: <20260730-rx_xmit_confusion-v1-1-ff684ec3db7c@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAKjyamoC/yWMUQqDMBAFryLvu4G4lVp6lVIkrmu7hcaSRAmId
+ 2+0n/N4MyuiBJWIW7UiyKJRJ1+gPlXgl/NPMToUBlm62PZsTchd/mjqePLjvL8Nt2KvTFRTIyj
+ eN8io+Wje0bvkhgWP/x7n/i2c9iC27QdIDB41fQAAAA==
+X-Change-ID: 20260730-rx_xmit_confusion-c7e08c22124e
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2007; i=sven@narfation.org;
- h=from:subject:message-id; bh=7x+j+vut6w0eKhJJvoKcW9MGYPhqOaXROtZCR9qyJEQ=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlZbx+c7VOdz/fHVoLl07ni7xNVmPJXTox5o82WsNMye
- cvspXOZOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATWavIyDBtWVLdpNfpUzqb
- Ls9/fsfxeds6nygOo19vtk0Q43/i8C6M4a90stHu3tZXSXvPzeuUm3pYelat8rI5CnUlF34ctCy
- JdmYBAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1635; i=sven@narfation.org;
+ h=from:subject:message-id; bh=lJ6znITSbhANJGjB1f79tIsTsyNE7BiLaTBbJbxrZDE=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlZn1bmpDs+ap3adDR77aRF1da9ymdZbp2aa1b1sDjw8
+ 49VcQ5zO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATSaliZLi11EE/c6qyZ+T+
+ yjvhuxMigjadvr0nQdQl5IbTY7VbUt8YfrNeN/pifidi04J8ngUCu86F1FjGca9nucQ29VFqGvf
+ shawA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: OI5LNMDXBA3CXZGVEMRVBFMJBI7HJGBK
-X-Message-ID-Hash: OI5LNMDXBA3CXZGVEMRVBFMJBI7HJGBK
+Message-ID-Hash: Y2IA3J7UHOHP4XD2LZIQS3KIVTP2LRO7
+X-Message-ID-Hash: Y2IA3J7UHOHP4XD2LZIQS3KIVTP2LRO7
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -105,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OI5LNMDXBA3CXZGVEMRVBFMJBI7HJGBK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/Y2IA3J7UHOHP4XD2LZIQS3KIVTP2LRO7/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,56 +111,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The kernel documentation for batadv_send_skb_unicast() states that only the
-return values NET_XMIT_DROP and NET_XMIT_SUCCESS are valid. Functions like
-batadv_dat_snoop_incoming_arp_request() are only checking if the return is
-not NET_XMIT_DROP to check if send was successful or not. Negative values
-were therefore also handled as success.
+batadv_recv_icmp_ttl_exceeded() is a receive function. It must therefore
+return NET_RX_* and not NET_XMIT_*. And batadv_send_skb_to_orig() is an
+xmit function and is returning NET_XMIT_*.
 
-Similar functions are not returning the batadv_send_skb_to_orig() return
-value directly but are checking if it is a direct success and only then
-marking the return as such. This must also be adopted for
-batadv_send_skb_unicast().
+This doesn't change the behavior because both NET_RX_SUCCESS and
+NET_RX_SUCCESS are using the same underlying value (0).
 
-Fixes: 83fef820ecdb ("batman-adv: Consume skb in receive handlers")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Changes in v2:
-- fix NET_RX_SUCCESS-NET_XMIT_SUCCESS confusion in code (not actual
-  behavior change)
-- Link to v1: https://patch.msgid.link/20260729-ucast-send-restrict-return-v1-1-07cf6d2ec5f5@narfation.org
----
- net/batman-adv/send.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ net/batman-adv/routing.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 2122560c..929b6dd3 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -324,6 +324,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 	struct batadv_unicast_packet *unicast_packet;
- 	int ret = NET_XMIT_DROP;
- 	struct ethhdr *ethhdr;
-+	int res;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 15ef47d3..7e093420 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -341,7 +341,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+  * For traceroute-style ICMP echo requests, send a TTL exceeded reply back to
+  * the source. Other ICMP types are simply dropped.
+  *
+- * Return: NET_XMIT_SUCCESS if the reply was queued, NET_RX_DROP otherwise
++ * Return: NET_RX_SUCCESS if the reply was queued, NET_RX_DROP otherwise
+  */
+ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb)
+@@ -382,8 +382,8 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
  
- 	if (!orig_node)
- 		goto out;
-@@ -360,7 +361,10 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
- 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
- 
--	ret = batadv_send_skb_to_orig(skb, orig_node, NULL);
-+	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res == NET_RX_SUCCESS)
+-		ret = NET_XMIT_SUCCESS;
 +	if (res == NET_XMIT_SUCCESS)
-+		ret = NET_XMIT_SUCCESS;
-+
- 	 /* skb was consumed */
- 	skb = NULL;
++		ret = NET_RX_SUCCESS;
  
+ 	/* skb was consumed */
+ 	skb = NULL;
 
 ---
 base-commit: 95b6f66b2659f617ce1937e790f48dc578ee014c
-change-id: 20260729-ucast-send-restrict-return-f485c0eed54b
+change-id: 20260730-rx_xmit_confusion-c7e08c22124e
 
 Best regards,
 --  
