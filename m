@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44C46C5516E
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CE01C5516D
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:20:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6B50580347
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:19:34 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C916083E4C
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:20:05 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785439174;
- b=z1yKb3boxRqocISZ3Mrc8btAKDTyZ9HURZ+vE3QBwtipU9+4+Xpx4yViZ6Yq3+AntJPYs
- yTEvUH92lkFokx7d+Hdm3a00os6bI0dyUoGjoQdqLDRGSLSN3OwVi6pl+6RVyMrvFxC4wPl
- XjCuebTlf/s83miZtyrD8dRPQcc2bVY=
+ t=1785439205;
+ b=mZuj2VvbHqM1qJvDCUAcD+FA/Rj3WYrCWBJpD1jpgTJ6MZg2mE6XPle6T/Jb/UHDUznny
+ kiuqf+7Hl/hsy4rKXuO1uKZHpWcXk9Dfrp+3OC0Z0I2hbwEUBOn5TFH04Krl5htjxMdjOqU
+ t7pqPgf3dF5uzfsTt2LdOfMxHogbTGw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785439174; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785439205; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=dJfsgsjttHoqyUOOJ8KgHY4L1JnFaZGPrtgWcVAH5Mc=;
- b=ITaNHjQ2KGeIFMWH4Bbga3rgo/0bAyNETzSW/EZ7kItcp75xNXIW2jKR1Nb6UyIoYptlD
- FptUiUpeZWEwbu+AgL5ZB4CMjtieX5OKRsqN6Bc2dQgX4PtVlfiqMFS6TnhlUcjjxVoI/ai
- 38K1FkHdmhTyZBJ+W/YeuxxGbVRqr3k=
+ list-archive; bh=wKG0KaIPm+7ebFZ+H3FrhmBmlGLT72h9PJAy/bxlw4k=;
+ b=2vCrm7Hwg9s+VkiT5GZWqJvzHbopz+5DpJwAVYSLC7L9V+uQO6yuQCQCREWz1OApkJeyL
+ YTjdXT7fNo+jYb1s6IJPWT1kOhYaKDhFpOudBNo4nt6zBy79CkPRjRrTXh2BSmrhYnwCVqF
+ fXwm9/YUjBRWBGyM6TXomT8nhINl9PY=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,63 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 305978082C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:19:03 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785439154;
-	b=ICoalp0iF9yzV8EBIvEtBFn/w01QlibmPIn52aigKfO4UgiMo2w5xoGLKSosG886BEGhWN
-	3de25UA9Zzxshk+vRfGEqtMPXtj730T6ohoy27wURqxnO3QcKQrUA9EXw96lLiNX5G3ID2
-	QuQhb+zgP5N5RutFCafEuIDVJQQzwIU=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2825381037
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:19:27 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785439168;
+	b=zaMC2aKYafUUCgu07QYz5Wu0z/Pls4MkuaLWvzeatMeTN+nsp7G8xI5rsdTpIVOjbhZ/6L
+	LwmlD0BRsKqqrtbey9RFVzO4GcDdiLwjyGAAs7n+EVHC5/fD8dbO+tpj7ima62fyxo+HGJ
+	1mp85qfKzkcjtta9zfCHzJWR+phiIGE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785439154;
+	s=20121; t=1785439168;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=dJfsgsjttHoqyUOOJ8KgHY4L1JnFaZGPrtgWcVAH5Mc=;
-	b=3GcVtaZ+YWiSeQBC7BmfmkRD173n/eyxFCfBOWQGPKap69trgkUBquwhQUSPx9tAORELeu
-	M5Y6KNxMTphluCDktovodFsAOoTvkAP7qLhYyCZ0v4hyuWueWAiw0h5OLTBj/rTXu/HnAB
-	QvFmJmlwtttojmsAhODrTSnUVtFjwsU=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=wKG0KaIPm+7ebFZ+H3FrhmBmlGLT72h9PJAy/bxlw4k=;
+	b=sy3fwHgRfmxUhtwr8g/uk/3YGF62u5HWipA5OPavnswlaF4N/zRm4QAzWZa4P/x4yEexpi
+	8CWmaly9IJYiYYArpxpdxM+k1E8N6NhqzdKvtbGP4j+vzo6RfbyyRT4FnYcytZWaZtuUbd
+	Mrn/rCHtM1qi873/PDB2afS/HNPRruY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=IkbCzUVV;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=RmzlzWzX;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id DB2B320CD9;
-	Thu, 30 Jul 2026 19:18:58 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 44D8320CDF;
+	Thu, 30 Jul 2026 19:19:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785439139;
+	s=20121; t=1785439163;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=dJfsgsjttHoqyUOOJ8KgHY4L1JnFaZGPrtgWcVAH5Mc=;
-	b=IkbCzUVVUZ4kjxGSK9jUZ6KfjoB8gkpAoeE7JIc7JuNp3FHI+qfN+xVJiGufWoQ5A2YXlF
-	J9TkAkWiyWlJlqP0CHtdy1moxGkolf4bhSkEQGajPDKgdeyiOVhGD4HRbafFutYiuO93aM
-	9YnazGK1zjwAaOia1DCW4GHNNs7SEi8=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wKG0KaIPm+7ebFZ+H3FrhmBmlGLT72h9PJAy/bxlw4k=;
+	b=RmzlzWzXWLacXUFkGyJFNKR+HVwZewmY1LLz4SBBHuTuHgHafMVBr/n9Ey6OR37qeBGp2/
+	r201P/Adk5cOHDg/1xSncbUWRd8emO9wxZCLxveMJfONyKy/OkTly+SvYkglpOZROJoajX
+	AeOq8+3KNRbTpWeBWHMu7tyQ9hSel+0=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH 0/2] alfred: notifications: random fixes
-Date: Thu, 30 Jul 2026 21:18:54 +0200
-Message-Id: <20260730-bugfixes-notification-v1-0-d7cf675220e2@narfation.org>
+Date: Thu, 30 Jul 2026 21:18:56 +0200
+Subject: [PATCH 2/2] alfred: Announce changed data only after it was stored
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJ+ja2oC/yXMSwqEMBBF0a1IjQ1EbeJnK9IDTUotB1FSSSOIe
- +9ShwfefScwBkKGLjsh4I+YNi8o8gzsMvgZFTkxlLo0uq60GtM80YGs/BZpIjtEKdRHN6ZxxtV
- ta0HaPeCzkrT/vuY0rmjjfQbX9Qc/Z0vfeQAAAA==
-X-Change-ID: 20260730-bugfixes-notification-40868d6d799c
+Message-Id: <20260730-bugfixes-notification-v1-2-d7cf675220e2@narfation.org>
+References: <20260730-bugfixes-notification-v1-0-d7cf675220e2@narfation.org>
+In-Reply-To: <20260730-bugfixes-notification-v1-0-d7cf675220e2@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=833; i=sven@narfation.org;
- h=from:subject:message-id; bh=K2CpXLG01ebO8OqUbkYpKt/VBm4jPWqKKbYe0c4X6m8=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZixd03Z5+bRbj60d+h7MObfhx7Fypa6SVBsNhp4mSV
- jzrHJSNOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQAT0ddl+J+Urnh4h12sdCiX
- /L03r+3sl2yy9lJ9lcGt/EH5XPKT3FJGhiPOBTcrn32R1Jz3hllJO3ei9cbE/GNn3B23v03jL2d
- bzwwA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5353; i=sven@narfation.org;
+ h=from:subject:message-id; bh=cvgJR/Mu6S6VH1ali9QHqGR8dDcoBLTdilJK/9mBlI4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZixeUp694ZuD08tbvsFOzUjm3nntkcG7BT/2tmVvOm
+ gc8MzMS7ihlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMJFOBkWHPjIpHLEJ8BxZs
+ FTrvbanskhrzlkUla89mzrU1vFlpBgkM/5Tjs5PMlx3c27fhcLLP98YIo7Wxy+cGOX4TSXezNy+
+ SYwEA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: M2BGTRUCQRAJQXZLAR33PMVVSMB75WD6
-X-Message-ID-Hash: M2BGTRUCQRAJQXZLAR33PMVVSMB75WD6
+Message-ID-Hash: QTMGCDVENXG7XMX63XVSFFUAIY43ALDN
+X-Message-ID-Hash: QTMGCDVENXG7XMX63XVSFFUAIY43ALDN
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/M2BGTRUCQRAJQXZLAR33PMVVSMB75WD6/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QTMGCDVENXG7XMX63XVSFFUAIY43ALDN/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,26 +112,181 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Similar to the batctl fixes, I have now compiled a list of potential fixes
-for alfred. Instead of posting everything at once, I will be posted in
-smaller chunks. They are just various (mostly minor) problems which should
-be tackled at some point.
+The event listeners were notified and the data type was marked as changed
+before the buffer for the new data was allocated. When that allocation
+fails then the dataset is left behind with a zero length and without
+buffer. But "alfred -E" has already reported the update and the update
+command will be started for a data type which was never stored (and which
+lost its previous content).
 
+Only notify the listeners and mark the type as changed after the new
+data was copied into the dataset. And only free the old buffer when the new
+was allocated.
+
+Fixes: b106a7a36f98 ("alfred: notify event listener via unix socket")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Sven Eckelmann (2):
-      alfred: Use _exit() in the update command child process
-      alfred: Announce changed data only after it was stored
-
  recv.c      | 41 +++++++++++++++++++++++++----------------
- server.c    |  2 +-
  unix_sock.c | 43 ++++++++++++++++++++++++++++---------------
- 3 files changed, 54 insertions(+), 32 deletions(-)
----
-base-commit: 462a0cf40615f62e0912c36d72a75accbb26f5ee
-change-id: 20260730-bugfixes-notification-40868d6d799c
+ 2 files changed, 53 insertions(+), 31 deletions(-)
 
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+diff --git a/recv.c b/recv.c
+index 76bfb30..929d086 100644
+--- a/recv.c
++++ b/recv.c
+@@ -32,8 +32,10 @@ static int finish_alfred_push_data(struct globals *globals,
+ 	struct dataset *dataset;
+ 	bool new_entry_created;
+ 	unsigned int data_len;
++	unsigned char *buf;
+ 	unsigned int len;
+ 	uint8_t *pos;
++	bool changed;
+ 
+ 	/* test already done in process_alfred_push_data */
+ 	len = ntohs(push->header.length);
+@@ -62,10 +64,6 @@ static int finish_alfred_push_data(struct globals *globals,
+ 			dataset->data_source = SOURCE_SYNCED;
+ 
+ 			memcpy(&dataset->data, data, sizeof(*data));
+-			if (hash_add(globals->data_hash, dataset)) {
+-				free(dataset);
+-				goto err;
+-			}
+ 			new_entry_created = true;
+ 		}
+ 		/* don't overwrite our own data */
+@@ -75,13 +73,14 @@ static int finish_alfred_push_data(struct globals *globals,
+ 		clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+ 
+ 		/* check that data was changed */
+-		if (new_entry_created ||
+-		    dataset->data.header.length != data_len ||
+-		    memcmp(dataset->buf, data->data, data_len) != 0) {
+-			changed_data_type(globals, data->header.type);
+-			unix_sock_event_notify(globals, data->header.type,
+-					       data->source);
+-		}
++		changed = new_entry_created ||
++			  dataset->data.header.length != data_len ||
++			  !dataset->buf ||
++			  memcmp(dataset->buf, data->data, data_len) != 0;
++
++		buf = malloc(data_len);
++		if (!buf)
++			goto err;
+ 
+ 		/* free old buffer */
+ 		if (dataset->buf) {
+@@ -89,16 +88,26 @@ static int finish_alfred_push_data(struct globals *globals,
+ 			dataset->data.header.length = 0;
+ 		}
+ 
+-		dataset->buf = malloc(data_len);
+-
+-		/* that's not good */
+-		if (!dataset->buf)
+-			goto err;
++		if (new_entry_created) {
++			if (hash_add(globals->data_hash, dataset)) {
++				free(buf);
++				free(dataset);
++				goto err;
++			}
++		}
+ 
++		dataset->buf = buf;
+ 		dataset->data.header.length = data_len;
+ 		dataset->data.header.version = data->header.version;
+ 		memcpy(dataset->buf, data->data, data_len);
+ 
++		/* only announce the new data once it is actually stored */
++		if (changed) {
++			changed_data_type(globals, data->header.type);
++			unix_sock_event_notify(globals, data->header.type,
++					       data->source);
++		}
++
+ 		/* if the sender is also the the source of the dataset, we
+ 		 * got a first hand dataset. */
+ 		if (memcmp(&mac, data->source, ETH_ALEN) == 0)
+diff --git a/unix_sock.c b/unix_sock.c
+index e6b44da..28752ec 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -106,8 +106,10 @@ static int unix_sock_add_data(struct globals *globals,
+ 	struct interface *interface;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
++	unsigned char *buf;
+ 	int data_len;
+ 	int ret = -1;
++	bool changed;
+ 	int len;
+ 
+ 	len = ntohs(push->header.length);
+@@ -166,34 +168,45 @@ static int unix_sock_add_data(struct globals *globals,
+ 		dataset->buf = NULL;
+ 
+ 		memcpy(&dataset->data, data, sizeof(*data));
+-		if (hash_add(globals->data_hash, dataset)) {
+-			free(dataset);
+-			goto err;
+-		}
+ 		new_entry_created = true;
+ 	}
+ 	dataset->data_source = SOURCE_LOCAL;
+ 	clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+ 
+ 	/* check that data was changed */
+-	if (new_entry_created ||
+-	    dataset->data.header.length != data_len ||
+-	    memcmp(dataset->buf, data->data, data_len) != 0)
+-		unix_sock_event_notify(globals, data->header.type,
+-				       data->source);
++	changed = new_entry_created ||
++		  dataset->data.header.length != data_len ||
++		  !dataset->buf ||
++		  memcmp(dataset->buf, data->data, data_len) != 0;
+ 
+-	/* free old buffer */
+-	free(dataset->buf);
+-
+-	dataset->buf = malloc(data_len);
+-	/* that's not good */
+-	if (!dataset->buf)
++	buf = malloc(data_len);
++	if (!buf)
+ 		goto err;
+ 
++	/* free old buffer */
++	if (dataset->buf) {
++		free(dataset->buf);
++		dataset->data.header.length = 0;
++	}
++
++	if (new_entry_created) {
++		if (hash_add(globals->data_hash, dataset)) {
++			free(buf);
++			free(dataset);
++			goto err;
++		}
++	}
++
++	dataset->buf = buf;
+ 	dataset->data.header.length = data_len;
+ 	dataset->data.header.version = data->header.version;
+ 	memcpy(dataset->buf, data->data, data_len);
+ 
++	/* only announce the new data once it is actually stored */
++	if (changed)
++		unix_sock_event_notify(globals, data->header.type,
++				       data->source);
++
+ 	ret = 0;
+ err:
+ 	close(client_sock);
+
+-- 
+2.47.3
 
