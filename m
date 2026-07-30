@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D875AC5516D
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:33:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E39BC5516D
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:34:02 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 23956831FC
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:33:31 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3F78684009
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:34:01 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785440011;
- b=if0ivF0Y46h+hm+7j7HSGxg3Iafkyn8WKvIZtUuhHr6Aqnb9MHFdvi+BXUn9LLYX5YvEJ
- t3G8P8k62647Iessa50SahQB3lln+txu7modGjuRBumxOUEcLRjvrCuxshvHMCCH14f+XJn
- 0ZtPG16s+/cJf7d26XP92Qu14H56ILk=
+ t=1785440041;
+ b=w6A7mk2PDua4+Q8xS3tVHnIXX6Xev3kWUQf6nmxhVOk3jvP5NVu9wfAi7Fh/dnFsDM31+
+ 23AfWB54xm0FeTr+GqYsWQUEG+284S4kwuEdLuI97O6xj9nBFD07lS3Zb4qzW9IBcE6IKid
+ f1H1VtmnpGfKjTu09/coL3FvQR3/z24=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785440011; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785440041; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=AH6YQxpye2YzWYDOWoXSAUOaZRHHc7NgN3IK6N6p8M4=;
- b=ruPwZxiYVffDUW5cG6WyDkQ2bb3Pn8NVY+JNfQFExHRgtHL9nQzhyE2dSSda/oZaW08Da
- bqF0W7mHbsdlCCGTtuoHCJQXhAsKeQAaiXXWXmjda6tUMdoPnVoO4y9Em8SNHqarkyRKSYI
- gDF+Nn/fuX3grS/yedqhTngHDNQQyAQ=
+ list-archive; bh=IBE6KyJrunHH1Pb7ubniRqIVk9bczohfMHsLKGSCTgI=;
+ b=cA1rvDeIVc72VWnfr6HxIJt4FeEVegYH3qPGP60pWHdjN/fmtbDkIU8e2Z/11Awt0qmNr
+ E0s9r6hMCJMIFE59mwTpsSelpBdvRFEW4ul5jdS/nvgVZeZDKqhCmUhw8PLBj/gx2dqzt0J
+ f4/LOpVrWlZ/nz2yqPjaQTdlyCcLmho=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,62 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 4C98483538
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:32:29 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785439949;
-	b=Ib+W51qjWmPppzptUawvV0jvMPPFcNgiV9zsXfzIT/hwO4OgSR5inTB523HmE1PcNRX7XT
-	TQYVXsNaqW74pRaeQmdvuPlK7ZzdTFW9h3CkCVVbpmcfgofPKP54VRk2gkXZbDj3dbeeSe
-	SCXrwfhKT9eJIvbRgjg1nQdRii2jkoI=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D2A2E83E78
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:32:55 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785439975;
+	b=srAFdTYMJjLrnN904TPKJp+7djGCAkzjNBCLD5GcVitK0GA2ClaWl7s0TOKkEUDK5UTjgy
+	mXKh7j7s+wUXCPw1AK+Xd4ANM1/2c4LJuKrdq2orwpIIgv/fV6feVq9YCj3PLxG0FeYkXr
+	J8XIqFaOaonyS0oVgVzJfmaMbhDGEuQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785439949;
+	s=20121; t=1785439975;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=AH6YQxpye2YzWYDOWoXSAUOaZRHHc7NgN3IK6N6p8M4=;
-	b=A2jNgSqq8XkNGaEerhRvCpc78wBJ+WUj/2wWSyNJcQhTj0V1V73dUFbsjlFME4shzrmSTE
-	WG6seg29iwcuHNwPgN0sI6tq1B+uR/Xy0pHloRzKELfmRxF1mUIHfBcPh+EpFhoAm9lSJp
-	Qwz1t04AcwaosPcxzShdKj/gsreGCHA=
+	bh=IBE6KyJrunHH1Pb7ubniRqIVk9bczohfMHsLKGSCTgI=;
+	b=1k0oeg3BJeEyO2K44uum4Db5Fd2Rd3GMWp9+JXwgShOof7K6NJrkC88xtVd4++vZF60Dp/
+	UwzEmaRzKApgjohiimT6KExORvXiPETfqw5bad1UngZO3cZkV8bTfKsSskysRtokj5yXWG
+	XQIouImSA8+jaLH2mijr/21jL/TjD/U=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=Sm5MBhDz;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=x0DWzTk3;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id D2D7B20CBF;
-	Thu, 30 Jul 2026 19:32:24 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 69ABE203F6;
+	Thu, 30 Jul 2026 19:32:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785439944;
+	s=20121; t=1785439971;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AH6YQxpye2YzWYDOWoXSAUOaZRHHc7NgN3IK6N6p8M4=;
-	b=Sm5MBhDzjBlcwc9qfO8eE9fAVRO4X4X4brP8VE82k67RDmsWjDek6dl7N4NscBIJ+u83MS
-	SOi2PJBhbvbVQdkyP9qz66p7z4fy9h74YBNtIx21prSTy5M/pdKZMgZ3bSGSSh2JBH/dkK
-	iRvkjR3E9cqnlhWIkmEcnskQS39etrg=
+	bh=IBE6KyJrunHH1Pb7ubniRqIVk9bczohfMHsLKGSCTgI=;
+	b=x0DWzTk387/MJpo26gPYx3kLp+meIt9aKiEKCHcWGLUgdvkfqRuAiHSx6HHgbWVp66XF6R
+	q9PyiO6cj4UROw1FBnHE9apWJ4jeDXKWoBh9weJ/K86jNDctJ/MN0R8Mb/8esakmUlJmpy
+	9lDW/DPEHJJTvK/X7cEl4568l/5bReA=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jul 2026 21:31:56 +0200
-Subject: [PATCH 2/6] alfred: free interface parameters before assigning new
+Date: Thu, 30 Jul 2026 21:31:57 +0200
+Subject: [PATCH 3/6] alfred: check strdup() failures during option parsing
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-bugfixes-parsing-v1-2-c0f2ce4764bd@narfation.org>
+Message-Id: <20260730-bugfixes-parsing-v1-3-c0f2ce4764bd@narfation.org>
 References: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
 In-Reply-To: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1218; i=sven@narfation.org;
- h=from:subject:message-id; bh=deJ28v9UYY4FXPQ2oYnPWLH3JBX5WqdeF1NQVKB/m6M=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZy9bOmjy1biHnmrNN0RVGk1gPforkqWa+bDtl1v7+O
- 5vn7H8X2VHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYiIYkI8OfnU1nf7S+aapq
- /Pzn6j/7ELH8VYF3Ln9ZYH05tqL0SU0BI8PtQxPL7G4yTGQUj319o4lZbMsJa02nF9Yu/7kXMbj
- /mskDAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1268; i=sven@narfation.org;
+ h=from:subject:message-id; bh=C1DSyDY63MKXpe3erc018q0+mAIONIvFoOAOOQpyYZ0=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZy9Ymz/NWtA1+GXRF3jMjO3Pf+h3RZj1M0hqzg4I+v
+ rvte7Ovo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRGa8ZGc4kTIveodDSxnRO
+ NPLEwp9GvEzhsV59GyYz3lu2Qr/9+EyGf0pyG3aJ1Gl+0Pp3/kPXkqm2Gt8ntrxo2NZgvdPI/pr
+ dHj4A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: JFCECSRMFRW7T3KUO33Q3PMV4YF6LCZ4
-X-Message-ID-Hash: JFCECSRMFRW7T3KUO33Q3PMV4YF6LCZ4
+Message-ID-Hash: 6KAGKWX2HND6B35MUMXSEPCZXRPF3774
+X-Message-ID-Hash: 6KAGKWX2HND6B35MUMXSEPCZXRPF3774
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JFCECSRMFRW7T3KUO33Q3PMV4YF6LCZ4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/6KAGKWX2HND6B35MUMXSEPCZXRPF3774/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,48 +111,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-When an interface specific parameter is given multiple times then it is
-necessary to free the already allocated interface string buffer.
+alfred_init() duplicates the default batman-adv interface name and the
+interface names passed via -i/-I and -b/-B with strdup() but never
+checked the result. On allocation failure globals->mesh_iface or
+globals->net_iface is left NULL and later used unconditionally and crashes.
+
+The allocation should be checked to present a user readable error instead
+of crashing at a later point.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- main.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ main.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/main.c b/main.c
-index 21def01..cc3bc42 100644
+index cc3bc42..baedbd2 100644
 --- a/main.c
 +++ b/main.c
-@@ -235,12 +235,6 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		case 'm':
- 			globals->opmode = OPMODE_PRIMARY;
- 			break;
--		case 'i':
--			globals->net_iface = strdup(optarg);
--			break;
--		case 'b':
--			globals->mesh_iface = strdup(optarg);
--			break;
- 		case 'V':
- 			i = atoi(optarg);
- 			if (i < 0 || i > 255) {
-@@ -264,10 +258,16 @@ static struct globals *alfred_init(int argc, char *argv[])
- 			break;
- 		case 'I':
- 			globals->clientmode = CLIENT_CHANGE_INTERFACE;
-+			/* fall-through */
-+		case 'i':
-+			free(globals->net_iface);
+@@ -262,6 +262,10 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		case 'i':
+ 			free(globals->net_iface);
  			globals->net_iface = strdup(optarg);
++			if (!globals->net_iface) {
++				perror("strdup");
++				return NULL;
++			}
  			break;
  		case 'B':
  			globals->clientmode = CLIENT_CHANGE_BAT_IFACE;
-+			/* fall-through */
-+		case 'b':
-+			free(globals->mesh_iface);
+@@ -269,6 +273,10 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		case 'b':
+ 			free(globals->mesh_iface);
  			globals->mesh_iface = strdup(optarg);
++			if (!globals->mesh_iface) {
++				perror("strdup");
++				return NULL;
++			}
  			break;
  		case 'S':
+ 			globals->clientmode = CLIENT_SERVER_STATUS;
 
 -- 
 2.47.3
