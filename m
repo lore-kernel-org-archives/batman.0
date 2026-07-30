@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F943C5516E
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:35:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C3D7C5516D
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:35:36 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8A983816BA
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:35:02 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 1E35F806CB
+	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:35:34 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785440102;
- b=MLFPV4yJ7G2966J5+MxIMSNi0/Egk6dO8T3RTguEc49tR0GF4AZdg6QEOAdVZSatiQCOA
- P64akx9PT6v4etL/3GoeE/WwGVWJDRbfM42+n5FMghsA5+CPYuviyCtk84E13+doF72qg8x
- Y6pxkd6dUsy+SDqqWWaOL4XvrS+qn9U=
+ t=1785440134;
+ b=xdvcNDx7J7RyfLj7sjihrmGdG4g2Xl/fG3VE9QSqv+fkfP/ZwZYRwPkKIaq6OuKODGrHA
+ yJKFXcU00Xi3ykAOMJSEEWewibcsLMcXiSBjdLrTay9KFsEzaiWWJphSyStNmD3MYDA1faq
+ Eh9N+7PkbnyJVVo3Y6LEF0oaETC70Gg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785440102; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785440134; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=7cT7IDQAVuL5WRpZRRWLdjSOIJ5FiVq+xIAnh3kplHk=;
- b=WpYcKezEfD7sB7YQ0Jf0mMSGNWnhGuagaL4ssldT6hLiBvcCVouCXvApmgh6yDnfJamfU
- 2a2mJDgEe2ozbU8/s0dw4SAFsZm3xKk42NNbmh/QnDS8iBkr0H8dG9AZHHxts9Tf01kD2FD
- FwTYWbUFCZRTJQuq/sExZwIoPAmaY8A=
+ list-archive; bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
+ b=L0MTlWedfwf80Ow82cCuOpyD34hAVExujHI0CpZpudUn8e4njpQOFQsyaUlbRFsAeE4Tp
+ 8Jcvbds9oqmJn9WZqRlw6KWMLhwR7iH4IUzZ/9c6SUZrpXI76kx0bicX9/7Dmmcp3c3L1an
+ Gw2lsE2JJa1AVChTDLutDiQaNDFSvuU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,62 +33,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D4668806CB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:34:06 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785440046;
-	b=SQh6SQ8DDtLAz6RP3cnG4Lvrr738pCXGo+2JA7OXo6R9vilMiT8gFt2Ra0y9vHUJGV5nWS
-	rskX06bPK6t8IwrnyKoDj6zoF+T2janTo0AZ2LHHHJpllu5VBOepYg0VC1IPeqrMmcWDWX
-	20fNM1Etoz/romUx53N6srqqFrUa0dw=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9779983D53
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:34:13 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785440053;
+	b=MfIDWSQy4gIYX7FryOk6ER11S2Qz2mQp70AuLjBmQ6hbygxo5qTrCUuh1SSflXKVoOIbnV
+	qM8ZfS9l7isHaf0/HdncK5DSNiJBpksMKXXEtF/yGv2O/P4pUBUTpL/IfAbKLsyjXYZrmJ
+	XsMgqPVnaa1qKjfwkD82DdUNg2YqIwI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785440046;
+	s=20121; t=1785440053;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=7cT7IDQAVuL5WRpZRRWLdjSOIJ5FiVq+xIAnh3kplHk=;
-	b=S7PwY6i9Pea/u5o5cCfW0pKlCafKwJ6rZ8Fep2KW4Y6APZHpayhn3rCY2RI3O/2UBFktyR
-	3B3x6aj1YyGjgeKxiWav9zUQJqu2o8Xte+cKzeG3nkwBwrS0ESZh5gPGNoIdiQTLRXa+T8
-	R4gFrnDFSpVDUjxAYDJzdUS1dDK6QjI=
+	bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
+	b=hqzLic+BdzkRnFrHxeHdGsN6eKI9Wf8QVubPAg/4hYcEtQXurOUQA2wJOKzY83UDwbGxuq
+	S6KaafZYg5yzXROJwzaMwhH9DfhcJKYKypB9grx4J7j+oWJVQ1BpoAgQDbBCB612HRk7hm
+	mAztqbEEczT3vBMrefbHsZ4IpR+bma8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="1pk/CENt";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=llowE4HL;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 6DCDF20CBF;
-	Thu, 30 Jul 2026 19:34:02 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 3137D20CBF;
+	Thu, 30 Jul 2026 19:34:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785440042;
+	s=20121; t=1785440049;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=7cT7IDQAVuL5WRpZRRWLdjSOIJ5FiVq+xIAnh3kplHk=;
-	b=1pk/CENtNCtPdOTriwQ51JwvwprZX+tjIPTy0KXCI63FkWIFM/ek4czmmebvmOmuwvUs8S
-	WUBlFU9k8fUlbFp+yInrXilVYxqmVvN9RWslwFmAThlP369vgIIPyYlFadVp41l49+w9fQ
-	T3qKhZXtB2MSID0Fm/pOlbWoPoDJwYA=
+	bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
+	b=llowE4HLFPb2hOzZHwJZZPtPPvpmKjvXH0HfiLCMm6KBXY0/b4Tz9Mvg6yiB/MTZ+TDMDS
+	iNyDpVRO2VePVCu0ear+W2fUaOta9YKvX28dDJ4gs5aIy30KSQc2R8QqR3Oe1eCdT7z5Tw
+	VGyGOcOunTq+GbDcmcp70pEBSwl427I=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jul 2026 21:31:59 +0200
-Subject: [PATCH 5/6] alfred: reject too long unix socket paths
+Date: Thu, 30 Jul 2026 21:32:00 +0200
+Subject: [PATCH 6/6] alfred: validate the IPv4 multicast group argument
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-bugfixes-parsing-v1-5-c0f2ce4764bd@narfation.org>
+Message-Id: <20260730-bugfixes-parsing-v1-6-c0f2ce4764bd@narfation.org>
 References: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
 In-Reply-To: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1184; i=sven@narfation.org;
- h=from:subject:message-id; bh=MdCkfI3vLb82wk+Jj5Q4ko4SkviNV/SeIYiWpceInSs=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZy9Z673y3KmC/4dqqc+nL77BLld25y5exfJfovAVzb
- 0urvl0o0lHKwiDGxSArpsiy50r++c3sb+U/T/t4FGYOKxPIEAYuTgGYiFYZwz9rv/xzJZHOXAG3
- YzKyDsnu/+O2dc2BuTFe4tXcT0K2vfrJyNBwQ1pn09Oaaq6tX56Kdqk1v8isNLr8fUs6V78lj9c
- MP14A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1181; i=sven@narfation.org;
+ h=from:subject:message-id; bh=NN69C/SryZ4Nu5vs38l1mqG+zzIyu3XAk9SN+b2OYwo=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZy9YuCfj625Tj0f7yw5PfrQ75WfM+wTil+neaotwqq
+ ZlyZjNqOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATqc1n+J/2rPHDyvNbPKfo
+ iRoHm9oleigoCZeteVY+U9BvRa7+rd0M/12MJ/6Z8pRTxHES68ZTpuXTD77cGnHaf7r7Ua7/O/a
+ 46DMDAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: DXNUKMMGPBF3LDCYKSB5VR6AQXVHKXSW
-X-Message-ID-Hash: DXNUKMMGPBF3LDCYKSB5VR6AQXVHKXSW
+Message-ID-Hash: 4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP
+X-Message-ID-Hash: 4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -102,7 +102,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DXNUKMMGPBF3LDCYKSB5VR6AQXVHKXSW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,45 +111,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The unix socket path needs to be stored in sockaddr_un::sun_path. But
-strncpy() is silently truncating the string when the target buffer is too
-small.
+The return value of inet_pton() was ignored when parsing the -4
+option. A mistyped group address left alfred_mcast untouched, so the
+daemon continued with the first bytes of the IPv6 default group
+(255.2.0.0) as IPv4 multicast group. Instead of a clear parse error
+the user only got confusing 'can't add multicast membership' failures
+at runtime.
 
-Reject such paths with a clear error message.
+Reject the option argument when it is not a valid IPv4 address.
 
+Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- unix_sock.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/unix_sock.c b/unix_sock.c
-index e6b44da..99c2538 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -35,6 +35,11 @@ int unix_sock_open_daemon(struct globals *globals)
- 	struct sockaddr_un addr;
- 	struct epoll_event ev;
- 
-+	if (strlen(globals->unix_path) >= sizeof(addr.sun_path)) {
-+		fprintf(stderr, "unix socket path too long\n");
-+		return -1;
-+	}
-+
- 	unlink(globals->unix_path);
- 
- 	globals->unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
-@@ -76,6 +81,11 @@ int unix_sock_open_client(struct globals *globals)
- {
- 	struct sockaddr_un addr;
- 
-+	if (strlen(globals->unix_path) >= sizeof(addr.sun_path)) {
-+		fprintf(stderr, "unix socket path too long\n");
-+		return -1;
-+	}
-+
- 	globals->unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
- 	if (globals->unix_sock < 0) {
- 		perror("can't create unix socket");
+diff --git a/main.c b/main.c
+index 6372ec8..3953020 100644
+--- a/main.c
++++ b/main.c
+@@ -330,7 +330,11 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			break;
+ 		case '4':
+ 			globals->ipv4mode = true;
+-			inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
++			ret = inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
++			if (ret != 1) {
++				fprintf(stderr, "bad IPv4 multicast group argument\n");
++				return NULL;
++			}
+ 			printf(" ** IPv4 Multicast Mode: %x\n", alfred_mcast.ipv4.s_addr);
+ 			break;
+ 		case 'f':
 
 -- 
 2.47.3
