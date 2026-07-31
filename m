@@ -4,105 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C3D7C5516D
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 19:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C6DC54F54
+	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 04:50:07 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1E35F806CB
-	for <batman@archiver.kernel.org>; Thu, 30 Jul 2026 21:35:34 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A29C4831A2
+	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 06:50:05 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785440134;
- b=xdvcNDx7J7RyfLj7sjihrmGdG4g2Xl/fG3VE9QSqv+fkfP/ZwZYRwPkKIaq6OuKODGrHA
- yJKFXcU00Xi3ykAOMJSEEWewibcsLMcXiSBjdLrTay9KFsEzaiWWJphSyStNmD3MYDA1faq
- Eh9N+7PkbnyJVVo3Y6LEF0oaETC70Gg=
+ t=1785473405;
+ b=wLipy+lrKjrrQqBOL5sYSQtgfRHvd0kEtpToPtv3hzfUsWI5pnrmwELnxsw1WnLBpkNFD
+ 9qkeIbIjNY+ffD9RgzzZADD9PMViR9DgPTTDO9YNU4kckMYFqFcgZ0ufTAkGVZeMgZha8mA
+ g+wugaxU0PHiC5+e0r/FMLkv9iCSt9U=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785440134; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785473405; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
- b=L0MTlWedfwf80Ow82cCuOpyD34hAVExujHI0CpZpudUn8e4njpQOFQsyaUlbRFsAeE4Tp
- 8Jcvbds9oqmJn9WZqRlw6KWMLhwR7iH4IUzZ/9c6SUZrpXI76kx0bicX9/7Dmmcp3c3L1an
- Gw2lsE2JJa1AVChTDLutDiQaNDFSvuU=
+ list-archive; bh=7Gplp1Xrzkfo+AGs7N2kTors4yxX8ZwuhH94jTpTC98=;
+ b=vClBWuO1CUn5Tx9xpI67diBKhV9J+8nIRalL5aCQogGg4JrtGbm+a6fkUcESUkh74biTa
+ +c6kpQoCe1Jdja/xGTQi/SP4M6AQ6EhUTw/UnYKmBhSFbmVu0Xy9PrGgt8gPw8i5ATYtNd7
+ GwmQtEvsfxS5wGx9wALBonzIWp/2zVc=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9779983D53
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 30 Jul 2026 21:34:13 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785440053;
-	b=MfIDWSQy4gIYX7FryOk6ER11S2Qz2mQp70AuLjBmQ6hbygxo5qTrCUuh1SSflXKVoOIbnV
-	qM8ZfS9l7isHaf0/HdncK5DSNiJBpksMKXXEtF/yGv2O/P4pUBUTpL/IfAbKLsyjXYZrmJ
-	XsMgqPVnaa1qKjfwkD82DdUNg2YqIwI=
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id ECD3581452
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 31 Jul 2026 04:33:44 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785465226;
+	b=qqSx6o2PES7om5VIYNGaw131UzrTCzt3ofd+Ocvrik88Al2/Mn8Y+FP8ohXCa7Gv4Hv1fD
+	td8TPyujBKgpsv7NOOw7pIY/xrgEBg1m9iQP0F9lAinRIxs8OWfkFbty1CjhwKNh5rwT4+
+	fKxz/sC9dxACzpmyp0gGzQiZIogxshY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785440053;
+	s=20121; t=1785465226;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
-	b=hqzLic+BdzkRnFrHxeHdGsN6eKI9Wf8QVubPAg/4hYcEtQXurOUQA2wJOKzY83UDwbGxuq
-	S6KaafZYg5yzXROJwzaMwhH9DfhcJKYKypB9grx4J7j+oWJVQ1BpoAgQDbBCB612HRk7hm
-	mAztqbEEczT3vBMrefbHsZ4IpR+bma8=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7Gplp1Xrzkfo+AGs7N2kTors4yxX8ZwuhH94jTpTC98=;
+	b=Jahqgn5RX/9++GbJqWTiIYgudK7KFt8ZAmpmlxaPRuXwjs4MiAZsM+LDwrD9EBF1tWsAcN
+	ufsXTTzcnGJze/UoKwe874MbW/9zehhLALk4sQlYvD5DFe3a682lL9FvOebdhvpHzssyEB
+	UVbr2DUzm9OCx/FfU7P/5CcM6Wsg3ME=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=llowE4HL;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3137D20CBF;
-	Thu, 30 Jul 2026 19:34:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785440049;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BYF9LNYC6ivkkKF6mEwj44VKr+1jQ13Ttdxpg/awNIk=;
-	b=llowE4HLFPb2hOzZHwJZZPtPPvpmKjvXH0HfiLCMm6KBXY0/b4Tz9Mvg6yiB/MTZ+TDMDS
-	iNyDpVRO2VePVCu0ear+W2fUaOta9YKvX28dDJ4gs5aIy30KSQc2R8QqR3Oe1eCdT7z5Tw
-	VGyGOcOunTq+GbDcmcp70pEBSwl427I=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jul 2026 21:32:00 +0200
-Subject: [PATCH 6/6] alfred: validate the IPv4 multicast group argument
+	dkim=none;
+	spf=pass (diktynna.open-mesh.org: domain of heminhong@kylinos.cn designates
+ 124.126.103.232 as permitted sender) smtp.mailfrom=heminhong@kylinos.cn;
+	dmarc=none
+X-UUID: 3c2be5aa8c8811f1aa26b74ffac11d73-20260731
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:54699a3d-b8b7-4609-aba9-1f6bdfc2354c,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACT
+	ION:release,TS:-50
+X-CID-META: VersionHash:e7bac3a,CLOUDID:58b3604013722049097fe9e4ff5bc48c,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|136|850|865|898,TC:nil,Content:0|15|
+	50,EDM:2,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI
+	:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 3c2be5aa8c8811f1aa26b74ffac11d73-20260731
+X-User: heminhong@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <heminhong@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1908533521; Fri, 31 Jul 2026 10:33:37 +0800
+From: Minhong He <heminhong@kylinos.cn>
+To: Marek Lindner <marek.lindner@mailbox.org>,
+	Simon Wunderlich <sw@simonwunderlich.de>,
+	Antonio Quartulli <antonio@mandelbit.com>,
+	Sven Eckelmann <sven@narfation.org>,
+	b.a.t.m.a.n@lists.open-mesh.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH batadv v3] batman-adv: handle errors in batadv_init()
+Date: Fri, 31 Jul 2026 10:33:33 +0800
+Message-Id: <20260731023333.70727-1-heminhong@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260730-bugfixes-parsing-v1-6-c0f2ce4764bd@narfation.org>
-References: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
-In-Reply-To: <20260730-bugfixes-parsing-v1-0-c0f2ce4764bd@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1181; i=sven@narfation.org;
- h=from:subject:message-id; bh=NN69C/SryZ4Nu5vs38l1mqG+zzIyu3XAk9SN+b2OYwo=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnZy9YuCfj625Tj0f7yw5PfrQ75WfM+wTil+neaotwqq
- ZlyZjNqOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATqc1n+J/2rPHDyvNbPKfo
- iRoHm9oleigoCZeteVY+U9BvRa7+rd0M/12MJ/6Z8pRTxHES68ZTpuXTD77cGnHaf7r7Ua7/O/a
- 46DMDAA==
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP
-X-Message-ID-Hash: 4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP
-X-MailFrom: sven@narfation.org
+Content-Transfer-Encoding: 8bit
+X-MailFrom: heminhong@kylinos.cn
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: ZKXBEU74Z5HNLFRTHPMQ2ZKA6Z6NXDYM
+X-Message-ID-Hash: ZKXBEU74Z5HNLFRTHPMQ2ZKA6Z6NXDYM
+X-Mailman-Approved-At: Fri, 31 Jul 2026 06:49:47 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4PSCTGKSNVILUSBG7UJYR7VVXBB7RXAP/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZKXBEU74Z5HNLFRTHPMQ2ZKA6Z6NXDYM/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,39 +108,207 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The return value of inet_pton() was ignored when parsing the -4
-option. A mistyped group address left alfred_mcast untouched, so the
-daemon continued with the first bytes of the IPv6 default group
-(255.2.0.0) as IPv4 multicast group. Instead of a clear parse error
-the user only got confusing 'can't add multicast membership' failures
-at runtime.
+batadv_init() ignores errors from several initialization helpers, so the
+module can load without those registrations in place.
 
-Reject the option argument when it is not a valid IPv4 address.
+Check the fallible init steps and unwind prior initialization in reverse
+order of acquisition on failure.
 
-Fixes: c7da798113a2 ("alfred: IPv4 multicast distribution support.")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Minhong He <heminhong@kylinos.cn>
 ---
- main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+v3:
+- Initialize wifi netdevices before the event workqueue so error
+  unwinding can share a single rcu_barrier() without an extra goto
+v2: https://lore.kernel.org/all/20260729084435.128142-1-heminhong@kylinos.cn/
+v1: https://lore.kernel.org/all/20260728031050.76643-1-heminhong@kylinos.cn/
 
-diff --git a/main.c b/main.c
-index 6372ec8..3953020 100644
---- a/main.c
-+++ b/main.c
-@@ -330,7 +330,11 @@ static struct globals *alfred_init(int argc, char *argv[])
- 			break;
- 		case '4':
- 			globals->ipv4mode = true;
--			inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
-+			ret = inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
-+			if (ret != 1) {
-+				fprintf(stderr, "bad IPv4 multicast group argument\n");
-+				return NULL;
-+			}
- 			printf(" ** IPv4 Multicast Mode: %x\n", alfred_mcast.ipv4.s_addr);
- 			break;
- 		case 'f':
+ net/batman-adv/bat_iv_ogm.c |  8 +++++++
+ net/batman-adv/bat_iv_ogm.h |  1 +
+ net/batman-adv/bat_v.c      |  9 ++++++++
+ net/batman-adv/bat_v.h      |  5 +++++
+ net/batman-adv/main.c       | 45 ++++++++++++++++++++++++++++---------
+ net/batman-adv/netlink.c    |  6 ++++-
+ net/batman-adv/netlink.h    |  2 +-
+ 7 files changed, 63 insertions(+), 13 deletions(-)
 
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 22622283f59b..625d4d2ac262 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2633,3 +2633,11 @@ int __init batadv_iv_init(void)
+ out:
+ 	return ret;
+ }
++
++/**
++ * batadv_iv_deinit() - B.A.T.M.A.N. IV deinitialization function
++ */
++void batadv_iv_deinit(void)
++{
++	batadv_recv_handler_unregister(BATADV_IV_OGM);
++}
+diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
+index 04b01bd684e8..90318801aeaf 100644
+--- a/net/batman-adv/bat_iv_ogm.h
++++ b/net/batman-adv/bat_iv_ogm.h
+@@ -10,5 +10,6 @@
+ #include "main.h"
+ 
+ int batadv_iv_init(void);
++void batadv_iv_deinit(void);
+ 
+ #endif /* _NET_BATMAN_ADV_BAT_IV_OGM_H_ */
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index db6f5bdcaa98..c1f2d37aa724 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -888,3 +888,12 @@ int __init batadv_v_init(void)
+ 
+ 	return ret;
+ }
++
++/**
++ * batadv_v_deinit() - B.A.T.M.A.N. V deinitialization function
++ */
++void batadv_v_deinit(void)
++{
++	batadv_recv_handler_unregister(BATADV_OGM2);
++	batadv_recv_handler_unregister(BATADV_ELP);
++}
+diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
+index 964431f4dc8d..76bd969e79a2 100644
+--- a/net/batman-adv/bat_v.h
++++ b/net/batman-adv/bat_v.h
+@@ -12,6 +12,7 @@
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ 
+ int batadv_v_init(void);
++void batadv_v_deinit(void);
+ void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
+ int batadv_v_mesh_init(struct batadv_priv *bat_priv);
+ void batadv_v_mesh_free(struct batadv_priv *bat_priv);
+@@ -23,6 +24,10 @@ static inline int batadv_v_init(void)
+ 	return 0;
+ }
+ 
++static inline void batadv_v_deinit(void)
++{
++}
++
+ static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
+ {
+ }
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 73becb054948..c1044287e2ca 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -94,35 +94,58 @@ static int __init batadv_init(void)
+ 
+ 	batadv_recv_handler_init();
+ 
+-	batadv_v_init();
+-	batadv_iv_init();
++	ret = batadv_v_init();
++	if (ret < 0)
++		goto err_tt;
++
++	ret = batadv_iv_init();
++	if (ret < 0)
++		goto err_v;
++
+ 	batadv_tp_meter_init();
+ 
++	ret = batadv_wifi_net_devices_init();
++	if (ret < 0)
++		goto err_iv;
++
+ 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
+ 	if (!batadv_event_workqueue) {
+ 		ret = -ENOMEM;
+-		goto err_create_wq;
++		goto err_wifi;
+ 	}
+ 
+-	ret = batadv_wifi_net_devices_init();
++	ret = register_netdevice_notifier(&batadv_hard_if_notifier);
+ 	if (ret < 0)
+-		goto err_init_wifi;
++		goto err_wq;
+ 
+-	register_netdevice_notifier(&batadv_hard_if_notifier);
+-	rtnl_link_register(&batadv_link_ops);
+-	batadv_netlink_register();
++	ret = rtnl_link_register(&batadv_link_ops);
++	if (ret < 0)
++		goto err_notifier;
++
++	ret = batadv_netlink_register();
++	if (ret < 0)
++		goto err_rtnl;
+ 
+ 	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
+ 		init_utsname()->release, BATADV_COMPAT_VERSION);
+ 
+ 	return 0;
+ 
+-err_init_wifi:
++err_rtnl:
++	rtnl_link_unregister(&batadv_link_ops);
++err_notifier:
++	unregister_netdevice_notifier(&batadv_hard_if_notifier);
++err_wq:
+ 	destroy_workqueue(batadv_event_workqueue);
+ 	batadv_event_workqueue = NULL;
+ 	rcu_barrier();
+-
+-err_create_wq:
++err_wifi:
++	batadv_wifi_net_devices_deinit();
++err_iv:
++	batadv_iv_deinit();
++err_v:
++	batadv_v_deinit();
++err_tt:
+ 	batadv_tt_cache_destroy();
+ 
+ 	return ret;
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index d2bc48c70714..99341f39df2a 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -1550,14 +1550,18 @@ struct genl_family batadv_netlink_family __ro_after_init = {
+ 
+ /**
+  * batadv_netlink_register() - register batadv genl netlink family
++ *
++ * Return: 0 on success or negative error number in case of failure
+  */
+-void __init batadv_netlink_register(void)
++int __init batadv_netlink_register(void)
+ {
+ 	int ret;
+ 
+ 	ret = genl_register_family(&batadv_netlink_family);
+ 	if (ret)
+ 		pr_warn("unable to register netlink family\n");
++
++	return ret;
+ }
+ 
+ /**
+diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
+index 4eae9e5ff135..f92d3ea7d06c 100644
+--- a/net/batman-adv/netlink.h
++++ b/net/batman-adv/netlink.h
+@@ -12,7 +12,7 @@
+ #include <linux/netlink.h>
+ #include <linux/types.h>
+ 
+-void batadv_netlink_register(void);
++int batadv_netlink_register(void);
+ void batadv_netlink_unregister(void);
+ struct net_device *batadv_netlink_get_meshif(struct netlink_callback *cb);
+ struct batadv_hard_iface *
 -- 
-2.47.3
+2.25.1
 
