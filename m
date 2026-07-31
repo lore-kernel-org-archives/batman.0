@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57B16C5516D
-	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 11:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E67C0C5516D
+	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 11:48:10 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id BC05E8402E
-	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 13:47:32 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 840DC81233
+	for <batman@archiver.kernel.org>; Fri, 31 Jul 2026 13:48:09 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785498452;
- b=lgWDrn/1QY55536uak02iudi5nSZYkf/iBMPm8u1NCs9esAbU6oz+Geg6M+4CwxYZ1DXB
- SnqKQoWVtN7kaHZgCjzA25BGFyZ6gCUjqkjkq6eGqy535hf2OgfF7KfcFQPOnEDWltk46KQ
- LdV1Jch89cUTWEXno6Y+lVsksBZYU7w=
+ t=1785498489;
+ b=DHGZpIKEx3qoUVAw5a27MF7xwxQ9hiiGggXS8LtYQ9ZjNevCF5L4w+p1+o6Sefdr2ieiu
+ 6AAzbeZndpY82oTRjCJFdvN0cjfcLt7oK4fibhKmLh2YGoEngqPfaOoYi2zkiSD9i4OlHUM
+ MwpdWRAHRSAolfHkuYMxqN5PLFL7JVE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785498452; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785498489; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=qu/Zsji8niWsKFPUT5G9pUfvN4ZRBSA8y70BPCiqfwc=;
- b=VSpmt0Z+3d+CirUc+bH1erh7fubPSHJKSBvGhKfY66Q1ccvzm3UQ6rSCDWVia434Cog79
- xvWG3kkxMR5Ikun7w4XXWw4DfKvhJwcEjm+DWhteyvOy/qcN8csFK49u3ahlqvx5JjT6l6q
- HYj6FUzZTn4ARnxVbPMB1YeIoaXjFXE=
+ list-archive; bh=tXhVZuoSeEXLQj4UEUlx2qDd3zVZRq9gBcmyJclpj9k=;
+ b=4SCTrUnpphSDILuXGdhElWqgtjXnJmaUNW6fO3dJLoRC8hU46kZr1qC+IRiPrOW357/QW
+ WCgpyGeNzJZliAopK1FvhOwGoZEZndhTQYWnB5lw+bwbmEBcu1/K3qLa8RxAZj1V7pGmz9k
+ SvXbn+viaUf/VtZP55cbvnACP2IvXho=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E0B8B84016
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 31 Jul 2026 13:45:49 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785498349;
-	b=U2T/Hk2Wrk1AxgB22RXXYOUQjvJIUoEIFzdCPWR9klTnTumCPufUFrJxAlre5xYrc2aOhw
-	v1nrdlsU18vSZMTzoxkgPhgXUeSfxu1c6np1MjqPe+5gftkZ9mxziTULtn8R5swYdESecO
-	dYXqYXt/2e1JzOzP8ybsYvAJJBMRPwU=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7FB1583FE0
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 31 Jul 2026 13:46:07 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785498367;
+	b=u9evDAiHrbM95rckr4+xNf5ytyasE+MU7/WWNGk/bobesqGOkWZVuclSLZteBcd++DSLqa
+	b8J3k5B7GdOnLBRrePsMfwyZF6puwx228I1b9o7eulaptTvwp+F2+1zRhw77z2f/lUJSEV
+	uC71H8O0fF11XVRgLdAAgsM+4jqPsZQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785498349;
+	s=20121; t=1785498367;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=qu/Zsji8niWsKFPUT5G9pUfvN4ZRBSA8y70BPCiqfwc=;
-	b=nmgM3W+1N1TFkIvh/V1zf3fdLP9sHsVvtSM8YWoRPzf8U+bPYLm5MGZfkvS96BaNMYalje
-	wDPNLkeEi625yEHSanGQMj37a4fCRYIZEX+yXb57qprD3bfY68jyAwyMab5+qiLR4xzJu1
-	RtJaI06rb0HA16KkkgTk1yZ/qZmpW4o=
+	bh=tXhVZuoSeEXLQj4UEUlx2qDd3zVZRq9gBcmyJclpj9k=;
+	b=a6KBSeL1q+Efi00XHfyqb7fnm7PfK8vXKmn16D8Y4igylq1HprkN2dTm/IU1dRSyJ52rq/
+	oaO7JnQid9PvCSDlpmXRWcWdJW4MwzDgEbTrPqts1CtAF2J/3B/n/2/Jy5VBMeDEWk9XGp
+	oWQ3CLEWsVTHUMKRT7nIN4CHVFDuCOQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=NpMITBZ3;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=mx1cIY2n;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 7C8BB20CB8;
-	Fri, 31 Jul 2026 11:45:45 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 130961FD3C;
+	Fri, 31 Jul 2026 11:46:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785498345;
+	s=20121; t=1785498363;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qu/Zsji8niWsKFPUT5G9pUfvN4ZRBSA8y70BPCiqfwc=;
-	b=NpMITBZ38hDvHJc+728GlwZ5QcHU3I4OUeAUOwksETHiHxjyxU1pNMtw0mBJq6U2A5PlTa
-	Z72Oef35IVA6GciyUXtvpbPTGstL4yxdRXE2gQs77qRCSJ1tc+ezShDaDPTrm1PvRxxZjj
-	kawjNgqmy8GtGtrKuAXbUMaWTnp7E24=
+	bh=tXhVZuoSeEXLQj4UEUlx2qDd3zVZRq9gBcmyJclpj9k=;
+	b=mx1cIY2nY+o0u3RXMSyYXgG0r9zuhGg1zdQ11BAOhcs+KYBZ42CMXBjptOU75ChlLmowPF
+	Ub5bHBco9Ry4U+hWzHJ/1TgASP8lIhpjvcQEmd5qvYCShAcxlxR4fY9IM5M8uhykdyo/pA
+	5lOx8T1zd+PBKk26OI9qqcKgXjbTn2M=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 31 Jul 2026 13:44:53 +0200
-Subject: [PATCH 4/6] alfred: keep the running interfaces when
- reconfiguration fails
+Date: Fri, 31 Jul 2026 13:44:54 +0200
+Subject: [PATCH 5/6] alfred: Report failure when the client refuses to
+ change interfaces
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260731-bugfixes-interfaces-v1-4-a148ca2f6688@narfation.org>
+Message-Id: <20260731-bugfixes-interfaces-v1-5-a148ca2f6688@narfation.org>
 References: <20260731-bugfixes-interfaces-v1-0-a148ca2f6688@narfation.org>
 In-Reply-To: <20260731-bugfixes-interfaces-v1-0-a148ca2f6688@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4045; i=sven@narfation.org;
- h=from:subject:message-id; bh=HvalYcejK+Ymz1JDnl+76XGFTQXouhV3prUYV/MOQZc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFk5XZu7wtsd95znS1a69YbV6vZKgbVzzqxdzq8WNbVJV
- CZVafayjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEon4y/I8w03gpfp3lou4T
- 1zsbeOZ0VTxM/TLBuW4V7/QT0bcY6vUYGf7U3Hi04az0lzzrwl2FCvWdWpeZePSWHNJZWNTSPEc
- jghEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1720; i=sven@narfation.org;
+ h=from:subject:message-id; bh=/WM662LJcl0S3P2I5MAO3vyOOxhEYZSdFwk/GRjE144=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFk5XZs/h/CrzCuOvct6L/hhW3mLX2AG+2M2zjevXt221
+ NyVy7eto5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRTdMZGR48FJnXt0L/19Pi
+ e46KSoc6p8TenWPsHBPa8b2bwzrtxxdGhqWhordX7WH60zBZ16I1zPH64i4Rlaj4SR4Z9ypNqvN
+ ZGQE=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: C4OCT764Y6YFFSQTMEVV5UCSA3XEZUYH
-X-Message-ID-Hash: C4OCT764Y6YFFSQTMEVV5UCSA3XEZUYH
+Message-ID-Hash: 65NOUTLMIJE462R4THOWR4YPAR7INXNP
+X-Message-ID-Hash: 65NOUTLMIJE462R4THOWR4YPAR7INXNP
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/C4OCT764Y6YFFSQTMEVV5UCSA3XEZUYH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/65NOUTLMIJE462R4THOWR4YPAR7INXNP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,141 +112,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-netsock_set_interfaces() tore down the existing interface list with
-netsock_close_all() before building the new one. When an allocation failed
-while building the replacement it called netsock_close_all() again and
-returned -ENOMEM, leaving the daemon with no interfaces at all.
+alfred_client_change_interface() and alfred_client_change_bat_iface() open
+the connection to the daemon and then an interface that fails the local
+checks printed a warning but returned 0. That reported success to the
+caller even though nothing was changed and left the connected unix socket
+open.
 
-Build the replacement into a temporary list first and only swap it in once
-it is complete. On failure the temporary list is discarded and the running
-interfaces are kept intact.
+Close the socket and return -1 on these paths so the exit status
+reflects that the requested change was rejected.
 
+Fixes: babd772a36e1 ("alfred: support for changing interfaces")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- netsock.c   | 41 +++++++++++++++++++++++++++--------------
- unix_sock.c |  7 +++++--
- 2 files changed, 32 insertions(+), 16 deletions(-)
+ client.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/netsock.c b/netsock.c
-index 60b2285..3505041 100644
---- a/netsock.c
-+++ b/netsock.c
-@@ -100,12 +100,12 @@ struct interface *netsock_first_interface(struct globals *globals)
- 	return NULL;
- }
- 
--static struct interface *netsock_find_interface(struct globals *globals,
-+static struct interface *netsock_find_interface(struct list_head *interfaces,
- 						const char *name)
- {
- 	struct interface *interface;
- 
--	list_for_each_entry(interface, &globals->interfaces, list) {
-+	list_for_each_entry(interface, interfaces, list) {
- 		if (strcmp(name, interface->interface) == 0)
- 			return interface;
+diff --git a/client.c b/client.c
+index f56042a..d25e3bb 100644
+--- a/client.c
++++ b/client.c
+@@ -265,7 +265,8 @@ int alfred_client_change_interface(struct globals *globals)
+ 	if (interface_len >= sizeof(change_interface.ifaces)) {
+ 		fprintf(stderr, "%s: interface name list too long, not changing\n",
+ 			__func__);
+-		return 0;
++		unix_sock_close(globals);
++		return -1;
  	}
-@@ -115,30 +115,32 @@ static struct interface *netsock_find_interface(struct globals *globals,
  
- int netsock_set_interfaces(struct globals *globals, char *interfaces)
- {
-+	struct list_head new_interfaces;
- 	struct interface *interface;
-+	struct interface *is;
- 	char *saveptr;
- 	char *input;
- 	char *token;
- 
--	netsock_close_all(globals);
-+	INIT_LIST_HEAD(&new_interfaces);
- 
- 	/* interface 'none' disables all interface operations */
--	if (is_iface_disabled(interfaces))
-+	if (is_iface_disabled(interfaces)) {
-+		netsock_close_all(globals);
- 		return 0;
-+	}
- 
- 	input = interfaces;
- 	while ((token = strtok_r(input, ",", &saveptr))) {
+ 	len = sizeof(change_interface);
+@@ -286,8 +287,10 @@ int alfred_client_change_interface(struct globals *globals)
  		input = NULL;
  
--		interface = netsock_find_interface(globals, token);
-+		interface = netsock_find_interface(&new_interfaces, token);
- 		if (interface)
- 			continue;
- 
- 		interface = malloc(sizeof(*interface));
--		if (!interface) {
--			netsock_close_all(globals);
--			return -ENOMEM;
--		}
-+		if (!interface)
-+			goto err;
- 
- 		memset(&interface->hwaddr, 0, sizeof(interface->hwaddr));
- 		memset(&interface->address, 0, sizeof(interface->address));
-@@ -151,8 +153,7 @@ int netsock_set_interfaces(struct globals *globals, char *interfaces)
- 		interface->interface = strdup(token);
- 		if (!interface->interface) {
- 			free(interface);
--			netsock_close_all(globals);
--			return -ENOMEM;
-+			goto err;
- 		}
- 
- 		interface->server_hash = hash_new(64, server_compare,
-@@ -160,14 +161,26 @@ int netsock_set_interfaces(struct globals *globals, char *interfaces)
- 		if (!interface->server_hash) {
- 			free(interface->interface);
- 			free(interface);
--			netsock_close_all(globals);
--			return -ENOMEM;
-+			goto err;
- 		}
- 
--		list_add_tail(&interface->list, &globals->interfaces);
-+		list_add_tail(&interface->list, &new_interfaces);
+ 		ret = check_interface(token);
+-		if (ret < 0)
+-			return 0;
++		if (ret < 0) {
++			unix_sock_close(globals);
++			return -1;
++		}
  	}
  
-+	netsock_close_all(globals);
-+	list_splice_tail(&new_interfaces, &globals->interfaces);
-+
- 	return 0;
-+
-+err:
-+	list_for_each_entry_safe(interface, is, &new_interfaces, list) {
-+		list_del(&interface->list);
-+		hash_delete(interface->server_hash, free);
-+		free(interface->interface);
-+		free(interface);
-+	}
-+
-+	return -ENOMEM;
- }
+ 	ret = write(globals->unix_sock, &change_interface, len);
+@@ -314,7 +317,8 @@ int alfred_client_change_bat_iface(struct globals *globals)
+ 	if (interface_len >= sizeof(change_bat_iface.bat_iface)) {
+ 		fprintf(stderr, "%s: batman-adv interface name list too long, not changing\n",
+ 			__func__);
+-		return 0;
++		unix_sock_close(globals);
++		return -1;
+ 	}
  
- static int enable_raw_bind_capability(int enable)
-diff --git a/unix_sock.c b/unix_sock.c
-index 417b380..d0e82dc 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -388,11 +388,14 @@ unix_sock_change_iface(struct globals *globals,
- 	if (!net_iface)
- 		goto err;
- 
-+	if (netsock_set_interfaces(globals, change_iface->ifaces) < 0) {
-+		free(net_iface);
-+		goto err;
-+	}
-+
- 	free(globals->net_iface);
- 	globals->net_iface = net_iface;
- 
--	netsock_set_interfaces(globals, change_iface->ifaces);
--
- 	ret = 0;
- err:
- 	close(client_sock);
+ 	len = sizeof(change_bat_iface);
 
 -- 
 2.47.3
