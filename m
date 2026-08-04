@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A620C55184
-	for <batman-adv@archiver.kernel.org>; Tue,  4 Aug 2026 06:56:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10268C55172
+	for <batman-adv@archiver.kernel.org>; Tue,  4 Aug 2026 10:18:55 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 418E684186
-	for <batman-adv@archiver.kernel.org>; Tue, 04 Aug 2026 08:56:34 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 11D53841D5
+	for <batman-adv@archiver.kernel.org>; Tue, 04 Aug 2026 12:18:54 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785826594;
- b=c+nDyobSE9f4NfqwIOuAiAfGy4OgtlmJEr74kM5DNNcJ0aQLu2cLFNK42YcJmlgB/voHx
- Ztgjk6ewpqj0n0zrOn/KAUgTUODDsFeXDlZFfhNfMSX2CdCg1x/ohop9atIi55+OMxX+sD3
- PkONBkmGmwSEXYR6LxNV0O+G8mw7Tvc=
+ t=1785838734;
+ b=pG79V/b0Eo5+UgTxfPzGE58GsYl1sPHrKoxIKDGy0QnV168AOBuUipGQRK+i/1O1jPSsS
+ 8U8gV9NYFCLQs1y5+WpK7FRuXN7LP56iq+SSjtgXco/7dSI5snAFWScv13rJT9iDLcQ4mEi
+ rf7gIn387oVBidheeypteRa4iv2iJkc=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785826594; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785838734; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=GyKqvdPJboPC+rw5Gusa2cgeLAvNIQAvnaOSrAsjNyo=;
- b=LSGt9vIQaFpXRSNYFuAtpKsH5tHMHHrLn6+k4tnVPQKq7HsWauS4XmQikN3SBqTFo5BQD
- PJFOoQPb9gpxqfGuZdBO936pfBVPfGefjelkkc09mlZHGMGjYUdhtef2eaBDJnXYvvFDMSr
- u+WwZMZmUPOMb1j13jROSqgbwMeJ80M=
+ list-archive; bh=ZnIFUywWMs6jZmc5T9qATewD1wiF3zlLdtYwW0qdHfc=;
+ b=ACrw0Uai3yjAt1Bv61psibL6eMC2GPN3X1C368onlr+AXTu0NoQkjwted4NmxISY/P9Wt
+ 3jHGXy+L7VcJmsWk7ZUPHAtyLqnHStYv/MPIG0AYjGYrsoHcowBRtUDVWffIxN+oUZagBVz
+ BPTTxf2uMHH+L1UAQp70Oc2zMbBNt9g=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,57 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 626CF8171F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 04 Aug 2026 08:56:04 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785826575;
-	b=b01hiJAXuzpxG0tDH6OPkVBwVW99VP4EG41oTQWUMMT6XZVtcPHzrFAmjttdq92JdUG2mR
-	TnQ7+fPraiawGptHti+mhaD2FFfFQUIjor14VJSnHC2ezl4qpeFeqsXVO8ta2rKD8PQ8Dq
-	epAOk5MRIsGwE6Rv+sK9GTb7i6C2UNo=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DB26280335
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 04 Aug 2026 12:18:26 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785838716;
+	b=V6TmsChUuddmiXO0xidVSiRFigmV6NFf+ShnADQ1/aNxn9kIVZKPr5NnPaxGfTbBisSbyj
+	aOhNwYIBxTqm52esFuBd4b9LUgfSx8gLT3QRK9u7DeqfG+V0jrq3Bt3Wk1mbe3j9g8PNZN
+	+MQq+PL3KRuFwnPARuHrmbhGDQY6AAw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785826575;
+	s=20121; t=1785838716;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=GyKqvdPJboPC+rw5Gusa2cgeLAvNIQAvnaOSrAsjNyo=;
-	b=t32fwYEAYkHb3qcMhk7xmVgKWn1XuyXx8dy8mo8bJ3Hr2t9bUaeyNMNF2TvxxuSfKohfia
-	wFYQGCP29QkRv1nSuyucdBUJyhjBTS5EdU2T1y9FnFsZVQZXgNIZ+exDf/h6/BGtFaLuka
-	9iky+m5bh8XHpdWtlfHOhpAiQRGmNkM=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=ZnIFUywWMs6jZmc5T9qATewD1wiF3zlLdtYwW0qdHfc=;
+	b=C8cigFjhxQ1F08Rp1RkvuiThoxJyRwxuPjxWEGZVNPPLqbM1gvusgNPu90AcbQiFUovVGX
+	g5l5Dd2CUlAuM3Q4kiIpjeNYrB/RHPMnYwYsT39qzxXlzbzT9lRDS91byxvB35QlZV1b2b
+	RI6e+t+SYeYSsCqmT+wKTmRa9reJChU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=kJXIb0sj;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=E4x93TmV;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 0ED1120597;
-	Tue, 04 Aug 2026 06:55:59 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 4B7DE21002;
+	Tue, 04 Aug 2026 10:18:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785826559;
+	s=20121; t=1785838701;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GyKqvdPJboPC+rw5Gusa2cgeLAvNIQAvnaOSrAsjNyo=;
-	b=kJXIb0sjXS6J6YN2e+ui3iWcElawhRrJGgO9Y8yzas0CSMpS5z0exulrOZiQektvxK0UOd
-	qjRHf4Tmst837LEr9WNkPoUEJHN5++cuNpSYrNtcGUz03lc1nrxrmyC+c5IwEdYhqDbAtA
-	bryJVhUpBf77YcQJWrVUW+u0VxLbifc=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=ZnIFUywWMs6jZmc5T9qATewD1wiF3zlLdtYwW0qdHfc=;
+	b=E4x93TmVFvq2a6tka0UcCUnLDGkBw1NKHXx0YNrOROOtd6XmfPs8rNF4iJW+co0jZEN8Z1
+	l/eXAxj69gvpMENuSCb29Dx/ZhscJOZNbcXybH7mZ7FcHSPhvwdlz2zesePdqyWSCGFDhC
+	MThz31UP8fR4kpskgo2DrAp2itCSazw=
 From: Sven Eckelmann <sven@narfation.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org,
- Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH net-next 00/15] pull request for net-next: batman-adv
- 2026-07-28
-Date: Tue, 04 Aug 2026 08:55:51 +0200
-Message-ID: <3386526.aV6nBDHxoP@sven-l14>
-In-Reply-To: <20260803191920.0e6c5a2c@kernel.org>
-References: <20260728133918.643267-1-sw@simonwunderlich.de>
- <20260803191920.0e6c5a2c@kernel.org>
+Subject: [PATCH batadv v2 0/6] batman-adv: tt: atomic_t sashiko fixes
+Date: Tue, 04 Aug 2026 12:18:11 +0200
+Message-Id: <20260804-tt-fixes-v2-0-487c48fc7fc4@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3093944.VdNmn5OnKV";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 7Q3FLDHAX6UOQBFEFBAXA7JTCX6QPRWM
-X-Message-ID-Hash: 7Q3FLDHAX6UOQBFEFBAXA7JTCX6QPRWM
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAGO8cWoC/2WOzQ7CIBCEX6XZsxi6Shs9+R6mB36WFg/UABJNw
+ 7tL8ehxZr7MzAaRgqMI126DQNlFt/oq8NCBXqSfiTlTNSDHgY8nzlJi1r0pMqslqhGRlDJQ8We
+ gFlT6DkomaTJMPz++1IN02nt2cnExreHTNnPf+P/63DPOhjNdSKAwQoibl8HKVP8d1zDDVEr5A
+ gdaErO+AAAA
+X-Change-ID: 20260730-tt-fixes-fca2b722ebbd
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1739; i=sven@narfation.org;
+ h=from:subject:message-id; bh=RcURNiUtsP9TyIHzmfjok7IjR3wHu5xw0hBFIJJB1OQ=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmFezJz9cJndQv4dkX/tGn7InXgctWE6EWpU2YHRGz23
+ pTr336vo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRu3WMDHOvsLBcnPUsYqZ3
+ UuiyhxcXXZ84zWKj+hbr8jKGqHDp9WcZGSYz1x0Xqjk6c/Ul7QcrXbenz7q/qmvz8pCrVYYV7Pq
+ Z+xgB
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: 5YA4ZLCFKCWW57YN4VZJYOH6MAW6YXSL
+X-Message-ID-Hash: 5YA4ZLCFKCWW57YN4VZJYOH6MAW6YXSL
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -96,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/7Q3FLDHAX6UOQBFEFBAXA7JTCX6QPRWM/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5YA4ZLCFKCWW57YN4VZJYOH6MAW6YXSL/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -105,55 +113,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3093944.VdNmn5OnKV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 04 Aug 2026 08:55:51 +0200
-Message-ID: <3386526.aV6nBDHxoP@sven-l14>
-In-Reply-To: <20260803191920.0e6c5a2c@kernel.org>
-MIME-Version: 1.0
+There were a couple of sashiko reports regarding the
+batadv-next-pullrequest-20260728 PR. I went through the TT code and tried
+to handle them and at the same time already predict what else sashiko might
+report as next. I needed to change the batadv_tt_local_remove() hash
+interaction as preparation for the related NEW flag (and counter) handling.
 
-On Tuesday, 4 August 2026 04:19:20 CEST Jakub Kicinski wrote:
-> On Tue, 28 Jul 2026 15:39:03 +0200 Simon Wunderlich wrote:
-> > here is a minor bugfix/cleanup pull request of batman-adv to go into net-next.
-> 
-> Can you look thru the Sashiko comments here (especially Medium+
-> severity)?
-> 
-> https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260728133918.643267-11-sw@simonwunderlich.de
+And the netdev maintainers rejected this approach (for now). I had to
+re-add the atomic_t code parts back in this patchset.
 
-https://patchwork.open-mesh.org/bundle/ecsv/pu-main/
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Changes in v2:
+- rebase on main
+- add "batman-adv: tt: use atomic flag modifications" and "batman-adv: tt:
+  simplify NEW flag transition code" because they are reverted on main
+- add patch to extract the roam "add" code in a separate function
+- make the "simplify NEW flag transition code" patch independent of atomic_t code
+- Link to v1: https://patch.msgid.link/20260730-tt-fixes-v1-0-64e9e525d555@narfation.org
 
-We were just waiting for a verdict. I am guessing it it a "no, will not 
-merge", correct?
+---
+Sven Eckelmann (6):
+      batman-adv: tt: remove only the entry which was looked up from the hash
+      batman-adv: tt: extract code handling a roam on add
+      batman-adv: tt: simplify NEW flag transition code
+      batman-adv: tt: use atomic flag modifications
+      batman-adv: tt: decrement count for committed client on local_remove
+      batman-adv: tt: don't uncount never committed clients on pending purge
 
-> At a glance patch 14 does not inspire confidence. I guess patch 15
-> removes the worst part - but is there a real reason not to use locking?
+ net/batman-adv/translation-table.c | 377 +++++++++++++++++++++++++------------
+ net/batman-adv/types.h             |   2 +-
+ 2 files changed, 253 insertions(+), 126 deletions(-)
+---
+base-commit: 7c21a379ef7f9887c13d7450a3d5236de62f22ed
+change-id: 20260730-tt-fixes-fca2b722ebbd
 
-In its current state, you would need spinlocks over larger (op-count) portions 
-of code in the hot-path. And since it it nearly impossible to get feedback 
-from the TT author/maintainer, I am not willing to invest time in a total 
-rewrite of the TT infrastructure.
-
-Regards,
-	Sven
-
-
---nextPart3093944.VdNmn5OnKV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCanGM9wAKCRBND3cr0xT1
-y3sqAP93VUsjB/3zBZEPOEwVl9F8KchEpqol2vmkE2mbdlui4gD/ZcZ0qOW3IWsP
-+5olqy4xUDXtdwWKz+2KDX80Fe+2mwI=
-=12G3
------END PGP SIGNATURE-----
-
---nextPart3093944.VdNmn5OnKV--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
