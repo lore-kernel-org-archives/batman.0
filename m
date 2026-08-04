@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD982C55822
-	for <batman-adv@archiver.kernel.org>; Tue,  4 Aug 2026 13:10:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 835A2C55184
+	for <batman-adv@archiver.kernel.org>; Tue,  4 Aug 2026 13:25:28 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id E6A6884202
-	for <batman-adv@archiver.kernel.org>; Tue, 04 Aug 2026 15:10:29 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id ADA0F84212
+	for <batman-adv@archiver.kernel.org>; Tue, 04 Aug 2026 15:25:26 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785849029;
- b=3SARI6pVjEI8T9YXecQN36b8FILw6Dj4JAASqRQEwpqCABIfOUX4p6NTxGx6pf9OBMOh3
- x4c9TyATbSyHY2L5BdBjzRQ5UENfnZmcd5ddcUF8zkwZr8//hl2FlXnikyYcfZIF0IzVFO+
- 07np0O5BCn1/SJT5lH+6mkzgZ36/Arg=
+ t=1785849926;
+ b=R2q3FpQd3CF5rDBwNO3zEiJyWYpFL/8Hyfpa/XvX2txK+EoBidZm06eTlVWOXtU8s3s1M
+ H0McFXO2cN2aprhthpnsvLzS79CZrafeYBojgwRHPb465es/Hw8ziZA7QPqm1tewm3n+E75
+ cwO79YPv34iXrp+cHnfqJWRcaL17QyY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785849029; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785849926; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Au6oX4MGDxMM7D69D4sBzTxdn67v9QMgjFo5KDy/9E8=;
- b=x+I+DzxGVqkWVURdDZ+6neTyXAGa0bNT4I4PjbPQCLD36Zoqnj08WAZ2DOWmW/ia2c4ZY
- sVg9W07pdbmCxtZxPfwhRZeiP2JOLYRcbe2v68GfA0AuE//h1v/YXF8WCOUcfQRnmuBQYdQ
- MkW0xElTdHSAPUSGUi4a4sXS33wV/A8=
+ list-archive; bh=kgKDAwfYkCsBa1/O9slq+N/Od4IInZ7YxbXYIKaLNVI=;
+ b=MFxZEebcF+oP50jvjM6BVxORcfEi2LEj9AgODlB3EhRPQLmbLtpY/bI0Wkvb8jMTpafRe
+ I8qplNrXNnyL0mcu5VcXd/ochu0MnsuT4Mp1hLmsA5949XgXNYUw0m+t51OyBg4PzxZkBpu
+ t1H72QhjJeluZskOeCaxVMYZdSOHsYc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=redhat.com;
  arc=pass;
@@ -34,103 +34,102 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=redhat.com;
  dmarc=pass (Used From Domain Record) header.from=redhat.com policy.dmarc=quarantine
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 342E180A35
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 04 Aug 2026 15:08:06 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785848887;
-	b=ctapCBDIf1XXAuEOKJ4LVy5jZ57vCcf5eqi/dQ0dSzLP3FUJ3F4VA/TiExIMseIr/JHNjq
-	BAydCll+kpmh0xUs2WRqBa45HHbgleOGdhf/LHTklk8JaBQ+q/FTjE/8Q/zUII/yjkUn4Q
-	q1txTBE8LmigQvXSAwO9f3KWQ0nllQk=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 1E07480758
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 04 Aug 2026 15:17:01 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785849422;
+	b=joaldjahkUE3V7Nbv2SFUCrCnZinreFAzwfY7D5ugt6zLVh2fwBhEmNtPjkCvkl0eHBgXp
+	ffiddf9XI9qlU911QAn746bCo1mZW2wWHkakAdXJl+7JiyTuRTmCmEm/7zr1dNjVDtMmh5
+	t+ikgu4S7orpv9kDUZEPGNqzJHR8YZA=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785848887;
+	s=20121; t=1785849422;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Au6oX4MGDxMM7D69D4sBzTxdn67v9QMgjFo5KDy/9E8=;
-	b=GlJSNG90OoSV9A7lDR7yZt0/KggQSn9xua6ehauHrC18Y8WE89snGrZXkDu0jnh0kuBGkf
-	NqPUqxlxf2I4G4xSCxtmCA6utD7dpc7je3s7cRfeJVQw92CmRW4fPQJDVHcR3V8cHSdRje
-	mhmM5YXc/MAF/JAQTTuV7Gd/3IhRby8=
+	bh=kgKDAwfYkCsBa1/O9slq+N/Od4IInZ7YxbXYIKaLNVI=;
+	b=b3v5ZZJkKzIzqmWm4lrBf+erdgS82sggkT6Kl2daoNCOxZYf0Jb5Y8u467yAV8BEGrs4c0
+	PKi8ag8soXHZGUpFgZL+JhXAxser4gurlqhKX8eWTRWgGFQNDwgSCLB5J4mroyazm4zzLR
+	BjdGL0eb6UjDmcoRz6qRdJYCKIPCAMA=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=redhat.com header.s=mimecast20190719 header.b=RBtmHnrP;
+	dkim=pass header.d=redhat.com header.s=mimecast20190719 header.b=Xq8cMZYN;
 	spf=pass (diktynna.open-mesh.org: domain of pabeni@redhat.com designates
  170.10.133.124 as permitted sender) smtp.mailfrom=pabeni@redhat.com;
 	dmarc=pass (policy=quarantine) header.from=redhat.com
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785848885;
+	s=mimecast20190719; t=1785849421;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Au6oX4MGDxMM7D69D4sBzTxdn67v9QMgjFo5KDy/9E8=;
-	b=RBtmHnrPvcT/ZHtrZ/T58VHMdAA6Nftj+t5EJFiMRtT2398+sE7WxPU2kSEEhLr/uIlL69
-	m3zbjeZKtDwt9XkympgdNRRGA6BZdEOxU82r0J42hu7d0D68X2zeafrIV1fC5J7Ssgfqfq
-	xPv11hk6BzFi0PyN1lH1EYbgR2YaSoY=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=kgKDAwfYkCsBa1/O9slq+N/Od4IInZ7YxbXYIKaLNVI=;
+	b=Xq8cMZYNwiPsjvbOKV4/B6WH8Pb7nfhCpyx4cc2bzf1z85kQb3JWvs4jVzXVegJfpn7B1W
+	s3F1L3UoalxBIAyBoV4bY2PkuV4of0LSb27sL+gpOq7/D82K6Us5fIUEkbYr5y2oM495h7
+	BixE60R7/GooZbXa2qTpv83QCCQ8rwI=
+Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
+ [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-292-d2nOLsfPMASbEKD8-NqKgw-1; Tue, 04 Aug 2026 09:08:04 -0400
-X-MC-Unique: d2nOLsfPMASbEKD8-NqKgw-1
-X-Mimecast-MFC-AGG-ID: d2nOLsfPMASbEKD8-NqKgw_1785848883
-Received: by mail-wr1-f71.google.com with SMTP id
- ffacd0b85a97d-47fe85684b9so835375f8f.3
+ us-mta-214-3mYfcYbqNRGKt3gbN-vrwg-1; Tue, 04 Aug 2026 09:16:57 -0400
+X-MC-Unique: 3mYfcYbqNRGKt3gbN-vrwg-1
+X-Mimecast-MFC-AGG-ID: 3mYfcYbqNRGKt3gbN-vrwg_1785849416
+Received: by mail-ej1-f71.google.com with SMTP id
+ a640c23a62f3a-c1c4715cf0eso498074166b.2
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Tue, 04 Aug 2026 06:08:04 -0700 (PDT)
+ Tue, 04 Aug 2026 06:16:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785848883; x=1786453683;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1785849416; x=1786454216;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Au6oX4MGDxMM7D69D4sBzTxdn67v9QMgjFo5KDy/9E8=;
-        b=jHAlcDukig0GnhzBPH3IddvRQZreAwp0d6cJHj9hdoGt1dHanetDhjBYO0fto+RYmh
-         6+Cb2F/JFUEOGcVglXYvy7smUPJjg6WLzPSLBD1CdA3Z8154uKaWt53ENBrttZbk5OA1
-         cxeNXAXwNb12mC/fa+H1c1GgOKLUtYJEsdvTUOXilrrcQv3Y2pJvEs06u9AZ6UMpemRB
-         SVIz0ZWBGq45VuSpJbwg2gi8j2QESzwmfS0RRC0qe+Mw0kgst4mcig5nqg6v3OV7jxjO
-         ZRkAD3AcmH9DFPPRoqNw+4MtmJQBUbHWFU+Vy24gTXgRnEeKOcA6j+jzX+kIvnFrpDJC
-         YK0A==
+        bh=kgKDAwfYkCsBa1/O9slq+N/Od4IInZ7YxbXYIKaLNVI=;
+        b=MdHnjXsW/47gw3AbDozrCfGxf+/3xpS4pKX66QAeTKG0YlzIzCNOCb6GVeBwUWA1MO
+         RjreKRKGEZR+qf1bWuwzTzK8hGNibKBnNDJ9mj5MdvOrEQhj2YiVft7mcUXykBV8LrYk
+         5NDui3jhJyoM7CZfF9GTbNBusRolWY6i5XlX/AZGka8EAuutUfmoh1197m7H/hvl2hI8
+         g/rAMFnZ2bJrTWZ3yfEgvOrJvgNxGwpqwY9Kp79GrTHbzgyBpCsPHCk7iIZSetMXvm1L
+         rGijLmS8cZuDMonkYvgcb1XndiC3IQyh9hq3Ro9d6WB812XjKnbPgxm0i6C4UWJIvSUd
+         vYjw==
 X-Forwarded-Encrypted: i=1;
- AHgh+Rop6TaP8m+O8szwRWHP9hce0MGDvryCmmguaUdCwOk4S53FAv33s1NQx0hbXpM88sS99LnL26FWyZ49qg==@lists.open-mesh.org
-X-Gm-Message-State: AOJu0Yz3tNHi69ihhikM9i/YokO+CulL8U2XKYonjJy+q6PjwXdKu7rO
-	GgIonz3TWaLuREVLYdtgdiKDi3lGTiPbZrFi+vjMNlJfv4Cdeu3NGDGtD411IZqp3OVanrttzqc
-	mQ4/aUGhgMJVZJ82/vBmOho5Bc557EqWfVCnwySi9OHx3LIW0laR0bHck5ChoSYT04ue+XA==
-X-Gm-Gg: AR+sD12w0TQGEXMrb7X2Z/eJO9pCVqF0W9xiMI4suDGGl7sSzs7Wd3b98wqfLQzkvfS
-	Sg9+m1QqiyHWIR+0M7JmrhubEDGpxdCkVcd5fIlJA/sbh0e6ActNhevFM/vJFaPH1cN85MR9dmc
-	BgPsgTqbr0xPardbuO+f3S66W8dW7Xz1+5GmzvTSIEbJ2XWFLTqGb2JJvZ2QOtbmTxaomhJIOtW
-	E3butWudRt26v9bmzmFzPP9LlsNa0Hq58K6u1d8Fqz65TOYvKnosI6XWxCKRHQQfYfN6BNp8rgg
-	3OG62DXp/4mBQTTMva3ulUmtObHLrPi7nvxtk3+dYZIrCPKFfR12K6iNLnB1zIIb3lITQIG1kkN
-	TPGT5rioF6O61hsXOhREgzdbvy6xqei3LuNi1cnDvHUYNU7Dv82IrggNNRci0bTwuhpWS01TdRq
-	0=
-X-Received: by 2002:a05:6000:60a:b0:47f:9283:1fb3 with SMTP id
- ffacd0b85a97d-47fd706349cmr39912167f8f.0.1785848883040;
-        Tue, 04 Aug 2026 06:08:03 -0700 (PDT)
-X-Received: by 2002:a05:6000:60a:b0:47f:9283:1fb3 with SMTP id
- ffacd0b85a97d-47fd706349cmr39912042f8f.0.1785848882595;
-        Tue, 04 Aug 2026 06:08:02 -0700 (PDT)
+ AHgh+RoK1iEPnh77b4kaYZ4p6lnoCebqxUNfC4PgyNugr9WpQYsbYuqq+DVe/y6txKHBRnQqLjSZcExGmdgPdw==@lists.open-mesh.org
+X-Gm-Message-State: AOJu0YzszLv7k+i588D6/FAxDAInR4sO/o49nEAQ2mS4vb4R6Kq5MlSM
+	2XHTw1Cggh0JAfM4dbnuL0tRKqZ+DE4yszo/C4wrkexUUHHCgYIInCPQINSLqpwshNSSjjcHijG
+	wDvVO1enD5wRs1FuGnZVl/BZUlNAtIMLLLZbw86UJ7P4uWwJEDPNHHqizuLkhIRC0kq6WTA==
+X-Gm-Gg: AR+sD11TF9qkgONxm976V3q4d8XRYHT5kktoX83phiivJOMPqUGbon3IsOCgN1RkvGs
+	MiuTQTpdE1C+2BlyODeSJ0wjGTYY/lnjWQF+C6ll9oPVUQ8NvO6/trurE4vgLvcPTaDk4yLymYJ
+	Jw72DidyUV1joyzfJC5a+hRshZXOShsTkHIbr+7L8umbDnfEi881l9YUv7PktepQjIiVXPTzXhc
+	vTn6Cx75cVSm8uBK7wVkHaBCuv0IFTsDurv/rVWLE/l9ZtqB6jmVXLjhQegyr7R+52ieteYKkuE
+	8vuV2RYN2dP3jZqZCXrzGQh/BP9wTI9sB3ovSmWlECvDOcv/VlQylKhzXq/ohSJlTNDOEWEMR2G
+	MXfaHIPvvDULed/yHCJVD2YabJEzucv0HNEc1ObyoFFMktNQodVCwDYd/SpW3A0Q2xPC3AqP2EB
+	k=
+X-Received: by 2002:a17:906:34c3:b0:c16:209f:d48e with SMTP id
+ a640c23a62f3a-c1fe8250ff3mr1087595066b.30.1785849416467;
+        Tue, 04 Aug 2026 06:16:56 -0700 (PDT)
+X-Received: by 2002:a17:906:34c3:b0:c16:209f:d48e with SMTP id
+ a640c23a62f3a-c1fe8250ff3mr1087589966b.30.1785849415843;
+        Tue, 04 Aug 2026 06:16:55 -0700 (PDT)
 Received: from [192.168.188.103] (ip239-44-231-195.pool-bba.aruba.it.
  [195.231.44.239])
         by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-47fd458bb4esm42401998f8f.30.2026.08.04.06.08.01
+ a640c23a62f3a-c20361312eesm12924466b.4.2026.08.04.06.16.54
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Aug 2026 06:08:02 -0700 (PDT)
-Message-ID: <37153ad1-5c96-49fc-adee-2a7678414428@redhat.com>
-Date: Tue, 4 Aug 2026 15:08:01 +0200
+        Tue, 04 Aug 2026 06:16:55 -0700 (PDT)
+Message-ID: <991957eb-65d1-4b3b-b903-76459127c124@redhat.com>
+Date: Tue, 4 Aug 2026 15:16:54 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH net-next 00/15] pull request for net-next: batman-adv
  2026-07-28
 To: Sven Eckelmann <sven@narfation.org>,
- Simon Wunderlich <sw@simonwunderlich.de>, netdev@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Simon Horman <horms@kernel.org>, b.a.t.m.a.n@lists.open-mesh.org
+ Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Simon Horman <horms@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>
 References: <20260728133918.643267-1-sw@simonwunderlich.de>
- <7d73cd74-b040-4a3d-9d78-4ad8fc0a01f4@redhat.com>
- <5248054.31r3eYUQgx@sven-desktop>
+ <20260803191920.0e6c5a2c@kernel.org> <3386526.aV6nBDHxoP@sven-l14>
 From: Paolo Abeni <pabeni@redhat.com>
-In-Reply-To: <5248054.31r3eYUQgx@sven-desktop>
+In-Reply-To: <3386526.aV6nBDHxoP@sven-l14>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: -HrP_ssUrxOsHECckfwNXg7PSwuPrWDa6QX4vCVgVpI_1785848883
+X-Mimecast-MFC-PROC-ID: v2vlQha8s0VQI0eYwuIshu9yExEnu4XxzIUOc09q6hM_1785849416
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8
@@ -142,15 +141,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: BF2ZDMZHV45VZPYBPXEMBGAP4TAGKOZQ
-X-Message-ID-Hash: BF2ZDMZHV45VZPYBPXEMBGAP4TAGKOZQ
-X-Mailman-Approved-At: Tue, 04 Aug 2026 15:10:14 +0200
+Message-ID-Hash: M7ZTS3VDJFN4LOENELXXOJQKNFZ2SJT3
+X-Message-ID-Hash: M7ZTS3VDJFN4LOENELXXOJQKNFZ2SJT3
+X-Mailman-Approved-At: Tue, 04 Aug 2026 15:25:10 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BF2ZDMZHV45VZPYBPXEMBGAP4TAGKOZQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/M7ZTS3VDJFN4LOENELXXOJQKNFZ2SJT3/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -159,35 +158,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On 8/4/26 12:38 PM, Sven Eckelmann wrote:
-> On Tuesday, 4 August 2026 12:19:13 CEST Paolo Abeni wrote:
->> On 7/28/26 3:39 PM, Simon Wunderlich wrote:
->>> Dear net maintainers,
->>>
+On 8/4/26 8:55 AM, Sven Eckelmann wrote:
+> On Tuesday, 4 August 2026 04:19:20 CEST Jakub Kicinski wrote:
+>> On Tue, 28 Jul 2026 15:39:03 +0200 Simon Wunderlich wrote:
 >>> here is a minor bugfix/cleanup pull request of batman-adv to go into net-next.
 >>
->> Note that it's preferred to avoid fixes and stable tags for changes
->> targeting the net-next tree. If the fixes are really minor, both could
->> possibly safely dropped. If there is some real problem behind, such
->> changes should instead target the net tree.
+>> Can you look thru the Sashiko comments here (especially Medium+
+>> severity)?
 >>
->> Can you easily rebase your tree and adjust the PR vs the above?
+>> https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260728133918.643267-11-sw@simonwunderlich.de
 > 
-> I have a different statement from Linus:
-> https://lore.kernel.org/lkml/CAHk-=wjt1NiKOdyAMz_DT7NmZ++SizPOhRSi492ukdTnpDzHQw@mail.gmail.com/T/#u
+> https://patchwork.open-mesh.org/bundle/ecsv/pu-main/
 > 
-> This is why we started to not send out net.git fixes PRs for things which 
-> aren't highly critical or for Linus' "just merged for this release commits"  
-> late in the development process.
-I actually think netdev preference is consistent with Linus'ask: move
-the "fixlet" to net-next.
+> We were just waiting for a verdict. I am guessing it it a "no, will not 
+> merge", correct?
 
-The additional twist is the ask to drop the stable and fixes tag
-(otherwise stable will be flooded, too).
+Please be aware of net-next commit c82ff94592fb: the expectation is that
+submitters reply proactively to AI review comments.
 
-PR are a bit apart from plain series, hence my initial questions WRT how
-problematic would be stripping such tags and how impactful are actually
-the things addressed in the first 6 patches.
+Specifically it would be helpful an evaluation of how critical is
+problem reported and if it could safely addressed with a follow-up.
+
+>> At a glance patch 14 does not inspire confidence. I guess patch 15
+>> removes the worst part - but is there a real reason not to use locking?
+> 
+> In its current state, you would need spinlocks over larger (op-count) portions 
+> of code in the hot-path. 
+
+I'm not sure if the following is well known/helps, but performance wise
+slightly lager critical regions are usually preferable to a larger
+number of atomic operations,
 
 /P
 
