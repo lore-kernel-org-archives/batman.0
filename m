@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86715C55ABA
-	for <batman-adv@archiver.kernel.org>; Wed,  5 Aug 2026 14:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD60EC55174
+	for <batman-adv@archiver.kernel.org>; Wed,  5 Aug 2026 14:36:18 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 05F4384278
-	for <batman-adv@archiver.kernel.org>; Wed, 05 Aug 2026 16:35:46 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3644884208
+	for <batman-adv@archiver.kernel.org>; Wed, 05 Aug 2026 16:36:17 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785940546;
- b=k3M3YMNTVjjPzPsKuQCUSKz5UKi1vI6CxTpvdtY0Y1dgc/t0w5QNxSl989XhCzj0CZJ4f
- +RTshcQydT9pjKBsarxaMqn0SFGL3QDWUKo8hddxwM+qgtNkHzA0EYkeOaxdREAO/dg/iwb
- jAPArgC3dXmNnDxfxmCmXcJTLcwi6pw=
+ t=1785940577;
+ b=uZV1tNjUgnsJGhlmQySC0+Itd+uUQLLuQkvJf7wpaN+mWbGVgWhySF6cT1mUw+mmDe6ZS
+ 4nkUrpjj3PASsMI5yhiXLZLHIf+7aW2ur8uykaTgaGqCIVOZfdZ/pwAjf1REf2IoQ7B+bQ3
+ /1+dlD4tOOt8J05ty4Ob6DpXhoomNwI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785940546; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785940577; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fEO3/kLmL6SmU2jKGwS0RERQbRf/VGCpfalTmiKvqFQ=;
- b=GIIU5CpiWIzL3z3rM9UYRGPp6YZ/Y/7OcMJcZ2uuk3BQZVt0wfHxFw9D/9U7EcOcLq89O
- jEx1tpzn9nCDtl3kNmgkm2ifvxLYr4IEQp2hNT4EyMUdOFNY2VgfllqGR3GwARvtjrwqM6R
- vDPI5n6ez2TbBxqjxxrhJty4mw3cdNQ=
+ list-archive; bh=IiVJdhIDEIkLfeAXrkfwyUM/mZiaFSdBYWa9q++T2OU=;
+ b=x4gkzcZfESAFKp4cgRnjzQCzYXqJ9TFM/A4vpoMbuvdoVqTRSsbpkDgRDqKZwk+n6KAH+
+ hL+J9BdYOZpbp/Gx2nL/X6y2GHHe82HimEWy9NwMZHxWAnrUT91hdBkdy6/S4LHoAWHm+/Z
+ ay6U5qK1h8iSs0Gi4pLGYT+SQG4DvD0=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,25 +34,25 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0950684192
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7E59F841BB
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 05 Aug 2026 16:32:11 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785940331;
-	b=xvFxk8RPKlcKmruBCoGi5GFCNcjHifst2VLGGLtnup6DNZZYppEJ5DYMBwjuemVJ2NBkua
-	fWHRtjv/yRSy+l8v6BfFYNXtSI+m8hS3tXEdoWuukdshOh0yoQzuCJerEcP+tmNsCvE7i/
-	weyW1kE5ckqZkWnRPFyz88KHDU98RJ8=
+	b=C9R/d3X4gcXzvk0ArmaAQop+hT3d0ZFGPvCq6s0DNEScym8BznQRjFIAy8v66Zj00uWe/8
+	mbiDtz5Z+NfZynclLNRRhQ8lQOjJ3Kze5TfmNTkbLPaz8vJwtRx3Xt/prikuKsY88qyrVB
+	ZguFka0RQYwnJybanV9lVdzLaUya3pw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1785940331;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=fEO3/kLmL6SmU2jKGwS0RERQbRf/VGCpfalTmiKvqFQ=;
-	b=Gn7iK2jvMj3YPt7R48xYaDpFywkR014oGaWzBqWHRBUZYDWFY9SAseRwPr+UJWyRhhGrzJ
-	anPSWj/E3ZDuM0IUBZ6pipzrD+buj9BorbeMkWRfUydP/xqG7REgE97rNjzDmqV1XQHkyZ
-	cHyWz1l/R3fCg6q/5IDoC5WWHhNqpGs=
+	bh=IiVJdhIDEIkLfeAXrkfwyUM/mZiaFSdBYWa9q++T2OU=;
+	b=UxmkJnJe17gPj6/YSmaJQd5qelrN2+4Df8/lHStJ1rzWj5Br7cwzcax0WMfrcWt0varAR2
+	6aqw4TILqFuX7gzFceJY9r/+SOgESPl/lDt+sxgovb6FaEYwKdqgbSb3aEMu673lh2015E
+	P2Dcjjzor0/BRsLcDy5XsDkc7nRqY7g=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=uEBHodpN;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=oYGVc2c9;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
@@ -64,20 +64,20 @@ Received: from kero.packetmixer.de
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 98046FA1DF;
-	Wed, 05 Aug 2026 16:32:10 +0200 (CEST)
+	by mail.simonwunderlich.de (Postfix) with ESMTPSA id 3738EFA26D;
+	Wed, 05 Aug 2026 16:32:11 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1785940330;
+	s=09092022; t=1785940331;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=fEO3/kLmL6SmU2jKGwS0RERQbRf/VGCpfalTmiKvqFQ=;
-	b=uEBHodpN6od0b8IqamW7zwKjeL1kIk0tynwpZjIZtXk8TI1pHWru6WgQU0PMKLz63xecVE
-	0o60Bwe8TQNahWikFNII/UQ2O7+5rCkod7tS1GxYajIjF4GA6ExLycNzYE1cUWlFg00Xw1
-	mDexgIJne3my67eps6ieyVdfhKFP6wLeLSUb+3cpAnIwoGdx04ChOoKtlxyRJBWEXYRlzS
-	QaMQm2NtQXdXW1CZrdvrwWRMWV/zfWVcUqpGFOZb57G+HptCBecAcVHVFcLkKPMpdOY90w
-	Hr7C2xiGWvJJEP3CesCCZsW3cu7eTQwlinxRpKtPFlwbWGBBrAvMGDeSbJNhIw==
+	bh=IiVJdhIDEIkLfeAXrkfwyUM/mZiaFSdBYWa9q++T2OU=;
+	b=oYGVc2c9UfF2k9mMuPpD0enC45RJI9ukra8sOPSNGxCw8XfbhhNeNW6smg9EFNklxpvK0p
+	tBIPz6LxBxrby2jKL+Tgifk6wgvutGIyZ5XnaqThSNcAcyStGzDhTiYqAXKykZkks3tWfx
+	G5jULUH2b4njeQNlGsQwWGd5dA1MytfmDqSktbit/kbQJdGDvBzeUG8mocpHQ5TC1OrGzq
+	pWEFuqkiXt+N0HqYlwpP29tnjybIEd/ytOjZf5paWmf6Hk6vDwKNlATn9E/EPivUVNonLb
+	I/kk7FFZ1K2I/lA5Mh6g9bcr9mCJe3YMj+9K2T8NuilEtkPaNEUZVXAtuKRYVQ==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,19 +86,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
-	Minhong He <heminhong@kylinos.cn>,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 08/10] batman-adv: handle errors in batadv_init()
-Date: Wed,  5 Aug 2026 16:27:22 +0200
-Message-ID: <20260805143200.722098-9-sw@simonwunderlich.de>
+Subject: [PATCH net-next 09/10] batman-adv: correct NET_RX_* NET_XMIT_*
+ confusion
+Date: Wed,  5 Aug 2026 16:27:23 +0200
+Message-ID: <20260805143200.722098-10-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260805143200.722098-1-sw@simonwunderlich.de>
 References: <20260805143200.722098-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: RXHSKZZTXANQ6M2NKNE3CVVFYQ6J6CNE
-X-Message-ID-Hash: RXHSKZZTXANQ6M2NKNE3CVVFYQ6J6CNE
+Message-ID-Hash: RTJBKTSIQMEQZ4LJVNPOPL6VRZIBGBIV
+X-Message-ID-Hash: RTJBKTSIQMEQZ4LJVNPOPL6VRZIBGBIV
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -112,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RXHSKZZTXANQ6M2NKNE3CVVFYQ6J6CNE/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RTJBKTSIQMEQZ4LJVNPOPL6VRZIBGBIV/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -121,205 +121,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-From: Minhong He <heminhong@kylinos.cn>
+From: Sven Eckelmann <sven@narfation.org>
 
-batadv_init() ignores errors from several initialization helpers, so the
-module can load without those registrations in place.
+batadv_recv_icmp_ttl_exceeded() is a receive function. It must therefore
+return NET_RX_* and not NET_XMIT_*. And batadv_send_skb_to_orig() is an
+xmit function and is returning NET_XMIT_*.
 
-Check the fallible init steps and unwind prior initialization in reverse
-order of acquisition on failure.
+This doesn't change the behavior because both NET_RX_SUCCESS and
+NET_RX_SUCCESS are using the same underlying value (0).
 
-Signed-off-by: Minhong He <heminhong@kylinos.cn>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c |  8 +++++++
- net/batman-adv/bat_iv_ogm.h |  1 +
- net/batman-adv/bat_v.c      |  9 ++++++++
- net/batman-adv/bat_v.h      |  5 +++++
- net/batman-adv/main.c       | 45 ++++++++++++++++++++++++++++---------
- net/batman-adv/netlink.c    |  6 ++++-
- net/batman-adv/netlink.h    |  2 +-
- 7 files changed, 63 insertions(+), 13 deletions(-)
+ net/batman-adv/routing.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index aff279b83da49..53fbdbbe8f4f7 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -2802,3 +2802,11 @@ int __init batadv_iv_init(void)
- out:
- 	return ret;
- }
-+
-+/**
-+ * batadv_iv_deinit() - B.A.T.M.A.N. IV deinitialization function
-+ */
-+void batadv_iv_deinit(void)
-+{
-+	batadv_recv_handler_unregister(BATADV_IV_OGM);
-+}
-diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
-index 04b01bd684e80..90318801aeaff 100644
---- a/net/batman-adv/bat_iv_ogm.h
-+++ b/net/batman-adv/bat_iv_ogm.h
-@@ -10,5 +10,6 @@
- #include "main.h"
- 
- int batadv_iv_init(void);
-+void batadv_iv_deinit(void);
- 
- #endif /* _NET_BATMAN_ADV_BAT_IV_OGM_H_ */
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index ee372fc9d44e9..0c27447cf6889 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -947,3 +947,12 @@ int __init batadv_v_init(void)
- 
- 	return ret;
- }
-+
-+/**
-+ * batadv_v_deinit() - B.A.T.M.A.N. V deinitialization function
-+ */
-+void batadv_v_deinit(void)
-+{
-+	batadv_recv_handler_unregister(BATADV_OGM2);
-+	batadv_recv_handler_unregister(BATADV_ELP);
-+}
-diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
-index 964431f4dc8de..76bd969e79a26 100644
---- a/net/batman-adv/bat_v.h
-+++ b/net/batman-adv/bat_v.h
-@@ -12,6 +12,7 @@
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 
- int batadv_v_init(void);
-+void batadv_v_deinit(void);
- void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
- int batadv_v_mesh_init(struct batadv_priv *bat_priv);
- void batadv_v_mesh_free(struct batadv_priv *bat_priv);
-@@ -23,6 +24,10 @@ static inline int batadv_v_init(void)
- 	return 0;
- }
- 
-+static inline void batadv_v_deinit(void)
-+{
-+}
-+
- static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
- {
- }
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index c2d5b39b02f47..77597171d6376 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -102,35 +102,58 @@ static int __init batadv_init(void)
- 
- 	batadv_recv_handler_init();
- 
--	batadv_v_init();
--	batadv_iv_init();
-+	ret = batadv_v_init();
-+	if (ret < 0)
-+		goto err_tt;
-+
-+	ret = batadv_iv_init();
-+	if (ret < 0)
-+		goto err_v;
-+
- 	batadv_tp_meter_init();
- 
-+	ret = batadv_wifi_net_devices_init();
-+	if (ret < 0)
-+		goto err_iv;
-+
- 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
- 	if (!batadv_event_workqueue) {
- 		ret = -ENOMEM;
--		goto err_create_wq;
-+		goto err_wifi;
- 	}
- 
--	ret = batadv_wifi_net_devices_init();
-+	ret = register_netdevice_notifier(&batadv_hard_if_notifier);
- 	if (ret < 0)
--		goto err_init_wifi;
-+		goto err_wq;
- 
--	register_netdevice_notifier(&batadv_hard_if_notifier);
--	rtnl_link_register(&batadv_link_ops);
--	batadv_netlink_register();
-+	ret = rtnl_link_register(&batadv_link_ops);
-+	if (ret < 0)
-+		goto err_notifier;
-+
-+	ret = batadv_netlink_register();
-+	if (ret < 0)
-+		goto err_rtnl;
- 
- 	pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i) loaded\n",
- 		init_utsname()->release, BATADV_COMPAT_VERSION);
- 
- 	return 0;
- 
--err_init_wifi:
-+err_rtnl:
-+	rtnl_link_unregister(&batadv_link_ops);
-+err_notifier:
-+	unregister_netdevice_notifier(&batadv_hard_if_notifier);
-+err_wq:
- 	destroy_workqueue(batadv_event_workqueue);
- 	batadv_event_workqueue = NULL;
- 	rcu_barrier();
--
--err_create_wq:
-+err_wifi:
-+	batadv_wifi_net_devices_deinit();
-+err_iv:
-+	batadv_iv_deinit();
-+err_v:
-+	batadv_v_deinit();
-+err_tt:
- 	batadv_tt_cache_destroy();
- 
- 	return ret;
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 926210a67d640..107647c9badad 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -1556,14 +1556,18 @@ struct genl_family batadv_netlink_family __ro_after_init = {
- 
- /**
-  * batadv_netlink_register() - register batadv genl netlink family
-+ *
-+ * Return: 0 on success or negative error number in case of failure
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index af0543a4d346c..6442f5d0cc937 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -341,7 +341,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+  * For traceroute-style ICMP echo requests, send a TTL exceeded reply back to
+  * the source. Other ICMP types are simply dropped.
+  *
+- * Return: NET_XMIT_SUCCESS if the reply was queued, NET_RX_DROP otherwise
++ * Return: NET_RX_SUCCESS if the reply was queued, NET_RX_DROP otherwise
   */
--void __init batadv_netlink_register(void)
-+int __init batadv_netlink_register(void)
- {
- 	int ret;
+ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb)
+@@ -382,8 +382,8 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
  
- 	ret = genl_register_family(&batadv_netlink_family);
- 	if (ret)
- 		pr_warn("unable to register netlink family\n");
-+
-+	return ret;
- }
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res == NET_RX_SUCCESS)
+-		ret = NET_XMIT_SUCCESS;
++	if (res == NET_XMIT_SUCCESS)
++		ret = NET_RX_SUCCESS;
  
- /**
-diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
-index 4eae9e5ff1354..f92d3ea7d06cb 100644
---- a/net/batman-adv/netlink.h
-+++ b/net/batman-adv/netlink.h
-@@ -12,7 +12,7 @@
- #include <linux/netlink.h>
- #include <linux/types.h>
- 
--void batadv_netlink_register(void);
-+int batadv_netlink_register(void);
- void batadv_netlink_unregister(void);
- struct net_device *batadv_netlink_get_meshif(struct netlink_callback *cb);
- struct batadv_hard_iface *
+ 	/* skb was consumed */
+ 	skb = NULL;
 -- 
 2.47.3
 
