@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30095C55174
-	for <batman-adv@archiver.kernel.org>; Wed,  5 Aug 2026 15:08:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAE73C55ABA
+	for <batman-adv@archiver.kernel.org>; Wed,  5 Aug 2026 15:10:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 9A08D84202
-	for <batman-adv@archiver.kernel.org>; Wed, 05 Aug 2026 17:08:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id F217283443
+	for <batman-adv@archiver.kernel.org>; Wed, 05 Aug 2026 17:10:07 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1785942524;
- b=ZjYf+feRJfYdNv+XTbHTY/SfvBa9UkKovxjWHB9FwgpIBlkc2VQPsUoUHyr9EnBuJNDRr
- WOpNmcQ7OQo43fqpl9xFHuGuQpsGFxCkSd4VUQTcs9rkiINY7uH7QjPzoKf8lZAASZcXuo9
- ZTSzyPmlIBJ/fo91+hwjEqvUqQwD9uQ=
+ t=1785942607;
+ b=bwzQp3gu4U3oBMUkPeYmdlFjVuf4vDDeL3+CH887X6/qXBgNI5Q9m34evIpLr9F21LcQI
+ pbjJw3DWvjUuWozCcJaLnqQjsia/ybkfPhYAerw7O9C/6awHYwkl4QetxP8e9nt6Y6vLuM9
+ iTEWdLGiCQLdsX6OptMveAfHwP1tCnU=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1785942524; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1785942607; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=AmlLtQRkM97FYutHqGFpM6jrd2KvNwyPOfScA9ebmQ4=;
- b=0FxyzRKXQpRP0XJGm/kR+YLhfCfLpe5eowkuVKpxVnXFxoviBxxHyPeVF13e8jDyZcESX
- H7pTbWwtyyqU1o0eHx/bUFxvYzk1Lyc1MN/ctI+7Y/fWvL4FsFHG6KNN+cpIsjQFk8wKeOl
- u93d2+1Z7zrEJhnZSIo+u7ARGR3kCuA=
+ list-archive; bh=bRkFro8mVn2n0AGMzh8rNFlUksfWTas3iD926F07yqk=;
+ b=2omL2oB6Fcse5urJ2cchhgYx66i/zVPXGgnKO/HnzFpVKd3x9ENW894tKqbCUuHRpSTV7
+ +1iaHPZA355Yp/jJ3lyHcFgc7vIZcrN+eCOliWaMWgvROlIiLpSN5JfZUrVVrOmzynrNw50
+ +75Vq6s+TSwS8AqhWe67E+UzBJooxVI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1D8D781083
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 05 Aug 2026 17:07:32 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785942452;
-	b=2xbm/rm40sd/b3JI74ARVGgYOQo90x7Bl4vPhCVYylHqXuJvoWG8KwK5U9o4l3IPggnx8w
-	8IIN0rHpalzJl1RvXg2d+lZ4q8a1iJXd/LyU2nqhXKrdLxfNIM7jArxaSA+T459scCimzH
-	aVFBf8yBHCSlxzG7AZAO8j/RPwiNRKc=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D90FB80E71
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 05 Aug 2026 17:09:50 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1785942590;
+	b=sj8VnQmTj/bVIZyqW3vT0TPc1bCAfOu+jXN8skCJPUa3KzuQDN8eYajcawSay2aJ5G18AL
+	JfI1aOzQW3vMkWr4s5534C0PwtyOB4mGuSPFfC6PMbNpAVZPGf+yVIwxuouD+TKr4EsZIQ
+	oTCjk8AiHpCDKmLIHP/f7nMU4tP86Z0=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1785942452;
+	s=20121; t=1785942590;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=AmlLtQRkM97FYutHqGFpM6jrd2KvNwyPOfScA9ebmQ4=;
-	b=wzGyS4edeGw0H+lRdZZWFkS2i+ohyLZHRyJkUB0JLriobAqp2EGPzmMGIpzujG1jMkLgrx
-	TiaKBY6pcHmZlgp4tj8Xo4frl3mFFIWoDiR/Fz+cG2JDUnwfcvVshO4VNEoXfOQGobs4x3
-	gOgvYGdjl8thTquTfPJks7VrXEr+2Lw=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=bRkFro8mVn2n0AGMzh8rNFlUksfWTas3iD926F07yqk=;
+	b=2NTGDU7jQo5BBpfqWYk2JiTlRsbRBdLWdPbapvTWYWpH8bBCV+80X8wWhWopLuYWaepwbI
+	1fzB+V0f5YekbGtigEV2x768kEZUCi933iAuSlH1SXMHTr1SAJnuTETvuysDBwwUJzQoqP
+	K4ZDGm/DOFAO0vclPXzFheCUg08iwrs=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=QpCXlBHW;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xwjOjQHi;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id A7D21204D0;
-	Wed, 05 Aug 2026 15:07:27 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 6741620241;
+	Wed, 05 Aug 2026 15:09:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1785942447;
+	s=20121; t=1785942586;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AmlLtQRkM97FYutHqGFpM6jrd2KvNwyPOfScA9ebmQ4=;
-	b=QpCXlBHWw3nV8peOjb/AKbtxh2jZ3/yNOs3If5jUbq3JjEnx/+Htp3pt6jEXFAxG0YS2J/
-	xQYgOPwQvV7GOaAR3AZBuT8l1R/qXtMDA+FiYC4CEUZoB7oNPXlEC0N460iYPWSbINgP/E
-	2NzMC5ik6ZF/fQKoX2OKRd4h0NVBThI=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=bRkFro8mVn2n0AGMzh8rNFlUksfWTas3iD926F07yqk=;
+	b=xwjOjQHi6Wk4oB9vBN1k+Sp32gsHz4rIO7WQGVkTz8bkR7DW4OQPvkIu1KtMnlVfWbdrVh
+	QnWgmgs3RJ8u6MrheQ+UjwbHY3Vr5SpalJOS6qEunRmYhs00Ec0cj/brJbx1PPglz7jJ5C
+	A1Qjl4mLOiuNsl3fbPIVwEQcTJXy69o=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 05 Aug 2026 17:06:58 +0200
-Subject: [PATCH batadv 2/2] batman-adv: compat: add
- scoped_guard(spinlock_bh, ...) support
+Subject: [PATCH RFC batadv v3 0/6] batman-adv: tt: atomic sashiko fixes
+Date: Wed, 05 Aug 2026 17:09:34 +0200
+Message-Id: <20260805-tt-fixes-v3-0-25b00b558470@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260805-scoped_guard-compat-v1-2-3067f6013b62@narfation.org>
-References: <20260805-scoped_guard-compat-v1-0-3067f6013b62@narfation.org>
-In-Reply-To: <20260805-scoped_guard-compat-v1-0-3067f6013b62@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAC5Sc2oC/2WOzQ7CIBCEX8VwFkMplOrJxMQH8Go88LO0eGgNI
+ NE0fXcpHjR6nJ35ZnZCAbyDgHarCXlILrhxyKJer5Du5dABdiZrRAltiKgJjhFb94CArZZUCUp
+ BKYNy/OahGDl9RqfjYbkpGaVJ6PK2w11dQcelbjF7F+Lon2U6VQX7X0kVJrhhsAVOueGc7wfpr
+ Yz5zc3ou1Kd6AduCfuCaYZZKzRrrRZWs194nucXkw7wUAIBAAA=
+X-Change-ID: 20260730-tt-fixes-fca2b722ebbd
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3406; i=sven@narfation.org;
- h=from:subject:message-id; bh=8rmMNiBmHjjVUKrzE1eVmlOw6Nhxcrut11Xj/1bgXUc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnFgZNlE0V1zEoVYr/+D5rp85Rv4773LDmz4wr7rt7rz
- rst/V6jo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRr08ZGS4eV+v9GL5FKyxI
- cv+1jIjwaSVX3v5ccMHildTS8JQgdl9Ghln3Kn0YNK49j/s7ScG14qT9hbVvezufJKxs779zYWq
- AGhcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2109; i=sven@narfation.org;
+ h=from:subject:message-id; bh=mJnX4NrM5Ndf2FX0M5n8EKAQGZaq9PoIFj3KX97c3T8=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnFQSZKj1RPVWx2eH2u/rK3tKKU8e6gK1n2v/vNOJSie
+ bgFT7R0lLIwiHExyIopsuy5kn9+M/tb+c/TPh6FmcPKBDKEgYtTACaito+R4ceh1bzcFr5qM0Vl
+ zH5NmiWRtOqNuxlT9wbd+vu1W3XKWxn+O5teuiK95HZ6k00f+wnDpKWWC77/2uwiXCuqHzl9yxw
+ lDgA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 4TUBCDQ2DU4HRGOEWMBGUVAILAJC3ASZ
-X-Message-ID-Hash: 4TUBCDQ2DU4HRGOEWMBGUVAILAJC3ASZ
+Message-ID-Hash: BULCHEC4TFRJ7SP2FDDCTVT25WYWHUF5
+X-Message-ID-Hash: BULCHEC4TFRJ7SP2FDDCTVT25WYWHUF5
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4TUBCDQ2DU4HRGOEWMBGUVAILAJC3ASZ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BULCHEC4TFRJ7SP2FDDCTVT25WYWHUF5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,115 +112,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
+There were a couple of sashiko reports regarding the
+batadv-next-pullrequest-20260728 PR. I went through the TT code and tried
+to handle them and at the same time already predict what else sashiko might
+report as next. I needed to change the batadv_tt_local_remove() hash
+interaction as preparation for the related NEW flag (and counter) handling.
+
+And the netdev maintainers rejected this approach (for now). I had to
+re-add the atomic_t code parts back in this patchset. But since the netdev
+maintainers didn't like the atomic_t implementation, everything was changed
+to atomic_t with the help of scoped_guard().
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- compat-include/linux/cleanup.h  | 48 +++++++++++++++++++++++++++++++++++++++++
- compat-include/linux/compiler.h | 15 +++++++++++++
- compat-include/linux/spinlock.h | 20 +++++++++++++++++
- 3 files changed, 83 insertions(+)
+Changes in v3:
+- switched to spinlock_bh due to rejection atomic_t by netdev (and
+  potentially easier code)
+- switch back to RFC
+- Link to v2: https://patch.msgid.link/20260804-tt-fixes-v2-0-487c48fc7fc4@narfation.org
 
-diff --git a/compat-include/linux/cleanup.h b/compat-include/linux/cleanup.h
-new file mode 100644
-index 00000000..9cdb6466
---- /dev/null
-+++ b/compat-include/linux/cleanup.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_CLEANUP_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_CLEANUP_H_
-+
-+#include <linux/version.h>
-+
-+#if LINUX_VERSION_IS_LESS(6, 5, 0) && \
-+    !(LINUX_VERSION_IS_GEQ(6, 1, 79) && LINUX_VERSION_IS_LESS(6, 2, 0))
-+
-+#include <linux/compiler.h>
-+
-+#define CLASS(_name, var)						\
-+	class_##_name##_t var __cleanup(class_##_name##_destructor) =	\
-+		class_##_name##_constructor
-+
-+#define scoped_guard(_name, args...)					\
-+	for (CLASS(_name, scope)(args),					\
-+	     *done = NULL; !done; done = (void *)1)
-+
-+#define __DEFINE_UNLOCK_GUARD(_name, _type, _unlock, ...)		\
-+typedef struct {							\
-+	_type *lock;							\
-+	__VA_ARGS__;							\
-+} class_##_name##_t;							\
-+									\
-+static inline void class_##_name##_destructor(class_##_name##_t *_T)	\
-+{									\
-+	if (_T->lock) { _unlock; }					\
-+}
-+
-+#define __DEFINE_LOCK_GUARD_1(_name, _type, _lock)			\
-+static inline class_##_name##_t class_##_name##_constructor(_type *l)	\
-+{									\
-+	class_##_name##_t _t = { .lock = l }, *_T = &_t;		\
-+	_lock;								\
-+	return _t;							\
-+}
-+
-+#define DEFINE_LOCK_GUARD_1(_name, _type, _lock, _unlock, ...)		\
-+__DEFINE_UNLOCK_GUARD(_name, _type, _unlock, __VA_ARGS__)		\
-+__DEFINE_LOCK_GUARD_1(_name, _type, _lock)
-+
-+#else
-+#include_next <linux/cleanup.h>
-+#endif /* LINUX_VERSION_IS_LESS(6, 5, 0) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_CLEANUP_H_ */
-diff --git a/compat-include/linux/compiler.h b/compat-include/linux/compiler.h
-new file mode 100644
-index 00000000..de7c09c4
---- /dev/null
-+++ b/compat-include/linux/compiler.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/compiler.h>
-+
-+#if LINUX_VERSION_IS_LESS(6, 5, 0)
-+
-+#define __cleanup(func)			__attribute__((__cleanup__(func)))
-+
-+#endif /* LINUX_VERSION_IS_LESS(6, 5, 0) */
-+
-+#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_ */
-diff --git a/compat-include/linux/spinlock.h b/compat-include/linux/spinlock.h
-new file mode 100644
-index 00000000..71a333f8
---- /dev/null
-+++ b/compat-include/linux/spinlock.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_SPINLOCK_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_SPINLOCK_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/spinlock.h>
-+
-+#if LINUX_VERSION_IS_LESS(6, 15, 0) && \
-+    !(LINUX_VERSION_IS_GEQ(6, 12, 37) && LINUX_VERSION_IS_LESS(6, 13, 0))
-+
-+#include <linux/cleanup.h>
-+
-+DEFINE_LOCK_GUARD_1(spinlock_bh, spinlock_t,
-+		    spin_lock_bh(_T->lock),
-+		    spin_unlock_bh(_T->lock))
-+
-+#endif /* LINUX_VERSION_IS_LESS(6, 15, 0) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_SPINLOCK_H_ */
+Changes in v2:
+- rebase on main
+- add "batman-adv: tt: use atomic flag modifications" and "batman-adv: tt:
+  simplify NEW flag transition code" because they are reverted on main
+- add patch to extract the roam "add" code in a separate function
+- make the "simplify NEW flag transition code" patch independent of atomic_t code
+- Link to v1: https://patch.msgid.link/20260730-tt-fixes-v1-0-64e9e525d555@narfation.org
 
--- 
-2.47.3
+---
+Sven Eckelmann (6):
+      batman-adv: tt: remove only the entry which was looked up from the hash
+      batman-adv: tt: extract code handling a roam on add
+      batman-adv: tt: simplify NEW flag transition code
+      batman-adv: tt: use atomic flag modifications
+      batman-adv: tt: decrement count for committed client on local_remove
+      batman-adv: tt: don't uncount never committed clients on pending purge
+
+ net/batman-adv/translation-table.c | 693 +++++++++++++++++++++++--------------
+ net/batman-adv/types.h             |   8 +-
+ 2 files changed, 448 insertions(+), 253 deletions(-)
+---
+base-commit: 46e983472304d8875436a23ccb996ea18856081a
+change-id: 20260730-tt-fixes-fca2b722ebbd
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
