@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED5AEC55ABF
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38219C56208
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:45:36 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4324884255
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:45:03 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 772D884257
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:45:34 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786009503;
- b=bjGIqEQc2HVlLwFNjRss5N8QZwCoU+UmpfCSF6b5Ry9efPNeW8N5kEMT6efTo1/RHmQWu
- kWfbdpi1hF/j9lEaAci/Iudv7ob0oHclKkurgY3yWWrtBiGFuYZGewIhJmucwnBwBFM+sdM
- Rxh41uJGsQrTVjJMSCe5cAkUaFP6tNk=
+ t=1786009534;
+ b=oonKce1ObA85fVNJqlkr4rQlNusqUDeDUfkkNeBM97UkxZaotzYE39WZtEUDb2VGQUw2p
+ 8SjBNVdcaF+gVrK/jwfmuN7PUxofdDpJN2TtOx1C6daKx7QJYL4YxVv92+QKlbJ4V+lcsWE
+ RI/D+Qld5lYUqsNChpHQlIdMTdtzIPw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786009503; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786009534; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=SkrfB3vAV6HD5leXjKA8ehH9MZtbiJefiz6c/RAu2H4=;
- b=QjxMjzhcV/3d4xbfHE2QlReeel0mf2mrvdwfxxMaF1iAm2tMlmAJK1uhTqK+ifCLOZ0AY
- V2P7PWGIXPyfrx7QTtrHnkSFb/GSfFAyC7odKWudY9KzrhFhsiIL7znSZ3ska0t82mbM9S+
- qxYKeWv78dw36AZ3Jj/KgbxsmtKbUxI=
+ list-archive; bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
+ b=UeQnTmB7/qKOm5l2W/6GBbV3YpTX0uOlU/rncmwKeHULydtAKEvNPogRYXhns3iZYldGW
+ bxkKehwxtHO3etP0ZmNjyP60ZCnB+t7Qz6mW50nrkvhK9DhtIgE9ENnZAiuJHyWZ6Gb8+jY
+ VhqhjFLj+NkGTwdPHyI5w6+lG41p+zE=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,64 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id F078F8065C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:44:47 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009488;
-	b=a4yb8aa7Z68FlJLI86O9vbNZ66fVMTgcA30EO8gTw20bCjVBGAiUQwxmrZq7+YSrKBKT6x
-	deURKVNmJPCfSDrblhHajv27lDJaspqeM68Kns+9/MXi1RNDhs7zZA5qTmVyNVsfQf7Izr
-	Coig9h8vsSNj6niPmSRBxO4KzS9budE=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 079CB84215
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:44:55 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009495;
+	b=OIxJIVccEzcsFETCHJ6Rq1GHEHGZORzyb5H0ygD6i6/VMrreW54VdrVkYfJ2IVl9ek+6Zm
+	d7mflg7NwJnRdVlLZfcovi5mQNNbNxg+v8DxPB2yn/3ZXwXVlk6x4XxFPDEoQ1tDYAIMNN
+	Wqi36H2skhbhw3JNGz5q4mqjuWqMIa8=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786009488;
+	s=20121; t=1786009495;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=SkrfB3vAV6HD5leXjKA8ehH9MZtbiJefiz6c/RAu2H4=;
-	b=s2ryBnCTzfGz/CmattRAwlDOXkvjiJi5kHXJeVLhWegpyCcUKvabxOQ5lor7022ERbUX/n
-	qKmcOwJeFkVj09siwdw9p9gMiKcJRdFsi71SAApJH+etxFjKQezwsbdNY9fjtwYKwdzgJW
-	slf/HIeXh7c3bBFocNFJ1tbu7Mujx6g=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
+	b=jcipsOORRGXHLUzCLLh4XwMzDJF73X5vx4vlAp85+XlbblFG9l/38EovSg4UWCxShzoIbg
+	bIhmr9sJK9lFww1fnb+goKVAAAMtIezbz3kWS9v+QRshBU5oX9Mw/pYbjN/wFRlWZSAhn0
+	NybSkHa+mmwKRvdyhIHxmic/C4yx9sw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=r7cwmxP3;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=wN3YFmzd;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id C46DD20590;
-	Thu, 06 Aug 2026 09:44:41 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 67B7920590;
+	Thu, 06 Aug 2026 09:44:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786009481;
+	s=20121; t=1786009490;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=SkrfB3vAV6HD5leXjKA8ehH9MZtbiJefiz6c/RAu2H4=;
-	b=r7cwmxP3OLDvxRNlkJCd2Aed5SxmnIUQjfCXfch+jRaSyQZPywKz9F0CWG9gy8J2QUnXf/
-	Ovx0jcjoqzPt63vXYJPNIZTR7omrdmaeoeSlpV3X8/b/1AbT0+qarAKDrAdBY3RMkH/kuv
-	tCAQJbqFEjqEz99ilj3UPOBLxdh+w4M=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
+	b=wN3YFmzdXEXaRM/BA8ewOyil4nYmvz3BB/XW9S7euklm6Z7SOVlqVEHRd5jRtvK5yon9uZ
+	BqbT1+pGsVzqBG4zSkxSjCK4OPevftBlSBKTvkcHnJXL2rrDslE1nLxYoPRSuO2Va8eYjo
+	c0XaPRdzbcqTuYtW7010oYEo5PgUKxA=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH RFC batadv 00/12] batman-adv: tt: refactor
- *_add/batadv_tt_local_remove functions
-Date: Thu, 06 Aug 2026 11:44:13 +0200
-Message-Id: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
+Date: Thu, 06 Aug 2026 11:44:14 +0200
+Subject: [PATCH RFC batadv 01/12] batman-adv: tt: look up wifi state of
+ incoming interface in helper
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAG1XdGoC/z2PQQ7CIBBFr9LMWhIKFGi3Jh7ArXExwKgYrVpoY
- 2K8u7Qal/9P/nuZFyQaIiXoqhcMNMUUb30J9aoCf8L+SCyGkkFwobnlmuXMMATmL4T9eGc1d42
- klnRjHJTRfaBDfC7AHWw367lzmDFMsP+e0+jO5PMM/Q0GeoxFnH+rv7erFquRfLYuWHbwKJwRg
- pwL3aS++ETM367XmLtKaWqtVEZIroK1plFSo5Deu7bVhLW1TfmjRti/3x8lRY7R/QAAAA==
-X-Change-ID: 20260806-tt-add-cleanup-10b53e9e657b
+Message-Id: <20260806-tt-add-cleanup-v1-1-ffcad65bccc4@narfation.org>
+References: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
+In-Reply-To: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2397; i=sven@narfation.org;
- h=from:subject:message-id; bh=kKD8Hof4CHRBufzygwQG2eyIGvxWrhn4i39nCqMbQwk=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4U2OheKGErF/5LbEuws7Kpgt43gmzmp8bG6TNc85U
- b66uXs7SlkYxLgYZMUUWfZcyT+/mf2t/OdpH4/CzGFlAhnCwMUpABNx42X4Z3NzZ/y7Svm5K8qV
- n81JFp3UNs+1K8BgekVqwJGaD44q+xgZbl8LuDPtSVvjRnn9wDnf7iiu/NGadkBjReX1u2r7E6W
- fcQEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3327; i=sven@narfation.org;
+ h=from:subject:message-id; bh=yUBo56PNmO4dZY3Evfho9qNT69IxmoZXkZwLPHZzZkw=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4U3clpHn5P5dzzisEuHzxOvo/za1xdPs58lLWHz9e
+ K70l//RjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEZv5k+Kc/a+tev7/eviv+
+ n7wze5X9Q45br594du7c8rvQvvPfecssRoYZqT1hotee35z2952+3T7ubyyWKieuR81VWqHptKX
+ 1ngYXAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: TJDUIPY7LAFVBKKEHQMVMFDLRDL2KYU7
-X-Message-ID-Hash: TJDUIPY7LAFVBKKEHQMVMFDLRDL2KYU7
+Message-ID-Hash: ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM
+X-Message-ID-Hash: ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -105,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TJDUIPY7LAFVBKKEHQMVMFDLRDL2KYU7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,49 +113,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-While workig on the flag protection changes, it became apparent that the
-current code is hard to maintain. Too many gotos with large sections which
-are hard to cras; because it is unclear how these sections are interact. To
-simplify everything, sections which are handling a single task are
-extracted in separate functions. This makes it cleared what the input and
-output of each "section" are.
+batadv_tt_local_add() only needs to know whether the client was seen on a
+wifi interface. But it kept the net_device reference of the incoming
+interface alive until its own cleanup section, together with a "net" and an
+"in_dev" variable which are of no interest to the rest of the function.
 
-I tought about moving this in front of the flag protection changes but I
-might end up in an endless "first clean up this other thing over
-there"-loop before actually integrating the relevant changes.
+Move the lookup to a small helper which acquires and releases the
+net_device reference itself.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Sven Eckelmann (12):
-      batman-adv: tt: look up wifi state of incoming interface in helper
-      batman-adv: tt: extract allocation of new local entries
-      batman-adv: tt: replace forward gotos in batadv_tt_local_add()
-      batman-adv: tt: extract refresh of existing local entries
-      batman-adv: tt: extract update of dynamic client flags
-      batman-adv: tt: extract allocation of new global entries
-      batman-adv: tt: extract merging of flags into existing global entries
-      batman-adv: tt: replace add_orig_entry goto in batadv_tt_global_add()
-      batman-adv: tt: extract removal of the superseded local entry
-      batman-adv: tt: extract marking of a removed local entry
-      batman-adv: tt: extract immediate purge of a local entry
-      batman-adv: tt: drop the cleanup label from batadv_tt_local_remove()
+ net/batman-adv/translation-table.c | 41 +++++++++++++++++++++++++++-----------
+ 1 file changed, 29 insertions(+), 12 deletions(-)
 
- net/batman-adv/translation-table.c | 720 +++++++++++++++++++++++--------------
- 1 file changed, 450 insertions(+), 270 deletions(-)
----
-base-commit: 46e983472304d8875436a23ccb996ea18856081a
-change-id: 20260806-tt-add-cleanup-10b53e9e657b
-prerequisite-change-id: 20260730-tt-fixes-fca2b722ebbd:v4
-prerequisite-patch-id: 8c512768c6b45c3df367b37240f13c82b9c0b073
-prerequisite-patch-id: d6522440ee88ce12d7109c9afe31eae8f0ec7358
-prerequisite-patch-id: 659ae36c803f6348748ae4bc34d5b59c54bca267
-prerequisite-patch-id: 023ee98093cfa05e842261bf895e5f3b4e38e49a
-prerequisite-patch-id: 58431a16185a5819aa0d6e3b57f2d77e83bca755
-prerequisite-patch-id: 14b8822e6f82a825b4d5b26d61003c9c4923cd7e
-prerequisite-patch-id: 1b1fcf21a580983f652735dfe4bc99ed67ca69dc
-prerequisite-patch-id: 7fbb101bc6b6924d631888aae052501ce724ce9f
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 63948ee2..d040c0d3 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -41,6 +41,7 @@
+ #include <linux/string.h>
+ #include <linux/workqueue.h>
+ #include <net/genetlink.h>
++#include <net/net_namespace.h>
+ #include <net/netlink.h>
+ #include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+@@ -745,6 +746,32 @@ static void batadv_tt_local_add_roam(struct batadv_priv *bat_priv,
+ 		batadv_tt_global_free(bat_priv, tt_global, "Roaming canceled");
+ }
+ 
++/**
++ * batadv_tt_iif_is_wifi() - check whether a client is connected via wifi
++ * @net: namespace to search the incoming interface in
++ * @ifindex: index of the interface where the client is connected to
++ *
++ * Return: true if @ifindex refers to a wifi interface, false otherwise (which
++ * includes the case of an unknown or missing incoming interface).
++ */
++static bool batadv_tt_iif_is_wifi(struct net *net, int ifindex)
++{
++	struct net_device *in_dev;
++	u32 wifi_flags;
++
++	if (ifindex == BATADV_NULL_IFINDEX)
++		return false;
++
++	in_dev = dev_get_by_index(net, ifindex);
++	if (!in_dev)
++		return false;
++
++	wifi_flags = batadv_netdev_get_wifi_flags(in_dev);
++	dev_put(in_dev);
++
++	return batadv_is_wifi(wifi_flags);
++}
++
+ /**
+  * batadv_tt_local_add() - add a new client to the local table or update an
+  *  existing client
+@@ -764,12 +791,10 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
+ 	struct batadv_tt_global_entry *tt_global = NULL;
+ 	struct batadv_tt_local_entry *tt_local;
+-	struct net *net = dev_net(mesh_iface);
+-	struct net_device *in_dev = NULL;
+ 	struct batadv_meshif_vlan *vlan;
+ 	bool roamed_back = false;
+-	bool iif_is_wifi = false;
+ 	int packet_size_max;
++	bool iif_is_wifi;
+ 	bool ret = false;
+ 	u8 remote_flags;
+ 	int hash_added;
+@@ -777,14 +802,7 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 	u32 match_mark;
+ 	bool modified;
+ 
+-	if (ifindex != BATADV_NULL_IFINDEX)
+-		in_dev = dev_get_by_index(net, ifindex);
+-
+-	if (in_dev) {
+-		u32 wifi_flags = batadv_netdev_get_wifi_flags(in_dev);
+-
+-		iif_is_wifi = batadv_is_wifi(wifi_flags);
+-	}
++	iif_is_wifi = batadv_tt_iif_is_wifi(dev_net(mesh_iface), ifindex);
+ 
+ 	tt_local = batadv_tt_local_hash_find(bat_priv, addr, vid);
+ 
+@@ -933,7 +951,6 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 
+ 	ret = true;
+ out:
+-	dev_put(in_dev);
+ 	batadv_tt_local_entry_put(tt_local);
+ 	batadv_tt_global_entry_put(tt_global);
+ 	return ret;
 
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
