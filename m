@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 920B2C5AC67
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 19:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58EFEC5AC67
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 20:00:14 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A33848084E
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 21:37:48 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 74E74800FE
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 22:00:08 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786045068;
- b=yrU5pfE721Q4NgGgyiBVjgC6ElN0pOvmHKDb+DIilRsM/WYdW18dOdHN5uLWLUNvzMGqJ
- OoMhsG0M8FH2wSveluPvh77j2vzYIfkt++6KbX1rvovH7i8Tzz2pcpMA3Ix69la1smmHpOH
- eUVeQ4+XHEffeCg2TxANg4I2S98Ib/M=
+ t=1786046408;
+ b=cvuzqaSe69MfQ5rbsG5LMYXOPpkilEe3ILoes/xqA2h1qsPgad/VczKiDHBfwJd3TfX4d
+ /HZgCaJ6XMXYV9UKQplJvm+Vh8EEPZQ9CKDc+lDUVXI7Z1e3UAdBP+6GyfXkA1JN6W3PQJ2
+ ujgWvmOs1OqXb62xNrrHEaeOnbUhEns=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786045068; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786046408; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=8MgRhsQsJhtovHQZ0AtT8uohec29vsFDRLDH1CyPyKw=;
- b=Z8EJ3C8ZVZpaK/OW3ZPDZOlpIBJ4gMZXqgzXjfOpR+hg8tD+8i7BZLZyxV2nbKnAkF9SZ
- n9o9jAXLRnHbI/X4dzqrNZZ2ajfFDm6jtz9ABMMRjeWj+P+MYNjjSn1nmE9bm6q7k3T8blY
- HTbBVLnGMm1RC3faWIz/Bs0P3DUMEm4=
+ list-archive; bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
+ b=j6unfAJ6/uC8DGwHd3a5edD5KgmpZjR/9+G3kifyu+Y0CL/5RFfVjS34c/BmErQ7LPzrz
+ q4TWiDy/DYSKTLG8ihkSnwsvlAGkksPunP6iMMdTXlNyptV0ipTRNAwg1hjoxlJSM76cxuf
+ oedn8+SGnHebxggwdLuiqzxqgUqYyjk=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C679681E08
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 20:55:31 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786042541;
-	b=0PKwi2Au1vjXjr5fOuSxoKFomM3bkWr5I6Hts5t+t0MBvy9HZRk7ZMM3AHisKh8Xh0JxFh
-	g6KP63koZBpw+TtLVPzkyKm+i3uyPWqVVRh7KqBntwplNq2U9w6KPH02QpUS76qoDp+BqU
-	5Tw/5p6/eEk/GCGzyWWiTTITQdkYXEo=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9E6BD80267
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 20:55:45 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786042545;
+	b=F3RQiL9WvRG24lzXhQkx7CqmCUGqvjN65HRZervsZGNRE5D8HO7fQqhBI7BJurtfv+yTVn
+	2/+4cjQzJ/PTOhl5Q64QHGp7mMjOnESgdD219rMa3Z5w+LCgINQIpfLLgLysudK23oB2Dt
+	uI+UmBOaTFqUzdVpNIroDKc6wFJMDJM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786042541;
+	s=20121; t=1786042545;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=8MgRhsQsJhtovHQZ0AtT8uohec29vsFDRLDH1CyPyKw=;
-	b=f5Emnw38VGGfRay/KZ2Dm811/EA8Veqr2IO9vuhT6z13fIjFpT6H7NYUMzPlWHDQo6sSYC
-	yZkWAnZDqJiLiX9ZdCU7170FPyh7l8V8+k+uwmCJf+WaccUeQqKHSzGLfmik/d5cJgVShD
-	Jqe3ukELV9a+1bjTcJwEE/Tkp7++BVE=
+	bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
+	b=dh0ehkXzhMWl8VZPwVPFJvCWqCvhyQsJr2YkCwdU164Q8a9CHw2I9WcmMrbrER/bvdqJn5
+	YsC/QFirnBOUBO+WMlbFV2idVJHHDDGV7PSDW1UO1UtV4EGHJ6C47BTlu3AbAdCDuhDtiH
+	2suOkjQugpCb+xc714MxjDetDVXRvAc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=bKaFZ7sD;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=pPQfGEle;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id DBC8621B1C;
-	Thu, 06 Aug 2026 18:55:26 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 3322C20267;
+	Thu, 06 Aug 2026 18:55:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786042527;
+	s=20121; t=1786042541;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8MgRhsQsJhtovHQZ0AtT8uohec29vsFDRLDH1CyPyKw=;
-	b=bKaFZ7sDxV7DLlYsrNkT0F6LKVozu1FmzEa3EKSnBaQBlmdMzeWPU9R20KXo34tg0e98Y7
-	FaknSrHkwApoQ6JP7FOLz+BlyWreZ9SEjX7KGiv4y0IeigUUOEQHiHcPSJWqezcN8SUJCE
-	txrfz2DdS2tsrZgRWHYGZZxSxK1eR2w=
+	bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
+	b=pPQfGEleBikMm1JBeIo6aX35q2QH9mnx8zoTCRqgpr1ZNpg9kQrxMNQr2O8SP3omETQvtx
+	6XBN+TzPgAIvXcB7RwkDaphHGJ/z82viSuhG+ipTtIHbZKTZWpOah/ZxrP/yiVokDR1pYo
+	mMIA3Ou7Qeo1P7e5x0Eu+PYqjyKvVKk=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 06 Aug 2026 20:54:53 +0200
-Subject: [PATCH batadv 1/3] batman-adv: bat_v: fix bonding candidate
- selection
+Date: Thu, 06 Aug 2026 20:54:55 +0200
+Subject: [PATCH batadv 3/3] batman-adv: use more descriptive var names for
+ is_similar_or_better
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260806-bat_v-sob-kdoc-v1-1-ba4d763de0da@narfation.org>
+Message-Id: <20260806-bat_v-sob-kdoc-v1-3-ba4d763de0da@narfation.org>
 References: <20260806-bat_v-sob-kdoc-v1-0-ba4d763de0da@narfation.org>
 In-Reply-To: <20260806-bat_v-sob-kdoc-v1-0-ba4d763de0da@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1993; i=sven@narfation.org;
- h=from:subject:message-id; bh=eVw31B8xKcVDHBtxqIgYjQ0dBjibHFRREqW/iGqvL4U=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklN1pTg3dpb/2s5Xrk4ZHT4avWsPswK85gNsq6db87O
- I2Lszmro5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjARucOMDHM0u6VKZ4mk6svt
- Wb3RqsfD8vvu6W03omtXL/nKoLoj7Cgjw/tvMw6yOV8wtDZT1mvbfzDqnvO1zg0P/6Qf/rpiyXx
- 1NT4A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6311; i=sven@narfation.org;
+ h=from:subject:message-id; bh=q6oVKRO6UkMUbkfG9SonXDBDa+wcIksb9B55Is53sDI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklN1r3XORRSuwRuP7rt8JK5rl8G7RfLtueVbL358vNy
+ 82rpbLfdZSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAm0mDH8M80ZEPnujahiPcm
+ xodnPatqNDKvvLvz4/9Tppo50gar72owMnR+eX5Q7XFhY8+Ctsw9LKdd2ZJTOp67Hv8sGxJUL38
+ okgcA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ND3TW5OOVWYT6ZY4E5Q55MUU4PY4JG2Y
-X-Message-ID-Hash: ND3TW5OOVWYT6ZY4E5Q55MUU4PY4JG2Y
+Message-ID-Hash: CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK
+X-Message-ID-Hash: CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ND3TW5OOVWYT6ZY4E5Q55MUU4PY4JG2Y/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,56 +113,153 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_v_neigh_is_sob() implements the metric (throughput) similarity check
-as:
+neigh1 and neigh2 is not really helpful when looking at a code which needs
+to judge the metric similarity between a candidate and a reference. This
+already caused an implementation error in the B.A.T.M.A.N. V bonding code.
+Simply using "reference" and "candidate" for the neighbors is a lot more
+descriptive and makes it easier to understand the code.
 
-  neigh2 (the reference) has a better throughput than 3/4 of the neigh1
-  (candidate) throughput
-
-But this results in a selection of bonding candidates in
-batadv_find_router() which have a really low throughput. But the goal must
-be to select candidates which have a good throughput.
-
-The neigh1/neigh2 operands must be swapped in the comparison to use the
-reference as such and select only neighbor+interface combinations with good
-throughput.
-
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Fixes: b05bbab5e1fc ("batman-adv: B.A.T.M.A.N. V - implement neighbor comparison API calls")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 25 +++++++++++++------------
+ net/batman-adv/bat_v.c      | 42 +++++++++++++++++++++---------------------
+ net/batman-adv/types.h      | 12 ++++++------
+ 3 files changed, 40 insertions(+), 39 deletions(-)
 
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 53fbdbbe..3fe09b4c 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2424,25 +2424,26 @@ static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
+ /**
+  * batadv_iv_ogm_neigh_is_sob() - check if neigh1 is similarly good or better
+  *  than neigh2 from the metric prospective
+- * @neigh1: the first neighbor object of the comparison
+- * @if_outgoing1: outgoing interface for the first neighbor
+- * @neigh2: the second neighbor object of the comparison
+- * @if_outgoing2: outgoing interface for the second neighbor
++ * @candidate: the first neighbor object of the comparison
++ * @if_outgoing_cand: outgoing interface for the @candidate neighbor
++ * @reference: the second neighbor object of the comparison
++ * @if_outgoing_ref: outgoing interface for the @reference neighbor
+  *
+- * Return: true if the metric via neigh1 is equally good or better than
+- * the metric via neigh2, false otherwise.
++ * Return: true if the metric via @candidate is equally good or better than
++ * the metric via @reference, false otherwise.
+  */
+ static bool
+-batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
+-			   struct batadv_hard_iface *if_outgoing1,
+-			   struct batadv_neigh_node *neigh2,
+-			   struct batadv_hard_iface *if_outgoing2)
++batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *candidate,
++			   struct batadv_hard_iface *if_outgoing_cand,
++			   struct batadv_neigh_node *reference,
++			   struct batadv_hard_iface *if_outgoing_ref)
+ {
+ 	bool ret;
+ 	int diff;
+ 
+-	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
+-				       if_outgoing2, &diff);
++	ret = batadv_iv_ogm_neigh_diff(candidate, if_outgoing_cand,
++				       reference, if_outgoing_ref,
++				       &diff);
+ 	if (!ret)
+ 		return false;
+ 
 diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 0c27447c..2d304573 100644
+index 0d0a226c..596889b3 100644
 --- a/net/batman-adv/bat_v.c
 +++ b/net/batman-adv/bat_v.c
-@@ -519,8 +519,8 @@ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
-  * @neigh2: second neighbour to compare
-  * @if_outgoing2: outgoing interface to use for @neigh2
+@@ -514,40 +514,40 @@ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
+ /**
+  * batadv_v_neigh_is_sob() - check whether two B.A.T.M.A.N. V neighbours have
+  *  a similar or better throughput
+- * @neigh1: first neighbour to compare
+- * @if_outgoing1: outgoing interface to use for @neigh1
+- * @neigh2: second neighbour to compare
+- * @if_outgoing2: outgoing interface to use for @neigh2
++ * @candidate: the first neighbor object of the comparison
++ * @if_outgoing_cand: outgoing interface for the @candidate neighbor
++ * @reference: the second neighbor object of the comparison
++ * @if_outgoing_ref: outgoing interface for the @reference neighbor
   *
-- * Return: true if the throughput of @neigh2 is at least 3/4 of the
-- *  @neigh1 throughput
-+ * Return: true if the throughput of @neigh1 is at least 3/4 of the
-+ *  @neigh2 throughput
+- * Return: true if the throughput of @neigh1 is more than 3/4 of the
+- *  @neigh2 throughput
++ * Return: true if the throughput of @candidate is more than 3/4 of the
++ *  @reference throughput
   */
- static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 				  struct batadv_hard_iface *if_outgoing1,
-@@ -540,10 +540,10 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 	if (!ifinfo2)
+-static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
+-				  struct batadv_hard_iface *if_outgoing1,
+-				  struct batadv_neigh_node *neigh2,
+-				  struct batadv_hard_iface *if_outgoing2)
++static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *candidate,
++				  struct batadv_hard_iface *if_outgoing_cand,
++				  struct batadv_neigh_node *reference,
++				  struct batadv_hard_iface *if_outgoing_ref)
+ {
+-	struct batadv_neigh_ifinfo *ifinfo1;
+-	struct batadv_neigh_ifinfo *ifinfo2;
++	struct batadv_neigh_ifinfo *ifinfo_cand;
++	struct batadv_neigh_ifinfo *ifinfo_ref;
+ 	bool ret = false;
+ 	u32 threshold;
+ 
+-	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+-	if (!ifinfo1)
++	ifinfo_cand = batadv_neigh_ifinfo_get(candidate, if_outgoing_cand);
++	if (!ifinfo_cand)
+ 		goto err_ifinfo1;
+ 
+-	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-	if (!ifinfo2)
++	ifinfo_ref = batadv_neigh_ifinfo_get(reference, if_outgoing_ref);
++	if (!ifinfo_ref)
  		goto err_ifinfo2;
  
--	threshold = ifinfo1->bat_v.throughput / 4;
--	threshold = ifinfo1->bat_v.throughput - threshold;
-+	threshold = ifinfo2->bat_v.throughput / 4;
-+	threshold = ifinfo2->bat_v.throughput - threshold;
+-	threshold = ifinfo2->bat_v.throughput / 4;
+-	threshold = ifinfo2->bat_v.throughput - threshold;
++	threshold = ifinfo_ref->bat_v.throughput / 4;
++	threshold = ifinfo_ref->bat_v.throughput - threshold;
  
--	ret = ifinfo2->bat_v.throughput > threshold;
-+	ret = ifinfo1->bat_v.throughput > threshold;
+-	ret = ifinfo1->bat_v.throughput > threshold;
++	ret = ifinfo_cand->bat_v.throughput > threshold;
  
- 	batadv_neigh_ifinfo_put(ifinfo2);
+-	batadv_neigh_ifinfo_put(ifinfo2);
++	batadv_neigh_ifinfo_put(ifinfo_ref);
  err_ifinfo2:
+-	batadv_neigh_ifinfo_put(ifinfo1);
++	batadv_neigh_ifinfo_put(ifinfo_cand);
+ err_ifinfo1:
+ 	return ret;
+ }
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9bdc5a3e..99667f63 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -2087,14 +2087,14 @@ struct batadv_algo_neigh_ops {
+ 		   struct batadv_hard_iface *if_outgoing2);
+ 
+ 	/**
+-	 * @is_similar_or_better: check if neigh1 is equally similar or better
+-	 *  than neigh2 for their respective outgoing interface from the metric
++	 * @is_similar_or_better: check if @candidate is equally similar or better
++	 *  than @reference for their respective outgoing interface from the metric
+ 	 *  prospective
+ 	 */
+-	bool (*is_similar_or_better)(struct batadv_neigh_node *neigh1,
+-				     struct batadv_hard_iface *if_outgoing1,
+-				     struct batadv_neigh_node *neigh2,
+-				     struct batadv_hard_iface *if_outgoing2);
++	bool (*is_similar_or_better)(struct batadv_neigh_node *candidate,
++				     struct batadv_hard_iface *if_outgoing_cand,
++				     struct batadv_neigh_node *reference,
++				     struct batadv_hard_iface *if_outgoing_ref);
+ 
+ 	/** @dump: dump neighbors to a netlink socket (optional) */
+ 	void (*dump)(struct sk_buff *msg, struct netlink_callback *cb,
 
 -- 
 2.47.3
