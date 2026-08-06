@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50700C56208
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:50:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02B3BC55ABF
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:51:02 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id D451D84214
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:50:30 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7E5F384261
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:51:01 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786009830;
- b=VL5vq1hQfQY9ARt68LE37LRthMqQ5/EvJv/NmjMHyjHkzkeCF/bXLDRx2NUPGnQYjox3F
- Rwt4pDR8STdxje/h8BXbS9To/1IUwNLC76may1966DaOBcrk8TAWe5gIFkBkaggGv3Y4qat
- ekCmwsFUCPfDW9a6OXUq17CwrYvnWEc=
+ t=1786009861;
+ b=iG5IrlfDHeLiIKDmvQ/ApcsuC3mF16qrv7bF2C+/M8yNvHbYCbXu14UlDC/UP8ansGxuX
+ acqMjQn9wBfPRM3WaO+L2tPqRXOIVy5e8C6aXqCV3iTb1FunbT+RMSYsOapCE3b/Qbg5yOt
+ DLc+KqaS48nkwZJyl/N1KvJ2fhvMTMo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786009830; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786009861; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Lf1O5/zROTaDXeMVYjlM48HeXIo5MxMjVBixkekHK9M=;
- b=jRCicaSZTr0O1nGYc293VDLoUf78yomKufHEROKN57iEdYWjjgmR4WhrK/b8gXFxAhOFV
- wJZI3lzL2UBz2xZzwFNQJLVrxYpKFJcEEPuB/OaElV0HI+6gey8IUrOSzSbp9GPGBTenIOA
- TTKS7w/Zz594aLsx/lV8R65a1b13UOg=
+ list-archive; bh=vLr4w6SOsrY6CSCZqtE9GRE3AXV2IBNsnV7zGuJ/VmM=;
+ b=kXnMZsp4M1rzn3mTNMKqzQKyq88QnIwB9w6h+h1uXWIFZ7NPIYzmUIdjW12bDrjeiMeAq
+ 89XWHVZV9bfQHmMBdN7RQGaZSFfc7LCoGzJ7q5hzD4q4CRrSrqyjcWz//3ZQxBGWyCPiHqJ
+ 3Xj47QrnBlGpaaoE8YZZ6MlyFTQmc2M=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B3D128421C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:45:50 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009550;
-	b=UJE2DH083+8bX1knMKS7ZRMQr9GWNP/GQUMX9RYFWbgQxeNEoDnMgJx1mDzFPQgKUCz6tM
-	bbxcH3ZRakUnOPJ++9KfbagV46ZTHk4U+OGVvk65vTrL/y8vrSQOkXY3sP45YbiqfJy3cr
-	n3KHQvSnv+2L26MXcCvNgbL4uR8mM2I=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 2B3D584244
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:45:57 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009557;
+	b=ygWYT3PXHLXdFh8Z16qUp/M8dWfJ8FR+0naLgr/Zkl2pXrHSWIymt/kD6oBGPxbkvke7DX
+	xk0ch3DlsyLLRrJekA+BybygMN7abWPW58NsJ30PhZau7M6+/Gu5YQA85kPm2ovk4xQfhZ
+	klToiCRB/MtSk5H64FQtH4R59DJupUY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786009550;
+	s=20121; t=1786009557;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Lf1O5/zROTaDXeMVYjlM48HeXIo5MxMjVBixkekHK9M=;
-	b=mYo/iW2Z0IWgCsNDRE8rtx3BM2OWDWbvvA06QwVTi4U/75p5LRp97+5dPfvGTfmE7G4b7D
-	Lq2Es4vKzRKQ+w6V+Nl6sgmbdgojBr1t2mdCJGmd0TUiZ0rLHncj6cnBZsEl8ljhYotytj
-	OtE73/wKzDkFIgmAat5Gospl60Lawdo=
+	bh=vLr4w6SOsrY6CSCZqtE9GRE3AXV2IBNsnV7zGuJ/VmM=;
+	b=ycrsmx076+uEJshQtVV078AgTnbL230AGL6E/VyGI4VlsCT77+mcKQxbO5cFcDxIGYiRNg
+	3XTgLHqsXkkGoPwrO2h4j90s7bWE2T3FFxi/BjTvrDByfLZlC0TsSz3Fln42lS90tZAJuG
+	hQ7j2Un34n0+SDwTQqxwJlWpJDxtyNA=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=zhExYR6J;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=iQmGUR+6;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 52D6D20019;
-	Thu, 06 Aug 2026 09:45:46 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id ACA0B20019;
+	Thu, 06 Aug 2026 09:45:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786009546;
+	s=20121; t=1786009552;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Lf1O5/zROTaDXeMVYjlM48HeXIo5MxMjVBixkekHK9M=;
-	b=zhExYR6Jnp/QMs6jwH75zbWVyi2kyGQhw5N6ITjzPDPRtGILjmfRWgXLBUyVPepd5U792j
-	HtfrkgIjk9YsS4faScvn7QwPf+lF3wfR9AG3W2qmKpONGY/M6+EhxjVqsLhFxz8Yb+FDh8
-	yxg1mDr3tDag/04skl1n3D7bWkJEOd8=
+	bh=vLr4w6SOsrY6CSCZqtE9GRE3AXV2IBNsnV7zGuJ/VmM=;
+	b=iQmGUR+6tR6rC+fBKe7NT3IBc6NA0C3nUIryz2gjUlLbywizL9waPKvD2XxWCfZlTmuGor
+	NFEdPvezE23D/XN0k+s2Q61d0jZcqJbwRll9++LwNCy63huenGiZTYamjRCtEWxfMkMQPt
+	OvHeZFJ5DzGH3RMh+PrQ1WrHgGZcvJU=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 06 Aug 2026 11:44:23 +0200
-Subject: [PATCH RFC batadv 10/12] batman-adv: tt: extract marking of a
- removed local entry
+Date: Thu, 06 Aug 2026 11:44:24 +0200
+Subject: [PATCH RFC batadv 11/12] batman-adv: tt: extract immediate purge
+ of a local entry
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260806-tt-add-cleanup-v1-10-ffcad65bccc4@narfation.org>
+Message-Id: <20260806-tt-add-cleanup-v1-11-ffcad65bccc4@narfation.org>
 References: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
 In-Reply-To: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3355; i=sven@narfation.org;
- h=from:subject:message-id; bh=7LrDK2XlDINiN6yN0pMXP0Rqs8cCV19hgvm5VIdyRlI=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4S1qLWE2dd8jPAzDu20cAq87f4idL3Gof8Wqp3J/x
- I1XyU/qKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAEzk1AKG/8lv/RJmKqic3LF9
- 0XR1S309l+2TpojVZTVMDpX4ydaX95Phv9+xpjhDvqc2ClvOterby7q+592nuGrtgsgktde71vz
- j4AMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3782; i=sven@narfation.org;
+ h=from:subject:message-id; bh=OJ/k2flrvvDE5E3ZzOkHKkyckW6kgNmQP86dsDNNfNA=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4S337tTzlARY7DXd9D//UXty7MfI2u+VyQLKj37zn
+ j7GnqfaUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZjIY25Ghm0zTctM+FUOCpfx
+ rHVgn2PL96J+R6r/7/WTV3+ebn7rbSojw7TvO6avnn+goPU/r/t8sR/PHqguy2PgfaC7pl6tf91
+ NTWYA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: FKC3O3VGNFU2RHLHCH3DE3LB52VPLYTQ
-X-Message-ID-Hash: FKC3O3VGNFU2RHLHCH3DE3LB52VPLYTQ
+Message-ID-Hash: 2X2IMAZQLGFZTM4A6WMWHJKYAS5JIATI
+X-Message-ID-Hash: 2X2IMAZQLGFZTM4A6WMWHJKYAS5JIATI
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FKC3O3VGNFU2RHLHCH3DE3LB52VPLYTQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2X2IMAZQLGFZTM4A6WMWHJKYAS5JIATI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,98 +113,100 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The first locked section of batadv_tt_local_remove() does three things at
-once
+A client which was added after the last ttvn increment was never announced
+and can be dropped from the local table right away. The code doing so is
+the second half of batadv_tt_local_remove() and needed a goto to skip the
+accounting when the entry was already gone from the hash.
 
-* it snapshots the flags for the return value
-* it marks the client as ROAMed
-* it decides whether the entry has to survive until the next ttvn increment
-
-But this complex locked section is in the middle of the function and cannot
-be written as scoped_guard() du to goto's in this routine.
-
-Move it to batadv_tt_local_mark_removed() and report the decision via its
-return value. But leave the batadv_tt_local_set_pending_event() flag
-assembly outside the function because it has no locking requirements.
+Move it to batadv_tt_local_remove_now().
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 48 +++++++++++++++++++++++++++-----------
- 1 file changed, 35 insertions(+), 13 deletions(-)
+ net/batman-adv/translation-table.c | 57 +++++++++++++++++++++++++-------------
+ 1 file changed, 37 insertions(+), 20 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4a166791..52c7cb90 100644
+index 52c7cb90..fecf1930 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1495,6 +1495,38 @@ batadv_tt_local_set_pending_event(struct batadv_priv *bat_priv,
- 		   batadv_print_vid(tt_local_entry->common.vid), message);
+@@ -1527,6 +1527,42 @@ batadv_tt_local_mark_removed(struct batadv_tt_local_entry *tt_local_entry,
+ 	return pending;
  }
  
 +/**
-+ * batadv_tt_local_mark_removed() - mark a local entry as removed
-+ * @tt_local_entry: local TT entry to mark
-+ * @roaming: true if the deletion is due to a roaming event
-+ * @curr_flags: pointer to store the flags of the entry before it was marked
++ * batadv_tt_local_remove_now() - purge a local entry which was never announced
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @tt_local_entry: local TT entry to purge
 + *
-+ * Return: true if the entry has to be kept in the local table until the next
-+ * ttvn increment, false if it can be purged immediately.
++ * A client which was added right after the last ttvn increment was never sent
++ * to the other nodes. It can therefore be dropped from the local table without
++ * waiting for the next ttvn increment.
 + */
-+static bool
-+batadv_tt_local_mark_removed(struct batadv_tt_local_entry *tt_local_entry,
-+			     bool roaming, u16 *curr_flags)
++static void
++batadv_tt_local_remove_now(struct batadv_priv *bat_priv,
++			   struct batadv_tt_local_entry *tt_local_entry)
 +{
 +	struct batadv_tt_common_entry *common = &tt_local_entry->common;
-+	bool pending = false;
++	struct hlist_node *tt_removed_node;
 +
-+	scoped_guard(spinlock_bh, &common->flags_lock) {
-+		*curr_flags = common->flags;
++	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
 +
-+		/* mark the local client as ROAMed */
-+		if (roaming)
-+			common->flags |= BATADV_TT_CLIENT_ROAM;
++	/* remove exactly this object when still present in hash */
++	tt_removed_node = batadv_hash_remove(bat_priv->tt.local_hash,
++					     batadv_compare_tt_entry,
++					     batadv_choose_tt, common);
++	if (!tt_removed_node)
++		return;
 +
-+		if (!(common->flags & BATADV_TT_CLIENT_NEW)) {
-+			common->flags |= BATADV_TT_CLIENT_PENDING;
-+			pending = true;
-+		}
-+	}
++	/* batadv_tt_local_transition_new() may have committed the entry and
++	 * thus counted it in the local table size since the
++	 * BATADV_TT_CLIENT_NEW check in batadv_tt_local_mark_removed().
++	 */
++	if (!(batadv_tt_flags_get(common) & BATADV_TT_CLIENT_NEW))
++		batadv_tt_local_size_dec(bat_priv, common->vid);
 +
-+	return pending;
++	/* drop reference of remove hash entry */
++	batadv_tt_local_entry_put(tt_local_entry);
 +}
 +
  /**
   * batadv_tt_local_remove() - logically remove an entry from the local table
   * @bat_priv: the bat priv with all the mesh interface information
-@@ -1519,26 +1551,16 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
- 	if (!tt_local_entry)
- 		goto out;
- 
--	spin_lock_bh(&tt_local_entry->common.flags_lock);
--	curr_flags = tt_local_entry->common.flags;
--
- 	flags = BATADV_TT_CLIENT_DEL;
- 	/* if this global entry addition is due to a roaming, the node has to
- 	 * mark the local entry as "roamed" in order to correctly reroute
- 	 * packets later
+@@ -1542,7 +1578,6 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 			   bool roaming)
+ {
+ 	struct batadv_tt_local_entry *tt_local_entry;
+-	struct hlist_node *tt_removed_node;
+ 	u16 curr_flags = BATADV_NO_FLAGS;
+ 	bool pending = false;
+ 	u16 flags;
+@@ -1570,25 +1605,7 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 	/* if this client has been added right now, it is possible to
+ 	 * immediately purge it
  	 */
--	if (roaming) {
-+	if (roaming)
- 		flags |= BATADV_TT_CLIENT_ROAM;
--		/* mark the local client as ROAMed */
--		tt_local_entry->common.flags |= BATADV_TT_CLIENT_ROAM;
--	}
+-	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
 -
--	if (!(tt_local_entry->common.flags & BATADV_TT_CLIENT_NEW)) {
--		tt_local_entry->common.flags |= BATADV_TT_CLIENT_PENDING;
--		pending = true;
--	}
--	spin_unlock_bh(&tt_local_entry->common.flags_lock);
+-	/* remove exactly this object when still present in hash */
+-	tt_removed_node = batadv_hash_remove(bat_priv->tt.local_hash,
+-					     batadv_compare_tt_entry,
+-					     batadv_choose_tt,
+-					     &tt_local_entry->common);
+-	if (!tt_removed_node)
+-		goto out;
+-
+-	/* batadv_tt_local_transition_new() may have committed the entry and
+-	 * thus counted it in the local table size since the BATADV_TT_CLIENT_NEW
+-	 * check above.
+-	 */
+-	if (!(batadv_tt_flags_get(&tt_local_entry->common) & BATADV_TT_CLIENT_NEW))
+-		batadv_tt_local_size_dec(bat_priv, tt_local_entry->common.vid);
+-
+-	/* drop reference of remove hash entry */
+-	batadv_tt_local_entry_put(tt_local_entry);
++	batadv_tt_local_remove_now(bat_priv, tt_local_entry);
  
-+	pending = batadv_tt_local_mark_removed(tt_local_entry, roaming,
-+					       &curr_flags);
- 	if (pending) {
- 		batadv_tt_local_set_pending_event(bat_priv, tt_local_entry, flags,
- 						  message);
+ out:
+ 	batadv_tt_local_entry_put(tt_local_entry);
 
 -- 
 2.47.3
