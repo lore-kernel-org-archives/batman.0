@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38219C56208
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:45:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B382C56208
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 09:46:13 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 772D884257
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:45:34 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5D75284255
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 11:46:11 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786009534;
- b=oonKce1ObA85fVNJqlkr4rQlNusqUDeDUfkkNeBM97UkxZaotzYE39WZtEUDb2VGQUw2p
- 8SjBNVdcaF+gVrK/jwfmuN7PUxofdDpJN2TtOx1C6daKx7QJYL4YxVv92+QKlbJ4V+lcsWE
- RI/D+Qld5lYUqsNChpHQlIdMTdtzIPw=
+ t=1786009571;
+ b=yfqldmIabbc/4y/YV5ZL24plwoMXZWDcTKlLqTGMjxEXl1dHfZSjUfXBdY4YVUo9Kk36e
+ v+kNV/IvzMJuHvhOMAYydit3ZgdxAYSFkMJUbuGpDKl7cIsjFFSHCTNYZ+oRSTfWrHiMvxN
+ wkplhSqm1SS1lyRWD4U3isD76e5jF0c=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786009534; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786009571; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
- b=UeQnTmB7/qKOm5l2W/6GBbV3YpTX0uOlU/rncmwKeHULydtAKEvNPogRYXhns3iZYldGW
- bxkKehwxtHO3etP0ZmNjyP60ZCnB+t7Qz6mW50nrkvhK9DhtIgE9ENnZAiuJHyWZ6Gb8+jY
- VhqhjFLj+NkGTwdPHyI5w6+lG41p+zE=
+ list-archive; bh=WTx4NvEYYAZbt03HbPpJrffP6k39Cx6VTKfLkf/cf0s=;
+ b=wPsO6r2PUJ5kMlRYoS5oogJKeFR+38bXP1CPpAx4/WZgFeCWzS+IMO+x3Z3V7N3GR1Q/c
+ +eQTaPjYzTN8QTB+4uye1yik6dGCbrq16DRmbdMqImCaWwFeZzUSq5DD+/TcLe3/tJ9hEdy
+ oyE4+lek7XQl0HjLnoOspYAqUHBPVzM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 079CB84215
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:44:55 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009495;
-	b=OIxJIVccEzcsFETCHJ6Rq1GHEHGZORzyb5H0ygD6i6/VMrreW54VdrVkYfJ2IVl9ek+6Zm
-	d7mflg7NwJnRdVlLZfcovi5mQNNbNxg+v8DxPB2yn/3ZXwXVlk6x4XxFPDEoQ1tDYAIMNN
-	Wqi36H2skhbhw3JNGz5q4mqjuWqMIa8=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 73A968065C
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 11:45:01 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786009501;
+	b=nGRw/6Pzmrb2Nd7s9fnFc8pFyb9WRllwjKDMdCE6zu0HxS4pDFoLY01E6DO8D4RZQdIZw1
+	9VG+plD7qndkymsjKjc49peqe6sGZykHb7kFWdfpFxjdK9rbRmq2iSpRK/90Mz018uNBTg
+	Oma9QMGpbhtjQpNtUSx49yzhUCrFWnc=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786009495;
+	s=20121; t=1786009501;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
-	b=jcipsOORRGXHLUzCLLh4XwMzDJF73X5vx4vlAp85+XlbblFG9l/38EovSg4UWCxShzoIbg
-	bIhmr9sJK9lFww1fnb+goKVAAAMtIezbz3kWS9v+QRshBU5oX9Mw/pYbjN/wFRlWZSAhn0
-	NybSkHa+mmwKRvdyhIHxmic/C4yx9sw=
+	bh=WTx4NvEYYAZbt03HbPpJrffP6k39Cx6VTKfLkf/cf0s=;
+	b=RPaac/Fc8SaHbZtlBr6pD2WqvqCbEtA9xDTme3BLd8THFAf3/PJqdeVtZ0WM8myXoqjD6e
+	Kq1YRMQogZxjUXMC4+oZsa6SdbHghCc5eet4KHx+4B1vd5QUoj5HnkXNwaARM2z/Riit2I
+	eb3Bcv8KDP+LKpzEFoamkTesy0GFiVQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=wN3YFmzd;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=PYf8nbru;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 67B7920590;
-	Thu, 06 Aug 2026 09:44:50 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id CB37220590;
+	Thu, 06 Aug 2026 09:44:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786009490;
+	s=20121; t=1786009496;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=fqf8ii4iuD2l1/UGCSh9nIuzzupDQj6ybsLs8b6n4Qs=;
-	b=wN3YFmzdXEXaRM/BA8ewOyil4nYmvz3BB/XW9S7euklm6Z7SOVlqVEHRd5jRtvK5yon9uZ
-	BqbT1+pGsVzqBG4zSkxSjCK4OPevftBlSBKTvkcHnJXL2rrDslE1nLxYoPRSuO2Va8eYjo
-	c0XaPRdzbcqTuYtW7010oYEo5PgUKxA=
+	bh=WTx4NvEYYAZbt03HbPpJrffP6k39Cx6VTKfLkf/cf0s=;
+	b=PYf8nbru4qVGkfN/iNSsh2yVQugze2HAWYIbhpaiwxUMs4ASzmx6HLzJ6eek29vVg7pIwT
+	ms7zM3Ex5qOPt7gp/qoS+hEA1IHVBKjMOhM8QOHwsAPOcLGNhhPEx2VvUg2gS6GSp+2RDG
+	REi8eS2tAJPVSmVOpiFX/g5hBztASac=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 06 Aug 2026 11:44:14 +0200
-Subject: [PATCH RFC batadv 01/12] batman-adv: tt: look up wifi state of
- incoming interface in helper
+Date: Thu, 06 Aug 2026 11:44:15 +0200
+Subject: [PATCH RFC batadv 02/12] batman-adv: tt: extract allocation of new
+ local entries
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260806-tt-add-cleanup-v1-1-ffcad65bccc4@narfation.org>
+Message-Id: <20260806-tt-add-cleanup-v1-2-ffcad65bccc4@narfation.org>
 References: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
 In-Reply-To: <20260806-tt-add-cleanup-v1-0-ffcad65bccc4@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3327; i=sven@narfation.org;
- h=from:subject:message-id; bh=yUBo56PNmO4dZY3Evfho9qNT69IxmoZXkZwLPHZzZkw=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4U3clpHn5P5dzzisEuHzxOvo/za1xdPs58lLWHz9e
- K70l//RjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEZv5k+Kc/a+tev7/eviv+
- n7wze5X9Q45br594du7c8rvQvvPfecssRoYZqT1hotee35z2952+3T7ubyyWKieuR81VWqHptKX
- 1ngYXAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6953; i=sven@narfation.org;
+ h=from:subject:message-id; bh=qoRrQmVO/exXJ21AhMC1MAbe8REinlV1CJXQ+Mt7L4w=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl4c3nlNm7+orexz29I/U9h3vhqUyr/YEe+1v+t7+cZ
+ 3gw8VNdRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAiatyMDK/W+a7ewqAfGsHL
+ KW76t+N2/Ml3HY+3V+nt+aG0/T3XbwmGP3xzd4loP4kNedD036CoN/eiUVJjnbOu85/97D8/8jq
+ vYAUA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM
-X-Message-ID-Hash: ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM
+Message-ID-Hash: IZQCWBPXUEQHNQSXV5E5JOJQOCIYHLBT
+X-Message-ID-Hash: IZQCWBPXUEQHNQSXV5E5JOJQOCIYHLBT
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZL2ABSMGRQCOJV3GIYHZA5YBRYSDPSOM/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/IZQCWBPXUEQHNQSXV5E5JOJQOCIYHLBT/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,102 +112,190 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_tt_local_add() only needs to know whether the client was seen on a
-wifi interface. But it kept the net_device reference of the incoming
-interface alive until its own cleanup section, together with a "net" and an
-"in_dev" variable which are of no interest to the rest of the function.
+The code which allocates and initializes a brand new local TT entry makes
+up more than a third of batadv_tt_local_add(). It only shares the addr, vid
+and iif_is_wifi parameters with the rest of the function.
 
-Move the lookup to a small helper which acquires and releases the
-net_device reference itself.
+Move it to batadv_tt_local_create(), which returns the fully initialized
+entry. The error paths become plain returns.
+
+The insertion into bat_priv->tt.local_hash intentionally stays in
+batadv_tt_local_add(), keeping the extra reference for the hash next to the
+error handling which has to drop it again.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 41 +++++++++++++++++++++++++++-----------
- 1 file changed, 29 insertions(+), 12 deletions(-)
+ net/batman-adv/translation-table.c | 135 ++++++++++++++++++++++---------------
+ 1 file changed, 79 insertions(+), 56 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 63948ee2..d040c0d3 100644
+index d040c0d3..8726bbba 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -41,6 +41,7 @@
- #include <linux/string.h>
- #include <linux/workqueue.h>
- #include <net/genetlink.h>
-+#include <net/net_namespace.h>
- #include <net/netlink.h>
- #include <uapi/linux/batadv_packet.h>
- #include <uapi/linux/batman_adv.h>
-@@ -745,6 +746,32 @@ static void batadv_tt_local_add_roam(struct batadv_priv *bat_priv,
- 		batadv_tt_global_free(bat_priv, tt_global, "Roaming canceled");
+@@ -772,6 +772,84 @@ static bool batadv_tt_iif_is_wifi(struct net *net, int ifindex)
+ 	return batadv_is_wifi(wifi_flags);
  }
  
 +/**
-+ * batadv_tt_iif_is_wifi() - check whether a client is connected via wifi
-+ * @net: namespace to search the incoming interface in
-+ * @ifindex: index of the interface where the client is connected to
++ * batadv_tt_local_create() - allocate and initialize a local TT entry
++ * @mesh_iface: netdev struct of the mesh interface
++ * @addr: the mac address of the client to add
++ * @vid: VLAN identifier
++ * @iif_is_wifi: whether the client is connected via a wifi interface
 + *
-+ * Return: true if @ifindex refers to a wifi interface, false otherwise (which
-+ * includes the case of an unknown or missing incoming interface).
++ * The returned entry is not yet part of bat_priv->tt.local_hash. It is marked
++ * as BATADV_TT_CLIENT_NEW to avoid sending it in a full table response going
++ * out before the next ttvn increment (consistency check).
++ *
++ * Return: the new entry with an initialized reference counter on success, NULL
++ * otherwise.
 + */
-+static bool batadv_tt_iif_is_wifi(struct net *net, int ifindex)
++static struct batadv_tt_local_entry *
++batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
++		       unsigned short vid, bool iif_is_wifi)
 +{
-+	struct net_device *in_dev;
-+	u32 wifi_flags;
++	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
++	struct batadv_tt_local_entry *tt_local;
++	struct batadv_meshif_vlan *vlan;
++	int packet_size_max;
++	int table_size;
 +
-+	if (ifindex == BATADV_NULL_IFINDEX)
-+		return false;
++	/* Ignore the client if we cannot send it in a full table response. */
++	table_size = batadv_tt_local_table_transmit_size(bat_priv);
++	table_size += batadv_tt_len(1);
++	packet_size_max = READ_ONCE(bat_priv->packet_size_max);
++	if (table_size > packet_size_max) {
++		net_ratelimited_function(batadv_info, mesh_iface,
++					 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
++					 table_size, packet_size_max, addr);
++		return NULL;
++	}
 +
-+	in_dev = dev_get_by_index(net, ifindex);
-+	if (!in_dev)
-+		return false;
++	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
++	if (!tt_local)
++		return NULL;
 +
-+	wifi_flags = batadv_netdev_get_wifi_flags(in_dev);
-+	dev_put(in_dev);
++	/* increase the refcounter of the related vlan */
++	vlan = batadv_meshif_vlan_get(bat_priv, vid);
++	if (!vlan) {
++		net_ratelimited_function(batadv_info, mesh_iface,
++					 "adding TT local entry %pM to non-existent VLAN %d\n",
++					 addr, batadv_print_vid(vid));
++		kmem_cache_free(batadv_tl_cache, tt_local);
++		return NULL;
++	}
 +
-+	return batadv_is_wifi(wifi_flags);
++	batadv_dbg(BATADV_DBG_TT, bat_priv,
++		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
++		   addr, batadv_print_vid(vid),
++		   (u8)atomic_read(&bat_priv->tt.vn));
++
++	ether_addr_copy(tt_local->common.addr, addr);
++	tt_local->common.vid = vid;
++	kref_init(&tt_local->common.refcount);
++	tt_local->last_seen = jiffies;
++	tt_local->common.added_at = tt_local->last_seen;
++	tt_local->vlan = vlan;
++	spin_lock_init(&tt_local->common.flags_lock);
++
++	scoped_guard(spinlock_bh, &tt_local->common.flags_lock) {
++		tt_local->common.flags = BATADV_TT_CLIENT_NEW;
++		if (iif_is_wifi)
++			tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
++
++		/* the batman interface mac and multicast addresses should never
++		 * be purged
++		 */
++		if (batadv_compare_eth(addr, mesh_iface->dev_addr) ||
++		    is_multicast_ether_addr(addr))
++			tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
++	}
++
++	return tt_local;
 +}
 +
  /**
   * batadv_tt_local_add() - add a new client to the local table or update an
   *  existing client
-@@ -764,12 +791,10 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+@@ -791,14 +869,11 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
  	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
  	struct batadv_tt_global_entry *tt_global = NULL;
  	struct batadv_tt_local_entry *tt_local;
--	struct net *net = dev_net(mesh_iface);
--	struct net_device *in_dev = NULL;
- 	struct batadv_meshif_vlan *vlan;
+-	struct batadv_meshif_vlan *vlan;
  	bool roamed_back = false;
--	bool iif_is_wifi = false;
- 	int packet_size_max;
-+	bool iif_is_wifi;
+-	int packet_size_max;
+ 	bool iif_is_wifi;
  	bool ret = false;
  	u8 remote_flags;
  	int hash_added;
-@@ -777,14 +802,7 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+-	int table_size;
  	u32 match_mark;
  	bool modified;
  
--	if (ifindex != BATADV_NULL_IFINDEX)
--		in_dev = dev_get_by_index(net, ifindex);
--
--	if (in_dev) {
--		u32 wifi_flags = batadv_netdev_get_wifi_flags(in_dev);
--
--		iif_is_wifi = batadv_is_wifi(wifi_flags);
+@@ -845,62 +920,10 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 		goto check_roaming;
+ 	}
+ 
+-	/* Ignore the client if we cannot send it in a full table response. */
+-	table_size = batadv_tt_local_table_transmit_size(bat_priv);
+-	table_size += batadv_tt_len(1);
+-	packet_size_max = READ_ONCE(bat_priv->packet_size_max);
+-	if (table_size > packet_size_max) {
+-		net_ratelimited_function(batadv_info, mesh_iface,
+-					 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
+-					 table_size, packet_size_max, addr);
+-		goto out;
 -	}
-+	iif_is_wifi = batadv_tt_iif_is_wifi(dev_net(mesh_iface), ifindex);
+-
+-	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
++	tt_local = batadv_tt_local_create(mesh_iface, addr, vid, iif_is_wifi);
+ 	if (!tt_local)
+ 		goto out;
  
- 	tt_local = batadv_tt_local_hash_find(bat_priv, addr, vid);
- 
-@@ -933,7 +951,6 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 
- 	ret = true;
- out:
--	dev_put(in_dev);
- 	batadv_tt_local_entry_put(tt_local);
- 	batadv_tt_global_entry_put(tt_global);
- 	return ret;
+-	/* increase the refcounter of the related vlan */
+-	vlan = batadv_meshif_vlan_get(bat_priv, vid);
+-	if (!vlan) {
+-		net_ratelimited_function(batadv_info, mesh_iface,
+-					 "adding TT local entry %pM to non-existent VLAN %d\n",
+-					 addr, batadv_print_vid(vid));
+-		kmem_cache_free(batadv_tl_cache, tt_local);
+-		tt_local = NULL;
+-		goto out;
+-	}
+-
+-	batadv_dbg(BATADV_DBG_TT, bat_priv,
+-		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
+-		   addr, batadv_print_vid(vid),
+-		   (u8)atomic_read(&bat_priv->tt.vn));
+-
+-	ether_addr_copy(tt_local->common.addr, addr);
+-	tt_local->common.vid = vid;
+-	kref_init(&tt_local->common.refcount);
+-	tt_local->last_seen = jiffies;
+-	tt_local->common.added_at = tt_local->last_seen;
+-	tt_local->vlan = vlan;
+-	spin_lock_init(&tt_local->common.flags_lock);
+-
+-	spin_lock_bh(&tt_local->common.flags_lock);
+-	/* The local entry has to be marked as NEW to avoid to send it in
+-	 * a full table response going out before the next ttvn increment
+-	 * (consistency check)
+-	 */
+-	tt_local->common.flags = BATADV_TT_CLIENT_NEW;
+-	if (iif_is_wifi)
+-		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
+-
+-	/* the batman interface mac and multicast addresses should never be
+-	 * purged
+-	 */
+-	if (batadv_compare_eth(addr, mesh_iface->dev_addr) ||
+-	    is_multicast_ether_addr(addr))
+-		tt_local->common.flags |= BATADV_TT_CLIENT_NOPURGE;
+-	spin_unlock_bh(&tt_local->common.flags_lock);
+-
+ 	kref_get(&tt_local->common.refcount);
+ 	hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
+ 				     batadv_choose_tt, &tt_local->common,
 
 -- 
 2.47.3
