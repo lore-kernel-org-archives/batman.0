@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDD57C55ABF
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 07:43:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9E78C55ABF
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 07:43:50 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 65DC48427C
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 09:43:12 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 76A7484290
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 09:43:49 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786002192;
- b=fe9TKPBgjWIbL7d8IJGShx3NDPHQaTvn0bzNMrkIEJ3QQjcwkYMQKha7GQGN2vjoy6OCU
- xOF4cKNixRo/vVTXuyuEU7EIV0TOPlo391pBeFWCz4kIzm1ku2hGNROD0UKAlxd8ykgeMyq
- vYCTQArQohSwewmnUgBJIubwV97+5ss=
+ t=1786002229;
+ b=CC735+mAeN+S5sW/rVhF0rTEt3swUdDRubVZeCv0IMFb/px3TlFNnmiccC9oOSR8Q4Ih3
+ VGpQwWEdaiNCrZJgHtAP6kZQArofHl3pXEFXAo0/pANpJ3FECwpcFWmh6/x1Jc7YxxQ0PZ7
+ BMt2GTlt+HXScI0Kw2wFJtyLFVq5uo8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786002192; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786002229; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Amjff2WWxRe7p1zqEYWtzp7p6nXgyLWm0YMZZxleEfk=;
- b=37ceP0FQgLbqpvinRkYw/pds50/q4Q3xC67Jpv5dbxkS5nmJD9SI859Saqa38aSVpiXV7
- PQwbauIu6F0xHgGT75VMYH4dO+OLewWc93WY5ZPDd0rMSuyjKkFznDYtlsWi16788y5RPfj
- U5wiqnveLiyxNF0syNKel8cn/0ReIc0=
+ list-archive; bh=ySyPelc7Z0vx8SSFi15BU5TocuNea9dhUMNWabrGkDw=;
+ b=jZDZW54QNRKH3uvgHz2yaMStmhgNPchNV524HFLV10nLp3A8BRkVm5uzThADAbLWz3K3n
+ Kbalv8Rupt6+mXUBiIM5kZ1GlhryCPz+mlxrcoIMmh6PfT8hnbJokgOLvCKerGmaDJ6kq3h
+ 0TjIt7Tn95b7OdZv2LbjZtSY7ZFY/l8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E90BE84214
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 09:42:04 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786002125;
-	b=OJqJ2Jk00FTeufZ5t5XxP40nb0zTesG57LWFCFKMnC7DoVVq5kfb8CuW6rKrniaFqeeKvu
-	CDZzBU8PfG2uk/ekIa3PAmC0MnpQA45dynS0PxwHlR/eDlDZmyr0oBvfWncDNgt0ZfhO54
-	9kbqvDwQCf/YpsUpy8ksiRl5AqxyU6s=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3542784227
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 09:42:11 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786002131;
+	b=Jyd7UgkOP3GQEHIZFkRRxC16B41WmtWiR135ocoVSQ/XKw6AbvRqtpndoELWs+swLGC8mB
+	jZZ30pBXXefoenChCOEyNmtel+ubDBn1jNjfFlf6fiDX+Uh8SCnp07epK6Gmy1GZepRAqv
+	ovN+p2sr5TUOWO7KaQgRLMubQR8ENt4=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786002125;
+	s=20121; t=1786002131;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Amjff2WWxRe7p1zqEYWtzp7p6nXgyLWm0YMZZxleEfk=;
-	b=xkvB5+PObckiBV4GjZy2UlFh2Z0qUo2i3zFd66IPYfc7hc3ILPOTZ4Doe4GTOai483rzno
-	7xdQ3x9naEOhQOKWeTh15brMJMJqMdUTZt5pQlzCB2pyhq5+BHJhKxgm65R8IkT9ZIS4Cc
-	xkpGE9rUJ8pvUChW/AkRNFs3rCgv3pA=
+	bh=ySyPelc7Z0vx8SSFi15BU5TocuNea9dhUMNWabrGkDw=;
+	b=EBQTdvFONZGsiKDVxOCgSYNZhDCtwbnOW9WTyyfB6YJgGcOrozMKkBapnkz0+kvRVh9hUI
+	n6eCpbSUacW+VeRYzbqeQ494BpfguvMl8lZbkh7OWJYMbVI6xvoI78Q3NGvwK6orRLn+hc
+	BIAZ99O9/NC+DuisZGlXAyvGv35mRwU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=NlXSQXhj;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=nRAzn4xX;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 742CD20DEB;
-	Thu, 06 Aug 2026 07:42:00 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id C0E5F20590;
+	Thu, 06 Aug 2026 07:42:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786002120;
+	s=20121; t=1786002126;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Amjff2WWxRe7p1zqEYWtzp7p6nXgyLWm0YMZZxleEfk=;
-	b=NlXSQXhjQ1dxMafBvSS228iVGgeJ2KwbsSdSqZMwkjzfONMC78ddnuLfzNqleElGemGAZb
-	fHnJOxuJ1lyDOghrzsTmvFv+zOjW7b6BLHG6ib5KEkGJf7VGQFdul5R8usye7RzxcTzJiG
-	NfBVCZv3O1bxB6LkB4ChILtncfksVIA=
+	bh=ySyPelc7Z0vx8SSFi15BU5TocuNea9dhUMNWabrGkDw=;
+	b=nRAzn4xX+sSyg8JxOLrN5tYX4Hx8WQtf7+ibCgPsPwm/E9tJFkA1eNFRzap3XlxTR67YfJ
+	D7WUyePmxgY8RLk03JauhUTTXq1U+CjbKuv9+JJOKwaePhRc88O5TkHN6X3oMNV5HIOiSH
+	tlIv8J9JqSU0pfqUJBCH4rwlnCLutKM=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 06 Aug 2026 09:41:27 +0200
-Subject: [PATCH RFC batadv v4 2/8] batman-adv: tt: extract code handling a
- roam on add
+Date: Thu, 06 Aug 2026 09:41:28 +0200
+Subject: [PATCH RFC batadv v4 3/8] batman-adv: tt: simplify NEW flag
+ transition code
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260806-tt-fixes-v4-2-c2fc871fe807@narfation.org>
+Message-Id: <20260806-tt-fixes-v4-3-c2fc871fe807@narfation.org>
 References: <20260806-tt-fixes-v4-0-c2fc871fe807@narfation.org>
 In-Reply-To: <20260806-tt-fixes-v4-0-c2fc871fe807@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4026; i=sven@narfation.org;
- h=from:subject:message-id; bh=Hgi4EjdSKJlkg5yyPcewRcS19RCvc/ufPhJ7duG47D4=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklVqv5pxc+fFO2dlJIRKyir/TzhatM3c4s5qmZa58Y+
- 05htqpxRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAikxIZGbrWKPgHvHGe/oTD
- 5GzPZ8V7U6Kza6UWzw+4e+4OJ6vkrRZGhiN1P32FX2jyum99N3d6zbIHhbFPuP64r+A7npKnvef
- bWlYA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2662; i=sven@narfation.org;
+ h=from:subject:message-id; bh=hGkYlfEMJKwYcVg2ekLUL+5O8TOQCG+hggRkrQOAtAo=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklVqs92LTkQxsfyyUfSeDekHfZk+Pjua5fsdL1lzZ9U
+ b/mJL+2o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRr8oMv1lSv982PhN5r2FR
+ 4xXTFZWv/3O33Hx7UUFVjuGt6LHJYqsY/het6WlOEpLLM/v81+PQDgcGLaW/WovOcL24+K3thVe
+ nJhMA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: AB2HMICAVG7W4XEERNH6S2X6X2MI5JGF
-X-Message-ID-Hash: AB2HMICAVG7W4XEERNH6S2X6X2MI5JGF
+Message-ID-Hash: 2WRN7KHUIR66QDMLSWDSZSKSDTWPGZ7E
+X-Message-ID-Hash: 2WRN7KHUIR66QDMLSWDSZSKSDTWPGZ7E
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AB2HMICAVG7W4XEERNH6S2X6X2MI5JGF/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2WRN7KHUIR66QDMLSWDSZSKSDTWPGZ7E/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,117 +113,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The code for handling the roaming of clients is mostly self contained but
-embedded in the already too large batadv_tt_local_add function. The
-maintainability can be improved by keeping it in an separate function.
+The function batadv_tt_local_set_flags() implements support for various
+flags and to set/unset them. It is also possible to decide whether this
+change should increase the TT size or not.
+
+But in reality, this function is only used to transition tt local entries
+from the NEW state and count these entries. Remove the rest of the code to
+simplify the function.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 71 ++++++++++++++++++++++++--------------
- 1 file changed, 45 insertions(+), 26 deletions(-)
+ net/batman-adv/translation-table.c | 26 +++++++-------------------
+ 1 file changed, 7 insertions(+), 19 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index af40ff81..2a1d8963 100644
+index 2a1d8963..5f0f7fb6 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -667,6 +667,50 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 	batadv_tt_global_entry_put(tt_global);
+@@ -3868,15 +3868,11 @@ void batadv_tt_free(struct batadv_priv *bat_priv)
  }
  
-+/**
-+ * batadv_tt_local_add_roam() - handle roamed clients during batadv_tt_local_add()
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tt_global: the global TT entry
-+ * @roamed_back: whether @tt_global roamed back
-+ */
-+static void batadv_tt_local_add_roam(struct batadv_priv *bat_priv,
-+				     struct batadv_tt_global_entry *tt_global,
-+				     bool roamed_back)
-+{
-+	struct batadv_tt_orig_list_entry *orig_entry;
-+	struct hlist_head *head;
-+
-+	if (!tt_global)
-+		return;
-+
-+	/* Check whether it is a roaming, but don't do anything if the roaming
-+	 * process has already been handled
-+	 */
-+	if (tt_global->common.flags & BATADV_TT_CLIENT_ROAM)
-+		return;
-+
-+	/* These node are probably going to update their tt table */
-+	head = &tt_global->orig_list;
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(orig_entry, head, list) {
-+		batadv_send_roam_adv(bat_priv, tt_global->common.addr,
-+				     tt_global->common.vid,
-+				     orig_entry->orig_node);
-+	}
-+	rcu_read_unlock();
-+
-+	if (roamed_back) {
-+		batadv_tt_global_free(bat_priv, tt_global,
-+				      "Roaming canceled");
-+	} else {
-+		/* The global entry has to be marked as ROAMING and
-+		 * has to be kept for consistency purpose
-+		 */
-+		tt_global->common.flags |= BATADV_TT_CLIENT_ROAM;
-+		tt_global->roam_at = jiffies;
-+	}
-+}
-+
  /**
-  * batadv_tt_local_add() - add a new client to the local table or update an
-  *  existing client
-@@ -685,14 +729,12 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+- * batadv_tt_local_set_flags() - set or unset the specified flags on the local
+- *  table and possibly count them in the TT size
++ * batadv_tt_local_transition_new() - unset the NEW flag on the local
++ *  table and count them in the TT size
+  * @bat_priv: the bat priv with all the mesh interface information
+- * @flags: the flag to switch
+- * @enable: whether to set or unset the flag
+- * @count: whether to increase the TT size by the number of changed entries
+  */
+-static void batadv_tt_local_set_flags(struct batadv_priv *bat_priv, u16 flags,
+-				      bool enable, bool count)
++static void batadv_tt_local_transition_new(struct batadv_priv *bat_priv)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
- 	struct batadv_tt_global_entry *tt_global = NULL;
--	struct batadv_tt_orig_list_entry *orig_entry;
- 	struct batadv_tt_local_entry *tt_local;
- 	struct net *net = dev_net(mesh_iface);
- 	struct net_device *in_dev = NULL;
- 	struct batadv_meshif_vlan *vlan;
- 	bool roamed_back = false;
- 	bool iif_is_wifi = false;
--	struct hlist_head *head;
- 	int packet_size_max;
- 	bool ret = false;
- 	u8 remote_flags;
-@@ -811,30 +853,7 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 	batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common_entry;
+@@ -3892,19 +3888,11 @@ static void batadv_tt_local_set_flags(struct batadv_priv *bat_priv, u16 flags,
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(tt_common_entry,
+ 					 head, hash_entry) {
+-			if (enable) {
+-				if ((tt_common_entry->flags & flags) == flags)
+-					continue;
+-				tt_common_entry->flags |= flags;
+-			} else {
+-				if (!(tt_common_entry->flags & flags))
+-					continue;
+-				tt_common_entry->flags &= ~flags;
+-			}
+-
+-			if (!count)
++			if (!(tt_common_entry->flags & BATADV_TT_CLIENT_NEW))
+ 				continue;
  
- check_roaming:
--	/* Check whether it is a roaming, but don't do anything if the roaming
--	 * process has already been handled
--	 */
--	if (tt_global && !(tt_global->common.flags & BATADV_TT_CLIENT_ROAM)) {
--		/* These node are probably going to update their tt table */
--		head = &tt_global->orig_list;
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(orig_entry, head, list) {
--			batadv_send_roam_adv(bat_priv, tt_global->common.addr,
--					     tt_global->common.vid,
--					     orig_entry->orig_node);
--		}
--		rcu_read_unlock();
--		if (roamed_back) {
--			batadv_tt_global_free(bat_priv, tt_global,
--					      "Roaming canceled");
--		} else {
--			/* The global entry has to be marked as ROAMING and
--			 * has to be kept for consistency purpose
--			 */
--			tt_global->common.flags |= BATADV_TT_CLIENT_ROAM;
--			tt_global->roam_at = jiffies;
--		}
--	}
-+	batadv_tt_local_add_roam(bat_priv, tt_global, roamed_back);
++			tt_common_entry->flags &= ~BATADV_TT_CLIENT_NEW;
++
+ 			batadv_tt_local_size_inc(bat_priv,
+ 						 tt_common_entry->vid);
+ 		}
+@@ -3977,7 +3965,7 @@ static void batadv_tt_local_commit_changes_nolock(struct batadv_priv *bat_priv)
+ 		return;
+ 	}
  
- 	/* store the current remote flags before altering them. This helps
- 	 * understanding is flags are changing or not
+-	batadv_tt_local_set_flags(bat_priv, BATADV_TT_CLIENT_NEW, false, true);
++	batadv_tt_local_transition_new(bat_priv);
+ 
+ 	batadv_tt_local_purge_pending_clients(bat_priv);
+ 	batadv_tt_local_update_crc(bat_priv);
 
 -- 
 2.47.3
