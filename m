@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64366C55ABF
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 14:50:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00B84C56207
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 15:03:09 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 72B5D8426F
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 16:50:20 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 89E338425F
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 17:03:08 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786027820;
- b=UD7pASmqIUbaUGJ9ekQWpMUS6VdP/x6q+3kJim/9b3qsK7+AIFzkOE9zj7D7LfQbidCXA
- sndj7vZhWWnwxOoZNS5XypiqJxtwEwPYpE6pF4qUfI0F9fh0zUnY0tjQZ9HqrvACLFNShnk
- B9M3qYCc7S0p2UGEySLm9TzvNFm9SuI=
+ t=1786028588;
+ b=hS9fd13AyU/ej68o1c/WYwNHIGyy/QgU6HWJWoRsgXVChbViq6HCDLmqG89oXLQCl2PYt
+ 0ZbQgaxeM05GVwLOOvAwD3hiEa5w8NDUbgQU5BELhefksHpdhY1PwcUGAjncDw1foCUidRM
+ pU7YBlKvry8cPltIcglsCh2ul7zB77E=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786027820; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786028588; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Nk2LetbE720VUwdle8IicEzzXoq1sgzpA9D6ECbMgKo=;
- b=xzB7wwOHytAa8+QUVSObFxUtt4iV8oaZGDVoUr/UAh/xKnqJLdTf2IG8Jx9CAcMCDCOfy
- C9sqa/HWaG17rEi6xmCAiYiRh4hdQ65nqiTkXVmBEa0KvhhW4hLuoWpdj41YZe0JW9yeCln
- xQkLDLxq5OOg267dPiRk+f6JaBnQdhU=
+ list-archive; bh=+ZHWkAEgT30OfPM0REVrekDug59Bs3R/BzIMfrSd1pM=;
+ b=zuHEnghP4jhGk+wm2HlW2FFtp78TF6K1hb1On5jnP3rN764dSS+JiQM7pqniOusMVMWZN
+ AINR/aaZkRboUgA2hNoVDlORfF3Yp6sj/+nSPmaWqkC0sdBe7C70LkFfZqfWk6RphQXl6IM
+ 1B36DltJorqS5DIWHo1HsM7a3RxmyD8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,57 +34,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7143B805C0
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 16:49:52 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786027802;
-	b=14AiqG67pxWuISs6S0liKJY0oLNsTum5csdhzYy8W/lJDpenUL3WXDprRE013EUFi35rw2
-	NccC7P2LD72NjDDg+byCDLLAloTDAEuFQLMBXC/x+Qgxv/JM543mkT7yuaF0pk+k40Uldg
-	qXSqEjoLCKfzfHb9gIz+8RPHgyRwxq4=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 096E9802A6
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 17:02:51 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786028572;
+	b=V2e3dIrCOYTNfIneiHyMsEgP1PzUZDh6XK3QwHgtEnj+kn7KvWZ203N2+OELh1vmx1bGwA
+	qwrQBiq9xjdy1SO5Lq2bHEYoTDmv7Li6xO1v7ONN7Cm6HFnkbutJOFUglEUXkO1zC12Xn1
+	ue6frCsYkVdvzfu6QosQVVtAl70KnfY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786027802;
+	s=20121; t=1786028572;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Nk2LetbE720VUwdle8IicEzzXoq1sgzpA9D6ECbMgKo=;
-	b=MaO9KhkYI8fhWuej3DxIi5TT6zaGirNpH49zHBuDvxF9hAjZdmnJ9ppP/MGwVnAJQkdxZP
-	DG6R7StfjVLkrbXskAnKbLkk3V5UziK27V+hU1GHIr0FOj9rh1euK0MQeKEt15lhWKB7b3
-	THHrHz4ZwOeJOFALDl/W+Y9WdTZRfcI=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=+ZHWkAEgT30OfPM0REVrekDug59Bs3R/BzIMfrSd1pM=;
+	b=VfgRjF1A3gjGPtjOIPhTzJ0waFslzE9YHa23ujKPrU+ZpmonTdjWs/iq3BKh0vEAurHYqe
+	RVZlGEf7BX4THKt7rII3BIgSGB9m6inFbFoAutcuSzMLZ3lpAfeUyS9vM4ucnpEonWpfpL
+	WEOXKvLz6BnogEmeQ49VCTTX5RUiUmc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=qUGQ5KUo;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Xoy127wu;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id CF837200D8;
-	Thu, 06 Aug 2026 14:49:46 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 59D0A2049B;
+	Thu, 06 Aug 2026 15:02:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786027787;
+	s=20121; t=1786028567;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Nk2LetbE720VUwdle8IicEzzXoq1sgzpA9D6ECbMgKo=;
-	b=qUGQ5KUoTXO6cSsCUvSD8mojzSCKzUF8shS0R9gMFVVqy6Bbk+NWMuMvh5ErOH7XjWy2aQ
-	rn9L+cOqodI3fG44wguNJAW1yqhhBzq3UOL2HP9OPC4Z622fR4nf4tzOuePE1nvc2LSV8Y
-	7feWK12VKiZF59W6JswvCDafZ25n6ms=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+ZHWkAEgT30OfPM0REVrekDug59Bs3R/BzIMfrSd1pM=;
+	b=Xoy127wu3UG92iPQQQZ3Qp7REPMNkSnQcGiQuamA9S+bRXcVcEGm0T9RN35fCM7nDs3UpF
+	ubpWA32obO07Szv8NRAELZW92BfvGAOzfX19QPVAWBLXdOOH7boKnFeO2crrg6XafB5oc9
+	vpaITiW7JjfxCMRVT+2Uma9yU0cQotE=
 From: Sven Eckelmann <sven@narfation.org>
-To: Paolo Abeni <pabeni@redhat.com>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org,
- netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Simon Horman <horms@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH net-next 00/15] pull request for net-next: batman-adv
- 2026-07-28
-Date: Thu, 06 Aug 2026 16:49:40 +0200
-Message-ID: <13090442.O9o76ZdvQC@sven-desktop>
-In-Reply-To: <991957eb-65d1-4b3b-b903-76459127c124@redhat.com>
-References: <20260728133918.643267-1-sw@simonwunderlich.de>
- <3386526.aV6nBDHxoP@sven-l14>
- <991957eb-65d1-4b3b-b903-76459127c124@redhat.com>
+Date: Thu, 06 Aug 2026 17:02:32 +0200
+Subject: [PATCH batadv] batman-adv: dat: fix printing of unknown 4addr
+ subtype
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6161773.DvuYhMxLoT";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: SFOX454CUBJYNHQV6UPP6CMU2GNRPVOW
-X-Message-ID-Hash: SFOX454CUBJYNHQV6UPP6CMU2GNRPVOW
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: 
+ <20260806-4addr-unknown-subtype-print-v1-1-e906357a5895@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAAeidGoC/yXM0Q6CMAyF4VchvbbJRghBX8V4UVjRalKWbqCE8
+ O5MvfxPcr4NEptwgku1gfEiSSYt4U8VDA/SO6OE0lC7unWda7GhEAxnfen0Vkxzn9fIGE00I3s
+ 6jxTIU9dAEaLxKJ+ffoWeMoUFbv+9HJ885C8N+34AdlpyrIcAAAA=
+X-Change-ID: 20260806-4addr-unknown-subtype-print-e1a9fada1a84
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1178; i=sven@narfation.org;
+ h=from:subject:message-id; bh=dgeI7fFqhp6jsG34exT+DcsFXSgKMhGgSyvmD2SZuaM=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklizhvyjw2Oh5yqSjN2dyN0/XvCzbdC0YtlRW+fvzuj
+ AUNOss7SlkYxLgYZMUUWfZcyT+/mf2t/OdpH4/CzGFlAhnCwMUpABOxNmL4w3WSQ7hmvfTPfc4W
+ 2+/18vQ+e3G7fyHfbF/5FLOj6Y+v9jP8T5ib0c13n7vDWuP0PK+JX2ZbFBx5l3Z0vXFhmi3butw
+ sHgA=
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: M2CMDKTJAVZ7HFS4K6YOWMBZ6N3355UZ
+X-Message-ID-Hash: M2CMDKTJAVZ7HFS4K6YOWMBZ6N3355UZ
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -98,7 +105,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SFOX454CUBJYNHQV6UPP6CMU2GNRPVOW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/M2CMDKTJAVZ7HFS4K6YOWMBZ6N3355UZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -107,47 +114,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart6161773.DvuYhMxLoT
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Paolo Abeni <pabeni@redhat.com>
-Date: Thu, 06 Aug 2026 16:49:40 +0200
-Message-ID: <13090442.O9o76ZdvQC@sven-desktop>
-In-Reply-To: <991957eb-65d1-4b3b-b903-76459127c124@redhat.com>
-MIME-Version: 1.0
+If an unknown subtype of an unicast 4addr packets was detected in
+batadv_dbg_arp(), it is printing the (known) packet_type instead of the
+subtype. This must be switched to the subtype to have any kind of use for
+the reader of the debug message.
 
-On Tuesday, 4 August 2026 15:16:54 CEST Paolo Abeni wrote:
-> Please be aware of net-next commit c82ff94592fb: the expectation is that
-> submitters reply proactively to AI review comments.
-> 
-> Specifically it would be helpful an evaluation of how critical is
-> problem reported and if it could safely addressed with a follow-up.
-> 
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-You sashiko instance is not sending out mails and AFAIK, there is no mbox 
-download button for the Sashiko "replies". It is therefore a little bit 
-inconvenient to reply to something which is just on some website.
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 011cfdc4..00903b79 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -548,7 +548,7 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 			break;
+ 		default:
+ 			batadv_dbg(BATADV_DBG_DAT, bat_priv, "* type: Unknown (%u)!\n",
+-				   unicast_4addr_packet->u.packet_type);
++				   unicast_4addr_packet->u.subtype);
+ 		}
+ 		break;
+ 	case BATADV_BCAST:
 
-I just wanted to go through all the accusations in 
-https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260805143200.722098-1-sw%40simonwunderlich.de
+---
+base-commit: 979765fe212e92b34a1627998820a9c3aaea6424
+change-id: 20260806-4addr-unknown-subtype-print-e1a9fada1a84
 
-Regards,
-	Sven
---nextPart6161773.DvuYhMxLoT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCanSfBAAKCRBND3cr0xT1
-y/JaAP9kbzFvnPeTMwGKyBLlt6CYOZnJ7rJsp4UkHgKz3EVY1gEA33wM9ZOGl/Yb
-Hz0MjjnZh5yY5541p9On6dsgRjqt5Qc=
-=htMl
------END PGP SIGNATURE-----
-
---nextPart6161773.DvuYhMxLoT--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
