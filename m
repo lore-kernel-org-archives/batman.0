@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C41AAC5AC7C
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 16:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78311C56208
+	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 16:56:36 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id DAE6A811E5
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 18:34:10 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 83CDA803DF
+	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 18:56:30 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786034050;
- b=l8HQErensmpiAPR80vEr++YCJcaXWf+dgeK71n55gq5vOXQqHBXxiewUtdUvg/pB1bgJH
- KvgyMQdKfZw5Kel2vjqYkeq7AvPO/Ql5am+xKQxDWEC40xLbcN5pT+2XXCntPb1i1D1v70k
- 2C3Wu6MlulDsQwYr4D3wBt4thoBFUzM=
+ t=1786035390;
+ b=pcO/V3oSWnZ9WEbF8KuDUtLJRBBdcehZVveN6+1irok1mf+jI2v/IhzGaRXsMKgki7swi
+ LGpfIBrcwSdu5S7FdnlyfVQyLwZphnD7XAWmCCrZglj45LdihJH7pgrqgfOQIU9PSHtf2QX
+ sZbOHlVLU1anCJxykgO+Hp8/Kx3HHXI=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786034050; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786035390; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=w4H2yC6PQ2JDPAI14NORM1ZMyLk4eXcA18IFYJSe5x4=;
- b=Klr8uoO9/K7TOSSIs9c3UDEWdrd6cL0dmMJFnQtK7VSej0uleK3hIg3frzzKXv32W5oJQ
- 0wODR2J2QQLIi0wXj/UEjZl9WLkt4FxB1YtieGiDu8/4QfbQpD5F4+uOBFMwCr5VBi0Mp3d
- bffAH/XhEmFgOmfQ52TTmtNFe4XPPe4=
+ list-archive; bh=LZtLPKTcwUO/HvzMqfdkw/jWU6LZFxp3friabveOrME=;
+ b=Hj7WrqxKBWMm/XTD2UBiJbDD7BVRcu0XM3H0sHZBfA65pMgQiVD199mlAQZm6GuG1F+eO
+ Ly3e75ugn6rtZ0fTYgVoQMwikYtjdY29PeX+jxeUh75aUOgwPc8tSlwbM9pmnXFEYfE+aGL
+ VxRL7gz2BVam/t4KoYwuK9E56CjQU24=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,56 +33,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7210680268
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 18:26:18 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786033578;
-	b=d5DtNIN13esTPyY/6ippsS1rXXmX+kZfRkMNS+xZF4N1LYKOmMJunKMBIEKT3LTTn7wFcY
-	mS5NcJJPiu27nqELJIYq4aOs8aryVvuwfFxT2UJ6PG5tfKSEqrcl5xB5/cvRUsDJ7W/xTR
-	4scELR2Mq+xKFXw1eS4AdcRY1kNztb4=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EC1E88315F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 18:33:32 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786034013;
+	b=NKE7nypSI6Sogju5XjsXXxHmecys/hvifnGUnS+ulCF5reiLA6zQUySoD8DYGEPSzdSryx
+	/6cg7XiaSTYQoyid0DuX+0W6L1IdcemRAi95xPO0xfO2LEmIxNKHk21Af0TZAXU47v/0G1
+	li03CMb9sibl6CQoqqzS+dLuurdyCeE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786033578;
+	s=20121; t=1786034013;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=w4H2yC6PQ2JDPAI14NORM1ZMyLk4eXcA18IFYJSe5x4=;
-	b=UZ5MlJ7K1PE9UC8C6dxhavmaHra9Kze3Xo+Z0SMIcok2Bhtr0Yf0Y99HnedUm+mGE22xkt
-	q6UXIGRPpowIPo1EK7XyKxthYUGIHdsC0Ndn/7m032GUC6dgfM+R9TwbGh8udx+KGfDKlF
-	qV6wwB0cDW8RZCl2XJvh0BLkugLsOQ8=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=LZtLPKTcwUO/HvzMqfdkw/jWU6LZFxp3friabveOrME=;
+	b=iDt1Xn8uGdQ3fmijU0vmkznDdnvzi2w+iq5vPzm8QbkuQ0bmPsyuFjFcJUpLdPT9Zto8el
+	v8mrIOmzqG44/wt8MNwW4FHafupQAxyT0gc0iKrCyHzjDpabrUZ4V/66mii+Xdo6ai3Anp
+	46ZwQx/fLL4XFrFpM3gU6sOVD6w/Xi4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=1TzcCNwe;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=oIFQMvBG;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 66A5120590;
-	Thu, 06 Aug 2026 16:26:13 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id F0ABE20DEB;
+	Thu, 06 Aug 2026 16:33:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786033573;
+	s=20121; t=1786034008;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=w4H2yC6PQ2JDPAI14NORM1ZMyLk4eXcA18IFYJSe5x4=;
-	b=1TzcCNweAvClvrGEez+sywN2Dj2fVj889fNaWTYIRPuLPNf9gXft8Pjv6+fpVCWzNVm/17
-	o7O6qYcE1508LadKDLrGypBccePFntkyoWXm4MYBx8uYBqO/CVReDaDofdnUhbvqgUuWpT
-	mJzfQ/EUxX7GDq0XK8BGQdo0VTmz5CE=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=LZtLPKTcwUO/HvzMqfdkw/jWU6LZFxp3friabveOrME=;
+	b=oIFQMvBG346wQril8K0XbuHdSuaM2VRNkWfShVGI/gsDrgAUxj2tZHI5FJdV/78QSjs06u
+	Szm0rdfUU5xyyEKZ0suWTk0qOIihPobnuEaLznM70ORwMeIKwgu8Xfo7ED/ummin/7j8QO
+	nuyIJGUuIZMOslO8HstEG3AlePwT37A=
 From: Sven Eckelmann <sven@narfation.org>
-To: netdev@vger.kernel.org, Simon Wunderlich <sw@simonwunderlich.de>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: [PATCH net-next 10/10] batman-adv: remove negative returns for
- batadv_send_skb_unicast
-Date: Thu, 06 Aug 2026 18:26:07 +0200
-Message-ID: <3216364.e9J7NaK4W3@sven-desktop>
-In-Reply-To: <20260805143200.722098-11-sw@simonwunderlich.de>
-References: <20260805143200.722098-1-sw@simonwunderlich.de>
- <20260805143200.722098-11-sw@simonwunderlich.de>
+Date: Thu, 06 Aug 2026 18:33:24 +0200
+Subject: [PATCH batadv] batman-adv: drop direction in
+ _batadv_is_ap_isolated kernel-doc
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3584836.aeNJFYEL58";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: JYXUDD4EAYXPCDN7QJM7Y4HQZIIPPN37
-X-Message-ID-Hash: JYXUDD4EAYXPCDN7QJM7Y4HQZIIPPN37
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: 
+ <20260806-ap_isolation_kerneldoc-param-v1-1-59e0d1cfb5e3@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAFO3dGoC/yXMUQrCMBBF0a2U+TaQ1qaKWxEpk2TU0ZqETCxC6
+ d4b9fM+HmcBocwkcGoWyDSzcAw12l0D7o7hRop9beh0N+ijHhSmkSVOWOpxfFIONPnoVMKML2X
+ Jm0PbG2fNHiqRMl358+PPYLGgn+Hy3+VtH+TK14Z13QD6Gzz4iAAAAA==
+X-Change-ID: 20260806-ap_isolation_kerneldoc-param-bed57145cb53
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1561; i=sven@narfation.org;
+ h=from:subject:message-id; bh=q1aCnE1kiM/E9Ru2rwmfpNCgdX0kBdfFYEwM9sAXi2k=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkl20PiIh/IXrtx8tySrl3zkgq//Fsiv7phxeJo3xl3x
+ eXUj82O6ChlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMZG4jw/+q4nXNX7kU7kZa
+ yFhOuXitLVTloW6lh/EiQ6vSCLlnmzQYGRZ7rO+fW/6mv/+YW+vX5yHHj11YcuP60tBVNQYCCVu
+ 9KxkB
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: 5VIR5CXMVJLRATNPBCVHZNTXP64RUZQP
+X-Message-ID-Hash: 5VIR5CXMVJLRATNPBCVHZNTXP64RUZQP
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -96,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JYXUDD4EAYXPCDN7QJM7Y4HQZIIPPN37/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5VIR5CXMVJLRATNPBCVHZNTXP64RUZQP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -105,78 +113,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3584836.aeNJFYEL58
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: netdev@vger.kernel.org, Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 06 Aug 2026 18:26:07 +0200
-Message-ID: <3216364.e9J7NaK4W3@sven-desktop>
-In-Reply-To: <20260805143200.722098-11-sw@simonwunderlich.de>
-MIME-Version: 1.0
+The _batadv_is_ap_isolated() is called by
 
-https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260805143200.722098-1=
-=2Dsw%40simonwunderlich.de?part=3D10
+* batadv_transtable_search()
+  - tt_local_entry is the source
+  - tt_global_entry is the destination
+* batadv_is_ap_isolated
+  - tt_local_entry is the destination
+  - tt_global_entry is the source
 
-> --- Patch [10]: [PATCH net-next 10/10] batman-adv: remove negative return=
-s for batadv_send_skb_unicast ---
-[...]
-> > @@ -360,7 +361,10 @@ int batadv_send_skb_unicast(struct batadv_priv *ba=
-t_priv,
-> >  	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
-> >  		unicast_packet->ttvn =3D unicast_packet->ttvn - 1;
-> > =20
-> > -	ret =3D batadv_send_skb_to_orig(skb, orig_node, NULL);
-> > +	res =3D batadv_send_skb_to_orig(skb, orig_node, NULL);
-> > +	if (res =3D=3D NET_XMIT_SUCCESS)
-> > +		ret =3D NET_XMIT_SUCCESS;
-> > +
->=20
-> Discovered by: opus-5, old-prompts =C2=B7 Missed by: sashiko-gemini
-> Does this change more than the counter in
-> batadv_dat_snoop_incoming_arp_request()?
->=20
-> In distributed-arp-table.c the same condition that bumps the counter also
-> sets the boolean return value:
->=20
-> 	err =3D batadv_send_skb_via_tt_4addr(bat_priv, skb_new,
-> 					   BATADV_P_DAT_CACHE_REPLY,
-> 					   NULL, vid);
-> 	if (err !=3D NET_XMIT_DROP) {
-> 		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
-> 		ret =3D true;
-> 	}
-> out:
-> 	batadv_dat_entry_put(dat_entry);
-> 	if (ret)
-> 		kfree_skb(skb);
-> 	return ret;
+It is therefore incorrect to document the tt_local_entry as sending client
+and tt_global_entry as the destination client.
 
-[...]
-> Could the changelog also mention that the packet disposition changes, i.e.
-> that the snooped ARP request is now delivered locally instead of being
-> dropped when the cached reply cannot be sent?
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-=46air enough, but not sure if it is worth sending the PR again to document=
- that=20
-this is the correct behavior too.
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4f47c97b..883b6c33 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -2490,8 +2490,8 @@ static void batadv_tt_global_table_free(struct batadv_priv *bat_priv)
+ /**
+  * _batadv_is_ap_isolated() - check whether two clients are AP-isolated from
+  *  each other
+- * @tt_local_entry: local TT entry of the sending client
+- * @tt_global_entry: global TT entry of the destination client
++ * @tt_local_entry: local TT entry of one local client
++ * @tt_global_entry: global TT entry of the remote client
+  *
+  * Return: true if traffic between the two clients should be dropped because
+  *  either both are WiFi clients or both carry the ISOLATION flag; false
 
-Regards,
-	Sven
---nextPart3584836.aeNJFYEL58
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+---
+base-commit: 979765fe212e92b34a1627998820a9c3aaea6424
+change-id: 20260806-ap_isolation_kerneldoc-param-bed57145cb53
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCanS1nwAKCRBND3cr0xT1
-y7CvAQDMBvgESXFOmJfS2TUbdom9xSRdSCv5fy8cxYRiXvFVlwEAvSAvBEy1uAlu
-+cteZTtC4bu4dF5Hsa+aXx3bkZnHHwc=
-=0ajW
------END PGP SIGNATURE-----
-
---nextPart3584836.aeNJFYEL58--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
