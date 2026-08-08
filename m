@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58EFEC5AC67
-	for <batman-adv@archiver.kernel.org>; Thu,  6 Aug 2026 20:00:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E2AFC5AC67
+	for <batman-adv@archiver.kernel.org>; Sat,  8 Aug 2026 18:06:27 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 74E74800FE
-	for <batman-adv@archiver.kernel.org>; Thu, 06 Aug 2026 22:00:08 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 35F018413A
+	for <batman-adv@archiver.kernel.org>; Sat, 08 Aug 2026 20:06:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1786046408;
- b=cvuzqaSe69MfQ5rbsG5LMYXOPpkilEe3ILoes/xqA2h1qsPgad/VczKiDHBfwJd3TfX4d
- /HZgCaJ6XMXYV9UKQplJvm+Vh8EEPZQ9CKDc+lDUVXI7Z1e3UAdBP+6GyfXkA1JN6W3PQJ2
- ujgWvmOs1OqXb62xNrrHEaeOnbUhEns=
+ t=1786212385;
+ b=O1QwFAyQMj2AtGXN3PMV22sPORjvBkea+jHYoUmX6EASmIivlq2iFHF+weQYuzU7ir5B7
+ 17JZ/3ISgUOs10ek+ZXNOObxPQ/2rPBfSW5vEolxVy2eLKP1dcsEBBFPPY6qwhm33wPpDN9
+ jqfsiO1DIJfq2SXGneVpWR3mTG9rPZw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1786046408; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1786212385; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
- b=j6unfAJ6/uC8DGwHd3a5edD5KgmpZjR/9+G3kifyu+Y0CL/5RFfVjS34c/BmErQ7LPzrz
- q4TWiDy/DYSKTLG8ihkSnwsvlAGkksPunP6iMMdTXlNyptV0ipTRNAwg1hjoxlJSM76cxuf
- oedn8+SGnHebxggwdLuiqzxqgUqYyjk=
+ list-archive; bh=YdiE8VGypJpv5HBuXnBa8KkgnNDJXFc7/hQuHCpKGkQ=;
+ b=fk7sRxRIGIODHuajOYO35jcSrZJOgd4bZwQfU+z05zTA6BS3xtdXRlP5I78mk+BY5ErMr
+ 5XJgaIgDDcq/ZzLD0M/NnxnZjEd7g1OM/6Gd3Hu2CAW9sYCueBpcnQjTtxEiUZQebFNgfLY
+ L4lmtwEh9ejh5HlAQpzbqVl1OgipHNc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,62 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9E6BD80267
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 06 Aug 2026 20:55:45 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786042545;
-	b=F3RQiL9WvRG24lzXhQkx7CqmCUGqvjN65HRZervsZGNRE5D8HO7fQqhBI7BJurtfv+yTVn
-	2/+4cjQzJ/PTOhl5Q64QHGp7mMjOnESgdD219rMa3Z5w+LCgINQIpfLLgLysudK23oB2Dt
-	uI+UmBOaTFqUzdVpNIroDKc6wFJMDJM=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id AF8AA811A3
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 08 Aug 2026 20:05:57 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1786212367;
+	b=1a2RWT649xdDlNQy1Fz87qGSoY5Ov2U9IkV2mVyvE+kTNCz1IyGJGwSFKHAIRepOig5IvQ
+	ud7mAr9586W8lqlAMImwhKPry/G0t5x0/CiGUzHuXnfJlheI2xugUfNvMyc1RJoCCn6yKy
+	VFzyuQuwWW8MOvINj91w4S5UgQOojSw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1786042545;
+	s=20121; t=1786212367;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
-	b=dh0ehkXzhMWl8VZPwVPFJvCWqCvhyQsJr2YkCwdU164Q8a9CHw2I9WcmMrbrER/bvdqJn5
-	YsC/QFirnBOUBO+WMlbFV2idVJHHDDGV7PSDW1UO1UtV4EGHJ6C47BTlu3AbAdCDuhDtiH
-	2suOkjQugpCb+xc714MxjDetDVXRvAc=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=YdiE8VGypJpv5HBuXnBa8KkgnNDJXFc7/hQuHCpKGkQ=;
+	b=OZaRZ3IZ+Ql/CQmV/wiAw+dp9kewbwZKULSOb/ie7A5A4MTAUSqEgUptp79D9yiQzMhS+q
+	/UX97449l+U6qaD99qh+Rf6/xXxo7/BibH8DIkWUu//JLH7U6fjMhWF8fS5m2aRWrrsXE0
+	PvhrfmG4+ILo8xkEGP0M5/ms6H+eXNQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=pPQfGEle;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=MfHmyUNO;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3322C20267;
-	Thu, 06 Aug 2026 18:55:41 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 98C8721B87;
+	Sat, 08 Aug 2026 18:05:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1786042541;
+	s=20121; t=1786212352;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=KTNInRYUtmSxn9/U16pVAgyx/ELaS1qxJaSVA29WiE0=;
-	b=pPQfGEleBikMm1JBeIo6aX35q2QH9mnx8zoTCRqgpr1ZNpg9kQrxMNQr2O8SP3omETQvtx
-	6XBN+TzPgAIvXcB7RwkDaphHGJ/z82viSuhG+ipTtIHbZKTZWpOah/ZxrP/yiVokDR1pYo
-	mMIA3Ou7Qeo1P7e5x0Eu+PYqjyKvVKk=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=YdiE8VGypJpv5HBuXnBa8KkgnNDJXFc7/hQuHCpKGkQ=;
+	b=MfHmyUNOad7fHE39KRHST7nSr+FkaLfkb5lbFTmem000rcEUoxsyTwmlRpbikZRzGzXcFG
+	jo2+BiHKsYop0X1HReS0VK8gW4r9ox563Hr+1Tz0UezX2IV3RXVTORGHKcyLrmXPlrRKDa
+	10D2iMV84NpfxxLPanoxYfPgvOO7fbU=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 06 Aug 2026 20:54:55 +0200
-Subject: [PATCH batadv 3/3] batman-adv: use more descriptive var names for
- is_similar_or_better
+Date: Sat, 08 Aug 2026 20:05:49 +0200
+Subject: [PATCH batadv] batman-adv: compat: drop support for Linux < 5.15
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260806-bat_v-sob-kdoc-v1-3-ba4d763de0da@narfation.org>
-References: <20260806-bat_v-sob-kdoc-v1-0-ba4d763de0da@narfation.org>
-In-Reply-To: <20260806-bat_v-sob-kdoc-v1-0-ba4d763de0da@narfation.org>
+Message-Id: <20260808-compat-5-14-removal-v1-1-112aae788fc7@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAPxvd2oC/yWMQQrCMBAAv1L27EIajKR+RTxsN6uu2KYkaRBK/
+ 27U4wzMbJAlqWQ4dxskqZo1zg36Qwf8oPkuqKExWGNPxhuPHKeFCjrsj5hkipVeOLB31oSBWRy
+ 0ckly0/fveoGRCoUK17/P6/gULt8l7PsHJlvbJn8AAAA=
+X-Change-ID: 20260808-compat-5-14-removal-9c8520d9cce5
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6311; i=sven@narfation.org;
- h=from:subject:message-id; bh=q6oVKRO6UkMUbkfG9SonXDBDa+wcIksb9B55Is53sDI=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFklN1r3XORRSuwRuP7rt8JK5rl8G7RfLtueVbL358vNy
- 82rpbLfdZSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAm0mDH8M80ZEPnujahiPcm
- xodnPatqNDKvvLvz4/9Tppo50gar72owMnR+eX5Q7XFhY8+Ctsw9LKdd2ZJTOp67Hv8sGxJUL38
- okgcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10128; i=sven@narfation.org;
+ h=from:subject:message-id; bh=EEmexGiHgDuxKqWiS2r/+KQGHNwoEF5i/q5ZjkSaCo4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnl+X/bHCZunPNWYf/caa4Rh7TrQt8szCk7EL6yhNH1a
+ JZeRlxnRwkLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAi9Z8ZfqybkJq6vqqRkefT
+ isspGWur7mzO/edzc4Utn63V0RydE4wMExgyHMJb1h05UvS6T471178stuATWz+JsZcaZRfOK+t
+ kAAA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK
-X-Message-ID-Hash: CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK
+Message-ID-Hash: F5YDONR23UJ6QYM2IPYPIEZSP4MEJJKX
+X-Message-ID-Hash: F5YDONR23UJ6QYM2IPYPIEZSP4MEJJKX
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CZ3SCXPRGBIOUCWQ6IZ72SZQBPNJ5LAK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/F5YDONR23UJ6QYM2IPYPIEZSP4MEJJKX/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,154 +112,329 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-neigh1 and neigh2 is not really helpful when looking at a code which needs
-to judge the metric similarity between a candidate and a reference. This
-already caused an implementation error in the B.A.T.M.A.N. V bonding code.
-Simply using "reference" and "candidate" for the neighbors is a lot more
-descriptive and makes it easier to understand the code.
+Linux 5.10.261 added commit 676457fe5ad1 ("mld: convert ifmcaddr6 to RCU")
+to backport the mld access behavior from Linux 5.13. But this fixes/stable
+backport version cannot be represented in the LINUX_VERSION_CODE. It is
+therefore hard to identify this version when trying to compile batman-adv
+against it. Supporting this versions is therefore unnecessary hard.
+
+This LTS kernel will be EoL at the end of the year anyway. There is not a
+big loss in dropping the support for this kernel version already with this
+batman-adv version.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c | 25 +++++++++++++------------
- net/batman-adv/bat_v.c      | 42 +++++++++++++++++++++---------------------
- net/batman-adv/types.h      | 12 ++++++------
- 3 files changed, 40 insertions(+), 39 deletions(-)
+ README.external.rst                |  2 +-
+ compat-include/linux/etherdevice.h | 20 --------
+ compat-include/linux/if_bridge.h   | 51 ---------------------
+ compat-include/linux/if_vlan.h     |  1 -
+ compat-include/linux/kstrtox.h     | 14 ------
+ compat-include/linux/netdevice.h   | 22 ---------
+ compat-include/linux/stdarg.h      | 13 ------
+ compat-include/net/addrconf.h      | 94 --------------------------------------
+ net/batman-adv/multicast.c         |  3 +-
+ 9 files changed, 2 insertions(+), 218 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 53fbdbbe..3fe09b4c 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -2424,25 +2424,26 @@ static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
- /**
-  * batadv_iv_ogm_neigh_is_sob() - check if neigh1 is similarly good or better
-  *  than neigh2 from the metric prospective
-- * @neigh1: the first neighbor object of the comparison
-- * @if_outgoing1: outgoing interface for the first neighbor
-- * @neigh2: the second neighbor object of the comparison
-- * @if_outgoing2: outgoing interface for the second neighbor
-+ * @candidate: the first neighbor object of the comparison
-+ * @if_outgoing_cand: outgoing interface for the @candidate neighbor
-+ * @reference: the second neighbor object of the comparison
-+ * @if_outgoing_ref: outgoing interface for the @reference neighbor
-  *
-- * Return: true if the metric via neigh1 is equally good or better than
-- * the metric via neigh2, false otherwise.
-+ * Return: true if the metric via @candidate is equally good or better than
-+ * the metric via @reference, false otherwise.
-  */
- static bool
--batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
--			   struct batadv_hard_iface *if_outgoing1,
--			   struct batadv_neigh_node *neigh2,
--			   struct batadv_hard_iface *if_outgoing2)
-+batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *candidate,
-+			   struct batadv_hard_iface *if_outgoing_cand,
-+			   struct batadv_neigh_node *reference,
-+			   struct batadv_hard_iface *if_outgoing_ref)
+diff --git a/README.external.rst b/README.external.rst
+index f988986f..0b1bef15 100644
+--- a/README.external.rst
++++ b/README.external.rst
+@@ -12,7 +12,7 @@ and as an external module. The external  module   allows  to  get
+ new    features without  upgrading  to  a  newer  kernel  version
+ and to get batman-adv specific bug fixes for  kernels  that   are
+ not   supported   anymore.  It compiles  against  and should work
+-with  Linux 5.10  -   7.2.  Supporting  older  versions  is   not
++with  Linux 5.15  -   7.2.  Supporting  older  versions  is   not
+ planned,  but it's probably easy to backport it. If you work on a
+ backport, feel free to contact us.  :-)
+ 
+diff --git a/compat-include/linux/etherdevice.h b/compat-include/linux/etherdevice.h
+deleted file mode 100644
+index 1e2fdafb..00000000
+--- a/compat-include/linux/etherdevice.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_ETHERDEVICE_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_ETHERDEVICE_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/etherdevice.h>
+-
+-#if LINUX_VERSION_IS_LESS(5, 15, 0)
+-
+-static inline void batadv_eth_hw_addr_set(struct net_device *dev,
+-					  const u8 *addr)
+-{
+-	ether_addr_copy(dev->dev_addr, addr);
+-}
+-#define eth_hw_addr_set batadv_eth_hw_addr_set
+-
+-#endif /* LINUX_VERSION_IS_LESS(5, 15, 0) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_ETHERDEVICE_H_ */
+diff --git a/compat-include/linux/if_bridge.h b/compat-include/linux/if_bridge.h
+deleted file mode 100644
+index 50aa0608..00000000
+--- a/compat-include/linux/if_bridge.h
++++ /dev/null
+@@ -1,51 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/if_bridge.h>
+-
+-#if LINUX_VERSION_IS_LESS(5, 14, 0)
+-
+-#include <net/addrconf.h>
+-
+-#if IS_ENABLED(CONFIG_IPV6)
+-static inline bool
+-br_multicast_has_router_adjacent(struct net_device *dev, int proto)
+-{
+-	struct list_head bridge_mcast_list = LIST_HEAD_INIT(bridge_mcast_list);
+-	struct br_ip_list *br_ip_entry, *tmp;
+-	int ret;
+-
+-	if (proto != ETH_P_IPV6)
+-		return true;
+-
+-	ret = br_multicast_list_adjacent(dev, &bridge_mcast_list);
+-	if (ret < 0)
+-		return true;
+-
+-	ret = false;
+-
+-	list_for_each_entry_safe(br_ip_entry, tmp, &bridge_mcast_list, list) {
+-		if (br_ip_entry->addr.proto == htons(ETH_P_IPV6) &&
+-		    ipv6_addr_is_ll_all_routers(&br_ip_entry->addr.dst.ip6))
+-			ret = true;
+-
+-		list_del(&br_ip_entry->list);
+-		kfree(br_ip_entry);
+-	}
+-
+-	return ret;
+-}
+-#else
+-static inline bool
+-br_multicast_has_router_adjacent(struct net_device *dev, int proto)
+-{
+-	return true;
+-}
+-#endif
+-
+-#endif /* LINUX_VERSION_IS_LESS(5, 14, 0) */
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_IF_BRIDGE_H_ */
+diff --git a/compat-include/linux/if_vlan.h b/compat-include/linux/if_vlan.h
+index b56b2ac1..db8d473c 100644
+--- a/compat-include/linux/if_vlan.h
++++ b/compat-include/linux/if_vlan.h
+@@ -7,7 +7,6 @@
+ #include_next <linux/if_vlan.h>
+ 
+ #if LINUX_VERSION_IS_LESS(6, 4, 0) && \
+-    !(LINUX_VERSION_IS_GEQ(5, 10, 205) && LINUX_VERSION_IS_LESS(5, 11, 0)) && \
+     !(LINUX_VERSION_IS_GEQ(5, 15, 144) && LINUX_VERSION_IS_LESS(5, 16, 0)) && \
+     !(LINUX_VERSION_IS_GEQ(6, 1, 69) && LINUX_VERSION_IS_LESS(6, 2, 0))
+ 
+diff --git a/compat-include/linux/kstrtox.h b/compat-include/linux/kstrtox.h
+deleted file mode 100644
+index 800341a8..00000000
+--- a/compat-include/linux/kstrtox.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_KSTRTOX_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_KSTRTOX_H_
+-
+-#include <linux/version.h>
+-#if (LINUX_VERSION_IS_GEQ(5, 10, 185) && LINUX_VERSION_IS_LESS(5, 11, 0)) || \
+-    LINUX_VERSION_IS_GEQ(5, 14, 0)
+-#include_next <linux/kstrtox.h>
+-#else
+-#include <linux/kernel.h>
+-#endif
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_KSTRTOX_H_ */
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 6963e12d..a31d0168 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -6,28 +6,6 @@
+ #include <linux/version.h>
+ #include_next <linux/netdevice.h>
+ 
+-#if LINUX_VERSION_IS_LESS(5, 15, 0)
+-
+-static inline void batadv_dev_put(struct net_device *dev)
+-{
+-	if (!dev)
+-		return;
+-
+-	dev_put(dev);
+-}
+-#define dev_put batadv_dev_put
+-
+-static inline void batadv_dev_hold(struct net_device *dev)
+-{
+-	if (!dev)
+-		return;
+-
+-	dev_hold(dev);
+-}
+-#define dev_hold batadv_dev_hold
+-
+-#endif /* LINUX_VERSION_IS_LESS(5, 15, 0) */
+-
+ #if LINUX_VERSION_IS_LESS(5, 17, 0)
+ 
+ typedef struct {} netdevice_tracker;
+diff --git a/compat-include/linux/stdarg.h b/compat-include/linux/stdarg.h
+deleted file mode 100644
+index 3137c428..00000000
+--- a/compat-include/linux/stdarg.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_STDARG_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_STDARG_H_
+-
+-#include <linux/version.h>
+-#if LINUX_VERSION_IS_GEQ(5, 15, 0)
+-#include_next <linux/stdarg.h>
+-#else
+-#include <stdarg.h>
+-#endif
+-
+-#endif
+diff --git a/compat-include/net/addrconf.h b/compat-include/net/addrconf.h
+deleted file mode 100644
+index 7b166c80..00000000
+--- a/compat-include/net/addrconf.h
++++ /dev/null
+@@ -1,94 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_NET_ADDRCONF_H_
+-#define _NET_BATMAN_ADV_COMPAT_NET_ADDRCONF_H_
+-
+-#include <linux/version.h>
+-#include_next <net/addrconf.h>
+-
+-#if LINUX_VERSION_IS_LESS(5, 13, 0)
+-
+-static bool batadv_mcast_mla_is_duplicate(u8 *mcast_addr,
+-					  struct hlist_head *mcast_list);
+-
+-static inline int
+-compat_batadv_mcast_mla_meshif_get_ipv6(struct net_device *dev,
+-				 struct hlist_head *mcast_list,
+-				 struct batadv_mcast_mla_flags *flags,
+-				 u8 *mcast_addr,
+-				struct batadv_hw_addr *new,
+-				struct inet6_dev *in6_dev)
+-
+-{
+-	struct ifmcaddr6 *pmc6;
+-	int ret = 0;
+-
+-	if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_IPV6)
+-		return 0;
+-
+-	rcu_read_lock();
+-
+-	in6_dev = __in6_dev_get(dev);
+-	if (!in6_dev) {
+-		rcu_read_unlock();
+-		return 0;
+-	}
+-
+-	read_lock_bh(&in6_dev->lock);
+-	for (pmc6 = in6_dev->mc_list; pmc6; pmc6 = pmc6->next) {
+-		if (IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) <
+-		    IPV6_ADDR_SCOPE_LINKLOCAL)
+-			continue;
+-
+-		if (flags->tvlv_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
+-		    ipv6_addr_is_ll_all_nodes(&pmc6->mca_addr))
+-			continue;
+-
+-		if (!(flags->tvlv_flags & BATADV_MCAST_WANT_NO_RTR6) &&
+-		    IPV6_ADDR_MC_SCOPE(&pmc6->mca_addr) >
+-		    IPV6_ADDR_SCOPE_LINKLOCAL)
+-			continue;
+-
+-		ipv6_eth_mc_map(&pmc6->mca_addr, mcast_addr);
+-
+-		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
+-			continue;
+-
+-		new = kmalloc_obj(*new, GFP_ATOMIC);
+-		if (!new) {
+-			ret = -ENOMEM;
+-			break;
+-		}
+-
+-		ether_addr_copy(new->addr, mcast_addr);
+-		hlist_add_head(&new->list, mcast_list);
+-		ret++;
+-	}
+-	read_unlock_bh(&in6_dev->lock);
+-	rcu_read_unlock();
+-
+-	return ret;
+-}
+-
+-#define ifmcaddr6 \
+-		net_device *orig_dev = dev; \
+-		return compat_batadv_mcast_mla_meshif_get_ipv6(orig_dev, \
+-							       mcast_list, \
+-							       flags, \
+-							       mcast_addr, \
+-							       new = NULL, \
+-							       in6_dev = NULL); \
+-	} \
+-	static inline int \
+-	__unused_batadv_mcast_mla_meshif_get_ipv6(struct net_device *dev, \
+-					     struct hlist_head *mcast_list, \
+-					     struct batadv_mcast_mla_flags *flags) \
+-	{ \
+-		struct batadv_hw_addr *new; \
+-		struct inet6_dev *in6_dev; \
+-		u8 mcast_addr[ETH_ALEN]; \
+-		struct ifmcaddr6
+-
+-#endif /* LINUX_VERSION_IS_LESS(5, 13, 0) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_NET_ADDRCONF_H_ */
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 61410364..155592ab 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -133,8 +133,7 @@ static u8 batadv_mcast_mla_rtr_flags_meshif_get_ipv6(struct net_device *dev)
  {
- 	bool ret;
- 	int diff;
+ 	struct inet6_dev *in6_dev = __in6_dev_get(dev);
  
--	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
--				       if_outgoing2, &diff);
-+	ret = batadv_iv_ogm_neigh_diff(candidate, if_outgoing_cand,
-+				       reference, if_outgoing_ref,
-+				       &diff);
- 	if (!ret)
- 		return false;
- 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 0d0a226c..596889b3 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -514,40 +514,40 @@ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
- /**
-  * batadv_v_neigh_is_sob() - check whether two B.A.T.M.A.N. V neighbours have
-  *  a similar or better throughput
-- * @neigh1: first neighbour to compare
-- * @if_outgoing1: outgoing interface to use for @neigh1
-- * @neigh2: second neighbour to compare
-- * @if_outgoing2: outgoing interface to use for @neigh2
-+ * @candidate: the first neighbor object of the comparison
-+ * @if_outgoing_cand: outgoing interface for the @candidate neighbor
-+ * @reference: the second neighbor object of the comparison
-+ * @if_outgoing_ref: outgoing interface for the @reference neighbor
-  *
-- * Return: true if the throughput of @neigh1 is more than 3/4 of the
-- *  @neigh2 throughput
-+ * Return: true if the throughput of @candidate is more than 3/4 of the
-+ *  @reference throughput
-  */
--static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
--				  struct batadv_hard_iface *if_outgoing1,
--				  struct batadv_neigh_node *neigh2,
--				  struct batadv_hard_iface *if_outgoing2)
-+static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *candidate,
-+				  struct batadv_hard_iface *if_outgoing_cand,
-+				  struct batadv_neigh_node *reference,
-+				  struct batadv_hard_iface *if_outgoing_ref)
- {
--	struct batadv_neigh_ifinfo *ifinfo1;
--	struct batadv_neigh_ifinfo *ifinfo2;
-+	struct batadv_neigh_ifinfo *ifinfo_cand;
-+	struct batadv_neigh_ifinfo *ifinfo_ref;
- 	bool ret = false;
- 	u32 threshold;
- 
--	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
--	if (!ifinfo1)
-+	ifinfo_cand = batadv_neigh_ifinfo_get(candidate, if_outgoing_cand);
-+	if (!ifinfo_cand)
- 		goto err_ifinfo1;
- 
--	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
--	if (!ifinfo2)
-+	ifinfo_ref = batadv_neigh_ifinfo_get(reference, if_outgoing_ref);
-+	if (!ifinfo_ref)
- 		goto err_ifinfo2;
- 
--	threshold = ifinfo2->bat_v.throughput / 4;
--	threshold = ifinfo2->bat_v.throughput - threshold;
-+	threshold = ifinfo_ref->bat_v.throughput / 4;
-+	threshold = ifinfo_ref->bat_v.throughput - threshold;
- 
--	ret = ifinfo1->bat_v.throughput > threshold;
-+	ret = ifinfo_cand->bat_v.throughput > threshold;
- 
--	batadv_neigh_ifinfo_put(ifinfo2);
-+	batadv_neigh_ifinfo_put(ifinfo_ref);
- err_ifinfo2:
--	batadv_neigh_ifinfo_put(ifinfo1);
-+	batadv_neigh_ifinfo_put(ifinfo_cand);
- err_ifinfo1:
- 	return ret;
- }
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9bdc5a3e..99667f63 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -2087,14 +2087,14 @@ struct batadv_algo_neigh_ops {
- 		   struct batadv_hard_iface *if_outgoing2);
- 
- 	/**
--	 * @is_similar_or_better: check if neigh1 is equally similar or better
--	 *  than neigh2 for their respective outgoing interface from the metric
-+	 * @is_similar_or_better: check if @candidate is equally similar or better
-+	 *  than @reference for their respective outgoing interface from the metric
- 	 *  prospective
- 	 */
--	bool (*is_similar_or_better)(struct batadv_neigh_node *neigh1,
--				     struct batadv_hard_iface *if_outgoing1,
--				     struct batadv_neigh_node *neigh2,
--				     struct batadv_hard_iface *if_outgoing2);
-+	bool (*is_similar_or_better)(struct batadv_neigh_node *candidate,
-+				     struct batadv_hard_iface *if_outgoing_cand,
-+				     struct batadv_neigh_node *reference,
-+				     struct batadv_hard_iface *if_outgoing_ref);
- 
- 	/** @dump: dump neighbors to a netlink socket (optional) */
- 	void (*dump)(struct sk_buff *msg, struct netlink_callback *cb,
+-#if (LINUX_VERSION_IS_GEQ(5, 10, 111) && LINUX_VERSION_IS_LESS(5, 11, 0)) || /* UGLY_HACK */ \
+-    (LINUX_VERSION_IS_GEQ(5, 15, 34) && LINUX_VERSION_IS_LESS(5, 16, 0)) || /* UGLY_HACK */ \
++#if (LINUX_VERSION_IS_GEQ(5, 15, 34) && LINUX_VERSION_IS_LESS(5, 16, 0)) || /* UGLY_HACK */ \
+     (LINUX_VERSION_IS_GEQ(5, 16, 20) && LINUX_VERSION_IS_LESS(5, 17, 0)) || /* UGLY_HACK */ \
+     LINUX_VERSION_IS_GEQ(5, 17, 3) // UGLY_HACK_NEW
+ 	if (in6_dev && atomic_read(&in6_dev->cnf.mc_forwarding))
 
--- 
-2.47.3
+---
+base-commit: 6ff21902725ca4c437f6d60774e903ecdca2e645
+change-id: 20260808-compat-5-14-removal-9c8520d9cce5
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
