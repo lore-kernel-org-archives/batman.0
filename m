@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2856C5B572
-	for <batman-adv@archiver.kernel.org>; Sat, 22 Aug 2026 10:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AE4CC5B572
+	for <batman-adv@archiver.kernel.org>; Sat, 22 Aug 2026 11:01:34 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B71308148C
-	for <batman-adv@archiver.kernel.org>; Sat, 22 Aug 2026 12:52:55 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9E820814AA
+	for <batman-adv@archiver.kernel.org>; Sat, 22 Aug 2026 13:01:32 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1787395975;
- b=zQ9xKBHdw7/AVYYBNmnd4iV9FIluQPwzN48dDiYLVAuGZaYAb+RbMscMjenb3jwIRgG9y
- 6jceu7L/esRyJeulW5Kf4oEo3gnHtjYxW46/yRL+t8f1mJ02ktSDGDPN/bi5dDW3QblIpU+
- UWwGJuq7k56ZMikjuejK3O+Z8LM0KAQ=
+ t=1787396492;
+ b=V50hsTnF2DOAk594QAqCkI12gKdaKe5kMHOnj+SQ9O4SQF9sACogShcKUJ1M95POscdMK
+ LOmYoxUyH8QGXFJp4bKgOrefjqjZANGwiT9Km9Tbno3MJzxDCjPA5gBzRabOkY05hCA7cK+
+ hKdHqwiYZQKfBOhqZkolJG7SLmp/Glo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1787395975; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1787396492; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=+A9ZO54T8rgnZj0kI1FqPmdnRVqmVtuZBXPeZ734HvM=;
- b=N6zFTMEtfWZwCk9LxdvWID7Ha35V0eFtGRiEMI47N26JvDksBOMLyeKMowSYPyUGOraMe
- DTI5YXSF/xN8vCm+ztFQQFLqIBSH+hHx4pWfgPz+juQg7Tzoo6BlK0Rc/8/DE9gEMRXXr22
- SXyGav1tDyEGrfhyfokBbXCp8WxlDUU=
+ list-archive; bh=5TYPD9L0vmzoBWI6d9zzsVJKKo6+pNNu3F7nzirXqkI=;
+ b=F50Icn3PAJ3lBEkkX/au8h7arRze19m6VemcwBWXf20acYbPHR189XNOYzr6Q156FJ9ia
+ FRdVSY2nOpizuzR+pBDYqKUU3ly+obwv70KnL2mU+zjmXCH/I6yl7sWV5qDgUbGAURojbfm
+ eYj8d8By0YZr4Tf46vWOsDI3/+unNB0=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,59 +32,60 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 932F5807F0
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 22 Aug 2026 12:52:37 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787395967;
-	b=jdFHzQfwjt07YPFze+o/EBurhbdvIdNtuBEi6w4E+XV1JxUYt6GHoUlLtrcRl4fL17Ij6L
-	cJ9TMmupr8VODvSfstiWB1hyITb4ECyfA3Kg+a0+aWRbpqnlYohoErI004HZXiPQnd4zxm
-	LXddwfujJJS1XVpiosfylLofmL5L9bs=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id E2F4E81487
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 22 Aug 2026 13:01:23 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787396484;
+	b=k8Ob7sviTkgl008E9EmqUz4UZzcbU9IbvoUyIKQ7MJ+EfhLX4xYpiBblfINnDliR6iNhAP
+	MbEdeB4dL0jj2tzvNR+5CTLt9hqtMv6++KHcB2pNNDBxxlk4cQ7hyRtjNnfJHTWH0YiLLW
+	XgTUh3QjzF3RinIZNo8MgAVUq/iVjgs=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1787395967;
+	s=20121; t=1787396484;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=+A9ZO54T8rgnZj0kI1FqPmdnRVqmVtuZBXPeZ734HvM=;
-	b=SISWsT+ceZ4ES+rL0V4EYLjbBHDt0f+kR+FsQLVzwVXhrE5xEKsMQQpJwKqmNl3BKsagEg
-	zKolLWj+rZfoWASbh+ZycU+pxYHz1c0yJsW/wUj9dkjs6fqk5lghV1hESaMalRggtNrqJ0
-	Y4/+DmdhD7l61QcP85VcSBdoyImmSDE=
+	bh=5TYPD9L0vmzoBWI6d9zzsVJKKo6+pNNu3F7nzirXqkI=;
+	b=M58+Po/RMPWQ50CWTvEGkQMw7F6++VaYnOu43nB9Mrz/WHrmdCorvRu4PmpzXOLFDevklh
+	wfT5kDB8f2p7/G5t60PfxUdBxiEr33RZ80us86OtVHT1fCx+NoRt+rs4KsHOUO6C2CeUcx
+	QnZvoBue8a9kIpqA8aiZe+Zot6NR8Ng=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=oF1RaNNu;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=m5P5axHG;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id E8ABC1FD5A;
-	Sat, 22 Aug 2026 10:52:31 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id A528A200FB;
+	Sat, 22 Aug 2026 11:01:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1787395952;
+	s=20121; t=1787396479;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=+A9ZO54T8rgnZj0kI1FqPmdnRVqmVtuZBXPeZ734HvM=;
-	b=oF1RaNNun07Hg8VSm0t9AS/rH5mQiJWCnhcDHS7wH6yTT7/Ls+k2mK8IjCrjXzz5K/G3l0
-	iB8S0ZPlXyFRbDbYLmgnatUovVTPsUNZ1C+e4wjIVPtmWIeF/iklcWmkv/2cqpy+R4UWVO
-	oGVjSP+hu/fEWSNTOy18QPkpWPAJn7Q=
+	bh=5TYPD9L0vmzoBWI6d9zzsVJKKo6+pNNu3F7nzirXqkI=;
+	b=m5P5axHGoYbicMzsTsmqiUl+iT6btqG1qWti/E74AUKojpV8/aTK0thoU6Oj88mn8Ksgv2
+	dcYw5VzI0Pn2JYlbFAvQb+rrBPAZDJoBcBDYUfk2kYzXv6XGdSie28ond565Wwazxo09zR
+	b9ZdX+57R4GEjwKdC+adI5XV+59MJLw=
 From: Sven Eckelmann <sven@narfation.org>
 To: netdev@vger.kernel.org, Simon Wunderlich <sw@simonwunderlich.de>
 Cc: "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- b.a.t.m.a.n@lists.open-mesh.org, Zhiling Zou <zhilinz@nebusec.ai>,
- stable@vger.kernel.org, Vega <vega@nebusec.ai>,
- Simon Wunderlich <sw@simonwunderlich.de>
-Subject: Re: [PATCH net 1/9] batman-adv: fix stale receive device on merged
- fragments
-Date: Sat, 22 Aug 2026 12:52:24 +0200
-Message-ID: <6299903.lOV4Wx5bFT@sven-desktop>
-In-Reply-To: <20260821094813.201800-2-sw@simonwunderlich.de>
+ b.a.t.m.a.n@lists.open-mesh.org, stable@vger.kernel.org,
+ Sashiko <sashiko-bot@kernel.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Subject: Re: [PATCH net 2/9] batman-adv: bla: avoid CRC corruption due to
+ parallel
+ claim add
+Date: Sat, 22 Aug 2026 13:01:14 +0200
+Message-ID: <2277407.irdbgypaU6@sven-desktop>
+In-Reply-To: <20260821094813.201800-3-sw@simonwunderlich.de>
 References: <20260821094813.201800-1-sw@simonwunderlich.de>
- <20260821094813.201800-2-sw@simonwunderlich.de>
+ <20260821094813.201800-3-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5127734.31r3eYUQgx";
+Content-Type: multipart/signed; boundary="nextPart14080243.uLZWGnKmhe";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: FTC4BCCCJT2YVFERWNOFJBK2G5BWC62L
-X-Message-ID-Hash: FTC4BCCCJT2YVFERWNOFJBK2G5BWC62L
+Message-ID-Hash: OHCV2V6YHMWV575DQDOVZOV6NCXDOTLI
+X-Message-ID-Hash: OHCV2V6YHMWV575DQDOVZOV6NCXDOTLI
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -98,7 +99,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FTC4BCCCJT2YVFERWNOFJBK2G5BWC62L/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OHCV2V6YHMWV575DQDOVZOV6NCXDOTLI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -107,68 +108,98 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart5127734.31r3eYUQgx
-Content-Transfer-Encoding: 7Bit
+--nextPart14080243.uLZWGnKmhe
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: netdev@vger.kernel.org, Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sat, 22 Aug 2026 12:52:24 +0200
-Message-ID: <6299903.lOV4Wx5bFT@sven-desktop>
-In-Reply-To: <20260821094813.201800-2-sw@simonwunderlich.de>
+Date: Sat, 22 Aug 2026 13:01:14 +0200
+Message-ID: <2277407.irdbgypaU6@sven-desktop>
+In-Reply-To: <20260821094813.201800-3-sw@simonwunderlich.de>
 MIME-Version: 1.0
 
-https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260821094813.201800-1-sw%40simonwunderlich.de?part=1
+https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260821094813.201800-1=
+=2Dsw%40simonwunderlich.de?part=3D2
 
-> --- Patch [1]: [PATCH net 1/9] batman-adv: fix stale receive device on merged fragments ---
 [...]
-> On the receive side, batadv_bla_rx() is called from batadv_interface_rx()
-> only after skb->dev has already been replaced:
-> 
-> net/batman-adv/mesh-interface.c:batadv_interface_rx() {
+> > @@ -732,43 +734,56 @@ static void batadv_bla_add_claim(struct batadv_pr=
+iv *bat_priv,
+> >  			kfree(claim);
+> >  			return;
+> >  		}
+> > +
+> > +		spin_lock_bh(&backbone_gw->crc_lock);
+> > +		backbone_gw->crc ^=3D claim_crc;
+> > +		spin_unlock_bh(&backbone_gw->crc_lock);
+>=20
+> Discovered by: gpt-5-6-sol, opus-5 =C2=B7 Missed by: sashiko-gemini
+> This isn't an issue introduced by this patch, but how do these relative X=
+OR
+> updates interact with the absolute CRC store that still exists in
+> batadv_bla_del_backbone_claims() at this commit?
+
+Please, look literally one patch further.
+https://lore.kernel.org/r/20260821094813.201800-4-sw@simonwunderlich.de
+
+[...]
+> Discovered by: gpt-5-6-sol, opus-5 =C2=B7 Missed by: sashiko-gemini
+> This is a pre-existing inconsistency rather than something this patch
+> introduces, but now that the compare and the swap of claim->backbone_gw
+> both happen under claim->backbone_lock here, should the two remaining
+> readers be annotated too?
+>=20
+> net/batman-adv/bridge_loop_avoidance.c:batadv_bla_del_backbone_claims() {
 > 	...
-> 	/* skb->dev & skb->pkt_type are set here */
-> 	skb->protocol = eth_type_trans(skb, mesh_iface);
-> 	...
-> 	if (batadv_bla_rx(bat_priv, skb, vid, packet_type))
+> 		hlist_for_each_entry_safe(claim, node_tmp,
+> 					  head, hash_entry) {
+> 			if (claim->backbone_gw !=3D backbone_gw)
+> 				continue;
 > 	...
 > }
-> 
-> and batadv_bla_rx() does not call batadv_bla_process_claim() at all.
-> 
-> That leaves batadv_arp_get_type() in
-> net/batman-adv/distributed-arp-table.c as the only consumer that can see
-> the stale receive device of a merged fragment:
-> 
-> 	if (unlikely(!pskb_may_pull(skb, hdr_size + ETH_HLEN +
-> 				    arp_hdr_len(skb->dev))))
-> 
-> reached via batadv_dat_snoop_incoming_arp_request()/_reply() from
-> batadv_recv_unicast_packet()/batadv_recv_bcast_packet(), and only when
-> CONFIG_BATMAN_ADV_DAT is built and bat_priv->distributed_arp_table is
-> enabled.
-> 
-> Since this carries Cc: stable, would it be worth restating the affected
-> path as DAT only, and mentioning that reaching it depends on DAT being
-> compiled in and enabled?
+>=20
+> net/batman-adv/bridge_loop_avoidance.c:batadv_bla_answer_request() {
+> 	...
+> 			/* only own claims are interesting */
+> 			if (claim->backbone_gw !=3D backbone_gw)
+> 				continue;
+> 	...
+> }
+>=20
+> Both do a plain load, not even READ_ONCE(), while types.h documents the
+> field as:
+>=20
+> 	/** @backbone_lock: lock protecting backbone_gw pointer */
+> 	spinlock_t backbone_lock;
+>=20
+> At both sites the pointer is only compared and never dereferenced, and in
+> batadv_bla_del_backbone_claims() a stale comparison still keeps the CRC
+> parity correct because the deferred batadv_claim_release() XORs the addre=
+ss
+> out of whichever backbone the claim points at. So this looks like a
+> KCSAN-visible plain-access race with no functional fallout, but would a
+> READ_ONCE() or a comment on those two readers be worth adding so the
+> documented locking rule matches the code?
 
-No
+No about this patch and definitely not high priority. Still made a ticket:=
+=20
+https://www.open-mesh.org/issues/465 for Simon
 
-Kind regards,
+Regards,
 	Sven
---nextPart5127734.31r3eYUQgx
+--nextPart14080243.uLZWGnKmhe
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaol/aAAKCRBND3cr0xT1
-y2djAQC6Wcf+fKhb5XLEoQF748sDkzw3gj9qR81Mv7zdNacwmQEAn86vSlxpETyb
-Q1tMEOwhO8ckdU3MvbSB74WU/JWNQwM=
-=Cj/H
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCaomBegAKCRBND3cr0xT1
+y+KRAP9EfpNMr0q7Bfn7zIWFY7VjQOW7BiYkErSJbQdMN/rPYAD9Hi9nJOko648D
+VHcO8RgNr3MYcNRsHGItdwE+8+03kQI=
+=d71n
 -----END PGP SIGNATURE-----
 
---nextPart5127734.31r3eYUQgx--
+--nextPart14080243.uLZWGnKmhe--
 
 
 
