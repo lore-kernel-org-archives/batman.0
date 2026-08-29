@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0B88C61DBE
-	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 06:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 674F6C61DD6
+	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 06:27:03 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 55FBD814AF
-	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 08:26:26 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 0462180D5F
+	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 08:27:02 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1787984786;
- b=Oj6FLZ6aQDsXyT9IK60NehjRS5XYCsFV1GX5Ajw/dk7XTYFzvu15UmI1dcBh/4le4XOtj
- rQUCIVzDz+o19vtVsahwdy2kPkZmZm3j44895W6odJJPkRg9iIaYUYBLdoszISWzN3FIVZY
- TkEhrhosPzjRXiDTMyGnsjPWaQxyjNo=
+ t=1787984822;
+ b=LiklhdehbewaZ/s8z6BnbDtMl0HCN12nbVTr0azLw69muIMV3znzeaCGPxNAhFlrOBg5i
+ x8sD3Wmiu8DlJLjlFB/ygFQyhcTN4gLVSSayIgy2a4M/nJznjSt77v8JoC712C1bcrWeGW0
+ 5rbodrKNySr0T7stHN444SjP+UMWq3Y=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1787984786; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1787984822; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
- b=ANPnXBDXwcsy7JVmKrQdGQFa+BSqdUwON3mLclS1KfxwpibPKQUiODKyGfeYd7eMOBRyY
- BHJ08YgyFEN7H19wUVEXdwdX85+tJzHV5kS5RdeLpGQeVFsh9nJSI7PmXttzf+J/BYUuoq5
- Un8q2IuFMvnis24xM50Orh61bM+ABhw=
+ list-archive; bh=2B+UoCLKO6t2mGbVM+F0tooy2beKjrAH9RLYJdfI280=;
+ b=WACcTbwQBQ1kxKbPgCuYjhCi4Pp98exSv+hgXZgVSH3b32AGQxFF9M9SFL7tlQrjWpN3S
+ rkQqEHNDSO10pjuAH+vjKVoXifuw5+aJqW7ae49ihL+LsUQJ0G2nM7CMjELlBgrCz1m15Wg
+ ZRGvVMjFb/ZGrLc/KtwismfZdOSbhko=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E4659842E6
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 29 Aug 2026 08:21:46 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787984506;
-	b=bNwwRQpYgYn+6+4yIneko2kbz4epx/xCYIAz/GGH+PtRfkJuTiXPEq3KbVYw7RfnSS+2gx
-	k2uXmiI4GcKJHhocSkvOoPDO1Ay0y2bQNRxvskcdJtBR+MJBljsL9A3N7pbEIkAotaoWOz
-	L6vGVf6ByfYISp+mn+2vzl/Vx/rKADQ=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 48F52842E5
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 29 Aug 2026 08:21:54 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787984514;
+	b=LaI0ljyWFU3SFOcqXyt1J45ZtVm2hJ4biQWOP1nw+m5XaDhoDdjEy1UXrv4etVO78c1oKm
+	i606EHjzhNLsTvNkSanFFj7htN8knMx8vE7hQdxwNl8jKBK/sjRAaYLJ5pXI/qBlQ7PKka
+	dUfdQKegHzrzoe5S/h/IzJ4ZzkxjG0o=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1787984506;
+	s=20121; t=1787984514;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
-	b=nMs7cLC+XIVwpGz5E3RtbAlKCVkPlwhSNlVASY55bCRZypOjWBH/1+H7N9IRV/V7O3MB2X
-	I+TE0ZMrmXZH5+1pOew/v3kGersB7q/tBaVtthP8u0BxuQsMgpxnb7r+ia7XHkLJA90Qq2
-	EQ4RQElRp8jDLlKG74l/SXOREmQx4EA=
+	bh=2B+UoCLKO6t2mGbVM+F0tooy2beKjrAH9RLYJdfI280=;
+	b=w7UiQwpWGmQU72kr1wGDJWdsL+DkL17QKZUtrq3XqNtYrsgvf3oVhzCShgW8DtV/28pmN9
+	5TEQt/pBOpHJu3gmub6DVoJgyGC89YoiiTY4pBrDiRg9qUbc4zpXC3zkDKeiuamPu5Kz+w
+	rerE3Bm6G1yA/JsQ2fJmSzUbEAPkqb8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=aurrZV6U;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="0/ph5/eS";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 748C3200E4;
-	Sat, 29 Aug 2026 06:21:42 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id D8553200E4;
+	Sat, 29 Aug 2026 06:21:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1787984502;
+	s=20121; t=1787984509;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
-	b=aurrZV6UW9PUG+/UwaxJKxHlzv3m6TK2hBQwl7y2XlU3mrmn7ux7hkSEdlyG/Q6LfOmG+W
-	spJC9dkyH/lpXmPNy7u8x1GdegBC/53YC5ee7Y3yICyc7Ea8u9vTeZ4n7TEbBwREileQmo
-	5I+wWA5fQdwFFt7IYWeAo1nj6bIX2rs=
+	bh=2B+UoCLKO6t2mGbVM+F0tooy2beKjrAH9RLYJdfI280=;
+	b=0/ph5/eSr7WtO5cOyWpHKF2nY30grR7GQ0Oh3B68nUGJExcPCWaaYdOn7dhSpYdudhtuFz
+	6mT5etX57jC56e0QVFdQnFUeQFruxkZsWS3bK5Omo8gX+9KB9Rm8BEf4Yj/zstog+WGVaA
+	j3Bt1C/OC0/BhP0sIrwznwTI248fmm0=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 29 Aug 2026 08:18:25 +0200
-Subject: [PATCH batadv v5 14/20] batman-adv: tt: extract allocation of new
- global entries
+Date: Sat, 29 Aug 2026 08:18:26 +0200
+Subject: [PATCH batadv v5 15/20] batman-adv: tt: extract merging of flags
+ into existing global entries
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260829-tt-fixes-v5-14-88fce8fd683d@narfation.org>
+Message-Id: <20260829-tt-fixes-v5-15-88fce8fd683d@narfation.org>
 References: <20260829-tt-fixes-v5-0-88fce8fd683d@narfation.org>
 In-Reply-To: <20260829-tt-fixes-v5-0-88fce8fd683d@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3917; i=sven@narfation.org;
- h=from:subject:message-id; bh=GMTY8FfVyhnGoz89dfXpuY2KKqdKKdAAXIGUacxkGHY=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmTKtcWZa/WeTx5c9OMkiN/p5+vP8Cjmvl9Bncve0jBi
- inf51R4dZSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAm0nuDkWG14eqmJyF+By7v
- dq/u6D97Tydh40GBbz7vX87vKNNaNt+akeHq7/DkM3qiTCs07x9d57LoTMhMnj/Kyj8Uvis+nj7
- DxIMfAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4363; i=sven@narfation.org;
+ h=from:subject:message-id; bh=dQRzIPCyONEp5MHLobeWwPOzsUSx+r5mKwKGpepqIJU=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmTKte+3NAak7QjY+Xr6IMWvJzKLg7ONRMbf2axPkzIV
+ Nx8MnR1RykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAim1MY/nAdW3KLhZUjhvF7
+ q+qCR5++5Bp4f7JouTndr3hP4K1NGxoY/oqbCV790q9t/DvpbuD622bh7IWMeaXXL4vdfHphcfr
+ 1u1wA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG
-X-Message-ID-Hash: SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG
+Message-ID-Hash: UVDZLVOB4BOAWA4OOPT3N5QSJCRMWZJP
+X-Message-ID-Hash: UVDZLVOB4BOAWA4OOPT3N5QSJCRMWZJP
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/UVDZLVOB4BOAWA4OOPT3N5QSJCRMWZJP/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,117 +112,124 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The code which allocates and initializes a brand new global TT entry makes
-up a third of batadv_tt_global_add() and only needs the tt_addr, vid and
-flags arguments. It is also the only part of the "new entry" branch which
-does not deal with the global hash.
+When an already known global TT entry is announced again, its flags have to
+be merged with the announced ones. Two of the merge steps also decide
+whether the originator list has to be purged before the announced
+originator is added.
 
-Move it to batadv_tt_global_create() and let it return the initialized
-entry.
+Move this to batadv_tt_global_merge_flags() and let it report via its
+return value whether the originator list has to be purged.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 76 +++++++++++++++++++++++++-------------
- 1 file changed, 51 insertions(+), 25 deletions(-)
+ net/batman-adv/translation-table.c | 87 +++++++++++++++++++++++---------------
+ 1 file changed, 52 insertions(+), 35 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index ba2a5188..d9055d07 100644
+index d9055d07..71d9fcf6 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1884,6 +1884,56 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+@@ -1884,6 +1884,57 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
  	spin_unlock_bh(&tt_global->list_lock);
  }
  
 +/**
-+ * batadv_tt_global_create() - allocate and initialize a global TT entry
-+ * @tt_addr: the mac address of the non-mesh client
-+ * @vid: VLAN identifier
-+ * @flags: TT flags that have to be set for this non-mesh client
++ * batadv_tt_global_merge_flags() - merge announced flags into a global TT entry
++ * @tt_global_entry: the global TT entry to update
++ * @flags: TT flags announced for this non-mesh client
 + *
-+ * The returned entry is not yet part of bat_priv->tt.global_hash and has an
-+ * empty originator list.
-+ *
-+ * Return: the new entry with an initialized reference counter on success, NULL
-+ * otherwise.
++ * Return: true if the originator list of @tt_global_entry has to be purged
++ * before the announced originator is added, false otherwise.
 + */
-+static struct batadv_tt_global_entry *
-+batadv_tt_global_create(const unsigned char *tt_addr, unsigned short vid,
-+			u16 flags)
++static bool
++batadv_tt_global_merge_flags(struct batadv_tt_global_entry *tt_global_entry,
++			     u16 flags)
 +{
-+	struct batadv_tt_global_entry *tt_global_entry;
-+	struct batadv_tt_common_entry *common;
++	struct batadv_tt_common_entry *common = &tt_global_entry->common;
++	bool delete = false;
 +
-+	tt_global_entry = kmem_cache_zalloc(batadv_tg_cache, GFP_ATOMIC);
-+	if (!tt_global_entry)
-+		return NULL;
++	scoped_guard(spinlock_bh, &common->flags_lock) {
++		/* if the client was temporary added before receiving the first
++		 * OGM announcing it, we have to clear the TEMP flag. Also,
++		 * remove the previous temporary orig node and re-add it
++		 * if required. If the orig entry changed, the new one which
++		 * is a non-temporary entry is preferred.
++		 */
++		if (common->flags & BATADV_TT_CLIENT_TEMP) {
++			delete = true;
++			common->flags &= ~BATADV_TT_CLIENT_TEMP;
++		}
 +
-+	common = &tt_global_entry->common;
-+	ether_addr_copy(common->addr, tt_addr);
-+	common->vid = vid;
-+	spin_lock_init(&common->flags_lock);
++		/* the change can carry possible "attribute" flags like the
++		 * TT_CLIENT_TEMP, therefore they have to be copied in the
++		 * client entry
++		 */
++		if (!is_multicast_ether_addr(common->addr))
++			common->flags |= flags & (~BATADV_TT_SYNC_MASK);
 +
-+	if (!is_multicast_ether_addr(common->addr)) {
-+		scoped_guard(spinlock_bh, &common->flags_lock)
-+			common->flags = flags & (~BATADV_TT_SYNC_MASK);
++		/* If there is the BATADV_TT_CLIENT_ROAM flag set, there is only
++		 * one originator left in the list and we previously received a
++		 * delete + roaming change for this originator.
++		 *
++		 * We should first delete the old originator before adding the
++		 * new one.
++		 */
++		if (common->flags & BATADV_TT_CLIENT_ROAM) {
++			delete = true;
++			tt_global_entry->roam_at = 0;
++			common->flags &= ~BATADV_TT_CLIENT_ROAM;
++		}
 +	}
 +
-+	tt_global_entry->roam_at = 0;
-+	/* node must store current time in case of roaming. This is
-+	 * needed to purge this entry out on timeout (if nobody claims
-+	 * it)
-+	 */
-+	if (flags & BATADV_TT_CLIENT_ROAM)
-+		tt_global_entry->roam_at = jiffies;
-+	kref_init(&common->refcount);
-+	common->added_at = jiffies;
-+
-+	INIT_HLIST_HEAD(&tt_global_entry->orig_list);
-+	atomic_set(&tt_global_entry->orig_list_count, 0);
-+	spin_lock_init(&tt_global_entry->list_lock);
-+
-+	return tt_global_entry;
++	return delete;
 +}
 +
  /**
-  * batadv_tt_global_add() - add a new TT global entry or update an existing one
-  * @bat_priv: the bat priv with all the mesh interface information
-@@ -1935,35 +1985,11 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 	}
+  * batadv_tt_global_create() - allocate and initialize a global TT entry
+  * @tt_addr: the mac address of the non-mesh client
+@@ -2026,41 +2077,7 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			goto add_orig_entry;
+ 		}
  
- 	if (!tt_global_entry) {
--		tt_global_entry = kmem_cache_zalloc(batadv_tg_cache,
--						    GFP_ATOMIC);
-+		tt_global_entry = batadv_tt_global_create(tt_addr, vid, flags);
- 		if (!tt_global_entry)
- 			goto out;
- 
- 		common = &tt_global_entry->common;
--		ether_addr_copy(common->addr, tt_addr);
--		common->vid = vid;
--		spin_lock_init(&common->flags_lock);
+-		delete = false;
 -
--		if (!is_multicast_ether_addr(common->addr)) {
--			spin_lock_bh(&common->flags_lock);
--			common->flags = flags & (~BATADV_TT_SYNC_MASK);
--			spin_unlock_bh(&common->flags_lock);
+-		spin_lock_bh(&common->flags_lock);
+-		/* if the client was temporary added before receiving the first
+-		 * OGM announcing it, we have to clear the TEMP flag. Also,
+-		 * remove the previous temporary orig node and re-add it
+-		 * if required. If the orig entry changed, the new one which
+-		 * is a non-temporary entry is preferred.
+-		 */
+-		if (common->flags & BATADV_TT_CLIENT_TEMP) {
+-			delete = true;
+-			common->flags &= ~BATADV_TT_CLIENT_TEMP;
 -		}
 -
--		tt_global_entry->roam_at = 0;
--		/* node must store current time in case of roaming. This is
--		 * needed to purge this entry out on timeout (if nobody claims
--		 * it)
+-		/* the change can carry possible "attribute" flags like the
+-		 * TT_CLIENT_TEMP, therefore they have to be copied in the
+-		 * client entry
 -		 */
--		if (flags & BATADV_TT_CLIENT_ROAM)
--			tt_global_entry->roam_at = jiffies;
--		kref_init(&common->refcount);
--		common->added_at = jiffies;
+-		if (!is_multicast_ether_addr(common->addr))
+-			common->flags |= flags & (~BATADV_TT_SYNC_MASK);
 -
--		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
--		atomic_set(&tt_global_entry->orig_list_count, 0);
--		spin_lock_init(&tt_global_entry->list_lock);
- 
- 		kref_get(&common->refcount);
- 		hash_added = batadv_hash_add(bat_priv->tt.global_hash,
+-		/* If there is the BATADV_TT_CLIENT_ROAM flag set, there is only
+-		 * one originator left in the list and we previously received a
+-		 * delete + roaming change for this originator.
+-		 *
+-		 * We should first delete the old originator before adding the
+-		 * new one.
+-		 */
+-		if (common->flags & BATADV_TT_CLIENT_ROAM) {
+-			delete = true;
+-			tt_global_entry->roam_at = 0;
+-			common->flags &= ~BATADV_TT_CLIENT_ROAM;
+-		}
+-		spin_unlock_bh(&common->flags_lock);
+-
++		delete = batadv_tt_global_merge_flags(tt_global_entry, flags);
+ 		if (delete)
+ 			batadv_tt_global_del_orig_list(tt_global_entry);
+ 	}
 
 -- 
 2.47.3
