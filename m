@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7861EC61DD6
-	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 06:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0B88C61DBE
+	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 06:26:27 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 1AE0283C6F
-	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 08:25:56 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 55FBD814AF
+	for <batman-adv@archiver.kernel.org>; Sat, 29 Aug 2026 08:26:26 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1787984756;
- b=21LYj1FEETzrOV93gtWmNLfQomNyvWvm+lcwMGXt0zr1GxFcPgFunRX6RGc3gYmupTHIr
- uJbKjqHwAQOrQD3ZFN7mhum0IvIvfjHWJ0eYYM66dgJYWFRSq/CCArb5og8Hf5MII18u8Fe
- /jZsDsGdaULX60Vb84TW2ci0iFB801M=
+ t=1787984786;
+ b=Oj6FLZ6aQDsXyT9IK60NehjRS5XYCsFV1GX5Ajw/dk7XTYFzvu15UmI1dcBh/4le4XOtj
+ rQUCIVzDz+o19vtVsahwdy2kPkZmZm3j44895W6odJJPkRg9iIaYUYBLdoszISWzN3FIVZY
+ TkEhrhosPzjRXiDTMyGnsjPWaQxyjNo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1787984756; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1787984786; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=DGJwFA5zBR1CjKT9UrLElQ9lrJqWDJ7qVPMQ2zu1b40=;
- b=Y8TTNVTgMX+Y0dI37KXSoeyt7IKtz8ivxbqnltzpQEzUiwnPaGeoau1PopmhzXvkem1Pn
- TrnxbdXJ6F8MZIkglvkH0KUzao8lMpVi+JM31Vu9VzIPW3XBn1BoBZ9pcqa/62gpfE6UfqZ
- W1AcBOHTdIeMlF/WZXttSHRaOOtfNWE=
+ list-archive; bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
+ b=ANPnXBDXwcsy7JVmKrQdGQFa+BSqdUwON3mLclS1KfxwpibPKQUiODKyGfeYd7eMOBRyY
+ BHJ08YgyFEN7H19wUVEXdwdX85+tJzHV5kS5RdeLpGQeVFsh9nJSI7PmXttzf+J/BYUuoq5
+ Un8q2IuFMvnis24xM50Orh61bM+ABhw=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EC3C783EA7
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 29 Aug 2026 08:21:39 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787984500;
-	b=W7J7IqfGQkbvPpXRCVraDyyGMnwt10Rb+0JgcjoHc7GFgeIkeYUO1RO9pahlhYaaN49rLC
-	EBP7X0lqNs0I20VxhrkIhny4jBUWY3zNi23SajvfjImRsr1dtZ5F6RPFKJCWur1rlrLVPX
-	B3HnC0bn6euLi1pYeKHBkzp5iHGaH3o=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E4659842E6
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 29 Aug 2026 08:21:46 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1787984506;
+	b=bNwwRQpYgYn+6+4yIneko2kbz4epx/xCYIAz/GGH+PtRfkJuTiXPEq3KbVYw7RfnSS+2gx
+	k2uXmiI4GcKJHhocSkvOoPDO1Ay0y2bQNRxvskcdJtBR+MJBljsL9A3N7pbEIkAotaoWOz
+	L6vGVf6ByfYISp+mn+2vzl/Vx/rKADQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1787984500;
+	s=20121; t=1787984506;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=DGJwFA5zBR1CjKT9UrLElQ9lrJqWDJ7qVPMQ2zu1b40=;
-	b=v8cQe6uKXqCX+s5Hg8+eZNZa3RMNcwk2+iFR9Mwmv2ntabVOjyhHJW/9eaEBdCufUEYktx
-	gtMZFXpmT0QbesGkzIQr5fxGddN+dEb5ncTuvgzf3viKW9S6nDYVaSevjl/J0XOkrGW4ef
-	ZY8lypOxsUrlnxqfPH9l0moGDG4fs/s=
+	bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
+	b=nMs7cLC+XIVwpGz5E3RtbAlKCVkPlwhSNlVASY55bCRZypOjWBH/1+H7N9IRV/V7O3MB2X
+	I+TE0ZMrmXZH5+1pOew/v3kGersB7q/tBaVtthP8u0BxuQsMgpxnb7r+ia7XHkLJA90Qq2
+	EQ4RQElRp8jDLlKG74l/SXOREmQx4EA=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=B6t+MtlM;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=aurrZV6U;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 8459B200E4;
-	Sat, 29 Aug 2026 06:21:35 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 748C3200E4;
+	Sat, 29 Aug 2026 06:21:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1787984495;
+	s=20121; t=1787984502;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=DGJwFA5zBR1CjKT9UrLElQ9lrJqWDJ7qVPMQ2zu1b40=;
-	b=B6t+MtlMSCq3Qlnuuw9MeHcpRICI8zUEgUjHYZSNznB6uLVRhtPPkZDLpESqyU8kSbu78E
-	f9eoWkZTN60hL/JLi9VBIM0zMschNaZxnDRzLcwi4cYp2O3Wff2TY9C5o6RBzOHe8oyzB0
-	3SDTxisjdR2+c+s4cCiBTLrlkrySgE4=
+	bh=J2sS4K16BkQksSoAnDDJrezYmrYDHH0BG4sohJU/J6U=;
+	b=aurrZV6UW9PUG+/UwaxJKxHlzv3m6TK2hBQwl7y2XlU3mrmn7ux7hkSEdlyG/Q6LfOmG+W
+	spJC9dkyH/lpXmPNy7u8x1GdegBC/53YC5ee7Y3yICyc7Ea8u9vTeZ4n7TEbBwREileQmo
+	5I+wWA5fQdwFFt7IYWeAo1nj6bIX2rs=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 29 Aug 2026 08:18:24 +0200
-Subject: [PATCH batadv v5 13/20] batman-adv: tt: extract update of dynamic
- client flags
+Date: Sat, 29 Aug 2026 08:18:25 +0200
+Subject: [PATCH batadv v5 14/20] batman-adv: tt: extract allocation of new
+ global entries
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260829-tt-fixes-v5-13-88fce8fd683d@narfation.org>
+Message-Id: <20260829-tt-fixes-v5-14-88fce8fd683d@narfation.org>
 References: <20260829-tt-fixes-v5-0-88fce8fd683d@narfation.org>
 In-Reply-To: <20260829-tt-fixes-v5-0-88fce8fd683d@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4426; i=sven@narfation.org;
- h=from:subject:message-id; bh=2OtbvmeYAnaTSJQK4i5Q84FgKKj+F0q0AEpc+OBb3R4=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmTKtca7t//PfL9ybrYewL7DFS+PxfO0XFW76m+99nwl
- 8re1YmfO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATaT3A8M96gfWvYNcjv8vu
- FfFs7/J4fE9nj32ccvTEtKSQ2hIGwx0M/8s/a65KlXOv7OiYeM5F24Szxt3CQyM9wor38iottcp
- wZgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3917; i=sven@narfation.org;
+ h=from:subject:message-id; bh=GMTY8FfVyhnGoz89dfXpuY2KKqdKKdAAXIGUacxkGHY=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmTKtcWZa/WeTx5c9OMkiN/p5+vP8Cjmvl9Bncve0jBi
+ inf51R4dZSyMIhxMciKKbLsuZJ/fjP7W/nP0z4ehZnDygQyhIGLUwAm0nuDkWG14eqmJyF+By7v
+ dq/u6D97Tydh40GBbz7vX87vKNNaNt+akeHq7/DkM3qiTCs07x9d57LoTMhMnj/Kyj8Uvis+nj7
+ DxIMfAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: FCQFDSR6CZC5TZJQ66LMDBL55CK5ZLJH
-X-Message-ID-Hash: FCQFDSR6CZC5TZJQ66LMDBL55CK5ZLJH
+Message-ID-Hash: SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG
+X-Message-ID-Hash: SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FCQFDSR6CZC5TZJQ66LMDBL55CK5ZLJH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SA2WBDJPVNS5CA7ZZARBNKDUXFLFYGAG/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,128 +113,117 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The WIFI and ISOLA flags are re-evaluated on every batadv_tt_local_add()
-call, no matter whether a new entry was created or an existing one was
-refreshed. It is mostly isolated from the rest of the
-batadv_tt_local_add().
+The code which allocates and initializes a brand new global TT entry makes
+up a third of batadv_tt_global_add() and only needs the tt_addr, vid and
+flags arguments. It is also the only part of the "new entry" branch which
+does not deal with the global hash.
 
-Move it to batadv_tt_local_update_flags(). To allow the caller to trigger
-the queuing of ADD events, it returns whether one of the flags announced to
-the other nodes actually changed.
+Move it to batadv_tt_global_create() and let it return the initialized
+entry.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 79 ++++++++++++++++++++++++--------------
- 1 file changed, 50 insertions(+), 29 deletions(-)
+ net/batman-adv/translation-table.c | 76 +++++++++++++++++++++++++-------------
+ 1 file changed, 51 insertions(+), 25 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index ca9956be..ba2a5188 100644
+index ba2a5188..d9055d07 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -899,6 +899,55 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
- 	return tt_local;
+@@ -1884,6 +1884,56 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 	spin_unlock_bh(&tt_global->list_lock);
  }
  
 +/**
-+ * batadv_tt_local_update_flags() - update the dynamic flags of a local entry
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tt_local: the local TT entry to update
-+ * @iif_is_wifi: whether the client is connected via a wifi interface
-+ * @mark: the value contained in the skb->mark field of the received packet (if
-+ *  any)
++ * batadv_tt_global_create() - allocate and initialize a global TT entry
++ * @tt_addr: the mac address of the non-mesh client
++ * @vid: VLAN identifier
++ * @flags: TT flags that have to be set for this non-mesh client
 + *
-+ * Return: true if a flag announced to the other nodes was modified, false
++ * The returned entry is not yet part of bat_priv->tt.global_hash and has an
++ * empty originator list.
++ *
++ * Return: the new entry with an initialized reference counter on success, NULL
 + * otherwise.
 + */
-+static bool
-+batadv_tt_local_update_flags(struct batadv_priv *bat_priv,
-+			     struct batadv_tt_local_entry *tt_local,
-+			     bool iif_is_wifi, u32 mark)
++static struct batadv_tt_global_entry *
++batadv_tt_global_create(const unsigned char *tt_addr, unsigned short vid,
++			u16 flags)
 +{
-+	struct batadv_tt_common_entry *common = &tt_local->common;
-+	u8 remote_flags;
-+	u32 match_mark;
-+	bool modified;
++	struct batadv_tt_global_entry *tt_global_entry;
++	struct batadv_tt_common_entry *common;
 +
-+	scoped_guard(spinlock_bh, &common->flags_lock) {
-+		/* store the current remote flags before altering them. This
-+		 * helps understanding is flags are changing or not
-+		 */
-+		remote_flags = common->flags & BATADV_TT_REMOTE_MASK;
++	tt_global_entry = kmem_cache_zalloc(batadv_tg_cache, GFP_ATOMIC);
++	if (!tt_global_entry)
++		return NULL;
 +
-+		if (iif_is_wifi)
-+			common->flags |= BATADV_TT_CLIENT_WIFI;
-+		else
-+			common->flags &= ~BATADV_TT_CLIENT_WIFI;
++	common = &tt_global_entry->common;
++	ether_addr_copy(common->addr, tt_addr);
++	common->vid = vid;
++	spin_lock_init(&common->flags_lock);
 +
-+		/* check the mark in the skb: if it's equal to the configured
-+		 * isolation_mark, it means the packet is coming from an
-+		 * isolated non-mesh client
-+		 */
-+		match_mark = (mark & bat_priv->isolation_mark_mask);
-+		if (bat_priv->isolation_mark_mask &&
-+		    match_mark == bat_priv->isolation_mark)
-+			common->flags |= BATADV_TT_CLIENT_ISOLA;
-+		else
-+			common->flags &= ~BATADV_TT_CLIENT_ISOLA;
-+
-+		modified = remote_flags ^ (common->flags & BATADV_TT_REMOTE_MASK);
++	if (!is_multicast_ether_addr(common->addr)) {
++		scoped_guard(spinlock_bh, &common->flags_lock)
++			common->flags = flags & (~BATADV_TT_SYNC_MASK);
 +	}
 +
-+	return modified;
++	tt_global_entry->roam_at = 0;
++	/* node must store current time in case of roaming. This is
++	 * needed to purge this entry out on timeout (if nobody claims
++	 * it)
++	 */
++	if (flags & BATADV_TT_CLIENT_ROAM)
++		tt_global_entry->roam_at = jiffies;
++	kref_init(&common->refcount);
++	common->added_at = jiffies;
++
++	INIT_HLIST_HEAD(&tt_global_entry->orig_list);
++	atomic_set(&tt_global_entry->orig_list_count, 0);
++	spin_lock_init(&tt_global_entry->list_lock);
++
++	return tt_global_entry;
 +}
 +
  /**
-  * batadv_tt_local_add() - add a new client to the local table or update an
-  *  existing client
-@@ -922,10 +971,7 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 	bool added = false;
- 	bool iif_is_wifi;
- 	bool ret = false;
--	u8 remote_flags;
- 	int hash_added;
--	u32 match_mark;
--	bool modified;
+  * batadv_tt_global_add() - add a new TT global entry or update an existing one
+  * @bat_priv: the bat priv with all the mesh interface information
+@@ -1935,35 +1985,11 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 	}
  
- 	iif_is_wifi = batadv_tt_iif_is_wifi(dev_net(mesh_iface), ifindex);
+ 	if (!tt_global_entry) {
+-		tt_global_entry = kmem_cache_zalloc(batadv_tg_cache,
+-						    GFP_ATOMIC);
++		tt_global_entry = batadv_tt_global_create(tt_addr, vid, flags);
+ 		if (!tt_global_entry)
+ 			goto out;
  
-@@ -962,35 +1008,10 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 
- 	batadv_tt_local_add_roam(bat_priv, tt_global, roamed_back);
- 
--	spin_lock_bh(&tt_local->common.flags_lock);
--	/* store the current remote flags before altering them. This helps
--	 * understanding is flags are changing or not
--	 */
--	remote_flags = tt_local->common.flags & BATADV_TT_REMOTE_MASK;
+ 		common = &tt_global_entry->common;
+-		ether_addr_copy(common->addr, tt_addr);
+-		common->vid = vid;
+-		spin_lock_init(&common->flags_lock);
 -
--	if (iif_is_wifi)
--		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
--	else
--		tt_local->common.flags &= ~BATADV_TT_CLIENT_WIFI;
+-		if (!is_multicast_ether_addr(common->addr)) {
+-			spin_lock_bh(&common->flags_lock);
+-			common->flags = flags & (~BATADV_TT_SYNC_MASK);
+-			spin_unlock_bh(&common->flags_lock);
+-		}
 -
--	/* check the mark in the skb: if it's equal to the configured
--	 * isolation_mark, it means the packet is coming from an isolated
--	 * non-mesh client
--	 */
--	match_mark = (mark & bat_priv->isolation_mark_mask);
--	if (bat_priv->isolation_mark_mask &&
--	    match_mark == bat_priv->isolation_mark)
--		tt_local->common.flags |= BATADV_TT_CLIENT_ISOLA;
--	else
--		tt_local->common.flags &= ~BATADV_TT_CLIENT_ISOLA;
+-		tt_global_entry->roam_at = 0;
+-		/* node must store current time in case of roaming. This is
+-		 * needed to purge this entry out on timeout (if nobody claims
+-		 * it)
+-		 */
+-		if (flags & BATADV_TT_CLIENT_ROAM)
+-			tt_global_entry->roam_at = jiffies;
+-		kref_init(&common->refcount);
+-		common->added_at = jiffies;
 -
--	modified = remote_flags ^ (tt_local->common.flags & BATADV_TT_REMOTE_MASK);
--	spin_unlock_bh(&tt_local->common.flags_lock);
--
- 	/* if any "dynamic" flag has been modified, resend an ADD event for this
- 	 * entry so that all the nodes can get the new flags
- 	 */
--	if (modified)
-+	if (batadv_tt_local_update_flags(bat_priv, tt_local, iif_is_wifi, mark))
- 		batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
+-		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
+-		atomic_set(&tt_global_entry->orig_list_count, 0);
+-		spin_lock_init(&tt_global_entry->list_lock);
  
- 	ret = true;
+ 		kref_get(&common->refcount);
+ 		hash_added = batadv_hash_add(bat_priv->tt.global_hash,
 
 -- 
 2.47.3
