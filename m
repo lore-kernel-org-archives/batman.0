@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF969C79F89
-	for <batman-adv@archiver.kernel.org>; Mon,  7 Sep 2026 08:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F22FC79F9E
+	for <batman-adv@archiver.kernel.org>; Mon,  7 Sep 2026 08:25:10 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5613485600
-	for <batman-adv@archiver.kernel.org>; Mon, 07 Sep 2026 10:24:38 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 13696857C7
+	for <batman-adv@archiver.kernel.org>; Mon, 07 Sep 2026 10:25:09 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1788769478;
- b=SC2/mT1IkXOVhagLmrl8G1a2KZTN9e5uH1HIgBkaTfNPym/+H5j75f7YEIdv3IlKppbqd
- FYGJ2n9v2jFkjqWEf10DvZaUVeqnA5lRe59fAaw0glliPT8/ZvLsY4PiWbAvav1Q4+wwNjf
- 0UynTC5giQM4qGKA0sq5JZLiezwtH2Q=
+ t=1788769509;
+ b=M7gLokcR89/nxx61ZYWnvGOa++xThB7igkJD/7DlCULZKcsyAipBt89ToCnNzsxtNmkiH
+ F6DWZ2CV+3VxOcyhgIJyILYOBFxlSfBUIhCVIjWel+/P3vjfyBFPS2+LyBieScIPQhVaX0m
+ KQyxL1KDkjEYNahB6q9r5jlo+odKEsY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1788769478; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1788769509; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Qx42SSP6TSVRnmDAWlf0ao23yIX26HwAK66gY1duE24=;
- b=vafEPERjB0RehmCEoAXbCNAH495ZZC6NKGXfoNV3VHPE7aYJ4r0raY3nsQxzTlypN9C5G
- V52RJJOnzaVgjKQ0SSaeUUEgUZtIMRb92MOt4xVb8yeI1eRznUqoHBWztDMQ9KGZ2gI706F
- U/SSTyLZSGkHaZK3Ab5qCyVxgOpYk+Y=
+ list-archive; bh=uaNZxQC8O9mmgTu5dTzySZJEw/1spS5Gz0etIBABIr8=;
+ b=hk2sVk7eVi1dugYGDylTQARSLCDdxbl+XA/rt4KBL6xRra7B4fYVn30Ya000aZ4pcHYlP
+ GL5+jqkoG2DDgTzJMqOozTQVW74yKLGILeRn5WFB62USLAc5ctqH+2ilO6aiym+iMU3Yhpg
+ hAhLAxIbsxNo4cMw9vUZQjUbhcS5wb8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,52 +32,50 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id C216D80888
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 07 Sep 2026 10:18:38 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1788769118;
-	b=puwSHmYwe/C1llG6vHpIsxmiMjmzncrNeebBXTQqHGEY6VAptcr4+YDquv8EUtPzW+86oV
-	kP9DAeWvnXLZk0+PAzAwMDX5vWk4FaSTAZnbyiVC26qhvCUYGGwfMasKOP+kTtf/6+nmJh
-	jwB4toeve2uzjHtM15NGaBIsO0SOlAQ=
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3773484179
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 07 Sep 2026 10:18:39 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1788769119;
+	b=wvWUteLMzzKFxwABePRNJGfCu3pEypFznrof9XlfxoCi5gJSsJ0peBwIdvwyySnfJhMVmK
+	QVjkgLae9ZF6nHtGipTrvSbbGM0HdED6Xtj4pf6JdkNkHQk99H7qVkllFS8GLCnCEtnGUM
+	zqDXBu/teB9Ycpw1lirxTYrAjL64anU=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1788769118;
+	s=20121; t=1788769119;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Qx42SSP6TSVRnmDAWlf0ao23yIX26HwAK66gY1duE24=;
-	b=x3xwGPyEG4G36UUQREDTYfPg/Np5o8m9b4h9GKxcByzPOkuXvs1Ks8HNBYRTZriYCCxGhC
-	9sQnvVqzA+uAUAk3z1j3+u3RnWr6wkOye4QVWwsGrDtOqSl5btW0AUcFVKp32GTN65+MNn
-	f39g2O+uSzRNxhY8t9LUOdV3ei3Pxvk=
+	bh=uaNZxQC8O9mmgTu5dTzySZJEw/1spS5Gz0etIBABIr8=;
+	b=dW5tHwHw4lx/cAee88kbqupi1P6dEY1or6IMMqGwgV+iW6OvIgbUbM9Hm5ICtYmxfmzVeV
+	OTAiZbOonMXpJVRr4QwpkhBZrDA5e//TGQcpHb2OJaHrizlBO5oaguQ4WwmgmfXCbxHdd2
+	mv2vlxHeRwGaEaYjK+PJfHQlUFVaXaI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=y8ksAf+V;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=VSi5lkFc;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C59748d0D8c3747188e6dFe6C0.dip0.t-ipconnect.de
+ (p200300C59748D0d8C3747188e6DFE6c0.dip0.t-ipconnect.de
  [IPv6:2003:c5:9748:d0d8:c374:7188:e6df:e6c0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 8A0D1FA2C4;
-	Mon, 07 Sep 2026 10:18:36 +0200 (CEST)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id BF8CAFA1AC;
+	Mon, 07 Sep 2026 10:18:28 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1788769116;
+	s=09092022; t=1788769108;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Qx42SSP6TSVRnmDAWlf0ao23yIX26HwAK66gY1duE24=;
-	b=y8ksAf+V/38C4w/h24eNIVmM1mj6SR5BAg1aibuXt26pb/UWrTEi/rKfpChv+GBHefSB28
-	+x9NblYEpO/dCMTyRrqBGYy3Dzil3jh3F8RYRu3Sht7jOB1URIubsQyl9l5rmdI0jSyVxp
-	upSHq5tdWT9cx+pGVUD5cPgf7nuPGuKgUUzhLV9otYUfGOf+q6QPsOJ4r2R7Vq+8OL1+BU
-	OQBrzAAr439S1UXqPFmI6um0QFHGTsVqFxOcq9OoGj48xvVRKsyfL7HkDAnzGrR6qiyke3
-	S9HP8cuI/cF+5Fz2EH4PxBkZVPkp7ZdmATeLH4FtPt0jWX4xBM26aLN+wo25YQ==
+	bh=uaNZxQC8O9mmgTu5dTzySZJEw/1spS5Gz0etIBABIr8=;
+	b=VSi5lkFc7V1vbOClS7FDKKyZqxsliiwB61The8Aof9Gxuyl2s4tAY7XeUDfYeb2iXS8HGA
+	lZSb5YftjhQUQmdhF1hqy91bccmqR9NufSbd4tNe5WCpPrmtTxeP2wCng8MEa/2YQjyO3N
+	82pQwqpyyCGmHZSPfM7QOQdBZeaOV4hNQohsU1OZ59hPZka6DUfCIkxL27i/HE7bkIaWqN
+	8ekD+zFp3nF3jE2MjWc66TP2TcScHOHFtGKwT0Q9BCFc9w7xO51JFommSeor7US/ooLu2T
+	vILO4lf4vV+joCQM5kQgXJb5tjfOwBeeAhzpWd9IyaUKpQ1e2DYZMN8a70dNtg==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -87,19 +85,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 15/15] batman-adv: correct batadv_hash_remove kdoc
- return type
-Date: Mon,  7 Sep 2026 10:18:24 +0200
-Message-ID: <20260907081824.2474040-16-sw@simonwunderlich.de>
+Subject: [PATCH net-next 04/15] batman-adv: tt: extract refresh of existing
+ local entries
+Date: Mon,  7 Sep 2026 10:18:13 +0200
+Message-ID: <20260907081824.2474040-5-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260907081824.2474040-1-sw@simonwunderlich.de>
 References: <20260907081824.2474040-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: V556NWU6CU74S7FGXJTEWLMVC22QQXH4
-X-Message-ID-Hash: V556NWU6CU74S7FGXJTEWLMVC22QQXH4
+Message-ID-Hash: VGEGJPP4KRN6Q2U2ASSCBVUGZWRIFI5H
+X-Message-ID-Hash: VGEGJPP4KRN6Q2U2ASSCBVUGZWRIFI5H
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +110,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/V556NWU6CU74S7FGXJTEWLMVC22QQXH4/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VGEGJPP4KRN6Q2U2ASSCBVUGZWRIFI5H/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -124,30 +121,117 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Not the data is returned after a batadv_hash_remove() but the pointer to
-the hlist_node which was used to look up the entry in the hash.
+The handling of a client which is already part of the local translation
+table is independent from the rest of batadv_tt_local_add(): it only
+refreshes last_seen and evaluates the PENDING and ROAM flags of the entry
+which was just looked up.
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831135117.574836-1-sw%40simonwunderlich.de?part=8
+Move it to batadv_tt_local_add_existing(). It reports via its return value
+whether the client has to be announced to the mesh again and whether the
+client roamed back to its original location.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/hash.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/translation-table.c | 78 +++++++++++++++++++-----------
+ 1 file changed, 51 insertions(+), 27 deletions(-)
 
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index e67afe01304ce..45a432cc15789 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -137,7 +137,7 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
-  * data could be the structure you use with just the key filled, we just need
-  * the key for comparing.
-  *
-- * Return: returns pointer to data on success, so you can remove the used
-+ * Return: returns pointer to hlist_node on success, so you can remove the used
-  * structure yourself, or NULL on error
-  */
- static inline void *batadv_hash_remove(struct batadv_hashtable *hash,
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 5d5f270b7eb4c..91e11e5f10140 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -720,6 +720,55 @@ static bool batadv_tt_iif_is_wifi(struct net *net, int ifindex)
+ 	return batadv_is_wifi(wifi_flags);
+ }
+ 
++/**
++ * batadv_tt_local_add_existing() - refresh an already known local TT entry
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @tt_local: the local TT entry which was found in the local table
++ * @roamed_back: set to true when the client returned to its original location
++ *
++ * Return: true when the client has to be announced to the mesh again, false
++ * otherwise.
++ */
++static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
++					 struct batadv_tt_local_entry *tt_local,
++					 bool *roamed_back)
++{
++	struct batadv_tt_common_entry *common = &tt_local->common;
++
++	tt_local->last_seen = jiffies;
++
++	scoped_guard(spinlock_bh, &common->flags_lock) {
++		if (common->flags & BATADV_TT_CLIENT_PENDING) {
++			batadv_dbg(BATADV_DBG_TT, bat_priv,
++				   "Re-adding pending client %pM (vid: %d)\n",
++				   common->addr, batadv_print_vid(common->vid));
++			/* whatever the reason why the PENDING flag was set,
++			 * this is a client which was enqueued to be removed in
++			 * this orig_interval. Since it popped up again, the
++			 * flag can be reset like it was never enqueued
++			 */
++			common->flags &= ~BATADV_TT_CLIENT_PENDING;
++
++			return true;
++		}
++
++		if (common->flags & BATADV_TT_CLIENT_ROAM) {
++			batadv_dbg(BATADV_DBG_TT, bat_priv,
++				   "Roaming client %pM (vid: %d) came back to its original location\n",
++				   common->addr, batadv_print_vid(common->vid));
++			/* the ROAM flag is set because this client roamed away
++			 * and the node got a roaming_advertisement message. Now
++			 * that the client popped up again at its original
++			 * location such flag can be unset
++			 */
++			common->flags &= ~BATADV_TT_CLIENT_ROAM;
++			*roamed_back = true;
++		}
++	}
++
++	return false;
++}
++
+ /**
+  * batadv_tt_local_create() - allocate and initialize a local TT entry
+  * @mesh_iface: netdev struct of the mesh interface
+@@ -834,33 +883,8 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 		tt_global = batadv_tt_global_hash_find(bat_priv, addr, vid);
+ 
+ 	if (tt_local) {
+-		tt_local->last_seen = jiffies;
+-
+-		spin_lock_bh(&tt_local->common.flags_lock);
+-		if (tt_local->common.flags & BATADV_TT_CLIENT_PENDING) {
+-			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "Re-adding pending client %pM (vid: %d)\n",
+-				   addr, batadv_print_vid(vid));
+-			/* whatever the reason why the PENDING flag was set,
+-			 * this is a client which was enqueued to be removed in
+-			 * this orig_interval. Since it popped up again, the
+-			 * flag can be reset like it was never enqueued
+-			 */
+-			tt_local->common.flags &= ~BATADV_TT_CLIENT_PENDING;
+-			added = true;
+-		} else if (tt_local->common.flags & BATADV_TT_CLIENT_ROAM) {
+-			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "Roaming client %pM (vid: %d) came back to its original location\n",
+-				   addr, batadv_print_vid(vid));
+-			/* the ROAM flag is set because this client roamed away
+-			 * and the node got a roaming_advertisement message. Now
+-			 * that the client popped up again at its original
+-			 * location such flag can be unset
+-			 */
+-			tt_local->common.flags &= ~BATADV_TT_CLIENT_ROAM;
+-			roamed_back = true;
+-		}
+-		spin_unlock_bh(&tt_local->common.flags_lock);
++		added = batadv_tt_local_add_existing(bat_priv, tt_local,
++						     &roamed_back);
+ 	} else {
+ 		tt_local = batadv_tt_local_create(mesh_iface, addr, vid, iif_is_wifi);
+ 		if (!tt_local)
 -- 
 2.47.3
 
