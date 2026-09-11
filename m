@@ -4,111 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C8BAC79FB6
-	for <batman-adv@archiver.kernel.org>; Sat, 12 Sep 2026 06:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60061C88E45
+	for <batman-adv@archiver.kernel.org>; Sat, 12 Sep 2026 06:19:03 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8DB0F83E1E
-	for <batman-adv@archiver.kernel.org>; Sat, 12 Sep 2026 08:18:28 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id C273384316
+	for <batman-adv@archiver.kernel.org>; Sat, 12 Sep 2026 08:19:01 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1789193908;
- b=Xl/c/Db12aKomSYrJ0doywXmWrX8fWOohLtC2sWpFv32ta55KOHE/BKFY9IxX/mtFbNNa
- iMxeIab5WBDAktZbxFaEiTJCuEHbJ30cdANZT9GY71R0BdHa3gjLjaDpIIGsfkRAogG0VPO
- 0YymLkESAIWF3mJ4w9rYuphngK01A/4=
+ t=1789193941;
+ b=HZnxkQXNE3H1/hTtuj9ip3xUYyQ3+2537MOK7lKEN3GZTdJwnT0jyR++ED54paWoyzCox
+ T9B4MnEZR+KqR9gBM+HOORH83/e2g8yHOu7Ged2SvVotxBbXEisByFg4hcw2q5tV1UiD3De
+ 9EiqWQmtyX80mIabtCNSQqVmNbfKZxo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1789193908; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1789193941; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
- b=LUecZW8wwg7frpumZpyYpiZhJ2oyORraDPIAnuOCgY+WI3jqUETHD+juVePrsZCXkDz51
- aIa6upwbLnrWTVdzrpuR/BYmWPCoYy4/LwKNV+2yju38b+l4P+0BP+XIP4qy4n25STjt1jL
- 71BIPfypjuY3b6Vu2SzU+7tqCrmqil8=
+ list-archive; bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+ b=Ea/yKm0sDwZN2GhmDnbPip4dBB7BimB3YwhYEbPEHUy0YaSMhGABoFsFtz1YS7CETU9wB
+ Cc9VfVovm4Mv2fN7+7q/5Gda0rkkR/72Q85rWSzjiHKGX9CD6V3tHKUTeR2OA9HWn3aPJi3
+ d5DyZDBVEGi4vGV4NK3jTx2JkWKVR9Y=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=yahoo.com;
+ dkim=pass header.d=suse.de;
  arc=pass;
- dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=yahoo.com; arc=pass;
- dmarc=none
-Received: from sonic301-38.consmr.mail.ne1.yahoo.com
- (sonic301-38.consmr.mail.ne1.yahoo.com [66.163.184.207])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D056F804FC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 11 Sep 2026 19:46:10 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1789148783;
-	b=cRhmzIy8rgt7JCepAcjISRXMYau79n38b2372PJZOodMk8RqBl7lW6h3spSu4Mzkt6ZQxS
-	e6i3a0y8s8G7V2hMFISExMMjlIF4pDJMV3rQDm+G6IAtw5zhOcN6BvqPiCXQRGEqh/3yFW
-	pKOjppDkmFHn069+577OIDhOmlIKGiU=
+ dmarc=pass header.from=suse.de policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=suse.de; arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=suse.de policy.dmarc=none
+Received: from smtp-out2.suse.de (smtp-out2.suse.de
+ [IPv6:2a07:de40:b251:101:10:150:64:2])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id DAC5F81ECC
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 11 Sep 2026 20:32:23 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1789151544;
+	b=iun2frU+cKb8avNhU5MdIx1FeZ/reeaeiLUGdWrcSppggoMTImPZODKLK9OPaVDF5MxTWS
+	KPcBi2GbT4QowvM0EAmvll5m8Imn+IiaOl5Sq/CeF2gyrTsfEr++2xYhZglx9oQU2nGn2p
+	8IGre5nBDCzgNLhs2i+wnDDhCsdnLbM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1789148783;
+	s=20121; t=1789151544;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
-	b=QGJt+mQUCZV9vYKWiAbxWsHCEJcyXlvax1XOQ4UrtBlmefGLNp0JpOKU5tGhNvwLNLke1A
-	sdthIpbn9VJ5CvP9evQNg+znz3dxUykmZrBMJ4Yh5PKpiXizys0P7DLytYa+WltdUecW//
-	yVOG1Cp6hc5s/RDlK0r1jwW/A8BvWyk=
+	bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+	b=owzA23jVYPvKVw6qgxddREY0LO0MKW4/PIXPJafeldV08jnIsV1IHOfYHQfqySTPL7u8AZ
+	hxwJkFIutRHbTILBtcQ7ORFxEfWbiQN1/JM7Ydls6jEjQmt2RkgkGDACrY9huzU/ICyERo
+	/73HiFGHMtYeSBtyz99FQuDRVy6ssxM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=yahoo.com header.s=s2048 header.b=TTx2G4le;
-	spf=none (diktynna.open-mesh.org: domain of casey@schaufler-ca.com has no SPF
- policy when checking 66.163.184.207) smtp.mailfrom=casey@schaufler-ca.com;
-	dmarc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048;
- t=1789148769; bh=N0ksFx+o56aUgsrzSCG07cwcgBEXSZlDOBLwLo9KB9k=;
- h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To;
- b=TTx2G4leGsglVi76Yby6niutgbgnkUWtTmqXQ3CSS3gmjkJ/wkADaUx01IU5BQuBJE0VLswz0TkBPV9GFPsEBlOH0NfD4H5tShMOaxPE03KqaX4wJOXOoa+5PWu4kpej/CDGkq8Pkc4Q8PKExmtNvhGgS7Ni1B1xffgfEqFqUgrC3LD5hCHE3FemcSHN2DqYFcq7wfxu2Ca/k4bR14lk1+CDTjKUjQcvmxI/lQjmpcb4pMxLEOPLUddLPaXhJ3bWRJxrUeoDZnB7yfPMnOZpMTrcLaT8Fxw2NYgpaxlIh300Cp05uetmeoftD1U4ou+3hNyb0iYLvOhpQmN9oZl5dA==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048;
- t=1789148769; bh=GjvaKhydn/NekBvaZICghXo106G8iLivzrqFUXtZ0o7=;
- h=X-Sonic-MF:Date:Subject:To:From:From:Subject;
- b=nzJQXoLjn5xHnOsguyrMazLh2SJgot3YStV8P2qsXsiYwRwi22I6EJ7mkIVlYnfbFIKmQGblmT+Q3r5pwlvPDTM9nI4T+nTpg8SpX1Fg1F+arskngpB5pxICbwphc52LpKY2y2GakGJcuHgdHKUz/1qfwoSSTuWVAbMY4+FxfWTZA22tsCvq4jT/uZ/nMWNLXRFaQY/qS8DHoOuACt88u2E4kJpdZ4x1fsNQ9mCdwZpTpOUK0AukVeHP7N/+DvkW50Qejr8CScSiOfoydw3yedP5UYCbuyAFsOE5kNJj4YUYGQ+ViZ/8lBHi5PEyU4HExdg6kr6RFVYffqDUA2UNHA==
-X-YMail-OSG: Z9UMG9YVM1lctHC24HnZvwkpAFOQdH7gglIMIGoN9uePiY6tmM1qasTJ0aPnTzX
- tzt29oMHmILoCJ0h7IC3u49YVUVYpMiAR3DOapJZF7js1zavVTijW7mz6eDy0Aknu2cJAIMBsqct
- C3ya42KOnkk9oeom.b.QTEgcQUSRb.xUyEOV838qqsLQzKYF7X4scufuZH2ZMtPbL4WXhFrvUpaa
- b2h7qJsroiEU4KnSo_4R743CTWkEixpeInkhNH0gSxv83Oy2Qp2WDEFOmBoIryMYglQrGdPXsoBd
- pWMZwxUFVMji3.9WaIrRLWEwU0aCVr.y7dg7LlQywAhwgodXzjq7xYZrwHNyfNkFOZOORAsIxvzh
- T2.QUhV.JpcG1Fb6DrNXHkSYUzD9f0kby6nX1oVX_X3RSxKW_gdPGix0Yg2F.SZCIlWjZiWlfSct
- EHuva2iR3235_wLAiNbAoBnNIA0auBPdbrWlPKgBy8dD1rjj1N.QzBmZteeApzGC5cTnvC6GdB_Y
- pj2GFD41VlRPuSGzC1TI4dE8UtcO9WCWDGJJ.N9ljlE7ridZHp5sXcvrlb2a1bJn8b8g.gM_k0Y.
- rhnpwwCd5hEjjm.jA8eaExquIyZEltU8Mn8S09036R4ZIVIUqtSgx2_UM_72JpAgdr93yUloY4Ni
- ZkPaUGtv8xsIZjdsKhzb9Di_L2bWvEmHR1tEWk0sRpWSJgpkcV4TInr7E.FKZCDYRWAgpQas1uQJ
- 1TOZ6fnSFy0FwYnc34A27vgJO53IRnC3i1fXQzozdz_ciT8l.ZAKAjYby7iyEEUlPZ7AuInZrPza
- IEdzUZNoQry0p.FCLskNePKfkzaolmO7kf1Xy1P9r1wU3jjfCqpzfxKG3gMpYwfVAsVNnOv6gDzl
- McJQL.IE2U_X9ZGVZjg4rkSvsjGUx_bL4lOIDeQWj5nb8EO_hS3ZFeOXVa76rEtJBTamfTTW_7Zc
- elKXzO0c0jsF_iGOvV2sX9TtagZFju13DPJgDpCFgKnK8RfROr.IP761grH7JdkzCRfBscbKj8k7
- Ahwv8KwS_qMFpGCZsVnKIueTdlB7CJitfx_aC17KoiI.w5vP5MeCFnyYnZ36ZuvoA4KiKo_Ncwrm
- CZCI96cIwehGcjN454ZgHYgmbxlMsQdtxl0ALCXIEd231qZxI5r3jKKzqWBRQBT6wyOE.JLSQXU3
- bZlUojN5mC7Gx19NhnLlG.lg751JnoD40Ciw_ysQAywCq2134cpLDvJiqE5XaWXg_KeWNaSx07Rp
- Z.Hp4cWssIRHg5vMk_aZs5Z7gP2r111AT0tPqB.Zl36I7EcMncMSuoK6TpjUpeCFPNA2Uzn6lWpv
- Ayq9XnDzPBBYPg3Z5Yq8pSj2VM5qO2prq6fi4wRQysNvd_1lqrs3VtFc9ydPyX8RD8VYVSxv1uJ1
- FB2N7hJH1gYewxLqD1TrMgTjhWKaalb0ZCqhrFy0PdSKktKHFroGOPZfZWAV4mekQimDDZkSUtnC
- yw.h8nHeNuzHO8V0HTM_P4nsUeGGf6aLnKrOA9cgDr2U7b1pfnZjwOEC9f3OwqLxHVtN7DxbxRBt
- XbRaMJ0t0JXpnmzFjCEwxOIe4YxMA79ojl0uBwAtD0Fy0woxF6BF3RJ1ZPPU0_PUXxNYTPAv797g
- hCvs4V7D7ilhn2pHF7zgioCgAymlDwbbb1kS25sFEgT.ab0mYvR_DTYvZdm8xvptaKga9_3Q_4la
- Nfg7LDwLu90rXbR_jFSVDg8_CRrWzNGZoExyv2KC5Ioxx4w5Z.vFZMm71aSdZqcz97awS9O27LEy
- zOpyEkEiGjFrw1cgZZtyu3Ew0HqIQ0h4xkl52jQ4XgT.30ChKEVFYvIV7iuJxGT28kntbVLk7n5h
- Qgdut7ArndRx8PCSev3URpMnf8AM0zR8NhPyD_xl.PBWGf9W2RDA6RRWpdjmgFHBTId2lKL_nSJl
- LkxGwDO7rDn_SxbCFne8eoKNae0qOWs798diQQVJL0Ddb8aFSC4LFGAwrr_d22T4W8yy.Ndfb49y
- z2dOYbOpJhAl12Ftt1XOzJGQFgwPv5Q_tiwpkT27_1AfToPZ2tfNNwEU5LXsoecZNMjPL637Fs88
- Pm9FtfEyd0XJbD1XOE.f.OBlHHpbiaJgp4mXcZx0q4HZOY4DX10_8VcqfbSEaXrmk1KmYyVyvbHM
- 3QxDwZXAF5FNMwXncGbQWYGe_Azdm2WnLc5rY4RP0yu0DZzoy5yQFXvQ.VZQ0.Ig5LzjCVNNskre
- .fT9yhcSlPWI3IHZaEsNbS3ASejCKAAQtyEkTugxQ5eM1GTORRydzR8ohwGmxc5gursUvWq1obkV
- s1L1HzWgkFSZ7
-X-Sonic-MF: <casey@schaufler-ca.com>
-X-Sonic-ID: b76ab4a0-2ab9-47b3-8cf5-8bdd5faf0803
-Received: from sonic.gate.mail.ne1.yahoo.com by
- sonic301.consmr.mail.ne1.yahoo.com with HTTP; Fri, 11 Sep 2026 17:46:09 +0000
-Received: by hermes--production-gq1-678d9dd684-kwnw4 (Yahoo Inc. Hermes SMTP
- Server) with ESMTPA ID 399694003e99ff36e3a7b206375e9b12;
-          Fri, 11 Sep 2026 17:46:02 +0000 (UTC)
-Message-ID: <ee89e26c-3dad-450b-8861-badf19afa141@schaufler-ca.com>
-Date: Fri, 11 Sep 2026 10:46:00 -0700
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Rod0sU8Q;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=SIrVXAQ4;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=t9gvN2nl;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="FnLFXx/K";
+	spf=pass (diktynna.open-mesh.org: domain of fmancera@suse.de designates
+ 2a07:de40:b251:101:10:150:64:2 as permitted sender)
+ smtp.mailfrom=fmancera@suse.de;
+	dmarc=pass (policy=none) header.from=suse.de
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org
+ [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id EE2791FEE6;
+	Fri, 11 Sep 2026 18:32:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_rsa;
+	t=1789151538;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+	b=Rod0sU8Qdbl2a9I9t1TH8nevi4QRfn3TPfcK74bX64NGYlK6IHkuzAhBL08HIKt63niSI/
+	6veFNIqyotajC6UCFkeNjNmJezrJxBptWKdfl94tSQs8eHOgD9mU8KcO4CkQo1s/NpMwfn
+	kmsnciPVbpHoeV5HykyGSvDyJ/flO3w=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789151538;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+	b=SIrVXAQ4ceuoB0fGrHOOtVO1/WzKntIfVXPqXNQPSKYuVdsXv8YzVUOSr+XNFJ/yIPVMhN
+	zTZpSfo+uSEO1wDA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de;
+ s=susede2_rsa;
+	t=1789151534;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+	b=t9gvN2nlbxSG+QCJOr3Qwp0FANn+yCEqu4YHmsqlPzf0zjeumUAtcGLCZTbmav6JBEjAnm
+	c41BWBSWq8AARidcMzA+ZhJfDP3iy28qnix3YpHWZbSEX+hx1j3W5/Dot4Ih4kiPxwIVpp
+	7cHlpzVuqFt2y519+0+mCk4UCgw+K/g=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789151534;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b3huHsOxzXu3WG732phakZA+zeD+7wCDwsZTRvWLdY4=;
+	b=FnLFXx/K4kGWIzrUI6pjTmx6O95RSJHfUkFLZdB3yB4XYnlrurdCfLL7hNThqzkOntilHf
+	8PYNspUtNK/EHXCg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6A640132D3;
+	Fri, 11 Sep 2026 18:32:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id B8AjFydJpGrJdAAAD6G6ig
+	(envelope-from <fmancera@suse.de>); Fri, 11 Sep 2026 18:32:07 +0000
+Message-ID: <dfd9590c-e029-4432-9a13-c789f708cfee@suse.de>
+Date: Fri, 11 Sep 2026 20:31:20 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 01/13 net-next] net: ipv4: introduce CONFIG_IPV4 to
  decouple the IPv4 stack
-To: Fernando Fernandez Mancera <fmancera@suse.de>, netdev@vger.kernel.org
+To: Casey Schaufler <casey@schaufler-ca.com>, netdev@vger.kernel.org
 Cc: horms@kernel.org, kuba@kernel.org, pabeni@redhat.com,
  edumazet@google.com, davem@davemloft.net, Jason Gunthorpe <jgg@ziepe.ca>,
  Leon Romanovsky <leon@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
@@ -187,33 +203,63 @@ Cc: horms@kernel.org, kuba@kernel.org, pabeni@redhat.com,
  mptcp@lists.linux.dev, lvs-devel@vger.kernel.org, dev@openvswitch.org,
  rds-devel@oss.oracle.com, linux-sctp@vger.kernel.org,
  linux-s390@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
- linux-security-module@vger.kernel.org,
- Casey Schaufler <casey@schaufler-ca.com>
+ linux-security-module@vger.kernel.org
 References: <20260910144914.8025-1-fmancera@suse.de>
  <20260910144914.8025-2-fmancera@suse.de>
+ <ee89e26c-3dad-450b-8861-badf19afa141@schaufler-ca.com>
 Content-Language: en-US
-From: Casey Schaufler <casey@schaufler-ca.com>
-In-Reply-To: <20260910144914.8025-2-fmancera@suse.de>
-Content-Type: text/plain; charset=UTF-8
+From: Fernando Fernandez Mancera <fmancera@suse.de>
+In-Reply-To: <ee89e26c-3dad-450b-8861-badf19afa141@schaufler-ca.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: WebService/1.1.26525
- mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
-X-MailFrom: casey@schaufler-ca.com
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: EE2791FEE6
+X-Spamd-Result: default: False [-1.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	FORGED_RECIPIENTS(2.00)[m:casey@schaufler-ca.com,m:netdev@vger.kernel.org,m:pabeni@redhat.com,m:edumazet@google.com,m:davem@davemloft.net,m:jgg@ziepe.ca,m:anthony.l.nguyen@intel.com,m:przemyslaw.kitszel@intel.com,m:ecree.xilinx@gmail.com,m:maxime.chevallier@bootlin.com,m:mcoquelin.stm32@gmail.com,m:alexandre.torgue@foss.st.com,m:arend.vanspriel@broadcom.com,m:miriam.rachel.korenblit@intel.com,m:axboe@kernel.dk,m:sagi@grimberg.me,m:James.Bottomley@HansenPartnership.com,m:varun@chelsio.com,m:viro@zeniv.linux.org.uk,m:jack@suse.cz,m:dhowells@redhat.com,m:marc.dionne@auristor.com,m:neil@brown.name,m:okorniev@redhat.com,m:tom@talpey.com,m:sw@simonwunderlich.de,m:razor@blackwall.org,m:fw@strlen.de,m:johannes@sipsolutions.net,m:ja@ssi.bg,m:aconole@redhat.com,m:echaudro@redhat.com,m:jiri@resnulli.us,m:marcelo.leitner@gmail.com,m:lucien.xin@gmail.com,m:jmaloy@redhat.com,m:tung.quang.nguyen@est.tech,m:steffen.klassert@secunet.com,m:herbert@gondor.apana.org.au,m:serge@hallyn.com,m:vikas.gupta@
+ broadcom.com,m:bhargava.marreddy@broadcom.com,m:rajashekar.hudumula@broadcom.com,m:nb@tipi-net.de,m:markus@blochl.de,m:arnd@arndb.de,m:hkallweit1@gmail.com,m:florian.fainelli@broadcom.com,m:julianbraha@gmail.com,m:enelsonmoore@gmail.com,s:linux-afs@lists.infradead.org,s:linux-arm-kernel@lists.infradead.org,s:linux-nvme@lists.infradead.org,s:brcm80211@lists.linux.dev,s:bridge@lists.linux.dev,s:mptcp@lists.linux.dev,s:b.a.t.m.a.n@lists.open-mesh.org,s:intel-wired-lan@lists.osuosl.org,s:tipc-discussion@lists.sourceforge.net,s:coreteam@netfilter.org,s:dev@openvswitch.org,s:rds-devel@oss.oracle.com];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FROM_HAS_DN(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_CC(0.00)[kernel.org,redhat.com,google.com,davemloft.net,ziepe.ca,lunn.ch,intel.com,marvell.com,nvidia.com,gmail.com,bootlin.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,HansenPartnership.com,chelsio.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,oracle.com,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,sipsolutions.net,ssi.bg,ovn.org,mojatatu.com,resnulli.us,linux.alibaba.com,linux.ibm.com,est.tech,secunet.com,gondor.apana.org.au,paul-moore.com,namei.org,hallyn.com,tipi-net.de,blochl.de,arndb.de,linux.dev,linuxfoundation.org,alyssa.is,vger.kernel.org,lists.osuosl.org,corigine.com,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,openvswitch.org,oss.oracle.com,lists.sourceforge.net];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RLt8y6wi1bfiy5zg4r6hmh87bb)];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[133];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[netdev];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,suse.de:mid,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
+X-MailFrom: fmancera@suse.de
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: JVYKYOIEUPJP3SH2SB747XKORPRS5WZO
-X-Message-ID-Hash: JVYKYOIEUPJP3SH2SB747XKORPRS5WZO
+Message-ID-Hash: EDABKUIIAIYYUGDZF33BKLDKQ5M54DXQ
+X-Message-ID-Hash: EDABKUIIAIYYUGDZF33BKLDKQ5M54DXQ
 X-Mailman-Approved-At: Sat, 12 Sep 2026 08:18:20 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JVYKYOIEUPJP3SH2SB747XKORPRS5WZO/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EDABKUIIAIYYUGDZF33BKLDKQ5M54DXQ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -222,53 +268,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On 9/10/2026 7:48 AM, Fernando Fernandez Mancera wrote:
-> Historically, the IPv4 protocol has been linked to the core INET
-> subsystem. Because shared infrastructure like the TCP/UDP engine,
-> routing or INET hashtables live inside net/ipv4/, it has been impossible
-> to compile a kernel with only IPv6 support.
->
-> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
-> 'def_bool y' for now. This does not allow to completely disable the
-> IPv4 stack yet but it lays the necessary build-system work for that
-> goal.
->
-> In addition, multiple subsystems Kconfig symbols across networking
-> features like tunnels, drivers and filesystems have been adjusted to
-> depend on IPv4. Keep on mind that follow-up work is required to convert
-> the Kconfig symbol to bool and remove the dependency on IPv4 where it
-> makes sense.
->
-> Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
-> ---
->  
+On 9/11/26 7:46 PM, Casey Schaufler wrote:
+> On 9/10/2026 7:48 AM, Fernando Fernandez Mancera wrote:
+>> Historically, the IPv4 protocol has been linked to the core INET
+>> subsystem. Because shared infrastructure like the TCP/UDP engine,
+>> routing or INET hashtables live inside net/ipv4/, it has been impossible
+>> to compile a kernel with only IPv6 support.
+>>
+>> This patch introduces the CONFIG_IPV4 Kconfig symbol, which is set to
+>> 'def_bool y' for now. This does not allow to completely disable the
+>> IPv4 stack yet but it lays the necessary build-system work for that
+>> goal.
+>>
+>> In addition, multiple subsystems Kconfig symbols across networking
+>> features like tunnels, drivers and filesystems have been adjusted to
+>> depend on IPv4. Keep on mind that follow-up work is required to convert
+>> the Kconfig symbol to bool and remove the dependency on IPv4 where it
+>> makes sense.
+>>
+>> Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
+>> ---
+>>   
+> 
+> ...
+> 
+> 
+>>   security/smack/Kconfig                        |  1 +
+>>   54 files changed, 126 insertions(+), 66 deletions(-)
+>>
+> ...
+> 
+>> diff --git a/security/smack/Kconfig b/security/smack/Kconfig
+>> index 5a8dfad469c3..b4e6d0168bd1 100644
+>> --- a/security/smack/Kconfig
+>> +++ b/security/smack/Kconfig
+>> @@ -3,6 +3,7 @@ config SECURITY_SMACK
+>>   	bool "Simplified Mandatory Access Control Kernel Support"
+>>   	depends on NET
+>>   	depends on INET
+>> +	depends on IPV4
+>>   	depends on SECURITY
+>>   	select NETLABEL
+>>   	select SECURITY_NETWORK
+> 
+> Why would this make sense? You're introducing the capability to use
+> IP6 by itself, which is admirable, but you're disallowing that configuration
+> with the Smack LSM. It appears that you've done a mechanical lookup in the
+> Kconfig files and applied the minimal change to make the kernel compile,
+> which probably works for most cases. It does not work for Smack. Unless
+> there's a strong argument that Smack with IPv6 and without IPv4 is and always
+> will be a pointless configuration you have my NAK.
+> 
+> 
 
-...
+Right, that was kind of the point. The idea was to be able to compile 
+core networking without IPv4. There are still plenty of modules that 
+depends on IPv4. It does not mean that they will remain like that 
+forever as I mentioned my idea was a follow-up on the series to avoid 
+having a too long series.
 
+Anyway, I can make Smack to do not depend on IPv4 on this series if that 
+could grant an ACK.
 
->  security/smack/Kconfig                        |  1 +
->  54 files changed, 126 insertions(+), 66 deletions(-)
->
-...
-
-> diff --git a/security/smack/Kconfig b/security/smack/Kconfig
-> index 5a8dfad469c3..b4e6d0168bd1 100644
-> --- a/security/smack/Kconfig
-> +++ b/security/smack/Kconfig
-> @@ -3,6 +3,7 @@ config SECURITY_SMACK
->  	bool "Simplified Mandatory Access Control Kernel Support"
->  	depends on NET
->  	depends on INET
-> +	depends on IPV4
->  	depends on SECURITY
->  	select NETLABEL
->  	select SECURITY_NETWORK
-
-Why would this make sense? You're introducing the capability to use
-IP6 by itself, which is admirable, but you're disallowing that configuration
-with the Smack LSM. It appears that you've done a mechanical lookup in the
-Kconfig files and applied the minimal change to make the kernel compile,
-which probably works for most cases. It does not work for Smack. Unless
-there's a strong argument that Smack with IPv6 and without IPv4 is and always
-will be a pointless configuration you have my NAK.
+Thanks,
+Fernando.
 
