@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EB30C982EE
-	for <batman-adv@archiver.kernel.org>; Mon, 21 Sep 2026 01:07:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81956C9830E
+	for <batman-adv@archiver.kernel.org>; Fri, 25 Sep 2026 08:44:41 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0EC8583F7E
-	for <batman-adv@archiver.kernel.org>; Mon, 21 Sep 2026 03:07:27 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A0026840FD
+	for <batman-adv@archiver.kernel.org>; Fri, 25 Sep 2026 10:44:39 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1789952847;
- b=QyW8OqcJmoB2HF2uzlbI84fRnsyujo8Wl3oIk56WL96AXpUgoY5ICQGfZUrOy9woF/epU
- SdAAJ728j0RGaqjCr5wwwWIhR6yOQWylQfBSyeqhZeo7p1ilfTl6VuyHoV+JZIqNFDjDZRR
- 6sPkJoNptKtWh9KpUU4sZGH2kFRdi+0=
+ t=1790325879;
+ b=M2epK+lWFVXYhDmf2zjQSwgLennSyarq5a/1iK1XFPaTYRu/TF7eYxFEUrfHivL9vVa1Q
+ WESWdUjnKpCJGuLwYeBFdddWw5B8UkZyvbSnPvLhSDHqJRGQ8KiMBCgZz9rSXZKRb6hI0li
+ dE55I0hbgBxiaq4unfvjed/wqCFVSeE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1789952847; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1790325879; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=M6WTNz+xVNiBgnOc5h80UuTWSKWWx5CpqYLO5V1gDng=;
- b=JkSS9EmnWnNSa8El/eXrUOyHWpLEamd2ryBfoSfIUBkgrQsKEQ1yF/MctZWq0IjwZ3XUT
- N96xzQftg1KIssDQkMnrHYkso2774EpUhxUVgztzozXSnSCF5KRHNQ3fzRLxsLfNIyUQSTV
- eYAx1W44AcljQVkX5KU2aFaoOCl0cLI=
+ list-archive; bh=WpKcw9uVpzjpm8uNqjdtAhl2WWi6zfKfZIGFI6MIZdU=;
+ b=tWN5Z8qKxJsfBBMKmSZQllHIUskdO+BN5j7t88+B7Xgi8HS2/g97/NJkXO6di6TPkRSUJ
+ tNavl9OtzngVtvEdc6iV0eiPjW2yDY0K6DIY0K9jnZVU9C6enLdqt12SVYwDZl6/ygHjfpR
+ d6B6L/XuIjRtVWiNTSkiwKS7JvStbxg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=fail;
  arc=pass;
@@ -32,21 +32,21 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
 Received: from mail.aperture-lab.de (mail.aperture-lab.de
  [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D15A481912
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 21 Sep 2026 03:07:22 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1789952842;
-	b=DSW6IeJSafX2Fg0CrTI3EolUE71M++b+LppKIy0XTY6+IaNQp5X2Iuo438IdBYdr/OiC7i
-	JKRczw0DmJfyghWTGPHxKi3eYDYNm1UEram6mggl1X9eEBDeReQDZcsReqNYb/ouGAu5kF
-	qLYQ0ZAmAGMwE4i76Ah3yWIDSOOEDCg=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3136A82684
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 25 Sep 2026 10:44:19 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790325870;
+	b=py5Fueiim9PTe++Vq0qHK9k8s3MdezCtectJh9L9eyyAYSIwy/rZMrKWXdcloRyLmjKVwO
+	Qzudb/votS7AbthpWfRCA1fyiXavc/G/1e0Bombxvg6vgNPZ/A0S6haFEKD5niGiw1Y8qb
+	vo4v4uG4yW/bXexgOoCzfcRqDTAHQac=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1789952842;
+	s=20121; t=1790325870;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to; bh=hkU5fRgGesRuFMjoq6USJ/c5w5dmMDltbUpwfjTKgwo=;
-	b=FsZn4WbID3eNkYbA7IO7adSXvYgFwJLRIYKP0lmKoBA/4jrCyQK+INez/B2ls0rq23cfZr
-	SpxPc4HPLvaPgbXVzpPta1fiTPseYh3CNqgkawJKrUxzj14h5oFaCRPe43ah0R9Vi/iwn+
-	YA24iAX3FjLXnoEDKzRkWFRLDXbdmEI=
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=WpKcw9uVpzjpm8uNqjdtAhl2WWi6zfKfZIGFI6MIZdU=;
+	b=y0LRv0zQt8cKtrquFSFKpMYSz0gmjY5G/obOj3sh6xevnTJOdsHPUBDNsdUeQMWMOsSWOZ
+	BGustxyK86ZRHL1SbBvz+n6YlcGJWiNonASq2SW4E1W9vAydoSi2WeAU+FZolL0WeHKCe0
+	4lQqIw2/GNHjINoYKw9oo+GigGU8cPU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
@@ -55,22 +55,21 @@ ARC-Authentication-Results: i=1;
  designates 2a01:4f8:c2c:665b::1 as permitted sender)
  smtp.mailfrom=linus.luessing@c0d3.blue
 Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 34A8B1F79C
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 21 Sep 2026 03:07:19 +0200 (CEST)
-Date: Mon, 21 Sep 2026 03:07:18 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+ with ESMTPSA id 1AEEF233F1;
+	Fri, 25 Sep 2026 10:44:17 +0200 (CEST)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [batadv,v10 1/2] batman-adv: split DAT cache into DAT cache and
- DAT DHT
-Message-ID: <arCDRj9ubBwDJ3EK@sellars>
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [batadv,v11 0/4] batman-adv: increase DAT DHT timeout
+Date: Fri, 25 Sep 2026 10:44:06 +0200
+Message-ID: <20260925084410.27483-1-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.55.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260918225549.31315-2-linus.luessing@c0d3.blue>
 X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: 3GITUZMXKXVKERUIS6ERP5GEE7QE2TUO
-X-Message-ID-Hash: 3GITUZMXKXVKERUIS6ERP5GEE7QE2TUO
+Message-ID-Hash: LPLT6GD6UUUOGL6GVYMSZJHU2X5R3KWZ
+X-Message-ID-Hash: LPLT6GD6UUUOGL6GVYMSZJHU2X5R3KWZ
 X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -84,7 +83,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/3GITUZMXKXVKERUIS6ERP5GEE7QE2TUO/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LPLT6GD6UUUOGL6GVYMSZJHU2X5R3KWZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -93,189 +92,127 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-tl;dr: One of the four suggestions makes sense to me. For 1(.5)
-other points don't make sense to me / are overlooking an aspect, imo.
-For the remaining points I don't think they are a big issue, or at least
-for now not worth the extra complexity / refactoring work needed?
+This patchset increases the DAT DHT timeout to reduce the amount
+of broadcasted ARP Replies.
 
+To increase the timeout only for DAT DHT entries added via DHT-PUT but
+not for any other entry in the DAT cache the DAT cache and DAT DHT
+concepts are split into two separate hash tables (PATCH 2/4).
 
-On Fri, Sep 18, 2026 at 11:11:00PM +0000, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential issue(s) to consider:
-> - [High] batadv: incomplete DAT hash split breaks DHCP snooping and broadcasts
-> --
-> 
-> commit 40cf52e0667d2a02a686b866fe2dc385205cdc83
-> Author: Linus Lüssing <linus.luessing@c0d3.blue>
-> 
-> batman-adv: split DAT cache into DAT cache and DAT DHT
-> 
-> This commit separates the locally maintained DAT cache and the DAT DHT into
-> two distinct hash tables. This split is intended to ease monitoring and
-> allow differing properties for cache vs DHT entries.
-> 
-> > diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-> > index a4be5b2a87d7a..d2a599c9651d7 100644
-> > --- a/net/batman-adv/distributed-arp-table.c
-> > +++ b/net/batman-adv/distributed-arp-table.c
-> 
-> [ ... ]
-> 
-> > @@ -1421,9 +1421,9 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-> >  	hw_src = batadv_arp_hw_src(skb, hdr_size);
-> >  	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
-> >  
-> > -	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-> > +	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
-> >  
-> > -	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-> > +	dat_entry = batadv_dat_cache_entry_find(bat_priv, ip_dst, vid);
-> >  	if (dat_entry) {
-> >  		u64_mac = atomic64_read(&dat_entry->mac_addr);
-> 
-> [Severity: High]
-> Does this fail to reply locally if the node has the requested entry in the
-> DAT DHT but not the DAT cache?
-> 
-> If the node is the DHT candidate, checking only the cache hash could bypass
-> local DHT knowledge and trigger unnecessary remote DHT_GET requests.
+PATCH 3/4 then increases the timeout for DAT DHT entries from 5 to
+30 minutes.
 
-I don't think these DHT_GET requests are unnecessary. The local DAT DHT
-information might (sometimes) be outdated if due to new or vanishing nodes
-we are not one of the three DAT DHT candidates anymore. We should
-check on the current DHT candidates instead then in my opinion.
+The motivation for this patchset is based on the observations made here:
+https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
 
-Also a DHT_GET is not that costly (at least compared to a
-broadcast flooded ARP request, for instance).
+In tests at Freifunk Lübeck with ~180 mesh nodes and Gluon
+this reduced the ARP broadcast overhead, measured over 7 days, as
+follows:
 
-(And thirdly, I'm also wondering if in the future in larger and/or more
-dynamic or lossy networks it might make sense to check all
-BATADV_P_DAT_CACHE_REPLY answers and choose the MAC address with the
-most votes. In case one of the candidates might have an
-outdated DHT entry somehow. Or if a candidate were generating
-corrupted/bogus replies. We've seen broken, bit-flipping devices
-in our networks before.)
+- Total:           6677.66 bits/s -> 677.26 bits/s => -89.86%
+                   11.92 pkts/s   -> 1.21 pkts/s   => -89.85%
 
-> 
-> [ ... ]
-> 
-> > @@ -1525,9 +1525,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-> >  
-> >  	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
-> >  
-> > -	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-> > +	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
-> >  
-> > -	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-> > +	dat_entry = batadv_dat_dht_entry_find(bat_priv, ip_dst, vid);
-> >  	if (!dat_entry)
-> >  		goto out;
-> 
-> [Severity: High]
-> Will this miss DHT entries that were improperly stored in the cache hash
-> instead of the DHT hash? 
-> 
-> If a node's local client sends an ARP reply or if a DHCP DHT_PUT is saved
-> in the cache hash, a remote DHT_GET will fail here because
-> batadv_dat_snoop_incoming_arp_request only searches the DHT hash.
+- from gateways: 5618.02 bits/s   -> 212.28        => -96.22%
+                   10.03 pkts/s   -> 0.38 pkts/s   => -96.21%
 
-The short answer would be: In theory valid but not sure if it's an
-issue in practice.
+Also see graphics and a few more test details here:
+- https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping#Result-2
 
-If our own, local node is one of the candidates then other nodes might
-loose one of the three potential candidates. But for one thing there
-are two other candidates and for another depending on the network size
-could be rare. In small networks would happen more often, but in
-smaller networks with therefore shorter paths just two candidates
-should generally be fine, too.
+Regards,
+Linus
 
+---
 
-If one were trying to not loose a candidate (but I'm not sure if
-that is worth it for now? Or if that should be extra patches
-later?):
+Changelog v11:
+- PATCH 1/4: NEW, simple restructuring in preparation for 2/5
+             (no functional change)
+- PATCH 2/4 (was: 1/2):
+  - update local DHT on DHCP ACKs received via DHT_PUTs, too
+  - added self-candidate checks (batadv_dat_check_self_candidate()):
+    - update local DHT from/on own DHT_PUT if we are a DAT candidate
+    - (try to) reply to own DHT_GET from own DHT first if we are a
+      selected DAT candidate
+- PATCH 3/4 (was 2/2): unchanged
+- PATCH 4/4: NEW, avoid superfluous DAT DHT_PUT if self-candidate
 
+Changelog v10:
+- PATCH 1/3: removed, already applied
+- PATCH 0/2: cover letter: removed test time period and "v5" reference
+- PATCH 1/2:
+  - fixed kerneldoc in batadv_dat_hash_free(),
+    replaced "bat_priv" with "hash"
+  - added missing kerneldoc in batadv_dat_snoop_incoming_arp_reply()
+    for is_dht_put
+  - rebase to current main branch:
+    - adopted new bat_priv kernel doc description,
+      "soft interface" -> "mesh interface"
+    - adopted variable rename from soft_iface to mesh_iface
 
-Option A)
+Changelog v9:
+- PATCH 1/3:
+  - fixed typo in a comment: ENOENT -> ENONET
 
->From batadv_dat_snoop_outgoing_arp_reply() /
-batadv_dat_snoop_outgoing_dhcp_ack() always add to local DHT,
-regardless if we are an actual DHT candidate.
+Changelog v8:
+- PATCH 1/3:
+  - fixing / cleaning up includes
+  - fixing function kernel doc titles
+  - fixing bugs introduced in v7 in the error handling of
+    batadv_orig_dump() and batadv_neigh_dump(), using a goto
+    pattern with more explicit labels
 
-Downside: From "batctl dd" we wouldn't know anymore if the entry
-came from a local addition or via a DHT PUT. (one could maybe add
-a flag to a DHT entry though for the batctl visualization...)
+Changelog v7:
+- adding PATCH 1/3 to add the batadv_netlink_get_softif() wrapper to
+  reduce the amount of duplicate code, both in the current code base
+  but also for the next PATCH 2/3
 
-Option B)
+Changelog v6:
+- removed renaming+deprecation of BATADV_P_DAT_CACHE_REPLY in PATCH 1/2
+- small commit message rewording in PATCH 1/2
 
-Make batadv_choose_next_candidate() consider our own, local orig
-address, too. Add a BATADV_DAT_CANDIDATE_SELF type.
-Make batadv_dat_forward_data() add to the local DHT (without
-sending a DHT PUT message to ourself?) if this local orig is a
-candidate.
+Changelog v5:
+- rebased to current main branch
+  -> removed now obsolete debugfs code
 
-Downside: More rework and extra checks.
+Changelog v4:
+- rebased to: acfc9a214d01695
+  ("batman-adv: genetlink: make policy common to family")
 
-Upside: Currently, also before these patches, if the local node is
-a candidate then we might do a superfluous DHT_PUSH to a node which
-is not actually a candidate from the perspective of other nodes.
-Consdering the own node for the DHT ring, too, would solve that as
-well.
+Changelog v3:
 
-> 
-> [ ... ]
-> 
-> > @@ -2077,8 +2077,8 @@ void batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
-> >  	ethhdr = (struct ethhdr *)(skb->data + hdr_size);
-> >  	hw_src = ethhdr->h_source;
-> >  
-> > -	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
-> > -	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-> > +	batadv_dat_cache_entry_add(bat_priv, yiaddr, chaddr, vid);
-> > +	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
-> >  
-> >  	batadv_dbg(BATADV_DBG_DAT, bat_priv,
-> 
-> [Severity: High]
-> When a DHT candidate receives a DHT_PUT containing a DHCP packet, should
-> these entries be saved in the DHT hash instead of the cache hash? 
-> 
-> Saving them to the cache hash unconditionally makes them invisible to
-> subsequent DHT_GET queries that only check the DHT hash.
+formerly:
+ "batman-adv: Increase purge timeout on DAT DHT candidates"
+ https://patchwork.open-mesh.org/patch/17728/
+- fixed the potential jiffies overflow and jiffies initialization
+  issues by replacing the last_dht_update timeout variable with
+  a split of DAT cache and DAT DHT into two separate hash tables
+  -> instead of maintaining two timeouts in one DAT entry two DAT
+     entries are created and maintained in their respective DAT
+     cache and DAT DHT hash tables
 
-Makes sense, indeed a batadv_dat_snoop_incoming_dhcp_ack() should
-behave similar to a batadv_dat_snoop_incoming_arp_reply() which it
-currently does not. So if the incoming DHCP ACK came via a
-DHT_PUT then I'd change this patch to add to the local DHT, too,
-in a v11.
+Changelog v2:
 
-> 
-> [ ... ]
-> 
-> > @@ -2132,7 +2132,7 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
-> >  		goto out;
-> >  
-> >  	ip_dst = batadv_arp_ip_dst(forw_packet->skb, hdr_size);
-> > -	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-> > +	dat_entry = batadv_dat_cache_entry_find(bat_priv, ip_dst, vid);
-> >  	/* check if the node already got this entry */
-> >  	if (!dat_entry) {
-> 
-> [Severity: High]
-> Does this fail to drop the broadcast packet if the node knows the answer
-> via the DHT hash rather than the cache hash? 
-> 
-> By only checking the cache, known DHT entries fail to suppress ARP
-> broadcasts, which can lead to unnecessary broadcast storms.
+formerly:
+ "batman-adv: Increase DHCP snooped DAT entry purge timeout in DHT"
+ (https://patchwork.open-mesh.org/patch/17364/)
+- removed the extended timeouts flag in the DHT-PUT messages introduced
+  in v1 again
+- removed DHCP dependency
 
-Similar to the first reply: The local DHT entry might be outdated.
-A broadcast in that case would seem safer to me.
+Linus Lüssing (4):
+  batman-adv: move local ARP reply code to subfunctions
+  batman-adv: split DAT cache into DAT cache and DAT DHT
+  batman-adv: increase DAT DHT timeout
+  batman-adv: avoid superfluous DAT DHT_PUT if self-candidate
 
-(Alternatively, with the "Option B)" mentioned above one could
-potentially also avoid the broadcast. But still a bit tricky,
-as we don't have an orig-node for ourself and therefore can't
-simply send a DHT_GET to ourself / can't treat ourself as any
-other DAT candidate?)
+ include/uapi/linux/batman_adv.h        |   5 +
+ net/batman-adv/distributed-arp-table.c | 762 +++++++++++++++++++------
+ net/batman-adv/distributed-arp-table.h |  19 +-
+ net/batman-adv/main.h                  |   3 +-
+ net/batman-adv/netlink.c               |   5 +
+ net/batman-adv/routing.c               |  12 +-
+ net/batman-adv/types.h                 |   7 +-
+ 7 files changed, 627 insertions(+), 186 deletions(-)
 
+-- 
+2.55.0
 
-> 
-> -- 
-> Sashiko AI review · https://sashiko.dev/#/patchset/20260918225549.31315-1-linus.luessing@c0d3.blue?part=1
