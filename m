@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 044D5CA5FC1
-	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 09:49:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F58CCA5FC1
+	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 09:50:27 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 69E3683BE2
-	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 11:49:54 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 95DA683BE2
+	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 11:50:25 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1790761794;
- b=taTmU8KcPKhXE4MGBZQAYzRQP/3UCxLQuHzDb9A/oB1I0iPq2G0+pmpoGgkx9ot0M4iVA
- O4kQlsV9KxfgtKhToR0ViLTT7FcWDjNw6+AxCgovGnmHKqdxIBabphNPg/NrXfmBCA2D0Ax
- iAADoaE74PkWjuub4Ao1eEVYHNA7fjY=
+ t=1790761825;
+ b=ACReNoJJAxfEAehbxTWt7ifh/XpS3eN4zVyVeU9hpTLmz2oBGci0gLAoPjuhewbMtlyUn
+ AK1Lu+SA8VVnQTNHBIlXiYZPeH8EVefz4TX7neTIJqLhmk1fnuk73Oa0p5+9goullB9YCt4
+ Qy6BGpiXmv4L2QtJ/BFqcwesAJl0Tvg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1790761794; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1790761825; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=4KijHBqujEiCmva7gP2FYY4DFFU9m83/MQ1MEy2EOsA=;
- b=jWGmvrid8Iwld6a381W9Z1JUZfDGyiDb21bfpZJdSy4Zvtjjdz/yN6ZqecDsK98Tvttd/
- AV1ww0Tz2fICagwsXrOI2FCX2pmsTKsFK5CeuylGSB9Yt2m3rhMMh4hwjIrbTcAzgsbftoE
- K/sPVOFf2Pu/v9/BnV1H7Nr8J6fEXHQ=
+ list-archive; bh=5ve/lpZCjWQRCIB2J7HQC4dwF/OKFBr6arbGesv1yjA=;
+ b=NpQ+Ysb/RgygWet1EXhM0RZXZepHiFSvZKXxN3VYQ6+5FzFkIO3JnBg3UwSdwUjmwxyU7
+ EEOnrog4ZfqNmztC8e2Qtr+45dJ5vLtpouypWyDBwh9FbhV1LHbn/F0U8yyutBz7BsOFWH0
+ x7T0NkOZ220rYssEHqixeupqX5OIV64=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,49 +34,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 645F88258E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 30 Sep 2026 11:46:06 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790761566;
-	b=kZ7nHu6D8oaZRxgVcJgP9HgMmjAKzsqWSCMbq9SmQcMrI9vNjzT3HH7SG6iE+HbnQJpJVa
-	zVmIOR9LYhOtaPizkK3vL337jdWHImDo7ERlDv0Jlh7fTEcImVV+FEdmnar6E9FN3zm452
-	xkHUWatrg/dzdcbRCpJDEnuPB+QYyPE=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 013CD83BDA
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 30 Sep 2026 11:46:07 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790761567;
+	b=XjKa10CL0awNnuUQp1WGOHtc3eONz+HUIeWl6/mFqI7EU+kLasfSYPaF9DTVe93YQ1TzDd
+	GHFILY7Ewt848SfiNJcZsS0sEuHp/GJTj9sGBInmUdiGTaiNlDxNgFWwqaALjQkfIV47h6
+	kOulBOjRzezvH7JIUcHnkd+IbltqVa8=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1790761566;
+	s=20121; t=1790761567;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=4KijHBqujEiCmva7gP2FYY4DFFU9m83/MQ1MEy2EOsA=;
-	b=o4nC2ToGYPE375n8r0IKAeJdgJkzTQjFjk6ieE9ADltimxfJKz/H6DFBEl/eWbWw/HZUCF
-	TP6Dkfurwd7eTIjStvGm2ViNLA7pZvoahy7oGVn4RUNLZKfxhTROVfyz9bA7AgSfHe2BsT
-	ElZhmOYGiU/ceKswbOD9GOaR9O5r1NQ=
+	bh=5ve/lpZCjWQRCIB2J7HQC4dwF/OKFBr6arbGesv1yjA=;
+	b=i+uFsKnxlYt9fKBDmc2z13arOeSW49T70LZHaFBEUBgQf7yPmwXJbb/kEKGv5RwZofoqAX
+	2yvk1etdJIw524Opatks/Bpls2wxNLJCjwx5vqLK6jmsTOMABW4GivAqFbzopxWr7NW6LZ
+	4K4GXVYbkpnIBVe/n+IVdNyICz2uOCQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=IFLsV1kp;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=ctgBmlRQ;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C5970E81D8CF20e45A7328D917.dip0.t-ipconnect.de
+ (p200300c5970E81d8Cf20e45a7328D917.dip0.t-ipconnect.de
  [IPv6:2003:c5:970e:81d8:cf20:e45a:7328:d917])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id AB4DFFA1B6;
-	Wed, 30 Sep 2026 11:46:05 +0200 (CEST)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 61EE2FA25D;
+	Wed, 30 Sep 2026 11:46:06 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1790761565;
+	s=09092022; t=1790761566;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4KijHBqujEiCmva7gP2FYY4DFFU9m83/MQ1MEy2EOsA=;
-	b=IFLsV1kpm6tUDuZCBUAE1F8i1GL08p9iukg0+zVHCapPzUm9ekvJSjdyDtIgykxgh9SZyR
-	b09ZWvpPe5GCfAjWHMYnHMmOmgqeUawpgJANu/+pGy8vtl+/Lxh3JEnEcLoFY0Rc/mx61T
-	M71O6B0rDd5uArwNA8PdUYbhDPVs87n8+GE9Hy26K5P5CSKkTA/hLONTyg4ljLoDzLtt6/
-	YT+q+ACiuo42yhbGEyGdP5YOn9s2v5owrBt60/8sxXzVAQ5oV7zbBo5yppav5pDYe+51Ko
-	MsN4GdQP/zrlgacgQQH7JUHTr4FIu4HwoYBoJEjz1L9jzlllK/GxyraJqwn+lA==
+	bh=5ve/lpZCjWQRCIB2J7HQC4dwF/OKFBr6arbGesv1yjA=;
+	b=ctgBmlRQyW4XzoD59JEv6UaqvjKNrN+WOwUc+GzZpA/OjXCHFt7GMLe/zm5W7soU6HoXIW
+	IoMSxL5HlYV+HjKc5hJpDsKA06Skz2MHMMfnv4oGB8RnWhlApc2Hh5v8vG9FxbFFJV7Rjh
+	O9agTeUjHHNGBH9XAcyL2GFf+5N2/o7WnZ3Ef3Fay0cTk+M0sl00z1BnBKXN6vMfvpAHC4
+	NmIhdy830qiAa/SZoty0FxoQNqVQv2nYjiLIheiohi7z0IemJUqSLuAsAlOlRVsw7F5bc/
+	X0t4VSDSv8RgIPDbMyxmBvs72ZgTTacyUUbwRVRsPtTITkznH3DTY+FgYhzu7g==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,19 +86,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 7/9] batman-adv: tt: queue local DEL event before
- marking entry as pending
-Date: Wed, 30 Sep 2026 11:45:56 +0200
-Message-ID: <20260930094558.3723766-8-sw@simonwunderlich.de>
+Subject: [PATCH net-next 8/9] batman-adv: tt: reject VLAN/TT entries before
+ reaching size limit
+Date: Wed, 30 Sep 2026 11:45:57 +0200
+Message-ID: <20260930094558.3723766-9-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260930094558.3723766-1-sw@simonwunderlich.de>
 References: <20260930094558.3723766-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: Y4HNH4QHUF2ITDIJYZ2FMNKNITARHYXR
-X-Message-ID-Hash: Y4HNH4QHUF2ITDIJYZ2FMNKNITARHYXR
+Message-ID-Hash: 2QBZNMQM425YSDCKGMMGV5E67DFDHKSE
+X-Message-ID-Hash: 2QBZNMQM425YSDCKGMMGV5E67DFDHKSE
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -112,7 +111,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/Y4HNH4QHUF2ITDIJYZ2FMNKNITARHYXR/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2QBZNMQM425YSDCKGMMGV5E67DFDHKSE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -123,240 +122,379 @@ List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_tt_local_set_pending() originally queued the DEL change event and
-only afterwards set BATADV_TT_CLIENT_PENDING on the local entry. Commit
-976b159b3c12 ("batman-adv: tt: use protected flag modifications") inverted
-this order for batadv_tt_local_remove() and batadv_tt_local_purge_list().
+The translation table is announcing its current state via the TT TVLV in
+each OGM(2). If another originator detects a desync with its own copy of
+this state information, it will request a full table sync. Each originator
+must therefore be able to send a reply with its full table without hitting
+the size limit of this response.
 
-The hash bucket list_lock held around both steps does not help against
-batadv_tt_local_add_existing() because it is not holding it.
+The translation table code already tries to limit the amount of local TT
+entries. But the code itself fails to achieve this task because:
 
-  CPU0                          CPU1
-  flags |= ..._PENDING;
-                                batadv_tt_local_add_existing()
-                                  flags &= ~..._PENDING;
-                                batadv_tt_local_event(ADD)
-  batadv_tt_local_event(DEL)
+* the size check uses shared, unlocked information
+* the size check isn't done for VLANs
 
-If the ADD was already announced by a commit in between, the DEL is sent in
-the next TTVN although the entry is no longer pending (after
-batadv_tt_local_add_existing()) and the local entry was never purged. The
-incorrect DEL will corrupt the CRC on neighbor nodes. A full table sync
-request is therefore issued to resolve this problem.
+When enough VLANs + TT entries are created in parallel, then the TT will
+need more room then allowed for a full translation table reply. Other
+originators will then send regularly requests for a table sync but never
+get a reply.
 
-When the DEL event is queued before the flag is set, a
-batadv_tt_local_add_existing() which clears the flag afterwards queues its
-ADD behind the DEL, and both cancel each other out.
+To avoid this problem for new VLAN and local TT entries, each new entry
+must reserve "room" before it is actually allocated. Only when enough
+"room" is available, this reservation is granted. This makes it possible to
+keep the reservation handling locked and therefore safe for multiple
+parallel contexts.
 
-But the check whether an entry has to be removed must not be separated (by
-using two different critial flags_lock sections) from setting the flag (in
-batadv_tt_local_event) either. Otherwise batadv_tt_local_add_existing()
-could refresh the entry between both steps without queuing an ADD, and an
-active client would be announced as removed and purged.
+For now, over-reservation caused by a reduction of the MTU is not taken
+into account.
 
-Fixes: 976b159b3c12 ("batman-adv: tt: use protected flag modifications")
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831135117.574836-1-sw%40simonwunderlich.de?part=12
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 102 ++++++++++++++++-------------
- 1 file changed, 55 insertions(+), 47 deletions(-)
+ net/batman-adv/main.c              |   1 +
+ net/batman-adv/mesh-interface.c    |   8 ++
+ net/batman-adv/translation-table.c | 194 ++++++++++++++++++++++++-----
+ net/batman-adv/translation-table.h |   3 +
+ net/batman-adv/types.h             |  19 +++
+ 5 files changed, 194 insertions(+), 31 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index c229c51cafa72..481dc6afaaba1 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -461,23 +461,21 @@ static u16 batadv_tt_flags_get(struct batadv_tt_common_entry *common)
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d89d44706269b..6c54a8d4be3ec 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -198,6 +198,7 @@ int batadv_mesh_init(struct net_device *mesh_iface)
+ 	spin_lock_init(&bat_priv->tt.roam_list_lock);
+ 	spin_lock_init(&bat_priv->tt.last_changeset_lock);
+ 	spin_lock_init(&bat_priv->tt.commit_lock);
++	spin_lock_init(&bat_priv->tt.reserve_lock);
+ 	spin_lock_init(&bat_priv->gw.list_lock);
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 	spin_lock_init(&bat_priv->mcast.mla_lock);
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 63af21954cf90..1ce707aaf48a0 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -561,6 +561,8 @@ void batadv_meshif_vlan_release(struct kref *ref)
+ 	hlist_del_rcu(&vlan->list);
+ 	spin_unlock_bh(&vlan->bat_priv->meshif_vlan_list_lock);
+ 
++	batadv_tt_local_unreserve_vlan(vlan->bat_priv);
++
+ 	kfree_rcu(vlan, rcu);
  }
  
- /**
-- * batadv_tt_local_event() - store a local TT event (ADD/DEL)
-+ * __batadv_tt_local_event() - store a local TT event (ADD/DEL) with given flags
-  * @bat_priv: the bat priv with all the mesh interface information
-- * @tt_local_entry: the TT entry involved in the event
-- * @event_flags: flags to store in the event structure
-+ * @common: the TT entry involved in the event
-+ * @flags: flags of the TT entry combined with the event flags
-  */
--static void batadv_tt_local_event(struct batadv_priv *bat_priv,
--				  struct batadv_tt_local_entry *tt_local_entry,
--				  u8 event_flags)
-+static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
-+				    const struct batadv_tt_common_entry *common,
-+				    u8 flags)
- {
--	struct batadv_tt_common_entry *common = &tt_local_entry->common;
- 	struct batadv_tt_change_node *tt_change_node;
- 	struct batadv_tt_change_node *entry;
- 	struct batadv_tt_change_node *safe;
- 	bool del_op_requested;
- 	bool del_op_entry;
- 	size_t changes;
--	u8 flags;
+@@ -614,9 +616,15 @@ int batadv_meshif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 		return -EEXIST;
+ 	}
  
- 	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
- 	if (!tt_change_node)
-@@ -488,8 +486,6 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 	ether_addr_copy(tt_change_node->change.addr, common->addr);
- 	tt_change_node->change.vid = htons(common->vid);
++	if (!batadv_tt_local_reserve_vlan(bat_priv, vid)) {
++		spin_unlock_bh(&bat_priv->meshif_vlan_list_lock);
++		return -EMSGSIZE;
++	}
++
+ 	vlan = kzalloc_obj(*vlan, GFP_ATOMIC);
+ 	if (!vlan) {
+ 		spin_unlock_bh(&bat_priv->meshif_vlan_list_lock);
++		batadv_tt_local_unreserve_vlan(bat_priv);
+ 		return -ENOMEM;
+ 	}
  
--	flags = batadv_tt_flags_get(common) | event_flags;
--
- 	tt_change_node->change.flags = flags;
- 	del_op_requested = flags & BATADV_TT_CLIENT_DEL;
- 
-@@ -537,6 +533,23 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 481dc6afaaba1..3349376a9087d 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -234,6 +234,162 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ 	return tt_global_entry;
  }
  
 +/**
-+ * batadv_tt_local_event() - store a local TT event (ADD/DEL)
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tt_local_entry: the TT entry involved in the event
-+ * @event_flags: flags to store in the event structure
++ * batadv_tt_len() - compute length in bytes of given number of tt changes
++ * @changes_num: number of tt changes
++ *
++ * Return: computed length in bytes.
 + */
-+static void batadv_tt_local_event(struct batadv_priv *bat_priv,
-+				  struct batadv_tt_local_entry *tt_local_entry,
-+				  u8 event_flags)
++static int batadv_tt_len(int changes_num)
 +{
-+	struct batadv_tt_common_entry *common = &tt_local_entry->common;
-+	u8 flags;
++	return changes_num * sizeof(struct batadv_tvlv_tt_change);
++}
 +
-+	flags = batadv_tt_flags_get(common) | event_flags;
-+	__batadv_tt_local_event(bat_priv, common, flags);
++/**
++ * batadv_tt_local_transmit_size() - calculate the size of a full table response
++ *  for a given number of VLANs and local TT entries
++ * @num_vlan: number of announced VLANs
++ * @num_entries: number of announced local TT entries
++ *
++ * Return: local translation table size in bytes.
++ */
++static int batadv_tt_local_transmit_size(u16 num_vlan, u16 num_entries)
++{
++	int hdr_size;
++
++	/* header size of tvlv encapsulated tt response payload */
++	hdr_size = sizeof(struct batadv_unicast_tvlv_packet);
++	hdr_size += sizeof(struct batadv_tvlv_hdr);
++	hdr_size += sizeof(struct batadv_tvlv_tt_data);
++	hdr_size += num_vlan * sizeof(struct batadv_tvlv_tt_vlan_data);
++
++	return hdr_size + batadv_tt_len(num_entries);
++}
++
++/**
++ * batadv_tt_local_reserve() - reserve room in the transmittable local table
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @num_vlan: number of VLANs to reserve
++ * @num_entries: number of local TT entries to reserve
++ * @table_size: stores the resulting worst case table size in bytes
++ *
++ * Add the requested number of VLANs and local TT entries to the reservation
++ * counters and check whether the local translation table would then still fit
++ * in a single full table response. The reservation is dropped again when it
++ * would not.
++ *
++ * The reservation has to happen before the related object is allocated. This
++ * way two parallel allocations cannot both observe enough room for themselves
++ * and end up with a local table which can no longer be transmitted.
++ *
++ * A granted reservation must be returned via batadv_tt_local_unreserve() when
++ * the related object is released or was never created.
++ *
++ * Return: true when the reservation was granted, false otherwise.
++ */
++static bool batadv_tt_local_reserve(struct batadv_priv *bat_priv, u16 num_vlan,
++				    u16 num_entries, int *table_size)
++{
++	int packet_size_max = READ_ONCE(bat_priv->packet_size_max);
++
++	scoped_guard(spinlock_bh, &bat_priv->tt.reserve_lock) {
++		bat_priv->tt.reserved_vlans += num_vlan;
++		bat_priv->tt.reserved_entries += num_entries;
++
++		*table_size = batadv_tt_local_transmit_size(bat_priv->tt.reserved_vlans,
++							    bat_priv->tt.reserved_entries);
++		if (*table_size <= packet_size_max)
++			return true;
++
++		bat_priv->tt.reserved_vlans -= num_vlan;
++		bat_priv->tt.reserved_entries -= num_entries;
++	}
++
++	return false;
++}
++
++/**
++ * batadv_tt_local_unreserve() - return room in the transmittable local table
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @num_vlan: number of VLANs to return
++ * @num_entries: number of local TT entries to return
++ */
++static void batadv_tt_local_unreserve(struct batadv_priv *bat_priv,
++				      u16 num_vlan, u16 num_entries)
++{
++	scoped_guard(spinlock_bh, &bat_priv->tt.reserve_lock) {
++		bat_priv->tt.reserved_vlans -= num_vlan;
++		bat_priv->tt.reserved_entries -= num_entries;
++	}
++}
++
++/**
++ * batadv_tt_local_reserve_entry() - reserve room for a new local TT entry
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @addr: the mac address of the client to add
++ *
++ * Return: true when the reservation was granted, false otherwise.
++ */
++static bool batadv_tt_local_reserve_entry(struct batadv_priv *bat_priv,
++					  const u8 *addr)
++{
++	int table_size;
++
++	if (batadv_tt_local_reserve(bat_priv, 0, 1, &table_size))
++		return true;
++
++	net_ratelimited_function(batadv_info, bat_priv->mesh_iface,
++				 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
++				 table_size,
++				 READ_ONCE(bat_priv->packet_size_max), addr);
++
++	return false;
++}
++
++/**
++ * batadv_tt_local_unreserve_entry() - return the room of a local TT entry
++ * @bat_priv: the bat priv with all the mesh interface information
++ */
++static void batadv_tt_local_unreserve_entry(struct batadv_priv *bat_priv)
++{
++	batadv_tt_local_unreserve(bat_priv, 0, 1);
++}
++
++/**
++ * batadv_tt_local_reserve_vlan() - reserve room for a new VLAN
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @vid: the VLAN identifier
++ *
++ * Each VLAN adds a per VLAN header to the full table response and therefore
++ * has to be reserved before batadv_meshif_create_vlan() allocates it.
++ *
++ * Return: true when the reservation was granted, false otherwise.
++ */
++bool batadv_tt_local_reserve_vlan(struct batadv_priv *bat_priv,
++				  unsigned short vid)
++{
++	int table_size;
++
++	if (batadv_tt_local_reserve(bat_priv, 1, 0, &table_size))
++		return true;
++
++	net_ratelimited_function(batadv_info, bat_priv->mesh_iface,
++				 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new VLAN: %d\n",
++				 table_size, READ_ONCE(bat_priv->packet_size_max),
++				 batadv_print_vid(vid));
++
++	return false;
++}
++
++/**
++ * batadv_tt_local_unreserve_vlan() - return the room of a VLAN
++ * @bat_priv: the bat priv with all the mesh interface information
++ */
++void batadv_tt_local_unreserve_vlan(struct batadv_priv *bat_priv)
++{
++	batadv_tt_local_unreserve(bat_priv, 1, 0);
 +}
 +
  /**
-  * batadv_tt_len() - compute length in bytes of given number of tt changes
-  * @changes_num: number of tt changes
-@@ -1420,28 +1433,37 @@ int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
+  * batadv_tt_local_entry_release() - release tt_local_entry from lists and queue
+  *  for free after rcu grace period
+@@ -246,6 +402,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+ 	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
+ 				      common.refcount);
+ 
++	batadv_tt_local_unreserve_entry(tt_local_entry->vlan->bat_priv);
+ 	batadv_meshif_vlan_put(tt_local_entry->vlan);
+ 
+ 	kfree_rcu(tt_local_entry, common.rcu);
+@@ -550,17 +707,6 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 	__batadv_tt_local_event(bat_priv, common, flags);
+ }
+ 
+-/**
+- * batadv_tt_len() - compute length in bytes of given number of tt changes
+- * @changes_num: number of tt changes
+- *
+- * Return: computed length in bytes.
+- */
+-static int batadv_tt_len(int changes_num)
+-{
+-	return changes_num * sizeof(struct batadv_tvlv_tt_change);
+-}
+-
+ /**
+  * batadv_tt_entries() - compute the number of entries fitting in tt_len bytes
+  * @tt_len: available space
+@@ -584,7 +730,6 @@ static int batadv_tt_local_table_transmit_size(struct batadv_priv *bat_priv)
+ 	struct batadv_meshif_vlan *vlan;
+ 	u16 tt_local_entries = 0;
+ 	u16 num_vlan = 0;
+-	int hdr_size;
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->meshif_vlan_list, list) {
+@@ -593,13 +738,7 @@ static int batadv_tt_local_table_transmit_size(struct batadv_priv *bat_priv)
+ 	}
+ 	rcu_read_unlock();
+ 
+-	/* header size of tvlv encapsulated tt response payload */
+-	hdr_size = sizeof(struct batadv_unicast_tvlv_packet);
+-	hdr_size += sizeof(struct batadv_tvlv_hdr);
+-	hdr_size += sizeof(struct batadv_tvlv_tt_data);
+-	hdr_size += num_vlan * sizeof(struct batadv_tvlv_tt_vlan_data);
+-
+-	return hdr_size + batadv_tt_len(tt_local_entries);
++	return batadv_tt_local_transmit_size(num_vlan, tt_local_entries);
  }
  
  /**
-- * batadv_tt_local_set_pending_event() - trigger events for TT pending removal
-+ * batadv_tt_local_set_pending() - mark local TT entry as pending removal
-  * @bat_priv: the bat priv with all the mesh interface information
-- * @tt_local_entry: local TT entry which was marked as BATADV_TT_CLIENT_PENDING
-+ * @tt_local_entry: local TT entry to mark as BATADV_TT_CLIENT_PENDING
-  * @flags: TT change flags to announce together with the pending removal
-  * @message: debug message describing the reason for the change
-  *
-- * Schedule the TT change announcement for the entry. The caller must already
-- * have added BATADV_TT_CLIENT_PENDING to the @tt_local_entry and must hold the
-- * hash bucket list_lock of @tt_local_entry since setting the flag.
-+ * Schedule the TT change announcement and set BATADV_TT_CLIENT_PENDING on the
-+ * entry. The entry is kept in the local table until the next TTVN increment
-+ * so that a consistency-check response can still be answered.
-+ *
-+ * Next to the flags_lock of the entry, the caller must hold the hash bucket
-+ * list_lock of @tt_local_entry. Otherwise
-+ * batadv_tt_local_purge_pending_clients() could remove the entry before its
-+ * change was queued.
-  */
- static void
--batadv_tt_local_set_pending_event(struct batadv_priv *bat_priv,
--				  struct batadv_tt_local_entry *tt_local_entry,
--				  u16 flags, const char *message)
-+batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
-+			    struct batadv_tt_local_entry *tt_local_entry,
-+			    u16 flags, const char *message)
-+	__must_hold(&tt_local_entry->common.flags_lock)
- {
-+	struct batadv_tt_common_entry *common = &tt_local_entry->common;
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	u32 i;
+@@ -803,23 +942,15 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
+ 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
+ 	struct batadv_tt_local_entry *tt_local;
+ 	struct batadv_meshif_vlan *vlan;
+-	int packet_size_max;
+-	int table_size;
  
--	i = batadv_choose_tt(&tt_local_entry->common, hash->size);
-+	i = batadv_choose_tt(common, hash->size);
- 	lockdep_assert_held(&hash->list_locks[i]);
-+	lockdep_assert_held(&common->flags_lock);
- 
--	batadv_tt_local_event(bat_priv, tt_local_entry, flags);
-+	__batadv_tt_local_event(bat_priv, common, common->flags | flags);
-+	common->flags |= BATADV_TT_CLIENT_PENDING;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Local tt entry (%pM, vid: %d) pending to be removed: %s\n",
-@@ -1460,7 +1482,8 @@ batadv_tt_local_set_pending_event(struct batadv_priv *bat_priv,
-  * An already announced entry is marked as BATADV_TT_CLIENT_PENDING and the
-  * (roamed) DEL change is queued. Both happen under the hash bucket list_lock
-  * of the entry to prevent concurrent batadv_tt_local_purge_pending_clients()
-- * from removing the entry.
-+ * from removing the entry and batadv_tt_local_transition_new() from clearing
-+ * BATADV_TT_CLIENT_NEW after it was checked.
-  *
-  * Return: true if the entry has to be kept in the local table until the next
-  * ttvn increment, false if it can be purged immediately.
-@@ -1492,19 +1515,16 @@ batadv_tt_local_mark_removed(struct batadv_priv *bat_priv,
- 		if (roaming)
- 			common->flags |= BATADV_TT_CLIENT_ROAM;
- 
--		if (!(common->flags & BATADV_TT_CLIENT_NEW)) {
--			common->flags |= BATADV_TT_CLIENT_PENDING;
--			pending = true;
--		}
+-	/* Ignore the client if we cannot send it in a full table response. */
+-	table_size = batadv_tt_local_table_transmit_size(bat_priv);
+-	table_size += batadv_tt_len(1);
+-	packet_size_max = READ_ONCE(bat_priv->packet_size_max);
+-	if (table_size > packet_size_max) {
+-		net_ratelimited_function(batadv_info, mesh_iface,
+-					 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
+-					 table_size, packet_size_max, addr);
++	if (!batadv_tt_local_reserve_entry(bat_priv, addr))
+ 		return NULL;
 -	}
-+		if (common->flags & BATADV_TT_CLIENT_NEW)
-+			break;
  
--	if (pending) {
- 		flags = BATADV_TT_CLIENT_DEL;
- 		if (roaming)
- 			flags |= BATADV_TT_CLIENT_ROAM;
+ 	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
+-	if (!tt_local)
++	if (!tt_local) {
++		batadv_tt_local_unreserve_entry(bat_priv);
+ 		return NULL;
++	}
  
--		batadv_tt_local_set_pending_event(bat_priv, tt_local_entry,
--						  flags, message);
-+		batadv_tt_local_set_pending(bat_priv, tt_local_entry, flags,
-+					    message);
-+		pending = true;
+ 	/* increase the refcounter of the related vlan */
+ 	vlan = batadv_meshif_vlan_get(bat_priv, vid);
+@@ -828,6 +959,7 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
+ 					 "adding TT local entry %pM to non-existent VLAN %d\n",
+ 					 addr, batadv_print_vid(vid));
+ 		kmem_cache_free(batadv_tl_cache, tt_local);
++		batadv_tt_local_unreserve_entry(bat_priv);
+ 		return NULL;
  	}
  
- 	spin_unlock_bh(list_lock);
-@@ -1601,37 +1621,25 @@ static void batadv_tt_local_purge_list(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 618d9dbca5eac..ca01d20ee2d7f 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -16,6 +16,9 @@
+ #include <linux/types.h>
  
- 	hlist_for_each_entry_safe(tt_common_entry, node_tmp, head,
- 				  hash_entry) {
--		bool cont = false;
--
- 		tt_local_entry = container_of(tt_common_entry,
- 					      struct batadv_tt_local_entry,
- 					      common);
+ int batadv_tt_init(struct batadv_priv *bat_priv);
++bool batadv_tt_local_reserve_vlan(struct batadv_priv *bat_priv,
++				  unsigned short vid);
++void batadv_tt_local_unreserve_vlan(struct batadv_priv *bat_priv);
+ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 			 unsigned short vid, int ifindex, u32 mark);
+ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 67872927cfb50..c19caa84e6920 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1055,6 +1055,25 @@ struct batadv_priv_tt {
+ 	 */
+ 	spinlock_t commit_lock;
  
- 		scoped_guard(spinlock_bh, &tt_local_entry->common.flags_lock) {
--			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_NOPURGE) {
--				cont = true;
-+			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_NOPURGE)
- 				break;
--			}
- 
- 			/* entry already marked for deletion */
--			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) {
--				cont = true;
-+			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING)
- 				break;
--			}
- 
--			if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout)) {
--				cont = true;
-+			if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout))
- 				break;
--			}
- 
--			tt_local_entry->common.flags |= BATADV_TT_CLIENT_PENDING;
-+			batadv_tt_local_set_pending(bat_priv, tt_local_entry,
-+						    BATADV_TT_CLIENT_DEL,
-+						    "timed out");
- 		}
--
--		if (cont)
--			continue;
--
--		batadv_tt_local_set_pending_event(bat_priv, tt_local_entry,
--						  BATADV_TT_CLIENT_DEL, "timed out");
- 	}
- }
- 
++	/**
++	 * @reserved_entries: number of local TT entries which are currently
++	 *  allocated or about to be allocated. Together with @reserved_vlans it
++	 *  describes the worst case size of a full table response.
++	 */
++	u16 reserved_entries;
++
++	/**
++	 * @reserved_vlans: number of mesh interface VLANs which are currently
++	 *  allocated or about to be allocated. Together with @reserved_entries
++	 *  it describes the worst case size of a full table response.
++	 */
++	u16 reserved_vlans;
++
++	/**
++	 * @reserve_lock: lock protecting @reserved_entries & @reserved_vlans
++	 */
++	spinlock_t reserve_lock;
++
+ 	/** @work: work queue callback item for translation table purging */
+ 	struct delayed_work work;
+ };
 -- 
 2.47.3
 
