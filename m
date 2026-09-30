@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D904CA5FB1
-	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 09:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE245CA5FC1
+	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 09:47:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 50F2A8427C
-	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 11:47:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8AEE683FBD
+	for <batman-adv@archiver.kernel.org>; Wed, 30 Sep 2026 11:47:45 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1790761635;
- b=RD63N8NskI1R1qDxB9/PeAiUt8WRjxHSdG/fQl0xYctWUgYhkDvnWEewxV/PeTRcHH/zs
- f/+4QqGVwuNXcWrD5SPO+kGkhMDqxC3elXEM6GoeSnqb89/ZsaDRBU4oTk37mQ5HIKJW6+G
- mpXg+sc7SHpDxdOrJuFvKTObOWE50Kg=
+ t=1790761665;
+ b=TvLC2sgi7fq8KWcHBZ7yYSWg2C+VVvfKKB1oLw4jB84h0XIn7bCD+hIaYtcIuCLFjj0as
+ OyEWQBOv2y2WDqlUsTv5d9BRq4ghbb1z3sYp3UoUqsZQtGHd3guITO64ejtfgSURnaP9CmG
+ 1nXOyOyL3nZnBL+szEmo0vHqvzRsJ/4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1790761635; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1790761665; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=28i/yfmhWsjrZWGfpgWXRsKrylYWppeaugMbYrlbf98=;
- b=cI8De1P4h2aAhzWzA+XZr4jfHJwVgqNMX5I2r/sHO4BEphQpcN1w+de+hV1MIaGKfIJlz
- +qZlt4E85DowzbvLfGztgmc8cG8JajZuHg3JcTX0Ujs5Lu0h0ioZFPoWE9TgBpQX0/Cf1gp
- d7mWIPAqgO29oO05TbL6a3zywqYKMkk=
+ list-archive; bh=VXNKA4chhRAf3l6+DCaQ64fVBwcgFd1YVsVFhuwWxXU=;
+ b=D7EsQlACtrgjx4o5YSjTiU2NVzTdP3GHpKXiAo/Ejpa4SVm7TUX9JsuV6XNhV2cJEox3c
+ 1NE2Z+woi5s3h0CbhoYXjIzr4zf7VqT2mS1FNK6QhWe0AH+Qs8Kq6pyke+x477Jfrp5C825
+ B041JK2jbApFB1hZOQUGmVOzuOl0A6w=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,47 +34,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 129738227C
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E02F880BA6
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 30 Sep 2026 11:46:02 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790761562;
-	b=ue/ME4foOUgGkGSYKAfyk7k4vn62xa5bE2FA5xWuNJotwKufh7PsyEpGbWmHSS1HDb0vLL
-	SKgYLLnNaq9hS7ffoBDjrdIIRrri5WvnxACA8SVDwQNd0VYnuJoNww7SBPt9D2qd8xjs9G
-	/z9IgMBYad60av1ecPAFt73+Hu2Q+Oc=
+	b=YnWAqXR+6xBvmd/vMhtpOhJ4y4jHc+5NbD8rH2pVl/BTul7V1XXRsLGMJvZmu4q26FruG5
+	cwtMzzpf03vsh9mDEvayWtCAOrzdYF3cQyAcYd4iiPXTYZdRPpShPosAzXUGVg/JDfC+uG
+	zQ63Zl1QURRsNwnjAsgBMC2Of7ST1JI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1790761562;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=28i/yfmhWsjrZWGfpgWXRsKrylYWppeaugMbYrlbf98=;
-	b=r9BjFklqS/ygdNKxQPzEyv39H/vgdV/XxeOiKOguuVAY2tbCmiG4SZuV39yLvTLSOWDG9u
-	rTTtg91x8ttytC3b2OSfmaF3DTuZK1Jq0hM3/VJ4Ygx+S4DPVeHpX6e9FIkjwoGhhvZN56
-	nN9KEqUxlYRot4OG4spVh9jP73Y3SnQ=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=VXNKA4chhRAf3l6+DCaQ64fVBwcgFd1YVsVFhuwWxXU=;
+	b=x79SHLR3lp8qHyybwj1ICJi3TDQDMPfhDQUmfIyGVr7Z7N0FswBT1BbZiEnjoftgJwNMUk
+	ZUAK7+CyjprSiClPlJl3CiXiRaFPHr6lWSZGmRJOMKKERUMfN8ZIBGvhGUwx5q1sxs7OQi
+	xZk5i0gdrQdC/dgZJfnsOk8p97nmBkw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=wc8VKd+O;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=mUO13suY;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C5970E81D8CF20E45a7328D917.dip0.t-ipconnect.de
+ (p200300C5970e81d8Cf20E45A7328d917.dip0.t-ipconnect.de
  [IPv6:2003:c5:970e:81d8:cf20:e45a:7328:d917])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 00E14FA006;
-	Wed, 30 Sep 2026 11:45:59 +0200 (CEST)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 127CFFA1B0;
+	Wed, 30 Sep 2026 11:46:02 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1790761560;
+	s=09092022; t=1790761562;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=28i/yfmhWsjrZWGfpgWXRsKrylYWppeaugMbYrlbf98=;
-	b=wc8VKd+O7SwI2WaWbd1ezuDl3++HMziO6DuwE2zAVANGyNzadl4+dv7WU4xEPooNmT2o9z
-	gGKktFUf+nv6ykoeuyw3Ai5Zuf9kdIxBOdolvBt3va+/0IOd5FUb81kaDYL2kczdpVDmjh
-	zc4wH2qRnJdKcB09hwXTEPHCJy6n2+2G4+ktEyla2Kfhcv3kYS/WARrCPhbxFjhpy2MShf
-	EO/ZaLWflCqyr6cCa4ZIkyQUkJ6AtLausiis2u4H7tYs17Bper75HDuTJTMygEin+/GFot
-	QCCMLJe4Lg+Km+jLee2JxqSe1VM93RPpS/AxDl1MSHKOqt+5AxU+kG0FvXcSHA==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=VXNKA4chhRAf3l6+DCaQ64fVBwcgFd1YVsVFhuwWxXU=;
+	b=mUO13suY66lRcQGOhkzd2hN4o0eS/vy7z7w9nrxR23UPnoaqm5f9A+UoTjnXEBHVYfu67I
+	+ASbwyok4QK7mJ1ucVhi+SoIu3NBqIu9OuTXZpOGluFq2jCQJjlnEr8ttrXilOIMcgw3xb
+	gNBORMcPBMf72CBMfe2KCGji4guaviXzCNtxJOruk2aRk5XHFbRhd6sWhNi+BgLZgUXE6U
+	28w3+n6g3Hja7JIfCq0Gc76Nt4I/3jbfoyRr4rivH4TQLeshOKG/cP85+WVMR3gOK/qCtL
+	e3edR323tYwcwaztjgF0icsYXgiBcsEYlitwjEjBQ0gCrnFKxAs9NkOoLSaJwg==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -83,15 +85,20 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
+	Sven Eckelmann <sven@narfation.org>,
+	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 0/9] pull request for net-next: batman-adv 2026-09-30
-Date: Wed, 30 Sep 2026 11:45:49 +0200
-Message-ID: <20260930094558.3723766-1-sw@simonwunderlich.de>
+Subject: [PATCH net-next 3/9] batman-adv: tt: clarify responsibility for roam
+ flag during removal
+Date: Wed, 30 Sep 2026 11:45:52 +0200
+Message-ID: <20260930094558.3723766-4-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260930094558.3723766-1-sw@simonwunderlich.de>
+References: <20260930094558.3723766-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: 5YLOQQSJUIMHCR3K3SLAUL77BTMNV373
-X-Message-ID-Hash: 5YLOQQSJUIMHCR3K3SLAUL77BTMNV373
+Message-ID-Hash: S3HSBQFXH36L3E57YWIYVPCZV5TIIAYK
+X-Message-ID-Hash: S3HSBQFXH36L3E57YWIYVPCZV5TIIAYK
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -105,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5YLOQQSJUIMHCR3K3SLAUL77BTMNV373/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/S3HSBQFXH36L3E57YWIYVPCZV5TIIAYK/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,61 +121,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Dear net maintainers,
+From: Sven Eckelmann <sven@narfation.org>
 
-here is another feature/cleanup pull request of batman-adv to go into net-next.
+If an local client gets removed due to an roam, then the local entry must
+be marked as "roamed" to handle the rerouting correctly. But this is not
+done by batadv_tt_local_remove() directly but by the new helper
+batadv_tt_local_mark_removed(). The former will only create similar flags
+for the roaming event.
 
-Please pull or let me know of any problem!
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260907081824.2474040-1-sw%40simonwunderlich.de?part=10
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/translation-table.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-Thank you,
-      Simon
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 6d8fa6d28fee8..78f032c9ad65c 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1461,7 +1461,10 @@ batadv_tt_local_mark_removed(struct batadv_tt_local_entry *tt_local_entry,
+ 	scoped_guard(spinlock_bh, &common->flags_lock) {
+ 		*curr_flags = common->flags;
+ 
+-		/* mark the local client as ROAMed */
++		/* if this global entry addition is due to a roaming, the node
++		 * has to mark the local entry as "roamed" in order to
++		 * correctly reroute packets later
++		 */
+ 		if (roaming)
+ 			common->flags |= BATADV_TT_CLIENT_ROAM;
+ 
+@@ -1532,22 +1535,22 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 	if (!tt_local_entry)
+ 		return BATADV_NO_FLAGS;
+ 
+-	flags = BATADV_TT_CLIENT_DEL;
+-	/* if this global entry addition is due to a roaming, the node has to
+-	 * mark the local entry as "roamed" in order to correctly reroute
+-	 * packets later
+-	 */
+-	if (roaming)
+-		flags |= BATADV_TT_CLIENT_ROAM;
++	if (batadv_tt_local_mark_removed(tt_local_entry, roaming, &curr_flags)) {
++		/* queue (roamed) del event which was prepared by
++		 * batadv_tt_local_mark_removed()
++		 */
++		flags = BATADV_TT_CLIENT_DEL;
++		if (roaming)
++			flags |= BATADV_TT_CLIENT_ROAM;
+ 
+-	if (batadv_tt_local_mark_removed(tt_local_entry, roaming, &curr_flags))
+ 		batadv_tt_local_set_pending_event(bat_priv, tt_local_entry,
+ 						  flags, message);
+-	else
++	} else {
+ 		/* if this client has been added right now, it is possible to
+ 		 * immediately purge it
+ 		 */
+ 		batadv_tt_local_remove_now(bat_priv, tt_local_entry);
++	}
+ 
+ 	batadv_tt_local_entry_put(tt_local_entry);
+ 
+-- 
+2.47.3
 
-The following changes since commit 6d7f71ae4cdcbb22f541638057299fe26c451e65:
-
-  batman-adv: correct batadv_hash_remove kdoc return type (2026-09-06 20:05:31 +0200)
-
-are available in the Git repository at:
-
-  https://git.open-mesh.org/batadv.git tags/batadv-next-pullrequest-20260930
-
-for you to fetch changes up to d1807b20d548171d40c5d21a7cf22830ea8f348e:
-
-  batman-adv: use assign_bit() where applicable (2026-09-27 19:03:34 +0200)
-
-----------------------------------------------------------------
-This feature/cleanup patchset includes the following patches:
-
- - bla: avoid double free after failed backbone_hash alloc,
-   by Sven Eckelmann
-
- - tt: update kerneldoc, by Sven Eckelmann (3 patches)
-
- - tt: fix local DEL handling, by Sven Eckelmann (3 patches)
-
- - tt: reject VLAN/TT entries before reaching size limit,
-   by Sven Eckelmann
-
- - use assign_bit() where applicable, by Peng Fan
-
-----------------------------------------------------------------
-Peng Fan (1):
-      batman-adv: use assign_bit() where applicable
-
-Sven Eckelmann (8):
-      batman-adv: bla: avoid double free after failed backbone_hash alloc
-      batman-adv: tt: clarify kernel-doc for batadv_tt_global_purge_local
-      batman-adv: tt: clarify responsibility for roam flag during removal
-      batman-adv: tt: soften kernel-doc for batadv_tt_local_remove_now()
-      batman-adv: tt: only queue local del event after successful unlink
-      batman-adv: tt: queue local DEL event under bucket lock
-      batman-adv: tt: queue local DEL event before marking entry as pending
-      batman-adv: tt: reject VLAN/TT entries before reaching size limit
-
- net/batman-adv/bridge_loop_avoidance.c |   1 +
- net/batman-adv/distributed-arp-table.c |   6 +-
- net/batman-adv/main.c                  |   1 +
- net/batman-adv/mesh-interface.c        |   8 +
- net/batman-adv/translation-table.c     | 359 ++++++++++++++++++++++++---------
- net/batman-adv/translation-table.h     |   3 +
- net/batman-adv/types.h                 |  19 ++
- 7 files changed, 299 insertions(+), 98 deletions(-)
