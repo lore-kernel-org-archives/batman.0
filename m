@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C683BCA5FB3
-	for <batman-adv@archiver.kernel.org>; Thu,  1 Oct 2026 12:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96B4ACA5FB3
+	for <batman-adv@archiver.kernel.org>; Thu,  1 Oct 2026 12:16:25 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 23524810DC
-	for <batman-adv@archiver.kernel.org>; Thu, 01 Oct 2026 14:15:52 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id EE80384578
+	for <batman-adv@archiver.kernel.org>; Thu, 01 Oct 2026 14:16:23 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1790856952;
- b=05O2EHAy1qkOOtq0eR6BvEMoqLN8sq1FgBNWlMASalZ5AOmCVtP5mSOu9XfCQzfrK5XUt
- h+h8ch6isCWAvJAAAvGEF9PmljLofRLX8GXJ+3RBOQL4UJAU/tnuzjaCSfSrVDRffbehzd/
- w43XDdkSDn2pgl/biUyKIi9AvZ6uZA0=
+ t=1790856983;
+ b=rT8AHW/2D+c0VOG/O4DaITgI4zQOGe/QNRXjNBEHJ0DTLjO2ZBGDATtyIyAWoRouw6TAz
+ 53Wbp6GLRphSX0CkfJCRE17MgWvgkl7OIOwwMAbkFfPHQpFos/pxm4VdHrwMq3RoEZl3GqA
+ 41gyb9faN2EeFGy89QW59+kNa8pzG/Q=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1790856952; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1790856983; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=vlZGPYj1d1ZFsTdMsJcZLBSvncgKD90m2oBH2nB0+Kc=;
- b=dAXkQJCUzoetQW57nEET6AlvUHF0qRiD52iKVlEBM8VQd2mYWfWm5FVJ5zPePZVvw5DT6
- neS60/9EwExjQ0wB07Lka6V/5imq1YLVpq6nYn/CHAWwPXRpQUKroI0x69AKbxkStpidXzL
- dhHlpuTr8DHWe1nVTAK4WCvdOzGVLE0=
+ list-archive; bh=WJorM2EtzzH95Xd1l8U0gNldIVFjJeiAV6lkiYM15bo=;
+ b=OAKQMae5Q8HQRILLXFm1V3OqTRrnLRV+tTvfBiIulXTtbrfQEQLjUx239cvGWV2p+ztb7
+ lPmLZsJ6MgUgDjTKYKoHRQHCIK/iuLFyM8N06COaZbkTnWolmQwYmaZylDb73jkuDbbX55z
+ vHtM5vrTxD83Jio+HBMFIYfxH0Sl+Zg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=kernel.org;
  arc=pass;
@@ -32,58 +32,57 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 6F31A80406
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 01 Oct 2026 12:10:29 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790849439;
-	b=wA3rmoQ2BjfKffJIu+EHs9ezSe0oTLt8ZYD5Vm1Or2/7Oaa9a9n/u4emTvcdiDXuwIx0Y7
-	B5yt3j+3GX0LRxMF0HwaGEsOwYm07v861tj1kZspEpXkKMA9qp5uRpigjeW3excKcHZkwu
-	4g+mhBD4W5lNZFy6dzEElD91DzfTTTM=
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id A290E80406
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 01 Oct 2026 12:10:30 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790849440;
+	b=ULSbPWFrvMOxlFlZh7o+Mr70X2bsjP9yw+qOgyEjT1PfsRWD2y1gaRIrJhD9LUyiGaAeZb
+	lULipYFgmn9Wi+AUatH+PnRoOEEQaXpKUsepUI/ZbtuoNrnUYmwVExY++BvHTfkmsVW7sz
+	OpvSA/XgFjqxNIE0s8a+Vk4Gpz29F1Y=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1790849439;
+	s=20121; t=1790849440;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=vlZGPYj1d1ZFsTdMsJcZLBSvncgKD90m2oBH2nB0+Kc=;
-	b=T+MU6COmybblk0d7dzwk1qvaV4CU/vZMHDUmUqtkeTWHJJH7+vHGGALlJigqgBShEUzJpl
-	CuKi+lEO0UlQSan4C9uz3dkXMjdMa1Neu7EvtkxWp197APi3yIbsh9CV7Wvy3yMRPu4Pu5
-	D9fP6vKv32EnBFIvtcZe3ufu63qLeI4=
+	bh=WJorM2EtzzH95Xd1l8U0gNldIVFjJeiAV6lkiYM15bo=;
+	b=irfvhBBw3Hs8jek2MGKWFTNp1zbgGR5EgEm0/M6/D/Ar++PEdd3MYKbdz2MgKU7lprrKOq
+	ItgcWmJ+m4unsusaCudaxuRm1792RQxM3E7/Lfa/CIcGnFXNwcb7gwGA/tCntB+QQziL8R
+	8iE2dyVTy+aVp0cKd3m2tsG36V6PE6g=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20260515 header.b=eofFC4Rd;
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=cLRlIm8r;
 	dmarc=pass (policy=quarantine) header.from=kernel.org;
 	spf=pass (diktynna.open-mesh.org: domain of netdev-bot+sashiko@kernel.org
- designates 2600:3c04:e001:324:0:1991:8:25 as permitted sender)
+ designates 172.105.4.254 as permitted sender)
  smtp.mailfrom=netdev-bot+sashiko@kernel.org
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5D8096021A;
-	Thu,  1 Oct 2026 10:10:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F9161F000FF;
-	Thu,  1 Oct 2026 10:10:26 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 80F086022F;
+	Thu,  1 Oct 2026 10:10:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B52EA1F00899;
+	Thu,  1 Oct 2026 10:10:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790849427;
-	bh=vlZGPYj1d1ZFsTdMsJcZLBSvncgKD90m2oBH2nB0+Kc=;
+	s=k20260515; t=1790849429;
+	bh=WJorM2EtzzH95Xd1l8U0gNldIVFjJeiAV6lkiYM15bo=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=eofFC4RdFUidCEZGVIf4FkUIkwKJfrBs7SsMqyEqvHmXSsI+4sGjNkdf1aQrNQ34f
-	 YIk2KlDxb53p4K3NXANA7p+BNmbChmpDRGejcZhaotluDtOO2+d7eKyuqfatu2GGYL
-	 JN+ZT1j7Q+oH2ed9/8b0c3LmmalQ2T82CcfktgiUTXSS1kWmdwxLcReG6fJvHD2aVP
-	 3dGxHe2S5QU5t/ntvDM5vBwqAl97NLQ59DGLJ2pYgwr8I93Xaiw258hHqT3bYOTSxy
-	 nCUbDXut6caHtFrEnP7WrqYoWZqJ4UyPitp79iZWZiLi+2Ngal/gQF6jNQfNtlLlw9
-	 Cg3gnCi3KsE0w==
-Subject: Re: [PATCH net-next 1/9] batman-adv: bla: avoid double free after
- failed backbone_hash alloc
+	b=cLRlIm8rKqRPygqyuL900K/75GEZNZ16SeFyIY7LR7fpE7OU8q2eJFkkpZ7vHlYZI
+	 vsOBSANx7s3Z1WqjA3pn3ePqhUlCQCsUMt1BdigBlW2iv+5hegzODi3+xVu+EZWIZ6
+	 kJP70Etu9zMVFvkVSSmGBXpvqlafWEy+6B1cvuhzhGxnJv77ksUWe+2ZWQcHuzVqsT
+	 fuGJ/Qyf6XbGr1yB8WJqAXOUTf24WBzITOKFkIs7w99r5dBoHY2VaBZJfYeRy6H6pn
+	 svsvR9+RnuP8E7nVYYO/6ohq1pZfwQ9sjlGL0ClDJY+gJCNGqQKxfqrTagj8MNMDPY
+	 xPvXCfF5oEA5g==
+Subject: Re: [PATCH net-next 5/9] batman-adv: tt: only queue local del event
+ after successful unlink
 From: netdev-bot+sashiko@kernel.org
 To: sw@simonwunderlich.de
 Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
  b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, sashiko-bot@kernel.org
-Date: Thu, 01 Oct 2026 10:10:26 +0000
-Message-ID: <179084942612.434549.483028329310521943@kernel.org>
-In-Reply-To: <20260930094558.3723766-2-sw@simonwunderlich.de>
-References: <20260930094558.3723766-2-sw@simonwunderlich.de>
-X-sashiko-severity: Medium
+Date: Thu, 01 Oct 2026 10:10:28 +0000
+Message-ID: <179084942832.434549.10138352246210429649@kernel.org>
+In-Reply-To: <20260930094558.3723766-6-sw@simonwunderlich.de>
+References: <20260930094558.3723766-6-sw@simonwunderlich.de>
+X-sashiko-severity: High
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -94,15 +93,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: JY6XC5IBUFKDPDO3A3PFLJ4NAENLTTOC
-X-Message-ID-Hash: JY6XC5IBUFKDPDO3A3PFLJ4NAENLTTOC
+Message-ID-Hash: Q2JTDX7GVDZNCWOOOVGD2ZWH5SUZTT2C
+X-Message-ID-Hash: Q2JTDX7GVDZNCWOOOVGD2ZWH5SUZTT2C
 X-Mailman-Approved-At: Thu, 01 Oct 2026 14:15:11 +0200
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JY6XC5IBUFKDPDO3A3PFLJ4NAENLTTOC/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/Q2JTDX7GVDZNCWOOOVGD2ZWH5SUZTT2C/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -111,10 +110,10 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Thank you for your contribution! Sashiko AI review found 1 potential
+Thank you for your contribution! Sashiko AI review found 2 potential
 issue(s) to consider.
 
-Critical: 0 · High: 0 · Medium: 1 · Low: 0
+Critical: 0 · High: 1 · Medium: 0 · Low: 1
 
 If you believe none of the issues are legitimate, please reply to each
 issue of Medium severity or higher and explain why the AI is wrong.
@@ -122,98 +121,129 @@ If any of them are legitimate and you plan to respin, please let patchwork
 know by including "pw-bot: cr" as a separate line at the end of your reply
 (one such reply per series is enough).
 
-- [Medium] The commit message describes a double free that cannot happen.
+- [High] The fix is incomplete, and the reordering opens a new window.
+- [Low] The commit fixes a TT announcement bug but has no Fixes: tag.
 
 --
 
-batman-adv: bla: avoid double free after failed backbone_hash alloc
+batman-adv: tt: only queue local del event after successful unlink
 
-This commit sets bat_priv->bla.claim_hash to NULL after
-batadv_hash_destroy() in the batadv_bla_init() error path taken when the
-backbone_hash allocation fails. The commit message says that the
-destructor later frees claim_hash a second time via batadv_mesh_free()
--> batadv_bla_free().
+This commit moves the BATADV_TT_CLIENT_DEL event in
+batadv_tt_local_remove_now() so it runs after batadv_hash_remove(). A
+delete event is now only queued when this exact entry was unlinked. The
+goal is to stop cancelling the pending add event of another local entry
+with the same MAC and VLAN.
 
-> When batadv_bla_init() fails to initialize the backbone_hash, it is freeing
-> the (previously) allocated claim_hash. The initialization function will
-> then return an error and the net_device initialization will stop. The
-> destructor will be called instead and (indirectly via batadv_mesh_free() ->
-> batadv_bla_free()) will try to free the bat_priv->bla.claim_hash again.
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831135117.574836-1-sw%40simonwunderlich.de?part=8
 
-[Severity: Medium]
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831135117.574836-1-sw%40simonwunderlich.de?part=8
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Can this sequence actually happen? batadv_bla_init() has only one
-caller, batadv_mesh_init(), and when it fails that function jumps past
-batadv_bla_free():
+[Severity: Low]
 
-net/batman-adv/main.c:batadv_mesh_init() {
-    ...
-	ret = batadv_bla_init(bat_priv);
-	if (ret < 0) {
-		WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
-		goto err_bla;
-	}
-    ...
-err_dat:
-	batadv_bla_free(bat_priv);
-err_bla:
-	batadv_v_mesh_free(bat_priv);
-    ...
-}
+This isn't a runtime bug, but should this have a Fixes: tag?
 
-batadv_mesh_init() is only reached from batadv_meshif_init_late(), the
-.ndo_init callback, which returns the error. In register_netdevice(), an
-ndo_init failure skips the priv_destructor call:
+The problem seems to come from bbfb0d2cf035 ("batman-adv: tt: remove only
+the entry which was looked up from the hash"). That commit changed the
+unlink in batadv_tt_local_remove() from batadv_compare_tt to
+batadv_compare_tt_entry. It kept the unconditional delete event in front
+of the unlink.
 
-net/core/dev.c:register_netdevice() {
-    ...
-	if (dev->netdev_ops->ndo_init) {
-		ret = dev->netdev_ops->ndo_init(dev);
-		if (ret) {
-			if (ret > 0)
-				ret = -EIO;
-			goto err_free_name;
-		}
-	}
-    ...
-err_uninit:
-	if (dev->netdev_ops->ndo_uninit)
-		dev->netdev_ops->ndo_uninit(dev);
-	if (dev->priv_destructor)
-		dev->priv_destructor(dev);
-err_free_name:
-	netdev_name_node_free(dev->name_node);
-	goto out;
-}
+931de98d3960 ("batman-adv: tt: extract immediate purge of a local entry")
+only moved that code into batadv_tt_local_remove_now().
 
-After that, free_netdev() sees reg_state == NETREG_UNINITIALIZED and
-only calls kvfree(dev). So batadv_meshif_free() -> batadv_mesh_free() ->
-batadv_bla_free() does not seem to run on this path, and nothing reads
-or frees the stale claim_hash pointer again.
+Other fixes in the same series have Fixes: tags, for example "batman-adv:
+tt: queue local DEL event under bucket lock". Perhaps something like:
 
-Also, if the destructor did run here, wouldn't batadv_bla_free() call
-disable_delayed_work_sync(&bat_priv->bla.work) on work that was never
-set up? INIT_DELAYED_WORK() only runs after both hashes are allocated.
-The patch doesn't handle that case, so the description and the fix don't
-seem to match.
+Fixes: bbfb0d2cf035 ("batman-adv: tt: remove only the entry which was looked up from the hash")
 
-This makes the change look like harmless hardening rather than a
-double-free fix. Could the commit message describe it that way, or show
-the path where the second batadv_hash_destroy() actually happens? As
-written, stable or CVE tooling may treat it as a memory-safety fix.
+> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+> index 354d9416c1b75..c904d67791f8f 100644
+> --- a/net/batman-adv/translation-table.c
+> +++ b/net/batman-adv/translation-table.c
+> @@ -1496,8 +1496,6 @@ batadv_tt_local_remove_now(struct batadv_priv *bat_priv,
+>  	struct batadv_tt_common_entry *common = &tt_local_entry->common;
+>  	struct hlist_node *tt_removed_node;
+>  
+> -	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
+> -
+>  	/* remove exactly this object when still present in hash */
+>  	tt_removed_node = batadv_hash_remove(bat_priv->tt.local_hash,
+>  					     batadv_compare_tt_entry,
+> @@ -1505,6 +1503,8 @@ batadv_tt_local_remove_now(struct batadv_priv *bat_priv,
+>  	if (!tt_removed_node)
+>  		return;
+>  
+> +	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
+> +
 
-> diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-> index ad6ab4a50658f..a96f269da8d37 100644
-> --- a/net/batman-adv/bridge_loop_avoidance.c
-> +++ b/net/batman-adv/bridge_loop_avoidance.c
-> @@ -1625,6 +1625,7 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
->  	bat_priv->bla.backbone_hash = batadv_hash_new(32);
->  	if (!bat_priv->bla.backbone_hash) {
->  		batadv_hash_destroy(bat_priv->bla.claim_hash);
-> +		bat_priv->bla.claim_hash = NULL;
->  		return -ENOMEM;
->  	}
->
+[Severity: High]
+
+Does this reordering open a new window in which a replacement entry's add
+event gets dropped?
+
+batadv_hash_remove() takes and releases the bucket list_lock before it
+returns. batadv_tt_local_event() only takes tt.changes_list_lock after
+that. Nothing seems to serialize this gap against batadv_tt_local_add()
+called from batadv_interface_tx() for the same MAC and VID.
+
+The remove side can be reached from a remote TT announcement:
+
+batadv_tt_global_add()
+  batadv_tt_global_purge_local()
+    batadv_tt_local_remove()
+      batadv_tt_local_remove_now()
+
+Consider entry E, which is still NEW and has a queued add event:
+
+CPU0 (remove path)
+batadv_hash_remove(E)
+  /* E unlinked, its add event still queued */
+
+CPU1 (batadv_tt_local_add())
+batadv_tt_local_hash_find()      /* misses E */
+batadv_tt_local_create()         /* new entry E' */
+batadv_hash_add(E')
+batadv_tt_local_event(E', BATADV_NO_FLAGS)
+  /* same addr/vid as E's pending add, so only flags are updated */
+
+CPU0
+batadv_tt_local_event(E, BATADV_TT_CLIENT_DEL)
+  /* matches the remaining add by addr/vid only */
+  if (del_op_requested != del_op_entry) {
+      list_del(&entry->list);
+      kmem_cache_free(batadv_tt_change_cache, entry);
+      changes--;
+
+E' is then in tt.local_hash with BATADV_TT_CLIENT_NEW set and no add
+event queued. The commit message says this should be prevented.
+
+Later packets from the client do not queue it again, because
+batadv_tt_local_add_existing() returns false for a NEW entry that is not
+PENDING.
+
+If local_changes drops to 0, batadv_tt_local_commit_changes_nolock()
+returns early and E' stays unannounced. A later unrelated commit would
+move E' into the CRC through batadv_tt_local_transition_new() without an
+add diff. Neighbours would then see a CRC mismatch and fall back to full
+table requests.
+
+Before this patch the delete event was queued while E was still in the
+hash. An add that ran after the unlink would then get a fresh add event
+that nothing cancels.
+
+The later patches in the series don't seem to change this part of
+batadv_tt_local_remove_now().
+
+Could the delete event instead be queued inside the same bucket list_lock
+critical section as the unlink, and only when this exact object was
+found? batadv_tt_local_set_pending() in "batman-adv: tt: queue local DEL
+event under bucket lock" already takes list_lock and then
+changes_list_lock in that order.
+
+[ ... ]
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%40simonwunderlich.de
