@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 870E3CA5FC4
-	for <batman@archiver.kernel.org>; Fri,  2 Oct 2026 16:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B8DDCA5FDD
+	for <batman@archiver.kernel.org>; Fri,  2 Oct 2026 16:05:57 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 94F698427E
-	for <batman@archiver.kernel.org>; Fri, 02 Oct 2026 18:00:15 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5225883C43
+	for <batman@archiver.kernel.org>; Fri, 02 Oct 2026 18:05:56 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1790956815;
- b=AZAy4+K43LVr/k34hUxF1qTm3vF1glbdDn69tHRbrTxHBfGvjaPKrtuOdZG5hrays7Eok
- 9ax2MH8HIR8n1YCHEfY8iibl35UTTWOV9dsE6T44/k/FRQt8Ga3aNUQ/9u5vodmbCftkXoQ
- CNrcRXf7MXeQ+lJl1sQXfdG0v51Wgh4=
+ t=1790957156;
+ b=Gei7gEt7o/YGPZz1G6AHhxthzyp5g4ftElmPdquHnEyat1p8ECHwgFNdYUk7Zw65UytS7
+ Zu7wLJdY/2SdOmcsOzZQPbfjNcMUXtO50EC+US4Lerdn6TDkWPqNynV5ogfxIbjKxtyRb6M
+ OLPDj75rBq05wRUSdRJAsEfVfXeula4=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1790956815; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1790957156; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=x1q56wVicCIloc+W4nKmUHYzwS/UjZUx+5MI4DSCe5A=;
- b=AlIAE/wguDAvyC2MXL7kjnFyDaww0LOPlzmeGY4UgyNCyBy5PXcR9l+aqG7oTLA+iJL5F
- AeJRjcqzBSyVjgKF7hv9sNOE8MkaadnsTWzD9ZLcRMuXDXgvp8VzPhiC7b8Nuf0+7AIgAP6
- Z2Qr7/g710xOXqW5golYTyu6U2sCDRo=
+ list-archive; bh=y2M+CgAOhsYFxG3telNT9hjb3vQ0aLrOXWVPVdgAqOA=;
+ b=qzf8dxp24Rk+n2iDmwaEUBtHFuPPHhFPWKsbyINj/HM6Pk8bKlfDclYKPpiPx4oNGu7Tm
+ Ydayg/6KI5CyNUJJsSu6DIvfhrps9zX9wMk6npE6metl9YC4Gim+7A5fAgnuUHjlk2p9IBy
+ Sh8ilDGac8lgdOzjKk1E1tgfqyuKm+I=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,56 +34,56 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 65A7483B70
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 02 Oct 2026 17:59:55 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790956805;
-	b=OTedFwGieWCxVKrpJaX7J8v7IP4MJs2I3N3OBa026f4FUT3ZL10ELuiCgdz0qgfTpxXvsr
-	M53k7fcjenXfh2hx/bJzv8NbyDxC11nHkcjRVy80Buwaj0IXVmEC/hT1wrjuZSEp7tE3zw
-	Xe45g1ZJUUnYFmIVcqE+8nn3xl/x0yA=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 691718067F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 02 Oct 2026 18:05:37 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790957147;
+	b=D584JkuS3sgdUGTtyjsxWQUrOSlugzZvo7Ka4rWSLqWnDSRR0tjlai+O4y2bKngdx5oTRu
+	0JvWzlpo+bvStTf+AJpuRgpmqsciLUD3IPoD3bXqRwaXnFecIJ08uJua+DgbqS2IZ0nrMC
+	/kPwNOmCnGlUcnVJ6b9acsqOuKGcA18=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1790956805;
+	s=20121; t=1790957147;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=x1q56wVicCIloc+W4nKmUHYzwS/UjZUx+5MI4DSCe5A=;
-	b=Sobw5eO0KhiPR6PQcfAVtj8ENpLrTEJKpRyF/1Fw88qkQksbRimwFDQvvlzZHFOlU/vT1a
-	2Odwz9a82vfwO8f6KROc3xTS5JxSX7xWmKPs1YGR0wUlcqpnqnDIZ10pTMiFE4OWYQrfLt
-	luBN9niJUhwkKxgHmVtuzKpwWuh9x14=
+	bh=y2M+CgAOhsYFxG3telNT9hjb3vQ0aLrOXWVPVdgAqOA=;
+	b=QJrXaUG+d/WEwbrjExEUr/rIZf1rt116Q8UaAGdLyEGdSDJdZuleNkP+QGo0n2kaxpXq0E
+	M1AxIy/8GWm2FeDK/1WrxhP40E50vfBNJ/58WsQsUbTDpOsmGYAc4oIgXSB2eAzS4N3iae
+	BWhgceYINneYzlDS+JX7ryZf/SRrG3U=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=eQOmPX3a;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=Okubelef;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 9BCF31FEA4;
-	Fri, 02 Oct 2026 15:59:53 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id A0F2520030;
+	Fri, 02 Oct 2026 16:05:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1790956793;
+	s=20121; t=1790957136;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=x1q56wVicCIloc+W4nKmUHYzwS/UjZUx+5MI4DSCe5A=;
-	b=eQOmPX3aFxFzhcddhOT4Bmk7VKAlD7QEgRhS2mbiu5636n8A3dru+TWaHbaRwt3bWcEDyp
-	Ax4Q4h4T4NRXkI3jjP5n4lA4kyJhl8YqvOu+YJLsrTMcVoGSPhM5N/RcWGIBC9Q9t6PkOi
-	Aq/NYh+vNBOjIK5t2PMBAxr2KBxkyCc=
+	bh=y2M+CgAOhsYFxG3telNT9hjb3vQ0aLrOXWVPVdgAqOA=;
+	b=OkubelefR/DLv6krpM13axsn+L3CgYSOCxZfjzOFnZJMGQRtTvxH9sCumg1b6eD8sS3AGK
+	I7KQiLjiDZFoAofPVlklqpCJzKEyHkj9Ar1F0FNCRIpiMwW0+qF81R8wyQ4MzhLLWrvBJ/
+	kMapbfuOlsu9pmu9W7gmgJV10OY7vAA=
 From: Sven Eckelmann <sven@narfation.org>
 To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
 Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
  b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
-Subject: Re: [PATCH net-next 1/9] batman-adv: bla: avoid double free after
- failed
- backbone_hash alloc
-Date: Fri, 02 Oct 2026 17:59:50 +0200
-Message-ID: <2427933.ElGaqSPkdT@sven-desktop>
-In-Reply-To: <179084942612.434549.483028329310521943@kernel.org>
-References: <20260930094558.3723766-2-sw@simonwunderlich.de>
- <179084942612.434549.483028329310521943@kernel.org>
+Subject: Re: [PATCH net-next 3/9] batman-adv: tt: clarify responsibility for
+ roam flag
+ during removal
+Date: Fri, 02 Oct 2026 18:05:34 +0200
+Message-ID: <14106471.uLZWGnKmhe@sven-desktop>
+In-Reply-To: <179084942724.434549.1630601702570339695@kernel.org>
+References: <20260930094558.3723766-4-sw@simonwunderlich.de>
+ <179084942724.434549.1630601702570339695@kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5106887.GXAFRqVoOG";
+Content-Type: multipart/signed; boundary="nextPart3065912.e9J7NaK4W3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: HYDGL6UMPMC4J2GC6YZAVTZH3GEQ5XLL
-X-Message-ID-Hash: HYDGL6UMPMC4J2GC6YZAVTZH3GEQ5XLL
+Message-ID-Hash: P6MQPQ3KJ6APYMFORRNWVE3XGRQU53TS
+X-Message-ID-Hash: P6MQPQ3KJ6APYMFORRNWVE3XGRQU53TS
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -97,7 +97,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HYDGL6UMPMC4J2GC6YZAVTZH3GEQ5XLL/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/P6MQPQ3KJ6APYMFORRNWVE3XGRQU53TS/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -106,45 +106,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart5106887.GXAFRqVoOG
+--nextPart3065912.e9J7NaK4W3
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Sven Eckelmann <sven@narfation.org>
 To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Date: Fri, 02 Oct 2026 17:59:50 +0200
-Message-ID: <2427933.ElGaqSPkdT@sven-desktop>
-In-Reply-To: <179084942612.434549.483028329310521943@kernel.org>
+Date: Fri, 02 Oct 2026 18:05:34 +0200
+Message-ID: <14106471.uLZWGnKmhe@sven-desktop>
+In-Reply-To: <179084942724.434549.1630601702570339695@kernel.org>
 MIME-Version: 1.0
 
-On Thursday, 1 October 2026 12:10:26 CEST netdev-bot+sashiko@kernel.org wrote:
+On Thursday, 1 October 2026 12:10:27 CEST netdev-bot+sashiko@kernel.org wrote:
 [...]
-> [Severity: Medium]
+> [Severity: Low]
 > 
-> Can this sequence actually happen? batadv_bla_init() has only one
-> caller, batadv_mesh_init(), and when it fails that function jumps past
-> batadv_bla_free():
+> This isn't a bug, but is the "prepared by batadv_tt_local_mark_removed()"
+> wording accurate at this commit?
+> 
+> In this commit, batadv_tt_local_mark_removed() doesn't build any event. It
+> only saves *curr_flags and sets BATADV_TT_CLIENT_ROAM and
+> BATADV_TT_CLIENT_PENDING on common->flags. The DEL and ROAM event flags are
+> built right after this comment and then passed to
+> batadv_tt_local_set_pending_event().
 
-Even when trying to get sashiko to stop complaining about something, the other 
-Sashiko instance will just complain about the opposite:
+This is just an intermediate move
 
-https://sashiko.dev/#/patchset/20260831135117.574836-1-sw%40simonwunderlich.de?part=6
+> The other two points are small wording nits. Both come from code that was
+> already there before this patch.
+> 
+> The comment moved into batadv_tt_local_mark_removed() starts with "if this
+> global entry addition is due to a roaming". The helper's kernel-doc
+> describes @roaming as "true if the deletion is due to a roaming event".
+> 
+> The only caller passing roaming=true is batadv_tt_global_add(), so the
+> wording is correct in context. Would it read more naturally in terms of
+> the deletion, to match the kernel-doc?
+
+No, it would be wrong. The global one is added and the local one is removed.
 
 Regards,
 	Sven
---nextPart5106887.GXAFRqVoOG
+--nextPart3065912.e9J7NaK4W3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCar/U9gAKCRBND3cr0xT1
-y/4kAP4kuH/5O3QRxPjxIrzpsKnwdB5IbO5OR4G5ThyIU32qMAD/SW4QPrjupRd6
-oJ3/EfQRQz8LFi5MnDT7s+vBXEf1aQ0=
-=6dmz
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCar/WTgAKCRBND3cr0xT1
+y9UkAQDcIxML8Hb0EASps7ASDrNCw5N4ZOBfQEP7j2owvIQRmwEA6+J7sxOe1VNy
+xzxHdPyB/TIbiibjC7cFcEGbmcZeSg0=
+=EC+u
 -----END PGP SIGNATURE-----
 
---nextPart5106887.GXAFRqVoOG--
+--nextPart3065912.e9J7NaK4W3--
 
 
 
