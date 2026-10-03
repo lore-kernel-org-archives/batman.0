@@ -4,87 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4731CCA5FE6
-	for <batman@archiver.kernel.org>; Fri,  2 Oct 2026 22:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97F14CA5FDD
+	for <batman@archiver.kernel.org>; Sat,  3 Oct 2026 07:27:01 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 88C788409C
-	for <batman@archiver.kernel.org>; Sat, 03 Oct 2026 00:05:26 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id ABED4841D3
+	for <batman@archiver.kernel.org>; Sat, 03 Oct 2026 09:26:59 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1790978726;
- b=hJdw4JmYelgiLDJ8FmDjAF6Jb0jooKyX68yDumyru4Hm0aRUFrQJfbNUJ2Ai0W4DEBnme
- 8noZ+NaXL4yU4MvWyLVY2HgbxCfOB8Nv7aOK23NPbMhv+0bKKVz2TbvUJ5PXVQZMvhU6dQE
- NYB1bQFPKnT1gjykIUHqM8F7f4+CeJw=
+ t=1791012419;
+ b=M/IO0T3j9YEj/8tEpgn0RlcRkfcN0Qx641RNUHAbV7OJgIJuoNNxKMvzhpwEZbBIFO66F
+ Q+tgvPdd3pH3L3RDBB7OKoN2TztH1F+4Ng0VZSJYW6bCH1d3T6rzB5NGa2i1kPtK/3gPzvc
+ hKYxNYGP3QGrl4Q4c2TkT8xn0etFF6w=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1790978726; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791012419; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=GNvw00UCUW/0bO/7q1Yy7pulx8K0aP4KiltkrXhApqY=;
- b=OwXhDaUWp5svxmgtR/+Yt2sElIJirEf62NzE1IpUpmzaswiT1NTD/wZPY89jMXJpHJFx+
- YLEZkSzehJs9HP0I9kfvhgkNyQC3SKExi5HdxGjtHkZgZ8AsAMp3lQakFq8gijIOvMYU41g
- ds6PRsu+vJTmUlTFIV+Ny0/XFpZquUU=
+ list-archive; bh=2DBV2WI664mxvRLEH0d9WsYHfTmyRMazdH0zCVnzQuI=;
+ b=1AqQEjlFnX4oUwYU+x+SR7nGEwTcKH+s7AaUB3z+tZ1VJa3mP+A8eqCZxhX/IbfcKf776
+ fGgyz6OGq/VZ73XfrXXeeJUv0fnPkli5PfGJc7qppWZ9eiAG8uAThmotnGmCcYzsLxij0t3
+ +Ip6LPLSxwbCoQJGAqExdoV6bGnOUa4=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 4BA28807F8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 03 Oct 2026 00:05:17 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1790978717;
-	b=4D2Kfwd+EdT+HJ+h0L/garYHM1jP+hesqxw0MQbxCslOiF/j9Nx5RRPofuL1oIPZw+O6/Q
-	glXp2Gr/kD8X3US8kPfBv1erx7eiELB85VW8ngQ1CsbVnwuOq02BVnnSApFHtDsNC0TUh0
-	zP7jc+TfSF4kOwzpid9Dmyg2yue4E5U=
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 8D7FD82C2E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 03 Oct 2026 09:26:39 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791012409;
+	b=QxG7N1Qb9b4jLNCuh1z5/SFnugKZ+WXoMrQrpfTcUhoLKsOOW8dKoROHidocEE9wbMA3SX
+	rjSHndoyieq1fUcIbJ5OpTSmsJNJkx/jERx9Kzp6UNhiSEOM9duRQuzWxabkmFv2yy+OZL
+	nm/adqBK8HovMbjOQgNvnkq5v1QaTGI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1790978717;
+	s=20121; t=1791012409;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=GNvw00UCUW/0bO/7q1Yy7pulx8K0aP4KiltkrXhApqY=;
-	b=M3QSxRdtjxkilUTe89Xo07rCbr+qYidxhAhziKzhLm/TUW2ypOhjwB8FM04eG3d4YYhwWb
-	hdqC4i1yI+WgJfZjC+tzxupjsbUX3qmfJn1GE08D9f09HdBa8A5+NHVjizN9v2UCrG+28b
-	xgF9+xh5khGlIHfXex766oWfvMJs7wk=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2DBV2WI664mxvRLEH0d9WsYHfTmyRMazdH0zCVnzQuI=;
+	b=pwfQchXrUWuXYSTS+CJzPAe3Go0B0lsqaEgH5iQARJKFJRI02J07mKLxIjsv8C50I9PbrK
+	lHLMtWQjP/tQMIvJRwnsS3uMN0WCnpDy4+ZUULUYiqHbDPz1s2MdSAD3S/2ZuRvjmmiCZ4
+	Y38OVuI5FAzUyL6m0fCyr33665luekY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=uExVwByN;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 696382046C;
-	Fri, 02 Oct 2026 22:05:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1790978716;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GNvw00UCUW/0bO/7q1Yy7pulx8K0aP4KiltkrXhApqY=;
-	b=uExVwByNcR78Kw5tcPlA8m5DnlP3A9/4PbXahxAGHjeX0LglxYH/UDOWCI3Fx0t2MxAuVX
-	QZGu4lCd65HRBfSMLKL+VJMWr57Ub3IVmY8tEO2BbxJf0FmnAUAe/niF3kRFNCHJP4rv1x
-	lVj1u83dSX9a/1zeRbZsq+5GPEoPPO4=
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
-Subject: Re: [PATCH net-next 8/9] batman-adv: tt: reject VLAN/TT entries
- before
- reaching size limit
-Date: Sat, 03 Oct 2026 00:05:13 +0200
-Message-ID: <2653823.Sgy9Pd6rRy@sven-desktop>
-In-Reply-To: <179084943174.434549.11209044496055868169@kernel.org>
-References: <20260930094558.3723766-9-sw@simonwunderlich.de>
- <179084943174.434549.11209044496055868169@kernel.org>
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 116.203.183.178 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id D58E12332B;
+	Sat, 03 Oct 2026 09:26:38 +0200 (CEST)
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Subject: [batadv,v12 1/5] batman-adv: move local ARP reply code to
+ subfunctions
+Date: Sat,  3 Oct 2026 09:26:24 +0200
+Message-ID: <20261003072628.28052-2-linus.luessing@c0d3.blue>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261003072628.28052-1-linus.luessing@c0d3.blue>
+References: <20261003072628.28052-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3881024.RUnXabflUD";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: A7J2KGGB6H3R4MAXW7TP3IHYXAVMDGH7
-X-Message-ID-Hash: A7J2KGGB6H3R4MAXW7TP3IHYXAVMDGH7
-X-MailFrom: sven@narfation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: J3VL6R7JA4LM24JVPC6VNPUEQ5QLUEHW
+X-Message-ID-Hash: J3VL6R7JA4LM24JVPC6VNPUEQ5QLUEHW
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -97,7 +86,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/A7J2KGGB6H3R4MAXW7TP3IHYXAVMDGH7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/J3VL6R7JA4LM24JVPC6VNPUEQ5QLUEHW/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -106,99 +95,248 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart3881024.RUnXabflUD
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Date: Sat, 03 Oct 2026 00:05:13 +0200
-Message-ID: <2653823.Sgy9Pd6rRy@sven-desktop>
-In-Reply-To: <179084943174.434549.11209044496055868169@kernel.org>
-MIME-Version: 1.0
+Shorten the length of batadv_dat_snoop_outgoing_arp_request() by moving
+the checks for and generation of a local ARP reply to a new subfunction.
+This is also in preparation for reuseability for the DAT cache/DHT
+split.
 
-On Thursday, 1 October 2026 12:10:31 CEST netdev-bot+sashiko@kernel.org wrote:
-[...]
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> 
-> [Severity: Low]
-> Should this have a Fixes: tag, and maybe a Cc to stable?
+No functional change.
 
-No, the change is not suitable for stable backports. And since it is submitted 
-for net-next, I am not allowed to add Fixes: (for old kernels) or Cc: stable@ tags.
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/distributed-arp-table.c | 181 ++++++++++++++-----------
+ 1 file changed, 105 insertions(+), 76 deletions(-)
 
-[...]
-> > diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-> > index 481dc6afaaba1..3349376a9087d 100644
-> > --- a/net/batman-adv/translation-table.c
-> > +++ b/net/batman-adv/translation-table.c
-> > @@ -234,6 +234,162 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
-> 
-> [ ... ]
-> 
-> > +static bool batadv_tt_local_reserve(struct batadv_priv *bat_priv, u16 num_vlan,
-> > +				    u16 num_entries, int *table_size)
-> > +{
-> > +	int packet_size_max = READ_ONCE(bat_priv->packet_size_max);
-> > +
-> > +	scoped_guard(spinlock_bh, &bat_priv->tt.reserve_lock) {
-> > +		bat_priv->tt.reserved_vlans += num_vlan;
-> > +		bat_priv->tt.reserved_entries += num_entries;
-> > +
-> > +		*table_size = batadv_tt_local_transmit_size(bat_priv->tt.reserved_vlans,
-> > +							    bat_priv->tt.reserved_entries);
-> > +		if (*table_size <= packet_size_max)
-> > +			return true;
-> 
-> [Severity: Medium]
-> Can bat_priv->tt.reserved_entries wrap here?
->
-> The new counters in struct batadv_priv_tt are u16. The only bound on them
-> is packet_size_max, and nothing caps packet_size_max at what a single TT
-> TVLV can hold. When fragmentation is disabled, batadv_hardif_min_mtu()
-> skips the clamp:
-
-This is actually a good point. I didn't think about the case of an extremely 
-large MTU and used a 9000/64K MTU in my head as reason for using only u16. I 
-still consider it as a corner case and will submit a follow up patch for it.
-
-
-> If packet_size_max is above roughly 65535, the table can still grow past
-> what batadv_tt_prepare_tvlv_local_data() can build, because tvlv_len is a
-> u16:
-> 
-> 	if (check_add_overflow(*tt_len, change_offset, &tvlv_len)) {
-> 		tvlv_len = 0;
-> 		*tt_len = 0;
-> 		goto out;
-> 	}
-
-Correct, so widening over u16 doesn't make any sense. It seems to be better to 
-just limit the size of the packet against which it is checked:
-
-Will be submitted later to netdev as follow up check because it is not a 
-regression but just a limitation in the supported packet_size_max limits (for 
-non-standard setups).
-
-https://lore.kernel.org/r/20261003-tvlv-limited-tt-response-reservation-v1-1-82fbca929cd9@narfation.org
-
-Regards,
-	Sven
-
---nextPart3881024.RUnXabflUD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCasAqmQAKCRBND3cr0xT1
-yzWBAP0WNBEmBd8u8mbzWIsGBUe2DLQV3yZCvFe/k5tsK1/hSgD9FW9xaMmfG1CI
-Qx/yW8Lbr+K6Jlns4DDpSs+KUR0SGgU=
-=ByNZ
------END PGP SIGNATURE-----
-
---nextPart3881024.RUnXabflUD--
-
-
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 74050bffedbc..1a0eb9d9812e 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -738,6 +738,103 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
+ 	return res;
+ }
+ 
++/**
++ * batadv_dat_arp_create_reply() - create an ARP Reply
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @ip_src: ARP sender IP
++ * @ip_dst: ARP target IP
++ * @hw_src: Ethernet source and ARP sender MAC
++ * @hw_dst: Ethernet destination and ARP target MAC
++ * @vid: VLAN identifier (optional, set to zero otherwise)
++ *
++ * Creates an ARP Reply from the given values, optionally encapsulated in a
++ * VLAN header.
++ *
++ * Return: An skb containing an ARP Reply.
++ */
++static struct sk_buff *
++batadv_dat_arp_create_reply(struct batadv_priv *bat_priv, __be32 ip_src,
++			    __be32 ip_dst, u8 *hw_src, u8 *hw_dst,
++			    unsigned short vid)
++{
++	struct sk_buff *skb;
++
++	skb = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_dst, bat_priv->mesh_iface,
++			 ip_src, hw_dst, hw_src, hw_dst);
++	if (!skb)
++		return NULL;
++
++	skb_reset_mac_header(skb);
++
++	if (vid & BATADV_VLAN_HAS_TAG)
++		skb = vlan_insert_tag(skb, htons(ETH_P_8021Q),
++				      vid & VLAN_VID_MASK);
++
++	return skb;
++}
++
++/**
++ * batadv_dat_arp_self_reply() - (maybe) reply to a local ARP request
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @ip_src: ARP request sender IP (and ARP reply target IP)
++ * @ip_dst: ARP request target IP (and ARP reply sender IP)
++ * @hw_src: Ethernet source and ARP sender MAC of ARP request
++ * @hw_dst: Ethernet destination and ARP target MAC of ARP request
++ * @vid: VLAN identifier (optional, set to zero otherwise)
++ * @arp_len: ARP packet size, including ethernet frame
++ *
++ * If the ARP request target is not a local client and if BLA is
++ * enabled and we have BLA claimed this target then generate and reply
++ * with an ARP reply locally on our mesh interface.
++ *
++ * Return: 0 if we transmitted an ARP reply, -ENOMEM if we should have but
++ * could not create an ARP reply (e.g. due to out-of-memory), -EACCSS
++ * otherwise (because the client is local or due to BLA suppression).
++ */
++static int
++batadv_dat_arp_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
++			  __be32 ip_dst, u8 *hw_src, u8 *hw_dst,
++			  unsigned short vid, unsigned int arp_len)
++{
++	struct sk_buff *skb;
++
++	/* If the ARP request is destined for a local client the local
++	 * client will answer itself. DAT would only generate a
++	 * duplicate packet.
++	 *
++	 * Moreover, if the mesh-interface is enslaved into a bridge, an
++	 * additional DAT answer may trigger kernel warnings about
++	 * a packet coming from the wrong port.
++	 */
++	if (batadv_is_my_client(bat_priv, hw_dst, vid))
++		return -EACCES;
++
++	/* If BLA is enabled, only send ARP replies if we have claimed
++	 * the destination for the ARP request or if no one else of
++	 * the backbone gws belonging to our backbone has claimed the
++	 * destination.
++	 */
++	if (!batadv_bla_check_claim(bat_priv, hw_dst, vid)) {
++		batadv_dbg(BATADV_DBG_DAT, bat_priv,
++			   "Device %pM claimed by another backbone gw. Don't send ARP reply!",
++			   hw_dst);
++		return -EACCES;
++	}
++
++	skb = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src, hw_dst,
++					  hw_src, vid);
++	if (!skb)
++		return -ENOMEM;
++
++	skb->protocol = eth_type_trans(skb, bat_priv->mesh_iface);
++
++	batadv_inc_counter(bat_priv, BATADV_CNT_RX);
++	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES, arp_len);
++
++	netif_rx(skb);
++	return 0;
++}
++
+ /**
+  * batadv_dat_forward_data() - copy and send payload to the selected candidates
+  * @bat_priv: the bat priv with all the mesh interface information
+@@ -1179,41 +1276,6 @@ static unsigned short batadv_dat_get_vid(struct sk_buff *skb, int *hdr_size)
+ 	return vid;
+ }
+ 
+-/**
+- * batadv_dat_arp_create_reply() - create an ARP Reply
+- * @bat_priv: the bat priv with all the mesh interface information
+- * @ip_src: ARP sender IP
+- * @ip_dst: ARP target IP
+- * @hw_src: Ethernet source and ARP sender MAC
+- * @hw_dst: Ethernet destination and ARP target MAC
+- * @vid: VLAN identifier (optional, set to zero otherwise)
+- *
+- * Creates an ARP Reply from the given values, optionally encapsulated in a
+- * VLAN header.
+- *
+- * Return: An skb containing an ARP Reply.
+- */
+-static struct sk_buff *
+-batadv_dat_arp_create_reply(struct batadv_priv *bat_priv, __be32 ip_src,
+-			    __be32 ip_dst, u8 *hw_src, u8 *hw_dst,
+-			    unsigned short vid)
+-{
+-	struct sk_buff *skb;
+-
+-	skb = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_dst, bat_priv->mesh_iface,
+-			 ip_src, hw_dst, hw_src, hw_dst);
+-	if (!skb)
+-		return NULL;
+-
+-	skb_reset_mac_header(skb);
+-
+-	if (vid & BATADV_VLAN_HAS_TAG)
+-		skb = vlan_insert_tag(skb, htons(ETH_P_8021Q),
+-				      vid & VLAN_VID_MASK);
+-
+-	return skb;
+-}
+-
+ /**
+  * batadv_dat_snoop_outgoing_arp_request() - snoop the ARP request and try to
+  * answer using DAT
+@@ -1232,10 +1294,9 @@ batadv_dat_arp_create_reply(struct batadv_priv *bat_priv, __be32 ip_src,
+ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb)
+ {
+-	struct net_device *mesh_iface = bat_priv->mesh_iface;
+ 	struct batadv_dat_entry *dat_entry = NULL;
+ 	u8 mac[ETH_ALEN] __aligned(2);
+-	struct sk_buff *skb_new;
++	unsigned int arp_len;
+ 	unsigned short vid;
+ 	bool ret = false;
+ 	int hdr_size = 0;
+@@ -1244,6 +1305,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	u16 type = 0;
+ 	u64 u64_mac;
+ 	u8 *hw_src;
++	int rep;
+ 
+ 	if (!READ_ONCE(bat_priv->distributed_arp_table))
+ 		goto out;
+@@ -1253,6 +1315,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	vid = batadv_dat_get_vid(skb, &hdr_size);
++	arp_len = skb->len + ETH_HLEN + hdr_size;
+ 
+ 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
+ 	/* If the node gets an ARP_REQUEST it has to send a DHT_GET unicast
+@@ -1274,46 +1337,12 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 		u64_mac = atomic64_read(&dat_entry->mac_addr);
+ 		u64_to_ether_addr(u64_mac, mac);
+ 
+-		/* If the ARP request is destined for a local client the local
+-		 * client will answer itself. DAT would only generate a
+-		 * duplicate packet.
+-		 *
+-		 * Moreover, if the mesh-interface is enslaved into a bridge, an
+-		 * additional DAT answer may trigger kernel warnings about
+-		 * a packet coming from the wrong port.
+-		 */
+-		if (batadv_is_my_client(bat_priv, mac, vid)) {
+-			ret = true;
+-			goto out;
+-		}
+-
+-		/* If BLA is enabled, only send ARP replies if we have claimed
+-		 * the destination for the ARP request or if no one else of
+-		 * the backbone gws belonging to our backbone has claimed the
+-		 * destination.
+-		 */
+-		if (!batadv_bla_check_claim(bat_priv, mac, vid)) {
++		rep = batadv_dat_arp_self_reply(bat_priv, ip_src, ip_dst,
++						hw_src, mac, vid, arp_len);
++		if (!rep)
+ 			batadv_dbg(BATADV_DBG_DAT, bat_priv,
+-				   "Device %pM claimed by another backbone gw. Don't send ARP reply!",
+-				   mac);
+-			ret = true;
+-			goto out;
+-		}
+-
+-		skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
+-						      mac, hw_src, vid);
+-		if (!skb_new)
+-			goto out;
+-
+-		skb_new->protocol = eth_type_trans(skb_new, mesh_iface);
+-
+-		batadv_inc_counter(bat_priv, BATADV_CNT_RX);
+-		batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+-				   skb->len + ETH_HLEN + hdr_size);
+-
+-		netif_rx(skb_new);
+-		batadv_dbg(BATADV_DBG_DAT, bat_priv, "ARP request replied locally\n");
+-		ret = true;
++				   "ARP request replied locally\n");
++		ret = (rep != -ENOMEM);
+ 	} else {
+ 		/* Send the request to the DHT */
+ 		ret = batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
+-- 
+2.55.0
 
