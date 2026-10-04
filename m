@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E4E6CA5FCE
-	for <batman@archiver.kernel.org>; Sun,  4 Oct 2026 10:11:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0771ACA5FEC
+	for <batman@archiver.kernel.org>; Sun,  4 Oct 2026 10:11:54 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3A925844B2
-	for <batman@archiver.kernel.org>; Sun, 04 Oct 2026 12:11:23 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9C57784625
+	for <batman@archiver.kernel.org>; Sun, 04 Oct 2026 12:11:52 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791108683;
- b=Nw9Pso0F/PgAIgfJRIs+gUw6+mRw/z58eaM3w4yOZhDr/SDNyefwPVg3nf+754/25bGy8
- 4qUE1pf4mAO5xh3xWnNY3GVKPEZMbVEfgmGjA8+Ho+x2lyS5FLrLrAcR6D8DmicRrZ5mbE6
- 53xBBriLHadALmQhvibxbPQf5Tc+st0=
+ t=1791108712;
+ b=oAzwVvpdQx47eTRkcDX1q7rnflGoQY7P9xh/iFiR46i/CgempXzfws4tPv4RRX8YBgcu1
+ d6OdTzk3L3Zhi/Xf48U/o5/++XYjhZdXkWndYFjBTXkcn3f7U2EDiwyFnr/MU4+jTApFI2Z
+ 9NlmtiPT1HbnVWkiwMxuJTxOI97+taQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791108683; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791108712; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=cv/t6JoTpxF5YgCKrZshxPUoswc3yWuJ3jjz+xKK+nA=;
- b=el4dTY5pjwNlXy2WiCb9ctvPI7cM7yXnXQ0EwKPKx2bAdmDcMlqIGEKcISOdfgf2TDt88
- RgftB2EtOXLRhC4Ywn2cxrLRuiacxrHBQAhPEozXtNWRL9wNbD6290zz9/Qz/NQPJQnFmWU
- e8TupIPP+xiz90M35wA7VSBIgok/Mgk=
+ list-archive; bh=vzY6ymHge9Fc/E2Rf5lp2JKlms5E6xa3Wcj+XqGq2rQ=;
+ b=eRh7609CIXZM7klK083ULeWJbKfVNwmfYT+BHu52KqhLk0dSKux6y1ISiHYTpN4tGl+og
+ zp3fAnBMG+9BzyO4YR+cRn1zZ8DlhQh8qZTTJoC1G0uqGLYYjT2KwB4ovupJuv/F1Rs0tkW
+ rwCCpKwFRzSiG941lPAjfhaeVEf7c18=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1B153841D3
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 04 Oct 2026 12:09:15 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791108555;
-	b=DaBkkdFf3OYGFATw/2SyTLv/+0jwf3JnSTrsv9kMdOm78HzXExln8TQHJN87OAxMjBOs6J
-	SXbTpCtkE2S7HwKcuZtw2pEwCMz88md5z+2Vz+JQb26/Ba3EO47XJ7d5qFGAKcm00e0UZk
-	FkS3EnkhzmdzYJY2MZxdxhmQzD8Ux9k=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 80DD184270
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 04 Oct 2026 12:09:06 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791108556;
+	b=qphDUNVYSuROQPGsfkkxSAujihart+d2qmWK+VfTgPLNjCo/NyoPyfxP85rLw4hCwPMZB4
+	SLC1AuhBVz7djYsBfaKzTgCbyZM2yclD9x0tY3y/7sEdXd3y25w/pZbG1AsmD6iUcMXN4z
+	RL4BmKYgzYIFgacq2WH4Idmo66/yKcI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791108555;
+	s=20121; t=1791108556;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=cv/t6JoTpxF5YgCKrZshxPUoswc3yWuJ3jjz+xKK+nA=;
-	b=L2hvGjA/8lYPgtU58AjHxcR9UF6FjFvccyrW7I6Nrb9xm65ywS6N2wX9iH6fQgAmKF2PDg
-	5kixYvu2U6CV0Al8wB6zKDAsKwXlzO0NYCoDykz84BcXsl+kZPd6Et2N94qP0p25xHJ2WB
-	A6uvq4s8FArv687H1wveQLiV1WzygXM=
+	bh=vzY6ymHge9Fc/E2Rf5lp2JKlms5E6xa3Wcj+XqGq2rQ=;
+	b=2Qg3MJCDDCvtG6Id/Sfx1lfM7wop0hRL3a9vQRwuxMfY2LoVifWG4H6v1bI3jPXlS4/vx1
+	ZW3fr00WbedkbQi7f0BRsJHHLLHmgtnd2z1Ml7Isi0YdQexheotN6Njc5oExAMRpVw749p
+	JxvsUqyW7VpwgZt4cZpb23nL9u6Qgdk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="EJV2/fHH";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=OaQT9AnL;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id CC37620494;
-	Sun, 04 Oct 2026 10:09:14 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 45E10204B3;
+	Sun, 04 Oct 2026 10:09:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791108554;
+	s=20121; t=1791108545;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cv/t6JoTpxF5YgCKrZshxPUoswc3yWuJ3jjz+xKK+nA=;
-	b=EJV2/fHHGYCnar1lAs1R5ZBc9juvxgYnw12ZUAG+h+wfQacorLXPcuNTwWTEt4A03Pg1xf
-	nGrN09cycoadxscrJFsmVGLRRbEp2E5/X3QBSK3/ucIG5CdKrHj7CE+mFGXX0M5gae5L9o
-	EZVpK0lrjzPajjs5lYhM+bv8jcKBnCQ=
+	bh=vzY6ymHge9Fc/E2Rf5lp2JKlms5E6xa3Wcj+XqGq2rQ=;
+	b=OaQT9AnLi9E11hFgsJVkaLcubzpk6YmFwroF16+volU456JUTVCCXpjkoONonzLmVcwMAq
+	yw7u16fDOgKnwmAdeBdwwNpT2ziex7xBOnkeYLWJowISOtkOzs6dsjovEOW0SWidOtcHLz
+	392caelq+7aaTBCM+IuNpxKpEg7pPkA=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 04 Oct 2026 12:08:42 +0200
-Subject: [PATCH batadv v2 7/9] batman-adv: annotate hardif_neigh_node
- last_seen with READ/WRITE_ONCE
+Date: Sun, 04 Oct 2026 12:08:37 +0200
+Subject: [PATCH batadv v2 2/9] batman-adv: bat_v: annotate last_unicast_tx
+ with READ/WRITE_ONCE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261004-dat-last_update-once-v2-7-ab012a4b18ed@narfation.org>
+Message-Id: <20261004-dat-last_update-once-v2-2-ab012a4b18ed@narfation.org>
 References: <20261004-dat-last_update-once-v2-0-ab012a4b18ed@narfation.org>
 In-Reply-To: <20261004-dat-last_update-once-v2-0-ab012a4b18ed@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3625; i=sven@narfation.org;
- h=from:subject:message-id; bh=uznJZOAhuAIAviDAtCTfu8RTOgy6h1vpn753Y++P+UM=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmHVLc6tm+4IxNpxuU/J2rLN7UN28Q+zuLlfOy1uDBgG
- 9engNLVHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJsHxnZNh3M68nsaHGZvGJ
- /fHqr8wubNqxW6leI9tMVNsnRqy2JoLhr2iTR0Ox3HTjCZ8+e3N3ZqYyJrJke61P/nXxfD6f9W0
- LPgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2110; i=sven@narfation.org;
+ h=from:subject:message-id; bh=QIbsGGQmfAR3CuMWr8JzV7YKZInaYp6iMOKn0bgjQ8I=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmHVLdEX05jKE3Sfp17b1cad6Lzwh65ShvBzsQFG7R6k
+ rctF5XvKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAEzk5lRGhp1z37Bs0Jx1xHhL
+ ml+0q0PxtrRPezZOWrnMSHTOws4vH1cy/OFa6L/w0XyeoPuJnHcVgx4ELO/6eO1ATF7Ch+3czid
+ TfdgB
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: TCM6MSZPHUPOMH7ZK5XABKASQZWDMTOQ
-X-Message-ID-Hash: TCM6MSZPHUPOMH7ZK5XABKASQZWDMTOQ
+Message-ID-Hash: MXCH4W4H7ECGJGSNBBHHXSIT6TW7TAET
+X-Message-ID-Hash: MXCH4W4H7ECGJGSNBBHHXSIT6TW7TAET
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/TCM6MSZPHUPOMH7ZK5XABKASQZWDMTOQ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/MXCH4W4H7ECGJGSNBBHHXSIT6TW7TAET/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,93 +113,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The last_seen field for batadv_hardif_neigh_node tracks the jiffies value
-of the most recent activity and is used to detect timeouts. These accesses
-are not consistently protected by a lock, so READ_ONCE/WRITE_ONCE must be
-used to prevent data races caused by compiler optimizations.
+The bat_v.last_unicast_tx field for batadv_hardif_neigh_node tracks the
+jiffies value of the most recent activity and is used to detect timeouts.
+These accesses are not consistently protected by a lock, so
+READ_ONCE/WRITE_ONCE must be used to prevent data races caused by compiler
+optimizations.
 
 To avoid an underflow due to an non-strict order read of jffies vs
-last_seen, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
+last_unicast_tx, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
 evaluate the delta.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c | 6 ++++--
- net/batman-adv/bat_v.c      | 4 +++-
- net/batman-adv/bat_v_elp.c  | 2 +-
- net/batman-adv/originator.c | 2 +-
- 4 files changed, 9 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_v_elp.c | 4 +++-
+ net/batman-adv/send.c      | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index d4b6c09d..4e15af1e 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1569,7 +1569,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
- 		hardif_neigh = batadv_hardif_neigh_get(if_incoming,
- 						       ethhdr->h_source);
- 		if (hardif_neigh)
--			hardif_neigh->last_seen = jiffies;
-+			WRITE_ONCE(hardif_neigh->last_seen, jiffies);
- 	}
- 
- 	router = batadv_orig_router_get(orig_node, if_outgoing);
-@@ -2287,9 +2287,11 @@ batadv_iv_ogm_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
- 			       struct batadv_hardif_neigh_node *hardif_neigh)
- {
- 	unsigned int last_seen_msecs;
-+	unsigned long last_seen;
- 	void *hdr;
- 
--	last_seen_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen);
-+	last_seen = READ_ONCE(hardif_neigh->last_seen);
-+	last_seen_msecs = jiffies_delta_to_msecs(jiffies - last_seen);
- 
- 	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
- 			  NLM_F_MULTI, BATADV_CMD_GET_NEIGHBORS);
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index de80e656..be113e9a 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -160,10 +160,12 @@ batadv_v_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
- 			  struct batadv_hardif_neigh_node *hardif_neigh)
- {
- 	unsigned int last_seen_msecs;
-+	unsigned long last_seen;
- 	u32 throughput;
- 	void *hdr;
- 
--	last_seen_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen);
-+	last_seen = READ_ONCE(hardif_neigh->last_seen);
-+	last_seen_msecs = jiffies_delta_to_msecs(jiffies - last_seen);
- 	throughput = ewma_throughput_read(&hardif_neigh->bat_v.throughput);
- 	throughput = throughput * 100;
- 
 diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index d250e47a..ee571384 100644
+index 6ad6042a..a56b2fb6 100644
 --- a/net/batman-adv/bat_v_elp.c
 +++ b/net/batman-adv/bat_v_elp.c
-@@ -536,7 +536,7 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
+@@ -230,6 +230,7 @@ static bool
+ batadv_v_elp_wifi_neigh_probe(struct batadv_hardif_neigh_node *neigh)
+ {
+ 	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
++	unsigned long last_unicast_tx;
+ 	struct batadv_priv *bat_priv;
+ 	unsigned long last_tx_diff;
+ 	struct sk_buff *skb;
+@@ -250,7 +251,8 @@ batadv_v_elp_wifi_neigh_probe(struct batadv_hardif_neigh_node *neigh)
+ 	 * generate 2 probe packets and push the RC algorithm to perform
+ 	 * the sampling
+ 	 */
+-	last_tx_diff = jiffies_to_msecs(jiffies - neigh->bat_v.last_unicast_tx);
++	last_unicast_tx = READ_ONCE(neigh->bat_v.last_unicast_tx);
++	last_tx_diff = jiffies_delta_to_msecs(jiffies - last_unicast_tx);
+ 	if (last_tx_diff <= BATADV_ELP_PROBE_MAX_TX_DIFF)
+ 		return true;
  
- 	last_seen = jiffies;
- 	WRITE_ONCE(neigh->last_seen, last_seen);
--	hardif_neigh->last_seen = last_seen;
-+	WRITE_ONCE(hardif_neigh->last_seen, last_seen);
- 	hardif_neigh->bat_v.elp_latest_seqno = ntohl(elp_packet->seqno);
- 	hardif_neigh->bat_v.elp_interval = ntohl(elp_packet->elp_interval);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 929b6dd3..cc673b94 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -144,7 +144,7 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+ 	hardif_neigh = batadv_hardif_neigh_get(neigh->if_incoming, neigh->addr);
  
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 352a8805..0f47ac3e 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -587,7 +587,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 	ether_addr_copy(hardif_neigh->addr, neigh_addr);
- 	ether_addr_copy(hardif_neigh->orig, orig_node->orig);
- 	hardif_neigh->if_incoming = hard_iface;
--	hardif_neigh->last_seen = jiffies;
-+	WRITE_ONCE(hardif_neigh->last_seen, jiffies);
+ 	if (hardif_neigh && ret != NET_XMIT_DROP)
+-		hardif_neigh->bat_v.last_unicast_tx = jiffies;
++		WRITE_ONCE(hardif_neigh->bat_v.last_unicast_tx, jiffies);
  
- 	kref_init(&hardif_neigh->refcount);
- 
+ 	batadv_hardif_neigh_put(hardif_neigh);
+ #endif
 
 -- 
 2.47.3
