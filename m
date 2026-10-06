@@ -4,109 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED039CA5FF0
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 00:50:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4831CA5FED
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 11:04:38 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id ECD1584270
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 02:50:31 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E6EEA842E5
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 13:04:36 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791247831;
- b=ApHO6JbbMDrUWAvnrpAf5xvSjC5VSdJzsLcw3Ydmy78llYaT8MFClFN8KBHB7FXV6/uB6
- 2thVSaIrncQR8Rc1kMxDsG3bwbGPewdH9w1ab9b0rtnZ0XsH1126y+PssqNiPyKleO8oyK7
- B4BDIKqDkRlBq0RNiPrKwvjqU+pePg8=
+ t=1791284676;
+ b=rgqXd6WJQefvAeaXDtqJBGtxmgGWZyw+bMeNj4eddpjZPq2WTHkDML/7J9V8beS2XIRxe
+ HSQFmIzt/TwvQSy0VvatvPpgW0Bo1Pfn2PppU74LkkpqusJNFFw61IK51Pn6vp4OWKY+A0c
+ cyzeKRBCUIWMWdH7/krRVEIejn0mqBY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791247831; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791284676; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
- b=hN7JMDGT2YAoZepwICo4S5lWBVWtUTsPIPagzoT23ZK2R78sEOZYlQw+4kr31fRayz3mB
- /HXBmACqs3WOaW1GJr2p/7n/iyUQiRGOxocMd9jox9ccdz+QileENGz3ZogkStqBfQ+a1zj
- cpzRw6pvz9SjEaDTDnD0r3U+LtNHQkQ=
+ list-archive; bh=irvTIbRziepJLkSkqL0aVR7rV8FhvDzfqREWnWZPkqU=;
+ b=0sNamxbLiCtON9toOI/Tn99YhaS1hLeuwsxl+MWSMtghs4j164VMalbQLOeh42Eu1iHve
+ 6fnBSNZY9nhGE5XknQ3wGev2mrSyWTxFwOZlhnCHPraQBgEd8g/HI+w6K737hegyl0Dn+oJ
+ Io/HIu4hMYzU4Ygf0nq0niCjkYdBSZk=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=kernel.org;
+ dkim=fail;
  arc=pass;
- dmarc=pass header.from=kernel.org policy.dmarc=quarantine
-Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
- arc=pass;
- dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 85231806E1
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 02:50:11 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791247821;
-	b=YeoJ7bOSeTfkzhsv0zfDqUIDdIxE2B1rH7mH3DIhCa/TiH8mfHaM7rEIth4C499ode8HDe
-	KKAtWFuuGTo1vW6djl3NlOSbmhSSdBMBOMzsF04aAaYdmJsKFDBMwNlI+LAGJTUfnv+TLb
-	AYKrtREscaoZuwjFXlPXKGT5RzDxeYw=
+ dmarc=none
+Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
+Received: from mail.aperture-lab.de (mail.aperture-lab.de
+ [IPv6:2a01:4f8:c2c:665b::1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 117DB81474
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 13:04:15 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791284666;
+	b=d/bSfJqWmE2YArmfuBkeG3Amymy2dBd47HnDWAFGuIZLsl0vpXhRaACmceHcHP8Q8cEmIg
+	CA0uSggM4Eh2anrzSM3WF+imm9UzjTYp/l8HkecpVDaNYyIF5VlLdD510WYbJrJbz1/ZHF
+	PF5u51TacCu5lls63+rv8V3RwmVzz2w=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791247821;
+	s=20121; t=1791284666;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
-	b=fRQz61309yE2bTE6rHMYAcAX+23/9iBStokDi5MMaRWIGEDqA7vWoi8R228gNxC5V7JiUY
-	XHZWyYQMK4HCxI8VHZB2wIZhoOPDu4sBAWKkioc8DyE110EvlnJb1xkywmkvuN1UhQTKXO
-	BavW8dP7tQN4yGfDQ3c1hRVBup5amZc=
+	 in-reply-to:in-reply-to:references:references;
+	bh=irvTIbRziepJLkSkqL0aVR7rV8FhvDzfqREWnWZPkqU=;
+	b=U3XShVjHW36Cjd2U8JKrw9lZXUchzm8asFwQHFrofkvmRHY8DYtCO/a9LFYspv8M15FG7f
+	vbd0LlMM2j7SVKhEXrO72FEgsZ+zjjwWdx5pkKWRTqoYgSvEsYGe9SZ9iqOgIFFUPPO/MH
+	Qn1DDUOFYO6gClB2wnZ2NV8JoaJwZdI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20260515 header.b=oj9dogqZ;
-	spf=pass (diktynna.open-mesh.org: domain of
- patchwork-bot+netdevbpf@kernel.org designates 2600:3c04:e001:324:0:1991:8:25
- as permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
-	dmarc=pass (policy=quarantine) header.from=kernel.org
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5392A601F1;
-	Tue,  6 Oct 2026 00:50:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07C0E1F000FF;
-	Tue,  6 Oct 2026 00:50:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791247809;
-	bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=oj9dogqZKC91eT6hUP1XWDFC93Wa32ndL++A2aphs292/Mht/WqsEHNKcNlQgFjrY
-	 8JqMU19Y0q0yOEXBFJ/jvIyk9C8t3irk7UUfQYvIB3vNqhCID+ETanPeXaduAgmybQ
-	 vlvXU3aLNU6gGyxiGUDr7Vw/2GNxeISllNn2Ga4AQgPpM9vpwI7CdripWMNTkWulUa
-	 kIe4u/fo/3a8EmwCGiPwOaMHP3er39szwsOtkeU2XQRsbU+theES0vFcVYy7irI/TO
-	 GsQ6Xid6WqQMDp4bDo+BF9/H/sC4mBGC/h5VE9BVneX5EuVlNVOK0kAr3pN2+Mgop9
-	 9A/16KSc2YIzw==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
- F142A392667F;
-	Tue,  6 Oct 2026 00:50:08 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	dkim=none;
+	dmarc=none;
+	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
+ designates 2a01:4f8:c2c:665b::1 as permitted sender)
+ smtp.mailfrom=linus.luessing@c0d3.blue
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
+ with ESMTPSA id 8F01323245;
+	Tue, 06 Oct 2026 13:04:09 +0200 (CEST)
+Date: Tue, 6 Oct 2026 13:04:08 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH batadv] batman-adv: dat: initialize orig_node of unfilled
+ candidate slots
+Message-ID: <asTVqLO0EWAVM_IE@sellars>
+References: 
+ <20261004-dat-eligable-uninitialized-v1-1-9674029343da@narfation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net-next 1/9] batman-adv: bla: avoid double free after
- failed
- backbone_hash alloc
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <179124780778.1960739.8553982365608117644.git-patchwork-notify@kernel.org>
-Date: Tue, 06 Oct 2026 00:50:07 +0000
-References: <20260930094558.3723766-2-sw@simonwunderlich.de>
-In-Reply-To: <20260930094558.3723766-2-sw@simonwunderlich.de>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, sashiko-bot@kernel.org
-Message-ID-Hash: ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F
-X-Message-ID-Hash: ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F
-X-MailFrom: patchwork-bot+netdevbpf@kernel.org
-X-Mailman-Rule-Hits: nonmember-moderation
+In-Reply-To: 
+ <20261004-dat-eligable-uninitialized-v1-1-9674029343da@narfation.org>
+X-Last-TLS-Session-Version: TLSv1.3
+Message-ID-Hash: S6U2H4F5H5FMTF7L2UVM4ORJBHTPFNZR
+X-Message-ID-Hash: S6U2H4F5H5FMTF7L2UVM4ORJBHTPFNZR
+X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
+ nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
+ news-moderation; no-subject; digests; suspicious-header
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/S6U2H4F5H5FMTF7L2UVM4ORJBHTPFNZR/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -115,45 +98,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Hello:
-
-This series was applied to netdev/net-next.git (main)
-by Sven Eckelmann <sven@narfation.org>:
-
-On Wed, 30 Sep 2026 11:45:50 +0200 you wrote:
-> From: Sven Eckelmann <sven@narfation.org>
+On Sun, Oct 04, 2026 at 10:10:06AM +0200, Sven Eckelmann wrote:
+> batadv_dat_select_candidates() allocates the candidate array without
+> zeroing it. batadv_choose_next_candidate() marks each slot as
+> BATADV_DAT_CANDIDATE_NOT_FOUND but only sets orig_node when an eligible
+> originator was found. In the following rounds,
+> batadv_is_orig_node_eligible() compares res[j].orig_node of all previous
+> slots against the evaluated originator. For slots without candidates, it
+> reads uninitialized memory.
 > 
-> When batadv_bla_init() fails to initialize the backbone_hash, it is freeing
-> the (previously) allocated claim_hash. The initialization function will
-> then return an error and the net_device initialization will stop. The
-> destructor will be called instead and (indirectly via batadv_mesh_free() ->
-> batadv_bla_free()) will try to free the bat_priv->bla.claim_hash again.
-> 
-> [...]
+> The orig_node has to be cleared together with the
+> BATADV_DAT_CANDIDATE_NOT_FOUND type.
 
-Here is the summary with links:
-  - [net-next,1/9] batman-adv: bla: avoid double free after failed backbone_hash alloc
-    https://git.kernel.org/netdev/net-next/c/4c0a6a5b7715
-  - [net-next,2/9] batman-adv: tt: clarify kernel-doc for batadv_tt_global_purge_local
-    https://git.kernel.org/netdev/net-next/c/f11712fc3d5f
-  - [net-next,3/9] batman-adv: tt: clarify responsibility for roam flag during removal
-    https://git.kernel.org/netdev/net-next/c/08967c26cc8d
-  - [net-next,4/9] batman-adv: tt: soften kernel-doc for batadv_tt_local_remove_now()
-    https://git.kernel.org/netdev/net-next/c/be66c5ac5485
-  - [net-next,5/9] batman-adv: tt: only queue local del event after successful unlink
-    https://git.kernel.org/netdev/net-next/c/597c0f2f69c0
-  - [net-next,6/9] batman-adv: tt: queue local DEL event under bucket lock
-    https://git.kernel.org/netdev/net-next/c/f95b9f28a9df
-  - [net-next,7/9] batman-adv: tt: queue local DEL event before marking entry as pending
-    https://git.kernel.org/netdev/net-next/c/a6746cb19076
-  - [net-next,8/9] batman-adv: tt: reject VLAN/TT entries before reaching size limit
-    https://git.kernel.org/netdev/net-next/c/85fb027f611b
-  - [net-next,9/9] batman-adv: use assign_bit() where applicable
-    https://git.kernel.org/netdev/net-next/c/d1807b20d548
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+(Though this issue seems very hard/unlikely to trigger? And even
+then the consequences would be minor and temporary?)
 
-
+(Also, I can't read the Sashiko link, I guess it's only accessible for
+maintainers?)
