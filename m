@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38503CA5FFC
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 16:57:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAFFDCA5FED
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 17:20:59 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C6C34811CE
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 18:57:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 03E248402F
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 19:20:58 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791305863;
- b=nAK5dWC9xmcwOwcRwVVii5Hs+IYB/Zq2OM4Xx9i7lMyy82oJHiPkU3KWA7kXQucdF3Pm+
- 04ECSNPxR0uv6+5R0kHBqa4AX1IRKxnOJoIXNBzP06gAUHvWY8/FqIYPADOSDL8AjPrhGFj
- V0UNG7BnAZWfsh5+MLtSKoLdj0UzBc0=
+ t=1791307258;
+ b=UpxsY++Zz9w8ghOUi2pjK+L9tAejmFVz8YSEBDQWKynvB/23Oip/12+pHqlc9S7eWoWW9
+ 506nKYJT6n49Rn5ibV6rAJ53ze1pdYWg78KMvq5qD87xbS+G5eBUmmBeuR3VjMO1lEL8VjR
+ 1osUo51dzOdLF3aE0AogcUeDxXXIj48=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791305863; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791307258; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=MDOxgEpIbCv2Iai/Qw2p7zkMsSSVbWHwnTJUy6ttOEI=;
- b=kFogMXf9ZTW6IRL0DjLtgO9NTbnkGvRd7cgXySE/jbXw/TeAAaeXjHAAhG52X9miGlSct
- 9ifTByOI1S8RAVW44g7rdmnH8gCzmwabTfaU/ODb4rE4jL163bbLBow37f6bc+/KEg/tMeP
- /SfY2r/YVcrwrnDlLIEkxGLTVE/t8EI=
+ list-archive; bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
+ b=c8rCphwg41AfEIq136/FWDchoBESrc+yajWGfnxnO+G87Jh3lEl7Hdj/7PY4g7APpbs94
+ lkpnzxqvAyoOdCqZRqX3SL6mDDcbKa9tTrh9KdgQM3wrajkyDv5NMVoE3Z+4X5ka8cDT7oc
+ LZT1jjRyaCtq8TR23WlK7QPHkOjP6Ro=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,54 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 5C837811CE
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 18:57:34 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791305854;
-	b=2O/l6ay8EFFQBQ3dxI7Xt8sQVKAxrGZR/D1LuhHfubH0TJINyuhD95MWFX4FJ5qo6fUHCt
-	7i+WjgT1VV7TsEM6gGQzgNu/+VCrwGqy+/nqF6Rtty+8o7jWhDhSXUvitvvhxyal7WdBmn
-	nAbgk0iKqwelROQ6ohwnWLj1dp92IS8=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DDEEF815D7
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 19:20:37 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791307247;
+	b=ehu+4mfIZIK+hvP2gsaWu0Z9KqR+GeocEzca6IOCwmb1NDoyRMyvbxWrkG0rijJdxRSP1p
+	t87r0AjYMwWNT+Y3P48KskiO5f37doIZ5WLvlZPZeX4ba44sDF8wPDMpLj8gzCz+7HCaoC
+	J/SbnmsJHthVgZrE++RZ0dZ0M5/93/E=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791305854;
+	s=20121; t=1791307247;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=MDOxgEpIbCv2Iai/Qw2p7zkMsSSVbWHwnTJUy6ttOEI=;
-	b=H9YRiIMLgdz2jwa9OJVYwW2nl0z+FzVjvl9tnvUWEcwKPl/0Mjr5PPT0X08IXD6jrNO2bX
-	FLa+f5CNE0hhlTNHrUAhFlEgin5HDq5MPBQPjRP+7AVnjuMtKFCQVndyOCE0i0zimp90P+
-	eqO3300epgoV0q1d3ROU5W6cLAXYQiE=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
+	b=lJFiaW9gEIBs7gagkboyL6lWvWRXtN/Z/beFrnJ/NYotjVcSvWddtLXGBAN0pwHNKjl5xP
+	e/gZgwhS5ekvXshEQLzB8nCfV1Ednv/KnXXRlXVObptLMHn7umum8AQxgHBajv5pEkRbWj
+	6ptkQvgzlAly7jNeoaW5i4AVDyRvLKw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=iS8QjPUP;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="N/xIVhrF";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id A7E041FFBB;
-	Tue, 06 Oct 2026 16:57:33 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 071E61FFBB;
+	Tue, 06 Oct 2026 17:20:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791305853;
+	s=20121; t=1791307237;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=MDOxgEpIbCv2Iai/Qw2p7zkMsSSVbWHwnTJUy6ttOEI=;
-	b=iS8QjPUPEGOGayzLlgM2B/rIi4J5yhpN6lEV35CmXb5KfdnIwfOfwfcXxXkJVIxmAWbUAO
-	jR7oueGv3ZlmjwVg5VesRat1JAyJ/pD+1ZIXR92SszPy/JhzYRwB/9rRYhxLP976/2QBMw
-	rSy2YUN/7WQkNRI1q7UR0FOAjFhjgCY=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
+	b=N/xIVhrFaR/BycNfA0r5Vaa388wroii1L0UXPd1ZMjSHxrqKIwfD6H+lvUjFq8uXLC5TTD
+	SUR727MIVRO69q0Uz60tVPV4PSQXMIPE33kVTxKKhLx7lrPZTw0OGPCdHZSKtVz9a/5fAv
+	BSxeJo+TW6AAGjHlSyztmqfOXK8sVFE=
 From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sashiko <sashiko-bot@kernel.org>
-Subject: Re: [PATCH batadv] batman-adv: dat: initialize orig_node of unfilled
- candidate slots
-Date: Tue, 06 Oct 2026 18:57:30 +0200
-Message-ID: <6321151.lOV4Wx5bFT@sven-desktop>
-In-Reply-To: <asTVqLO0EWAVM_IE@sellars>
-References: 
- <20261004-dat-eligable-uninitialized-v1-1-9674029343da@narfation.org>
- <asTVqLO0EWAVM_IE@sellars>
+Date: Tue, 06 Oct 2026 19:20:21 +0200
+Subject: [PATCH batadv] batman-adv: bat_v: fix probing in first 5 minutes
+ after boot
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5146418.31r3eYUQgx";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: SGKZQ77JAZ6A3DEYIZNEAKAKRGJQBEJ7
-X-Message-ID-Hash: SGKZQ77JAZ6A3DEYIZNEAKAKRGJQBEJ7
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261006-bat_v-early-start-probe-v1-1-4206a407c062@narfation.org>
+X-B4-Tracking: v=1; b=H4sIANQtxWoC/yWM0QrCMAwAf2Xk2UBbYWP+ioika6YR2UbSFWXs3
+ 636eAd3GxirsMGp2UC5iMk8VfCHBoY7TTdGSZUhuNB651qMlK8FmfT5RsukGRedI+OYOtcfkw9
+ 9F6DWi/Ior9/5DDWiVODy97bGBw/5u4V9/wBSWIGegwAAAA==
+X-Change-ID: 20261006-bat_v-early-start-probe-fd7093d12972
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1244; i=sven@narfation.org;
+ h=from:subject:message-id; bh=AwSMS6xw1xDy3ziQwKLW6B7v3F/9RIqSMG8AcV6hQHU=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlHde9MDeRjYW61nP/eqLtVudLVOKRv92792xuuvWcKc
+ 3XVTg/sKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAEzEKIPhn/IByQqRA5tWPBT/
+ lvH90TGlfu3ypE7hiPcPfs7f8Xmu1zpGhi8HnSR3ch7U6+Jc1/DN6o/rnU8ysekzbv4XaguL9D/
+ rzgEA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: 4R3UIQYFUHFINCXXXEVKBB265WNDVGRB
+X-Message-ID-Hash: 4R3UIQYFUHFINCXXXEVKBB265WNDVGRB
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -95,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SGKZQ77JAZ6A3DEYIZNEAKAKRGJQBEJ7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4R3UIQYFUHFINCXXXEVKBB265WNDVGRB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -104,118 +113,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart5146418.31r3eYUQgx
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sashiko <sashiko-bot@kernel.org>
-Date: Tue, 06 Oct 2026 18:57:30 +0200
-Message-ID: <6321151.lOV4Wx5bFT@sven-desktop>
-In-Reply-To: <asTVqLO0EWAVM_IE@sellars>
-MIME-Version: 1.0
+hardif_neigh->bat_v.last_unicast_tx is initialized to 0. And jiffies is
+initialized on boot to -5 minutes (INITIAL_JIFFIES).
+batadv_v_elp_wifi_neigh_probe() will therefore always reject the probe in
+the first 5 minutes.
 
-On Tuesday, 6 October 2026 13:04:08 CEST Linus L=C3=BCssing wrote:
-[...]
-> (Also, I can't read the Sashiko link, I guess it's only accessible for
-> maintainers?)
+To get it started earlier after the first detection of a neighbor, it is
+necessary to initialize the last_unicast_tx when a new hardif_neighbor is
+detected.
 
-I had to login to the sashiko.dev to get access to the "Bugs" section. And=
-=20
-even after login, I can only access the "BATMAN ADVANCED" subsystem. I have=
- no=20
-idea how to make the report readable for everyone. But this is the text:
+Fixes: cdc4545350d1 ("batman-adv: keep track of when unicast packets are sent")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_v.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-In the batman-adv Distributed ARP Table (DAT) selection process, if an
-early candidate selection round fails to find an eligible node,
-batadv_is_orig_node_eligible() reads uninitialized heap memory when
-evaluating nodes during subsequent rounds.
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 596889b3..4a25e513 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -143,6 +143,7 @@ static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
+ static void
+ batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
++	WRITE_ONCE(hardif_neigh->bat_v.last_unicast_tx, jiffies);
+ 	ewma_throughput_init(&hardif_neigh->bat_v.throughput);
+ }
+ 
 
-The vulnerability stems from batadv_dat_select_candidates() allocating the
-candidate array using kmalloc() without zeroing the memory. It then
-iteratively calls batadv_choose_next_candidate() to fill each slot. If no
-candidate is found during a given iteration, the slot's type is marked as
-BATADV_DAT_CANDIDATE_NOT_FOUND, but its orig_node pointer remains
-uninitialized. During the next iteration, batadv_choose_next_candidate()
-iterates over nodes and calls batadv_is_orig_node_eligible(), which loops
-over all previously processed slots (up to the current select index) and
-reads res[j].orig_node to verify if the candidate was already selected.
+---
+base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
+change-id: 20261006-bat_v-early-start-probe-fd7093d12972
 
-This results in an uninitialized heap memory read during the pointer
-comparison, which triggers a KMSAN violation. Because the garbage memory is
-used only for equality comparison against active orig_node pointers, the
-defect results in undefined behavior and a highly improbable false-positive
-candidate match rather than a system crash or memory corruption.
-
-// net/batman-adv/distributed-arp-table.c:182-206
-static struct batadv_dat_candidate *
-batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-{
-	int select;
-	< ... >
-	struct batadv_dat_candidate *res;
-	< ... >
-	res =3D kmalloc(BATADV_DAT_CANDIDATES_NUM * sizeof(*res), GFP_ATOMIC);
-	if (!res)
-		return NULL;
-	< ... >
-	for (select =3D 0; select < BATADV_DAT_CANDIDATES_NUM; select++)
-		batadv_choose_next_candidate(bat_priv, res, select, ip_key,
-					     &last_max);
-
-	return res;
-}
-
-// net/batman-adv/distributed-arp-table.c:114-162
-static void batadv_choose_next_candidate(...)
-{
-	< ... >
-	cands[select].type =3D BATADV_DAT_CANDIDATE_NOT_FOUND;
-
-	for (i =3D 0; i < hash->size; i++) {
-		< ... >
-		hlist_for_each_entry_rcu(...) {
-			< ... >
-			if (!batadv_is_orig_node_eligible(cands, select, ...))
-				continue;
-			< ... >
-		}
-		< ... >
-	}
-	if (max_orig_node) {
-		cands[select].type =3D BATADV_DAT_CANDIDATE_ORIG;
-		cands[select].orig_node =3D max_orig_node;
-		< ... >
-	}
-	< ... >
-}
-
-// net/batman-adv/distributed-arp-table.c:69-82
-static bool batadv_is_orig_node_eligible(...)
-{
-	bool ret =3D false;
-	int j;
-	< ... >
-	/* Check if this node has already been selected... */
-	for (j =3D 0; j < select; j++)
-		if (res[j].orig_node =3D=3D candidate)
-			break;
-	< ... >
-}
---nextPart5146418.31r3eYUQgx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCasUoewAKCRBND3cr0xT1
-yxrwAQDXYJrtGmVUV9mGs0iW3c4cHg5CvCCTXMAseIckMkh+BQEAikjxapYSBg33
-J+vb64XwX30gEaN3YhIVdtytTmqQ3Qo=
-=5FuC
------END PGP SIGNATURE-----
-
---nextPart5146418.31r3eYUQgx--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
