@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAFFDCA5FED
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 17:20:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 921EFCA5FED
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 17:43:21 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 03E248402F
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 19:20:58 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id DD73C82684
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 19:43:19 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791307258;
- b=UpxsY++Zz9w8ghOUi2pjK+L9tAejmFVz8YSEBDQWKynvB/23Oip/12+pHqlc9S7eWoWW9
- 506nKYJT6n49Rn5ibV6rAJ53ze1pdYWg78KMvq5qD87xbS+G5eBUmmBeuR3VjMO1lEL8VjR
- 1osUo51dzOdLF3aE0AogcUeDxXXIj48=
+ t=1791308599;
+ b=iaubQkD4rtHA61O9cWeeywUiA6FN6SJ4xYLLPka3Q3wMwyH45OrdlhzpiSqXdZxCeCs15
+ dnEtQXLSSfyasT0l1Wx1eZ9Zv12sXUKmymKdAYBFmsBmSK4wkrS05psG7zEkONIIKZqFRYX
+ /jepM/+ZWmGrogmHbutzz2amQc8ao/M=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791307258; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791308599; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
- b=c8rCphwg41AfEIq136/FWDchoBESrc+yajWGfnxnO+G87Jh3lEl7Hdj/7PY4g7APpbs94
- lkpnzxqvAyoOdCqZRqX3SL6mDDcbKa9tTrh9KdgQM3wrajkyDv5NMVoE3Z+4X5ka8cDT7oc
- LZT1jjRyaCtq8TR23WlK7QPHkOjP6Ro=
+ list-archive; bh=sLMsTFreGPGyXMpJjAoLN7fGXeOrOBgnDedsfzuvwR8=;
+ b=lAv5VJHyfcALCoipNnQXHW79vuPs2DaZ36b4d/cX35FMLOxwWaQg+6urJ1D1Ut6K+ihB4
+ h/jCccII5kxruBucPOHzq2gKpKfYUruxiHlissWC9yo6tBaVZPhjr5iJy6sjN95lGM9MjOd
+ toDPa6mPXuHLSrkv81OxPWOfcAATazs=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DDEEF815D7
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 19:20:37 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791307247;
-	b=ehu+4mfIZIK+hvP2gsaWu0Z9KqR+GeocEzca6IOCwmb1NDoyRMyvbxWrkG0rijJdxRSP1p
-	t87r0AjYMwWNT+Y3P48KskiO5f37doIZ5WLvlZPZeX4ba44sDF8wPDMpLj8gzCz+7HCaoC
-	J/SbnmsJHthVgZrE++RZ0dZ0M5/93/E=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1F3BD801AE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 19:42:59 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791308590;
+	b=foJ7QxLd4Ud8HxHrk0YJGXWnN/Vmv/3fgnajB5eNDO9PuB8JXl1z/hCFEYuyMbYV8zQb6s
+	wcB9MfwkfSuB1WPiuLT4Xzzbf8qBcZQVvPEd3FgDeOHjxw5SPNh7+S/4YMkrHC9MW+ff3P
+	rkeC/P0/1bYtlnuC4lJal9L6m3ZoJlo=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791307247;
+	s=20121; t=1791308590;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
-	b=lJFiaW9gEIBs7gagkboyL6lWvWRXtN/Z/beFrnJ/NYotjVcSvWddtLXGBAN0pwHNKjl5xP
-	e/gZgwhS5ekvXshEQLzB8nCfV1Ednv/KnXXRlXVObptLMHn7umum8AQxgHBajv5pEkRbWj
-	6ptkQvgzlAly7jNeoaW5i4AVDyRvLKw=
+	bh=sLMsTFreGPGyXMpJjAoLN7fGXeOrOBgnDedsfzuvwR8=;
+	b=Etso8z1EwMeomYBMC0jQjk2B0ouImxARJ+hMZq7Vah9rjejKzy/gxEX3WGheZ4PTHiODzf
+	S9d63N/mxzwVZrR7bv68Sjh40ywpbYHJnqiHrtkpJBA+AzPl4/HDbFnJkS1c4Wb2DcsWtG
+	mb8nGEX6Y89APhMMSzISuONdAvIiUhk=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b="N/xIVhrF";
+	dkim=pass header.d=narfation.org header.s=20121 header.b=zMaRonap;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 071E61FFBB;
-	Tue, 06 Oct 2026 17:20:37 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 544B020515;
+	Tue, 06 Oct 2026 17:42:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791307237;
+	s=20121; t=1791308579;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=yCkWYhjbGOtOtElqSEd/EfCemS/v2I9AJtfyS1kEuZc=;
-	b=N/xIVhrFaR/BycNfA0r5Vaa388wroii1L0UXPd1ZMjSHxrqKIwfD6H+lvUjFq8uXLC5TTD
-	SUR727MIVRO69q0Uz60tVPV4PSQXMIPE33kVTxKKhLx7lrPZTw0OGPCdHZSKtVz9a/5fAv
-	BSxeJo+TW6AAGjHlSyztmqfOXK8sVFE=
+	bh=sLMsTFreGPGyXMpJjAoLN7fGXeOrOBgnDedsfzuvwR8=;
+	b=zMaRonapOc1mbt5sPxq0UTCjCoXcInQ52QMkm19UVrhHu892U3rPbkl1mkZNlhYS4QcMly
+	TN0GsHhL2i+pBcg00d2PIrZA+x3xOv8aeF5F186bf6yyzEHJfRWsQ6HYX1Bf/v/Pe14i/C
+	Jj6eCWOWHe5FB21mZXa/i4z0RDVyKOc=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 06 Oct 2026 19:20:21 +0200
-Subject: [PATCH batadv] batman-adv: bat_v: fix probing in first 5 minutes
- after boot
+Date: Tue, 06 Oct 2026 19:42:48 +0200
+Subject: [PATCH batadv] batman-adv: tpmeter: fix u32 truncation of reported
+ bytes
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261006-bat_v-early-start-probe-v1-1-4206a407c062@narfation.org>
-X-B4-Tracking: v=1; b=H4sIANQtxWoC/yWM0QrCMAwAf2Xk2UBbYWP+ioika6YR2UbSFWXs3
- 636eAd3GxirsMGp2UC5iMk8VfCHBoY7TTdGSZUhuNB651qMlK8FmfT5RsukGRedI+OYOtcfkw9
- 9F6DWi/Ior9/5DDWiVODy97bGBw/5u4V9/wBSWIGegwAAAA==
-X-Change-ID: 20261006-bat_v-early-start-probe-fd7093d12972
+Message-Id: 
+ <20261006-tp-total-bytes-truncation-v1-1-54143d6fde9e@narfation.org>
+X-B4-Tracking: v=1; b=H4sIABczxWoC/yWMQQrCMBAAv1L27EJabEj9injYTVaNSFqSbamU/
+ r1RjzMws0GRHKXApdkgyxJLHFOF9tSAf1J6CMZQGTrT2dYYizqhjkpv5I9KQc1z8qS1wsGduQ/
+ s7GAd1H7Kco/r730FJqWwwO3vy8wv8fodw74fnZtMqYUAAAA=
+X-Change-ID: 20261006-tp-total-bytes-truncation-984b5db86968
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1244; i=sven@narfation.org;
- h=from:subject:message-id; bh=AwSMS6xw1xDy3ziQwKLW6B7v3F/9RIqSMG8AcV6hQHU=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlHde9MDeRjYW61nP/eqLtVudLVOKRv92792xuuvWcKc
- 3XVTg/sKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAEzEKIPhn/IByQqRA5tWPBT/
- lvH90TGlfu3ypE7hiPcPfs7f8Xmu1zpGhi8HnSR3ch7U6+Jc1/DN6o/rnU8ysekzbv4XaguL9D/
- rzgEA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1217; i=sven@narfation.org;
+ h=from:subject:message-id; bh=5QX/bbkwhGvvoTsNQavXzJvgsT0mGDLDZpdpQ06uBZ4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlHjRW0Uk3Z13NoLg6KednYsWmOasBqif8TtzzSF9jzd
+ cGkzdKsHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ+O5gZNj3W178d0X2OtF1
+ 9y4fSFkwm2cB7zIxOe/KoATL8+VbjFcz/GR0WThn468J+enRDwR1blldqz+/ZlL6tArZ3ZJJ+60
+ yeVgB
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: 4R3UIQYFUHFINCXXXEVKBB265WNDVGRB
-X-Message-ID-Hash: 4R3UIQYFUHFINCXXXEVKBB265WNDVGRB
+Message-ID-Hash: VXVXBJDH6ZMFZTMC76CO7JRIUKFHMH7C
+X-Message-ID-Hash: VXVXBJDH6ZMFZTMC76CO7JRIUKFHMH7C
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/4R3UIQYFUHFINCXXXEVKBB265WNDVGRB/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VXVXBJDH6ZMFZTMC76CO7JRIUKFHMH7C/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,37 +113,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-hardif_neigh->bat_v.last_unicast_tx is initialized to 0. And jiffies is
-initialized on boot to -5 minutes (INITIAL_JIFFIES).
-batadv_v_elp_wifi_neigh_probe() will therefore always reject the probe in
-the first 5 minutes.
+When more than 4 GB are transferred by the throughput meter,
+batadv_tp_batctl_notify() will cut of the upper 32 bit of the u64 counter
+and thus under-report the actual transferred bytes.
 
-To get it started earlier after the first detection of a neighbor, it is
-necessary to initialize the last_unicast_tx when a new hardif_neighbor is
-detected.
+The data type of the temporary storage variable must therefore still
+continue to use u64.
 
-Fixes: cdc4545350d1 ("batman-adv: keep track of when unicast packets are sent")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/bug/linux-08bb3be4-6c6a-452d-b4e4-606940c6cfa5
+Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/tp_meter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 596889b3..4a25e513 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -143,6 +143,7 @@ static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
- static void
- batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 022eb13e..56feb02d 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -221,7 +221,7 @@ static void batadv_tp_batctl_notify(enum batadv_tp_meter_reason reason,
+ 				    unsigned long start_time, u64 total_sent,
+ 				    u32 cookie)
  {
-+	WRITE_ONCE(hardif_neigh->bat_v.last_unicast_tx, jiffies);
- 	ewma_throughput_init(&hardif_neigh->bat_v.throughput);
- }
+-	u32 total_bytes;
++	u64 total_bytes;
+ 	u32 test_time;
+ 	u8 result;
  
 
 ---
-base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
-change-id: 20261006-bat_v-early-start-probe-fd7093d12972
+base-commit: aba49616932df5bb5c3f43e684248cb4bf72218e
+change-id: 20261006-tp-total-bytes-truncation-984b5db86968
 
 Best regards,
 --  
