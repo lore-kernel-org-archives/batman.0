@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24192CA5FFC
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 16:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C3C7CA5FFC
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 16:50:15 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B57338409C
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 18:49:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id BD351842E0
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 18:50:13 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791305383;
- b=pytgWL321WRbbigeXjDKuA0A4z1fomw4nLVvIw2SLH9NByVpxPqhXxFRixJKssNaJgAX4
- DfzF+DudoiXSlKFg8FP9ydbK9YTZN7HPYlJmjhcCdG5en73Un51dfWnSFcNdVvPCgQliSmt
- vA8SEVFvWa0yEqLxTK4edZ0/Tr7ff3M=
+ t=1791305413;
+ b=JSppcrgQ5yqD6qDr0cagnmeEi95vtT0v2gDAMk739oSWm0La4t5NnBOczMgXScMHXxElP
+ KYrFF9uFCFFPGi7XUqaHADsVb/Z+Ymd5+J4fDacylJ+Zu1UAZWavl0WqzkaSAY9I5qGlrQP
+ lfRe8wD1cmZqkitzQf3b66otC6ZLO7w=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791305383; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791305413; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=VAVnKyJdpcFsMvidBaUe0DvETJX2RzAktU7qX9Er7ks=;
- b=rDC6qbghE93QJDPq6ChbcSCXsR/yPHUsWugKRj53CkISoa0ko+fSLKXK9rBCCRMMNRGnr
- NsT/0EMGb3+OgvcFyjtJcFetTkyHjaGaTI5AYVkgC294DGylRd67vXWGRiUKVAPWEQkyran
- 7TJmcaj3aV6U2LwLA7jZ9eSm4UW67Fk=
+ list-archive; bh=XuiBm4UXKADyrAZEBf0Ue5AgzqJpVM9XQgmTC96McUc=;
+ b=i66iRogP+730tOmpD7x6zqEM/1Ubu7FV8JjF/rEP9AXbt6cSq9x6MiJE3Fe6Zrft8drEy
+ uN7HA1l2Xm04y2fDibr2Y6zCz3sglXhXHBkY0RUVnSp9NpISmVMzU3eJ1e+LtBNW/YeNQyN
+ dovggLpj4hvCfKCPSMC0tR6O3ct1EuQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,64 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0A29A83BB4
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 18:48:23 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791305314;
-	b=DFzISzUc6AIRLrqHR6+pKCypCd4gcYTXsC+3Qgn419TYZFqYk3n44EYUWV0PyAcp2xoWI5
-	aifa2bmk/C+fah2cpn/xJYxNZYy9iGG0jp3hY38+xUOjFZnPOTAmTFHZuVKPKgk6lrSBkZ
-	hQCjwJm190iUNXRszqVK25T6giuhjrI=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 28DD183BE2
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 18:48:37 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791305317;
+	b=d6fTgSl/CJgdkYyldjht484ejf9YHNh8i31MF++XL6efdF0rDzkyaVrFkQccuCZd5cTtc1
+	YCFhyNb2VlGormaEOxaIUfIBLUW7qsBCMbjfeTvtmrY7WzSPjUM3dbAhgkaLisbfuTEWcs
+	eBT6nfY5kF3wobAe0evbyxM3t2GQb2w=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791305314;
+	s=20121; t=1791305317;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=VAVnKyJdpcFsMvidBaUe0DvETJX2RzAktU7qX9Er7ks=;
-	b=qwA6e0HMwm3p2DlyViz2JTx3dKW8ZZCTTuulaF9JO8oJu2rJ/2rLiNaUaCsl4oF99M5kJT
-	o9fvwyCWlFz9vPBWbdXifa7e/xXrOpaMO7yENlKyb366515p1PVAxurY8E4/BApx8fXGcH
-	b9ME4bPu0pddc5oQVsuOGGybrNUZUps=
+	bh=XuiBm4UXKADyrAZEBf0Ue5AgzqJpVM9XQgmTC96McUc=;
+	b=B4GuIArmYNzrUxIbGdw3hws5p7DJ5dty4WCK82+LWCk4yGXFi1Yu3GBh+jntVncDJaXw5u
+	cTnmetClvsKvTrp5tm2nEAoJKIKmjAQPuYmLv0dHZP46M0r9Zwx4BUMVXxxJ84taf4JKjp
+	UbdBPrmJIrgnFu8fpuFOpkpUUB68e9w=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=sR9+Dxd+;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=wHt2zQhc;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 475F51FE24;
-	Tue, 06 Oct 2026 16:48:23 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 796241FE24;
+	Tue, 06 Oct 2026 16:48:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791305303;
+	s=20121; t=1791305316;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=VAVnKyJdpcFsMvidBaUe0DvETJX2RzAktU7qX9Er7ks=;
-	b=sR9+Dxd+6F2D0ZJRvSx3OcgM5+VjdCTvSvO86nZePJUFNhHSPNGgVucmRHndPlBB1CGZjJ
-	YHNNy7A4wueaANh+mhlqPYkQN1ECvUzUa2m+oabpkQr3XIs8CjIPppWKAeXULJNmUIgnpE
-	B0EDOXnyyBSQigSKkV9epDT8Oosu6t4=
+	bh=XuiBm4UXKADyrAZEBf0Ue5AgzqJpVM9XQgmTC96McUc=;
+	b=wHt2zQhcx/rvF+kfHvImVU6My04RsT5qGbYDi1b3BFREZ9PWS0PKMCg77nnmvWUfCzflJj
+	smb0juWvsTeS4AeIGhl7H22JQ7b21+AS92q8Gow5p7jVycrwFOFzPZtJBYEnZXhJchK5eJ
+	O9bKlLm+Qen6OQzh+eZ2LRU8ddt3WXs=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 06 Oct 2026 18:47:05 +0200
-Subject: [PATCH batadv v3 3/9] batman-adv: bla: annotate lasttime with
+Date: Tue, 06 Oct 2026 18:47:06 +0200
+Subject: [PATCH batadv v3 4/9] batman-adv: tt: annotate last_seen with
  READ/WRITE_ONCE
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261006-dat-last_update-once-v3-3-316aefdd5f5f@narfation.org>
+Message-Id: <20261006-dat-last_update-once-v3-4-316aefdd5f5f@narfation.org>
 References: <20261006-dat-last_update-once-v3-0-316aefdd5f5f@narfation.org>
 In-Reply-To: <20261006-dat-last_update-once-v3-0-316aefdd5f5f@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1544; i=sven@narfation.org;
- h=from:subject:message-id; bh=yVKoxy5R2+cuPDV2BjmrfJJKlWtum/4kTqOgnxqY3dI=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlH1bhWioWa8b5fx8r4feraJrMeFb+X6me/dZ9covHzu
- 3CZyw69jlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEXsQyMmwxazQXSCznvJZ5
- /MaN1kmPvPr27N0hd+mLalnMhVZO6fMM/8OZKpOn703sP1iyVt+sp0Q7ROij22S5i4KSdXdZ2GV
- leQE=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2998; i=sven@narfation.org;
+ h=from:subject:message-id; bh=CEd2yQjxIXqpkHondk+B5lDrnbZN9vyhYPDo3VIiGv0=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlH1bgc3ubMm7j5/5TASal/5EUCMn+zvph3JCfvIrdg0
+ 9XQB/VcHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJfH3M8L84UexCSO2EdrUT
+ B45P3st2zd332toHqumay2988bziUBLB8JuF8U4lJ3O8XFXf5EMzxMzmCM2cHHpp7uGG8ydOHef
+ wP8MEAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: FLGPOZUMQ46O4YEVG3YCXKKPQ3KARWIW
-X-Message-ID-Hash: FLGPOZUMQ46O4YEVG3YCXKKPQ3KARWIW
+Message-ID-Hash: GVH7TD5G5EOZ7B2N3ZFBZEN7MF7URTJC
+X-Message-ID-Hash: GVH7TD5G5EOZ7B2N3ZFBZEN7MF7URTJC
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FLGPOZUMQ46O4YEVG3YCXKKPQ3KARWIW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GVH7TD5G5EOZ7B2N3ZFBZEN7MF7URTJC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,42 +113,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The lasttime field for batadv_bla_backbone_gw tracks the jiffies value of
+The last_seen field for batadv_tt_local_entry tracks the jiffies value of
 the most recent activity and is used to detect timeouts. These accesses are
 not consistently protected by a lock, so READ_ONCE/WRITE_ONCE must be used
 to prevent data races caused by compiler optimizations.
 
 To avoid an underflow due to an non-strict order read of jffies vs
-lasttime, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
+last_seen, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
 evaluate the delta.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/batman-adv/translation-table.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index a96f269d..0833f9f9 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -2363,6 +2363,7 @@ batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid,
- 			       struct batadv_bla_backbone_gw *backbone_gw)
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e46040fd..11d9fbdd 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -940,7 +940,7 @@ static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
  {
- 	const u8 *primary_addr = primary_if->net_dev->dev_addr;
-+	unsigned long lasttime;
- 	int ret = -EINVAL;
- 	u16 backbone_crc;
- 	bool is_own;
-@@ -2385,7 +2386,8 @@ batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid,
- 	backbone_crc = backbone_gw->crc;
- 	spin_unlock_bh(&backbone_gw->crc_lock);
+ 	struct batadv_tt_common_entry *common = &tt_local->common;
  
--	msecs = jiffies_to_msecs(jiffies - READ_ONCE(backbone_gw->lasttime));
-+	lasttime = READ_ONCE(backbone_gw->lasttime);
-+	msecs = jiffies_delta_to_msecs(jiffies - lasttime);
+-	tt_local->last_seen = jiffies;
++	WRITE_ONCE(tt_local->last_seen, jiffies);
  
- 	if (is_own)
- 		if (nla_put_flag(msg, BATADV_ATTR_BLA_OWN)) {
+ 	scoped_guard(spinlock_bh, &common->flags_lock) {
+ 		if (common->flags & BATADV_TT_CLIENT_PENDING) {
+@@ -995,6 +995,7 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
+ 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
+ 	struct batadv_tt_local_entry *tt_local;
+ 	struct batadv_meshif_vlan *vlan;
++	unsigned long last_seen;
+ 
+ 	if (!batadv_tt_local_reserve_entry(bat_priv, addr))
+ 		return NULL;
+@@ -1024,8 +1025,9 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
+ 	ether_addr_copy(tt_local->common.addr, addr);
+ 	tt_local->common.vid = vid;
+ 	kref_init(&tt_local->common.refcount);
+-	tt_local->last_seen = jiffies;
+-	tt_local->common.added_at = tt_local->last_seen;
++	last_seen = jiffies;
++	WRITE_ONCE(tt_local->last_seen, last_seen);
++	tt_local->common.added_at = last_seen;
+ 	tt_local->vlan = vlan;
+ 	spin_lock_init(&tt_local->common.flags_lock);
+ 
+@@ -1480,12 +1482,14 @@ batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid,
+ 	struct batadv_tt_local_entry *local;
+ 	struct batadv_meshif_vlan *vlan;
+ 	unsigned int last_seen_msecs;
++	unsigned long last_seen;
+ 	void *hdr;
+ 	u16 flags;
+ 	u32 crc;
+ 
+ 	local = container_of(common, struct batadv_tt_local_entry, common);
+-	last_seen_msecs = jiffies_to_msecs(jiffies - local->last_seen);
++	last_seen = READ_ONCE(local->last_seen);
++	last_seen_msecs = jiffies_delta_to_msecs(jiffies - last_seen);
+ 
+ 	vlan = batadv_meshif_vlan_get(bat_priv, common->vid);
+ 	if (!vlan)
+@@ -1818,7 +1822,8 @@ static void batadv_tt_local_purge_list(struct batadv_priv *bat_priv,
+ 			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING)
+ 				break;
+ 
+-			if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout))
++			if (!batadv_has_timed_out(READ_ONCE(tt_local_entry->last_seen),
++						  timeout))
+ 				break;
+ 
+ 			batadv_tt_local_set_pending(bat_priv, tt_local_entry,
 
 -- 
 2.47.3
