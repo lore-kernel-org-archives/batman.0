@@ -4,77 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80A8ECA5FFC
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 12:10:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53869CA5FF0
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 13:06:00 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id ECCD5848E0
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 14:10:23 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 747C381900
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 15:05:58 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791288623;
- b=SxkQ99de2DdTOflLzZcO78kdcZKnO3vErTi5A9TDdi/d/TwR+cbv3/uk21IEown+sAV3P
- 1aDREaTbtGs9Eyip0z8pBkSl7vKrpnIdkP76DqgDr3CZd1NcWo8aBqZO6E/ugzdLYHBpwIo
- saAKTeNZfTIWgAw/wWzP7lWYhxDorLo=
+ t=1791291958;
+ b=ljA3jRdSALMIIh4JpFZ3AimSwXFCyQZ+4aR0X0cl8Sbv2KBje+LqsMvW4mkzoEJpCQU72
+ cRDsl+BhfoALH9qXOjrQZpebLtV8az466relXnz5Y3dDZ4FFCDEHFStfB33W6DQ07eIcv4H
+ VsOQOrPNJHY1Ya8Nq7RFCDqmYFkmnMk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791288623; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791291958; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=aZEnbuLFAQZ5W6ZiZDS1AVzyp2OBqnZ6PFIF5xhsmjE=;
- b=vnqmZkgsUxmcwO1lGmiYy6tUIGVWiqTPyQdjVxFc7DlnGsUSy6LmGDci5Xkd3J1qljov5
- 6jV7RhULH6SgMOexwylKMQjcvazx3f9xjVj6bvsoxKHKPtTT945npm8z2Vsctvonqqt5j6N
- zFpfkh97zEW5AWxbQ58BfAca+HbrtxA=
+ list-archive; bh=leMROTpkwTJLP4gquGwlXc+Y9Mr/ZVFaEnXalX39paE=;
+ b=KlG3LiJQyz8jwSIbhT819k2HDjTX/+hau7ZYC3tbA/heVz8QzaVWH5g/Acd84sImpX5aS
+ 520CPXg1KxzrKVlEmoFyANQxBr5X96wxr11idrG+wecCn1kVVz3eEnpX3CFxNPoEmSvyvT+
+ eHe31Tv0ZIStDDxqgD8lt2ielZ8TeYY=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=fail;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=none
-Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
-Received: from mail.aperture-lab.de (mail.aperture-lab.de
- [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 3C61C844EB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 14:07:31 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791288461;
-	b=JkJ8pAwJlRFxMV0VusUGniRmQVWBoGE+IPDRKZK9dRzfrOO1d5mMF886hVfyfVDOh7Rb5B
-	qdtBklo+7NgmGHgiFgUN+1AH3xkLD3H1kJRauOM/qWWgDOle63A0QO9heKnTpgK/+gqZMO
-	2IWMEj5OBY9ctP4l5Qbghib2Ws+e8Do=
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id D76AB80B92
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 15:05:29 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791291940;
+	b=NhawQPozPLDFhL7QBw+SfCgPH+9RTX3aCWasWU1T+XnhQBxF6fDjYdd4/Y8RUr4qDz+0N2
+	6l2AHfcm7YKa06ZjGxT/PS1mGJRxtXtCZ0GOX7+HLGnULZML7JzEUyS+ACuvxfPwSC+jNk
+	WYandxJWYCdSY0K1Te1v/AmthkKsbQk=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791288461;
+	s=20121; t=1791291939;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=aZEnbuLFAQZ5W6ZiZDS1AVzyp2OBqnZ6PFIF5xhsmjE=;
-	b=vpARZuhTikeyWyxzl374WDKGKcKn4suC7SJhAjm04z3ytscntFDvRbr9cqtqgjM+Bp7+zS
-	6eO9rV+FqqnM0VJcCf15+5b9aY9ufUX+y/NN6KJV7dkCWS8GG1xlJKDu/xp3hWVzuNyVWI
-	SEMjGi+JF1fIdwnA/GGZcaZNcK7o0/w=
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=leMROTpkwTJLP4gquGwlXc+Y9Mr/ZVFaEnXalX39paE=;
+	b=NzNcyupDGJMFln+zNq1gf47QbKXxQ3GpYo7EK+TNYaHtPfFIdz/0i5BKyM6th7k9gHM+ar
+	u0DJ6gNgQbECDk9lgHyAnlRQaVaW6xQ5uCW5/Ey61/1KkAdB16ChX9IyJac3janewlKGdI
+	LLKp9fP7+vMGfYh7TVUCU/V7f+5fVrU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=none;
-	dmarc=none;
-	spf=pass (diktynna.open-mesh.org: domain of linus.luessing@c0d3.blue
- designates 2a01:4f8:c2c:665b::1 as permitted sender)
- smtp.mailfrom=linus.luessing@c0d3.blue
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id F1DB82331D;
-	Tue, 06 Oct 2026 14:07:22 +0200 (CEST)
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [batadv,v13 5/5] batman-adv: avoid superfluous DAT DHT_PUT additions
- to local DAT
-Date: Tue,  6 Oct 2026 14:06:46 +0200
-Message-ID: <20261006120647.8646-6-linus.luessing@c0d3.blue>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261006120647.8646-1-linus.luessing@c0d3.blue>
+	dkim=pass header.d=narfation.org header.s=20121 header.b=pOG53iOD;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+Received: by dvalin.narfation.org (Postfix) id 8A05020411;
+	Tue, 06 Oct 2026 13:05:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1791291925;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=leMROTpkwTJLP4gquGwlXc+Y9Mr/ZVFaEnXalX39paE=;
+	b=pOG53iODMpPMRnZQIsNIS7WPci8nCkm1zav21wIRMWyBhsxOuqFNzrEPjeVhD6Z+vd5aeO
+	fyXuL+K/wwdsGwxJr6Z32B0u0hof9ySoXHUPR1tbsGxtEU0ENc1OdqKzD+uJuJV5Zh2ctF
+	rJh2M4zV9PdZebl5+9gTBeKAmb0Teqg=
+From: Sven Eckelmann <sven@narfation.org>
+To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Cc: sashiko-reviews@lists.linux.dev, b.a.t.m.a.n@lists.open-mesh.org
+Subject: Re: [batadv,v13 5/5] batman-adv: avoid superfluous DAT DHT_PUT
+ additions to
+ local DAT
+Date: Tue, 06 Oct 2026 15:05:22 +0200
+Message-ID: <3435112.aeNJFYEL58@sven-l14>
+In-Reply-To: <20261006121937.398DD1F000FF@smtp.kernel.org>
 References: <20261006120647.8646-1-linus.luessing@c0d3.blue>
+ <20261006120647.8646-6-linus.luessing@c0d3.blue>
+ <20261006121937.398DD1F000FF@smtp.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: PH3JXTUPJA6NLBMHWK5JTMKRLI7NKBNS
-X-Message-ID-Hash: PH3JXTUPJA6NLBMHWK5JTMKRLI7NKBNS
-X-MailFrom: linus.luessing@c0d3.blue
+Content-Type: multipart/signed; boundary="nextPart3441699.44csPzL39Z";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Message-ID-Hash: QTXYHBV6YKG7PNYHQTSTPLC57F2BXXGE
+X-Message-ID-Hash: QTXYHBV6YKG7PNYHQTSTPLC57F2BXXGE
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -87,7 +96,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PH3JXTUPJA6NLBMHWK5JTMKRLI7NKBNS/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/QTXYHBV6YKG7PNYHQTSTPLC57F2BXXGE/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -96,532 +105,1008 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-We send DHT_PUT ARP Replies to (typically) three DAT DHT candidates
-for the sender MAC/IP pair and another three for the target MAC/IP
-pair to likely different DAT DHT candidates. On the DHT_PUT
-receiving side we would then add both the sender MAC/IP and target
-MAC/IP to the local DHT, even if we are not actually a selected
-DAT candidate for one of the pairs.
+--nextPart3441699.44csPzL39Z
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Sven Eckelmann <sven@narfation.org>
+To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Cc: sashiko-reviews@lists.linux.dev, b.a.t.m.a.n@lists.open-mesh.org
+Date: Tue, 06 Oct 2026 15:05:22 +0200
+Message-ID: <3435112.aeNJFYEL58@sven-l14>
+In-Reply-To: <20261006121937.398DD1F000FF@smtp.kernel.org>
+MIME-Version: 1.0
 
-This way we typically unnecessarily populate our local DHT with
-superfluous entries. Entries which no DAT DHT_GET will likely
-ever query from us.
+On Tuesday, 6 October 2026 14:19:36 CEST sashiko-bot@kernel.org wrote:> > d=
+iff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+> > index 5cf26e8b3257a..8dd4094d134bd 100644
+> > --- a/net/batman-adv/routing.c
+> > +++ b/net/batman-adv/routing.c
+> > @@ -1094,7 +1096,8 @@ int batadv_recv_unicast_packet(struct sk_buff *sk=
+b,
+> >  			unicast_4addr_packet =3D
+> >  				(struct batadv_unicast_4addr_packet *)skb->data;
+> >  			subtype =3D unicast_4addr_packet->subtype;
+> > -			batadv_dat_inc_counter(bat_priv, subtype);
+> > +			flags =3D unicast_4addr_packet->flags;
+> > +			batadv_dat_inc_counter(bat_priv, subtype, flags);
+>=20
+> [Severity: Low]
+> This passes three arguments to batadv_dat_inc_counter(). However, looking
+> at net/batman-adv/distributed-arp-table.h, the dummy fallback implementat=
+ion=20
+> of this function used when CONFIG_BATMAN_ADV_DAT is disabled seems to onl=
+y=20
+> accept two arguments:
+>=20
+> static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+> 					  u8 subtype)
+> {
+> }
+>=20
+> Will this cause a build failure when compiling the kernel with
+> CONFIG_BATMAN_ADV_DAT=3Dn?
 
-To avoid these unnecessary local DHT additions add a flag to DHT_PUT
-messages to indicate which pair is supposed to be added to the local
-DHT.
+Confirmed (+ some extra):
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- include/uapi/linux/batadv_packet.h     |  17 +++-
- net/batman-adv/distributed-arp-table.c | 124 ++++++++++++++++++++++---
- net/batman-adv/distributed-arp-table.h |  15 ++-
- net/batman-adv/mesh-interface.c        |   4 +
- net/batman-adv/routing.c               |  19 +++-
- net/batman-adv/send.c                  |   8 +-
- net/batman-adv/send.h                  |   3 +-
- net/batman-adv/types.h                 |  24 +++++
- 8 files changed, 186 insertions(+), 28 deletions(-)
+Name of failed tests
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
-index 32436560ecc8..6f4783887d37 100644
---- a/include/uapi/linux/batadv_packet.h
-+++ b/include/uapi/linux/batadv_packet.h
-@@ -70,6 +70,19 @@ enum batadv_subtype {
- 	BATADV_P_DAT_CACHE_REPLY	= 0x04,
- };
- 
-+/**
-+ * enum batadv_subtype_flags - unicast4addr packet subtype specific flags
-+ * @BATADV_P_DAT_DHT_PUT_NO_SRC: do not add sender IP/MAC from DHT_PUT ARP Reply
-+ *  to local DHT
-+ * @BATADV_P_DAT_DHT_PUT_NO_DST: do not add target IP/MAC from DHT_PUT ARP Reply
-+ *  to local DHT
-+ */
-+enum batadv_subtype_flags {
-+	BATADV_P_DAT_DHT_PUT_NO_SRC	= 0x01,
-+	BATADV_P_DAT_DHT_PUT_NO_DST	= 0x02,
-+};
-+
-+
- /* this file is included by batctl which needs these defines */
- #define BATADV_COMPAT_VERSION 15
- 
-@@ -433,13 +446,13 @@ struct batadv_unicast_packet {
-  * @u: common unicast packet header
-  * @src: address of the source
-  * @subtype: packet subtype
-- * @reserved: reserved byte for alignment
-+ * @flags: packet subtype specific flags
-  */
- struct batadv_unicast_4addr_packet {
- 	struct batadv_unicast_packet u;
- 	__u8 src[ETH_ALEN];
- 	__u8 subtype;
--	__u8 reserved;
-+	__u8 flags;
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 52dff46a7c52..739269a3b9d8 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -160,6 +160,9 @@ struct batadv_dhcp_option_header {
- #define BATADV_DHCP_CHADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->chaddr)
- 
- static void batadv_dat_purge(struct work_struct *work);
-+static bool
-+batadv_dat_dht_check_self_is_candidate(struct batadv_priv *bat_priv,
-+				       __be32 ip, unsigned short vid);
- 
- /**
-  * batadv_dat_start_timer() - initialise the DAT periodic worker
-@@ -562,6 +565,20 @@ static inline void
- batadv_dat_dht_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 			 u8 *mac_addr, unsigned short vid)
- {
-+	/* Happens if a new node just beat us as a candidate, an old node
-+	 * does not have the more specific candidate selection enhancements yet
-+	 * or if future protocol enhancements, which this node does not have
-+	 * yet, added new/other candidate selections. For compatibility reasons
-+	 * do not bail out here.
-+	 */
-+	if (!batadv_dat_dht_check_self_is_candidate(bat_priv, ip, vid)) {
-+		batadv_inc_counter(bat_priv,
-+				   BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE);
-+		batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+			   "Adding %pI4 %pM (vid: %d), although we are not a candidate\n",
-+			   &ip, mac_addr, batadv_print_vid(vid));
-+	}
-+
- 	batadv_dat_entry_add(bat_priv, bat_priv->dat.dht_hash, ip, mac_addr,
- 			     vid, "dht");
- }
-@@ -1050,6 +1067,7 @@ batadv_dat_dht_get_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
-  * @ip: the DHT key
-  * @vid: VLAN identifier
-  * @packet_subtype: unicast4addr packet subtype to use
-+ * @flags: packet subtype specific flags to set
-  *
-  * This function copies the skb with pskb_copy() and is sent as a unicast packet
-  * to each of the selected candidates.
-@@ -1060,7 +1078,8 @@ batadv_dat_dht_get_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
- static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
- 				    struct batadv_dat_candidate *cands,
- 				    struct sk_buff *skb, __be32 ip,
--				    unsigned short vid, int packet_subtype)
-+				    unsigned short vid, int packet_subtype,
-+				    int flags)
- {
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct sk_buff *tmp_skb;
-@@ -1085,7 +1104,8 @@ static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
- 
- 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
- 							   cands[i].orig_node,
--							   packet_subtype)) {
-+							   packet_subtype,
-+							   flags)) {
- 			kfree_skb(tmp_skb);
- 			goto free_neigh;
- 		}
-@@ -1135,6 +1155,31 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
- 	kfree(cands);
- }
- 
-+/**
-+ * batadv_dat_dht_check_self_is_candidate() - check if we are a DHT candidate
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @ip: key to look up in the DHT
-+ * @vid: VLAN identifier
-+ *
-+ * Check if we are a selected candidate for the given IP address key.
-+ *
-+ * Return: true if we are a selected candidate for the given @ip, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_dat_dht_check_self_is_candidate(struct batadv_priv *bat_priv,
-+				       __be32 ip, unsigned short vid)
-+{
-+	struct batadv_dat_candidate *cands;
-+	bool self_is_candidate = false;
-+
-+	cands = batadv_dat_select_candidates(bat_priv, ip, vid,
-+					     &self_is_candidate);
-+	batadv_dat_candidates_free(cands);
-+
-+	return self_is_candidate;
-+}
-+
- /**
-  * batadv_dat_forward_dht_put() - send payload via DHT_PUT to DAT candidates
-  * @bat_priv: the bat priv with all the mesh interface information
-@@ -1142,6 +1187,7 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
-  * @ip: the DHT key
-  * @hw_addr: the MAC address which the IP resolves to
-  * @vid: VLAN identifier
-+ * @flags: packet subtype specific flags to set
-  *
-  * Send the given payload via a DAT DHT_PUT message to the selected
-  * candidates.
-@@ -1151,7 +1197,8 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
-  */
- static bool
- batadv_dat_forward_dht_put(struct batadv_priv *bat_priv, struct sk_buff *skb,
--			   __be32 ip, u8 *hw_addr, unsigned short vid)
-+			   __be32 ip, u8 *hw_addr, unsigned short vid,
-+			   int flags)
- {
- 	struct batadv_dat_candidate *cands;
- 	bool self_is_candidate = false;
-@@ -1166,12 +1213,56 @@ batadv_dat_forward_dht_put(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		batadv_dat_dht_entry_add(bat_priv, ip, hw_addr, vid);
- 
- 	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip, vid,
--				      BATADV_P_DAT_DHT_PUT);
-+				      BATADV_P_DAT_DHT_PUT, flags);
- 
- 	batadv_dat_candidates_free(cands);
- 	return ret;
- }
- 
-+/**
-+ * batadv_dat_forward_dht_put_src() - send source-specific DHT_PUTs
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @skb: payload to send
-+ * @ip_src: the DHT key
-+ * @hw_src: the MAC address which the IP resolves to
-+ * @vid: VLAN identifier
-+ *
-+ * Send the given payload via a DAT DHT_PUT message to the selected
-+ * candidates, with the PUT_NO_DST flag set.
-+ *
-+ * Return: true if the packet is sent to at least one candidate, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_dat_forward_dht_put_src(struct batadv_priv *bat_priv, struct sk_buff *skb,
-+			       __be32 ip_src, u8 *hw_src, unsigned short vid)
-+{
-+	return batadv_dat_forward_dht_put(bat_priv, skb, ip_src, hw_src, vid,
-+					  BATADV_P_DAT_DHT_PUT_NO_DST);
-+}
-+
-+/**
-+ * batadv_dat_forward_dht_put_dst() - send destination-specific DHT_PUTs
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @skb: payload to send
-+ * @ip_dst: the DHT key
-+ * @hw_dst: the MAC address which the IP resolves to
-+ * @vid: VLAN identifier
-+ *
-+ * Send the given payload via a DAT DHT_PUT message to the selected
-+ * candidates, with the PUT_NO_SRC flag set.
-+ *
-+ * Return: true if the packet is sent to at least one candidate, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_dat_forward_dht_put_dst(struct batadv_priv *bat_priv, struct sk_buff *skb,
-+			       __be32 ip_dst, u8 *hw_dst, unsigned short vid)
-+{
-+	return batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid,
-+					  BATADV_P_DAT_DHT_PUT_NO_SRC);
-+}
-+
- /**
-  * batadv_dat_forward_dht_get() - send payload via DHT_GET to DAT candidates
-  * @bat_priv: the bat priv with all the mesh interface information
-@@ -1211,7 +1302,7 @@ batadv_dat_forward_dht_get(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	}
- 
- 	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip_dst, vid,
--				      BATADV_P_DAT_DHT_GET);
-+				      BATADV_P_DAT_DHT_GET, 0);
- 
- skip_remote_forward:
- 	batadv_dat_candidates_free(cands);
-@@ -1870,8 +1961,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	/* Send the ARP reply to the candidates for both the IP addresses that
- 	 * the node obtained from the ARP reply
- 	 */
--	batadv_dat_forward_dht_put(bat_priv, skb, ip_src, hw_src, vid);
--	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
-+	batadv_dat_forward_dht_put_src(bat_priv, skb, ip_src, hw_src, vid);
-+	batadv_dat_forward_dht_put_dst(bat_priv, skb, ip_dst, hw_dst, vid);
- }
- 
- /**
-@@ -1880,8 +1971,12 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-- * @is_dht_put: ARP reply is part of a unicast 4addr DHT PUT packet and should
-- *  not only update our local DAT cache but also our local DAT DHT
-+ * @is_dht_put_src: ARP reply is part of a source-specific unicast 4addr DHT PUT
-+ *  packet and should not only update our local DAT cache but also our local
-+ *  DAT DHT
-+ * @is_dht_put_dst: ARP reply is part of a destination-specific unicast 4addr
-+ *  DHT PUT packet and should not only update our local DAT cache but also our
-+ *  local DAT DHT
-  *
-  * Warning: This function may reallocate the skb data buffer via
-  * batadv_dat_get_vid()/... Any pointer into the skb data (e.g. obtained
-@@ -1893,7 +1988,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size,
--					 bool is_dht_put)
-+					 bool is_dht_put_src,
-+					 bool is_dht_put_dst)
- {
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	u8 mac[ETH_ALEN] __aligned(2);
-@@ -1926,10 +2022,10 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	if (is_dht_put) {
-+	if (is_dht_put_src)
- 		batadv_dat_dht_entry_add(bat_priv, ip_src, hw_src, vid);
-+	if (is_dht_put_dst)
- 		batadv_dat_dht_entry_add(bat_priv, ip_dst, hw_dst, vid);
--	}
- 
- 	/* If ip_dst is already in cache and has the right mac address,
- 	 * drop this frame if this ARP reply is destined for us because it's
-@@ -2212,8 +2308,8 @@ static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
- 	batadv_dat_cache_entry_add(bat_priv, yiaddr, chaddr, vid);
- 	batadv_dat_cache_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
--	batadv_dat_forward_dht_put(bat_priv, skb, yiaddr, chaddr, vid);
--	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
-+	batadv_dat_forward_dht_put_src(bat_priv, skb, yiaddr, chaddr, vid);
-+	batadv_dat_forward_dht_put_dst(bat_priv, skb, ip_dst, hw_dst, vid);
- 
- 	consume_skb(skb);
- 
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index ad81b7db921e..d955fcb27ae0 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -32,7 +32,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size,
--					 bool is_dht_put);
-+					 bool is_dht_put_src,
-+					 bool is_dht_put_dst);
- void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
- 					struct sk_buff *skb,
- 					__be16 proto,
-@@ -81,11 +82,12 @@ int batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb);
-  * batadv_dat_inc_counter() - increment the correct DAT packet counter
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @subtype: the 4addr subtype of the packet to be counted
-+ * @flags: packet subtype specific flags
-  *
-  * Updates the ethtool statistics for the received packet if it is a DAT subtype
-  */
- static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
--					  u8 subtype)
-+					  u8 subtype, u8 flags)
- {
- 	switch (subtype) {
- 	case BATADV_P_DAT_DHT_GET:
-@@ -95,6 +97,13 @@ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
- 	case BATADV_P_DAT_DHT_PUT:
- 		batadv_inc_counter(bat_priv,
- 				   BATADV_CNT_DAT_PUT_RX);
-+		if (!flags)
-+			batadv_inc_counter(bat_priv,
-+					   BATADV_CNT_DAT_PUT_NOFLAGS_RX);
-+		if (!(flags & BATADV_P_DAT_DHT_PUT_NO_SRC))
-+			batadv_inc_counter(bat_priv, BATADV_CNT_DAT_PUT_SRC_RX);
-+		if (!(flags & BATADV_P_DAT_DHT_PUT_NO_DST))
-+			batadv_inc_counter(bat_priv, BATADV_CNT_DAT_PUT_DST_RX);
- 		break;
- 	}
- }
-@@ -129,7 +138,7 @@ batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- static inline bool
- batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb, int hdr_size,
--				    bool is_dht_put)
-+				    bool is_dht_put_src, bool is_dht_put_dst)
- {
- 	return false;
- }
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index 41d148634034..bdf9c21b0da2 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -1005,7 +1005,11 @@ static const struct {
- 	{ "dat_get_rx" },
- 	{ "dat_put_tx" },
- 	{ "dat_put_rx" },
-+	{ "dat_put_src_rx" },
-+	{ "dat_put_dst_rx" },
-+	{ "dat_put_noflags_rx" },
- 	{ "dat_cached_reply_tx" },
-+	{ "dat_dht_add_not_candidate" },
- #endif
- };
- 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 5cf26e8b3257..8dd4094d134b 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1045,8 +1045,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 	struct batadv_orig_node *orig_node_gw = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	int hdr_size = sizeof(*unicast_packet);
-+	enum batadv_subtype_flags flags;
- 	enum batadv_subtype subtype;
--	bool is_dht_put = false;
-+	bool is_dht_put_src = false;
-+	bool is_dht_put_dst = false;
- 	int ret = NET_RX_DROP;
- 	u8 *orig_addr_gw;
- 	u8 *orig_addr;
-@@ -1094,7 +1096,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 			unicast_4addr_packet =
- 				(struct batadv_unicast_4addr_packet *)skb->data;
- 			subtype = unicast_4addr_packet->subtype;
--			batadv_dat_inc_counter(bat_priv, subtype);
-+			flags = unicast_4addr_packet->flags;
-+			batadv_dat_inc_counter(bat_priv, subtype, flags);
- 
- 			/* Only payload data should be considered for speedy
- 			 * join. For example, DAT also uses unicast 4addr
-@@ -1107,7 +1110,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 				orig_node = batadv_orig_hash_find(bat_priv,
- 								  orig_addr);
- 			} else if (subtype == BATADV_P_DAT_DHT_PUT) {
--				is_dht_put = true;
-+				if (!(flags & BATADV_P_DAT_DHT_PUT_NO_SRC))
-+					is_dht_put_src = true;
-+				if (!(flags & BATADV_P_DAT_DHT_PUT_NO_DST))
-+					is_dht_put_dst = true;
- 			}
- 		}
- 
-@@ -1115,7 +1121,9 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 							  hdr_size))
- 			goto rx_success;
- 		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
--							hdr_size, is_dht_put))
-+							hdr_size,
-+							is_dht_put_src,
-+							is_dht_put_dst))
- 			goto rx_success;
- 
- 		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-@@ -1356,7 +1364,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
- 		goto rx_success;
--	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false))
-+	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false,
-+						false))
- 		goto rx_success;
- 
- 	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 929b6dd34c10..e6ebe311f79d 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -263,13 +263,15 @@ static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
-  * @skb: the skb containing the payload to encapsulate
-  * @orig: the destination node
-  * @packet_subtype: the unicast 4addr packet subtype to use
-+ * @flags: packet subtype specific flags to set
-  *
-  * Return: false if the payload could not be encapsulated or true otherwise.
-  */
- bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb,
- 					   struct batadv_orig_node *orig,
--					   int packet_subtype)
-+					   int packet_subtype,
-+					   int flags)
- {
- 	struct batadv_unicast_4addr_packet *uc_4addr_packet;
- 	struct batadv_hard_iface *primary_if;
-@@ -291,7 +293,7 @@ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
- 	uc_4addr_packet->u.packet_type = BATADV_UNICAST_4ADDR;
- 	ether_addr_copy(uc_4addr_packet->src, primary_if->net_dev->dev_addr);
- 	uc_4addr_packet->subtype = packet_subtype;
--	uc_4addr_packet->reserved = 0;
-+	uc_4addr_packet->flags = flags;
- 
- 	ret = true;
- out:
-@@ -337,7 +339,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 	case BATADV_UNICAST_4ADDR:
- 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, skb,
- 							   orig_node,
--							   packet_subtype))
-+							   packet_subtype, 0))
- 			goto out;
- 		break;
- 	default:
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 3415afec4a0c..7481c4fa0681 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -53,7 +53,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb,
- 					   struct batadv_orig_node *orig_node,
--					   int packet_subtype);
-+					   int packet_subtype,
-+					   int flags);
- int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 			    struct sk_buff *skb, int packet_type,
- 			    int packet_subtype,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 045727c3adc0..68b753bb32f6 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -975,11 +975,35 @@ enum batadv_counters {
- 	/** @BATADV_CNT_DAT_PUT_RX: received dht PUT traffic packet counter */
- 	BATADV_CNT_DAT_PUT_RX,
- 
-+	/**
-+	 * @BATADV_CNT_DAT_PUT_SRC_RX: received source-specfic dht PUT traffic
-+	 *  packet counter
-+	 */
-+	BATADV_CNT_DAT_PUT_SRC_RX,
-+
-+	/**
-+	 * @BATADV_CNT_DAT_PUT_DST_RX: received destination-specfic dht PUT
-+	 *  traffic packet counter
-+	 */
-+	BATADV_CNT_DAT_PUT_DST_RX,
-+
-+	/**
-+	 * @BATADV_CNT_DAT_PUT_NOFLAGS_RX: received unspecific/unflagged dht PUT
-+	 *  traffic packet counter
-+	 */
-+	BATADV_CNT_DAT_PUT_NOFLAGS_RX,
-+
- 	/**
- 	 * @BATADV_CNT_DAT_CACHED_REPLY_TX: transmitted dat cache reply traffic
- 	 *  packet counter
- 	 */
- 	BATADV_CNT_DAT_CACHED_REPLY_TX,
-+
-+	/**
-+	 * @BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE: counter for local DHT
-+	 *  additions without (supposedly) being a selected candidate
-+	 */
-+	BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE,
- #endif
- 
- 	/** @BATADV_CNT_NUM: number of traffic counters */
--- 
-2.55.0
+pu
+=2D-
+
+ * checkpatch include/uapi/linux/batadv_packet.h
+ * kerneldoc
+ * sparse v5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dy BATMAN=
+_V=3Dn
+ * sparse v5.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN=
+_V=3Dn
+ * sparse v6.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v6.1.188 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BAT=
+MAN_V=3Dn
+ * sparse v6.10 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dn BATMAN=
+_V=3Dn
+ * sparse v6.11 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN=
+_V=3Dy
+ * sparse v6.11 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dy
+ * sparse v6.12 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMAN=
+_V=3Dy
+ * sparse v6.12.110 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dn BA=
+TMAN_V=3Dy
+ * sparse v6.12.110 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BA=
+TMAN_V=3Dn
+ * sparse v6.12.110 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BA=
+TMAN_V=3Dy
+ * sparse v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dn
+ * sparse v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dy BATMAN=
+_V=3Dy
+ * sparse v6.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dn
+ * sparse v6.18.51 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BAT=
+MAN_V=3Dn
+ * sparse v6.18.51 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dy BAT=
+MAN_V=3Dy
+ * sparse v6.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v6.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMAN_=
+V=3Dy
+ * sparse v6.4 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn BATMAN_=
+V=3Dy
+ * sparse v6.4 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v6.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN_=
+V=3Dy
+ * sparse v6.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN_=
+V=3Dy
+ * sparse v6.6.157 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BAT=
+MAN_V=3Dy
+ * sparse v6.8 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn BATMAN_=
+V=3Dn
+ * sparse v6.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v7.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN_=
+V=3Dy
+ * sparse v7.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMAN_=
+V=3Dn
+ * sparse v7.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN_=
+V=3Dn
+ * sparse v7.2 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN_=
+V=3Dy
+ * sparse v7.2 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN_=
+V=3Dn
+ * sparse v7.2.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMA=
+N_V=3Dy
+ * sparse v7.3-rc3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BAT=
+MAN_V=3Dn
+ * sparse v7.3-rc3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn BAT=
+MAN_V=3Dy
+ * sparse v7.3-rc3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BAT=
+MAN_V=3Dy
+ * unused_symbols v5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3D=
+y BATMAN_V=3Dn
+ * unused_symbols v5.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3D=
+y BATMAN_V=3Dn
+ * unused_symbols v6.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v6.1.188 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+ * unused_symbols v6.10 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3D=
+n BATMAN_V=3Dn
+ * unused_symbols v6.11 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3D=
+y BATMAN_V=3Dy
+ * unused_symbols v6.11 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3D=
+n BATMAN_V=3Dy
+ * unused_symbols v6.12 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3D=
+n BATMAN_V=3Dy
+ * unused_symbols v6.12.110 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAS=
+T=3Dn BATMAN_V=3Dy
+ * unused_symbols v6.12.110 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAS=
+T=3Dn BATMAN_V=3Dn
+ * unused_symbols v6.12.110 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAS=
+T=3Dn BATMAN_V=3Dy
+ * unused_symbols v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3D=
+n BATMAN_V=3Dn
+ * unused_symbols v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3D=
+y BATMAN_V=3Dy
+ * unused_symbols v6.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3D=
+n BATMAN_V=3Dn
+ * unused_symbols v6.18.51 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=
+=3Dy BATMAN_V=3Dn
+ * unused_symbols v6.18.51 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=
+=3Dy BATMAN_V=3Dy
+ * unused_symbols v6.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v6.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn=
+ BATMAN_V=3Dy
+ * unused_symbols v6.4 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn=
+ BATMAN_V=3Dy
+ * unused_symbols v6.4 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v6.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy=
+ BATMAN_V=3Dy
+ * unused_symbols v6.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn=
+ BATMAN_V=3Dy
+ * unused_symbols v6.6.157 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=
+=3Dy BATMAN_V=3Dy
+ * unused_symbols v6.8 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn=
+ BATMAN_V=3Dn
+ * unused_symbols v6.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v7.0 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy=
+ BATMAN_V=3Dy
+ * unused_symbols v7.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn=
+ BATMAN_V=3Dn
+ * unused_symbols v7.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn=
+ BATMAN_V=3Dn
+ * unused_symbols v7.2 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy=
+ BATMAN_V=3Dy
+ * unused_symbols v7.2 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy=
+ BATMAN_V=3Dn
+ * unused_symbols v7.2.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols v7.3-rc3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=
+=3Dy BATMAN_V=3Dn
+ * unused_symbols v7.3-rc3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+ * unused_symbols v7.3-rc3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+
+
+Output of different failed tests
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+
+pu: checkpatch include/uapi/linux/batadv_packet.h
+=2D------------------------------------------------
+
+    CHECK: Please don't use multiple blank lines
+    #85: FILE: include/uapi/linux/batadv_packet.h:85:
+    +
+    +
+   =20
+    total: 0 errors, 0 warnings, 1 checks, 688 lines checked
+
+pu: kerneldoc
+=2D------------
+
+    Warning: ./net/batman-adv/distributed-arp-table.c:1032 Excess function =
+parameter 'hw_dst' description in 'batadv_dat_dht_get_self_reply' (did you =
+mean one of: 'ip_dst', 'hw_src')
+    Warning: ./net/batman-adv/distributed-arp-table.c:1286 Excess function =
+parameter 'hw_dst' description in 'batadv_dat_forward_dht_get' (did you mea=
+n one of: 'ip_dst', 'hw_src')
+    Warning: ./net/batman-adv/distributed-arp-table.c:1032 Excess function =
+parameter 'hw_dst' description in 'batadv_dat_dht_get_self_reply' (did you =
+mean one of: 'ip_dst', 'hw_src')
+    Warning: ./net/batman-adv/distributed-arp-table.c:1286 Excess function =
+parameter 'hw_dst' description in 'batadv_dat_forward_dht_get' (did you mea=
+n one of: 'ip_dst', 'hw_src')
+    4 errors
+
+pu: sparse v5.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dy BATMA=
+N_V=3Dn
+=2D---------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:288: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:550: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:1834: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v5.19 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMA=
+N_V=3Dn
+=2D---------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:249: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:466: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:1843: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dy BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:249: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:465: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:1852: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.1.188 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BA=
+TMAN_V=3Dn
+=2D------------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:250: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:503: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:2025: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.10 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dn BATMA=
+N_V=3Dn
+=2D---------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:244: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:485: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.10/Makefi=
+le:1934: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:240: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.11 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMA=
+N_V=3Dy
+=2D---------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:244: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:485: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.11/Makefi=
+le:1926: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:224: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.12 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMA=
+N_V=3Dy
+=2D---------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:229: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:478: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.12/Makefi=
+le:1936: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:224: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.12.110 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn B=
+ATMAN_V=3Dy
+=2D-------------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:229: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:466: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.12.110/Ma=
+kefile:1967: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:224: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dy BATMA=
+N_V=3Dy
+=2D---------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v6.17/script=
+s/Makefile.build:287: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v6.17/script=
+s/Makefile.build:556: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v6.17/Makefi=
+le:2011: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.17/Makefi=
+le:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.18 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMA=
+N_V=3Dn
+=2D---------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v6.18/script=
+s/Makefile.build:287: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v6.18/script=
+s/Makefile.build:556: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v6.18/Makefi=
+le:2010: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.18/Makefi=
+le:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.18.51 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BA=
+TMAN_V=3Dn
+=2D------------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v6.18.51/scr=
+ipts/Makefile.build:287: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v6.18.51/scr=
+ipts/Makefile.build:544: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v6.18.51/Mak=
+efile:2050: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.18.51/Mak=
+efile:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.2 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:252: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:504: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:2021: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.3 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMAN=
+_V=3Dy
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:252: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:494: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:2025: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.4 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dy
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[3]: *** [scripts/Makefile.build:252: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[2]: *** [scripts/Makefile.build:494: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[1]: *** [Makefile:2026: /home/build_test/build_env/tmp.FzAjE3FV2V]=
+ Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.6 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN=
+_V=3Dy
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:243: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:480: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.6/Makefil=
+e:1913: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:234: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.6.157 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BA=
+TMAN_V=3Dy
+=2D------------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:243: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:480: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.6.157/Mak=
+efile:1933: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:234: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.8 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:243: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:481: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.8/Makefil=
+e:1921: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:240: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v6.9 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c: In =
+function =E2=80=98batadv_recv_unicast_packet=E2=80=99:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/routing.c:1100=
+:25: error: too many arguments to function =E2=80=98batadv_dat_inc_counter=
+=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from /home/build_test/build_env/tmp.FzAjE3FV2V/net/bat=
+man-adv/routing.c:30:
+    /home/build_test/build_env/tmp.FzAjE3FV2V/net/batman-adv/distributed-ar=
+p-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[4]: *** [scripts/Makefile.build:244: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv/routing.o] Error 1
+    make[3]: *** [scripts/Makefile.build:485: /home/build_test/build_env/tm=
+p.FzAjE3FV2V/net/batman-adv] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v6.9/Makefil=
+e:1919: /home/build_test/build_env/tmp.FzAjE3FV2V] Error 2
+    make[1]: *** [Makefile:240: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v7.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3Dn BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v7.0/scripts=
+/Makefile.build:289: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v7.0/scripts=
+/Makefile.build:548: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v7.0/Makefil=
+e:2105: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v7.0/Makefil=
+e:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v7.1 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATMAN=
+_V=3Dn
+=2D--------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v7.1/scripts=
+/Makefile.build:289: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v7.1/scripts=
+/Makefile.build:548: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v7.1/Makefil=
+e:2144: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v7.1/Makefil=
+e:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v7.2 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3Dy BATMAN=
+_V=3Dy
+=2D--------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v7.2/scripts=
+/Makefile.build:289: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v7.2/scripts=
+/Makefile.build:549: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v7.2/Makefil=
+e:2187: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v7.2/Makefil=
+e:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v7.2.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=3Dn BATM=
+AN_V=3Dy
+=2D----------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v7.2.5/scrip=
+ts/Makefile.build:289: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v7.2.5/scrip=
+ts/Makefile.build:550: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v7.2.5/Makef=
+ile:2198: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v7.2.5/Makef=
+ile:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: sparse v7.3-rc3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=3Dy BA=
+TMAN_V=3Dn
+=2D------------------------------------------------------------------------
+
+    net/batman-adv/routing.c: In function =E2=80=98batadv_recv_unicast_pack=
+et=E2=80=99:
+    net/batman-adv/routing.c:1100:25: error: too many arguments to function=
+ =E2=80=98batadv_dat_inc_counter=E2=80=99
+     1100 |                         batadv_dat_inc_counter(bat_priv, subtyp=
+e, flags);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~
+    In file included from net/batman-adv/routing.c:30:
+    net/batman-adv/distributed-arp-table.h:197:20: note: declared here
+      197 | static inline void batadv_dat_inc_counter(struct batadv_priv *b=
+at_priv,
+          |                    ^~~~~~~~~~~~~~~~~~~~~~
+    make[5]: *** [/home/build_test/build_env/linux-build/linux/v7.3-rc3/scr=
+ipts/Makefile.build:290: net/batman-adv/routing.o] Error 1
+    make[4]: *** [/home/build_test/build_env/linux-build/linux/v7.3-rc3/scr=
+ipts/Makefile.build:551: net/batman-adv] Error 2
+    make[3]: *** [/home/build_test/build_env/linux-build/linux/v7.3-rc3/Mak=
+efile:2229: .] Error 2
+    make[2]: *** [/home/build_test/build_env/linux-build/linux/v7.3-rc3/Mak=
+efile:248: __sub-make] Error 2
+    make[1]: *** [Makefile:248: __sub-make] Error 2
+    make: *** [Makefile:65: all] Error 2
+
+pu: unused_symbols v6.0 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=3D=
+y BATMAN_V=3Dn
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_bla_check_bcast_duplist
+    batadv_bla_is_backbone_gw
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_hardif_no_broadcast
+    batadv_interface_rx
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v6.10 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=
+=3Dn BATMAN_V=3Dn
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_hardif_no_broadcast
+    batadv_interface_rx
+    batadv_is_my_mac
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v6.11 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAST=
+=3Dy BATMAN_V=3Dy
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_interface_rx
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v6.17 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dy MCAST=
+=3Dy BATMAN_V=3Dy
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_bla_check_bcast_duplist
+    batadv_bla_is_backbone_gw
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_interface_rx
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v6.8 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dn TRACING=3Dn MCAST=3D=
+n BATMAN_V=3Dn
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_bla_check_bcast_duplist
+    batadv_bla_is_backbone_gw
+    batadv_bla_is_backbone_gw_orig
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_hardif_no_broadcast
+    batadv_interface_rx
+    batadv_is_my_mac
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v7.2.5 cfg: BLA=3Dy DAT=3Dn DEBUG=3Dy TRACING=3Dn MCAST=
+=3Dn BATMAN_V=3Dy
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_bla_check_bcast_duplist
+    batadv_bla_is_backbone_gw
+    batadv_bla_is_backbone_gw_orig
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_interface_rx
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+pu: unused_symbols v7.3-rc3 cfg: BLA=3Dn DAT=3Dn DEBUG=3Dn TRACING=3Dy MCAS=
+T=3Dy BATMAN_V=3Dn
+=2D------------------------------------------------------------------------=
+=2D-
+
+    batadv_frag_send_packet
+    batadv_frag_skb_buffer
+    batadv_frag_skb_fwd
+    batadv_gw_get_selected_orig
+    batadv_hardif_no_broadcast
+    batadv_interface_rx
+    batadv_netdev_get_wifi_flags
+    batadv_netlink_tpmeter_notify
+    batadv_orig_node_vlan_get
+    batadv_orig_node_vlan_new
+    batadv_orig_node_vlan_release
+    batadv_skb_head_push
+
+--nextPart3441699.44csPzL39Z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCasTyEgAKCRBND3cr0xT1
+y1GcAP9hBU7w6GeFcgUCtLKhk+fFvaBxrauWYZFINQs7qWDF+gD/eGtnKFTwfiTF
+4o6iS6Nx6yDjpPX7EUUCpLtJY+8BKQ8=
+=zO+Q
+-----END PGP SIGNATURE-----
+
+--nextPart3441699.44csPzL39Z--
+
+
 
