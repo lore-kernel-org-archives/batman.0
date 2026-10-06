@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 089F9CA5FED
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 18:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4E37CA5FED
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 18:51:41 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4929284205
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 20:51:02 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7ECA48458B
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 20:51:40 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791312662;
- b=bglsW43oMgQZuxRRXT5if/uw4pdWLhpXjQq7lAKtYrv261q2GXyeOHhV7kCMM9hGFLVpg
- AbO/xDdyHZkEa8Csuds0JiSTC+7SmzY5BwAvk4Y6ZlH6GhRXfmc/1YuYDV74hS9h+cWlKSy
- V3jbDk5b23O9Ixt3cUNweviB0E29MmM=
+ t=1791312700;
+ b=aN9261DLoQhh2Xd0V9SZu4qCPuxf27V6oxBq/P3TFhddx8UhWqtd0Qf9wj9RttXiGXnCi
+ a1aG/vs/iD2O/vQPxxYEaSNx48G2xif58MOPAFq988lfFheJAMO7Z9jZsf79IWlVXIe+Rve
+ W+WjOMEYt2bIokYaWVRrNYuWS0nquZk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791312662; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791312700; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=34smdi15sD2y7TaOxG7Bz/ZpdO9nnVRWQJsk7WkqkkA=;
- b=rRExhc03adVlIIL2ND1dE2TGkE1cjJAWdr+Zg0VhEupypVhOkGrtCNAdMp6vHuszxyiwJ
- g6KpmYwtQkmnP5gRPeLq5+fMtT1/xsIKCu25mUgYTh5yu/8616Xxj7rN9eKwhpnF7dKKBwQ
- lPJvNNaWVNEsV5nDRXh7Dd3H9aPYZoE=
+ list-archive; bh=9L4njhnpPx1P+WdIo8CeTmmVfvFEe4DbjV8zfPALmIM=;
+ b=vuFJguBU32d8GOUJSjImtU4/0FlYpIeAbHKL9vsgMJ+6xRrVlhSWCz2sOat4bpAFOIb5M
+ dbGsL9KD68CeB6fgcTIl2S04KSRYwhEoAQPy7h9DbAXuPafMWpttLj+XLsqVwfi5DnYzuoi
+ qzWMbWdDZKCcmr48tpNP1ra5B25m3n0=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=fail;
  arc=pass;
@@ -32,21 +32,22 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
 Received: from mail.aperture-lab.de (mail.aperture-lab.de
  [IPv6:2a01:4f8:c2c:665b::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 8E5FC80C33
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 20:50:43 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791312653;
-	b=tQqW+QtFIY7t85jG4udC2ECxEQtgcxlHLd1ysbxj0AVJp+F9usNQENA2Da90yKpmSoJHit
-	PtqI/avE7ifPSdzeuHv0L/ZwO0uGqS4REZYFU18bLCGWNKU358NySSOl/N/f8kIhUNB4u8
-	Qo2XQ41LngPsfGCZ8QLKC6SKwEeAync=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 0626C80C33
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 20:50:54 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791312654;
+	b=k3H+N053hifdkMR9OVp2duwDe82eSryzpwhr0TlBgDYWSw+WpEF0pTnDw77v66gN305Y4c
+	6L9FyMRo+E+mzAhDj7yo9acm908/SCTLl9DwIsVMD1Mcq53ZDa8FfuhhJXmAaNEkVc5Zqb
+	rlJoSGtWZ13zLAgwi0PIPijF584k09w=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791312653;
+	s=20121; t=1791312654;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=34smdi15sD2y7TaOxG7Bz/ZpdO9nnVRWQJsk7WkqkkA=;
-	b=WRZ2QiOWCJvmq+t9y+XLCqWHBH8OB4mevx0GiLfqM2Y4hOV/m5dRQanvunlTd/3m7Fc2TI
-	WE/z9WVRic2NQTZihAV274NU/z1Zfpv3MuwYigfTLZWCzmrTw5Ld+JHgAOBYmc2fK1xa+q
-	YfLRpgVENxJT6h6AUpT12HSiTYw5chE=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=9L4njhnpPx1P+WdIo8CeTmmVfvFEe4DbjV8zfPALmIM=;
+	b=A5nsuyYW+dyVdlbovrlFfyS0DZVRCy0AHPe/eVSSwvvc7sbql3kSmxX0qdZfc+ezsjCgor
+	YaxfQj6WMCVxy1r889/ApYDz+Fzi9IKYVv2CoBJt/xJfclS6z0fp/wx2Xdgn+Exxmm32E9
+	XrxrsyGaMuz2zjQgABq07RX0OGloG/k=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
@@ -55,21 +56,24 @@ ARC-Authentication-Results: i=1;
  designates 2a01:4f8:c2c:665b::1 as permitted sender)
  smtp.mailfrom=linus.luessing@c0d3.blue
 Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 64EEE23473;
-	Tue, 06 Oct 2026 20:50:42 +0200 (CEST)
+ with ESMTPSA id 1CB8D234EE;
+	Tue, 06 Oct 2026 20:50:46 +0200 (CEST)
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [batadv,v14 0/5] batman-adv: increase DAT DHT timeout
-Date: Tue,  6 Oct 2026 20:50:31 +0200
-Message-ID: <20261006185037.27163-1-linus.luessing@c0d3.blue>
+Subject: [batadv,v14 5/5] batman-adv: avoid superfluous DAT DHT_PUT additions
+ to local DAT
+Date: Tue,  6 Oct 2026 20:50:36 +0200
+Message-ID: <20261006185037.27163-6-linus.luessing@c0d3.blue>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261006185037.27163-1-linus.luessing@c0d3.blue>
+References: <20261006185037.27163-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: FOYV633YTPPOMRCP4YMXMHQY5NJIJZ4N
-X-Message-ID-Hash: FOYV633YTPPOMRCP4YMXMHQY5NJIJZ4N
+Message-ID-Hash: SD2ABWO7KUFTQQN22PKHJOG5IJVEUEHY
+X-Message-ID-Hash: SD2ABWO7KUFTQQN22PKHJOG5IJVEUEHY
 X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -83,7 +87,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FOYV633YTPPOMRCP4YMXMHQY5NJIJZ4N/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SD2ABWO7KUFTQQN22PKHJOG5IJVEUEHY/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -92,182 +96,540 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-This patchset increases the DAT DHT timeout to reduce the amount
-of broadcasted ARP Replies.
+We send DHT_PUT ARP Replies to (typically) three DAT DHT candidates
+for the sender MAC/IP pair and another three for the target MAC/IP
+pair to likely different DAT DHT candidates. On the DHT_PUT
+receiving side we would then add both the sender MAC/IP and target
+MAC/IP to the local DHT, even if we are not actually a selected
+DAT candidate for one of the pairs.
 
-To increase the timeout only for DAT DHT entries added via DHT-PUT but
-not for any other entry in the DAT cache the DAT cache and DAT DHT
-concepts are split into two separate hash tables (PATCH 2/5).
+This way we typically unnecessarily populate our local DHT with
+superfluous entries. Entries which no DAT DHT_GET will likely
+ever query from us.
 
-PATCH 3/5 then increases the timeout for DAT DHT entries from 5 to
-30 minutes, the main performance enhancement and goal of this patchset.
+To avoid these unnecessary local DHT additions add a flag to DHT_PUT
+messages to indicate which pair is supposed to be added to the local
+DHT.
 
-PATCH 4/5 and 5/5 are some small tweaks for a few unnecessary DHT additions
-which we can now detect and avoid.
-
-The motivation for this patchset is based on the observations made here:
-https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping
-
-In tests at Freifunk Lübeck with ~180 mesh nodes and Gluon
-this reduced the ARP broadcast overhead, measured over 7 days, as
-follows:
-
-- Total:           6677.66 bits/s -> 677.26 bits/s => -89.86%
-                   11.92 pkts/s   -> 1.21 pkts/s   => -89.85%
-
-- from gateways: 5618.02 bits/s   -> 212.28        => -96.22%
-                   10.03 pkts/s   -> 0.38 pkts/s   => -96.21%
-
-Also see graphics and a few more test details here:
-- https://www.open-mesh.org/projects/batman-adv/wiki/DAT_DHCP_Snooping#Result-2
-
-Regards,
-Linus
-
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
-
-Changelog v14:
-- PATCH 2/5:
-  - remove wrong @hw_dst kerneldoc for batadv_dat_dht_get_self_reply()
-    and batadv_dat_forward_dht_get()
-- PATCH 5/5:
-  - remove an extra newline in batadv_packet.h
-  - fix compilation with DAT=n by adding the new flags
-    argument to the batadv_dat_inc_counter() stub, too
-
-Changelog v13:
-- PATCH 2/5:
-  - remove .validate for BATADV_CMD_GET_DAT_DHT again
-  - moved BATADV_CMD_GET_DAT_DHT to end of batadv_netlink_ops
-
-Changelog v12:
-- PATCH 0/5:
-  - added mentioning of PATCH 4/5 and 5/5 in the summary
-- PATCH 1/5 (was: 1/4):
-  - fix triggering of the "ARP request replied locally" debug message
-    by changing the batadv_dat_arp_self_reply() return type from bool
-    to int, ensuring to (keep) only trigger(ing) it when netif_rx()'ing
-- PATCH 2/5 (was: 2/4):
-  - consistently use a "cands" variable name for the candidate array
-    instead of sometimes calling it "cand", sometimes "cands"
-  - add missing kerneldoc for batadv_dat_forward_data()'s "cands"
-    function argument
-  - renaming batadv_dat_check_self_candidate() to
-    batadv_dat_cmp_self_candidate()
-  - fix unprivileged DAT_DHT netlink usage
-  - add netlink .validate (and .resv_start_op for compat) for
-    uniform netlink ops
-  - adjust batadv_dat_dht_get_self_reply() to new
-    batadv_dat_arp_self_reply() int return type
-    (also avoiding an automatic type conversion from int
-     to bool by that)
-  - fix memory leak / missing orig_node put in
-    batadv_dat_forward_dht_get() if one self is a
-    candidate, move orig-node put from batadv_dat_forward_data()
-    to separate batadv_dat_candidates_free() function, called
-    later
-  - revert "update local DHT on DHCP ACKs received via DHT_PUTs, too"
-    from v11 as we never send DHT_PUT messages with a DHCP payload,
-    sashiko.dev seems to have missed that these are always ARP Replies
-- PATCH 3/5 (was: 3/4): unchanged
-- PATCH 4/5 (was: 4/4): unchanged
-- PATCH 5/5: NEW, avoid superfluous DAT DHT_PUT additions to local DAT
-
-Changelog v11:
-- PATCH 1/4: NEW, simple restructuring in preparation for 2/4
-             (no functional change)
-- PATCH 2/4 (was: 1/2):
-  - update local DHT on DHCP ACKs received via DHT_PUTs, too
-  - added self-candidate checks (batadv_dat_check_self_candidate()):
-    - update local DHT from/on own DHT_PUT if we are a DAT candidate
-    - (try to) reply to own DHT_GET from own DHT first if we are a
-      selected DAT candidate
-- PATCH 3/4 (was 2/2): unchanged
-- PATCH 4/4: NEW, avoid superfluous DAT DHT_PUT if self-candidate
-
-Changelog v10:
-- PATCH 1/3: removed, already applied
-- PATCH 0/2: cover letter: removed test time period and "v5" reference
-- PATCH 1/2:
-  - fixed kerneldoc in batadv_dat_hash_free(),
-    replaced "bat_priv" with "hash"
-  - added missing kerneldoc in batadv_dat_snoop_incoming_arp_reply()
-    for is_dht_put
-  - rebase to current main branch:
-    - adopted new bat_priv kernel doc description,
-      "soft interface" -> "mesh interface"
-    - adopted variable rename from soft_iface to mesh_iface
-
-Changelog v9:
-- PATCH 1/3:
-  - fixed typo in a comment: ENOENT -> ENONET
-
-Changelog v8:
-- PATCH 1/3:
-  - fixing / cleaning up includes
-  - fixing function kernel doc titles
-  - fixing bugs introduced in v7 in the error handling of
-    batadv_orig_dump() and batadv_neigh_dump(), using a goto
-    pattern with more explicit labels
-
-Changelog v7:
-- adding PATCH 1/3 to add the batadv_netlink_get_softif() wrapper to
-  reduce the amount of duplicate code, both in the current code base
-  but also for the next PATCH 2/3
-
-Changelog v6:
-- removed renaming+deprecation of BATADV_P_DAT_CACHE_REPLY in PATCH 1/2
-- small commit message rewording in PATCH 1/2
-
-Changelog v5:
-- rebased to current main branch
-  -> removed now obsolete debugfs code
-
-Changelog v4:
-- rebased to: acfc9a214d01695
-  ("batman-adv: genetlink: make policy common to family")
-
-Changelog v3:
-
-formerly:
- "batman-adv: Increase purge timeout on DAT DHT candidates"
- https://patchwork.open-mesh.org/patch/17728/
-- fixed the potential jiffies overflow and jiffies initialization
-  issues by replacing the last_dht_update timeout variable with
-  a split of DAT cache and DAT DHT into two separate hash tables
-  -> instead of maintaining two timeouts in one DAT entry two DAT
-     entries are created and maintained in their respective DAT
-     cache and DAT DHT hash tables
-
-Changelog v2:
-
-formerly:
- "batman-adv: Increase DHCP snooped DAT entry purge timeout in DHT"
- (https://patchwork.open-mesh.org/patch/17364/)
-- removed the extended timeouts flag in the DHT-PUT messages introduced
-  in v1 again
-- removed DHCP dependency
-
-Linus Lüssing (5):
-  batman-adv: move local ARP reply code to subfunctions
-  batman-adv: split DAT cache into DAT cache and DAT DHT
-  batman-adv: increase DAT DHT timeout
-  batman-adv: avoid superfluous DAT DHT_PUT if self-candidate
-  batman-adv: avoid superfluous DAT DHT_PUT additions to local DAT
-
- include/uapi/linux/batadv_packet.h     |  16 +-
- include/uapi/linux/batman_adv.h        |   5 +
- net/batman-adv/distributed-arp-table.c | 887 ++++++++++++++++++++-----
- net/batman-adv/distributed-arp-table.h |  26 +-
- net/batman-adv/main.h                  |   3 +-
+ include/uapi/linux/batadv_packet.h     |  16 +++-
+ net/batman-adv/distributed-arp-table.c | 124 ++++++++++++++++++++++---
+ net/batman-adv/distributed-arp-table.h |  17 +++-
  net/batman-adv/mesh-interface.c        |   4 +
- net/batman-adv/netlink.c               |   5 +
- net/batman-adv/routing.c               |  18 +-
+ net/batman-adv/routing.c               |  19 +++-
  net/batman-adv/send.c                  |   8 +-
  net/batman-adv/send.h                  |   3 +-
- net/batman-adv/types.h                 |  31 +-
- 11 files changed, 807 insertions(+), 199 deletions(-)
+ net/batman-adv/types.h                 |  24 +++++
+ 8 files changed, 186 insertions(+), 29 deletions(-)
 
+diff --git a/include/uapi/linux/batadv_packet.h b/include/uapi/linux/batadv_packet.h
+index 32436560ecc8..2a7928fa5195 100644
+--- a/include/uapi/linux/batadv_packet.h
++++ b/include/uapi/linux/batadv_packet.h
+@@ -70,6 +70,18 @@ enum batadv_subtype {
+ 	BATADV_P_DAT_CACHE_REPLY	= 0x04,
+ };
+ 
++/**
++ * enum batadv_subtype_flags - unicast4addr packet subtype specific flags
++ * @BATADV_P_DAT_DHT_PUT_NO_SRC: do not add sender IP/MAC from DHT_PUT ARP Reply
++ *  to local DHT
++ * @BATADV_P_DAT_DHT_PUT_NO_DST: do not add target IP/MAC from DHT_PUT ARP Reply
++ *  to local DHT
++ */
++enum batadv_subtype_flags {
++	BATADV_P_DAT_DHT_PUT_NO_SRC	= 0x01,
++	BATADV_P_DAT_DHT_PUT_NO_DST	= 0x02,
++};
++
+ /* this file is included by batctl which needs these defines */
+ #define BATADV_COMPAT_VERSION 15
+ 
+@@ -433,13 +445,13 @@ struct batadv_unicast_packet {
+  * @u: common unicast packet header
+  * @src: address of the source
+  * @subtype: packet subtype
+- * @reserved: reserved byte for alignment
++ * @flags: packet subtype specific flags
+  */
+ struct batadv_unicast_4addr_packet {
+ 	struct batadv_unicast_packet u;
+ 	__u8 src[ETH_ALEN];
+ 	__u8 subtype;
+-	__u8 reserved;
++	__u8 flags;
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+ 	 */
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 602d10452e60..aea3b928c80f 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -160,6 +160,9 @@ struct batadv_dhcp_option_header {
+ #define BATADV_DHCP_CHADDR_LEN sizeof(((struct batadv_dhcp_packet *)0)->chaddr)
+ 
+ static void batadv_dat_purge(struct work_struct *work);
++static bool
++batadv_dat_dht_check_self_is_candidate(struct batadv_priv *bat_priv,
++				       __be32 ip, unsigned short vid);
+ 
+ /**
+  * batadv_dat_start_timer() - initialise the DAT periodic worker
+@@ -562,6 +565,20 @@ static inline void
+ batadv_dat_dht_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+ 			 u8 *mac_addr, unsigned short vid)
+ {
++	/* Happens if a new node just beat us as a candidate, an old node
++	 * does not have the more specific candidate selection enhancements yet
++	 * or if future protocol enhancements, which this node does not have
++	 * yet, added new/other candidate selections. For compatibility reasons
++	 * do not bail out here.
++	 */
++	if (!batadv_dat_dht_check_self_is_candidate(bat_priv, ip, vid)) {
++		batadv_inc_counter(bat_priv,
++				   BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE);
++		batadv_dbg(BATADV_DBG_DAT, bat_priv,
++			   "Adding %pI4 %pM (vid: %d), although we are not a candidate\n",
++			   &ip, mac_addr, batadv_print_vid(vid));
++	}
++
+ 	batadv_dat_entry_add(bat_priv, bat_priv->dat.dht_hash, ip, mac_addr,
+ 			     vid, "dht");
+ }
+@@ -1049,6 +1066,7 @@ batadv_dat_dht_get_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
+  * @ip: the DHT key
+  * @vid: VLAN identifier
+  * @packet_subtype: unicast4addr packet subtype to use
++ * @flags: packet subtype specific flags to set
+  *
+  * This function copies the skb with pskb_copy() and is sent as a unicast packet
+  * to each of the selected candidates.
+@@ -1059,7 +1077,8 @@ batadv_dat_dht_get_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
+ static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
+ 				    struct batadv_dat_candidate *cands,
+ 				    struct sk_buff *skb, __be32 ip,
+-				    unsigned short vid, int packet_subtype)
++				    unsigned short vid, int packet_subtype,
++				    int flags)
+ {
+ 	struct batadv_neigh_node *neigh_node = NULL;
+ 	struct sk_buff *tmp_skb;
+@@ -1084,7 +1103,8 @@ static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
+ 
+ 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
+ 							   cands[i].orig_node,
+-							   packet_subtype)) {
++							   packet_subtype,
++							   flags)) {
+ 			kfree_skb(tmp_skb);
+ 			goto free_neigh;
+ 		}
+@@ -1134,6 +1154,31 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
+ 	kfree(cands);
+ }
+ 
++/**
++ * batadv_dat_dht_check_self_is_candidate() - check if we are a DHT candidate
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @ip: key to look up in the DHT
++ * @vid: VLAN identifier
++ *
++ * Check if we are a selected candidate for the given IP address key.
++ *
++ * Return: true if we are a selected candidate for the given @ip, false
++ * otherwise.
++ */
++static bool
++batadv_dat_dht_check_self_is_candidate(struct batadv_priv *bat_priv,
++				       __be32 ip, unsigned short vid)
++{
++	struct batadv_dat_candidate *cands;
++	bool self_is_candidate = false;
++
++	cands = batadv_dat_select_candidates(bat_priv, ip, vid,
++					     &self_is_candidate);
++	batadv_dat_candidates_free(cands);
++
++	return self_is_candidate;
++}
++
+ /**
+  * batadv_dat_forward_dht_put() - send payload via DHT_PUT to DAT candidates
+  * @bat_priv: the bat priv with all the mesh interface information
+@@ -1141,6 +1186,7 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
+  * @ip: the DHT key
+  * @hw_addr: the MAC address which the IP resolves to
+  * @vid: VLAN identifier
++ * @flags: packet subtype specific flags to set
+  *
+  * Send the given payload via a DAT DHT_PUT message to the selected
+  * candidates.
+@@ -1150,7 +1196,8 @@ static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
+  */
+ static bool
+ batadv_dat_forward_dht_put(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-			   __be32 ip, u8 *hw_addr, unsigned short vid)
++			   __be32 ip, u8 *hw_addr, unsigned short vid,
++			   int flags)
+ {
+ 	struct batadv_dat_candidate *cands;
+ 	bool self_is_candidate = false;
+@@ -1165,12 +1212,56 @@ batadv_dat_forward_dht_put(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		batadv_dat_dht_entry_add(bat_priv, ip, hw_addr, vid);
+ 
+ 	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip, vid,
+-				      BATADV_P_DAT_DHT_PUT);
++				      BATADV_P_DAT_DHT_PUT, flags);
+ 
+ 	batadv_dat_candidates_free(cands);
+ 	return ret;
+ }
+ 
++/**
++ * batadv_dat_forward_dht_put_src() - send source-specific DHT_PUTs
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @skb: payload to send
++ * @ip_src: the DHT key
++ * @hw_src: the MAC address which the IP resolves to
++ * @vid: VLAN identifier
++ *
++ * Send the given payload via a DAT DHT_PUT message to the selected
++ * candidates, with the PUT_NO_DST flag set.
++ *
++ * Return: true if the packet is sent to at least one candidate, false
++ * otherwise.
++ */
++static bool
++batadv_dat_forward_dht_put_src(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			       __be32 ip_src, u8 *hw_src, unsigned short vid)
++{
++	return batadv_dat_forward_dht_put(bat_priv, skb, ip_src, hw_src, vid,
++					  BATADV_P_DAT_DHT_PUT_NO_DST);
++}
++
++/**
++ * batadv_dat_forward_dht_put_dst() - send destination-specific DHT_PUTs
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @skb: payload to send
++ * @ip_dst: the DHT key
++ * @hw_dst: the MAC address which the IP resolves to
++ * @vid: VLAN identifier
++ *
++ * Send the given payload via a DAT DHT_PUT message to the selected
++ * candidates, with the PUT_NO_SRC flag set.
++ *
++ * Return: true if the packet is sent to at least one candidate, false
++ * otherwise.
++ */
++static bool
++batadv_dat_forward_dht_put_dst(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			       __be32 ip_dst, u8 *hw_dst, unsigned short vid)
++{
++	return batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid,
++					  BATADV_P_DAT_DHT_PUT_NO_SRC);
++}
++
+ /**
+  * batadv_dat_forward_dht_get() - send payload via DHT_GET to DAT candidates
+  * @bat_priv: the bat priv with all the mesh interface information
+@@ -1209,7 +1300,7 @@ batadv_dat_forward_dht_get(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	}
+ 
+ 	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip_dst, vid,
+-				      BATADV_P_DAT_DHT_GET);
++				      BATADV_P_DAT_DHT_GET, 0);
+ 
+ skip_remote_forward:
+ 	batadv_dat_candidates_free(cands);
+@@ -1868,8 +1959,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 	/* Send the ARP reply to the candidates for both the IP addresses that
+ 	 * the node obtained from the ARP reply
+ 	 */
+-	batadv_dat_forward_dht_put(bat_priv, skb, ip_src, hw_src, vid);
+-	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
++	batadv_dat_forward_dht_put_src(bat_priv, skb, ip_src, hw_src, vid);
++	batadv_dat_forward_dht_put_dst(bat_priv, skb, ip_dst, hw_dst, vid);
+ }
+ 
+ /**
+@@ -1878,8 +1969,12 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @skb: packet to check
+  * @hdr_size: size of the encapsulation header
+- * @is_dht_put: ARP reply is part of a unicast 4addr DHT PUT packet and should
+- *  not only update our local DAT cache but also our local DAT DHT
++ * @is_dht_put_src: ARP reply is part of a source-specific unicast 4addr DHT PUT
++ *  packet and should not only update our local DAT cache but also our local
++ *  DAT DHT
++ * @is_dht_put_dst: ARP reply is part of a destination-specific unicast 4addr
++ *  DHT PUT packet and should not only update our local DAT cache but also our
++ *  local DAT DHT
+  *
+  * Warning: This function may reallocate the skb data buffer via
+  * batadv_dat_get_vid()/... Any pointer into the skb data (e.g. obtained
+@@ -1891,7 +1986,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+  */
+ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb, int hdr_size,
+-					 bool is_dht_put)
++					 bool is_dht_put_src,
++					 bool is_dht_put_dst)
+ {
+ 	struct batadv_dat_entry *dat_entry = NULL;
+ 	u8 mac[ETH_ALEN] __aligned(2);
+@@ -1924,10 +2020,10 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
+ 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
+ 
+-	if (is_dht_put) {
++	if (is_dht_put_src)
+ 		batadv_dat_dht_entry_add(bat_priv, ip_src, hw_src, vid);
++	if (is_dht_put_dst)
+ 		batadv_dat_dht_entry_add(bat_priv, ip_dst, hw_dst, vid);
+-	}
+ 
+ 	/* If ip_dst is already in cache and has the right mac address,
+ 	 * drop this frame if this ARP reply is destined for us because it's
+@@ -2210,8 +2306,8 @@ static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
+ 	batadv_dat_cache_entry_add(bat_priv, yiaddr, chaddr, vid);
+ 	batadv_dat_cache_entry_add(bat_priv, ip_dst, hw_dst, vid);
+ 
+-	batadv_dat_forward_dht_put(bat_priv, skb, yiaddr, chaddr, vid);
+-	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
++	batadv_dat_forward_dht_put_src(bat_priv, skb, yiaddr, chaddr, vid);
++	batadv_dat_forward_dht_put_dst(bat_priv, skb, ip_dst, hw_dst, vid);
+ 
+ 	consume_skb(skb);
+ 
+diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+index ad81b7db921e..4909760d7491 100644
+--- a/net/batman-adv/distributed-arp-table.h
++++ b/net/batman-adv/distributed-arp-table.h
+@@ -32,7 +32,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb);
+ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb, int hdr_size,
+-					 bool is_dht_put);
++					 bool is_dht_put_src,
++					 bool is_dht_put_dst);
+ void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
+ 					struct sk_buff *skb,
+ 					__be16 proto,
+@@ -81,11 +82,12 @@ int batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb);
+  * batadv_dat_inc_counter() - increment the correct DAT packet counter
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @subtype: the 4addr subtype of the packet to be counted
++ * @flags: packet subtype specific flags
+  *
+  * Updates the ethtool statistics for the received packet if it is a DAT subtype
+  */
+ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+-					  u8 subtype)
++					  u8 subtype, u8 flags)
+ {
+ 	switch (subtype) {
+ 	case BATADV_P_DAT_DHT_GET:
+@@ -95,6 +97,13 @@ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+ 	case BATADV_P_DAT_DHT_PUT:
+ 		batadv_inc_counter(bat_priv,
+ 				   BATADV_CNT_DAT_PUT_RX);
++		if (!flags)
++			batadv_inc_counter(bat_priv,
++					   BATADV_CNT_DAT_PUT_NOFLAGS_RX);
++		if (!(flags & BATADV_P_DAT_DHT_PUT_NO_SRC))
++			batadv_inc_counter(bat_priv, BATADV_CNT_DAT_PUT_SRC_RX);
++		if (!(flags & BATADV_P_DAT_DHT_PUT_NO_DST))
++			batadv_inc_counter(bat_priv, BATADV_CNT_DAT_PUT_DST_RX);
+ 		break;
+ 	}
+ }
+@@ -129,7 +138,7 @@ batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ static inline bool
+ batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 				    struct sk_buff *skb, int hdr_size,
+-				    bool is_dht_put)
++				    bool is_dht_put_src, bool is_dht_put_dst)
+ {
+ 	return false;
+ }
+@@ -186,7 +195,7 @@ batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb)
+ }
+ 
+ static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
+-					  u8 subtype)
++					  u8 subtype, u8 flags)
+ {
+ }
+ 
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 41d148634034..bdf9c21b0da2 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -1005,7 +1005,11 @@ static const struct {
+ 	{ "dat_get_rx" },
+ 	{ "dat_put_tx" },
+ 	{ "dat_put_rx" },
++	{ "dat_put_src_rx" },
++	{ "dat_put_dst_rx" },
++	{ "dat_put_noflags_rx" },
+ 	{ "dat_cached_reply_tx" },
++	{ "dat_dht_add_not_candidate" },
+ #endif
+ };
+ 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 5cf26e8b3257..8dd4094d134b 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1045,8 +1045,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 	struct batadv_orig_node *orig_node_gw = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	int hdr_size = sizeof(*unicast_packet);
++	enum batadv_subtype_flags flags;
+ 	enum batadv_subtype subtype;
+-	bool is_dht_put = false;
++	bool is_dht_put_src = false;
++	bool is_dht_put_dst = false;
+ 	int ret = NET_RX_DROP;
+ 	u8 *orig_addr_gw;
+ 	u8 *orig_addr;
+@@ -1094,7 +1096,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 			unicast_4addr_packet =
+ 				(struct batadv_unicast_4addr_packet *)skb->data;
+ 			subtype = unicast_4addr_packet->subtype;
+-			batadv_dat_inc_counter(bat_priv, subtype);
++			flags = unicast_4addr_packet->flags;
++			batadv_dat_inc_counter(bat_priv, subtype, flags);
+ 
+ 			/* Only payload data should be considered for speedy
+ 			 * join. For example, DAT also uses unicast 4addr
+@@ -1107,7 +1110,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 				orig_node = batadv_orig_hash_find(bat_priv,
+ 								  orig_addr);
+ 			} else if (subtype == BATADV_P_DAT_DHT_PUT) {
+-				is_dht_put = true;
++				if (!(flags & BATADV_P_DAT_DHT_PUT_NO_SRC))
++					is_dht_put_src = true;
++				if (!(flags & BATADV_P_DAT_DHT_PUT_NO_DST))
++					is_dht_put_dst = true;
+ 			}
+ 		}
+ 
+@@ -1115,7 +1121,9 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 							  hdr_size))
+ 			goto rx_success;
+ 		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
+-							hdr_size, is_dht_put))
++							hdr_size,
++							is_dht_put_src,
++							is_dht_put_dst))
+ 			goto rx_success;
+ 
+ 		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
+@@ -1356,7 +1364,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 
+ 	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
+ 		goto rx_success;
+-	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false))
++	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false,
++						false))
+ 		goto rx_success;
+ 
+ 	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 929b6dd34c10..e6ebe311f79d 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -263,13 +263,15 @@ static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
+  * @skb: the skb containing the payload to encapsulate
+  * @orig: the destination node
+  * @packet_subtype: the unicast 4addr packet subtype to use
++ * @flags: packet subtype specific flags to set
+  *
+  * Return: false if the payload could not be encapsulated or true otherwise.
+  */
+ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig,
+-					   int packet_subtype)
++					   int packet_subtype,
++					   int flags)
+ {
+ 	struct batadv_unicast_4addr_packet *uc_4addr_packet;
+ 	struct batadv_hard_iface *primary_if;
+@@ -291,7 +293,7 @@ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 	uc_4addr_packet->u.packet_type = BATADV_UNICAST_4ADDR;
+ 	ether_addr_copy(uc_4addr_packet->src, primary_if->net_dev->dev_addr);
+ 	uc_4addr_packet->subtype = packet_subtype;
+-	uc_4addr_packet->reserved = 0;
++	uc_4addr_packet->flags = flags;
+ 
+ 	ret = true;
+ out:
+@@ -337,7 +339,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	case BATADV_UNICAST_4ADDR:
+ 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, skb,
+ 							   orig_node,
+-							   packet_subtype))
++							   packet_subtype, 0))
+ 			goto out;
+ 		break;
+ 	default:
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 3415afec4a0c..7481c4fa0681 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -53,7 +53,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig_node,
+-					   int packet_subtype);
++					   int packet_subtype,
++					   int flags);
+ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 			    struct sk_buff *skb, int packet_type,
+ 			    int packet_subtype,
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 045727c3adc0..68b753bb32f6 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -975,11 +975,35 @@ enum batadv_counters {
+ 	/** @BATADV_CNT_DAT_PUT_RX: received dht PUT traffic packet counter */
+ 	BATADV_CNT_DAT_PUT_RX,
+ 
++	/**
++	 * @BATADV_CNT_DAT_PUT_SRC_RX: received source-specfic dht PUT traffic
++	 *  packet counter
++	 */
++	BATADV_CNT_DAT_PUT_SRC_RX,
++
++	/**
++	 * @BATADV_CNT_DAT_PUT_DST_RX: received destination-specfic dht PUT
++	 *  traffic packet counter
++	 */
++	BATADV_CNT_DAT_PUT_DST_RX,
++
++	/**
++	 * @BATADV_CNT_DAT_PUT_NOFLAGS_RX: received unspecific/unflagged dht PUT
++	 *  traffic packet counter
++	 */
++	BATADV_CNT_DAT_PUT_NOFLAGS_RX,
++
+ 	/**
+ 	 * @BATADV_CNT_DAT_CACHED_REPLY_TX: transmitted dat cache reply traffic
+ 	 *  packet counter
+ 	 */
+ 	BATADV_CNT_DAT_CACHED_REPLY_TX,
++
++	/**
++	 * @BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE: counter for local DHT
++	 *  additions without (supposedly) being a selected candidate
++	 */
++	BATADV_CNT_DAT_DHT_ADD_NOT_CANDIDATE,
+ #endif
+ 
+ 	/** @BATADV_CNT_NUM: number of traffic counters */
 -- 
 2.55.0
 
