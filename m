@@ -4,106 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1717CA5FCE
-	for <batman@archiver.kernel.org>; Sun,  4 Oct 2026 10:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED039CA5FF0
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 00:50:33 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3E66282241
-	for <batman@archiver.kernel.org>; Sun, 04 Oct 2026 12:14:01 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id ECD1584270
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 02:50:31 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791108841;
- b=Wk9D5sWH/CcjfRVI2tLdJpPfsQvB8f7Cb80WD1LogJC2NFg7hLPpm+HeSEGiMqQaxJJcE
- BaOooDn+UvqKv0ewU4ssFS0JB0cAH0b9gRS+fkJrpuS/fCMhN0Eb/34+OZQ6Ho+RWTbXBrB
- WjAg6+XVStgnP7hfPe1mR7KeXimtD/w=
+ t=1791247831;
+ b=ApHO6JbbMDrUWAvnrpAf5xvSjC5VSdJzsLcw3Ydmy78llYaT8MFClFN8KBHB7FXV6/uB6
+ 2thVSaIrncQR8Rc1kMxDsG3bwbGPewdH9w1ab9b0rtnZ0XsH1126y+PssqNiPyKleO8oyK7
+ B4BDIKqDkRlBq0RNiPrKwvjqU+pePg8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791108841; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791247831; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ls/WoSxzPA6uAbWm76rznxXVXDqIWint9oY79/K8Uxk=;
- b=c5NKlVLlpsQreRvM+HebmwTmRZsWE3hK3GA19AtkA/puP8gondAWbG9p52CvzqjxRh2ma
- YkqKtEj5MOVw3P5RyYqb/S6LEtWQLZCpqltHlyRGApOBw3UlYBafE5ZjllideNvDTPm2+Q4
- atjihmyxO92zbqLAw5FNPfSh/+cieOA=
+ list-archive; bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
+ b=hN7JMDGT2YAoZepwICo4S5lWBVWtUTsPIPagzoT23ZK2R78sEOZYlQw+4kr31fRayz3mB
+ /HXBmACqs3WOaW1GJr2p/7n/iyUQiRGOxocMd9jox9ccdz+QileENGz3ZogkStqBfQ+a1zj
+ cpzRw6pvz9SjEaDTDnD0r3U+LtNHQkQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E8986845DB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 04 Oct 2026 12:09:18 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791108569;
-	b=xwSy/WcNg2HLhTViHfScQgloFq8d4s5olMZzPZ6/kEDaNs5N55Q5nkEzudVtA942aYyDPA
-	LHOo7Md26EYMIc5slI46kSuNISrTfdSoKXfm0g4Ha3qW75qSax4PIDeAAwAdvZWHWY0vxe
-	9hRPYxwUWuedPa1keK6XUp1HOi22gN4=
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 85231806E1
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 02:50:11 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791247821;
+	b=YeoJ7bOSeTfkzhsv0zfDqUIDdIxE2B1rH7mH3DIhCa/TiH8mfHaM7rEIth4C499ode8HDe
+	KKAtWFuuGTo1vW6djl3NlOSbmhSSdBMBOMzsF04aAaYdmJsKFDBMwNlI+LAGJTUfnv+TLb
+	AYKrtREscaoZuwjFXlPXKGT5RzDxeYw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791108568;
+	s=20121; t=1791247821;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ls/WoSxzPA6uAbWm76rznxXVXDqIWint9oY79/K8Uxk=;
-	b=MYuN2vOei/kmOGP6ntVGn0NsHH/U0mcIfGp9CyjDy7a/9WZKlqD7YQMmf3J32AwT6D7MPH
-	2V68q9maVaMY5jaAHg4fTX5LvYhTBSUEM0IvfZcBu2EYo4prBeJUc29Cfhq7AcYv398T3/
-	VHWs11gJrBFt/mjb2rP9AP2CKQnSmX8=
+	bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
+	b=fRQz61309yE2bTE6rHMYAcAX+23/9iBStokDi5MMaRWIGEDqA7vWoi8R228gNxC5V7JiUY
+	XHZWyYQMK4HCxI8VHZB2wIZhoOPDu4sBAWKkioc8DyE110EvlnJb1xkywmkvuN1UhQTKXO
+	BavW8dP7tQN4yGfDQ3c1hRVBup5amZc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=PLSyAM44;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 88CBC20494;
-	Sun, 04 Oct 2026 10:09:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791108558;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ls/WoSxzPA6uAbWm76rznxXVXDqIWint9oY79/K8Uxk=;
-	b=PLSyAM443F85h4M2l0UFEnV/3pmwUfBhQLPdFZ08LiDLrq6Y2kZC0PfOj2CdMVa0S3wsu/
-	GAUpvSIGdafH7WGECpZHkRSF66WGvMXWj4FqP22L2abCFWpQ9GBxG/prNyYUdWDQ0elDkh
-	OXNvyDNUwn1UCYm3yCCppsYVxqzElxI=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 04 Oct 2026 12:08:44 +0200
-Subject: [PATCH batadv v2 9/9] batman-adv: tpmeter: avoid underflow in rtt
-MIME-Version: 1.0
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=oj9dogqZ;
+	spf=pass (diktynna.open-mesh.org: domain of
+ patchwork-bot+netdevbpf@kernel.org designates 2600:3c04:e001:324:0:1991:8:25
+ as permitted sender) smtp.mailfrom=patchwork-bot+netdevbpf@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 5392A601F1;
+	Tue,  6 Oct 2026 00:50:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07C0E1F000FF;
+	Tue,  6 Oct 2026 00:50:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791247809;
+	bh=nwczxQ9fvICRfG0h3rEJO7F4BMVUHAG9xNrV1heXrVU=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=oj9dogqZKC91eT6hUP1XWDFC93Wa32ndL++A2aphs292/Mht/WqsEHNKcNlQgFjrY
+	 8JqMU19Y0q0yOEXBFJ/jvIyk9C8t3irk7UUfQYvIB3vNqhCID+ETanPeXaduAgmybQ
+	 vlvXU3aLNU6gGyxiGUDr7Vw/2GNxeISllNn2Ga4AQgPpM9vpwI7CdripWMNTkWulUa
+	 kIe4u/fo/3a8EmwCGiPwOaMHP3er39szwsOtkeU2XQRsbU+theES0vFcVYy7irI/TO
+	 GsQ6Xid6WqQMDp4bDo+BF9/H/sC4mBGC/h5VE9BVneX5EuVlNVOK0kAr3pN2+Mgop9
+	 9A/16KSc2YIzw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ F142A392667F;
+	Tue,  6 Oct 2026 00:50:08 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261004-dat-last_update-once-v2-9-ab012a4b18ed@narfation.org>
-References: <20261004-dat-last_update-once-v2-0-ab012a4b18ed@narfation.org>
-In-Reply-To: <20261004-dat-last_update-once-v2-0-ab012a4b18ed@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=861; i=sven@narfation.org;
- h=from:subject:message-id; bh=jhklif6OJDYCAzila98PUZQA9QDgkAjj9NO1HoDm7Sk=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFmHVLfW3orYOa/5ueieCKf47Rvnm6lGFBt2rHuorP8ix
- eLeccbvHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ6L1mZNhhuMy49++SMm/x
- DS8adr6t3fhnqsgxp2eG2h/KNru/Du9gZOj8eDxX8Bu/zf/4ntgtzR4aeX/bwkQ3O/Ws7/zRZjA
- /ng8A
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: SBW6TWQQA4EY2EEGY5PUFA5SMIEOQH4G
-X-Message-ID-Hash: SBW6TWQQA4EY2EEGY5PUFA5SMIEOQH4G
-X-MailFrom: sven@narfation.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH net-next 1/9] batman-adv: bla: avoid double free after
+ failed
+ backbone_hash alloc
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <179124780778.1960739.8553982365608117644.git-patchwork-notify@kernel.org>
+Date: Tue, 06 Oct 2026 00:50:07 +0000
+References: <20260930094558.3723766-2-sw@simonwunderlich.de>
+In-Reply-To: <20260930094558.3723766-2-sw@simonwunderlich.de>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, sashiko-bot@kernel.org
+Message-ID-Hash: ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F
+X-Message-ID-Hash: ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F
+X-MailFrom: patchwork-bot+netdevbpf@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/SBW6TWQQA4EY2EEGY5PUFA5SMIEOQH4G/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ONBU5LU2IHRNTWBABXVT7LM6KLEKPB2F/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,29 +115,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-To avoid an underflow due to an non-strict order read of jffies vs
-timestamp, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
-evaluate the delta.
+Hello:
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/tp_meter.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This series was applied to netdev/net-next.git (main)
+by Sven Eckelmann <sven@narfation.org>:
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 7d4d84ad..3fdc7f67 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -822,7 +822,7 @@ static void batadv_tp_recv_ack(struct batadv_priv *bat_priv,
- 
- 	spin_lock_bh(&tp_vars->cc_lock);
- 	/* update RTO with the new sampled RTT, if any */
--	rtt = jiffies_to_msecs(jiffies) - ntohl(icmp->timestamp);
-+	rtt = jiffies_delta_to_msecs(jiffies) - ntohl(icmp->timestamp);
- 	if (icmp->timestamp && rtt)
- 		batadv_tp_update_rto(tp_vars, rtt);
- 
+On Wed, 30 Sep 2026 11:45:50 +0200 you wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> When batadv_bla_init() fails to initialize the backbone_hash, it is freeing
+> the (previously) allocated claim_hash. The initialization function will
+> then return an error and the net_device initialization will stop. The
+> destructor will be called instead and (indirectly via batadv_mesh_free() ->
+> batadv_bla_free()) will try to free the bat_priv->bla.claim_hash again.
+> 
+> [...]
 
+Here is the summary with links:
+  - [net-next,1/9] batman-adv: bla: avoid double free after failed backbone_hash alloc
+    https://git.kernel.org/netdev/net-next/c/4c0a6a5b7715
+  - [net-next,2/9] batman-adv: tt: clarify kernel-doc for batadv_tt_global_purge_local
+    https://git.kernel.org/netdev/net-next/c/f11712fc3d5f
+  - [net-next,3/9] batman-adv: tt: clarify responsibility for roam flag during removal
+    https://git.kernel.org/netdev/net-next/c/08967c26cc8d
+  - [net-next,4/9] batman-adv: tt: soften kernel-doc for batadv_tt_local_remove_now()
+    https://git.kernel.org/netdev/net-next/c/be66c5ac5485
+  - [net-next,5/9] batman-adv: tt: only queue local del event after successful unlink
+    https://git.kernel.org/netdev/net-next/c/597c0f2f69c0
+  - [net-next,6/9] batman-adv: tt: queue local DEL event under bucket lock
+    https://git.kernel.org/netdev/net-next/c/f95b9f28a9df
+  - [net-next,7/9] batman-adv: tt: queue local DEL event before marking entry as pending
+    https://git.kernel.org/netdev/net-next/c/a6746cb19076
+  - [net-next,8/9] batman-adv: tt: reject VLAN/TT entries before reaching size limit
+    https://git.kernel.org/netdev/net-next/c/85fb027f611b
+  - [net-next,9/9] batman-adv: use assign_bit() where applicable
+    https://git.kernel.org/netdev/net-next/c/d1807b20d548
+
+You are awesome, thank you!
 -- 
-2.47.3
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
