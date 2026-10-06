@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77462CA5FFF
-	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 18:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0634CA5FED
+	for <batman@archiver.kernel.org>; Tue,  6 Oct 2026 18:53:17 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 16BF2847B7
-	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 20:52:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3AE7E84824
+	for <batman@archiver.kernel.org>; Tue, 06 Oct 2026 20:53:16 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791312764;
- b=mVVEL37kUap3yTUOBpY9wvpbVbz0+v7xV0nIMNIxmzc+Unr9nt9/eOW4WK1qRQta7xQWW
- t4YQWIzKgAfoQizCMgibZI8Ojps/WQVbfS2GVLC1atxhT7+sYHkpmy2wUvj+fXFBuCEdPpk
- NeNe1HTWN5lu8gt8DhprO/A1CjKnPfw=
+ t=1791312796;
+ b=FVG5ZUtcLcjORQbrHW4CbnoCdBZiGWJ3qSgjibHLyxGNhPv6VluGuwalIL8OvQ47YzocD
+ Sp5bN+iBLzOLgx4oOjjyabfYihsj71HVWKKSwUoeuxWvaUeWRYGBBH1vXeVFkShv1oiqyP9
+ MIJdBqNzsEAqENUiN/Gm30UNf3a61Uo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791312764; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791312796; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=DQ3c6MT0/FyqrTk2K9rAJjTvUsv5qj+pKJ0U5O5JRD8=;
- b=oL8sxlCtErqpiyM8I8lV+Hh8Yo4//M5WGZRjwe4MPNRvEBn8eSQyjS9SeIv8xydqgr70f
- 0RqK5xowXlCAequRUEN2oHENTfLvTVXSbxrnnCRnjWT19xtRs2hDyWbAutBL0xjuxpR0Zq6
- wOzglszoPnBGM5kwee0RLeBM8Z9sSKg=
+ list-archive; bh=u8ePEmLV0Zcz1rkDAiqEKqTVMjLvt5sKcgcLe/9WCTU=;
+ b=pUYGPt3Yp1Oeu+17Q/sLaTCZ9EZgncg5y5Tn/opTae1XvRarqKNFHnhyDyl0GCRitVx1G
+ Zoi+zIUWGxqWu7bnP+3j19wz8Xl49XE+THn2CZeTY6thy4ZfcNYwIi1nP+++zcVJQ9SapoB
+ 4xU8hTjmOka8HRiL/wq9TpoC0edAvWI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=fail;
  arc=pass;
  dmarc=none
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass; dmarc=none
 Received: from mail.aperture-lab.de (mail.aperture-lab.de [116.203.183.178])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id BB5B882740
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 20:50:44 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791312654;
-	b=jXmLwZOFGpBhQByj/evlLTVmQQxWMh/MzYZVxUYQF74Mpy7nshO9z51UY139lOhSqAb/L6
-	GMVbFM0VSWNbIGZqTPUqEO1Wou9HSDUSQWEmSG4oazUX/fnDjwWVVajUt8KTBdigMBMUuJ
-	kBYmJHwLnO5m9fL2/Vt39kUWxzwZ9+M=
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 56CBA80C33
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 06 Oct 2026 20:50:45 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791312655;
+	b=xbg0VKl3YscXoJZ+5sVe7rWBwjU32fGRCUCNLVXcjK+XJlzVo9H07253Nqga7Vy2rb8Ue0
+	5swMc+CO7J2bFVe2uRNVJEADjKBK68CCp8w/K+iu0TK/hvUzxZP8oWVArwnSBJl3oX6jse
+	3o6snktd4kMwrxhXUlEItIXZQj5Bz0Y=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791312654;
+	s=20121; t=1791312655;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=DQ3c6MT0/FyqrTk2K9rAJjTvUsv5qj+pKJ0U5O5JRD8=;
-	b=RdPT8SX+ItNvO9baLXJPM+/wH+QVE/CXDLVhGFdXZPflb9NP/U6OweShIf+jGzwYzm9xqx
-	0X+PK19ur78xFgP2wj8g/BasS7gvP5dBieyq5AmV3P9F8HMR7xUKn2Q3haBbyEbgIM3ifG
-	FuKm+Y1l5OKGOC9OQesaI5+fl17hKFw=
+	bh=u8ePEmLV0Zcz1rkDAiqEKqTVMjLvt5sKcgcLe/9WCTU=;
+	b=bqNoteIRBKVObB+enNHPK85mrb50YB220jnQ1n42POYx2rp5zqNgTGcDo1s1rd9yvu50s+
+	pv2/Qz5/rJ/9tTlHvX3RhvmcjFDffVU9mBGeBQoSsSz3n2ck6OELSXX0kczix8s+La83Z0
+	TQkl8VWSBJa6mB1NffmCGSzwUh1okLU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
@@ -55,15 +55,14 @@ ARC-Authentication-Results: i=1;
  designates 116.203.183.178 as permitted sender)
  smtp.mailfrom=linus.luessing@c0d3.blue
 Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 43BFB234E4;
+ with ESMTPSA id E68AD234EA;
 	Tue, 06 Oct 2026 20:50:44 +0200 (CEST)
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Subject: [batadv,v14 2/5] batman-adv: split DAT cache into DAT cache and DAT
- DHT
-Date: Tue,  6 Oct 2026 20:50:33 +0200
-Message-ID: <20261006185037.27163-3-linus.luessing@c0d3.blue>
+Subject: [batadv,v14 3/5] batman-adv: increase DAT DHT timeout
+Date: Tue,  6 Oct 2026 20:50:34 +0200
+Message-ID: <20261006185037.27163-4-linus.luessing@c0d3.blue>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261006185037.27163-1-linus.luessing@c0d3.blue>
 References: <20261006185037.27163-1-linus.luessing@c0d3.blue>
@@ -71,8 +70,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
-Message-ID-Hash: VAWTWY6TY5RDCS4VSPDTYUXOONKVKAX5
-X-Message-ID-Hash: VAWTWY6TY5RDCS4VSPDTYUXOONKVKAX5
+Message-ID-Hash: XFTCQTPAXYCG5QNXYLQVE3VEN7OFVZQ2
+X-Message-ID-Hash: XFTCQTPAXYCG5QNXYLQVE3VEN7OFVZQ2
 X-MailFrom: linus.luessing@c0d3.blue
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -86,7 +85,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VAWTWY6TY5RDCS4VSPDTYUXOONKVKAX5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XFTCQTPAXYCG5QNXYLQVE3VEN7OFVZQ2/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -95,1102 +94,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Similar to the translation table split the (mostly) locally maintained
-DAT cache and the DAT DHT concepts into two separate tables.
+Currently, the DHT_GET messages of the DAT will likely be left
+unanswered due to the following issues:
 
-This eases the monitoring and debugging regarding the origin of DAT
-entries. And allows to apply differing properties to entries in the DAT
-cache and DAT DHT in the future, like distinct timeouts.
+When a node has a matching DAT Cache entry for a local ARP Request then
+this node will answer it directly with the information provided by the
+cache. This however, will likely lead to missing ARP Replies from the
+original host. Which in turn leads to the DAT DHT not being updated.
+
+Then the local DAT cache entry will time out, triggering a unicasted
+DHT_GET. However, as the 5min. timeout has passed, the DAT DHT
+candidates will likely have purged their entry, too.
+
+So basically this results in an ARP Request broadcast fallback every
+five minutes.
+
+A second issue is that it is quite common that a host which has long
+gone offline will be tried to be contacted by another one at some remote
+period larger than the current 5min. timeout. This too leads to flooded
+ARP Requests.
+
+With this patch the purge timeout for DAT DHT entries is increased to
+30min to reduce the number of DAT ARP broadcast fallbacks.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- include/uapi/linux/batman_adv.h        |   5 +
- net/batman-adv/distributed-arp-table.c | 579 ++++++++++++++++++++-----
- net/batman-adv/distributed-arp-table.h |  13 +-
- net/batman-adv/netlink.c               |   5 +
- net/batman-adv/routing.c               |   7 +-
- net/batman-adv/types.h                 |   7 +-
- 6 files changed, 507 insertions(+), 109 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 22 +++++++++++++++++-----
+ net/batman-adv/main.h                  |  3 ++-
+ 2 files changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index 936bcac270b5..7379c1509f77 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -613,6 +613,11 @@ enum batadv_nl_commands {
- 	 */
- 	BATADV_CMD_SET_VLAN,
- 
-+	/**
-+	 * @BATADV_CMD_GET_DAT_DHT: Query list of DAT DHT entries
-+	 */
-+	BATADV_CMD_GET_DAT_DHT,
-+
- 	/* add new commands above here */
- 
- 	/**
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 1a0eb9d9812e..720658f3bb8b 100644
+index 720658f3bb8b..9043d10346c6 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -211,17 +211,17 @@ static bool batadv_dat_to_purge(struct batadv_dat_entry *dat_entry)
+@@ -199,15 +199,27 @@ static void batadv_dat_entry_put(struct batadv_dat_entry *dat_entry)
  }
  
  /**
-- * __batadv_dat_purge() - delete entries from the DAT local storage
-- * @bat_priv: the bat priv with all the mesh interface information
-+ * __batadv_dat_purge() - delete entries from a DAT hash table
-+ * @hash: the hash table to delete from
-  * @to_purge: function in charge to decide whether an entry has to be purged or
-  *	      not. This function takes the dat_entry as argument and has to
-  *	      returns a boolean value: true is the entry has to be deleted,
-  *	      false otherwise
+- * batadv_dat_to_purge() - check whether a dat_entry has to be purged or not
++ * batadv_dat_cache_to_purge() - check if a cache entry has to be purged or not
+  * @dat_entry: the entry to check
   *
-- * Loops over each entry in the DAT local storage and deletes it if and only if
-+ * Loops over each entry in a DAT hash table and deletes it if and only if
-  * the to_purge function passed as argument returns true.
+  * Return: true if the entry has to be purged now, false otherwise.
   */
--static void __batadv_dat_purge(struct batadv_priv *bat_priv,
-+static void __batadv_dat_purge(struct batadv_hashtable *hash,
- 			       bool (*to_purge)(struct batadv_dat_entry *))
+-static bool batadv_dat_to_purge(struct batadv_dat_entry *dat_entry)
++static bool batadv_dat_cache_to_purge(struct batadv_dat_entry *dat_entry)
  {
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
-@@ -230,12 +230,12 @@ static void __batadv_dat_purge(struct batadv_priv *bat_priv,
- 	struct hlist_head *head;
- 	u32 i;
+ 	return batadv_has_timed_out(dat_entry->last_update,
+-				    BATADV_DAT_ENTRY_TIMEOUT);
++				    BATADV_DAT_CACHE_ENTRY_TIMEOUT);
++}
++
++/**
++ * batadv_dat_dht_to_purge() - check if a DHT entry has to be purged or not
++ * @dat_entry: the entry to check
++ *
++ * Return: true if the entry has to be purged now, false otherwise.
++ */
++static bool batadv_dat_dht_to_purge(struct batadv_dat_entry *dat_entry)
++{
++	return batadv_has_timed_out(dat_entry->last_update,
++				    BATADV_DAT_DHT_ENTRY_TIMEOUT);
+ }
  
--	if (!bat_priv->dat.hash)
-+	if (!hash)
- 		return;
- 
--	for (i = 0; i < bat_priv->dat.hash->size; i++) {
--		head = &bat_priv->dat.hash->table[i];
--		list_lock = &bat_priv->dat.hash->list_locks[i];
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+		list_lock = &hash->list_locks[i];
- 
- 		spin_lock_bh(list_lock);
- 		hlist_for_each_entry_safe(dat_entry, node_tmp, head,
-@@ -268,7 +268,8 @@ static void batadv_dat_purge(struct work_struct *work)
+ /**
+@@ -268,8 +280,8 @@ static void batadv_dat_purge(struct work_struct *work)
  	priv_dat = container_of(delayed_work, struct batadv_priv_dat, work);
  	bat_priv = container_of(priv_dat, struct batadv_priv, dat);
  
--	__batadv_dat_purge(bat_priv, batadv_dat_to_purge);
-+	__batadv_dat_purge(bat_priv->dat.cache_hash, batadv_dat_to_purge);
-+	__batadv_dat_purge(bat_priv->dat.dht_hash, batadv_dat_to_purge);
+-	__batadv_dat_purge(bat_priv->dat.cache_hash, batadv_dat_to_purge);
+-	__batadv_dat_purge(bat_priv->dat.dht_hash, batadv_dat_to_purge);
++	__batadv_dat_purge(bat_priv->dat.cache_hash, batadv_dat_cache_to_purge);
++	__batadv_dat_purge(bat_priv->dat.dht_hash, batadv_dat_dht_to_purge);
  	batadv_dat_start_timer(bat_priv);
  }
  
-@@ -387,19 +388,17 @@ static u32 batadv_hash_dat(const void *data, u32 size)
- }
- 
- /**
-- * batadv_dat_entry_hash_find() - look for a given dat_entry in the local hash
-- * table
-- * @bat_priv: the bat priv with all the mesh interface information
-+ * batadv_dat_entry_hash_find() - look for a given dat_entry in a hash table
-+ * @hash: the hash table to search in
-  * @ip: search key
-  * @vid: VLAN identifier
-  *
-  * Return: the dat_entry if found, NULL otherwise.
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index e738758ee4a7..17af6322e157 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -36,7 +36,8 @@
+ #define BATADV_TT_WORK_PERIOD 5000 /* 5 seconds */
+ #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
+ #define BATADV_MCAST_WORK_PERIOD 500 /* 0.5 seconds */
+-#define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
++#define BATADV_DAT_CACHE_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
++#define BATADV_DAT_DHT_ENTRY_TIMEOUT (30 * 60000) /* 30 mins in milliseconds */
+ /* sliding packet range of received originator messages in sequence numbers
+  * (should be a multiple of our word size)
   */
- static struct batadv_dat_entry *
--batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
-+batadv_dat_entry_hash_find(struct batadv_hashtable *hash, __be32 ip,
- 			   unsigned short vid)
- {
--	struct batadv_hashtable *hash = bat_priv->dat.hash;
- 	struct batadv_dat_entry *dat_entry_tmp = NULL;
- 	struct batadv_dat_entry *dat_entry;
- 	struct batadv_dat_entry to_find;
-@@ -434,29 +433,64 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
- 	return dat_entry_tmp;
- }
- 
-+/**
-+ * batadv_dat_cache_entry_find() - look for a given dat_entry in the DAT cache
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @ip: search key
-+ * @vid: VLAN identifier
-+ *
-+ * Return: the dat_entry if found, NULL otherwise.
-+ */
-+static inline struct batadv_dat_entry *
-+batadv_dat_cache_entry_find(struct batadv_priv *bat_priv, __be32 ip,
-+			    unsigned short vid)
-+{
-+	return batadv_dat_entry_hash_find(bat_priv->dat.cache_hash, ip, vid);
-+}
-+
-+/**
-+ * batadv_dat_dht_entry_find() - look for a given dat_entry in the DAT DHT
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @ip: search key
-+ * @vid: VLAN identifier
-+ *
-+ * Return: the dat_entry if found, NULL otherwise.
-+ */
-+static inline struct batadv_dat_entry *
-+batadv_dat_dht_entry_find(struct batadv_priv *bat_priv, __be32 ip,
-+			  unsigned short vid)
-+{
-+	return batadv_dat_entry_hash_find(bat_priv->dat.dht_hash, ip, vid);
-+}
-+
- /**
-  * batadv_dat_entry_add() - add a new dat entry or update it if already exists
-  * @bat_priv: the bat priv with all the mesh interface information
-+ * @hash: the hash table to add to
-  * @ip: ipv4 to add/edit
-  * @mac_addr: mac address to assign to the given ipv4
-  * @vid: VLAN identifier
-+ * @tablename: the name of the hash table to add to
-  */
--static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
--				 u8 *mac_addr, unsigned short vid)
-+static void
-+batadv_dat_entry_add(struct batadv_priv *bat_priv,
-+		     struct batadv_hashtable *hash, __be32 ip,
-+		     u8 *mac_addr, unsigned short vid,
-+		     const char *tablename)
- {
- 	u64 u64_mac = ether_addr_to_u64(mac_addr);
- 	struct batadv_dat_entry *dat_entry;
- 	int hash_added;
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip, vid);
-+	dat_entry = batadv_dat_entry_hash_find(hash, ip, vid);
- 	/* if this entry is already known, just update it */
- 	if (dat_entry) {
- 		atomic64_set(&dat_entry->mac_addr, u64_mac);
- 
- 		dat_entry->last_update = jiffies;
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
--			   "Entry updated: %pI4 %pM (vid: %d)\n",
--			   &dat_entry->ip, mac_addr,
-+			   "Entry updated in %s: %pI4 %pM (vid: %d)\n",
-+			   tablename, &dat_entry->ip, mac_addr,
- 			   batadv_print_vid(vid));
- 		goto out;
- 	}
-@@ -472,7 +506,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 	kref_init(&dat_entry->refcount);
- 
- 	kref_get(&dat_entry->refcount);
--	hash_added = batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
-+	hash_added = batadv_hash_add(hash, batadv_compare_dat,
- 				     batadv_hash_dat, dat_entry,
- 				     &dat_entry->hash_entry);
- 
-@@ -482,13 +516,44 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 		goto out;
- 	}
- 
--	batadv_dbg(BATADV_DBG_DAT, bat_priv, "New entry added: %pI4 %pM (vid: %d)\n",
--		   &dat_entry->ip, mac_addr, batadv_print_vid(vid));
-+	batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+		   "New entry added in %s: %pI4 %pM (vid: %d)\n",
-+		   tablename, &dat_entry->ip, mac_addr, batadv_print_vid(vid));
- 
- out:
- 	batadv_dat_entry_put(dat_entry);
- }
- 
-+/**
-+ * batadv_dat_cache_entry_add() - add or update dat_entry in the DAT cache
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ip: ipv4 to add/edit
-+ * @mac_addr: mac address to assign to the given ipv4
-+ * @vid: VLAN identifier
-+ */
-+static inline void
-+batadv_dat_cache_entry_add(struct batadv_priv *bat_priv, __be32 ip,
-+			   u8 *mac_addr, unsigned short vid)
-+{
-+	batadv_dat_entry_add(bat_priv, bat_priv->dat.cache_hash, ip, mac_addr,
-+			     vid, "cache");
-+}
-+
-+/**
-+ * batadv_dat_dht_entry_add() - add or update dat_entry in the DAT DHT
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @ip: ipv4 to add/edit
-+ * @mac_addr: mac address to assign to the given ipv4
-+ * @vid: VLAN identifier
-+ */
-+static inline void
-+batadv_dat_dht_entry_add(struct batadv_priv *bat_priv, __be32 ip,
-+			 u8 *mac_addr, unsigned short vid)
-+{
-+	batadv_dat_entry_add(bat_priv, bat_priv->dat.dht_hash, ip, mac_addr,
-+			     vid, "dht");
-+}
-+
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- 
- /**
-@@ -692,12 +757,77 @@ static void batadv_choose_next_candidate(struct batadv_priv *bat_priv,
- 	*last_max = max;
- }
- 
-+/**
-+ * batadv_dat_cmp_self_candidate() - check if we are a better DHT candidate
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @cands: candidates array
-+ * @ip_key: key to look up in the DHT
-+ * @last_max: address of the last selected candidate
-+ *
-+ * Check if we are a better candidate than the last placed, selected DHT
-+ * candidate for the given IP address key.
-+ *
-+ * Return: true if we are a better candidate, false otherwise.
-+ */
-+static bool batadv_dat_cmp_self_candidate(struct batadv_priv *bat_priv,
-+					  struct batadv_dat_candidate *cands,
-+					  batadv_dat_addr_t ip_key,
-+					  batadv_dat_addr_t last_max)
-+{
-+	struct batadv_hard_iface *primary_if = NULL;
-+	struct batadv_dat_candidate *last_cand;
-+	const unsigned char *own_orig_addr;
-+	batadv_dat_addr_t own_dat_addr;
-+	batadv_dat_addr_t tmp_max;
-+	bool ret = false;
-+
-+	last_cand = &cands[BATADV_DAT_CANDIDATES_NUM - 1];
-+
-+	/* a free slot? then it is for us */
-+	if (last_cand->type == BATADV_DAT_CANDIDATE_NOT_FOUND) {
-+		ret = true;
-+		goto out;
-+	}
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if)
-+		return false;
-+
-+	own_orig_addr = primary_if->net_dev->dev_addr;
-+	own_dat_addr = batadv_choose_orig(own_orig_addr, BATADV_DAT_ADDR_MAX);
-+	tmp_max = BATADV_DAT_ADDR_MAX - own_dat_addr + ip_key;
-+
-+	/* check if we are a better candidate than the last placed,
-+	 * selected candidate node
-+	 */
-+	if (tmp_max < last_max)
-+		goto out;
-+
-+	/* this is a hash collision with the last placed, selected candidate.
-+	 * Choose the one with the lowest address
-+	 */
-+	if (tmp_max == last_max &&
-+	    memcmp(own_orig_addr, last_cand->orig_node->orig, ETH_ALEN) >= 0)
-+		goto out;
-+
-+	ret = true;
-+out:
-+	if (ret)
-+		batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+			   "%s(): self-candidate for hash(IP)=%u, dist=%i\n",
-+			   __func__, ip_key, primary_if ? tmp_max : -1);
-+
-+	batadv_hardif_put(primary_if);
-+	return ret;
-+}
-+
- /**
-  * batadv_dat_select_candidates() - select the nodes which the DHT message has
-  *  to be sent to
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @ip_dst: ipv4 to look up in the DHT
-  * @vid: VLAN identifier
-+ * @self_is_candidate: stores if we are a candidate (must not be NULL)
-  *
-  * An originator O is selected if and only if its DHT_ID value is one of three
-  * closest values (from the LEFT, with wrap around if needed) then the hash
-@@ -707,7 +837,7 @@ static void batadv_choose_next_candidate(struct batadv_priv *bat_priv,
-  */
- static struct batadv_dat_candidate *
- batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
--			     unsigned short vid)
-+			     unsigned short vid, bool *self_is_candidate)
- {
- 	batadv_dat_addr_t last_max = BATADV_DAT_ADDR_MAX;
- 	struct batadv_dat_candidate *res;
-@@ -735,6 +865,9 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
- 		batadv_choose_next_candidate(bat_priv, res, select, ip_key,
- 					     &last_max);
- 
-+	if (batadv_dat_cmp_self_candidate(bat_priv, res, ip_key, last_max))
-+		*self_is_candidate = true;
-+
- 	return res;
- }
- 
-@@ -835,9 +968,60 @@ batadv_dat_arp_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
- 	return 0;
- }
- 
-+/**
-+ * batadv_dat_dht_get_self_reply() - reply to our DHT_GET locally
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @ip_src: ARP request sender IP (and ARP reply target IP)
-+ * @ip_dst: ARP request target IP (and ARP reply sender IP)
-+ * @hw_src: Ethernet source and ARP sender MAC of ARP request
-+ * @vid: VLAN identifier (optional, set to zero otherwise)
-+ * @arp_len: ARP packet size, including ethernet frame
-+ *
-+ * If we have a suitable response in our local DAT DHT for a local
-+ * ARP request and are a suitable responder then generate and respond
-+ * with an ARP reply locally.
-+ *
-+ * Return: false if we could not find a DAT DHT entry locally or if we
-+ * were a suitable responder but could not generate an ARP reply
-+ * (e.g. due to out-of-memory), true otherwise.
-+ */
-+static bool
-+batadv_dat_dht_get_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
-+			      __be32 ip_dst, u8 *hw_src, unsigned short vid,
-+			      unsigned int arp_len)
-+{
-+	struct batadv_dat_entry *dat_entry;
-+	u8 mac[ETH_ALEN] __aligned(2);
-+	u64 u64_mac;
-+	int ret;
-+
-+	dat_entry = batadv_dat_dht_entry_find(bat_priv, ip_dst, vid);
-+	if (!dat_entry)
-+		return false;
-+
-+	u64_mac = atomic64_read(&dat_entry->mac_addr);
-+	u64_to_ether_addr(u64_mac, mac);
-+
-+	/* we are a selected DAT DHT candidate, our DAT DHT entry should get
-+	 * updates, we can therefore safely copy it to our DAT cache for now
-+	 */
-+	batadv_dat_cache_entry_add(bat_priv, ip_dst, mac, vid);
-+
-+	ret = batadv_dat_arp_self_reply(bat_priv, ip_src, ip_dst, hw_src, mac,
-+					vid, arp_len);
-+	if (!ret)
-+		batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+			   "ARP request for %pI4 replied locally (via local DHT)\n",
-+			   &ip_dst);
-+
-+	batadv_dat_entry_put(dat_entry);
-+	return (ret != -ENOMEM);
-+}
-+
- /**
-  * batadv_dat_forward_data() - copy and send payload to the selected candidates
-  * @bat_priv: the bat priv with all the mesh interface information
-+ * @cands: candidates array
-  * @skb: payload to send
-  * @ip: the DHT key
-  * @vid: VLAN identifier
-@@ -850,37 +1034,33 @@ batadv_dat_arp_self_reply(struct batadv_priv *bat_priv, __be32 ip_src,
-  * otherwise.
-  */
- static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
-+				    struct batadv_dat_candidate *cands,
- 				    struct sk_buff *skb, __be32 ip,
- 				    unsigned short vid, int packet_subtype)
- {
- 	struct batadv_neigh_node *neigh_node = NULL;
--	struct batadv_dat_candidate *cand;
- 	struct sk_buff *tmp_skb;
- 	bool ret = false;
- 	int send_status;
- 	int i;
- 
--	cand = batadv_dat_select_candidates(bat_priv, ip, vid);
--	if (!cand)
--		return ret;
--
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv, "DHT_SEND for %pI4\n", &ip);
- 
- 	for (i = 0; i < BATADV_DAT_CANDIDATES_NUM; i++) {
--		if (cand[i].type == BATADV_DAT_CANDIDATE_NOT_FOUND)
-+		if (cands[i].type == BATADV_DAT_CANDIDATE_NOT_FOUND)
- 			continue;
- 
--		neigh_node = batadv_orig_router_get(cand[i].orig_node,
-+		neigh_node = batadv_orig_router_get(cands[i].orig_node,
- 						    BATADV_IF_DEFAULT);
- 		if (!neigh_node)
--			goto free_orig;
-+			continue;
- 
- 		tmp_skb = pskb_copy_for_clone(skb, GFP_ATOMIC);
- 		if (!tmp_skb)
- 			goto free_neigh;
- 
- 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
--							   cand[i].orig_node,
-+							   cands[i].orig_node,
- 							   packet_subtype)) {
- 			kfree_skb(tmp_skb);
- 			goto free_neigh;
-@@ -905,11 +1085,111 @@ static bool batadv_dat_forward_data(struct batadv_priv *bat_priv,
- 		}
- free_neigh:
- 		batadv_neigh_node_put(neigh_node);
--free_orig:
--		batadv_orig_node_put(cand[i].orig_node);
- 	}
- 
--	kfree(cand);
-+	return ret;
-+}
-+
-+/**
-+ * batadv_dat_candidates_free() - free a candidates array
-+ * @cands: the candidates array to free
-+ *
-+ * Free the given candidate array and release any potential orig node references
-+ * it held.
-+ *
-+ * If @cands is NULL, no operation is performed.
-+ */
-+static void batadv_dat_candidates_free(struct batadv_dat_candidate *cands)
-+{
-+	if (!cands)
-+		return;
-+
-+	for (int i = 0; i < BATADV_DAT_CANDIDATES_NUM; i++)
-+		if (cands[i].type == BATADV_DAT_CANDIDATE_ORIG)
-+			batadv_orig_node_put(cands[i].orig_node);
-+
-+	kfree(cands);
-+}
-+
-+/**
-+ * batadv_dat_forward_dht_put() - send payload via DHT_PUT to DAT candidates
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @skb: payload to send
-+ * @ip: the DHT key
-+ * @hw_addr: the MAC address which the IP resolves to
-+ * @vid: VLAN identifier
-+ *
-+ * Send the given payload via a DAT DHT_PUT message to the selected
-+ * candidates.
-+ *
-+ * Return: true if the packet is sent to at least one candidate, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_dat_forward_dht_put(struct batadv_priv *bat_priv, struct sk_buff *skb,
-+			   __be32 ip, u8 *hw_addr, unsigned short vid)
-+{
-+	struct batadv_dat_candidate *cands;
-+	bool self_is_candidate = false;
-+	bool ret;
-+
-+	cands = batadv_dat_select_candidates(bat_priv, ip, vid,
-+					     &self_is_candidate);
-+	if (!cands)
-+		return false;
-+
-+	if (self_is_candidate)
-+		batadv_dat_dht_entry_add(bat_priv, ip, hw_addr, vid);
-+
-+	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip, vid,
-+				      BATADV_P_DAT_DHT_PUT);
-+
-+	batadv_dat_candidates_free(cands);
-+	return ret;
-+}
-+
-+/**
-+ * batadv_dat_forward_dht_get() - send payload via DHT_GET to DAT candidates
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @skb: payload to send
-+ * @ip_src: ARP sender IP
-+ * @ip_dst: ARP target IP
-+ * @hw_src: Ethernet source and ARP sender MAC
-+ * @vid: VLAN identifier
-+ * @arp_len: ARP packet size, including ethernet frame
-+ *
-+ * Send the given payload via a DAT DHT_GET message to the selected
-+ * candidates.
-+ *
-+ * Return: true if the packet is sent to at least one candidate, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_dat_forward_dht_get(struct batadv_priv *bat_priv, struct sk_buff *skb,
-+			   __be32 ip_src, __be32 ip_dst, u8 *hw_src,
-+			   unsigned short vid, unsigned int arp_len)
-+{
-+	struct batadv_dat_candidate *cands;
-+	bool self_is_candidate = false;
-+	bool ret;
-+
-+	cands = batadv_dat_select_candidates(bat_priv, ip_dst, vid,
-+					     &self_is_candidate);
-+	if (!cands)
-+		return false;
-+
-+	if (self_is_candidate) {
-+		ret = batadv_dat_dht_get_self_reply(bat_priv, ip_src, ip_dst,
-+						    hw_src, vid, arp_len);
-+		if (ret)
-+			goto skip_remote_forward;
-+	}
-+
-+	ret = batadv_dat_forward_data(bat_priv, cands, skb, ip_dst, vid,
-+				      BATADV_P_DAT_DHT_GET);
-+
-+skip_remote_forward:
-+	batadv_dat_candidates_free(cands);
- 	return ret;
- }
- 
-@@ -965,19 +1245,57 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- }
- 
- /**
-- * batadv_dat_hash_free() - free the local DAT hash table
-- * @bat_priv: the bat priv with all the mesh interface information
-+ * batadv_dat_hash_free() - free a DAT hash table
-+ * @hash: the hash table to free
-  */
--static void batadv_dat_hash_free(struct batadv_priv *bat_priv)
-+static void batadv_dat_hash_free(struct batadv_hashtable **hash)
- {
--	if (!bat_priv->dat.hash)
-+	if (!(*hash))
- 		return;
- 
--	__batadv_dat_purge(bat_priv, NULL);
-+	__batadv_dat_purge(*hash, NULL);
- 
--	batadv_hash_destroy(bat_priv->dat.hash);
-+	batadv_hash_destroy(*hash);
- 
--	bat_priv->dat.hash = NULL;
-+	*hash = NULL;
-+}
-+
-+/**
-+ * batadv_dat_cache_hash_init() - initialise the DAT cache hash table
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ *
-+ * Return: 0 in case of success, a negative error code otherwise
-+ */
-+static int batadv_dat_cache_hash_init(struct batadv_priv *bat_priv)
-+{
-+	if (bat_priv->dat.cache_hash)
-+		return 0;
-+
-+	bat_priv->dat.cache_hash = batadv_hash_new(1024);
-+
-+	if (!bat_priv->dat.cache_hash)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+/**
-+ * batadv_dat_dht_hash_init() - initialise the DAT DHT hash table
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ *
-+ * Return: 0 in case of success, a negative error code otherwise
-+ */
-+static int batadv_dat_dht_hash_init(struct batadv_priv *bat_priv)
-+{
-+	if (bat_priv->dat.dht_hash)
-+		return 0;
-+
-+	bat_priv->dat.dht_hash = batadv_hash_new(1024);
-+
-+	if (!bat_priv->dat.dht_hash)
-+		return -ENOMEM;
-+
-+	return 0;
- }
- 
- /**
-@@ -988,13 +1306,15 @@ static void batadv_dat_hash_free(struct batadv_priv *bat_priv)
-  */
- int batadv_dat_init(struct batadv_priv *bat_priv)
- {
--	if (bat_priv->dat.hash)
--		return 0;
-+	int ret;
- 
--	bat_priv->dat.hash = batadv_hash_new(1024);
-+	ret = batadv_dat_cache_hash_init(bat_priv);
-+	if (ret < 0)
-+		return ret;
- 
--	if (!bat_priv->dat.hash)
--		return -ENOMEM;
-+	ret = batadv_dat_dht_hash_init(bat_priv);
-+	if (ret < 0)
-+		return ret;
- 
- 	INIT_DELAYED_WORK(&bat_priv->dat.work, batadv_dat_purge);
- 	batadv_dat_start_timer(bat_priv);
-@@ -1017,23 +1337,25 @@ void batadv_dat_free(struct batadv_priv *bat_priv)
- 
- 	disable_delayed_work_sync(&bat_priv->dat.work);
- 
--	batadv_dat_hash_free(bat_priv);
-+	batadv_dat_hash_free(&bat_priv->dat.cache_hash);
-+	batadv_dat_hash_free(&bat_priv->dat.dht_hash);
- }
- 
- /**
-- * batadv_dat_cache_dump_entry() - dump one entry of the DAT cache table to a
-- *  netlink socket
-+ * batadv_dat_dump_entry() - dump one entry of a DAT hash table to a netlink
-+ *  socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-  * @cb: Control block containing additional options
-  * @dat_entry: entry to dump
-+ * @cmd: generic netlink command
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_dat_cache_dump_entry(struct sk_buff *msg, u32 portid,
--			    struct netlink_callback *cb,
--			    struct batadv_dat_entry *dat_entry)
-+batadv_dat_dump_entry(struct sk_buff *msg, u32 portid,
-+		      struct netlink_callback *cb,
-+		      struct batadv_dat_entry *dat_entry, u8 cmd)
- {
- 	u8 mac[ETH_ALEN] __aligned(2);
- 	u64 u64_mac;
-@@ -1041,8 +1363,7 @@ batadv_dat_cache_dump_entry(struct sk_buff *msg, u32 portid,
- 	void *hdr;
- 
- 	hdr = genlmsg_put(msg, portid, cb->nlh->nlmsg_seq,
--			  &batadv_netlink_family, NLM_F_MULTI,
--			  BATADV_CMD_GET_DAT_CACHE);
-+			  &batadv_netlink_family, NLM_F_MULTI, cmd);
- 	if (!hdr)
- 		return -ENOBUFS;
- 
-@@ -1066,22 +1387,23 @@ batadv_dat_cache_dump_entry(struct sk_buff *msg, u32 portid,
- }
- 
- /**
-- * batadv_dat_cache_dump_bucket() - dump one bucket of the DAT cache table to
-- *  a netlink socket
-+ * batadv_dat_dump_bucket() - dump one bucket of a DAT hash table to a netlink
-+ *  socket
-  * @msg: buffer for the message
-  * @portid: netlink port
-  * @cb: Control block containing additional options
-  * @hash: hash to dump
-  * @bucket: bucket index to dump
-  * @idx_skip: How many entries to skip
-+ * @cmd: generic netlink command
-  *
-  * Return: 0 or error code.
-  */
- static int
--batadv_dat_cache_dump_bucket(struct sk_buff *msg, u32 portid,
--			     struct netlink_callback *cb,
--			     struct batadv_hashtable *hash, unsigned int bucket,
--			     int *idx_skip)
-+batadv_dat_dump_bucket(struct sk_buff *msg, u32 portid,
-+		       struct netlink_callback *cb,
-+		       struct batadv_hashtable *hash, unsigned int bucket,
-+		       int *idx_skip, u8 cmd)
- {
- 	struct batadv_dat_entry *dat_entry;
- 	int idx = 0;
-@@ -1093,7 +1415,7 @@ batadv_dat_cache_dump_bucket(struct sk_buff *msg, u32 portid,
- 		if (idx < *idx_skip)
- 			goto skip;
- 
--		if (batadv_dat_cache_dump_entry(msg, portid, cb, dat_entry)) {
-+		if (batadv_dat_dump_entry(msg, portid, cb, dat_entry, cmd)) {
- 			spin_unlock_bh(&hash->list_locks[bucket]);
- 			*idx_skip = idx;
- 
-@@ -1109,30 +1431,26 @@ batadv_dat_cache_dump_bucket(struct sk_buff *msg, u32 portid,
- }
- 
- /**
-- * batadv_dat_cache_dump() - dump DAT cache table to a netlink socket
-+ * batadv_dat_dump() - dump a DAT hash table to a netlink socket
-+ * @bat_priv: the bat priv with all the mesh interface information
-  * @msg: buffer for the message
-  * @cb: callback structure containing arguments
-+ * @hash: the hash table to dump from
-+ * @cmd: generic netlink command
-  *
-  * Return: message length.
-  */
--int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+static int
-+batadv_dat_dump(struct batadv_priv *bat_priv, struct sk_buff *msg,
-+		struct netlink_callback *cb, struct batadv_hashtable *hash,
-+		u8 cmd)
- {
--	struct batadv_hard_iface *primary_if = NULL;
- 	int portid = NETLINK_CB(cb->skb).portid;
--	struct net_device *mesh_iface;
--	struct batadv_hashtable *hash;
--	struct batadv_priv *bat_priv;
-+	struct batadv_hard_iface *primary_if;
- 	int bucket = cb->args[0];
- 	int idx = cb->args[1];
- 	int ret = 0;
- 
--	mesh_iface = batadv_netlink_get_meshif(cb);
--	if (IS_ERR(mesh_iface))
--		return PTR_ERR(mesh_iface);
--
--	bat_priv = netdev_priv(mesh_iface);
--	hash = bat_priv->dat.hash;
--
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
- 		ret = -ENOENT;
-@@ -1140,8 +1458,8 @@ int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 	}
- 
- 	while (bucket < hash->size) {
--		if (batadv_dat_cache_dump_bucket(msg, portid, cb, hash, bucket,
--						 &idx))
-+		if (batadv_dat_dump_bucket(msg, portid, cb, hash, bucket, &idx,
-+					   cmd))
- 			break;
- 
- 		bucket++;
-@@ -1156,8 +1474,58 @@ int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
- out:
- 	batadv_hardif_put(primary_if);
- 
-+	return ret;
-+}
-+
-+/**
-+ * batadv_dat_cache_dump() - dump the DAT cache table to a netlink socket
-+ * @msg: buffer for the message
-+ * @cb: callback structure containing arguments
-+ *
-+ * Return: Message length on success or a negative error number otherwise.
-+ */
-+int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	struct net_device *mesh_iface;
-+	struct batadv_priv *bat_priv;
-+	int ret;
-+
-+	mesh_iface = batadv_netlink_get_meshif(cb);
-+	if (IS_ERR(mesh_iface))
-+		return PTR_ERR(mesh_iface);
-+
-+	bat_priv = netdev_priv(mesh_iface);
-+
-+	ret = batadv_dat_dump(bat_priv, msg, cb, bat_priv->dat.cache_hash,
-+			      BATADV_CMD_GET_DAT_CACHE);
-+
- 	dev_put(mesh_iface);
-+	return ret;
-+}
- 
-+/**
-+ * batadv_dat_dht_dump() - dump the DAT DHT table to a netlink socket
-+ * @msg: buffer for the message
-+ * @cb: callback structure containing arguments
-+ *
-+ * Return: Message length on success or a negative error number otherwise.
-+ */
-+int batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	struct net_device *mesh_iface;
-+	struct batadv_priv *bat_priv;
-+	int ret;
-+
-+	mesh_iface = batadv_netlink_get_meshif(cb);
-+	if (IS_ERR(mesh_iface))
-+		return PTR_ERR(mesh_iface);
-+
-+	bat_priv = netdev_priv(mesh_iface);
-+
-+	ret = batadv_dat_dump(bat_priv, msg, cb, bat_priv->dat.dht_hash,
-+			      BATADV_CMD_GET_DAT_DHT);
-+
-+	dev_put(mesh_iface);
- 	return ret;
- }
- 
-@@ -1330,9 +1698,9 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	hw_src = batadv_arp_hw_src(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-+	dat_entry = batadv_dat_cache_entry_find(bat_priv, ip_dst, vid);
- 	if (dat_entry) {
- 		u64_mac = atomic64_read(&dat_entry->mac_addr);
- 		u64_to_ether_addr(u64_mac, mac);
-@@ -1341,12 +1709,13 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 						hw_src, mac, vid, arp_len);
- 		if (!rep)
- 			batadv_dbg(BATADV_DBG_DAT, bat_priv,
--				   "ARP request replied locally\n");
-+				   "ARP request for %pI4 replied locally (via DAT cache)\n",
-+				   &ip_dst);
- 		ret = (rep != -ENOMEM);
- 	} else {
- 		/* Send the request to the DHT */
--		ret = batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
--					      BATADV_P_DAT_DHT_GET);
-+		ret = batadv_dat_forward_dht_get(bat_priv, skb, ip_src, ip_dst,
-+						 hw_src, vid, arp_len);
- 	}
- out:
- 	batadv_dat_entry_put(dat_entry);
-@@ -1401,9 +1770,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-+	dat_entry = batadv_dat_dht_entry_find(bat_priv, ip_dst, vid);
- 	if (!dat_entry)
- 		goto out;
- 
-@@ -1470,16 +1839,14 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
- 	/* Send the ARP reply to the candidates for both the IP addresses that
- 	 * the node obtained from the ARP reply
- 	 */
--	batadv_dat_forward_data(bat_priv, skb, ip_src, vid,
--				BATADV_P_DAT_DHT_PUT);
--	batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
--				BATADV_P_DAT_DHT_PUT);
-+	batadv_dat_forward_dht_put(bat_priv, skb, ip_src, hw_src, vid);
-+	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
- }
- 
- /**
-@@ -1488,6 +1855,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ * @is_dht_put: ARP reply is part of a unicast 4addr DHT PUT packet and should
-+ *  not only update our local DAT cache but also our local DAT DHT
-  *
-  * Warning: This function may reallocate the skb data buffer via
-  * batadv_dat_get_vid()/... Any pointer into the skb data (e.g. obtained
-@@ -1498,7 +1867,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
--					 struct sk_buff *skb, int hdr_size)
-+					 struct sk_buff *skb, int hdr_size,
-+					 bool is_dht_put)
- {
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	u8 mac[ETH_ALEN] __aligned(2);
-@@ -1531,13 +1901,18 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
-+	if (is_dht_put) {
-+		batadv_dat_dht_entry_add(bat_priv, ip_src, hw_src, vid);
-+		batadv_dat_dht_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	}
-+
- 	/* If ip_dst is already in cache and has the right mac address,
- 	 * drop this frame if this ARP reply is destined for us because it's
- 	 * most probably an ARP reply generated by another node of the DHT.
- 	 * We have most probably received already a reply earlier. Delivering
- 	 * this frame would lead to doubled receive of an ARP reply.
- 	 */
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_src, vid);
-+	dat_entry = batadv_dat_cache_entry_find(bat_priv, ip_src, vid);
- 	if (dat_entry) {
- 		u64_mac = atomic64_read(&dat_entry->mac_addr);
- 		u64_to_ether_addr(u64_mac, mac);
-@@ -1554,8 +1929,8 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* Update our internal cache with both the IP addresses the node got
- 	 * within the ARP reply
- 	 */
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
- 	if (dropped)
- 		goto out;
-@@ -1809,13 +2184,11 @@ static void batadv_dat_put_dhcp(struct batadv_priv *bat_priv, u8 *chaddr,
- 
- 	skb_set_network_header(skb, ETH_HLEN);
- 
--	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
-+	batadv_dat_cache_entry_add(bat_priv, yiaddr, chaddr, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
--	batadv_dat_forward_data(bat_priv, skb, yiaddr, vid,
--				BATADV_P_DAT_DHT_PUT);
--	batadv_dat_forward_data(bat_priv, skb, ip_dst, vid,
--				BATADV_P_DAT_DHT_PUT);
-+	batadv_dat_forward_dht_put(bat_priv, skb, yiaddr, chaddr, vid);
-+	batadv_dat_forward_dht_put(bat_priv, skb, ip_dst, hw_dst, vid);
- 
- 	consume_skb(skb);
- 
-@@ -1945,8 +2318,8 @@ void batadv_dat_snoop_incoming_dhcp_ack(struct batadv_priv *bat_priv,
- 	ethhdr = (struct ethhdr *)(skb->data + hdr_size);
- 	hw_src = ethhdr->h_source;
- 
--	batadv_dat_entry_add(bat_priv, yiaddr, chaddr, vid);
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_cache_entry_add(bat_priv, yiaddr, chaddr, vid);
-+	batadv_dat_cache_entry_add(bat_priv, ip_src, hw_src, vid);
- 
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 		   "Snooped from incoming DHCPACK (server address): %pI4, %pM (vid: %i)\n",
-@@ -1999,7 +2372,7 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	ip_dst = batadv_arp_ip_dst(forw_packet->skb, hdr_size);
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
-+	dat_entry = batadv_dat_cache_entry_find(bat_priv, ip_dst, vid);
- 	/* check if the node already got this entry */
- 	if (!dat_entry) {
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index e7b75e82eb1d..ad81b7db921e 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -31,7 +31,8 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
--					 struct sk_buff *skb, int hdr_size);
-+					 struct sk_buff *skb, int hdr_size,
-+					 bool is_dht_put);
- void batadv_dat_snoop_outgoing_dhcp_ack(struct batadv_priv *bat_priv,
- 					struct sk_buff *skb,
- 					__be16 proto,
-@@ -74,6 +75,7 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- int batadv_dat_init(struct batadv_priv *bat_priv);
- void batadv_dat_free(struct batadv_priv *bat_priv);
- int batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb);
-+int batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb);
- 
- /**
-  * batadv_dat_inc_counter() - increment the correct DAT packet counter
-@@ -126,7 +128,8 @@ batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 
- static inline bool
- batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
--				    struct sk_buff *skb, int hdr_size)
-+				    struct sk_buff *skb, int hdr_size,
-+				    bool is_dht_put)
- {
- 	return false;
- }
-@@ -176,6 +179,12 @@ batadv_dat_cache_dump(struct sk_buff *msg, struct netlink_callback *cb)
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int
-+batadv_dat_dht_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static inline void batadv_dat_inc_counter(struct batadv_priv *bat_priv,
- 					  u8 subtype)
- {
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 1177b3ceaf03..7968c513886f 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -1535,6 +1535,11 @@ static const struct genl_small_ops batadv_netlink_ops[] = {
- 		.internal_flags = BATADV_FLAG_NEED_MESH |
- 				  BATADV_FLAG_NEED_VLAN,
- 	},
-+	{
-+		.cmd = BATADV_CMD_GET_DAT_DHT,
-+		.flags = GENL_UNS_ADMIN_PERM,
-+		.dumpit = batadv_dat_dht_dump,
-+	},
- };
- 
- struct genl_family batadv_netlink_family __ro_after_init = {
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 6442f5d0cc93..5cf26e8b3257 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1046,6 +1046,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 	struct batadv_orig_node *orig_node = NULL;
- 	int hdr_size = sizeof(*unicast_packet);
- 	enum batadv_subtype subtype;
-+	bool is_dht_put = false;
- 	int ret = NET_RX_DROP;
- 	u8 *orig_addr_gw;
- 	u8 *orig_addr;
-@@ -1105,6 +1106,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 				orig_addr = unicast_4addr_packet->src;
- 				orig_node = batadv_orig_hash_find(bat_priv,
- 								  orig_addr);
-+			} else if (subtype == BATADV_P_DAT_DHT_PUT) {
-+				is_dht_put = true;
- 			}
- 		}
- 
-@@ -1112,7 +1115,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 							  hdr_size))
- 			goto rx_success;
- 		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
--							hdr_size))
-+							hdr_size, is_dht_put))
- 			goto rx_success;
- 
- 		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-@@ -1353,7 +1356,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 
- 	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
- 		goto rx_success;
--	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size, false))
- 		goto rx_success;
- 
- 	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c19caa84e692..045727c3adc0 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1211,8 +1211,11 @@ struct batadv_priv_dat {
- 	/** @addr: node DAT address */
- 	batadv_dat_addr_t addr;
- 
--	/** @hash: hashtable representing the local ARP cache */
--	struct batadv_hashtable *hash;
-+	/** @cache_hash: hashtable representing the local ARP cache */
-+	struct batadv_hashtable *cache_hash;
-+
-+	/** @dht_hash: hashtable representing the local DAT DHT */
-+	struct batadv_hashtable *dht_hash;
- 
- 	/** @work: work queue callback item for cache purging */
- 	struct delayed_work work;
 -- 
 2.55.0
 
