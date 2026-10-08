@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94AE5CA6007
-	for <batman@archiver.kernel.org>; Thu,  8 Oct 2026 14:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09ABFCA6007
+	for <batman@archiver.kernel.org>; Thu,  8 Oct 2026 14:31:17 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8D80384292
-	for <batman@archiver.kernel.org>; Thu, 08 Oct 2026 16:30:44 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 351CC83EB0
+	for <batman@archiver.kernel.org>; Thu, 08 Oct 2026 16:31:16 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791469844;
- b=rDtz/iwJ69r86wEkwKwNJTaDB/JNcToLtWnN7Zn3bL+LiwotLPXq7K1/PUYz/mb1ElGl9
- QMR5fPOcsP26Y9CsDzAB9AA7kmwybKZcwnJZy1ZpraDVp6m/eVIyg0qlBF7nZl8jlfCA3+l
- 2Wm0hOiGyzDXsklNiJss3VWIaE6hl9E=
+ t=1791469876;
+ b=fKbD7Rlc6vbxV2/1HkO0SP/OfjLH2qWLDe9eqKYl+cn1stSIQZIPv5gC20H36H/4gGrqS
+ EapnTy6toF0qI2C6ypx5XPKF4hxxW7vOS67vx6ylxEkqkquf9G5EdZG+5t/Ulwyxfh+7n6O
+ G9UuJ13hEARDDzNR4uRcSGjli1kkBd0=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791469844; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791469876; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
- b=yRSYKpLbZ4oRYCiOf0xODylWReHH4+waCXYQLxdL6EXVQJACYuYo3VT9gGSD/8FmkoB/x
- r+E6yrYiiXktlC0Tu5R3rC+4OyqSWeu1bLF9WaDDQJCrprTEOk5g0RjTYXbk966qA1Nh9Ha
- P9AMXPWG5AH/rAGD+3DDsIBYsG+K8A0=
+ list-archive; bh=dYpJ/WTL9ve9l+DzsykNt58Ew/WW7dve30kyJncqHvU=;
+ b=lJwRbPh9/qo7uXnHBUPOaWMEV1CHwHx5DDToUeprxFFWb6wPU0lwvv9uj/bLXYlivcoPY
+ h88gkSVj+niuUWZ5YOl/KaS1t4ETmIfCICqzOhJsmeXeAp4lHzk8lH59AJDKdMBwdNap5Ln
+ CFFYd2icxMmPli9S4Su+4DPtrwh+ml4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1B86280D4F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 08 Oct 2026 16:30:25 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791469835;
-	b=htC8Buz3abbjl7uILbr9flsdEEAH2maX+hrA1p+0tk9sZqdCp0rBnW/UoygnLZihHKYDfH
-	pb67rcQUAVv1sDdDK0zhDvLiO0hiwDY1hzDbZ26SeekqWNxFxfk2rXhWQOhQrn6PDNITLh
-	xR8d3WW8V61Ic0Hp6ELcQncdb/qh7ZE=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 5E7C081E84
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 08 Oct 2026 16:30:36 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791469836;
+	b=YForX/EdWEuvbUjqftYV8mh1eXVVwx02q6BJl0LoX0dnKF/QYRPS49rx/SGi32ksjb6GEA
+	tFHZYlndiGs7TJCQdiYn8Bm1qmAxmpewB0FB8qg59pekGkSiFyQD00QwtTWYh6vdbH5z9a
+	m6JNEtnqB2c3VSBSQefkmWWpRc4D0fE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791469835;
+	s=20121; t=1791469836;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
-	b=oylaEN+EjorZth5P0GD4nLfUChPSp+ul6sdd8vGYdTCNerj4Cn2fk3fgaZQnNQ819HaMWo
-	XqGbli5t2UvGN9TMqoGnrGlmbhb8/q0tyPPdLS3sPASMajOdIKVefOZA3HzuO5kpj9mmBX
-	Ev9AqREuPLcOA/d+hi3g/JRXCScn2go=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=dYpJ/WTL9ve9l+DzsykNt58Ew/WW7dve30kyJncqHvU=;
+	b=Nh68jdeRjvy6Z3mhnANZCDllII5NswMVmCsrmcxbbjW33PFb7U1uS7sppAF7Y8l78p/Lf7
+	tRu/XZIQciV0+0cq7Df8Je2hyBAFaikL+pTr2/T3RFWPhI7qRSanfczlM2RdIFZvukgNHu
+	jVk+LeoCbP1Gxdk234/5myczZ8swxJY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=hKhTRtgg;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=h3X6o0tU;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 1DEAE1FEA4;
-	Thu, 08 Oct 2026 14:30:24 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 19ED11FEA4;
+	Thu, 08 Oct 2026 14:30:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791469824;
+	s=20121; t=1791469836;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
-	b=hKhTRtggWzBwxe6bKdFNKSj7Q114pv+UIvOFDHkXSA+sd9NpMcu5QVnawXSTcJTZfUdilF
-	vQn32/iTdcxYbxK9x8P2M435o8vVZFIehNRDgyCohhCZZAMrwC6iXHT0Ra0EYjLckpaakP
-	6epjRO6bHDi3SvHjL0zUR45NtScsatg=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dYpJ/WTL9ve9l+DzsykNt58Ew/WW7dve30kyJncqHvU=;
+	b=h3X6o0tUF72Yw4jTy20e8dqAwY3YQDBgjD5r+fJIYP+9tY5FJv6IZQAv5IAGPUw9uH8Qw2
+	IA32k06L9oP7JWCUo4x1ZkGeTRc8rXhjIDHdrevddrcDq8eEjkMyltIKloW3xbw41B7xQF
+	BvqVcdvf5GNjr05NfC4mk8XmtUfAg/A=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv v2 0/8] batman-adv: tt: shashiko 20260930 follow ups
-Date: Thu, 08 Oct 2026 16:30:05 +0200
-Message-Id: <20261008-tt-avoid-unhashed-event-v2-0-7c4eed81606d@narfation.org>
+Date: Thu, 08 Oct 2026 16:30:10 +0200
+Subject: [PATCH batadv v2 5/8] batman-adv: tt: only update flags for TT
+ events
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAO2ox2oC/3WOTQ7CIBCFr2Jm7Rio6RBdeQ/TBZRpwQU1QImm6
- d2l1a3L7+X9LZA4ek5wPSwQufjkp1ChOR6gdzqMjN5WhkY0JIUgzBl1mbzFOTidHFvkwiGjImP
- agchK2UJNPyMP/rU338HorG2B7qun2Ty4z1vt5nQ+5Sm+9wtF7v7fmvq7ViQKFLJXdKZWXSTdg
- o6DzvX9aYojdOu6fgAlXC3z3AAAAA==
-X-Change-ID: 20261006-tt-avoid-unhashed-event-76bb5f66d115
+Message-Id: <20261008-tt-avoid-unhashed-event-v2-5-7c4eed81606d@narfation.org>
+References: <20261008-tt-avoid-unhashed-event-v2-0-7c4eed81606d@narfation.org>
+In-Reply-To: 
+ <20261008-tt-avoid-unhashed-event-v2-0-7c4eed81606d@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1715; i=sven@narfation.org;
- h=from:subject:message-id; bh=s0+hu1SKUqaPmYT2EH7yfpD7WfszMMQ4XV0EpjjdKIs=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnHV7y/vGuqFFujrDE3Y303614Gvpii73VRs557Kv4Qv
- c13M6Wqo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRaAWGX8xnNuYuNeX+0R2R
- 8dzb78o9zxvrtJuzlkx4wcNw/6ljmwQjw9lboSFle/7Ouv6k4qs0Q5zZ9mtrm/sXyW1ftDtr2Ub
- dGWwA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4241; i=sven@narfation.org;
+ h=from:subject:message-id; bh=Qp4J3WllAXwQ183XrkKb//MVyZfMsGWcMKAAIzprA+4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnHV3wwsZxdGqVzVfS9YYOZ/W/N1oasNbMcdVatW8K5K
+ un7qeUKHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJbNVj+O/9eu4VcbF532om
+ OpxfmVbIUrxqrn2s4X2+pLyFt3ST50gw/DPLlMhIPvtVzes3y6rVpif9S5dEfj8q4xYeGfr+y43
+ sAh4A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC
-X-Message-ID-Hash: XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC
+Message-ID-Hash: OZD5YMC4DSSBASDB4MIZODXZ26ABKFJR
+X-Message-ID-Hash: OZD5YMC4DSSBASDB4MIZODXZ26ABKFJR
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/OZD5YMC4DSSBASDB4MIZODXZ26ABKFJR/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -112,42 +113,102 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-There were various reports in the Sashiko report from
+In the first implementation of the translation table events, it was only
+possible to announce:
 
-* https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%2540simonwunderlich.de
-* https://sashiko.dev/#/patchset/20260930094558.3723766-1-sw@simonwunderlich.de
+* ADD: new locally detected client
+* DEL: disappeared local client
 
-Some of them are about the rather bad locking behavior in TT and addressed
-here. While looking at this, it was also noticed that the TT event handling
-seems to be broken since the introduction of dynamic flag changes.
+If an ADD event was queued and then a DEL event was queued in the same
+timeslot, it is valid to destroy both events because nothing actually
+changed for remode nodes
 
-As Sashiko now already complained about the ROAM flags, i have added the
-ROAM flags handling patches in front of the original patchset.
+But with commit e0eb5f8df352 ("batman-adv: improve the TT component to
+support runtime flag changes") and subsequent changes, it could also happen
+that there are extra ADD events:
 
+* ADD: _NEW_ locally detected client
+* ADD: already existing client with new flags
+* DEL: disappeared local client
+
+The first and the last type of event could in theory still be removed
+together from the (to be announced) events queue. But if the "update flags"
+ADD is dropped together with the DEL, it would still leave global
+translation table of a remote node in the incorrect state - believing that
+the client didn't disappear.
+
+If a detected client was previously announced, a DEL event must only
+overwrite the "update flags" ADD but the DEL itself must still continue to
+exist in the (to be anounced) events queue. For now, adjustment of the
+announced flags is used for everything instead of dropping already queued
+up events completely.
+
+Similarly, a DEL followed by an ADD caused both entries to be deleted. But
+the new ADD could announce flags changes which were not yet present for the
+client before it was marked for DELetion. The new ADD must therefore only
+overwrite the DEL - but still be kept.
+
+Fixes: e0eb5f8df352 ("batman-adv: improve the TT component to support runtime flag changes")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Changes in v2:
-- add patches to handle ROAM flags differently
-- Link to v1: https://patch.msgid.link/20261007-tt-avoid-unhashed-event-v1-0-01c763657916@narfation.org
+ net/batman-adv/translation-table.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
----
-Sven Eckelmann (8):
-      batman-adv: tt: only transmit local ROAM flag together with DEL
-      batman-adv: tt: clear ROAM flag when re-adding a pending local client
-      batman-adv: tt: send ROAM_ADV on each roamed back client
-      batman-adv: tt: ignore ROAM flag of received ADD changes
-      batman-adv: tt: only update flags for TT events
-      batman-adv: tt: don't queue local events for unhashed entries
-      batman-adv: tt: avoid list_lock for unchanged local clients
-      batman-adv: tt: drop ADD+DEL events of never announced clients
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2792617c..c6c4df57 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -675,6 +675,9 @@ static u16 batadv_tt_flags_get(struct batadv_tt_common_entry *common)
+  * @bat_priv: the bat priv with all the mesh interface information
+  * @common: the TT entry involved in the event
+  * @flags: flags of the TT entry combined with the event flags
++ *
++ * Only a single change per client is queued. It describes the latest state of
++ * the client and a new event therefore replaces an already queued one.
+  */
+ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 				    const struct batadv_tt_common_entry *common,
+@@ -684,7 +687,6 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_change_node *entry;
+ 	struct batadv_tt_change_node *safe;
+ 	bool del_op_requested;
+-	bool del_op_entry;
+ 	size_t changes;
+ 
+ 	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
+@@ -718,25 +720,12 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 		if (entry->change.vid != tt_change_node->change.vid)
+ 			continue;
+ 
+-		del_op_entry = entry->change.flags & BATADV_TT_CLIENT_DEL;
+-		if (del_op_requested != del_op_entry) {
+-			/* DEL+ADD in the same orig interval have no effect and
+-			 * can be removed to avoid silly behaviour on the
+-			 * receiver side. The  other way around (ADD+DEL) can
+-			 * happen in case of roaming of  a client still in the
+-			 * NEW state. Roaming of NEW clients is now possible due
+-			 * to automatically recognition of "temporary" clients
+-			 */
+-			list_del(&entry->list);
+-			kmem_cache_free(batadv_tt_change_cache, entry);
+-			changes--;
+-		} else {
+-			/* this is a second add or del in the same originator
+-			 * interval. It could mean that flags have been changed
+-			 * (e.g. double add): update them
+-			 */
+-			entry->change.flags = flags;
+-		}
++		/* the other nodes may know the client with different
++		 * flags. A DEL+ADD must therefore still announce the
++		 * current flags and an ADD+DEL must still remove the
++		 * client. ADD+ADD and DEL+DEL only update the flags
++		 */
++		entry->change.flags = flags;
+ 
+ 		kmem_cache_free(batadv_tt_change_cache, tt_change_node);
+ 		goto update_changes;
 
- net/batman-adv/translation-table.c | 417 +++++++++++++++++++++++--------------
- 1 file changed, 264 insertions(+), 153 deletions(-)
----
-base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
-change-id: 20261006-tt-avoid-unhashed-event-76bb5f66d115
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
