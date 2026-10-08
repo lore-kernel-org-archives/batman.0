@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5004ACA600C
-	for <batman@archiver.kernel.org>; Thu,  8 Oct 2026 15:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D19CA600C
+	for <batman@archiver.kernel.org>; Thu,  8 Oct 2026 16:29:35 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AE7FA84517
-	for <batman@archiver.kernel.org>; Thu, 08 Oct 2026 17:55:18 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A3303842AC
+	for <batman@archiver.kernel.org>; Thu, 08 Oct 2026 18:29:33 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791474918;
- b=wmOi41AMrboJzPBME29YRduNYPj6FjdTWpzuIks3G+Hja0Fo0E9+rCFQXVDvMJQgjLJR2
- 68F+uPWi/75t0LMEmPQ7sUpPJgEtTkh7h9oC1LUVMCJ7nSYaemrowcVhxTgWHZ2SC0BOxD4
- Tlq7OynfbFNNEO7uk8X8qOZv4A80Y/E=
+ t=1791476973;
+ b=z1Dp1OEFaA5tgwoaXTtAHaNgf5bwQNO39ff8DPknKldxjhTelRlvQ8xq7r8S6DBB98WTG
+ Z+1O4j26K5T7sJYAMRRr2DZLnYKZg0oIIXQKA6kA8NFcUAFDTIMoCQvkCt6Lq2n/jk8nATg
+ T2A7ldaFjn8sc+3AVJ4v2gPY72GGDts=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791474918; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791476973; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=TaI6CV0OWqBNk0TR8Zp6dWEZg/l4xGHqCAAKt2jZL9c=;
- b=aDWM8hPZr/rFH0nnokGAoq1UxLEPNIXg/+QCjDbBdgOgxdPS4iNsikK8N15WyJNDzdi1x
- 1/AtsK3vqXPhgnJBMOeo2NIMzYSk741HPoudMIKtfIn1KpgDMXVvOW7CxgX+iXOimNDLEUR
- 1GSaBHYUmx//rUdxpDWsrRjA687CsZU=
+ list-archive; bh=Ew6tJh4QVus/ztPZ7dWebQLyi/ldMYvb7n1Q00HSBn8=;
+ b=xO+34wHkz1K1iwAPk0HaOZudCfAGRLxn4AggHA7h/d9ynvGXdOqUVC282ETGoHjgCpcW9
+ Mk4iLu473Zijxy7J7UbCWBxvf05Z2DsQOaSodp74voTHdh6nKdZBi/DodkeS3BX5wwR+UAj
+ SP5E+NvYEnLQtcK8uN4dh0FL7bU5MlM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 4DB4484341
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 08 Oct 2026 17:53:15 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791474795;
-	b=0BauB81NtFmHde1c2wR7zL7S1FN/nvbYH1Si25JvFrlhAQoJyJ0SKfTsUiEqIb8KyiNe3W
-	cWlV+Z9cWEJJsFYef8ZkzpBEiMzGt8KHjR26iEbMmzl8/lCdauqwKjXSvQ0ETU5BOJa8VX
-	IP/I9iUGkMCDSdzaEVbMRgQ4plDglqI=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E65AC806D6
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 08 Oct 2026 18:29:24 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791476965;
+	b=vHltCz790mhEMuq5McCpm3rewRSF4b8vLwwdJd+y1kiSNFbyypkFwMPFASHuy7p/yoIEHf
+	ZdTCUWriSb9MiW10Tec7HKDebFUdL9CN8pp/tm17GED4AmoA11dt5lmusyltjC7kp6dCg+
+	fVT8sdgLLMVg2WFWaAicgUfrdZ1G3sY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791474795;
+	s=20121; t=1791476965;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=TaI6CV0OWqBNk0TR8Zp6dWEZg/l4xGHqCAAKt2jZL9c=;
-	b=qLN9MfWSDaGrKNtN/sqy5F8nsYj0G08F/U6gxsR3uDQpSQeXiUJxU+lKGiFAJN0Ej+R5iQ
-	sIMKZShpQa5+vXP1Pm6Gp4XBluRQj3hgntqdHJVg3jxqNGzQiv0v2LB8hmCzd0Kl4KOhoc
-	+u9J8M28amTCMXNOqPsH103j1mxf9co=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=Ew6tJh4QVus/ztPZ7dWebQLyi/ldMYvb7n1Q00HSBn8=;
+	b=ukLJPGDmM416vGBFJV+4gQ+cydT08NB0jNE9dllPLygQ7tBAZPh6OnTLAKIq+CXscfD1jo
+	EWgzXrp3QNNv0+cJgwTfotVwukdaBy6SL1wyibXy+tqrcnDo5udzoeXGVUCmv/zCRYKqZF
+	2vPn2GLro461gxwPsrvrP3EzGMLP7H8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=xSaXlXMF;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=s+qaGDFv;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 0EE0E1FEA4;
-	Thu, 08 Oct 2026 15:53:15 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 189C22038A;
+	Thu, 08 Oct 2026 16:29:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791474795;
+	s=20121; t=1791476964;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TaI6CV0OWqBNk0TR8Zp6dWEZg/l4xGHqCAAKt2jZL9c=;
-	b=xSaXlXMFDAT2iaJAzu8Q9CxNkQFEoBOfCLu1xuN0cskVui0AFY/pCYlybTEvBrrn+iRdkb
-	4LKXOSv9JlL4Xbx/8+dMvQoaklEeBfWsDZudgCB/VnUHr8OIdB2z1AWRpnTD1IzwGGfrO+
-	JPiBKfi8ATNqilKK1qewwf/qNN0VKgo=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Ew6tJh4QVus/ztPZ7dWebQLyi/ldMYvb7n1Q00HSBn8=;
+	b=s+qaGDFv9iL/5ceAE5TL5d/Ge9lAZvZQIBTK41N/I55zYn0JqNq6W9p6mp2XrO9eWf/4Eg
+	O7PUQN7g8XlH6RdabFIBoEevJ8uvPPgb230CMRa3rksH85/xLhzZv6mzAp3LazV0JegJ3u
+	LoOxn04ulKGD4m5XYy+xheGkp4tEw3Y=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 08 Oct 2026 17:53:02 +0200
-Subject: [PATCH batadv v2 4/4] batman-adv: increase orig hash generation
- when purging originators
+Date: Thu, 08 Oct 2026 18:29:16 +0200
+Subject: [PATCH batadv] batman-adv: stop originator purge worker before
+ freeing TT
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261008-tt-hash-generatopn-v2-4-72b61e956a81@narfation.org>
-References: <20261008-tt-hash-generatopn-v2-0-72b61e956a81@narfation.org>
-In-Reply-To: <20261008-tt-hash-generatopn-v2-0-72b61e956a81@narfation.org>
+Message-Id: <20261008-mesh_free-order-v1-1-a5edf68f1a96@narfation.org>
+X-B4-Tracking: v=1; b=H4sIANvEx2oC/yWMXQqDMBAGryL73EAiWLRXKaXk54tuoVp2rRTEu
+ zfq4wzMrKQQhtKtWkmwsPI0FnCXiuLgxx6GU2GqbX111rbmDR2eWQAzSYKYpo2dQxeczQ2V6iP
+ I/DuOdwp+9mmhx+n1G16I876jbfsDzWs9JHsAAAA=
+X-Change-ID: 20261008-mesh_free-order-58c91e9b10f5
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1281; i=sven@narfation.org;
- h=from:subject:message-id; bh=TJDLD/c5sWgwhqDxcIRm2OKEtd7gjyVUG6gmO2VBtRE=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnH98TfONUSxOYgKCmicMg/lvWRf8KzstdbAialXIyfv
- 0XR+itrRykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAikwsYGY5PEmir/iAqW7V8
- +6yP+1M2qmhGP9qzR+SLhvjuwu4/pWaMDEcmHDirJ16sdrwholjJ46yfwJYHJ3nKFmyUdn3i5v7
- kBxMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2054; i=sven@narfation.org;
+ h=from:subject:message-id; bh=1H4lL1q1m0nYfNd8HvatAGthB663mI5mW4KIH8NEZ+k=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnHj9xf4T6rovL6xnMV8ZWivoezLlfmrRMz1IxSX5e4K
+ zc5TNqzo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRx0UM/7McJ26T2Lk+2qDn
+ beBb7eeSQTcvJAmuEGYK8gn86J3pf46R4Tx/3Y5Piz7OXDAnou/7xOeR/PUad47d1pF0miX5c0K
+ yLxsA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: I5GBGVAXBJDMG6FGEDVIHU36ZBYNPY73
-X-Message-ID-Hash: I5GBGVAXBJDMG6FGEDVIHU36ZBYNPY73
+Message-ID-Hash: F3JVYLUC4B4URH666CWWW42ECM777DUU
+X-Message-ID-Hash: F3JVYLUC4B4URH666CWWW42ECM777DUU
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/I5GBGVAXBJDMG6FGEDVIHU36ZBYNPY73/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/F3JVYLUC4B4URH666CWWW42ECM777DUU/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,35 +112,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-If batadv_mcast_flags_dump() is preempted during a netlink dump and resumes
-in the middle of a hash bucket while batadv_purge_orig_ref() concurrently
-removes an originator, the dump offset will be shifted.
+batadv_mesh_free() releases the translation tables via batadv_tt_free()
+before batadv_originator_free() stops orig_work. The purge worker can
+therefore still run while the TT is torn down. When an originator times
+out, batadv_purge_orig_ref() calls batadv_tt_global_del_orig(), which
+loads tt.global_hash and walks all buckets while taking their locks:
 
-Without incrementing the hash generation counter, netlink won't set
-NLM_F_DUMP_INTR and the userspace will not be informed about the
-inconsistent dump.
+  CPU0                          CPU1
+  batadv_tt_free()              batadv_purge_orig()
+                                  batadv_tt_global_del_orig()
+                                    hash = ...tt.global_hash;
+    batadv_tt_global_table_free()
+      batadv_hash_destroy(hash);
+                                    spin_lock_bh(&hash->list_locks[i]);
+
+Disable orig_work at the beginning of batadv_mesh_free(), directly after
+the mesh was marked as deactivating. The second
+disable_delayed_work_sync() in batadv_originator_free() is harmless because
+it is free'd anyway.
 
 Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/bug/linux-83da443f-ce69-4393-a29f-e02b70d1ec96
-Fixes: 06c82b7b15b1 ("batman-adv: Add inconsistent multicast netlink dump detection")
+Closes: https://sashiko.dev/#/patchset/20260708091821.314516-1-sw%40simonwunderlich.de?part=3
+Fixes: 21fa2647ad45 ("batman-adv: fix potential TT client + orig-node memory leak")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/originator.c | 1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index f06583ef..c617a648 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -1287,6 +1287,7 @@ void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
- 			if (batadv_purge_orig_node(bat_priv, orig_node)) {
- 				batadv_gw_node_delete(bat_priv, orig_node);
- 				hlist_del_rcu(&orig_node->hash_entry);
-+				atomic_inc(&hash->generation);
- 				batadv_tt_global_del_orig(orig_node->bat_priv,
- 							  orig_node, -1,
- 							  "originator timed out");
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 6c54a8d4..eb9c6bdd 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -295,6 +295,11 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+ 
+ 	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 
++	/* the originator purge worker accesses (among others) the TT tables
++	 * and must therefore be stopped before any of them are freed
++	 */
++	disable_delayed_work_sync(&bat_priv->orig_work);
++
+ 	batadv_purge_outstanding_packets(bat_priv, NULL);
+ 	batadv_tp_stop_all(bat_priv);
+ 
 
--- 
-2.47.3
+---
+base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
+change-id: 20261008-mesh_free-order-58c91e9b10f5
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
