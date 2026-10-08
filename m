@@ -4,88 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C686CA5FF1
-	for <batman@archiver.kernel.org>; Wed,  7 Oct 2026 12:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94AE5CA6007
+	for <batman@archiver.kernel.org>; Thu,  8 Oct 2026 14:30:46 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id BDFB183F06
-	for <batman@archiver.kernel.org>; Wed, 07 Oct 2026 14:39:05 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 8D80384292
+	for <batman@archiver.kernel.org>; Thu, 08 Oct 2026 16:30:44 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791376745;
- b=bp/LIwXtrg+wy0SgugebQNTWpJcmiN1BZnhdB5hC5Q8eifTd3c0aANesP9ejZquolmMuK
- /vojr/gBy1Rp0KZoIyjaMAH5/WRx36t8CmHC3lqSOIgY+HZVVNgzdu0pyQnDx301xvTld0P
- qqZesGKGTZmwqHaFpmMWW2Vyf9FoJrQ=
+ t=1791469844;
+ b=rDtz/iwJ69r86wEkwKwNJTaDB/JNcToLtWnN7Zn3bL+LiwotLPXq7K1/PUYz/mb1ElGl9
+ QMR5fPOcsP26Y9CsDzAB9AA7kmwybKZcwnJZy1ZpraDVp6m/eVIyg0qlBF7nZl8jlfCA3+l
+ 2Wm0hOiGyzDXsklNiJss3VWIaE6hl9E=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791376745; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791469844; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=XWiOK8jZ40zmaDNpJFrpVKMvUivr2p4ae213NrN7yRE=;
- b=wEkpJCRWogsT09xUoOqMc8fk+RQuERlED6oIeVT9gexO0OauFZs4ipgCw4g4XV/GQwkTU
- Niuw+2x4bPaNRW6sMfeh/RJQKkulblNZJVvnZnQyou6NlGr215qbyBEAS+KIVoMINNQYoPv
- JHDI0qtmw3mdd0DTD2/hex6BTXMLnp8=
+ list-archive; bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
+ b=yRSYKpLbZ4oRYCiOf0xODylWReHH4+waCXYQLxdL6EXVQJACYuYo3VT9gGSD/8FmkoB/x
+ r+E6yrYiiXktlC0Tu5R3rC+4OyqSWeu1bLF9WaDDQJCrprTEOk5g0RjTYXbk966qA1Nh9Ha
+ P9AMXPWG5AH/rAGD+3DDsIBYsG+K8A0=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=lunn.ch;
+ dkim=pass header.d=narfation.org;
  arc=pass;
- dmarc=pass header.from=lunn.ch policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=lunn.ch; arc=pass;
- dmarc=pass (Used From Domain Record) header.from=lunn.ch policy.dmarc=none
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 08D108037F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 07 Oct 2026 14:38:44 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791376735;
-	b=khmxv/T9G86A3V9CtOQ8khadkFJI4aB2IfWkQOTEtWWtNnEnS9lbhAwoMvOa67NQrbqFET
-	/zQI9Mhb/cQHqfyO4Iywh6MVKRNFLK0pljcIw4JUmCARosqO1OgfSgM6F9jh0ZJbSoBElo
-	4BxfOHjAnV4lZVWbZ2Oq7qRvBRA/XcY=
+ dmarc=pass header.from=narfation.org policy.dmarc=none
+Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ arc=pass;
+ dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1B86280D4F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 08 Oct 2026 16:30:25 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791469835;
+	b=htC8Buz3abbjl7uILbr9flsdEEAH2maX+hrA1p+0tk9sZqdCp0rBnW/UoygnLZihHKYDfH
+	pb67rcQUAVv1sDdDK0zhDvLiO0hiwDY1hzDbZ26SeekqWNxFxfk2rXhWQOhQrn6PDNITLh
+	xR8d3WW8V61Ic0Hp6ELcQncdb/qh7ZE=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791376735;
+	s=20121; t=1791469835;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=XWiOK8jZ40zmaDNpJFrpVKMvUivr2p4ae213NrN7yRE=;
-	b=pLRHlcD/hevyBNtCfMt6mvwLZ0HjKWvoOnQzGRCy78l/pLO1PyL1OdeUn7EoZDwIID/bpv
-	69Guw7h6aiAMqpdtSwiRvoPweDIUid8Og7V8g+nFCr2DJiFGd4548TkkWpZe7fXyZjMz4I
-	YrnZaXUmewP8VzAL5AWh14YApFJ4iWE=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
+	b=oylaEN+EjorZth5P0GD4nLfUChPSp+ul6sdd8vGYdTCNerj4Cn2fk3fgaZQnNQ819HaMWo
+	XqGbli5t2UvGN9TMqoGnrGlmbhb8/q0tyPPdLS3sPASMajOdIKVefOZA3HzuO5kpj9mmBX
+	Ev9AqREuPLcOA/d+hi3g/JRXCScn2go=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=lunn.ch header.s=20171124 header.b="mo tRJLK";
-	spf=pass (diktynna.open-mesh.org: domain of andrew@lunn.ch designates
- 156.67.10.101 as permitted sender) smtp.mailfrom=andrew@lunn.ch;
-	dmarc=pass (policy=none) header.from=lunn.ch
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Transfer-Encoding:Content-Disposition:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Content-Disposition:
-	In-Reply-To:References; bh=XWiOK8jZ40zmaDNpJFrpVKMvUivr2p4ae213NrN7yRE=; b=mo
-	tRJLKbr929X9Zsbt3IwAcg9Kgy2Kj2DvcjGMKby54qSOcnGXAxK7nvV6EKzzzThG/p9Zj17gf7CLl
-	W+aFJGnGCPyHwOAwDKoCZJufa47KDWtOFH/t2WTztDBJP3jVqYO5mpiqC2DDVrJSaFAnJwWSG9lcA
-	4ac/zwL3yyei/B8=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1xEQuw-009SIJ-Be; Wed, 07 Oct 2026 14:38:42 +0200
-Date: Wed, 7 Oct 2026 14:38:42 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Linus =?iso-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org,
-	sashiko-reviews@lists.linux.dev, marek.lindner@mailbox.org,
-	sw@simonwunderlich.de, antonio@mandelbit.com
-Subject: Re: [batadv,v14 5/5] batman-adv: avoid superfluous DAT DHT_PUT
- additions to local DAT
-Message-ID: <7d8ffb0b-ae92-4d44-aaa9-affc0dfe7e19@lunn.ch>
-References: <asWbc64vRQgTKt9E@sellars>
- <5152412.GXAFRqVoOG@sven-desktop>
- <asY38NN2pGa8FICm@sellars>
+	dkim=pass header.d=narfation.org header.s=20121 header.b=hKhTRtgg;
+	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+	dmarc=pass (policy=none) header.from=narfation.org
+Received: by dvalin.narfation.org (Postfix) id 1DEAE1FEA4;
+	Thu, 08 Oct 2026 14:30:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
+	s=20121; t=1791469824;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=nUajgh9fBWYuSkNGvxDecT60YrVF5D3rHAQQiGDjYc8=;
+	b=hKhTRtggWzBwxe6bKdFNKSj7Q114pv+UIvOFDHkXSA+sd9NpMcu5QVnawXSTcJTZfUdilF
+	vQn32/iTdcxYbxK9x8P2M435o8vVZFIehNRDgyCohhCZZAMrwC6iXHT0Ra0EYjLckpaakP
+	6epjRO6bHDi3SvHjL0zUR45NtScsatg=
+From: Sven Eckelmann <sven@narfation.org>
+Subject: [PATCH batadv v2 0/8] batman-adv: tt: shashiko 20260930 follow ups
+Date: Thu, 08 Oct 2026 16:30:05 +0200
+Message-Id: <20261008-tt-avoid-unhashed-event-v2-0-7c4eed81606d@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <asY38NN2pGa8FICm@sellars>
-Message-ID-Hash: J32LFVF7GE4PPVMWJDLUIGKKSNJFPZOO
-X-Message-ID-Hash: J32LFVF7GE4PPVMWJDLUIGKKSNJFPZOO
-X-MailFrom: andrew@lunn.ch
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAO2ox2oC/3WOTQ7CIBCFr2Jm7Rio6RBdeQ/TBZRpwQU1QImm6
+ d2l1a3L7+X9LZA4ek5wPSwQufjkp1ChOR6gdzqMjN5WhkY0JIUgzBl1mbzFOTidHFvkwiGjImP
+ agchK2UJNPyMP/rU338HorG2B7qun2Ty4z1vt5nQ+5Sm+9wtF7v7fmvq7ViQKFLJXdKZWXSTdg
+ o6DzvX9aYojdOu6fgAlXC3z3AAAAA==
+X-Change-ID: 20261006-tt-avoid-unhashed-event-76bb5f66d115
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1715; i=sven@narfation.org;
+ h=from:subject:message-id; bh=s0+hu1SKUqaPmYT2EH7yfpD7WfszMMQ4XV0EpjjdKIs=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnHV7y/vGuqFFujrDE3Y303614Gvpii73VRs557Kv4Qv
+ c13M6Wqo5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRaAWGX8xnNuYuNeX+0R2R
+ 8dzb78o9zxvrtJuzlkx4wcNw/6ljmwQjw9lboSFle/7Ouv6k4qs0Q5zZ9mtrm/sXyW1ftDtr2Ub
+ dGWwA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC
+X-Message-ID-Hash: XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC
+X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
@@ -98,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/J32LFVF7GE4PPVMWJDLUIGKKSNJFPZOO/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XZ6ZSPWZ7CSDRT74VEWFRMBNSDLY3MKC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -107,33 +112,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On Wed, Oct 07, 2026 at 02:15:44PM +0200, Linus Lüssing wrote:
-> On Wed, Oct 07, 2026 at 09:24:23AM +0200, Sven Eckelmann wrote:
-> > On Wednesday, 7 October 2026 03:08:03 CEST Linus Lüssing wrote:
-> > > > - [Medium] batadv: UAPI source compatibility breakage via reserved field rename
-> > > 
-> > > I would have thought that for a field called "reserved" it would
-> > > be clear that it'd be subject to change in the future.
-> > 
-> > To play the devils advocate: But programs would still fail when they 
-> > manually initialize this field to 0.
-> 
-> On the other hand I'm thinking they should have memset() the
-> struct to zero in the first place, instead of manually setting a
-> reserved field to 0.
+There were various reports in the Sashiko report from
 
-There is another general case advantage of memset. I've not looked to
-see if it is actually applicable here. It will also clear any padding
-bytes, if there are holes in the structure due to alignment. If the
-padding bytes have always been zeroed, you can make use of them later.
+* https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%2540simonwunderlich.de
+* https://sashiko.dev/#/patchset/20260930094558.3723766-1-sw@simonwunderlich.de
 
-Also, for kernel to userspace copies, you avoid leaking bits of the
-stack to userspace, both in the padding holes, and any fields in the
-structure which don't get explicitly set.
+Some of them are about the rather bad locking behavior in TT and addressed
+here. While looking at this, it was also noticed that the TT event handling
+seems to be broken since the introduction of dynamic flag changes.
 
-memset of a small structure, less than a cache line in length,
-probably costs the same as setting a single element. Fetching it into
-cache is the expensive part, once in the cache it is nearly free to
-use.
+As Sashiko now already complained about the ROAM flags, i have added the
+ROAM flags handling patches in front of the original patchset.
 
-	  Andrew
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Changes in v2:
+- add patches to handle ROAM flags differently
+- Link to v1: https://patch.msgid.link/20261007-tt-avoid-unhashed-event-v1-0-01c763657916@narfation.org
+
+---
+Sven Eckelmann (8):
+      batman-adv: tt: only transmit local ROAM flag together with DEL
+      batman-adv: tt: clear ROAM flag when re-adding a pending local client
+      batman-adv: tt: send ROAM_ADV on each roamed back client
+      batman-adv: tt: ignore ROAM flag of received ADD changes
+      batman-adv: tt: only update flags for TT events
+      batman-adv: tt: don't queue local events for unhashed entries
+      batman-adv: tt: avoid list_lock for unchanged local clients
+      batman-adv: tt: drop ADD+DEL events of never announced clients
+
+ net/batman-adv/translation-table.c | 417 +++++++++++++++++++++++--------------
+ 1 file changed, 264 insertions(+), 153 deletions(-)
+---
+base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
+change-id: 20261006-tt-avoid-unhashed-event-76bb5f66d115
+
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
+
