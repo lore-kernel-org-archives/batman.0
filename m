@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A981ACC6B12
-	for <batman@archiver.kernel.org>; Tue, 13 Oct 2026 18:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0AC1CC6B12
+	for <batman@archiver.kernel.org>; Tue, 13 Oct 2026 18:47:59 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 45A1181029
-	for <batman@archiver.kernel.org>; Tue, 13 Oct 2026 20:10:23 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id E510A83E09
+	for <batman@archiver.kernel.org>; Tue, 13 Oct 2026 20:47:57 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791915023;
- b=H/N2kvf5D/h+H6A8oWBsh4bcmaMFX84U+JzYda1u5AneCjvdaU+qVR94Dd5QBjq5yaL/2
- 6i2tEXeQjjUswWlxpQZWLgAT940bvwR4VXMkNukq71YukfMeDVARTDEuvO49hc2IyVogFjR
- xoB+eHEQdpUHqfOcs17Lxyls5cdHHeA=
+ t=1791917277;
+ b=HkVI2+Oso2rGl9wN5Ff8z1lIB6RVaH55TbnAR8myojU0Do4RQZrpOfP2tMxVXPIUs1g6/
+ YyyW1G/JiSdHkK2Ea6zBwadjBUZUpxxUH+tculrsBhY1dfo3oxCACBVNnd/TqdnBApGTxZt
+ hitNRMwZmFvlaehOsuBpO6qq8KVu4mA=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791915023; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791917277; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=jUbCMbrawzQzJSDiyfKGEVWAeItVg4BUcMgM+4pCz54=;
- b=uJVcIH+5z56+HcLFkWtIT9//Rci08EBfmqmeuKny25I+Ru/dyPrsrkNlh7IirgdXpbMqJ
- 7J9Xp6f9RCcpgD7m9y98lTqk5j7+uHlhy49rVLkPA7cLZapoEaClNAhYRlDB9f0tSVlWZDE
- cp24cPt44wFRhD57MOjeRLqxfqEglVE=
+ list-archive; bh=NYOsV4+8AmVePeTc/GLSdCsOjbf3pQWsVNVUCCaUFh8=;
+ b=g84pFUHt9wVY4q70epuOUylNXE+YFAQqH8yNMWxbqqq4dXuW6kvwL5ds5CT+GTR4dwkvS
+ qe8P+Faa35bwBih6Udkb6vjE0Tj7K9hshazh7Py5B/DQx+ymfzsQQDQHCj/E0/MKa7Vctyv
+ fIYzdLRuZn63Y9A87A04b9jBp+4qHrI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8C6C482F10
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 13 Oct 2026 20:07:58 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791914888;
-	b=x0XTuCw4klGxu80OKJOvB3wy6fRLNcI3GbtY7FA0a8pyCYPalw/OuLccF7dfF2n6BxK/Fd
-	YOINmF2QSTeHpF5oZSVSVdLDoyLjlnMhj1bYXy67UMO5ipi1YVhqiF/n1vCA9N369Pcf4P
-	KpReoYMR2hJ9y31ZkspbgLvODu8g8zc=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id A752A81C22
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 13 Oct 2026 20:47:37 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791917267;
+	b=Y/6vb9salrZkuHohuWWC4Sp4flKcL+hya4VNt/3PtT+Yq7qdmktaNiJS78ZJKvt4Ab5rKW
+	GJtUz7w2r0qsDx6kWm5El/jivlLRwJKoGXk3ThOYUFQ/VNbmIEbK/9NlXOZp7KY81QNKIm
+	8nKAkTwapG1/KZlenU+4e+9A7F1ZVmg=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791914888;
+	s=20121; t=1791917267;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=jUbCMbrawzQzJSDiyfKGEVWAeItVg4BUcMgM+4pCz54=;
-	b=kHpaiqUsb1qbiX/JDPt2ZLRqvMuFp/+RTWKa3I6FMHLKbnFNhcx2JyJOL5nRUf+Z1GNbMl
-	stLdh7JNnoA6fJHcNRnGPx7pXUCUK4r08dr2u4qm7DvnH5oSlCQaARU4uusCiZ2hLOxNTA
-	l00Nm02seWEYyOILQbopU5nl9h7bMz8=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=NYOsV4+8AmVePeTc/GLSdCsOjbf3pQWsVNVUCCaUFh8=;
+	b=OyL2/PEh//6HyxZBlinvEsI1+tVebdy6dmAxUG8BZkQ5cNltSdDFeGHVMf7wFe1XJijfYY
+	xQezHLHwHt+M0KkQHkQyJe7qNXw8RV+bs7jwphb/cymiZpMuNUi48Tqzo/arWPpk0TEdwb
+	XfgqBHgUt8bcIkcoxUy6/CcYFrxUzvo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=WnOUSs9e;
+	dkim=pass header.d=narfation.org header.s=20121 header.b="G/A2TFwt";
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 36C3820FAF;
-	Tue, 13 Oct 2026 18:07:58 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id AA80D20281;
+	Tue, 13 Oct 2026 18:47:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791914878;
+	s=20121; t=1791917256;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jUbCMbrawzQzJSDiyfKGEVWAeItVg4BUcMgM+4pCz54=;
-	b=WnOUSs9eQ7DgFYA6F9CdD0/cW4dSNEPaV6BG9opsMn3x8kWsduI+55OtVBWuVPlkrKQ2fW
-	iz5tu1P8YEhnwVrS3dhy4DgORd2oRGPT/2I20rYVVXidaYQagmPXLR6AlDY8LpggY9XuFS
-	ohC9v8Ty1qzXMX2y0JkAQziutCTaewA=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=NYOsV4+8AmVePeTc/GLSdCsOjbf3pQWsVNVUCCaUFh8=;
+	b=G/A2TFwtLEZvV1+Tq7hiV7u4zEN+sqD4dwaCCdlNbVAnmsnPdZ2HCBc6nTvypoTv2iLmpg
+	0N0wDet9EZwQM9XzZEgnhCXDZOZcZ7kNOI1Fw+0eYEiXYYrkTdtvsUxTNPYHAvpEZhGN+K
+	N49bBM6GRQSl9oYK7gtjW2tgzEkgYc0=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 13 Oct 2026 20:07:50 +0200
-Subject: [PATCH batadv 4/4] batman-adv: mcast: document the value stored in
- is_routable
+Subject: [PATCH batadv 0/6] batman-adv: make aggregated hash keys easier to
+ identify
+Date: Tue, 13 Oct 2026 20:47:28 +0200
+Message-Id: <20261013-hash-key-v1-0-0370efdd8cd0@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261013-simple-type-cleanup-v1-4-8a31d7e82eb4@narfation.org>
-References: <20261013-simple-type-cleanup-v1-0-8a31d7e82eb4@narfation.org>
-In-Reply-To: <20261013-simple-type-cleanup-v1-0-8a31d7e82eb4@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAMB8zmoC/yWMQQqDMBQFryJv3YAxxYhXkS6ifpuvoJKvooh3b
+ 7TLGYY5IRSYBGVyItDGwtMYQb8SNN6NX1LcRkaWZrlOtVHeiVcDHcqazhaWityaN2I+B+p4f1Y
+ Vare4dsPn72Wte2qW+4Pr+gHsjajHdAAAAA==
+X-Change-ID: 20261013-hash-key-73f787e86734
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6143; i=sven@narfation.org;
- h=from:subject:message-id; bh=Ypph89jOuc86azLiRBt4PdY2VrTFhMNJFGCJDQC38jA=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnikvO2P3au0mgkS/4QURqRsqVBYF5bhWvDrsemHv2Q
- PbPspOnO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATkbzLyDB/pcXsiQ4BFjf+
- Hgvokbl1xEP178P565xORzyK32cR7SzM8L/ST8230vjbZM/tzSzH/W65CWkLlchM3pDfIZMpb1O
- qyAIA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1594; i=sven@narfation.org;
+ h=from:subject:message-id; bh=36fmx3wkaszkHrBpf9b3whzYw41PHs6G8IFHwTFMPk8=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnag4dF6potL0X+Lf1jF7L9+kvheX7ql0f/FhZMX11F
+ 2POzP9HOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQAT6RVgZGhkDl7k1X6zTs9f
+ 7feZu2rXu0yaViYrxF3dIKst3HKNs4+RYbHCH9+j6hznNt7K25UVKfpO9e6eza8POC30n9r2V07
+ FgA8A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: JMMM2M42OWM74WREKF5CI4DQCDFKEM6L
-X-Message-ID-Hash: JMMM2M42OWM74WREKF5CI4DQCDFKEM6L
+Message-ID-Hash: PM4DDAYPACU2WKIYR5BHRJUONRWSO75M
+X-Message-ID-Hash: PM4DDAYPACU2WKIYR5BHRJUONRWSO75M
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JMMM2M42OWM74WREKF5CI4DQCDFKEM6L/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/PM4DDAYPACU2WKIYR5BHRJUONRWSO75M/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,115 +112,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The kerneldoc of is_routable says it indicates whether the destination is
-routable, which reads like a boolean. But it actually holds the
-protocol of the routable destination (ETH_P_IP or ETH_P_IPV6) or 0.
+Some of the fixes in the recent past were about the incorrectly hashing
+and/or comparison of hash keys. I took the opportunity to have an easier
+identifiable key for the hashes by using a separate struct in case they are
+aggregated types.
+
+As side effect, it is now possible to reserve less stack space when trying
+to find an hash entry. Only they is now needed for the search.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/multicast.c      | 18 ++++++++++++------
- net/batman-adv/multicast_forw.c |  9 ++++++---
- 2 files changed, 18 insertions(+), 9 deletions(-)
+Sven Eckelmann (6):
+      batman-adv: bla: use dedicated key type for claim hash
+      batman-adv: bla: use dedicated key type for backbone gateway hash
+      batman-adv: dat: use dedicated key type for DAT hash
+      batman-adv: tt: use dedicated key type for hashes
+      batman-adv: originator: pass explicit key to orig_hash
+      batman-adv: hash: document key argument of hash operations
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 0446324c..100660cc 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -984,7 +984,8 @@ static bool batadv_mcast_is_report_ipv4(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the IPv4 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores 0 if the destination is not routable, otherwise the
-+ *  protocol (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Checks whether the given IPv4 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -1052,7 +1053,8 @@ static bool batadv_mcast_is_report_ipv6(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the IPv6 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores 0 if the destination is not routable, otherwise the
-+ *  protocol (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Checks whether the given IPv6 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -1094,7 +1096,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast frame to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores 0 if the destination is not routable, otherwise the
-+ *  protocol (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Checks whether the given multicast ethernet frame has the potential to be
-  * forwarded with a mode more optimal than classic flooding.
-@@ -1180,7 +1183,8 @@ static int batadv_mcast_forw_rtr_count(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to check
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet need to be sent to
-  *
-  * For a multicast packet with multiple destination originators, checks which
-@@ -1224,7 +1228,8 @@ batadv_mcast_forw_mode_by_count(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to check
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores 0 if the destination is not routable, otherwise the
-+ *  protocol (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Return: The forwarding mode as enum batadv_forw_mode.
-  */
-@@ -1554,7 +1559,8 @@ batadv_mcast_forw_want_rtr(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to transmit
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Sends copies of a frame with multicast destination to any node that signaled
-  * interest in it, that is either via the translation table or the according
-diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
-index e77a111f..a33ecbb9 100644
---- a/net/batman-adv/multicast_forw.c
-+++ b/net/batman-adv/multicast_forw.c
-@@ -477,7 +477,8 @@ batadv_mcast_forw_push_adjust_padding(struct sk_buff *skb, int *count,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the skb to push the destination addresses onto
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  * @tvlv_len: stores the amount of currently pushed TVLV bytes
-  *
-@@ -569,7 +570,8 @@ static int batadv_mcast_forw_push_tracker(struct sk_buff *skb, int num_dests,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the skb to push the tracker TVLV onto
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  * @tvlv_len: stores the amount of currently pushed TVLV bytes
-  *
-@@ -1120,7 +1122,8 @@ static int batadv_mcast_forw_expand_head(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to encapsulate and send
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  *
-  * Encapsulates the given multicast packet in a batman-adv multicast packet.
+ net/batman-adv/bat_iv_ogm.c            |   2 +-
+ net/batman-adv/bat_v_ogm.c             |   2 +-
+ net/batman-adv/bridge_loop_avoidance.c | 201 +++++++++++++++++----------------
+ net/batman-adv/distributed-arp-table.c |  73 ++++++------
+ net/batman-adv/hash.h                  |  13 +--
+ net/batman-adv/originator.c            |  19 ++--
+ net/batman-adv/originator.h            |   2 +-
+ net/batman-adv/translation-table.c     | 177 +++++++++++++++--------------
+ net/batman-adv/types.h                 |  57 ++++++++--
+ 9 files changed, 291 insertions(+), 255 deletions(-)
+---
+base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
+change-id: 20261013-hash-key-73f787e86734
 
--- 
-2.47.3
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
