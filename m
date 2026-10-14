@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AFFACC6B1A
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 07:50:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 718B5CC6B27
+	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 08:54:30 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 90B08841D0
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 09:50:02 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B1AC584399
+	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 10:54:28 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791964202;
- b=qWmwe8+Gh6cvODhDbHu7U1sw0jhQpWWdAAd7XPCmP1ducvbdoQffNzeEaT3Qj9UFV8NTT
- MYP69KMunn4EAqJxBCuAv9ylHzuiFs8RPzrPtxiYX1D0YqzI+gm6WEJrthAJWZWdEe5bCmD
- EweMTJnqH21vAeY3EB+6OHdEw+VEGuo=
+ t=1791968068;
+ b=fvB3aecz67Vn3r9HKCd+s/0rYC32H3HQ7WeCgO7UbvhVMqDOLeTe+GqHtE4VvH4DEXO6Z
+ AvpL7byWscw8XaUTt2g2Lv6rYopbdme8vPm/iAXTd/MM941n/i1MFw7fFJ9wYJSXzKdUwId
+ 6t8iNJkBjBbhFwbiDNgX2fG1D/sCBWs=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791964202; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791968068; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=qDZUhdHDTimTE1GbKT9utvLJaQPmibMTwOcnA4E+rgs=;
- b=UPiWscQHrq6b6YsmolprEwTWgMYqTgIdh1FagZeg/ebO10Zt8rf/CqvrAcIwpYqSmWJ7g
- 2nVNmeFjjo2P2UAJwS6nZLkkd8owr8FE5L3mVizW9bOBkS3fWXDD1Iwj3KdRdT/Xt576rKt
- /WLKQNqxys1PRwwWI0/MnSoATrcJccA=
+ list-archive; bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+ b=27Ta/tQRpOER2c0BzEsloF3pLWLMY5LfradLpPUPN5N2i7oVFtG8H6gpsnU0WUQMc2HH4
+ GI91iNL6VRr9EDROZFM6lP2XG+i8xUw15Qc+SkwrPUTiW9RXiNY9GIfAZli1xY+vL+pxZ6K
+ /Bt3Qw8wV5ol+5CR3NekMyvqso6edCI=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7FBD184258
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 14 Oct 2026 09:46:35 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791964005;
-	b=OxYUVcVVCEAvRIgkJ3yafc97lAYJah6TO1DPkra6orB1DrMe9hraXAW4m3E/wk23UnFnbg
-	Q+RWD7sD8pngaah7+S0AQ3GuDiXx+HxXIgDzMBysz1bGs9Hn+eT57NtSVQLtDTTDS6yJG8
-	1dVZL/t7J6uTDxBsk2FUwU8Rz5Fn+Zk=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9DFEA814BA
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 14 Oct 2026 10:54:18 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791968058;
+	b=Ubor0UH8ftCJVTO1wLUhbjA1TxgQnul7fIvcfAPCoeegICs9lUF6OCaxok/Unbc7RFb/PS
+	oagJAJKFkwOZxr27gQ4EzI4n3k809uqdDZly5HsGNM7QB14a+GqXPyyDNTOTab/KHOK+L7
+	I2Dpzm0zUorZl576BYjo/BZi0A2zAqg=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791964005;
+	s=20121; t=1791968058;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=qDZUhdHDTimTE1GbKT9utvLJaQPmibMTwOcnA4E+rgs=;
-	b=PAFL3BGd8gf7WdyyX7h6H3NBmFq0mTeRwjNgZceLPCEBCp2NUFX1SLAxs9/MydDFQ4fFFJ
-	x45b6NkDLBCY/RCm9He7AHRGxEmlI/qwrXqflAYCtban1XBSmIGBhFuEgTCMg4Lilp+NHM
-	VdHeK5lOtHPSL5kpLTARqEEIZlGLJMs=
+	bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+	b=y22UGvgX0ag8h0hDQnHjtcM981A5oRp29We1MBWpKP2bJDBpUwGGW58NgcNXqxuTwmU0Hk
+	Jh2+yLgiC89RyaazcnjnR2+EnGCKjIjx+AygDbryaA0rCyg5u5pXKEAj2luw3EMJGA+ZFD
+	4ZVUO3olQnJLMXDPrFado1oM1twHvqg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=kVq02bVv;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=kY9053Hq;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3D0EA1FF7B;
-	Wed, 14 Oct 2026 07:46:35 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 6DC1A20EF2;
+	Wed, 14 Oct 2026 08:54:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791963995;
+	s=20121; t=1791968057;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qDZUhdHDTimTE1GbKT9utvLJaQPmibMTwOcnA4E+rgs=;
-	b=kVq02bVvR/wvPMROoyKbrE+6F8oMQ2hicjvMJlFkam53ZZrluip9qiSbSQQbf7c4uEN9Ll
-	r2uxNkS1qJzTKnVJwRgJHYALc2gVJPa120MHbZxo0n0bmWcGwCx8nZQpULhv5vxfq38wsx
-	HGfjKJKmHDstgDwPPHHXR46jIuArCpI=
+	bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+	b=kY9053HqqAyC4MaQ0xCNZZv5P3dbS6atoeC1pU5ScXmK9rVV+ipKEHRFN6tY7vVGw45wby
+	+icn6/iJhi5ys/7FU78vwXmEDr51BK3LSSI3PpAdh0m+RnpD5CPfqiZbOqXMR0SG0v9yfa
+	iEoTmRhzcXPfcbmg4JQKm0MlT6J6ozw=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 14 Oct 2026 09:46:04 +0200
-Subject: [PATCH batadv v2 5/6] batman-adv: originator: pass explicit key to
- orig_hash
+Date: Wed, 14 Oct 2026 10:54:04 +0200
+Subject: [PATCH batadv 3/4] batman-adv: split fragment forwarding into
+ lookup and forward
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261014-hash-key-v2-5-7cb91c7df2cb@narfation.org>
-References: <20261014-hash-key-v2-0-7cb91c7df2cb@narfation.org>
-In-Reply-To: <20261014-hash-key-v2-0-7cb91c7df2cb@narfation.org>
+Message-Id: <20261014-skb-ownership-v1-3-4b83b9206b65@narfation.org>
+References: <20261014-skb-ownership-v1-0-4b83b9206b65@narfation.org>
+In-Reply-To: <20261014-skb-ownership-v1-0-4b83b9206b65@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4811; i=sven@narfation.org;
- h=from:subject:message-id; bh=mo/5QMjjTumokBBlRlavvLnpVM27tR72CHIvr70u8zI=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnjT233r3Q+ck1YkHyZ4lr67+VXbrya9rMUBOPDTbV2
- RzH1jdu7ChlYRDjYpAVU2TZcyX//Gb2t/Kfp308CjOHlQlkCAMXpwBMJDiX4Z9d9vrG1UtPz5ys
- s+X/g53pe69P2GywvPtZ/pHNutPjixmDGRlmro1/7ykg3mW2pVyg3HX24Xezv/JNTzXRspy+u2b
- 1v2oeAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7128; i=sven@narfation.org;
+ h=from:subject:message-id; bh=GO9fsMywXIh3ikv/3B99Yfjjp8xGDTny5+9+HJrVoOM=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnnfW/uM1nzpK+c1TY5R7b0zNTGq1atTUsPax5kkMVL
+ NVWcph3lLIwiHExyIopsuy5kn9+M/tb+c/TPh6FmcPKBDKEgYtTACay+jsjw+OvbzPFPvNlZNvY
+ vzlz/rW14NkznJs/d85/L3X+Wthh62qG/9XCGsKTn+iVnvw8uY75qvvtpUmm5zrPTH0hnK+46qN
+ hHzMA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: I72IXD4R4VS4N565LTD3IMN2I6UDXQV5
-X-Message-ID-Hash: I72IXD4R4VS4N565LTD3IMN2I6UDXQV5
+Message-ID-Hash: R4XNMMTCY5XFCY5G63CKWFKSKB65R7VQ
+X-Message-ID-Hash: R4XNMMTCY5XFCY5G63CKWFKSKB65R7VQ
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/I72IXD4R4VS4N565LTD3IMN2I6UDXQV5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/R4XNMMTCY5XFCY5G63CKWFKSKB65R7VQ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,121 +112,211 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-The key of the orig_hash is the originator address. But batadv_hash_add()
-was given the whole orig_node, while batadv_orig_hash_find() is given the
-bare address, and batadv_compare_orig() and the lookup compare the
-orig_node pointer itself against the address. This only works because
-orig is the first member of struct batadv_orig_node.
+batadv_frag_skb_fwd() consumed the skb only when it returned true, and
+passed the receive result back through an out-parameter that was only
+valid in that case.
 
-Pass orig_node->orig as key to batadv_hash_add(), compare explicitly
-against orig_node->orig in batadv_compare_orig(), use it for the lookup,
-and let batadv_orig_hash_find() take a const u8 * address instead of an
-untyped pointer.
+To ensure that the forwarding functions either borrow or consume the skb,
+split it into:
+
+* batadv_frag_fwd_neigh_get(): borrows the skb and returns the next-hop
+  (with a reference) when the merged packet would exceed its MTU
+* batadv_frag_skb_fwd(): always consumes the skb and returns
+  NET_RX_SUCCESS or NET_RX_DROP (instead of using the out-parameter
+  "rx_result")
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c |  2 +-
- net/batman-adv/bat_v_ogm.c  |  2 +-
- net/batman-adv/originator.c | 19 ++++++++++---------
- net/batman-adv/originator.h |  2 +-
- 4 files changed, 13 insertions(+), 12 deletions(-)
+ net/batman-adv/fragmentation.c | 105 ++++++++++++++++++++++-------------------
+ net/batman-adv/fragmentation.h |   9 ++--
+ net/batman-adv/routing.c       |  15 ++++--
+ 3 files changed, 72 insertions(+), 57 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 85e99506a53f5..9ffa3c8c3c0b0 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -155,7 +155,7 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const u8 *addr)
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 493af309..9025d5f6 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -385,70 +385,79 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ }
  
- 	kref_get(&orig_node->refcount);
- 	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
--				     batadv_choose_orig, orig_node,
-+				     batadv_choose_orig, orig_node->orig,
- 				     &orig_node->hash_entry);
- 	if (hash_added != 0)
- 		goto free_orig_node_hash;
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 70846c997410d..bc96d1629a77b 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -68,7 +68,7 @@ struct batadv_orig_node *batadv_v_ogm_orig_get(struct batadv_priv *bat_priv,
- 
- 	kref_get(&orig_node->refcount);
- 	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
--				     batadv_choose_orig, orig_node,
-+				     batadv_choose_orig, orig_node->orig,
- 				     &orig_node->hash_entry);
- 	if (hash_added != 0) {
- 		/* remove refcnt for newly created orig_node and hash entry */
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index f06583ef9b3f5..b46014dc8b7a8 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -45,12 +45,12 @@ static struct lock_class_key batadv_orig_hash_lock_class_key;
  /**
-  * batadv_orig_hash_find() - Find and return originator from orig_hash
-  * @bat_priv: the bat priv with all the mesh interface information
-- * @data: mac address of the originator
-+ * @addr: mac address of the originator
+- * batadv_frag_skb_fwd() - forward fragments that would exceed MTU when merged
+- * @skb: skb to forward
++ * batadv_frag_fwd_neigh_get() - get next-hop for fragments that would exceed
++ *  MTU when merged
++ * @skb: received fragment
+  * @recv_if: interface that the skb is received on
+- * @orig_node_src: originator that the skb is received from
+- * @rx_result: set to NET_RX_SUCCESS when the fragment was forwarded and
+- *  NET_RX_DROP when it was dropped; only valid when true is returned
   *
-  * Return: orig_node (with increased refcnt), NULL on errors
-  */
- struct batadv_orig_node *
--batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
-+batadv_orig_hash_find(struct batadv_priv *bat_priv, const u8 *addr)
- {
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	struct batadv_orig_node *orig_node_tmp = NULL;
-@@ -61,12 +61,12 @@ batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
- 	if (!hash)
- 		return NULL;
- 
--	index = batadv_choose_orig(data, hash->size);
-+	index = batadv_choose_orig(addr, hash->size);
- 	head = &hash->table[index];
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--		if (!batadv_compare_eth(orig_node, data))
-+		if (!batadv_compare_orig(&orig_node->hash_entry, addr))
- 			continue;
- 
- 		if (!kref_get_unless_zero(&orig_node->refcount))
-@@ -85,16 +85,17 @@ static void batadv_purge_orig(struct work_struct *work);
- /**
-  * batadv_compare_orig() - comparing function used in the originator hash table
-  * @node: node in the local table
-- * @data2: second object to compare the node to
-+ * @data2: mac address of the originator to compare the node to
+  * Look up the next-hop of the fragments payload and check if the merged packet
+- * will exceed the MTU towards the next-hop. If so, the fragment is forwarded
+- * without merging it.
++ * will exceed the MTU towards the next-hop.
   *
-- * Return: true if they are the same originator
-+ * Return: true if the node is the originator with the given address
+- * Return: true if the fragment is consumed/forwarded, false otherwise.
++ * Return: the next-hop neighbor (with increased refcounter) when the fragment
++ * has to be forwarded without merging it, NULL otherwise
   */
- bool batadv_compare_orig(const struct hlist_node *node, const void *data2)
+-bool batadv_frag_skb_fwd(struct sk_buff *skb,
+-			 struct batadv_hard_iface *recv_if,
+-			 struct batadv_orig_node *orig_node_src,
+-			 int *rx_result)
++struct batadv_neigh_node *
++batadv_frag_fwd_neigh_get(const struct sk_buff *skb,
++			  struct batadv_hard_iface *recv_if)
  {
--	const void *data1 = container_of(node, struct batadv_orig_node,
--					 hash_entry);
-+	const struct batadv_orig_node *orig_node;
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->mesh_iface);
+-	struct batadv_neigh_node *neigh_node = NULL;
+-	struct batadv_frag_packet *packet;
+-	bool ret = false;
++	const struct batadv_frag_packet *packet;
++	struct batadv_neigh_node *neigh_node;
+ 	u16 total_size;
  
--	return batadv_compare_eth(data1, data2);
-+	orig_node = container_of(node, struct batadv_orig_node, hash_entry);
+-	packet = (struct batadv_frag_packet *)skb->data;
++	packet = (const struct batadv_frag_packet *)skb->data;
+ 
+ 	neigh_node = batadv_orig_to_router(bat_priv, packet->dest, recv_if);
+ 	if (!neigh_node)
+-		goto out;
++		return NULL;
+ 
+-	/* Forward the fragment, if the merged packet would be too big to
+-	 * be assembled.
+-	 */
+ 	total_size = ntohs(packet->total_size);
+-	if (total_size > neigh_node->if_incoming->net_dev->mtu) {
+-		if (packet->ttl < 2) {
+-			kfree_skb(skb);
+-			*rx_result = NET_RX_DROP;
+-			ret = true;
+-			goto out;
+-		}
+-
+-		if (skb_cow(skb, ETH_HLEN) < 0) {
+-			kfree_skb(skb);
+-			*rx_result = NET_RX_DROP;
+-			ret = true;
+-			goto out;
+-		}
+-
+-		packet = (struct batadv_frag_packet *)skb->data;
+-
+-		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
+-		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
+-				   skb->len + ETH_HLEN);
+-
+-		packet->ttl--;
+-		batadv_send_unicast_skb(skb, neigh_node);
+-		*rx_result = NET_RX_SUCCESS;
+-		ret = true;
++	if (total_size <= neigh_node->if_incoming->net_dev->mtu) {
++		batadv_neigh_node_put(neigh_node);
++		return NULL;
+ 	}
+ 
+-out:
+-	batadv_neigh_node_put(neigh_node);
+-	return ret;
++	return neigh_node;
++}
 +
-+	return batadv_compare_eth(orig_node->orig, data2);
++/**
++ * batadv_frag_skb_fwd() - forward fragment without merging it
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @skb: skb to forward
++ * @neigh_node: next-hop to forward the fragment to
++ *
++ * The skb is always consumed by this function.
++ *
++ * Return: NET_RX_SUCCESS when the fragment was forwarded and NET_RX_DROP when
++ * it was dropped
++ */
++int batadv_frag_skb_fwd(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			struct batadv_neigh_node *neigh_node)
++{
++	struct batadv_frag_packet *packet;
++
++	packet = (struct batadv_frag_packet *)skb->data;
++
++	if (packet->ttl < 2)
++		goto free_skb;
++
++	if (skb_cow(skb, ETH_HLEN) < 0)
++		goto free_skb;
++
++	packet = (struct batadv_frag_packet *)skb->data;
++
++	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
++	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
++			   skb->len + ETH_HLEN);
++
++	packet->ttl--;
++	batadv_send_unicast_skb(skb, neigh_node);
++
++	return NET_RX_SUCCESS;
++
++free_skb:
++	kfree_skb(skb);
++	return NET_RX_DROP;
  }
  
  /**
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index db0c55128170c..5ca5529267ea8 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -83,7 +83,7 @@ static inline u32 batadv_choose_orig(const void *data, u32 size)
- }
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 51e28102..3c98a4f8 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -17,10 +17,11 @@
  
- struct batadv_orig_node *
--batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data);
-+batadv_orig_hash_find(struct batadv_priv *bat_priv, const u8 *addr);
+ void batadv_frag_purge_orig(struct batadv_orig_node *orig,
+ 			    bool (*check_cb)(struct batadv_frag_table_entry *));
+-bool batadv_frag_skb_fwd(struct sk_buff *skb,
+-			 struct batadv_hard_iface *recv_if,
+-			 struct batadv_orig_node *orig_node_src,
+-			 int *rx_result);
++struct batadv_neigh_node * __must_check
++batadv_frag_fwd_neigh_get(const struct sk_buff *skb,
++			  struct batadv_hard_iface *recv_if);
++int batadv_frag_skb_fwd(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			struct batadv_neigh_node *neigh_node);
+ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 			    struct batadv_orig_node *orig_node);
+ int batadv_frag_send_packet(struct sk_buff *skb,
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index b4172a6e..a6f532c6 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1206,6 +1206,7 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->mesh_iface);
+ 	struct batadv_orig_node *orig_node_src = NULL;
+ 	struct batadv_frag_packet *frag_packet;
++	struct batadv_neigh_node *neigh_node;
+ 	int ret = NET_RX_DROP;
  
- /**
-  * batadv_orig_node_vlan_put() - decrement the refcounter and possibly release
+ 	if (batadv_check_unicast_packet(bat_priv, skb,
+@@ -1220,11 +1221,15 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 	skb->priority = frag_packet->priority + 256;
+ 
+ 	/* Route the fragment if it is not for us and too big to be merged. */
+-	if (!batadv_is_my_mac(bat_priv, frag_packet->dest) &&
+-	    batadv_frag_skb_fwd(skb, recv_if, orig_node_src, &ret)) {
+-		/* skb was consumed */
+-		skb = NULL;
+-		goto put_orig_node;
++	if (!batadv_is_my_mac(bat_priv, frag_packet->dest)) {
++		neigh_node = batadv_frag_fwd_neigh_get(skb, recv_if);
++		if (neigh_node) {
++			ret = batadv_frag_skb_fwd(bat_priv, skb, neigh_node);
++			batadv_neigh_node_put(neigh_node);
++			/* skb was consumed */
++			skb = NULL;
++			goto put_orig_node;
++		}
+ 	}
+ 
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_RX);
 
 -- 
 2.47.3
