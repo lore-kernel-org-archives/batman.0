@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9B44CC6B27
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 07:48:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 547AACC6B1A
+	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 07:48:57 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 3D8EE81F65
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 09:48:25 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 7D72A8424E
+	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 09:48:55 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791964105;
- b=QydCJi3opgDH7RMRBxXnZvjEgDxjkrWOIpUpl+igBhuoi0rIPUxCoR6dGFKRwLFrrwxRs
- 0M0i3f3BMvEUjCUE4xZR7Uu4gLWfiS+Lm8ygeTX8J0wxz4UAZwa4swm/Rz+tjp2h8A9p4HK
- bW3UeSKF39baeHXb4nS9Fkd3eXAPpVs=
+ t=1791964135;
+ b=aawIV0UA9wJCgb2eNN9SGFnDXA/N3P+ifq7QOY/z0JJv91i8AmMdTWAJzkpHRTCV8UO/b
+ 9qp3ln+Sh4IixaEHuNPLA0oFmNgt6r0Ka+7w/eoK0Xr/C6mq62PIvp6802IudpX9GcxExxJ
+ zmecISGEEp2oYEe8AsTMwCdRbdvL+8E=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791964105; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1791964135; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=KHKpFfjnhQR2SMC5Qem0vEEeZ/9cQGadOiM37y04Utc=;
- b=ZA54Y3nxgevMtRIdPE2rQVDN6RrBrSmJ52yAvzR1wd5tGHtcUVYt9lR6NzhXwraFPl1yR
- 2V0RH2eDO4rIonK8rYqEVT4v/bs1qMHKSQ9wfX7VtHx74eJ8tB6uLuqVQh0AssRPH8Z8hkw
- R5IDXnOuFzIpiOzSorFTlpKQCtOH+d8=
+ list-archive; bh=2scXpSaOwVtDFSo4Em4mUw/fuU+xwcqjxQB5mWbuYVM=;
+ b=IhSibtoPJepmCYtBgAeGP+yb8DHKXtbzP7rxKStoFuVAWp/aqXOjpRzPuI7ny6X9DC/V7
+ q1uwzD2cs8L0K0nckZiHnomaW2qsg4qOZKc8tkE2O6Mo94BT6QBuq6DzSgamA0o2lrkniO+
+ 9XrTH2f4wdLNUj/SA5IKGcqJTzbdl/8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,66 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 63F0384230
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 14 Oct 2026 09:46:27 +0200 (CEST)
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7019A8425E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 14 Oct 2026 09:46:37 +0200 (CEST)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791963997;
-	b=wkbEsI4K/jj1Pe3+Lx+ashpBMf30BG0XbUI+stiE62Dqvsy2TzSUY4whOYLdIO69xMgyhX
-	or11nXls/0V/ytWCTU3TBPinx7AfH03JaAg9MgkpJWRtb9kEpwCq19iLkAuGRLJEaDBDI4
-	MxDYieImge0fqsmlfRDu3E0zuz8/Q9c=
+	b=E1F6xY5guhfrn7E77eQdChmNSg7ul39VCPAsPjoQInlbV19swzG9wFpZwKaqXcB3TIml3M
+	sN6tBb2wsXajjXa8DwSxzzptAxvxq4nNli/Xr1ICOeqo7WlSzqokVKYw79wN6WU8tf6jdk
+	QHhEpiFuoL8pWIFzg3dMfR8iMH2sRrk=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1791963997;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=KHKpFfjnhQR2SMC5Qem0vEEeZ/9cQGadOiM37y04Utc=;
-	b=e04QDFth8CggjQBZrD6sU6jLds6gEevDowXOTSyT4iXCzGtR1UPtgeUeAxmKxnXWBmoigs
-	bW600/dn2qohWDiDadJdd81nKH/XdE/dThDM/lPAsR6HIUOkkkCsoSOJVM//AZp6M/SKme
-	RyjEHfb6rJx6feJHcKxHu8OQwtBxhxk=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=2scXpSaOwVtDFSo4Em4mUw/fuU+xwcqjxQB5mWbuYVM=;
+	b=potBEoQX4lT78dSOHRZpiOBJuffbjwxKzhrRQH6ZaLj3ES1OO8UEEduLk/TUI9YFigJpLs
+	eTM+n83y3QQqyAoeY5hRDKvtfZVHyxzcCp1b89svdnr8EWfWGTKsLaSaXUS2wqxx1/XjK6
+	WpReepxpjqeTZwLrxFoVC+yamjO9WsM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=GPCQ3xPV;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=HiZ0nwHO;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 30C0B20411;
-	Wed, 14 Oct 2026 07:46:25 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 02A0F20EF2;
+	Wed, 14 Oct 2026 07:46:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791963985;
+	s=20121; t=1791963997;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=KHKpFfjnhQR2SMC5Qem0vEEeZ/9cQGadOiM37y04Utc=;
-	b=GPCQ3xPVWGpFJKX+XxvKkoxS/ksDVrwhGGVHrpIkWv/aCpL2txnbYrqjZOkfJrNNUH5bA5
-	kbBj8GN3q3OLx8v2cM+v4auaKRV4we3ub0H0ZAb5MQbItQAzO7LNEQLdYYU8zewUt8Qjwy
-	WQYmgzwy2FBpYdET65PEXDC1rLbimjk=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2scXpSaOwVtDFSo4Em4mUw/fuU+xwcqjxQB5mWbuYVM=;
+	b=HiZ0nwHOJhreh70YsfnOmmBKhWpJVg/vZgdSf2vmqZ5pEeWGe94cQH3idQ8hcNFsOEfPkz
+	HHPIfLvxSRST39QXi3kbj4W4NO/2mZ3Qy2tV3+9PnjuBsKtmNoykx5NtkExcblk3lIcIsC
+	W+zWYuMXKScGSP77VRvm2s2I1chsvxY=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv v2 0/6] batman-adv: make aggregated hash keys easier
- to identify
-Date: Wed, 14 Oct 2026 09:45:59 +0200
-Message-Id: <20261014-hash-key-v2-0-7cb91c7df2cb@narfation.org>
+Date: Wed, 14 Oct 2026 09:46:05 +0200
+Subject: [PATCH batadv v2 6/6] batman-adv: hash: document key argument of
+ hash operations
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADczz2oC/2WOQQ7CIBREr9L8tRgophBX3sN08Vs+BU2oASQ2T
- e8urUuXM3l5Myskip4SXJsVIhWf/BxqaE8NjA7DRMybmqHlbSe4kMxhcuxJC1PSKq1Id0peoOK
- vSNZ/DtUdBsxoCvS/Pr2HB4159+yk8ynPcTk2izj4f30RjDMuFSdrjB4NvwWMFnP9d57jBP22b
- V9TPWdlvgAAAA==
-X-Change-ID: 20261013-hash-key-73f787e86734
+Message-Id: <20261014-hash-key-v2-6-7cb91c7df2cb@narfation.org>
+References: <20261014-hash-key-v2-0-7cb91c7df2cb@narfation.org>
+In-Reply-To: <20261014-hash-key-v2-0-7cb91c7df2cb@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1757; i=sven@narfation.org;
- h=from:subject:message-id; bh=Y+g/jSwJ0tAxBOEyoJOHh5JIkE3kISiM+9obuswpvuY=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnjT0/V7K+f7ynUj+q4KGurYBGw7uPP+wXnNuYtGfby
- V96c2Q1OkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATeSDM8D9gwqSJp4/7L7vw
- kGPifM1DpUdrZ2adfLzV4LikvibDbS0/Rob/O1TeSVj+kohZmbRzehG/cm/Chf1O7tKJGQm3PWP
- 9/DgA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2578; i=sven@narfation.org;
+ h=from:subject:message-id; bh=xEF8KD7l04jf7tij2UvCUEO3IoOKAuL6rrLcrCSKv+8=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnjT0FGffKBv20sxMx5X6kNlP082+3uX4b3wqdLGRpX
+ No2oaS+o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRWgmGP1w766O8gqZ+m3f9
+ raPsJBl+nk63wnXf59ydHHe7aZaYZBPDH95v3B79bDscHx0R+NvEJBdzpTS4an+e5MVJIebLhFS
+ buAE=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: XSOWB6KRONG42EBVR7IKCY2A2B2MACAK
-X-Message-ID-Hash: XSOWB6KRONG42EBVR7IKCY2A2B2MACAK
+Message-ID-Hash: ATJXVBF5F7A2YYCIQJNTQI4FE5QBODSL
+X-Message-ID-Hash: ATJXVBF5F7A2YYCIQJNTQI4FE5QBODSL
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -105,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/XSOWB6KRONG42EBVR7IKCY2A2B2MACAK/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ATJXVBF5F7A2YYCIQJNTQI4FE5QBODSL/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -114,44 +112,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-Some of the fixes in the recent past were about the incorrectly hashing
-and/or comparison of hash keys. I took the opportunity to have an easier
-identifiable key for the hashes by using a separate struct in case they are
-aggregated types.
+With all users converted, the data passed to batadv_hash_add(),
+batadv_hash_remove() and the compare/choose callbacks is always the key
+of the hash table, never a (partially initialized) element. The
+kernel-doc of batadv_hash_remove() even still suggested to pass "the
+structure you use with just the key filled".
 
-As side effect, it is now possible to reserve less stack space when trying
-to find an hash entry. Only they is now needed for the search.
+Document the actual key contract.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Changes in v2:
-- resend due to problems in the sashiko pipeline
-- Link to v1: https://patch.msgid.link/20261013-hash-key-v1-0-0370efdd8cd0@narfation.org
+ net/batman-adv/hash.h | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
----
-Sven Eckelmann (6):
-      batman-adv: bla: use dedicated key type for claim hash
-      batman-adv: bla: use dedicated key type for backbone gateway hash
-      batman-adv: dat: use dedicated key type for DAT hash
-      batman-adv: tt: use dedicated key type for hashes
-      batman-adv: originator: pass explicit key to orig_hash
-      batman-adv: hash: document key argument of hash operations
+diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
+index 45a432cc15789..fca426c5e3c58 100644
+--- a/net/batman-adv/hash.h
++++ b/net/batman-adv/hash.h
+@@ -21,7 +21,7 @@
+ /**
+  * typedef batadv_hashdata_compare_cb - hash element comparison callback
+  * @node: hlist node of the element currently stored in the bucket
+- * @key: opaque payload to compare @node's key against
++ * @key: key to compare @node's key against
+  *
+  * Compare hash element by its keys.
+  *
+@@ -32,7 +32,7 @@ typedef bool (*batadv_hashdata_compare_cb)(const struct hlist_node *node,
+ 
+ /**
+  * typedef batadv_hashdata_choose_cb - hash bucket selection callback
+- * @key: opaque payload whose key selects the bucket
++ * @key: key which selects the bucket
+  * @size: number of buckets in the hash table
+  *
+  * Return: bucket index derived from the key in @key and the table @size.
+@@ -80,7 +80,8 @@ void batadv_hash_destroy(struct batadv_hashtable *hash);
+  *	@hash: storage hash table
+  *	@compare: callback to determine if 2 hash elements are identical
+  *	@choose: callback calculating the hash index
+- *	@data: data passed to the aforementioned callbacks as argument
++ *	@data: key of the element to add (the key embedded in the element),
++ *	 passed to the aforementioned callbacks as argument
+  *	@data_node: to be added element
+  *
+  *	Return: 0 on success, 1 if the element already is in the hash
+@@ -132,10 +133,8 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
+  * @hash: hash table
+  * @compare: callback to determine if 2 hash elements are identical
+  * @choose: callback calculating the hash index
+- * @data: data passed to the aforementioned callbacks as argument
+- *
+- * data could be the structure you use with just the key filled, we just need
+- * the key for comparing.
++ * @data: key of the element to remove, passed to the aforementioned callbacks
++ *  as argument
+  *
+  * Return: returns pointer to hlist_node on success, so you can remove the used
+  * structure yourself, or NULL on error
 
- net/batman-adv/bat_iv_ogm.c            |   2 +-
- net/batman-adv/bat_v_ogm.c             |   2 +-
- net/batman-adv/bridge_loop_avoidance.c | 201 +++++++++++++++++----------------
- net/batman-adv/distributed-arp-table.c |  73 ++++++------
- net/batman-adv/hash.h                  |  13 +--
- net/batman-adv/originator.c            |  19 ++--
- net/batman-adv/originator.h            |   2 +-
- net/batman-adv/translation-table.c     | 177 +++++++++++++++--------------
- net/batman-adv/types.h                 |  57 ++++++++--
- 9 files changed, 291 insertions(+), 255 deletions(-)
----
-base-commit: 0a79fef370780da6a67906bf2d83be8e2bd4e24d
-change-id: 20261013-hash-key-73f787e86734
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
