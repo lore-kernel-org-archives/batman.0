@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2F6BCC6B29
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 08:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCDD5CC6B34
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 06:31:40 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id ED56E84284
-	for <batman@archiver.kernel.org>; Wed, 14 Oct 2026 10:56:40 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id AB5EC845AD
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 08:31:38 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1791968200;
- b=cXlJ3KCer19sjDPSho/fK0tmbeL42lg2rPrzUp0mZ1TpkkUTcH4d2iE7H4j5JsWh1t5EQ
- 73aZ+wh3kQvj+4HnPq6hbyOXhg1a4Oy2zy0PK+I7pqOjVM26kT4tQIr8BqoS5uCVhqiLS/+
- gr87LNwdR8F2ZEi8kOE9c/PMwtHlvMs=
+ t=1792045898;
+ b=cM2IJ613flpOVomE16o92kilQ0qQgohrzp+5JaRCyy3HmsW4t0+d9kb80lK7/vG9J4fLN
+ okuNC1tKG2isAT/i888PEvO2DW4ahnYHn21aGUN+SOL2VqVk7xuwVweeZMBDnZ5e8p6mUs8
+ uDwN2qzpyN//uRgFlK3A+PQ6w+FGP2g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1791968200; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1792045898; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=JcwiVcQoi7L4vnWJIs2xInsjxnXxDPWHeDyVDGXeGIY=;
- b=A96tDDFoSwO4S8Pt2rwilsu4l/b+q0LXMlNzZ1o1JaU4p6BCPPTEIpgn/Ub3vSHvAJf4i
- aXQvyOatgFg8uMahejldVrNh3OL/OgxgYouV7Z5PZqGffCnd2rIgH+NvAHfBQx4yluAD1OO
- 4PsoxwLjZqEmGPe9bCRnbexVS7ISGuc=
+ list-archive; bh=oBiu0YvGgE60l/XBSkqzmtAXMmH2FcrScaDGasWYSH8=;
+ b=iiY5ZdfzMZo2aM+ZthV5ylWOqR9xHWH62KeWj3kDxdE4ehD+nJZHYoGKxiLctmwyHILDw
+ y9Jdv4As79hS520u7orVVYyOBmwicsC97E5MJF9u2Xp1Os6Js+vqMxUXhkt45r/VWpTpRg8
+ KnhC6Ce2gr8E63OFQ52Wx9nBghMpzcg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,59 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D3DE783764
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 14 Oct 2026 10:54:16 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1791968066;
-	b=rf21HpHhebmycnFRIuUOYrn8P9b+yQkCQ2bRFVNZuxhJI8i8J5V+aYal3u6y9mraAebFPx
-	92RB0YOkyiT9zWDPVF3xclQTDXAFi4XGArxl2H/PwSyUBmPVpT80jJ49d0s/i4Q+Jh/N+a
-	IN9RhH7+F0MuS0ciNRlCtNi32YiPr50=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7AB8180A3D
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 08:31:17 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792045887;
+	b=AH6wFHK5HkoZFNqo+TOb8YlIOHEcZcifuvOwDGybfI+RWFqxVkgHUDsGAzIxNYLJOzO1y5
+	LBK3Knv+Zuf9g56RFeLLr/pHv9frRgIvEYibs350WYoKtqXvFzisp6vA3/S4nVGuF/ZjjW
+	/XXQIGU7smcX34YvA+3Nl+1jg2euORk=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1791968066;
+	s=20121; t=1792045887;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=JcwiVcQoi7L4vnWJIs2xInsjxnXxDPWHeDyVDGXeGIY=;
-	b=MQPbyMcF6MMfjfWrUXNb5Vy0X03OstdiZa7kUrynkKwlvZCIbVR2cwNc5/7G2aW2z+HlSh
-	phiBPfjnm4xk7SuG9wGnJNeQ5WYrdu3thEnWFoZQcVkMUr3BR61M3I0Af29IJmUujLZtKd
-	CDgRlscfo6Kqk7r5jIkrmF7KCOjPNlE=
+	bh=oBiu0YvGgE60l/XBSkqzmtAXMmH2FcrScaDGasWYSH8=;
+	b=Z7KGbLchs1IbC979Ch+XYoNLXouPNZeF2z4xAT6GI0/mgl6I71tfXBrw9bZqiziElBHHPf
+	yBJaCCgnA0LbvwzP2O6/o3Zt5WmRCVDSUeKVD0tAp97eoMi8NGNMwocEzrxo6TwKhgs+V8
+	bNH35jO4RLH3HrnKnlxeUrAPGEP/pJY=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=zttGHKa6;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=bu2Tn0LY;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 4C11720411;
-	Wed, 14 Oct 2026 08:54:11 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id B797A20320;
+	Thu, 15 Oct 2026 06:31:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1791968051;
+	s=20121; t=1792045871;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=JcwiVcQoi7L4vnWJIs2xInsjxnXxDPWHeDyVDGXeGIY=;
-	b=zttGHKa6GeUHGQuXyNKh6dJ1JU3yuX0QS6VYOtMX1+W7j4ue0P7A5sA4Eh3Pq3pcgMqZWW
-	hZxEPg1XQw+HiklWsdedypyP0A7i2MnAVzg2uQeNMxKyVU+8mz7SGEX9lb4kgeRMNQNPfq
-	5tlLvHvT0E56WwCwPkqJ2XK8krI+/cY=
+	bh=oBiu0YvGgE60l/XBSkqzmtAXMmH2FcrScaDGasWYSH8=;
+	b=bu2Tn0LYBLMfcwkdu47rm6JvazZgvxNZlrvZ31zYHLe0hj169nTSyJQJf2/GYXvrMerAUW
+	QhKqOLS5seKCadS6c144Wa5+hJZFLqmdi1nOuSBPQPiOOL+/azqu/ftvK8LI53w0DZxUAW
+	slM7e8uYpZrhe+aNHasoMnLBNoAeXvE=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv 0/4] batman-adv: avoid mixed borrow/consume-skb
- functions
-Date: Wed, 14 Oct 2026 10:54:01 +0200
-Message-Id: <20261014-skb-ownership-v1-0-4b83b9206b65@narfation.org>
+Subject: [batadv PATCH RESEND 0/4] batman-adv: avoid mixed
+ borrow/consume-skb functions
+Date: Thu, 15 Oct 2026 08:31:00 +0200
+Message-Id: <20261015-skb-ownership-v1-0-8bb03bba6701@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIACpDz2oC/yWMQQqDMBQFryJv3YBJIWqvUrpI4le/hSj5agXx7
- qbtcgZmDgglJsGjOJBoY+EpZtC3AmFwsSfFbWaY0lhd6ruSt1fTJ1KSgWdFTaWt6WobGo/czIk
- 63n+/J7xbXLvh9fey+pHC8p3hPC9rrUsKeQAAAA==
-X-Change-ID: 20261013-skb-ownership-e97162f86c9b
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1511; i=sven@narfation.org;
- h=from:subject:message-id; bh=WPCWoOoV15WRvOuLjUhZfpvUUawefv+vROoPFTA/34c=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnnnfUfhB5mWzF500r+2e+/Nc34JbQ6p6N0/bJD2w0mn
- j0rMPFRXUcpC4MYF4OsmCLLniv55zezv5X/PO3jUZg5rEwgQxi4OAVgIkb9jAz3/x419lhynNn6
- p4BczQKV7+tj6/NtDYKD/d7cj+w9unAqw3/nzY1GTXXL3nhLV5s4ltgsNY69stC/b8sHoblMt2w
- qZvEAAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1551; i=sven@narfation.org;
+ h=from:subject:message-id; bh=iq7Cbth8Ngl/pMV9IhyxF/TeVRgTDzbYiXwTDl2HCHU=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkXitXWNfFzCyp6m7T/u7Q/zLhGJNBA94nTv7si3Q+D/
+ 1XPMrbvKGVhEONikBVTZNlzJf/8Zva38p+nfTwKM4eVCWQIAxenAFykmuF/8lr7b4c8bvaz+eYZ
+ JkRucJojXfFAbteX67vO1f4tW/oukpHhvVf7M09BpfmLLarunlhjlrFclInnqE7oxdivMiqh3Zo
+ 8AA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: BF22FPRLCPUPGXDMTLACVSIVGZ4BQGK3
-X-Message-ID-Hash: BF22FPRLCPUPGXDMTLACVSIVGZ4BQGK3
+Message-ID-Hash: YIYUUGDAHW6AXFKXGS5POYDUDRIFUHBB
+X-Message-ID-Hash: YIYUUGDAHW6AXFKXGS5POYDUDRIFUHBB
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +100,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/BF22FPRLCPUPGXDMTLACVSIVGZ4BQGK3/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/YIYUUGDAHW6AXFKXGS5POYDUDRIFUHBB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -146,6 +142,8 @@ base-commit: 0eaac0f4187bc9b69b41d90998fd7b93ab07e53e
 change-id: 20261013-skb-ownership-e97162f86c9b
 
 Best regards,
---  
+--
+Sven Eckelmann <sven@narfation.org>
+-- 
 Sven Eckelmann <sven@narfation.org>
 
