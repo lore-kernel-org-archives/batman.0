@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D86A2CC6B34
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 06:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15619CC6B2F
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 06:33:15 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 430E68462F
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 08:32:43 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 703F4824B5
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 08:33:13 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1792045963;
- b=GEilUBAdG94JU1+stx3lwEcFAbdSndhNgyUhDevIsYlX9RjmuBYAcixSGp65ssAgvvOMn
- gEZOoeuEN9t01MgTEXvM7OA++LFZ+0chjl1ekDN9/qvWs1CsriGlhSCExyC2k0Guf+kYuxM
- VPb8cd2l7eWPfzJARinRFKRcKAqLv/8=
+ t=1792045993;
+ b=zs5DqjY/FytQRFPFacxgXDy5wqb6h7+NXNQFwm4bDvYwLRyIkIYE4ZZu2e7//Y2shMCgd
+ rmPmadsqlMaCYzC3jQ8P1gf5tsOx8oZV2wLncvscEDBVZVFdCNCJdWiGUEYCuGgWi7XVBF1
+ ZxaPzS0JhNaonHemwox9ILDFys7rlPg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1792045963; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1792045993; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
- b=cWLhzqMZHXBaqsbu6TciOEWbKqP258oF+uzMYxsRHDJVypTSEBP67JYDHnhDsfsfSoESL
- OWaoGCqls22GrLxvhaau7OHQjnpIpRJv6MZbgkXz1O5LJQi1wpOJ9npCq9d4dps8eupSbC6
- aGA2KEQ/zPyLHV7uIxFNsc5tNsPJVa8=
+ list-archive; bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+ b=g941zY8KSXpx5ONdVw4aBMKkxVa3Uo6FA0ipkkxRskVvdZvo5O31kmETYwKb9AsmJyTLJ
+ 2cg2l7trwlyScDytwzkQdeC2sWsPfT15+YlOOPkqivoTya/L79JbO/HulK0r1XNr9iUQJnC
+ cq6+i0+Vs6cJHD2l4pA0eZL7y8UqBKA=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,65 +32,64 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8686F81E9F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 08:31:26 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792045896;
-	b=ey91h1YiA+VyY+Ikgn/L0K+NKyb5IeizcEdlM5RF7Cgjaxx0T8zFgnzt8azUS8qlYorzcG
-	E96jXtqBss7+j4d7boVFuh0BqdPMJnS++eQICVhxfQ1510nEcvt+CIu8PZaOLHPBkM+JzK
-	U89LFuQEhSvwJR0h7j9fcCASJlsKtjQ=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8799D81E9F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 08:31:30 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792045900;
+	b=VgE/pNCpW82LvJRoyzceM8cko39Zt38KMkPe3jsFc07A+Z5GrV0+wCPw1QN9gA/jJfmrnP
+	a3Rdgbu2yJn4aOmDtOAcaDK8Pzty1LM2kZC6p62PBn8cmlmd0IZeKGfUAX7+UmOgUH7Yl3
+	Nv4sFA8kbE6M+SNnK5g2r5ur/z2eReY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1792045896;
+	s=20121; t=1792045900;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
-	b=YBzKIzoaGUvmthAl4phBy2euflGSYkHKqPMdzIbq0YHpKpHEGL2C/AgpEE4UyAx4/iKVdK
-	Ndt3jF8xqmiE8B6Q2QcU8j0wpmQWwtyHXzN/O/w/JXub4wf3iU6g9LXjRvTXHiaFp2NSMy
-	GfRGJsaWy+DemEgGj01RjhjfzIZCNbM=
+	bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+	b=Xe5AWfeL+opVfQoseOCjvnRx8o4Z3QjNl8Lksog4Wo8gtNMdq4098zdrAIleiLeOlpIQ/z
+	dR8qr/jQG7M+2wkq1GzbjKl7v9Ty79YlzIJooI4n38HOpmYGpE4B6ZA//dMPd4nHWMehfP
+	E2ycLjpE91+cDd/RIUqmfk8FxwuC7cQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=o0nNOWp5;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=cSQwdteV;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 2D19720EF2;
-	Thu, 15 Oct 2026 06:31:26 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id EE03320320;
+	Thu, 15 Oct 2026 06:31:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1792045886;
+	s=20121; t=1792045890;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
-	b=o0nNOWp5RU9ft4Xu1bCW/NrikfN/S90JsBlaJDC1XOX7+BKBKMDaLRbVICSJX79/w1qG/9
-	8CkSAyzu5TzMdE6HtGBQWZo7K3X7cv7sAuL2ql5657Obwp0k0I13uv61WHHtccPWcdKg24
-	GM4lXeie7LfTT++DaOaWn/JXSCgwE5Y=
+	bh=sjjvCr+tGsAk+xgGRsCb6YyxAX/BeNP3FxuXx/GlVAo=;
+	b=cSQwdteVHTIMTKKNhf4q1W4kHRaQcGDihO31/STZ7JqGr+OG7vZWuyMCLoju1oaPgh9g9G
+	4irR0n6XsMSc62mq+7qxD9y8xUHtZlGgSMmYcFmEKFdnHnEhMIim2ZOPnUZYCUH+QecfHA
+	cd0WpQ0d9soe6okk01l2gYuyUQ7/vtA=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 15 Oct 2026 08:31:02 +0200
-Subject: [PATCH RESEND batadv 2/4] batman-adv: always consume skb in
- batadv_forw_packet_alloc()
+Date: Thu, 15 Oct 2026 08:31:03 +0200
+Subject: [PATCH RESEND batadv 3/4] batman-adv: split fragment forwarding
+ into lookup and forward
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261015-skb-ownership-v1-2-8bb03bba6701@narfation.org>
+Message-Id: <20261015-skb-ownership-v1-3-8bb03bba6701@narfation.org>
 References: <20261015-skb-ownership-v1-0-8bb03bba6701@narfation.org>
 In-Reply-To: <20261015-skb-ownership-v1-0-8bb03bba6701@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3023; i=sven@narfation.org;
- h=from:subject:message-id; bh=EHtDBdZurigikShfFjrl0+nCP2Vr6Hb8wRpPja076fc=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkXinXCfxgEcX78f16iU1LbMXF35wTbf4nxqgdzRfmb3
- n1bY6DYUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZhI0XeG/7GluyWmCm6Zw/tA
- 2njrsbBpJiET3Ve+Y128Skw03fvbKRuG/2F+B+23cr2dP8v/bmaDwPYC4zl6TnPahOfu9r5ZfXF
- iLgsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7128; i=sven@narfation.org;
+ h=from:subject:message-id; bh=GO9fsMywXIh3ikv/3B99Yfjjp8xGDTny5+9+HJrVoOM=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkXinXe9b6+OpW79Me2NbMT8+uaRYJzkvQS53PIOlrkC
+ rs8uVjeUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZjIf2OG/5H+V3bv0GTa264o
+ VrH++eLXgeae7Dbq3EYfRa6kqanPEmH477lYNlH16abOyZbbFNk1b/i46uax3BYT7zlzTugS4/y
+ PvAA=
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: G5T5C7P7WJOIX3GUP2API25IQX4SXFOW
-X-Message-ID-Hash: G5T5C7P7WJOIX3GUP2API25IQX4SXFOW
+Message-ID-Hash: DBILXXZSBN2BOXOZJDJA2JGP3VDTWZ5E
+X-Message-ID-Hash: DBILXXZSBN2BOXOZJDJA2JGP3VDTWZ5E
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +103,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G5T5C7P7WJOIX3GUP2API25IQX4SXFOW/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DBILXXZSBN2BOXOZJDJA2JGP3VDTWZ5E/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,95 +112,211 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-On success, batadv_forw_packet_alloc() stores the skb in the new
-forw_packet, and batadv_forw_packet_free() frees it later. On failure
-(queue full or out of memory), the skb was left for the caller to free.
-Whether the caller still owned the skb therefore depended on the return
-value.
+batadv_frag_skb_fwd() consumed the skb only when it returned true, and
+passed the receive result back through an out-parameter that was only
+valid in that case.
 
-Free the skb inside batadv_forw_packet_alloc() on failure, so the skb is
-always consumed, and drop the kfree_skb() calls from both callers.
+To ensure that the forwarding functions either borrow or consume the skb,
+split it into:
+
+* batadv_frag_fwd_neigh_get(): borrows the skb and returns the next-hop
+  (with a reference) when the merged packet would exceed its MTU
+* batadv_frag_skb_fwd(): always consumes the skb and returns
+  NET_RX_SUCCESS or NET_RX_DROP (instead of using the out-parameter
+  "rx_result")
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c |  4 +---
- net/batman-adv/send.c       | 14 +++++++-------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ net/batman-adv/fragmentation.c | 105 ++++++++++++++++++++++-------------------
+ net/batman-adv/fragmentation.h |   9 ++--
+ net/batman-adv/routing.c       |  15 ++++--
+ 3 files changed, 72 insertions(+), 57 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 85e99506..466619fd 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -647,10 +647,8 @@ static bool batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
- 	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
- 						    queue_left, bat_priv, skb);
--	if (!forw_packet_aggr) {
--		kfree_skb(skb);
-+	if (!forw_packet_aggr)
- 		return false;
--	}
- 
- 	forw_packet_aggr->skb->priority = TC_PRIO_CONTROL;
- 	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 929b6dd3..6672f817 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -481,6 +481,9 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
-  * (optional) if_incoming, if_outgoing and queue_left. If queue_left
-  * is NULL then bat_priv is optional, too.
-  *
-+ * The skb is always consumed: on success, it is owned by the returned
-+ * forwarding packet, on failure it is freed.
-+ *
-  * Return: An allocated forwarding packet on success, NULL otherwise.
-  */
- struct batadv_forw_packet *
-@@ -505,6 +508,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "%s queue is full\n", qname);
- 
-+		kfree_skb(skb);
- 		return NULL;
- 	}
- 
-@@ -532,6 +536,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 	if (queue_left)
- 		atomic_inc(queue_left);
- 
-+	kfree_skb(skb);
- 	return NULL;
- }
- 
-@@ -753,13 +758,13 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 
- 	newskb = skb_clone(skb, GFP_ATOMIC);
- 	if (!newskb)
--		goto err;
-+		return NETDEV_TX_BUSY;
- 
- 	forw_packet = batadv_forw_packet_alloc(if_in, if_out,
- 					       &bat_priv->bcast_queue_left,
- 					       bat_priv, newskb);
- 	if (!forw_packet)
--		goto err_packet_free;
-+		return NETDEV_TX_BUSY;
- 
- 	forw_packet->own = own_packet;
- 
-@@ -770,11 +775,6 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 
- 	batadv_forw_packet_bcast_queue(bat_priv, forw_packet, send_time);
- 	return NETDEV_TX_OK;
--
--err_packet_free:
--	kfree_skb(newskb);
--err:
--	return NETDEV_TX_BUSY;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 493af309..9025d5f6 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -385,70 +385,79 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
  }
  
  /**
+- * batadv_frag_skb_fwd() - forward fragments that would exceed MTU when merged
+- * @skb: skb to forward
++ * batadv_frag_fwd_neigh_get() - get next-hop for fragments that would exceed
++ *  MTU when merged
++ * @skb: received fragment
+  * @recv_if: interface that the skb is received on
+- * @orig_node_src: originator that the skb is received from
+- * @rx_result: set to NET_RX_SUCCESS when the fragment was forwarded and
+- *  NET_RX_DROP when it was dropped; only valid when true is returned
+  *
+  * Look up the next-hop of the fragments payload and check if the merged packet
+- * will exceed the MTU towards the next-hop. If so, the fragment is forwarded
+- * without merging it.
++ * will exceed the MTU towards the next-hop.
+  *
+- * Return: true if the fragment is consumed/forwarded, false otherwise.
++ * Return: the next-hop neighbor (with increased refcounter) when the fragment
++ * has to be forwarded without merging it, NULL otherwise
+  */
+-bool batadv_frag_skb_fwd(struct sk_buff *skb,
+-			 struct batadv_hard_iface *recv_if,
+-			 struct batadv_orig_node *orig_node_src,
+-			 int *rx_result)
++struct batadv_neigh_node *
++batadv_frag_fwd_neigh_get(const struct sk_buff *skb,
++			  struct batadv_hard_iface *recv_if)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->mesh_iface);
+-	struct batadv_neigh_node *neigh_node = NULL;
+-	struct batadv_frag_packet *packet;
+-	bool ret = false;
++	const struct batadv_frag_packet *packet;
++	struct batadv_neigh_node *neigh_node;
+ 	u16 total_size;
+ 
+-	packet = (struct batadv_frag_packet *)skb->data;
++	packet = (const struct batadv_frag_packet *)skb->data;
+ 
+ 	neigh_node = batadv_orig_to_router(bat_priv, packet->dest, recv_if);
+ 	if (!neigh_node)
+-		goto out;
++		return NULL;
+ 
+-	/* Forward the fragment, if the merged packet would be too big to
+-	 * be assembled.
+-	 */
+ 	total_size = ntohs(packet->total_size);
+-	if (total_size > neigh_node->if_incoming->net_dev->mtu) {
+-		if (packet->ttl < 2) {
+-			kfree_skb(skb);
+-			*rx_result = NET_RX_DROP;
+-			ret = true;
+-			goto out;
+-		}
+-
+-		if (skb_cow(skb, ETH_HLEN) < 0) {
+-			kfree_skb(skb);
+-			*rx_result = NET_RX_DROP;
+-			ret = true;
+-			goto out;
+-		}
+-
+-		packet = (struct batadv_frag_packet *)skb->data;
+-
+-		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
+-		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
+-				   skb->len + ETH_HLEN);
+-
+-		packet->ttl--;
+-		batadv_send_unicast_skb(skb, neigh_node);
+-		*rx_result = NET_RX_SUCCESS;
+-		ret = true;
++	if (total_size <= neigh_node->if_incoming->net_dev->mtu) {
++		batadv_neigh_node_put(neigh_node);
++		return NULL;
+ 	}
+ 
+-out:
+-	batadv_neigh_node_put(neigh_node);
+-	return ret;
++	return neigh_node;
++}
++
++/**
++ * batadv_frag_skb_fwd() - forward fragment without merging it
++ * @bat_priv: the bat priv with all the mesh interface information
++ * @skb: skb to forward
++ * @neigh_node: next-hop to forward the fragment to
++ *
++ * The skb is always consumed by this function.
++ *
++ * Return: NET_RX_SUCCESS when the fragment was forwarded and NET_RX_DROP when
++ * it was dropped
++ */
++int batadv_frag_skb_fwd(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			struct batadv_neigh_node *neigh_node)
++{
++	struct batadv_frag_packet *packet;
++
++	packet = (struct batadv_frag_packet *)skb->data;
++
++	if (packet->ttl < 2)
++		goto free_skb;
++
++	if (skb_cow(skb, ETH_HLEN) < 0)
++		goto free_skb;
++
++	packet = (struct batadv_frag_packet *)skb->data;
++
++	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
++	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
++			   skb->len + ETH_HLEN);
++
++	packet->ttl--;
++	batadv_send_unicast_skb(skb, neigh_node);
++
++	return NET_RX_SUCCESS;
++
++free_skb:
++	kfree_skb(skb);
++	return NET_RX_DROP;
+ }
+ 
+ /**
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 51e28102..3c98a4f8 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -17,10 +17,11 @@
+ 
+ void batadv_frag_purge_orig(struct batadv_orig_node *orig,
+ 			    bool (*check_cb)(struct batadv_frag_table_entry *));
+-bool batadv_frag_skb_fwd(struct sk_buff *skb,
+-			 struct batadv_hard_iface *recv_if,
+-			 struct batadv_orig_node *orig_node_src,
+-			 int *rx_result);
++struct batadv_neigh_node * __must_check
++batadv_frag_fwd_neigh_get(const struct sk_buff *skb,
++			  struct batadv_hard_iface *recv_if);
++int batadv_frag_skb_fwd(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			struct batadv_neigh_node *neigh_node);
+ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 			    struct batadv_orig_node *orig_node);
+ int batadv_frag_send_packet(struct sk_buff *skb,
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index b4172a6e..a6f532c6 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1206,6 +1206,7 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->mesh_iface);
+ 	struct batadv_orig_node *orig_node_src = NULL;
+ 	struct batadv_frag_packet *frag_packet;
++	struct batadv_neigh_node *neigh_node;
+ 	int ret = NET_RX_DROP;
+ 
+ 	if (batadv_check_unicast_packet(bat_priv, skb,
+@@ -1220,11 +1221,15 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 	skb->priority = frag_packet->priority + 256;
+ 
+ 	/* Route the fragment if it is not for us and too big to be merged. */
+-	if (!batadv_is_my_mac(bat_priv, frag_packet->dest) &&
+-	    batadv_frag_skb_fwd(skb, recv_if, orig_node_src, &ret)) {
+-		/* skb was consumed */
+-		skb = NULL;
+-		goto put_orig_node;
++	if (!batadv_is_my_mac(bat_priv, frag_packet->dest)) {
++		neigh_node = batadv_frag_fwd_neigh_get(skb, recv_if);
++		if (neigh_node) {
++			ret = batadv_frag_skb_fwd(bat_priv, skb, neigh_node);
++			batadv_neigh_node_put(neigh_node);
++			/* skb was consumed */
++			skb = NULL;
++			goto put_orig_node;
++		}
+ 	}
+ 
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_RX);
 
 -- 
 2.47.3
