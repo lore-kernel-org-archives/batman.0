@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A23F8CC6B2F
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 06:32:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D86A2CC6B34
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 06:32:44 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C951584605
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 08:32:12 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 430E68462F
+	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 08:32:43 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1792045932;
- b=VMYZk2ntErQgTZ6L5h5anjj/sDibAdiZ9AKJOa2ZFglo8hLa7k504Zz1OXOCKLDoPJTMA
- dgzpAtRsvPnvqAWiutLu1bF2NiPCkE7XzGx7k/OqIJPfpaXYwm0uRKFeBzDVYKpMlkynQ0H
- k6PCL91Vf8AVmctwXnKTz08vkuQ8j+4=
+ t=1792045963;
+ b=GEilUBAdG94JU1+stx3lwEcFAbdSndhNgyUhDevIsYlX9RjmuBYAcixSGp65ssAgvvOMn
+ gEZOoeuEN9t01MgTEXvM7OA++LFZ+0chjl1ekDN9/qvWs1CsriGlhSCExyC2k0Guf+kYuxM
+ VPb8cd2l7eWPfzJARinRFKRcKAqLv/8=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1792045932; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1792045963; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2ndhOSVGP6TmruvqiXughdllk0NWVomr3RzaTVfvDPw=;
- b=y3rj9lF2U2avlrWkC5eR8SURD97abc5iZBVNIIxxRvK+EtTDogWpfAp3BH4RJm1ygcjMI
- ZN7ffhu9r81gLnZVLujZbzTJe8yBXlmGOHlNUp0at7VtziyKLI+R0k3O/++4bOuROTyYqtC
- oq2C7ctVo3d5ps4egqlsgVT45eTShVg=
+ list-archive; bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
+ b=cWLhzqMZHXBaqsbu6TciOEWbKqP258oF+uzMYxsRHDJVypTSEBP67JYDHnhDsfsfSoESL
+ OWaoGCqls22GrLxvhaau7OHQjnpIpRJv6MZbgkXz1O5LJQi1wpOJ9npCq9d4dps8eupSbC6
+ aGA2KEQ/zPyLHV7uIxFNsc5tNsPJVa8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,63 +34,63 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 04F548429F
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 08:31:23 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792045894;
-	b=CaGMHbiaidKweP9B3d8JEY+6Mb5/T+JsF8LBrEDaZp6jviwhWL0uLz4I4sD5JPbj9FLeYE
-	O55snmjhT58eNupKJYTAifn7R/Z0Yt0kMo7fUJdIxMDi7jJPjpNIHPHOZadIP7Are0Nn09
-	0Ubde7m1tzdtKYKiRwOvWWcQ0XzUHlg=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 8686F81E9F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 08:31:26 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792045896;
+	b=ey91h1YiA+VyY+Ikgn/L0K+NKyb5IeizcEdlM5RF7Cgjaxx0T8zFgnzt8azUS8qlYorzcG
+	E96jXtqBss7+j4d7boVFuh0BqdPMJnS++eQICVhxfQ1510nEcvt+CIu8PZaOLHPBkM+JzK
+	U89LFuQEhSvwJR0h7j9fcCASJlsKtjQ=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1792045894;
+	s=20121; t=1792045896;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=2ndhOSVGP6TmruvqiXughdllk0NWVomr3RzaTVfvDPw=;
-	b=KbOVU/h+6H5zJO1HSMLepwTCJkPSTe/nB3A9l60J02gYJEQ6OU1vYEs1aI+Awp39Lk6oO1
-	lPXSGeSET9zY2ELV4PTYMA7cd5ydLvBWkHSoIIMJzamdGNxIyA4hXQPKubpIRkt0mq9VYo
-	TS1uP5BgAb5acqW8bkS+JgblRi4WwdM=
+	bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
+	b=YBzKIzoaGUvmthAl4phBy2euflGSYkHKqPMdzIbq0YHpKpHEGL2C/AgpEE4UyAx4/iKVdK
+	Ndt3jF8xqmiE8B6Q2QcU8j0wpmQWwtyHXzN/O/w/JXub4wf3iU6g9LXjRvTXHiaFp2NSMy
+	GfRGJsaWy+DemEgGj01RjhjfzIZCNbM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=hkSjESV2;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=o0nNOWp5;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 7F7A82064A;
-	Thu, 15 Oct 2026 06:31:23 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 2D19720EF2;
+	Thu, 15 Oct 2026 06:31:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1792045883;
+	s=20121; t=1792045886;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=2ndhOSVGP6TmruvqiXughdllk0NWVomr3RzaTVfvDPw=;
-	b=hkSjESV2JaE5kBqJesHV/hA3HvFTOXLi8vHAYhSEaBFBYvRGF38sU9kQrtgqnaDW8m9ah5
-	YTDb0SwIMJdahkhUSvtQLLOIsbgoLQmU3DYtspQNDEcD+NbYXNNsr1SaPfbMyiAsXWwepu
-	uRWlmHORoGb1zWi/hucnD9cByy+2iuw=
+	bh=8lcm2dpGT6oVtVd8VDPobmuDADlvmU1E0BOQCnE71Gc=;
+	b=o0nNOWp5RU9ft4Xu1bCW/NrikfN/S90JsBlaJDC1XOX7+BKBKMDaLRbVICSJX79/w1qG/9
+	8CkSAyzu5TzMdE6HtGBQWZo7K3X7cv7sAuL2ql5657Obwp0k0I13uv61WHHtccPWcdKg24
+	GM4lXeie7LfTT++DaOaWn/JXSCgwE5Y=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 15 Oct 2026 08:31:01 +0200
-Subject: [PATCH RESEND batadv 1/4] batman-adv: never consume skb in BLA rx
- and DAT incoming snooping
+Date: Thu, 15 Oct 2026 08:31:02 +0200
+Subject: [PATCH RESEND batadv 2/4] batman-adv: always consume skb in
+ batadv_forw_packet_alloc()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261015-skb-ownership-v1-1-8bb03bba6701@narfation.org>
+Message-Id: <20261015-skb-ownership-v1-2-8bb03bba6701@narfation.org>
 References: <20261015-skb-ownership-v1-0-8bb03bba6701@narfation.org>
 In-Reply-To: <20261015-skb-ownership-v1-0-8bb03bba6701@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6567; i=sven@narfation.org;
- h=from:subject:message-id; bh=5dXHCdFfZNjkddRCzew/8K/seHMepd92facPbGFh28s=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkXinVs/M4pHJgXfVl8e7rDpIL9xufm7LgmdVDUvsTQs
- +Y014S/HaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJGC9l+GczPTUlskKVOWGC
- 8/GnqeuzDCcz5TXrX372TrnPdqVQrRojw/5CmUkHe1edm1TrsiqfUz94jgrPc6O1B+8tLgtfdcz
- qAhMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3023; i=sven@narfation.org;
+ h=from:subject:message-id; bh=EHtDBdZurigikShfFjrl0+nCP2Vr6Hb8wRpPja076fc=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkXinXCfxgEcX78f16iU1LbMXF35wTbf4nxqgdzRfmb3
+ n1bY6DYUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZhI0XeG/7GluyWmCm6Zw/tA
+ 2njrsbBpJiET3Ve+Y128Skw03fvbKRuG/2F+B+23cr2dP8v/bmaDwPYC4zl6TnPahOfu9r5ZfXF
+ iLgsA
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: N7R46R5257UOUI4TO3W5GJOBEV4RVHZ5
-X-Message-ID-Hash: N7R46R5257UOUI4TO3W5GJOBEV4RVHZ5
+Message-ID-Hash: G5T5C7P7WJOIX3GUP2API25IQX4SXFOW
+X-Message-ID-Hash: G5T5C7P7WJOIX3GUP2API25IQX4SXFOW
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -104,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/N7R46R5257UOUI4TO3W5GJOBEV4RVHZ5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/G5T5C7P7WJOIX3GUP2API25IQX4SXFOW/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -113,177 +113,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
-batadv_bla_tx() and the outgoing DAT snooping functions return true when
-the caller has to drop the skb, and they never free it themselves.
-batadv_bla_rx(), batadv_dat_snoop_incoming_arp_request() and
-batadv_dat_snoop_incoming_arp_reply() look the same, but they freed the skb
-themselves when returning true, and only then.
+On success, batadv_forw_packet_alloc() stores the skb in the new
+forw_packet, and batadv_forw_packet_free() frees it later. On failure
+(queue full or out of memory), the skb was left for the caller to free.
+Whether the caller still owned the skb therefore depended on the return
+value.
 
-So callers had to know, for each function, whether "true" meant "already
-freed" or "free it now". batadv_bla_rx() and batadv_bla_tx() even had the
-same kerneldoc text.
-
-Make all of them only borrow the skb, and let the callers free it when
-true is returned.
+Free the skb inside batadv_forw_packet_alloc() on failure, so the skb is
+always consumed, and drop the kfree_skb() calls from both callers.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 13 ++++++-------
- net/batman-adv/distributed-arp-table.c | 10 +++++-----
- net/batman-adv/mesh-interface.c        |  6 ++----
- net/batman-adv/routing.c               | 16 +++++++++-------
- 4 files changed, 22 insertions(+), 23 deletions(-)
+ net/batman-adv/bat_iv_ogm.c |  4 +---
+ net/batman-adv/send.c       | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index a96f269d..a37d172f 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1950,10 +1950,10 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
-  *  * we have to race for a claim
-  *  * if the frame is allowed on the LAN
-  *
-- * In these cases, the skb is further handled by this function
-+ * The skb is never consumed by this function.
-  *
-- * Return: true if handled, otherwise it returns false and the caller shall
-- * further process the skb.
-+ * Return: true if the skb has to be dropped, otherwise it returns false and the
-+ * caller shall further process the skb.
-  */
- bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   unsigned short vid, int packet_type)
-@@ -2064,7 +2064,6 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	goto out;
- 
- handled:
--	kfree_skb(skb);
- 	ret = true;
- 
- out:
-@@ -2083,15 +2082,15 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
-  *  * a claim was received which has to be processed
-  *  * the frame is allowed on the mesh
-  *
-- * in these cases, the skb is further handled by this function.
-+ * The skb is never consumed by this function.
-  *
-  * Warning: This function may reallocate the skb data buffer via
-  * batadv_bla_process_claim()/... Any pointer into the skb data (e.g.
-  * obtained from skb->data or eth_hdr()) before this call must be considered
-  * invalid afterwards and has to be reacquired.
-  *
-- * Return: true if handled, otherwise it returns false and the caller shall
-- * further process the skb.
-+ * Return: true if the skb has to be dropped, otherwise it returns false and the
-+ * caller shall further process the skb.
-  */
- bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   unsigned short vid)
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 74050bff..6a72c17e 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1336,6 +1336,8 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-  * from skb->data or eth_hdr()) before this call must be considered
-  * invalid afterwards and has to be reacquired.
-  *
-+ * The skb is never consumed by this function.
-+ *
-  * Return: true if the request has been answered, false otherwise.
-  */
- bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-@@ -1395,8 +1397,6 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	}
- out:
- 	batadv_dat_entry_put(dat_entry);
--	if (ret)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 85e99506..466619fd 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -647,10 +647,8 @@ static bool batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
+ 	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
+ 						    queue_left, bat_priv, skb);
+-	if (!forw_packet_aggr) {
 -		kfree_skb(skb);
- 	return ret;
++	if (!forw_packet_aggr)
+ 		return false;
+-	}
+ 
+ 	forw_packet_aggr->skb->priority = TC_PRIO_CONTROL;
+ 	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 929b6dd3..6672f817 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -481,6 +481,9 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
+  * (optional) if_incoming, if_outgoing and queue_left. If queue_left
+  * is NULL then bat_priv is optional, too.
+  *
++ * The skb is always consumed: on success, it is owned by the returned
++ * forwarding packet, on failure it is freed.
++ *
+  * Return: An allocated forwarding packet on success, NULL otherwise.
+  */
+ struct batadv_forw_packet *
+@@ -505,6 +508,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "%s queue is full\n", qname);
+ 
++		kfree_skb(skb);
+ 		return NULL;
+ 	}
+ 
+@@ -532,6 +536,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 	if (queue_left)
+ 		atomic_inc(queue_left);
+ 
++	kfree_skb(skb);
+ 	return NULL;
  }
  
-@@ -1465,7 +1465,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * from skb->data or eth_hdr()) before this call must be considered
-  * invalid afterwards and has to be reacquired.
-  *
-- * Return: true if the packet was snooped and consumed by DAT. False if the
-+ * The skb is never consumed by this function.
-+ *
-+ * Return: true if the packet was snooped and has to be dropped. False if the
-  * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
-@@ -1555,8 +1557,6 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	 */
- 	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
- out:
--	if (dropped)
--		kfree_skb(skb);
- 	batadv_dat_entry_put(dat_entry);
- 	/* if dropped == false -> deliver to the interface */
- 	return dropped;
-diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
-index 41d14863..01f30fee 100644
---- a/net/batman-adv/mesh-interface.c
-+++ b/net/batman-adv/mesh-interface.c
-@@ -513,7 +513,7 @@ void batadv_interface_rx(struct net_device *mesh_iface,
- 	 * not handle it, we can safely push it up.
- 	 */
- 	if (batadv_bla_rx(bat_priv, skb, vid, packet_type))
--		goto out;
-+		goto dropped;
+@@ -753,13 +758,13 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
  
- 	if (orig_node)
- 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
-@@ -538,12 +538,10 @@ void batadv_interface_rx(struct net_device *mesh_iface,
- 	}
+ 	newskb = skb_clone(skb, GFP_ATOMIC);
+ 	if (!newskb)
+-		goto err;
++		return NETDEV_TX_BUSY;
  
- 	netif_rx(skb);
--	goto out;
-+	return;
+ 	forw_packet = batadv_forw_packet_alloc(if_in, if_out,
+ 					       &bat_priv->bcast_queue_left,
+ 					       bat_priv, newskb);
+ 	if (!forw_packet)
+-		goto err_packet_free;
++		return NETDEV_TX_BUSY;
  
- dropped:
- 	kfree_skb(skb);
--out:
--	return;
+ 	forw_packet->own = own_packet;
+ 
+@@ -770,11 +775,6 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 
+ 	batadv_forw_packet_bcast_queue(bat_priv, forw_packet, send_time);
+ 	return NETDEV_TX_OK;
+-
+-err_packet_free:
+-	kfree_skb(newskb);
+-err:
+-	return NETDEV_TX_BUSY;
  }
  
  /**
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 6442f5d0..b4172a6e 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1109,11 +1109,12 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 		}
- 
- 		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
--							  hdr_size))
--			goto rx_success;
--		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
--							hdr_size))
-+							  hdr_size) ||
-+		    batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
-+							hdr_size)) {
-+			kfree_skb(skb);
- 			goto rx_success;
-+		}
- 
- 		batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
- 
-@@ -1351,10 +1352,11 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 	if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size))
- 		goto free_skb;
- 
--	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
--		goto rx_success;
--	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size) ||
-+	    batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size)) {
-+		kfree_skb(skb);
- 		goto rx_success;
-+	}
- 
- 	batadv_dat_snoop_incoming_dhcp_ack(bat_priv, skb, hdr_size);
- 
 
 -- 
 2.47.3
