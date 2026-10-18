@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A5C6CC6B34
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 07:49:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 814D5CCF2C9
+	for <batman@archiver.kernel.org>; Sun, 18 Oct 2026 16:43:08 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0F72C845CF
-	for <batman@archiver.kernel.org>; Thu, 15 Oct 2026 09:49:24 +0200 (CEST)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9CF31845CF
+	for <batman@archiver.kernel.org>; Sun, 18 Oct 2026 18:43:06 +0200 (CEST)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1792050564;
- b=qrfdyuu9MX1Pwhg22lx4B2fYf+EFWPFQIDZAph8UTzKe0hnNbAQS9MMhz45zwtKvIJgUN
- PBUUE7Ak3kyWuaQG3osDgbmwLPsyqOk4RlPHUmAiSCg5/+FHaX9XIAlCmgn446ZPmb+Oh0z
- n/sAGjuMEcPtCm65RpT4/BpjTPqctwU=
+ t=1792341786;
+ b=gB1XuWMiLhXoIA14Wl0ZZrLYzqCOFG8p9uq9HGOLAr+n/u7wyvdtsXjBAOdYgI6Cb3XnK
+ tZN06snlqYUMYeMNJW+d6Ir5cQlfImPW/tyJZpXpmRjys8xAKLYOpJaqzO0pk5mEEmHnc19
+ QMNcpDJykoi6BBPOS8JRTc7jofDdBB0=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1792050564; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1792341786; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=2Z04HSMPCq4TStSlOrI0Qzkx+UdltHqoHvsA/gtOiko=;
- b=zMfbSCkY7Ehzxeqnp1Xx9VeLRpC6M4GhUaeBQptwtR1fiDz9jyPfq2tzB1j3TyiTKg8uT
- b+hDDgzzuBmCquah1pRSe0SZAb8eiEOvc6gHAh3shq5Jf738NEXWr66uB1TRxOyslRwBpSb
- 58AiWtay7WxIWpQ3UpQ/rBVC5lDF69E=
+ list-archive; bh=l+AAjF5isX2LBbg9Ogrny17BQRYnYYl4ZsV+b9Tb/3o=;
+ b=NVeQKlrHvJOWAMhX045NkEKS3vt9NDvYAiqVZLen1ZnOO+gvvAXs3URvIoJbZKK9dW7sP
+ RMlYn+CxdeUb/rJPs2U4O1J6TwieoT/KbPdG7URT64iL3XDoz8BeM6KD0YPC+8qIqu7hza9
+ Avqm9CBieGf9ffpqoJuUBABb4YAFzvs=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,55 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id F27BD80454
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Thu, 15 Oct 2026 09:49:03 +0200 (CEST)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792050554;
-	b=BxhGFPEzFzamCdUXhuEcFMd1D6OSqmsSPr4b8KAZgeMdxPivjqNwwus9YJlrTlJppB+dHr
-	QfQnzO/KXaUXF7TFUR3LkQKy2j333u6Q9O0wPTY4p2YeXMSgUvXiieA+zuun1uxxF9CgvQ
-	KXc/citPm88jgDAED6HDmfDxjVZMgMs=
+Received: from dvalin.narfation.org (dvalin.narfation.org
+ [IPv6:2a00:17d8:100::8b1])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B5A53805A5
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 18 Oct 2026 18:42:45 +0200 (CEST)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1792341775;
+	b=R54WbiJvc0XLBGfMpGlTS2fuJHgkuYUZLl34eQOF18j134/RTbq9BREW+D40nuAtXREhTs
+	wOOb189hw6xXRdjijdGWjDu9na+Sdq1/3vSpe71oYwsk5PJoZ/iRYozcTf3hoJunNCzDNk
+	iwaw9e7fdJW64gjDPLvmyplhBTN5kYk=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1792050554;
+	s=20121; t=1792341775;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=2Z04HSMPCq4TStSlOrI0Qzkx+UdltHqoHvsA/gtOiko=;
-	b=Sw6bACg2ByJOcPdbfX0eTCu9DkeTzCwSnO5ZLo5ZGFfD9fVKjsqiV9SYes1quRaMq7ChmT
-	hkdI4tlRI9KdZLHE0urhxD/AonrM7We4dSoX+5lCqdVQAg8k7iegwpN6zma0d+TX7OcP5N
-	ueyzXhmhWZb7ODZKAEwezxw3b7Uo8cM=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=l+AAjF5isX2LBbg9Ogrny17BQRYnYYl4ZsV+b9Tb/3o=;
+	b=GHlcnp7MMXcjLKTwKv7Hsw7N2akYYuX96x1jPmyuWQSyBDCEs2pSVklF5fOZ6Jv5F5ROYT
+	EpXi05ZE7q0hia4kuXxYvCUKJD2XvMR7eOtRxDlo6lnHVFsPQFa6VnckjMMNMOC4RukKeH
+	7yvXeQv8IKugDmyqJk2tCT/CxZZhnFU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=hAYWudea;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=2hVBH55L;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 054D6202DA;
-	Thu, 15 Oct 2026 07:48:57 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id E6BED20320;
+	Sun, 18 Oct 2026 16:42:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1792050538;
+	s=20121; t=1792341764;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2Z04HSMPCq4TStSlOrI0Qzkx+UdltHqoHvsA/gtOiko=;
-	b=hAYWudea/+8ozZBecqfImxsPSlMPCSdnQ1GwMLkgnrDE56o3FXg5bcYo67x0XuFi7uB1dZ
-	kUM4khEPB+FXLseuUuNisOUf20yphwS7YRJv35H3z9XjN8ajHIJvd+Ybnl/HgFtHpl92FB
-	MICMiS4nptzYrmWn8YSdEt+nMBmjE3E=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=l+AAjF5isX2LBbg9Ogrny17BQRYnYYl4ZsV+b9Tb/3o=;
+	b=2hVBH55LoArtv+3OU/BeXG9YUBBDUcATRYqn4rKJf6zc5TjJh5HX6UgpxAwQTWvGc1eN51
+	FTyNyG4U2n8wuh9CqX7yJGFhdAlouGG9dHJ45xF9bZwXLfAwfNQLyLhX4PTNxfjQ917kE7
+	nLXxg0vvD1eFoAPbONwOodzWo5HQmLc=
 From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sashiko <sashiko-bot@kernel.org>
-Subject: Re: [PATCH batadv] batman-adv: dat: initialize orig_node of unfilled
- candidate slots
-Date: Thu, 15 Oct 2026 09:48:55 +0200
-Message-ID: <2865631.mvXUDI8C0e@sven-desktop>
-In-Reply-To: <asTVqLO0EWAVM_IE@sellars>
-References: 
- <20261004-dat-eligable-uninitialized-v1-1-9674029343da@narfation.org>
- <asTVqLO0EWAVM_IE@sellars>
+Date: Sun, 18 Oct 2026 18:42:40 +0200
+Subject: [PATCH batadv] batman-adv: compat: use netns_immutable in Linux
+ 6.12.114
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13002458.O9o76ZdvQC";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 2CHQAJ53S5XMFCLHIX3VXGIX5LXB6TQD
-X-Message-ID-Hash: 2CHQAJ53S5XMFCLHIX3VXGIX5LXB6TQD
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261018-stable-netns_immutable-v1-1-73785e05954a@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAP/21GoC/yXMUQrCMBCE4auUfTawKWiLVxGRbDPqio2STYtQe
+ nejffwG5l/IkBVGx2ahjFlNX6nC7xoa7iHd4DRWU8vtwbPvnZUgT7iEkuyi4zht7tAxR7Dspad
+ 6fmdc9fMPn0hCCXGm87bbJA8M5Veldf0CNuRP1oIAAAA=
+X-Change-ID: 20261018-stable-netns_immutable-7e700de0b5b8
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1905; i=sven@narfation.org;
+ h=from:subject:message-id; bh=EPSyACxorPHGwasOQQ766Cxx6L0ITj8VG3bwZ4X5dm4=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFlXvjPeayoOfbU09K/123Kx+GI74fnZT6oiNqfHOPNM9
+ W7N2NjSUcrCIMbFICumyLLnSv75zexv5T9P+3gUZg4rE8gQBi5OAZiImiMjQ4vv9qNnD0Q/ZLDy
+ +xWxvF5SwV/wWv+H3S0tG76W3FY+JsnIcKG7cHrli4P9gvK8oRy7g0sYSlYcuamzXrXf/NWEWxX
+ nuQE=
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: LWBF7FGZXLU5RPBBYHMB6OVAFKXBRZ4Y
+X-Message-ID-Hash: LWBF7FGZXLU5RPBBYHMB6OVAFKXBRZ4Y
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -94,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2CHQAJ53S5XMFCLHIX3VXGIX5LXB6TQD/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/LWBF7FGZXLU5RPBBYHMB6OVAFKXBRZ4Y/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -103,40 +113,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
 List-Unsubscribe: <mailto:b.a.t.m.a.n-leave@lists.open-mesh.org>
 
---nextPart13002458.O9o76ZdvQC
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sashiko <sashiko-bot@kernel.org>
-Date: Thu, 15 Oct 2026 09:48:55 +0200
-Message-ID: <2865631.mvXUDI8C0e@sven-desktop>
-In-Reply-To: <asTVqLO0EWAVM_IE@sellars>
-MIME-Version: 1.0
+The commit 0c493da86374 ("net: rename netns_local to netns_immutable") was
+backported back to Linux 6.12.114. batman-adv must therefore stop to use
+netns_local for newer 6.12.y kernels.
 
-On Tuesday, 6 October 2026 13:04:08 CEST Linus L=C3=BCssing wrote:
-> (Also, I can't read the Sashiko link, I guess it's only accessible for
-> maintainers?)
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/netdevice.h | 7 +++++++
+ net/batman-adv/mesh-interface.c  | 7 ++-----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
-Please try out the link from the patch now. It should now in theory be=20
-accessible by everyone.
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 45df743e..992f1dcf 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -16,4 +16,11 @@
+ 
+ #endif /* LINUX_VERSION_IS_LESS(6, 0, 0) */
+ 
++#if LINUX_VERSION_IS_LESS(6, 15, 0) && \
++    !(LINUX_VERSION_IS_GEQ(6, 12, 114) && LINUX_VERSION_IS_LESS(6, 13, 0))
++
++#define netns_immutable netns_local
++
++#endif /* LINUX_VERSION_IS_LESS(6, 15, 0) */
++
+ #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_NETDEVICE_H_ */
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index 41d14863..d1263c77 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -1090,13 +1090,10 @@ static void batadv_meshif_init_early(struct net_device *dev)
+ 	dev->priv_destructor = batadv_meshif_free;
+ 	dev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+ 	dev->priv_flags |= IFF_NO_QUEUE;
+-#if LINUX_VERSION_IS_GEQ(6, 15, 0) // UGLY_HACK_NEW
++#if LINUX_VERSION_IS_GEQ(6, 12, 0) // UGLY_HACK_NEW
+ 	dev->lltx = true;
+ 	dev->netns_immutable = true;
+-#elif LINUX_VERSION_IS_GEQ(6, 12, 0) // UGLY_HACK_OLD
+-	dev->lltx = true;
+-	dev->netns_local = true;
+-#else
++#else // UGLY_HACK_OLD
+ 	dev->features |= NETIF_F_LLTX | NETIF_F_NETNS_LOCAL;
+ #endif // UGLY_HACK_STOP
+ 
 
-Regards,
-	Sven
---nextPart13002458.O9o76ZdvQC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+---
+base-commit: c1d440f3d066942932a55866a5f69bd4d486a5b7
+change-id: 20261018-stable-netns_immutable-7e700de0b5b8
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCatCFZwAKCRBND3cr0xT1
-yyuJAP92B4UsWhqmW9D7FZuEBQ+QQk5s4x+mKZ6vKZnGgCLJrgEAhwR5pZvSYdzv
-TCshilOUP+ust2m7d/A0X9GITTRg1QQ=
-=CJou
------END PGP SIGNATURE-----
-
---nextPart13002458.O9o76ZdvQC--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
