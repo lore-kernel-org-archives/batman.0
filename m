@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8912606A31A
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 08:56:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C874606A31E
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 08:57:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=AKiMNvwI
+	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=lSwW4vVq
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 514648562C
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:56:56 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 6F30C85823
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:57:29 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793005016;
- b=t4rKkM5PAQy3tfh2eJpEhF8hl/z7b4EvSxEQbWGofdSGSV3x6NtqhszE1ClkK3Yu4tjB4
- q6ccEpySdXl+i9kcWSxNWHJ1cVSaRn4l0LffygBBJovuUS2+WjIKWf3Sp+xlFquwoyRm7Xs
- kZFg3Bd/bzEaS5UApnVJCJPWF1lb1VQ=
+ t=1793005049;
+ b=v5p3Q7WbDIVaxiXvRo2eq34O3EsvPLdG7+0PiXzwxgqMZVth9rScXOUNRsHwclGBDMZHx
+ fWyoy7cDCBnAoCimzMXOINJkWnbDxkAvPsocRLhID/eWT6RSNXkWgQ7qBVRKjouzPUHwnrp
+ YTSH5OWLDzXgFOTv/MZVkUKuVqSVlVQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793005016; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793005049; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ibnlRdMDfruCoRPmJn7htwYgiPi5QCuvCums/+Zi7Iw=;
- b=DHI/7Pbq9VjfUCMDWlk/xRtnUqNMoM3E/f+i351s8Zs8ux0iWreER7mYm2RALIUlillfd
- yqSZgdlvIRwkbbGzuEvb0H/Qh+8DD9ZPCVeqq6tbhsNqCTMxQXy7pnFv6vmxqUudZKfmmCs
- /u9UZFsfyyoCVdQ2OfX2zygpvjsqHx0=
+ list-archive; bh=8a/owQR7BJm0KvqIzWrZJw/lhP2sM9n2M+zPpLTBVGM=;
+ b=E+tZO+kyXgl33kFglfbj3eZaiPYUCLCCvSvrte10bxpTYuRJ7sknZPp3DJwyaBJ+tkV67
+ N3g9LZnGHFKBgqy/6bFDaOQ6oRKItbIbWadeNKC42OClredycp+it3FhAvjqEPWLkUxwGMW
+ sd2cl2ZoKRaF3b+h5kZo6Kz9Ma+W2pc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,49 +33,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 84B3484230
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 09:53:24 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B477E81EBB
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 09:53:34 +0100 (CET)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793004814;
-	b=t9CDYqqRMiBnvXegagG3IFP1DYjOZHGpMfdwivZfu6EXi5uRykbXsJiGtgajfF3X7rQYFm
-	9H3XlvCHvqUhwMb8LJosNkGjreqDPiMu6Ih1QjObMh4dFTHyRsiVG1gbxBHSUIpzLpEZFN
-	Z3g4sz2sWbAiweeN5JaPUvWLrZLpauo=
+	b=lOobNWpTPot7XHFdze4jvgmZMMt1imtFMTkpQe+XK1PuR41lkJCsX47pxI2FlQDXCyX17i
+	vrKRTwKAFHfcUYt1OR5rBXczHDBsKl9JiU5pI/FxNSh2XZf39ywWyWTINyeM4Hrsg+OA9s
+	CtoPBUVTZ0DkGMrWThiNrWixxoVKJ34=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1793004814;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ibnlRdMDfruCoRPmJn7htwYgiPi5QCuvCums/+Zi7Iw=;
-	b=QxMH4MjxZtcbWn8m6vpar7wbFC8XrfpQUeqnm8Ytg/j9BnJZLQFc6j/xuwwB2EmOb0uvUs
-	vMr8FxZCSboPb0K+SV3VCFH7kZLZ/pjnNnm5SWFK8dL4L3/DdibudiQ06cypWvWtBmLEvU
-	Ej87BRWZQ3wUSeVMSYdtA989ox39t9k=
+	bh=8a/owQR7BJm0KvqIzWrZJw/lhP2sM9n2M+zPpLTBVGM=;
+	b=kmk/ov1UoKy035AmsxXrox9QHLVPIKQ4CkvPO4/6lMRd/WAdlze3nVFigUXrIIGqZBULwu
+	Qnhe70pnPxMjnL4ItBKKTBaKyfaYWCyGlitWrcRmL3YR2DMwaLJhzqY4LaoGskCzWi0vwX
+	cmaZcT2INlAdu0C0xM8VD31ZeDjbWEU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=AKiMNvwI;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=lSwW4vVq;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C5973CE5d80fc8dFe94a24022D.dip0.t-ipconnect.de
+ (p200300C5973Ce5d80fC8dfe94A24022D.dip0.t-ipconnect.de
  [IPv6:2003:c5:973c:e5d8:fc8:dfe9:4a24:22d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 2693AFA1DF;
-	Mon, 26 Oct 2026 09:53:16 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 143EDFA26F;
+	Mon, 26 Oct 2026 09:53:18 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1793004796;
+	s=09092022; t=1793004798;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ibnlRdMDfruCoRPmJn7htwYgiPi5QCuvCums/+Zi7Iw=;
-	b=AKiMNvwIPOPRq5L5mMieuooL/xvZQK5IwZE+xxDFfPUFNgFg8/fLoqc3uofnHXlWNm4M6c
-	6ZNliEwcZKsmmdE18jQ6dwPtAsmLVXB8LzjYYeUt4tZdjcDBU3QUOY+n+fbtnYc9VQUU32
-	wP7QsrSmm7LyZheGmzw7MJeQaIqdOi64eFvh/tsTYblttzmYtaRV/XUNrNQ3Ddrq1dEgrz
-	mx+DwJmrILjk/Gx09xx87SKIzKaYwi0+8QEDo0DvHpf8pQlNkuxVMZWQYiGnmDJTLJ/RS6
-	GU1poS9pUrNo+MZIlleKDkKH7g9zIGA7TswJ45ssW9BI3nLEXoQJw0hdUNNFVA==
+	bh=8a/owQR7BJm0KvqIzWrZJw/lhP2sM9n2M+zPpLTBVGM=;
+	b=lSwW4vVqgBDTWteUidlAnuOMamBAtz0qeklCTtp1ltBu4D9Hh7A4pFan7b4XKwMl+ailQy
+	9NK/DuCThtOCpfBiPybffGy867eg7MA/Qsso7805BUNBWyvMuP5Pco3KZydbSa0UZOgpnh
+	YvWLhrMugYiSZLmG1FQuuce5OqN8BGX1ktXn/o6LHFJX6KrrcfGjR6PS4E9SFSsNP+p4+M
+	NIJAsPnDGnOIl46aDhJHDtNAkRCY3jQgiAFqjaz7EWvL0vHUgQsCJ9wdgP5Zvm3u6johnT
+	fwK9QxIYFRoxUqw7nY98sFWK4f1Dg6os9JbBIoI4nQ3zBJXiSP98MFxXb4z8fQ==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -85,20 +85,20 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 07/10] batman-adv: tt: only transmit local ROAM flag
- together with DEL
-Date: Mon, 26 Oct 2026 09:53:06 +0100
-Message-ID: <20261026085309.1074911-8-sw@simonwunderlich.de>
+Subject: [PATCH net 10/10] batman-adv: tt: limit local table to single TVLV
+ response size
+Date: Mon, 26 Oct 2026 09:53:09 +0100
+Message-ID: <20261026085309.1074911-11-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261026085309.1074911-1-sw@simonwunderlich.de>
 References: <20261026085309.1074911-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: U2YXXYJI4T7LEWZYSHBUVR7ZG3JOCF5O
-X-Message-ID-Hash: U2YXXYJI4T7LEWZYSHBUVR7ZG3JOCF5O
+Message-ID-Hash: HW4PNXOBNGH2TZA4ZOPPGRSYPXLOFPYB
+X-Message-ID-Hash: HW4PNXOBNGH2TZA4ZOPPGRSYPXLOFPYB
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -112,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/U2YXXYJI4T7LEWZYSHBUVR7ZG3JOCF5O/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HW4PNXOBNGH2TZA4ZOPPGRSYPXLOFPYB/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -129,92 +129,175 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-BATADV_TT_CLIENT_ROAM is part of BATADV_TT_REMOTE_MASK but on the wire it
-only has a defined meaning together with BATADV_TT_CLIENT_DEL: the
-originator no longer serves the client because it roamed to another node.
-Such a DEL is only relevant for events (non-full table requests).
+The reservation of local TT entries and VLANs only limits the local table
+by (int) packet_size_max. But the full table response is sent as a single
+unicast TVLV packet whose tvlv_len (covering the TVLV header and the TT
+TVLV) is only 16 bit wide. The reservation must therefore be capped at the
+minimum of both the packet_size_max and the maximum theoretic table
+response.
 
-An ADD carrying ROAM is processed (by accident) by the receiver like a
-ROAMING_ADV:
-
-* a newly created global entry is marked as roaming and is excluded from
-  the global CRC. but the sender includes it in its local CRC
-* batadv_tt_global_purge_local() removes a local entry of the receiver
-
-But such a behavior doesn't make sense for non-ROAM_ADV because a new TTVN
-is meant as announced commit of the local TT table of a node and should
-therefore not be used not be used to create a temporary (roam) global entry
-in a node.
-
-At the moment, such an ADD with the BATADV_TT_CLIENT_ROAM flag set can
-happen due to two mechanisms:
-
-batadv_tt_local_valid() copies all flags of the local entry into a full
-table response. It is not synchronized with batadv_tt_local_mark_removed().
-An entry which was marked as ROAM|PENDING by a ROAMING_ADV is still part of
-the current TTVN and is sent with the ROAM flag set. When the requester is
-the node which sent the ROAMING_ADV, it then marks its own (new) local
-client as roamed back to the old originator and drops it when it is still
-NEW. Other receivers will detect a CRC mismatch and request the full table
-again.
-
-The same can happen for an ADD change which is queued for an entry which
-(still) has the ROAM flag set. For example when only the dynamic WIFI or
-ISOLA flags were updated.
-
-It is not triggered by batadv_send_other_tt_response() because
-batadv_tt_global_valid() is already taking care of filtering out
-BATADV_TT_CLIENT_ROAM entries.
-
-For the two problematic announcement mechanism, only send the ROAM flag of
-local entries together with a DEL.
-
-Cc: stable@vger.kernel.org
-Fixes: 27b37ebfa2d2 ("batman-adv: correctly pass the client flag on tt_response")
-Fixes: 068ee6e204e1 ("batman-adv: roaming handling mechanism redesign")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%40simonwunderlich.de?part=8
+Fixes: 85fb027f611b ("batman-adv: tt: reject VLAN/TT entries before reaching size limit")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ net/batman-adv/translation-table.c | 69 ++++++++++++++++++++----------
+ 1 file changed, 47 insertions(+), 22 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 3349376a9087d..39b61426f1680 100644
+index 6774484f1c573..6931ce88c3062 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -643,9 +643,17 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
- 	ether_addr_copy(tt_change_node->change.addr, common->addr);
- 	tt_change_node->change.vid = htons(common->vid);
+@@ -26,8 +26,10 @@
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+ #include <linux/kref.h>
++#include <linux/limits.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
++#include <linux/minmax.h>
+ #include <linux/net.h>
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+@@ -253,7 +255,8 @@ static int batadv_tt_len(int changes_num)
+  *
+  * Return: local translation table size in bytes.
+  */
+-static int batadv_tt_local_transmit_size(u16 num_vlan, u16 num_entries)
++static int batadv_tt_local_transmit_size(unsigned int num_vlan,
++					 unsigned int num_entries)
+ {
+ 	int hdr_size;
  
--	tt_change_node->change.flags = flags;
- 	del_op_requested = flags & BATADV_TT_CLIENT_DEL;
- 
-+	/* the ROAM flag is only meaningful for the receiver in combination
-+	 * with a DEL. An ADD with ROAM would be interpreted as a roaming
-+	 * advertisement
-+	 */
-+	if (!del_op_requested)
-+		flags &= ~BATADV_TT_CLIENT_ROAM;
-+
-+	tt_change_node->change.flags = flags;
-+
- 	/* check for ADD+DEL, DEL+ADD, ADD+ADD or DEL+DEL events */
- 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
- 	changes = READ_ONCE(bat_priv->tt.local_changes);
-@@ -3342,8 +3350,12 @@ static bool batadv_tt_local_valid(void *entry_ptr,
- 	if (tt_flags & BATADV_TT_CLIENT_NEW)
- 		return false;
- 
-+	/* the entry is (still) announced. A ROAM flag of an entry which is
-+	 * pending to be removed must not be transmitted. Otherwise, the
-+	 * receiver would handle it like a roaming advertisement
-+	 */
- 	if (flags)
--		*flags = tt_flags;
-+		*flags = tt_flags & ~BATADV_TT_CLIENT_ROAM;
- 
- 	return true;
+@@ -266,6 +269,25 @@ static int batadv_tt_local_transmit_size(u16 num_vlan, u16 num_entries)
+ 	return hdr_size + batadv_tt_len(num_entries);
  }
+ 
++/**
++ * batadv_tt_local_transmit_size_max() - get the maximum size of a full local table
++ *  response
++ * @bat_priv: the bat priv with all the mesh interface information
++ *
++ * The full table response is sent as a single unicast TVLV packet. Its
++ * tvlv_len, which covers the TVLV header and the TT TVLV, is only 16 bit wide.
++ * This limits the response size even when packet_size_max is larger.
++ *
++ * Return: maximum size of a full local table response in bytes
++ */
++static int batadv_tt_local_transmit_size_max(struct batadv_priv *bat_priv)
++{
++	int tvlv_size_max = sizeof(struct batadv_unicast_tvlv_packet) + U16_MAX;
++	int packet_size_max = READ_ONCE(bat_priv->packet_size_max);
++
++	return min(packet_size_max, tvlv_size_max);
++}
++
+ /**
+  * batadv_tt_local_reserve() - reserve room in the transmittable local table
+  * @bat_priv: the bat priv with all the mesh interface information
+@@ -290,22 +312,23 @@ static int batadv_tt_local_transmit_size(u16 num_vlan, u16 num_entries)
+ static bool batadv_tt_local_reserve(struct batadv_priv *bat_priv, u16 num_vlan,
+ 				    u16 num_entries, int *table_size)
+ {
+-	int packet_size_max = READ_ONCE(bat_priv->packet_size_max);
++	int size_max = batadv_tt_local_transmit_size_max(bat_priv);
++	unsigned int entries;
++	unsigned int vlans;
+ 
+ 	scoped_guard(spinlock_bh, &bat_priv->tt.reserve_lock) {
+-		bat_priv->tt.reserved_vlans += num_vlan;
+-		bat_priv->tt.reserved_entries += num_entries;
++		vlans = bat_priv->tt.reserved_vlans + num_vlan;
++		entries = bat_priv->tt.reserved_entries + num_entries;
+ 
+-		*table_size = batadv_tt_local_transmit_size(bat_priv->tt.reserved_vlans,
+-							    bat_priv->tt.reserved_entries);
+-		if (*table_size <= packet_size_max)
+-			return true;
++		*table_size = batadv_tt_local_transmit_size(vlans, entries);
++		if (*table_size > size_max)
++			return false;
+ 
+-		bat_priv->tt.reserved_vlans -= num_vlan;
+-		bat_priv->tt.reserved_entries -= num_entries;
++		bat_priv->tt.reserved_vlans = vlans;
++		bat_priv->tt.reserved_entries = entries;
+ 	}
+ 
+-	return false;
++	return true;
+ }
+ 
+ /**
+@@ -339,9 +362,10 @@ static bool batadv_tt_local_reserve_entry(struct batadv_priv *bat_priv,
+ 		return true;
+ 
+ 	net_ratelimited_function(batadv_info, bat_priv->mesh_iface,
+-				 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new local tt entry: %pM\n",
++				 "Local translation table size (%i) exceeds maximum table response size (%i); Ignoring new local tt entry: %pM\n",
+ 				 table_size,
+-				 READ_ONCE(bat_priv->packet_size_max), addr);
++				 batadv_tt_local_transmit_size_max(bat_priv),
++				 addr);
+ 
+ 	return false;
+ }
+@@ -374,8 +398,9 @@ bool batadv_tt_local_reserve_vlan(struct batadv_priv *bat_priv,
+ 		return true;
+ 
+ 	net_ratelimited_function(batadv_info, bat_priv->mesh_iface,
+-				 "Local translation table size (%i) exceeds maximum packet size (%i); Ignoring new VLAN: %d\n",
+-				 table_size, READ_ONCE(bat_priv->packet_size_max),
++				 "Local translation table size (%i) exceeds maximum table response size (%i); Ignoring new VLAN: %d\n",
++				 table_size,
++				 batadv_tt_local_transmit_size_max(bat_priv),
+ 				 batadv_print_vid(vid));
+ 
+ 	return false;
+@@ -724,9 +749,9 @@ static u16 batadv_tt_entries(u16 tt_len)
+  */
+ static int batadv_tt_local_table_transmit_size(struct batadv_priv *bat_priv)
+ {
++	unsigned int tt_local_entries = 0;
+ 	struct batadv_meshif_vlan *vlan;
+-	u16 tt_local_entries = 0;
+-	u16 num_vlan = 0;
++	unsigned int num_vlan = 0;
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(vlan, &bat_priv->meshif_vlan_list, list) {
+@@ -4686,16 +4711,16 @@ void batadv_tt_local_resize_to_mtu(struct net_device *mesh_iface)
+ 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
+ 	int timeout = BATADV_TT_LOCAL_TIMEOUT / 2;
+ 	bool reduced = false;
+-	int packet_size_max;
+ 	int table_size;
++	int size_max;
+ 
+-	packet_size_max = READ_ONCE(bat_priv->packet_size_max);
++	size_max = batadv_tt_local_transmit_size_max(bat_priv);
+ 
+ 	spin_lock_bh(&bat_priv->tt.commit_lock);
+ 
+ 	while (timeout) {
+ 		table_size = batadv_tt_local_table_transmit_size(bat_priv);
+-		if (packet_size_max >= table_size)
++		if (size_max >= table_size)
+ 			break;
+ 
+ 		batadv_tt_local_purge(bat_priv, timeout);
+@@ -4704,8 +4729,8 @@ void batadv_tt_local_resize_to_mtu(struct net_device *mesh_iface)
+ 		timeout /= 2;
+ 		reduced = true;
+ 		net_ratelimited_function(batadv_info, mesh_iface,
+-					 "Forced to purge local tt entries to fit new maximum fragment MTU (%i)\n",
+-					 packet_size_max);
++					 "Forced to purge local tt entries to fit new maximum table response size (%i)\n",
++					 size_max);
+ 	}
+ 
+ 	/* commit these changes immediately, to avoid synchronization problem
 -- 
 2.47.3
 
