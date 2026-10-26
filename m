@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C07E2606A31A
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 08:55:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17C93606A31F
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 08:55:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=CJ/AQeWD
+	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=gDcshYgo
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 4C51A84764
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:55:11 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9CD78851C1
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:55:46 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793004911;
- b=CHIknWYFOu3ymIxfqDWxzFvANFIgIwTjgfUrz6XAxTJmXDitpkpbM9uzcn/jb1qhqfN1v
- 9Sau58vt+KdzWYHNQRAbAarjVtDaZbrs9g4CotGY0n5W1C4RgPWjm7XmeLaMi8+tps856xc
- i6Le+dSQ1o7pJVyBYvqnudhgYBUye4o=
+ t=1793004946;
+ b=vyYrF0J9mhzuCjJWhyM443+oZG/TH7jyPNNdWD/hj14DPkV4QTmPjRc8KtQ2w8GbBh4Fa
+ 1Wi0x/dXYv14xf9XZOijeswPyf9U4ndxen+x598rk/GtNjGdZKMIi9XbIFMpgdXbkvb0cAo
+ ZysTn+KeY+dJ81fGfJb6vGOaNmlWtHo=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793004911; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793004946; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ttMqqcboLQzjut5NgdLonwJi+uD/OkLUOeVwq0uZg1w=;
- b=fecEjiQMkngva0UXS6FsdMiX8OwIjyxPu2GYlEy9Cnt7CXppg+RvU7C0CI2qeLWcqNocY
- PCixdS4RZHLvSk3jqGC2hkCw3Zh1J84G0tat8nCp/TT3PPUpgnPawj13hOXAEjHUUT+EoYm
- Dw0kSPTpZpT6he3tccjn364vqcsN9W4=
+ list-archive; bh=cxXmU1gHIk+rLUIhSl6n8CsoMjs3h5pCmJ6cV3NBPIE=;
+ b=W/Ey6q2PTzSL/7BtWeWfKsvsGUK6RHILBq+nzOTD8qEIEgthm1eeIBJ1DPE0eA40KMI73
+ y8bmnxuex0IORTZqXJqNcxTjoCuj+iKZxiLdWHY44EuMsd0Tc/k22Cu/9gH17ef/N3RoBfL
+ mXnlhM2N6EMvp5ScJvGH1nPVQBm3oC0=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,25 +33,25 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 9A10083EC8
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 09:53:24 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793004804;
-	b=qEQLLpmpTuY9rkOe49Amp4H3ykLo95Wnsmp+UNOok7qP4DOTBOnzGQIT6L88n/e91tw2Rs
-	DMqBwF32jyz6+jYpi0sgiJdpcYAn0cM+FuaPWnFpe6bDGhlosyid6wRTHswmxbB6yPZGhs
-	LZQNa8hAUlmeCmwC1SmlE8OY1P8A3Ts=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 1309683EAD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 09:53:25 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793004805;
+	b=GZZ47pmeFHBE2PESP6pdMQD48RQ05dP3jtQ/ZFfQsee90CSnkObJ3rKVtEq56Z+5GdjKRL
+	ZpJbyzB7IWBAt2FQgI2d0opNq2qRdhW1kw9NUpkdQUWqnejyx7pVkkM8KD9L6SCsZlKKCT
+	t7s/EWFLd13wFydUBTF69tu88QyJk18=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793004804;
+	s=20121; t=1793004805;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ttMqqcboLQzjut5NgdLonwJi+uD/OkLUOeVwq0uZg1w=;
-	b=J6yCA2YJ5oWYbSywwE/3cBjcvr6RjS0Wxm+vqeeesYpmGHccnFPDOCcWYwazlskKehoLJF
-	7smvaATHwNlrjzbIazln6TODHNiwg8a4v4GILreyIK09Qsk7BCqHMbxgzpOBmsVcBQS/nq
-	/RGiWFsfWRwtE9DWSOmj44BVXMMbxYw=
+	bh=cxXmU1gHIk+rLUIhSl6n8CsoMjs3h5pCmJ6cV3NBPIE=;
+	b=TnJu3i3RM6SBAFD7CiMYPrbcUpIYG4hHwZH7Ucu6B8AxioilTIhz8IhSv2m4/8na5KWz/Y
+	BpxA8qOTAR1FayjmtgEiCsdRhzp9u1u4D3BKLKDGnrrn0d3wBCPAbcStzCHcIa1xddWTRc
+	SwZxKynz2dzv9aCmUOLq/aRcCAxvUTI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="CJ/AQeWD";
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=gDcshYgo;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
@@ -62,20 +62,20 @@ Received: from kero.packetmixer.de
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id DF428FA26D;
-	Mon, 26 Oct 2026 09:53:16 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 5D8C3FA26E;
+	Mon, 26 Oct 2026 09:53:17 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
 	s=09092022; t=1793004797;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ttMqqcboLQzjut5NgdLonwJi+uD/OkLUOeVwq0uZg1w=;
-	b=CJ/AQeWDeV4jWGEQJ6H/tYBG216ax3QlMttkQokapKSB42sFiykQ/YoQqeOFoNeNs6VsKE
-	/I6wtSV/scYwFNrmCbLsZv16ASSCjaPva34QKyTBNrYe+CqDzx45QKCW6dnY3cTzF2l4sT
-	A94f0UUQgO3Fp6VTszQsNza4LKObZzI3hSB2VGVS8eSFmMKV0e3p4JCzzE3nC4N0g1sXge
-	3mm/atHBcvMYQ2qZadWEmivu+jX/I2N0HKrO7Ru8z2wM7yc8+Q63pL/c/Pust4YKbssRC1
-	KIIlCxoDiJqfW4xxyxZeDUEUBUEP9XLq0VrwPuLXNje9rNYBlK4iMtk9dIJMNQ==
+	bh=cxXmU1gHIk+rLUIhSl6n8CsoMjs3h5pCmJ6cV3NBPIE=;
+	b=gDcshYgo0BOetHNnLXbBRvW/2mt+xDVI081MbiY8ubbNFjx4ioNub1WzGPjYpxUQGdD1b/
+	oaBwYN5H3Kx25kBrohyxstm4DPLhaHlk4m0ucCHXwanXjESsCclLJDsUj9zAsPbI4iSNuk
+	owW40g7BIAjp52AuLNX8ro0ZT/96zDvL/CwNIEJ/o5VO+zgfwBmp4GL/bvwXdYNKqVuR0A
+	0xefQbPDvi7gS7ySPZmw4hiiQHCzMwxNWDXI3tUzHvwj1vzd+adDxJn20RBsELOaWKLnKV
+	v3kpa4q7WnD97lIOSGvtpmHnsvxmHrTh5uAc0LuRPATnllls1njZjydzspjjOw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,18 +86,20 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 08/10] batman-adv: tt: only update flags for TT events
-Date: Mon, 26 Oct 2026 09:53:07 +0100
-Message-ID: <20261026085309.1074911-9-sw@simonwunderlich.de>
+Subject: [PATCH net 09/10] batman-adv: tt: don't drop local events queued
+ during TVLV update
+Date: Mon, 26 Oct 2026 09:53:08 +0100
+Message-ID: <20261026085309.1074911-10-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261026085309.1074911-1-sw@simonwunderlich.de>
 References: <20261026085309.1074911-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: AVFHUEQYT6HTJ54LKTDLUTAFSDWUEA2V
-X-Message-ID-Hash: AVFHUEQYT6HTJ54LKTDLUTAFSDWUEA2V
+Message-ID-Hash: EZQEUIBXOBAA5NHILGC2F7IC3PFNDVCY
+X-Message-ID-Hash: EZQEUIBXOBAA5NHILGC2F7IC3PFNDVCY
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -111,7 +113,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AVFHUEQYT6HTJ54LKTDLUTAFSDWUEA2V/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EZQEUIBXOBAA5NHILGC2F7IC3PFNDVCY/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -128,103 +130,108 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-In the first implementation of the translation table events, it was only
-possible to announce:
+batadv_tt_tvlv_container_update() read the number of local changes without
+holding changes_list_lock. batadv_tt_local_event() is not serialized by
+the commit_lock and can queue new events before the changes_list is
+flushed:
 
-* ADD: new locally detected client
-* DEL: disappeared local client
+  CPU0                          CPU1
+  batadv_tt_tvlv_container_update()
+    num = ...local_changes;
+                                batadv_tt_local_event()
+                                  list_add_tail(...);
+                                  ...local_changes++;
+    spin_lock_bh(&...changes_list_lock);
+    /* only num events copied but all freed */
 
-If an ADD event was queued and then a DEL event was queued in the same
-timeslot, it is valid to destroy both events because nothing actually
-changed for remode nodes
+The additional events were freed without ever being sent. Other nodes will
+only notice this via a CRC mismatch and must request the full table.
 
-But with commit e0eb5f8df352 ("batman-adv: improve the TT component to
-support runtime flag changes") and subsequent changes, it could also happen
-that there are extra ADD events:
+The number of changes and the changes_list must therefore be taken
+atomically. Events queued afterwards then stay in the tt.changes_list for
+the next TT round.
 
-* ADD: _NEW_ locally detected client
-* ADD: already existing client with new flags
-* DEL: disappeared local client
+The changes can no longer be kept for the next round when the TVLV buffer
+allocation fails. But they would be sent with a skipped TTVN anyway, so the
+other nodes have to request the full table in this case either way.
 
-The first and the last type of event could in theory still be removed
-together from the (to be announced) events queue. But if the "update flags"
-ADD is dropped together with the DEL, it would still leave global
-translation table of a remote node in the incorrect state - believing that
-the client didn't disappear.
-
-If a detected client was previously announced, a DEL event must only
-overwrite the "update flags" ADD but the DEL itself must still continue to
-exist in the (to be anounced) events queue. For now, adjustment of the
-announced flags is used for everything instead of dropping already queued
-up events completely.
-
-Similarly, a DEL followed by an ADD caused both entries to be deleted. But
-the new ADD could announce flags changes which were not yet present for the
-client before it was marked for DELetion. The new ADD must therefore only
-overwrite the DEL - but still be kept.
+This does not make the TTVN and CRC decisions in
+batadv_tt_local_commit_changes_nolock() consistent with the announced
+changeset. Events which are queued between these decisions and the
+snapshot can still be announced under a TTVN or CRC which doesn't cover
+them.
 
 Cc: stable@vger.kernel.org
-Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/bug/linux-fc286ddd-5bed-4683-b842-ee7a307eeb19
+Fixes: a73105b8d4c7 ("batman-adv: improved client announcement mechanism")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 29 +++++++++--------------------
- 1 file changed, 9 insertions(+), 20 deletions(-)
+ net/batman-adv/translation-table.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 39b61426f1680..24054077cf3db 100644
+index 24054077cf3db..6774484f1c573 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -622,6 +622,9 @@ static u16 batadv_tt_flags_get(struct batadv_tt_common_entry *common)
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @common: the TT entry involved in the event
-  * @flags: flags of the TT entry combined with the event flags
-+ *
-+ * Only a single change per client is queued. It describes the latest state of
-+ * the client and a new event therefore replaces an already queued one.
-  */
- static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
- 				    const struct batadv_tt_common_entry *common,
-@@ -631,7 +634,6 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
- 	struct batadv_tt_change_node *entry;
- 	struct batadv_tt_change_node *safe;
- 	bool del_op_requested;
--	bool del_op_entry;
- 	size_t changes;
+@@ -1327,11 +1327,18 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	int tt_diff_entries_num = 0;
+ 	bool drop_changes = false;
+ 	size_t tt_extra_len = 0;
++	LIST_HEAD(changes_list);
+ 	int tt_change_len = 0;
+ 	int tt_diff_len;
+ 	u16 tvlv_len;
  
- 	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
-@@ -665,25 +667,12 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
- 		if (entry->change.vid != tt_change_node->change.vid)
- 			continue;
++	/* atomically get the list of changes */
++	spin_lock_bh(&bat_priv->tt.changes_list_lock);
++	list_splice_init(&bat_priv->tt.changes_list, &changes_list);
+ 	tt_diff_entries_num = READ_ONCE(bat_priv->tt.local_changes);
++	WRITE_ONCE(bat_priv->tt.local_changes, 0);
++	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
++
+ 	tt_diff_len = batadv_tt_len(tt_diff_entries_num);
  
--		del_op_entry = entry->change.flags & BATADV_TT_CLIENT_DEL;
--		if (del_op_requested != del_op_entry) {
--			/* DEL+ADD in the same orig interval have no effect and
--			 * can be removed to avoid silly behaviour on the
--			 * receiver side. The  other way around (ADD+DEL) can
--			 * happen in case of roaming of  a client still in the
--			 * NEW state. Roaming of NEW clients is now possible due
--			 * to automatically recognition of "temporary" clients
--			 */
--			list_del(&entry->list);
--			kmem_cache_free(batadv_tt_change_cache, entry);
--			changes--;
--		} else {
--			/* this is a second add or del in the same originator
--			 * interval. It could mean that flags have been changed
--			 * (e.g. double add): update them
--			 */
--			entry->change.flags = flags;
--		}
-+		/* the other nodes may know the client with different
-+		 * flags. A DEL+ADD must therefore still announce the
-+		 * current flags and an ADD+DEL must still remove the
-+		 * client. ADD+ADD and DEL+DEL only update the flags
+ 	/* if we have too many changes for one packet don't send any
+@@ -1349,19 +1356,23 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 
+ 	tvlv_len = batadv_tt_prepare_tvlv_local_data(bat_priv, &tt_data,
+ 						     &tt_change, &tt_diff_len);
+-	if (!tvlv_len)
++	if (!tvlv_len) {
++		/* the TTVN of the changes is lost and the other nodes will
++		 * have to request the full table anyway
 +		 */
-+		entry->change.flags = flags;
++		list_for_each_entry_safe(entry, safe, &changes_list, list) {
++			list_del(&entry->list);
++			kmem_cache_free(batadv_tt_change_cache, entry);
++		}
+ 		return;
++	}
  
- 		kmem_cache_free(batadv_tt_change_cache, tt_change_node);
- 		goto update_changes;
+ 	tt_data->flags = BATADV_TT_OGM_DIFF;
+ 
+ 	if (!drop_changes && tt_diff_len == 0)
+ 		goto container_register;
+ 
+-	spin_lock_bh(&bat_priv->tt.changes_list_lock);
+-	WRITE_ONCE(bat_priv->tt.local_changes, 0);
+-
+-	list_for_each_entry_safe(entry, safe, &bat_priv->tt.changes_list,
+-				 list) {
++	list_for_each_entry_safe(entry, safe, &changes_list, list) {
+ 		if (tt_diff_entries_count < tt_diff_entries_num) {
+ 			memcpy(tt_change + tt_diff_entries_count,
+ 			       &entry->change,
+@@ -1371,7 +1382,6 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 		list_del(&entry->list);
+ 		kmem_cache_free(batadv_tt_change_cache, entry);
+ 	}
+-	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
+ 
+ 	tt_extra_len = batadv_tt_len(tt_diff_entries_num -
+ 				     tt_diff_entries_count);
 -- 
 2.47.3
 
