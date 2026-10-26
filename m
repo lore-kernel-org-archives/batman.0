@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C36F1606A31A
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 08:58:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C106E606A31A
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:00:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=gnraW2l4
+	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=OtAXISVz
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5B5298598A
-	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 09:58:47 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 5AA4185A2B
+	for <batman@archiver.kernel.org>; Mon, 26 Oct 2026 10:00:44 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793005127;
- b=MKNtSKMxgm2SYt2VdJNHQjSC5Vwg2wAUsuFOD8Ei7DMPMP+473gex1wDcllGooadhyNKg
- wg7Cx7UN+aLXOpLWY59joW9JfiRxpQeTmnI5aZA7f3qi7zcxWC0MaHR580SiC0y/qk/lXyJ
- L9rBoDHlYOI97rZaneNqk6G3iUKl3ko=
+ t=1793005244;
+ b=wlRMXkY0X0dWFUxUD03U9EUtbf+eTnjxbAnog0Ayn42fTu40bcsrE5X0kISnqXIV1hC9T
+ YeykHtvGk/LojCWZvyL4BHhob1iCHd/5l5R8LxK2Peh4veE2Ts9rrGA9NE2WBlcNFeaia0P
+ gmrThTE8nz7DVuGmE0pKXvJu8hahA2w=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793005127; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793005244; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
- b=CR6eruSK3TZDVl0DbiT6DAbFcDwjhoI0yBmFkImz0mOcriuX7un75tEPCkjNKtxjASe1c
- UBHEnLxoLFim5HIAwASqo5v2UxENWOiKvnTiGuqwT3QN0LgecWWJY8s1nLLXgxvnrPPejyy
- YfCF1hvoDC5n7zja1n1jVLRbm1Vp9Cc=
+ list-archive; bh=Evk3sUQ7uuIJybpzKewVPlKXeloIYVZQPgkkBsr6TKw=;
+ b=VEdLanIJhfjXaHSk2C15qAXHijYV1RFd9vVDQt5v0Y88uK/Cq/sRmavbdMMcFA4TjeyKy
+ MawALX1DDlIH7dJ5X1valoXvwlbAT2XNEANPuNr/zmIaarOkN7ISSniO5RH/MWyUF/yYHdJ
+ DEm5GWosz7RWokJPYK2G/aarCgeETHg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,49 +33,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0140383EAD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 09:53:32 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793004823;
-	b=IpY82q1PkFrNpbgj6qvGz9o01djSF9ngMSbMh7HzynEHLBwWZViQ1Gbcp2HNP8SN3LLLl8
-	JbCeWmfgkmMgtdcHyTlKrw21O1Vm9Fjg2vbL5HuHQCxyKk1yIJNAq5IiItA9xw4bEAKVNW
-	RALEMZwsD8qhM65jHSgz1d39R2qe+ws=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 7CB1685434
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 26 Oct 2026 10:00:31 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793005231;
+	b=xhrTiUKmsbgiP8N4lQ/LqZwysBqLdvV2/MxRo5vGOYiEV/qve9LJNogiG4gNfEeHNDIlfZ
+	xLWYKFBEFYs5dGJDGKYv2equB+lhTnsIF5dXJArYHK2GWZrXesOQr08tKaHghjpWWuPNUA
+	RLDbRHr8Mv0FRTuHDAU7egN5lKjfjRw=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793004823;
+	s=20121; t=1793005231;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
-	b=V4Wo3skOUc/usJztQIyJsv2EkVXYiL4+GA9bZTrl/17+KLl6LGF4bcudmLirOUCoKN2aoQ
-	O9VaKJmY6B7/OTYDBbQDUJzsAjeGgqDkCXIKEOO4G4SLmGv46MQXZtWBQ4a9CRjd9InIAZ
-	hxdQRHkNSiL/gZcopveawGneEaFXNUE=
+	bh=Evk3sUQ7uuIJybpzKewVPlKXeloIYVZQPgkkBsr6TKw=;
+	b=c9SXhnfum0dfJ77527oDyiww0ms6tSzYir3xXQiAmxEhIqCKV8xNMw5rKpa8xxLxjb5xhg
+	twCHq3h1mL7qkZm4t8EQ28v9IF5Zs02pOeohiJKrlZwQkJElbXgv+1TCPrgBUpabfhwYEu
+	d86CE+JQIQs5xnndyCZC+i5zmzCGPL0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=gnraW2l4;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=OtAXISVz;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C5973CE5d80fc8dFe94a24022D.dip0.t-ipconnect.de
+ (p200300C5973CE5d80fc8dFE94a24022d.dip0.t-ipconnect.de
  [IPv6:2003:c5:973c:e5d8:fc8:dfe9:4a24:22d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 7384CFA1DD;
-	Mon, 26 Oct 2026 09:53:15 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 44C80FA0E4;
+	Mon, 26 Oct 2026 09:53:12 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1793004795;
+	s=09092022; t=1793004792;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
-	b=gnraW2l40+qdMqD9HFBkJ27iu1Qu1IJn9u1z+/kTnTSuPAAPHhp4zP7k1H/PgDM76lJMSu
-	TlIux4U8I29V3Rx8PWOAIuJO90lbdv7WNOMJV9RZoY8dWIgWjuvTH/P58RtDAuK0bJAkrk
-	hluiEFoI/0djs+4Fn6p/o4CB2kdgWVXTKlWxOr2N2+29pVoJwTB7oPKKjrKkoeiE1A+RQX
-	6Av8+8IWIELXSVgnOSSJWZGB5uGhQ0zuL9dm1gYTpO/TKRpuIFewnEhi+HX7bXzEULCsj/
-	+5yiFkfjT1maYhkHmbpZD/6ntl+2uEiNK48Njx+CSV2Ai4+Fu8FGIHwaM8xFsA==
+	bh=Evk3sUQ7uuIJybpzKewVPlKXeloIYVZQPgkkBsr6TKw=;
+	b=OtAXISVzzPbMT2SniOfbSxTeRpfNBErpT3ifOkk/vWq90IzaqVJTDq9oOfM4GMWxwQa03F
+	5QIIWhUJlwPtpAAyHpobMCEWRvfNMRzzS6E6K/FdNrgMIkUKE/CvID+LSfYLlRs/2yweOf
+	0LDUZMX4rBAmFSwGb6iFS/HA+QsQGRyYrkX01tJhu+vAP0qNk9CKxjhXM5jyDkovNkJAcp
+	BoIKzLwEgMjD9RxPO0ra9DK6kNuV5u11YI0Ab1zIhl3vkKAoqjJFOCcKbYBEZsjU8mYfXl
+	OBxRvhRCFVwFbnGX7c9H8i592m4AjkQF9ILKh5C5NwV9N7Flm0a7I8uh8fY6wA==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -84,22 +84,22 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Paolo Abeni <pabeni@redhat.com>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
-	Sven Eckelmann <sven@narfation.org>,
+	Chengfeng Ye <nicoyip.dev@gmail.com>,
 	stable@vger.kernel.org,
-	Sashiko <sashiko-bot@kernel.org>,
+	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 06/10] batman-adv: stop originator purge worker before
- freeing TT
-Date: Mon, 26 Oct 2026 09:53:05 +0100
-Message-ID: <20261026085309.1074911-7-sw@simonwunderlich.de>
+Subject: [PATCH net 02/10] batman-adv: Close OGM aggregation before
+ transmission
+Date: Mon, 26 Oct 2026 09:53:01 +0100
+Message-ID: <20261026085309.1074911-3-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261026085309.1074911-1-sw@simonwunderlich.de>
 References: <20261026085309.1074911-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: EF3A3P47H4W7ERLMCENEVTOOHRPPKCT5
-X-Message-ID-Hash: EF3A3P47H4W7ERLMCENEVTOOHRPPKCT5
+Message-ID-Hash: D5EP2PVQTBFHO2OBWHHVJVQ3MROQ5J37
+X-Message-ID-Hash: D5EP2PVQTBFHO2OBWHHVJVQ3MROQ5J37
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +113,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/EF3A3P47H4W7ERLMCENEVTOOHRPPKCT5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/D5EP2PVQTBFHO2OBWHHVJVQ3MROQ5J37/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -128,53 +128,58 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Chengfeng Ye <nicoyip.dev@gmail.com>
 
-batadv_mesh_free() releases the translation tables via batadv_tt_free()
-before batadv_originator_free() stops orig_work. The purge worker can
-therefore still run while the TT is torn down. When an originator times
-out, batadv_purge_orig_ref() calls batadv_tt_global_del_orig(), which
-loads tt.global_hash and walks all buckets while taking their locks:
+The OGM send worker leaves its forwarding packet on forw_bat_list until
+after batadv_iv_ogm_emit() returns. Aggregation holds forw_bat_list_lock,
+but emission reads and clones the packet without that lock.
 
-  CPU0                          CPU1
-  batadv_tt_free()              batadv_purge_orig()
-                                  batadv_tt_global_del_orig()
-                                    hash = ...tt.global_hash;
-    batadv_tt_global_table_free()
-      batadv_hash_destroy(hash);
-                                    spin_lock_bh(&hash->list_locks[i]);
+CPU 0 can therefore start emitting a queued packet while CPU 1 takes the
+list lock, finds the same packet and appends another OGM. The sender can
+observe the new packet length before the corresponding direct-link flag
+is set, or clone the skb while its length and payload are being updated.
+This can transmit an OGM with incorrect flags or inconsistent data.
 
-Disable orig_work at the beginning of batadv_mesh_free(), directly after
-the mesh was marked as deactivating. The second
-disable_delayed_work_sync() in batadv_originator_free() is harmless because
-it is free'd anyway.
+KCSAN reported:
 
-Cc: stable@vger.kernel.org
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260708091821.314516-1-sw%40simonwunderlich.de?part=3
-Fixes: 9d31b3ce8168 ("batman-adv: fix potential TT client + orig-node memory leak")
+  BUG: KCSAN: data-race in batadv_iv_ogm_queue_add / batadv_iv_send_outstanding_bat_ogm_packet
+  write to 0xffff888100fedcf8 of 2 bytes by interrupt on cpu 1:
+  read to 0xffff888100fedcf8 of 2 bytes by task 70 on cpu 2:
+  value changed: 0x00c0 -> 0x00d8
+
+Mark the aggregate as full under forw_bat_list_lock before emission. This
+waits for any ongoing append and prevents further aggregation. Emission
+uses packet_len to walk the OGMs, so all queued packets are still sent.
+Keep the packet on the list so interface purging can find the worker,
+wait for it to finish and free the packet.
+
+Fixes: 9b4aec647a92 ("batman-adv: fix rare race conditions on interface removal")
+Cc: stable@vger.kernel.org # 4.10.x: 434becf57bdc ("batman-adv: Limit number of aggregated packets directly")
+Cc: stable@vger.kernel.org # 4.10.x
+Assisted-by: GPT-6-Astra
+Signed-off-by: Chengfeng Ye <nicoyip.dev@gmail.com>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 5 +++++
+ net/batman-adv/bat_iv_ogm.c | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index ced76942f33c5..3b9fa861be7be 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -295,6 +295,11 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 158d2b8f04036..85e99506a53f5 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1909,6 +1909,11 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+ 		goto out;
+ 	}
  
- 	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
- 
-+	/* the originator purge worker accesses (among others) the TT tables
-+	 * and must therefore be stopped before any of them are freed
-+	 */
-+	disable_delayed_work_sync(&bat_priv->orig_work);
++	/* Mark aggregate as full before forcing emit. */
++	spin_lock_bh(&bat_priv->forw_bat_list_lock);
++	forw_packet->num_packets = BATADV_MAX_AGGREGATION_PACKETS;
++	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
 +
- 	batadv_purge_outstanding_packets(bat_priv, NULL);
- 	batadv_tp_stop_all(bat_priv);
+ 	batadv_iv_ogm_emit(forw_packet);
  
+ 	/* we have to have at least one packet in the queue to determine the
 -- 
 2.47.3
 
