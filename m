@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23727606A31A
-	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 12:12:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 523AA606A31A
+	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 12:18:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=BBKHFlx2
+	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=hvOHcBIH
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id A940D8411F
-	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 13:12:05 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id DF61F830A6
+	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 13:18:53 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793103125;
- b=DIC5xnuGb8y3SO5kLq+n5jO2EnrfZrgg7MxjUIUYazuibJsKMSaoYo762zGg6X3tuPSE6
- RAGq+kuACsT+YSWH2S/7OAHITfzcEd+tB5HDuCyx6wu4VMG21UBDPFbfVazc4NhXlxxOInN
- My/dN0VbLYDQI5dF2rEGW7hzPe9YGXM=
+ t=1793103533;
+ b=OcTep3e/d6dUhiXv19NWbGOlXVyG33OA4nInbujVpVo1CuLXbiYp64hHqg+0F5u6kVEu7
+ +9dBsvsin+A8lnjAa7znzKJFAOHDY4M53Mnd2v6jDoWiBQNx20ddgOV2vaTUyikp0PbOe0l
+ 4YNFV9tgyQhPvmI1mkEaXbfbiM5HisQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793103125; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793103533; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=9RA/xsPWE7iX/5+zhjVd4uSj9i7bQuXj68Gc6UmAfS0=;
- b=G2p25x9wWehfGfu8MgSllvtE8mUDyfwBFUbz3UB9CHvtGVLCGIqbFiz9NXf+jTAJdsGc3
- YuCXj8Tl83CT1EY9wxa5yHK3irgfcvT9dtO/77DjIJvgJE+6oml7kF6iSYkZdzVlb27N6pB
- zdm7Ts6+eBqMGvQEEVjIF3RYkGZ2V4w=
+ list-archive; bh=c0IunEX04TaNsit88KQcLus9zoNLvzD2jF1hWBlIUOU=;
+ b=0j6mS0BialnuEzHwIwrb6cPPD8JF7qfYjeAKtuq2gsgTEKMg/ID3D4ShKqs0DvDviIejS
+ hY3KHGyAnrIIBG0GniZKBUhxAIkyeg4BH6HrwRbnlgZVduP9+Dl1+LfRqVvzAZ7E79n7z0F
+ DQOQ0hVu0Mc6bIUca5PpRDj6WNLp8Vc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,59 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 736ED81933
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 27 Oct 2026 13:11:38 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793103109;
-	b=LHZ7BGCrvbQPMMMSWMhKs8no7CgSxA7ZlCsTX4V+9CmTHZoIytrfnbJAP4GuBpfVUzSPX5
-	F6tmfoNJoLTnzur77klbxYDk8MTf34H3CTQ4UG5Dpi84adAa5lzl51VjGPgOb2p1tRqsoJ
-	uR4o3YvSHQl6ZU2sDbW89CnZVTc5K5Y=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 6743981CFF
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 27 Oct 2026 13:18:29 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793103519;
+	b=W0Ose5RAxbtmfObNMQrzCZ8ZnDecgvaRxxohT7+QOem1aaCun/qJCK++R6GU0LWzu7t/FQ
+	CFwM8/LqyjLlzi373oYjh/EMUWknqp1NMFDGMWHyFSbknKcxiaO9cJldzW6xCJmDV5oklp
+	w6J7bw9w/YVUBeCMWi+XJSdKO+XSF0A=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793103109;
+	s=20121; t=1793103519;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=9RA/xsPWE7iX/5+zhjVd4uSj9i7bQuXj68Gc6UmAfS0=;
-	b=Jo27t1by3+1+vYnmpjBoneUadPn3FsY7oONyRvhcTzMWCjHtN8xI1goNP09lZE3wfuSK/o
-	mm40lYrfYegucLj/V4krbOSlCv1i981yf9gwJRT3wl+IRb/tZwKKWPGUSTCba0JozwCJCe
-	xhUGKii4kH4vLhkrk1USVQfzHylAk7c=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=c0IunEX04TaNsit88KQcLus9zoNLvzD2jF1hWBlIUOU=;
+	b=Mhr7nUY1wj0hYN2LZQkmPUHr/32m/71q1z7T6kBIMlmc7hhiBMl2NUj1nr3fmvD85UNSkU
+	vih2Ctwtw6T5/0sUT1ZB9yun2zCYZaQfg/XPVKYWn1W3Koeb548v7iMqsGfz6tK5z79ABw
+	/NueIu1A3YUloFH6BduStbevCKmzvhw=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=BBKHFlx2;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=hvOHcBIH;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 029ED202F3;
-	Tue, 27 Oct 2026 12:11:35 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 310B220152;
+	Tue, 27 Oct 2026 12:18:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1793103096;
+	s=20121; t=1793103508;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9RA/xsPWE7iX/5+zhjVd4uSj9i7bQuXj68Gc6UmAfS0=;
-	b=BBKHFlx2Fhz5/44C+m+jbdE9Qglch5ZLWct58ZUG56OfblYF/qENFmpe8EvTsfdrB/apHm
-	ymrq6H1U51xMn+WOe5+VjqWyLHq4z4wKqtSHh/rYqkxjoivPHjxDX2cgbj528d1Ol8IcfD
-	x6kYzYNjogfNz4nlk2DIaXPnj1aDUAc=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=c0IunEX04TaNsit88KQcLus9zoNLvzD2jF1hWBlIUOU=;
+	b=hvOHcBIH5fQVnyD1yTGhMQt0C1Oj1YrGtf6/sTLlJ7V1iiusWtpQJIlJmbfk9xmbSV4X6y
+	1oD2pnjVmNpYizEFDff0OKFaOH0q/FbUmlg0KPPp1ZlJ+q3+RAmaLNT1XSqVb80rgw+hPk
+	uFbaNwejkS4R9NqtAVQOM61HoJlRu9g=
 From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
-Subject: Re: [PATCH net 07/10] batman-adv: tt: only transmit local ROAM flag
- together
- with DEL
-Date: Tue, 27 Oct 2026 13:11:30 +0100
-Message-ID: <2294364.Icojqenx9y@ripper>
-In-Reply-To: <179309132249.3134.16887364336514212941@kernel.org>
-References: <20261026085309.1074911-8-sw@simonwunderlich.de>
- <179309132249.3134.16887364336514212941@kernel.org>
+Date: Tue, 27 Oct 2026 13:18:25 +0100
+Subject: [PATCH batadv] batman-adv: document num_packets use as aggregation
+ stop marker
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart119544528.nniJfEyVGO";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: DLDHOWL43FBQ657OK6X6HFDAC6JMUFT2
-X-Message-ID-Hash: DLDHOWL43FBQ657OK6X6HFDAC6JMUFT2
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261027-kdoc-num_packets-v1-1-1fa6d584b7b3@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAJCW4GoC/yWMzQrCMBAGX6V8ZwNpDjX6KiKSn42uxbRk0yKUv
+ rtRjzMws0GoMAnO3YZCKwtPuUF/6BAeLt9JcWwMo83Qa3NUY5yCysvrNrswUhVl0xCttsmftEf
+ L5kKJ37/lBd5VF1dc/14W/6RQvz/s+wf3U93hfAAAAA==
+X-Change-ID: 20261027-kdoc-num_packets-8f6d808fb90b
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1794; i=sven@narfation.org;
+ h=from:subject:message-id; bh=Na/Toj69wD/kb9K6d3bsMImYyj0BxNaZTV2O8WdOfUM=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkPpk3cVlNdEbslKOfLWcuvf0N27O0WzDA897QmzElrz
+ uRt23uTO0pZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQA3eSIjw8tDEe2GX/YtWf7X
+ ta2qoiWqhM1ha1WtzfFV93z9vDmFXBkZTlgdaVv66gbzqo2Ja/dETT25OUyvYNfKr5MnODaYhes
+ bswMA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: FDMMO4FIPFIYLSPPOWBXEJR54RUHS3I5
+X-Message-ID-Hash: FDMMO4FIPFIYLSPPOWBXEJR54RUHS3I5
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -98,85 +104,62 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/DLDHOWL43FBQ657OK6X6HFDAC6JMUFT2/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FDMMO4FIPFIYLSPPOWBXEJR54RUHS3I5/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---nextPart119544528.nniJfEyVGO
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Date: Tue, 27 Oct 2026 13:11:30 +0100
-Message-ID: <2294364.Icojqenx9y@ripper>
-In-Reply-To: <179309132249.3134.16887364336514212941@kernel.org>
-MIME-Version: 1.0
+The OGM send worker sets num_packets of a forw_packet to
+BATADV_MAX_AGGREGATION_PACKETS before emitting it. This marks the
+aggregate as full so that no further OGMs get appended while it is
+transmitted. After this, num_packets no longer holds the number of
+aggregated OGMs.
 
-On Tuesday, 27 October 2026 09:55:22 CET netdev-bot+sashiko@kernel.org wrote:
-> batman-adv: tt: only transmit local ROAM flag together with DEL
-> 
-> This patch stops local TT entries from sending BATADV_TT_CLIENT_ROAM
-> unless it comes with BATADV_TT_CLIENT_DEL. The ROAM bit is now cleared
-> for non-DEL events in __batadv_tt_local_event() and for full table
-> responses in batadv_tt_local_valid(). The goal is to stop receivers from
-> treating a plain ADD as a roaming advertisement.
-[...]
-> 
-> [Severity: Medium]
-> 
-> Does this fix the requester-side symptom described in the commit
-> message?
->
-> The commit message says:
-> 
->   When the requester is the node which sent the ROAMING_ADV, it then
->   marks its own (new) local client as roamed back to the old originator
->   and drops it when it is still NEW.
+The kernel-doc still only describes the field as a plain counter.
+Document the second use so later readers don't rely on num_packets
+to be the actual number of aggregated OGMs.
 
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261026085309.1074911-2-sw%40simonwunderlich.de?part=2
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/types.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-No, this is not the symptom. It is just the way the roaming works.
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index c19caa84..b3e6dbb3 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -2047,7 +2047,13 @@ struct batadv_forw_packet {
+ 	/** @direct_link_flags: direct link flags for aggregated OGM packets */
+ 	DECLARE_BITMAP(direct_link_flags, BATADV_MAX_AGGREGATION_PACKETS);
+ 
+-	/** @num_packets: counter for aggregated OGMv1 packets */
++	/**
++	 * @num_packets: counter for aggregated OGMv1 packets. Set to
++	 *  BATADV_MAX_AGGREGATION_PACKETS (independent of the real number of
++	 *  aggregated packets) by the send worker to prevent further
++	 *  aggregation while the packet is emitted. It must therefore not be
++	 *  used to iterate over the aggregated packets
++	 */
+ 	u8 num_packets;
+ 
+ 	/** @delayed_work: work queue callback item for packet sending */
 
-The relevant part is "But such a behavior doesn't make sense for non-ROAM_ADV 
-because a new TTVN [...] should therefore be used to create a temporary (roam) 
-global entry in a node." It is there to announce the "committed" local entries 
-which everyone should use in their global table for this originator. And ADD 
-is therefore required - but not the roaming flag because it would be 
-interpreted as roaming announcement. See also 
-https://www.open-mesh.org/projects/batman-adv/wiki/Client-roaming#Translation-table-consistency
+---
+base-commit: 08b79268afb43880f861c12ec9a34d1ccb85ab2f
+change-id: 20261027-kdoc-num_packets-8f6d808fb90b
 
-There are also pending changes for TT which avoid this odd removal of the 
-ROAMING and flash it out more in the receiver side [1,2,3].
-
-Regards,
-	Sven
-
-[1] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./patch/20261008-tt-avoid-unhashed-event-v2-2-7c4eed81606d@narfation.org/
-[2] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./patch/20261008-tt-avoid-unhashed-event-v2-3-7c4eed81606d@narfation.org/
-[3] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./patch/20261008-tt-avoid-unhashed-event-v2-4-7c4eed81606d@narfation.org/
---nextPart119544528.nniJfEyVGO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCauCU8gAKCRBND3cr0xT1
-y9ZtAP0drgonQgtLdtN+ois4rAObGdjhVcdOZRhqLIO/gZ9OcwD/YJbHo4BEByYC
-51zGNh19L04Y0SN+ZIeks2+lvDyLtQc=
-=HsmC
------END PGP SIGNATURE-----
-
---nextPart119544528.nniJfEyVGO--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
