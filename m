@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0104606A31B
-	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 12:36:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1E62606A323
+	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 13:30:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=VALFiym6
+	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=eyNenwS2
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 30E708417B
-	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 13:36:08 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 48E1C8452C
+	for <batman@archiver.kernel.org>; Tue, 27 Oct 2026 14:30:37 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793104568;
- b=po0dykpW22MfkLDMGH4sr92HrGp2Bsn5zinzTd4mW9rqYFVzyhSJ0DjFTn6H9GNWRw5yh
- pIhXsjUNJlJdtkjzdZUyqPh0qOk5LlxTabyLoxWe1lFsyZULkPAyF6KjEbdYbOTjrgmZNwK
- dp5ufVVRQt23XS+fgbpokIBU/NDJ4Vs=
+ t=1793107837;
+ b=OHwFmmj7Y2x9152EjDim4YdH++9q5fziHcTsO5eNxmL+XsL/at8OYwcXP/ZJKG5D7/Ocu
+ Jykn/HOkSmZYjjsM7zub/WWHmYQ0/Jc1NW885TG1uxsYwQTRjuL7HfWispqeWPx9RMQm0Te
+ QA09mZqhZl82pm+vYHRZJHhvmGCjx70=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793104568; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793107837; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=K+i0Ir8NB1/YA/OFJN2Vo6ahQORxDCkTkkHvWg7tAU0=;
- b=mYV7z3oLXgnXy2jl/tOjZlQPDrXp7GMHSbwa5bfa1zssWJBFnZs3R5jk3U19kMvKOHWm8
- v8oAz2mAuTqFxgwKfu6bnIcD0iWbLVGCLQF0O7y+OdiEEQ4lvi4saBBSkltieZhO+mDMrjP
- HUdC7EveghOlNPAzHNE1bME8Ax6JjtQ=
+ list-archive; bh=r8xHc5QZAbY7w3dhkCAxHNRc5KfuavGcRlEVDxK6d9E=;
+ b=gcYpyeg8fOeRAg0xHVJ9r+ijZ+NqnPxRoCIcWs9GFpko+C6wTlp0+MXBZ5xSwvU9PbIX7
+ IK0vuZS6Wtr6gi1T8QrV1gWPbeRH/Or9PRI+tVioA48J6lswVsBckZhbQd2rwyhD7V7A1CQ
+ 7yq8fxjcalSMAMMJI47qf34X6b9HzZM=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,59 +32,65 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 2149F81233
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 27 Oct 2026 13:35:42 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793104553;
-	b=EZ+/B+GwbaXjclb63fxbL3fr3vi8tIvBRNRFtRmYXkuPQGBp+XQjZQUTPOAmNW0C+O9P0x
-	0z0wLZcKBgdeRbpc5fOYBz3i+qfuaMnUJYMbGSoOwFU/2cSeZYM8Pr5WQXLZWbIILDxFwd
-	R9q4LvmWcJH7+K9ZwGZ2C0qiuRKQSgs=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E6565807DE
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 27 Oct 2026 14:30:23 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793107824;
+	b=CJ/hp2mK7L0+fsF7R+umgV9AvO8vyPMn+zcH67vpnvNosXZD52yn5tCJoHcaC0z0tkq52f
+	7Q2pc+CUexaMqoKPtVDe5nEkRvOP0m1Qb/Q+gaYd6wt2ENdQwdM0cmBqdlTQen0wZGzntJ
+	cBkflw9A9qfOk6jvcigbk75ppTyZmEM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793104553;
+	s=20121; t=1793107824;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=K+i0Ir8NB1/YA/OFJN2Vo6ahQORxDCkTkkHvWg7tAU0=;
-	b=EUieN2sUHVTxcCsECRO7bSNHJfObBYtvQkv4azmTxy7rx86hK9FlOTx45Zlxy5jT48CEjG
-	yDRlqAc+xpX+lZyQSmnOL49CBCHo1QQaR4C0H8+puHuCkXF6f2NiBYBLMtx73cbqcIB3wx
-	Np+moja/eA9kVFWHzzjDLon3+AGL9Yw=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=r8xHc5QZAbY7w3dhkCAxHNRc5KfuavGcRlEVDxK6d9E=;
+	b=HFrU93U3JOBsOSnwLju3L3SXz9u1PYM0Kh3JwOsGXWIJu05kSgap2xd4OyPoBlAqRe5Tl5
+	B2o4vWo6QLNI6uDByGLRJJ6dVInR6/TbX1GUxmz4UTMleRmoFE2swgzthdeqAavGqr3ML2
+	t/M6L8WCaJzKtmt7hplGs8riT6aMQE4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=VALFiym6;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=eyNenwS2;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 4D1BC20581;
-	Tue, 27 Oct 2026 12:35:41 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 97B7F2057A;
+	Tue, 27 Oct 2026 13:30:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1793104541;
+	s=20121; t=1793107822;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=K+i0Ir8NB1/YA/OFJN2Vo6ahQORxDCkTkkHvWg7tAU0=;
-	b=VALFiym6jC5QNhPgDk4uS8ZY59hMZJ7Y3BaVeeQLQ+tqQ+aFB/nJ7xK6D9+QPm2+BiZzty
-	zC+PDPCI02H57dC5vhI07HwiQEDnlVqGftt/cQPdln0yCyDk32s3GYGrlbO57Nu0mMJuMt
-	HJ+Xvgohx9RfqAQ6kEDMD8S7W3hFRZk=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=r8xHc5QZAbY7w3dhkCAxHNRc5KfuavGcRlEVDxK6d9E=;
+	b=eyNenwS2RncjitYAleQ7AHZSFk0vT+0JRAGWrEX8E9k0QHlw+LWF02B1E2cvwB07jtcyzy
+	0ywX3SrZWCR8HHVxQtqe5hV6yM7Pq9AXept+S84ED9lyUuki1zYaKeJXQTzsNuKStDiW83
+	+b4/P+76FX4mBsTA33jElESx+pmsptY=
 From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org, sashiko-bot@kernel.org
-Subject: Re: [PATCH net 10/10] batman-adv: tt: limit local table to single
- TVLV
- response size
-Date: Tue, 27 Oct 2026 13:35:33 +0100
-Message-ID: <2934231.BEx9A2HvPv@ripper>
-In-Reply-To: <179309132480.3134.3568656714789779480@kernel.org>
-References: <20261026085309.1074911-11-sw@simonwunderlich.de>
- <179309132480.3134.3568656714789779480@kernel.org>
+Date: Tue, 27 Oct 2026 14:30:15 +0100
+Subject: [PATCH batadv] batman-adv: tt: avoid stale changeset after TVLV
+ allocation failure
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart15872503.tv2OnDr8pf";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: 42ASKDJ7DGUMNOJWYFIOTEBKQ2GLBM26
-X-Message-ID-Hash: 42ASKDJ7DGUMNOJWYFIOTEBKQ2GLBM26
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261027-tt-tvlv-alloc-fail-v1-1-02058bcc4595@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAGan4GoC/yWM0QrCMAwAf2Xk2UBX0A5/RXxIu0QjZZM2FmHs3
+ 636eAd3G1QuyhXOwwaFm1Zdlw7jYYB0p+XGqHNn8M6fRucDmqG13JByXhMKacZjFI5B3BRkgh4
+ +C4u+f9MLRDKaG1z/vr7ig5N9j7DvH7HUsL9+AAAA
+X-Change-ID: 20261027-tt-tvlv-alloc-fail-5bfeb7f087f8
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2740; i=sven@narfation.org;
+ h=from:subject:message-id; bh=WOmiKicp5BAohlyKtlBCB4YwV4ujw7osY0N7Mw+1A4E=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkPlmeu+hnhIq7verJzyasvn5etiNZf8/3kFWO+U58ux
+ Md+Upt6s6OUhUGMi0FWTJFlz5X885vZ38p/nvbxKMwcViaQIQxcnAIwEdk8RobWc8Eh9/TrW9I9
+ +QrrHVcbmtazLmybd1PATNL9HhtrsCkjw433svEvZsqtuzW70mGF1z+uidv+bUnw7WFM7jlUX2S
+ 8mRsA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: L3D2GFYRGT3U5LQDPE35P2HMYHFOK2QC
+X-Message-ID-Hash: L3D2GFYRGT3U5LQDPE35P2HMYHFOK2QC
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -98,90 +104,82 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/42ASKDJ7DGUMNOJWYFIOTEBKQ2GLBM26/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/L3D2GFYRGT3U5LQDPE35P2HMYHFOK2QC/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---nextPart15872503.tv2OnDr8pf
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Date: Tue, 27 Oct 2026 13:35:33 +0100
-Message-ID: <2934231.BEx9A2HvPv@ripper>
-In-Reply-To: <179309132480.3134.3568656714789779480@kernel.org>
-MIME-Version: 1.0
+When batadv_tt_prepare_tvlv_local_data() fails in
+batadv_tt_tvlv_container_update(), the new TTVN and CRCs were already
+committed. Still no new diff container would have been registered.
 
-On Tuesday, 27 October 2026 09:55:24 CET netdev-bot+sashiko@kernel.org wrote:
-> [Severity: Low]
-> 
-> Does this Fixes: tag point at the commit that introduced the problem?
-> 
-> 85fb027f611b removed a check from batadv_tt_local_create() that already
-> limited the table by packet_size_max only:
-> 
-> -       /* Ignore the client if we cannot send it in a full table response. 
-*/
-> -       table_size = batadv_tt_local_table_transmit_size(bat_priv);
-> -       table_size += batadv_tt_len(1);
-> -       packet_size_max = READ_ONCE(bat_priv->packet_size_max);
-> -       if (table_size > packet_size_max) {
-> 
-> That older check had no cap at the 16-bit tvlv_len either. So the missing
-> limit seems to predate 85fb027f611b.
-> 
-> Blame on the parent of 85fb027f611b points at defa87f5ce75fe
-> ("batman-adv: tt: extract allocation of new local entries"). That commit
-> only moved this code, so the check is older still. The original commit
-> was not identified.
-> 
-> Kernels without 85fb027f611b can still let the local table grow past what
-> one unicast TVLV full table response can carry. This happens with
-> fragmentation disabled and a hard interface MTU above
-> sizeof(struct batadv_unicast_tvlv_packet) + U16_MAX. In that case,
-> batadv_tt_prepare_tvlv_local_data() hits its check_add_overflow() path and
-> returns 0, so no response is sent.
-> 
-> With the current tag, stable tooling would only pick this fix for trees
-> that contain 85fb027f611b. Could the tag name the commit that first added
-> the packet_size_max-only check? Or could the commit message say that
-> older trees are affected too?
-> 
+When no new local changes are queued, the new TTVN is only announced after
+ogm_append_cnt reached 0 (after BATADV_TT_OGM_APPEND_MAX OGM intervals).
+Nodes which are at the previous TTVN then send a diff TT request instead of
+a full table request. This request was answered with the still stored
+last_changeset of the previous TTVN. The requesting node applied these
+outdated changes under the new TTVN and only noticed the problem via a CRC
+mismatch on a later OGM.
 
-The code only does it job partially after this commit. All of the previous 
-commits would need a big revamp of the TT code - which is not backport-able 
-via stable.
+Drop the last changeset in this error path. TT requests for the new TTVN
+are then answered with the full table - independent of the request type.
+Also reset ogm_append_cnt to retry the TT container update in the next OGM
+interval.
 
-The really relevant part is in batadv_tt_local_reserve() and this was only 
-introduced with this specific commit. And only for this commit, Sashiko 
-pointed this out.
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261026085309.1074911-1-sw%40simonwunderlich.de?part=9
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/translation-table.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-Regards,
-	Sven
---nextPart15872503.tv2OnDr8pf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 8102d719..446a6838 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1435,13 +1435,25 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	tvlv_len = batadv_tt_prepare_tvlv_local_data(bat_priv, &tt_data,
+ 						     &tt_change, &tt_diff_len);
+ 	if (!tvlv_len) {
+-		/* the TTVN of the changes is lost and the other nodes will
+-		 * have to request the full table anyway
++		/* the changes are lost and the other nodes have to request the
++		 * full table. Don't answer TT requests for the new TTVN with
++		 * the stale changeset of the previous TTVN
+ 		 */
+ 		list_for_each_entry_safe(entry, safe, &changes_list, list) {
+ 			list_del(&entry->list);
+ 			kmem_cache_free(batadv_tt_change_cache, entry);
+ 		}
++
++		spin_lock_bh(&bat_priv->tt.last_changeset_lock);
++		kfree(bat_priv->tt.last_changeset);
++		bat_priv->tt.last_changeset = NULL;
++		bat_priv->tt.last_changeset_len = 0;
++		spin_unlock_bh(&bat_priv->tt.last_changeset_lock);
++
++		/* announce the already committed TTVN in the next OGM interval
++		 * instead of waiting for BATADV_TT_OGM_APPEND_MAX idle rounds
++		 */
++		atomic_set(&bat_priv->tt.ogm_append_cnt, 0);
+ 		return;
+ 	}
+ 
 
------BEGIN PGP SIGNATURE-----
+---
+base-commit: 08b79268afb43880f861c12ec9a34d1ccb85ab2f
+change-id: 20261027-tt-tvlv-alloc-fail-5bfeb7f087f8
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCauCalQAKCRBND3cr0xT1
-y8TcAQDjHcUwP2NnzQWPSyWeev4w3Dn2s9iUlhfIyglDNphWaQEApfjfe4DbHT5L
-NYy4eR55gRf5HWQ8hcEEXHkCgWA/rwc=
-=XFF3
------END PGP SIGNATURE-----
-
---nextPart15872503.tv2OnDr8pf--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
