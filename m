@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C450606A31A
-	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 13:55:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1A4A606A320
+	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 13:56:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=ySC56UOh
+	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=Wk11/76Z
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0599D84230
-	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 14:55:45 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 698BB8483F
+	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 14:56:15 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793368545;
- b=IB9vup85FDC2P3KRH2B1/E/n3XqK06iyvfIVBHUenVKasjV58+NRLfpLG/UMw3KVdw/8H
- iW2lF1Iv6aZ3xLYh8PtvAWeB0sLkI2uFJ0jpuGWmMwIddr21K1IeGQ9k5HW2/qR4Izv0g1E
- NcG+71ZjfhHO8OLHyc5LorG7dGjDnrY=
+ t=1793368575;
+ b=Gilt/EmADYbgLjUjGszaXDYYTQDt7fg6dX14pNl04dHGQZzlzcLZmBE8/b551Knn88SWP
+ Nsdzez/OZyEV7PJoaiJBOMRcwlIm3/j4os6Xw3dyfEdhds0h5nGft8c5JRFvcKvUNTKht2R
+ HmmzIV4hIql5CcRU5ToqUHx6qP1VltM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793368545; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793368575; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
- b=uH5CHOOrwfeAbygdleVfM9hRVt0rhschgpZZyDf6KQJvP90oyS3sqV0PTnVjww8DRQC9i
- MBOWNynHCjzt/Rp0l6kvX4gZyHflaK4Ijs2pNyQg7BADEUhU30zAJpojeDB7qj1i6hh7hv8
- +ETnklWUl1RlOdkW687mO16RUMCjfHY=
+ list-archive; bh=4Sdas4EDEWHsgNZKpqDTz51HIwTHhqSyCgWVHRMM+/8=;
+ b=bJSV5qc5eb++smFKmlvpJtLri4D+Ro2NBbNDLkUjf7qq9ZhdfTQIs2oo7DvwJlg1IwDKR
+ rfNqxn5AEK6kCWIBJKa28vZufk5XcwS163SJsfQNz23IGuNLHjuDDyTBe6tm/rxt3rZfGTu
+ JxOHns6q2pBkCTuu9hms2CnXfDtabU4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,49 +33,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id DBCC784421
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E897184438
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 30 Oct 2026 14:51:21 +0100 (CET)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793368291;
-	b=UMa2FPqW4UYo6gN2i5hD0b+NXij+hEOtkNB735nUVmuRnK0RqIuezU3TdUQVKZNiwx62lC
-	x5q3hQjbOdDCNONqgqkukkPE56A6kYf77XTJXIXeoaQYP4IYRvAPa0Gm6h7EKmy46Sq8e3
-	UMAoxEbdYdU4v+tdSKRI2t5u6Kn/9RI=
+	b=vY4XsvkiVPQ5XlhcgOZP7V++tL0pEswew7rbDlXG3jtdvUumnvMqwmrLhQVarJKKj4yPzg
+	t0tGyAT4MHzwuEIj3jvS/20lFOaeTv7FERmaemMJK4x/NuEthtavpNvifaG7MKrfXbVirz
+	f5a8qTwnl/58TgkC6/Wi2ILTMH+FpwU=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1793368291;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
-	b=HKMvftH4ksf/Y0g2y4YiUVgiyTrLgypM7kddbZjdJ71jE1FDjtjxFzzFwF3Nn/CsiFI9NI
-	/J2Z5GoOkLxiMjnEkAjgl7SF9k4MZV7zo+pbLE5sb8SEYm1gMOkMNMockrYESM2n3xN8PE
-	NBG/EC2dpMmyzuTWYQifP8FQV0KPb9s=
+	bh=4Sdas4EDEWHsgNZKpqDTz51HIwTHhqSyCgWVHRMM+/8=;
+	b=c9viMVeQR9w5c0C+h5z7J3FWsUmf23+tbpfhfL7aZfhXsz31u5Qrwe6HCrSacksyjJdRC2
+	dtsoAH+jQsEWyXsDXEPySR4H7gETWB8aroSiyTZQVCRzOF00z4V6NmNN7W9k8QPUOCsul5
+	e1qZ71BGPcMkI74PGJuBy4A6qH6vYWc=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=ySC56UOh;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="Wk11/76Z";
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C597124fd839580c360d3ed6f6.dip0.t-ipconnect.de
+ (p200300c597124FD839580C360D3ed6f6.dip0.t-ipconnect.de
  [IPv6:2003:c5:9712:4fd8:3958:c36:d3e:d6f6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 33787FA1CC;
-	Fri, 30 Oct 2026 14:51:15 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 3842FFA273;
+	Fri, 30 Oct 2026 14:51:17 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1793368275;
+	s=09092022; t=1793368277;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Tb6YY7ws5ricakk5fR+nEefJhgviyi0JtUHb63cvMS4=;
-	b=ySC56UOhdXeYD5ZTai0+o7Hqc1KreHftBHMGenfMfKrr5qZFZ1s1HcAdvUZS5x7BhsYJ6F
-	1TYZuDKNg7/in6jWbZBly3cY9N/k5zUrWFTAjLQN6v9k2Z4he3/yG2GcIsdHn5M3hHjAs1
-	S+K3fEXz0JxfiiWt4Ll73xGkJ2U8PHadvPU/Oyv9yVGUzVyu2vz8CkpTJ64mkRfCjVRdWO
-	0KlpGEFlPEcMEegdohPyHjlKctnNrDEQi0fCKdPOr8SPDoec9XJmmWTbNnqVmtMluyjZT3
-	wCq/GmydpGiGXzsQPzdnYdaZo6Wqpy8OcF7UI7hWkpvR2d/kc3qyFwzx84WVIQ==
+	bh=4Sdas4EDEWHsgNZKpqDTz51HIwTHhqSyCgWVHRMM+/8=;
+	b=Wk11/76ZRA7BdAZGziY5W0a3IxsEs6b1Xi6FULgiN5ssnc5WryR3K2zLeQImYeJamPYrbY
+	BIrd2LZZNE41jtr+3yfOz17UNpuB5e+OZBshy1uvWpNNqIEEXD2T7B7eb1z6AjfjCE2abY
+	bIplPYB9oyxIlZwh+chJMcHKEcbCrO0j4pQjv51LjmLGiK0jAZGJBQDupI50hJuequHsXL
+	KFPSSbltgNOezryeUEpHKLTCRrkILa+8XU7h0S5d9WqB/niEAok5f8/aKQ5yX8WCMPjAti
+	PF7pgWK6gqGNKdDVG11BLJwe0eEunGB+4MntETvB/RiROjyQNAe4/LuloxvCfg==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,20 +86,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 07/14] batman-adv: stop originator purge worker before
- freeing TT
-Date: Fri, 30 Oct 2026 14:50:58 +0100
-Message-ID: <20261030135105.2555887-8-sw@simonwunderlich.de>
+Subject: [PATCH net 09/14] batman-adv: tt: clear ROAM flag when re-adding a
+ pending local client
+Date: Fri, 30 Oct 2026 14:51:00 +0100
+Message-ID: <20261030135105.2555887-10-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261030135105.2555887-1-sw@simonwunderlich.de>
 References: <20261030135105.2555887-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: 5X5UPH5NGGFVCHLP6AC4PK3PXOGLJQB7
-X-Message-ID-Hash: 5X5UPH5NGGFVCHLP6AC4PK3PXOGLJQB7
+Message-ID-Hash: VIN5BBC6JSWOCKVQNH45QJ6HIEZPB64E
+X-Message-ID-Hash: VIN5BBC6JSWOCKVQNH45QJ6HIEZPB64E
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5X5UPH5NGGFVCHLP6AC4PK3PXOGLJQB7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VIN5BBC6JSWOCKVQNH45QJ6HIEZPB64E/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -130,51 +129,62 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_mesh_free() releases the translation tables via batadv_tt_free()
-before batadv_originator_free() stops orig_work. The purge worker can
-therefore still run while the TT is torn down. When an originator times
-out, batadv_purge_orig_ref() calls batadv_tt_global_del_orig(), which
-loads tt.global_hash and walks all buckets while taking their locks:
+When a ROAMING_ADV is received for an announced local client,
+batadv_tt_local_mark_removed() sets BATADV_TT_CLIENT_ROAM, queues a
+DEL|ROAM change and marks the entry as BATADV_TT_CLIENT_PENDING. If the
+client sends a frame again before the next TTVN commit,
+batadv_tt_local_add_existing() only clears the PENDING flag and returns
+early. The ADD cancels the queued DEL, but the entry keeps the ROAM flag:
 
-  CPU0                          CPU1
-  batadv_tt_free()              batadv_purge_orig()
-                                  batadv_tt_global_del_orig()
-                                    hash = ...tt.global_hash;
-    batadv_tt_global_table_free()
-      batadv_hash_destroy(hash);
-                                    spin_lock_bh(&hash->list_locks[i]);
+* batadv_is_my_client() reports the client as not served by this node
+* batadv_tt_local_client_is_roaming() reroutes unicast frames for it to
+  the node which sent the ROAMING_ADV
 
-Disable orig_work at the beginning of batadv_mesh_free(), directly after
-the mesh was marked as deactivating. The second
-disable_delayed_work_sync() in batadv_originator_free() is harmless because
-it is free'd anyway.
+The ROAM flag is only removed with the next frame of the client.
+
+Since BATADV_TT_CLIENT_ROAM is set together with BATADV_TT_CLIENT_PENDING,
+it has to be cleared also at the same time with BATADV_TT_CLIENT_PENDING
+when the client roamed back.
 
 Cc: stable@vger.kernel.org
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/patchset/20260708091821.314516-1-sw%40simonwunderlich.de?part=3
-Fixes: 9d31b3ce8168 ("batman-adv: fix potential TT client + orig-node memory leak")
+Fixes: 068ee6e204e1 ("batman-adv: roaming handling mechanism redesign")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ net/batman-adv/translation-table.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index ced76942f33c5..3b9fa861be7be 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -295,6 +295,11 @@ void batadv_mesh_free(struct net_device *mesh_iface)
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 39b61426f1680..e13c2828da475 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -894,6 +894,7 @@ static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
+ 					 bool *roamed_back)
+ {
+ 	struct batadv_tt_common_entry *common = &tt_local->common;
++	bool readded = false;
  
- 	WRITE_ONCE(bat_priv->mesh_state, BATADV_MESH_DEACTIVATING);
+ 	tt_local->last_seen = jiffies;
  
-+	/* the originator purge worker accesses (among others) the TT tables
-+	 * and must therefore be stopped before any of them are freed
-+	 */
-+	disable_delayed_work_sync(&bat_priv->orig_work);
-+
- 	batadv_purge_outstanding_packets(bat_priv, NULL);
- 	batadv_tp_stop_all(bat_priv);
+@@ -908,8 +909,7 @@ static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
+ 			 * flag can be reset like it was never enqueued
+ 			 */
+ 			common->flags &= ~BATADV_TT_CLIENT_PENDING;
+-
+-			return true;
++			readded = true;
+ 		}
  
+ 		if (common->flags & BATADV_TT_CLIENT_ROAM) {
+@@ -926,7 +926,7 @@ static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
+ 		}
+ 	}
+ 
+-	return false;
++	return readded;
+ }
+ 
+ /**
 -- 
 2.47.3
 
