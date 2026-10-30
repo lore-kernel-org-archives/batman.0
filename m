@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BE6C606A31A
-	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 13:53:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65EF4606A323
+	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 13:54:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=X7LUlO71
+	dkim=pass (2048-bit key, unprotected) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=Uj9ZNI8M
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id AAC0C83C3D
-	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 14:53:37 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 033BC842E5
+	for <batman@archiver.kernel.org>; Fri, 30 Oct 2026 14:54:08 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793368417;
- b=amEs7dPEQfvJjLkL9UVyJhB4nqP0KNjLeIbvMX2CHRj+wVrMK60m92976MSQhja5oSZor
- a7RXqj+Anj+Ekw+Ui8dZozMGORn5LywTED30Va/iRJkRmS3CURGMHvTfaJ4TqBuj3uihqDN
- JlbX4llzCVMJSyVGntyz3KEj9mNX6VU=
+ t=1793368448;
+ b=VuxSiZ+QiGpy3WHyXdU73efbhOU55pI9LGih7WjDls/rJXHq47AQjwRidNoLMFTfrH7j8
+ 2CuwhiNjgUyqNBX0gFgUfr6fxQJlWIXOnqocICfU9SbaK8PCQEa7c0mzTGFQk0LAn68EAkn
+ U5lDBAYwORd+ebXpogVZ05a8ZhUHl4k=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793368417; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793368448; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=5VFfE+Ja1v7fq+LdBxrDTp1pJJQrK5P+CsSeA/Arnmg=;
- b=kud7xEO/W7UEPDuksK1e/Abo+wqXQdeJzOzn6RxNjj5ZxwobmgJqxj/RBFnGdzO+DsDAO
- mOGKMndEjCcq9kfza+JdWgqzJYKCldtTmEAkNJZ6cUL48/d0H7D/k7ZU9ARUuI10/q2DtwB
- 36yr2jAw0lVv0u9MSmfvkUgoX9cblWM=
+ list-archive; bh=7RJrvzHfyRH2NludABJx8SkoHJ3QglEZ3QwWWnb4wDA=;
+ b=0GdS+Z/Ygo0DgwkOJmd/Cp45XPhb+tuibVHBsknKTu24q89C/wGJEi6NQW/FnxLkHsTub
+ zVsIIVxTdUTmRhx5Q9F1nwhJiZsRi1Cru5Q+FVF1/w+SSpRd3OS/wcO5EWpFhznyR6DrFyS
+ nZDsFtzadPvvwf1tJTKKnQi57f9D60k=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,52 +32,50 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id E526D83E9B
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 30 Oct 2026 14:51:21 +0100 (CET)
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id D364E83130
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Fri, 30 Oct 2026 14:51:11 +0100 (CET)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793368281;
-	b=hPOyDudbaOKautElEqanyrkx9NBVoiD72fsXDCK/MhvRWt8zKRUXs2hY66j1EFMOTwKhRB
-	DQrGSQ9qBo/2qAvO2FT26GIZTfJ0a9yK8eJEv2LA7dUhkSBi5AIKYWfWFIaE8r6KBtLklz
-	eOaiLd9qAXSOcPysGVuwRVN57l9FoN4=
+	b=FjpFXdQ/IJpojZVTn/0lrJXJgAKUnOqfQAycWgTZ13SP48zLVr4oKVMQxpevrySGylhEZa
+	dpHpQiSw2M5PPF5D+b/4PedPuILrZ5TVYAzf8liEWFORpgcXLzL/Li9bVM9IFGPb5DIifa
+	EGk2xxnT733Cjbqlj5vvZGEcckgABTM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1793368281;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=5VFfE+Ja1v7fq+LdBxrDTp1pJJQrK5P+CsSeA/Arnmg=;
-	b=qX+wbT439Nelmaa7HtfmAKI2kFnlmgGkHE23gppre8OyRAZVzUU+LOxnWvpj3eGEfKiEnA
-	XmhYMq1g40T7DnFC5zccIbyqor6TIOtSuO61RgGaUNiQp2crXbOOkwsZXcO5SybXCcOjGu
-	GTmpSe+dtLqtp3+qnXtCWxQ13j68vJU=
+	bh=7RJrvzHfyRH2NludABJx8SkoHJ3QglEZ3QwWWnb4wDA=;
+	b=owVRB1k0H+WJzsep8SMhWcBhTRhNg9hVIPFha4HJfql2/GrnuSs9/GgVvGI0haOtangyy9
+	EUNwam9w6Q3XRvWNVDsPWlEdmUnBXnCXhq9rCBLrVh0RjFwmewo5fN+aBau9ct3DaOgz87
+	nL3p1Vr/P2zK5UPxNhOExRl3NAAuae0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=X7LUlO71;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=Uj9ZNI8M;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender)
- smtp.mailfrom=sw@simonwunderlich.de;
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300c597124Fd839580C360D3ed6f6.dip0.t-ipconnect.de
+ (p200300c597124Fd839580C360D3ed6F6.dip0.t-ipconnect.de
  [IPv6:2003:c5:9712:4fd8:3958:c36:d3e:d6f6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 67A5AFA2EE;
-	Fri, 30 Oct 2026 14:51:18 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id E38E7FA156;
+	Fri, 30 Oct 2026 14:51:10 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1793368278;
+	s=09092022; t=1793368271;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5VFfE+Ja1v7fq+LdBxrDTp1pJJQrK5P+CsSeA/Arnmg=;
-	b=X7LUlO71Okd/VctZ/Rom2MH1z5Hg9fQtbTRyNlFWxrh5vqFG7vOnGEoooD1G4qgui064f0
-	PjDCDwKSjX3K1Gitg0XyzLdXsN2hffGzJCwai4p/atXFoSEdmCHwg3kLyLVx871FTZOQs1
-	50ePOaxiISuCi93OlNeMTdV4osz6zqw1G7C9Enaw+SLvR1Uo5QJz5APPBBJkNPRmmLZVdc
-	W/tTFpmKiTEjduTCyjEMLiVl1UJLLN+hIUM2BxtQmBdQBSZlVydB38KBa22gtPrcqMNQIV
-	7/bpUNmQV9ORrA7PqDqCIP+07aTH7EeEkcyL4857TO5Qmh+dG+Fh2NA/mmvCbQ==
+	bh=7RJrvzHfyRH2NludABJx8SkoHJ3QglEZ3QwWWnb4wDA=;
+	b=Uj9ZNI8M4c5o4Os1IXz7uiJxfYui+RDzm1Dz5CjSqpmnu1qnnnsztK4BrmhL5dBuo+f4jA
+	e63MWLv7Pi7/1ILRtfyjCjON2tQ2nxNWcppNf/LDZzOh60l7t0AYuWsdeWhBFHekCc5ik3
+	46FKQtt1Nb2gOVEUccTVhIsoRHCUgvShp3Zq+oc7Z0xvVuu0ZzGfb/M7f/Uh8ZMljxX+kl
+	6QACAaZDu7kv2Rj1U2kbF6cxWLpPRTGfnC9A2CFTD83hZHayfhysa/yt0eghDsRwy/eTzi
+	dilHbngjWayN5MjAqApnpvevXOIa1KHh/TIdk/Nt2jSro9EhWuNj2ta7vmS+SQ==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -88,19 +86,20 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	stable@vger.kernel.org,
+	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net 11/14] batman-adv: tt: ignore ROAM flag of received ADD
- changes
-Date: Fri, 30 Oct 2026 14:51:02 +0100
-Message-ID: <20261030135105.2555887-12-sw@simonwunderlich.de>
+Subject: [PATCH net 04/14] batman-adv: tpmeter: fix u32 truncation of reported
+ bytes
+Date: Fri, 30 Oct 2026 14:50:55 +0100
+Message-ID: <20261030135105.2555887-5-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261030135105.2555887-1-sw@simonwunderlich.de>
 References: <20261030135105.2555887-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: AOYWYAMVDOPFBKW72BEAAQZTCJUKVNGV
-X-Message-ID-Hash: AOYWYAMVDOPFBKW72BEAAQZTCJUKVNGV
+Message-ID-Hash: WPO2LSHJWBWD45DNB46CRMAXTE3DZ5FA
+X-Message-ID-Hash: WPO2LSHJWBWD45DNB46CRMAXTE3DZ5FA
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -114,7 +113,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AOYWYAMVDOPFBKW72BEAAQZTCJUKVNGV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/WPO2LSHJWBWD45DNB46CRMAXTE3DZ5FA/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -131,66 +130,36 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-A received TT change (OGM diff or full table response) with the ROAM flag
-but without DEL is handled by batadv_tt_global_add() like a ROAMING_ADV:
+When more than 4 GB are transferred by the throughput meter,
+batadv_tp_batctl_notify() will cut of the upper 32 bit of the u64 counter
+and thus under-report the actual transferred bytes.
 
-* a newly created global entry gets BATADV_TT_CLIENT_ROAM and is
-  therefore excluded from the global CRC. The sender has it in its local
-  CRC and the receiver has to request the full table again
-* batadv_tt_global_purge_local() removes the local entry of the
-  receiver. The receiver's own client is considered as roamed to the sender
-  and frames for it are rerouted
-
-The ROAM flag only has a meaning together with DEL. Drop it on reception to
-keep it from populating the global table with a temporary ROAMING entry
-which is not part of the CRC - and therefore causing a CRC mismatch.
+The data type of the temporary storage variable must therefore still
+continue to use u64.
 
 Cc: stable@vger.kernel.org
-Fixes: 068ee6e204e1 ("batman-adv: roaming handling mechanism redesign")
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/bug/linux-08bb3be4-6c6a-452d-b4e4-606940c6cfa5
+Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ net/batman-adv/tp_meter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0df51523dcf0c..247cce95c09f4 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3941,21 +3941,30 @@ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
- 				      u16 tt_num_changes, u8 ttvn)
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 022eb13e8ec47..56feb02d2b7ef 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -221,7 +221,7 @@ static void batadv_tp_batctl_notify(enum batadv_tp_meter_reason reason,
+ 				    unsigned long start_time, u64 total_sent,
+ 				    u32 cookie)
  {
- 	int roams;
-+	u8 flags;
- 	int i;
+-	u32 total_bytes;
++	u64 total_bytes;
+ 	u32 test_time;
+ 	u8 result;
  
- 	for (i = 0; i < tt_num_changes; i++) {
--		if ((tt_change + i)->flags & BATADV_TT_CLIENT_DEL) {
--			roams = (tt_change + i)->flags & BATADV_TT_CLIENT_ROAM;
-+		flags = (tt_change + i)->flags;
-+
-+		if (flags & BATADV_TT_CLIENT_DEL) {
-+			roams = flags & BATADV_TT_CLIENT_ROAM;
- 			batadv_tt_global_del(bat_priv, orig_node,
- 					     (tt_change + i)->addr,
- 					     ntohs((tt_change + i)->vid),
- 					     "tt removed by changes",
- 					     roams);
- 		} else {
-+			/* an announced client cannot have roamed away from
-+			 * orig_node. Only a ROAMING_ADV is allowed to add a
-+			 * global entry with the ROAM flag
-+			 */
-+			flags &= ~BATADV_TT_CLIENT_ROAM;
-+
- 			if (!batadv_tt_global_add(bat_priv, orig_node,
- 						  (tt_change + i)->addr,
- 						  ntohs((tt_change + i)->vid),
--						  (tt_change + i)->flags, ttvn))
-+						  flags, ttvn))
- 				/* In case of problem while storing a
- 				 * global_entry, we stop the updating
- 				 * procedure without committing the
 -- 
 2.47.3
 
