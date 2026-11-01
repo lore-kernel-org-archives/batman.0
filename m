@@ -2,230 +2,273 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58A69606A31A
-	for <batman@archiver.kernel.org>; Sat, 31 Oct 2026 22:17:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44063606A324
+	for <batman@archiver.kernel.org>; Sun,  1 Nov 2026 15:27:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=OFGariA9
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FeFpMrWz
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id EFA4C8084B
-	for <batman@archiver.kernel.org>; Sat, 31 Oct 2026 23:17:29 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id DB8CA84036
+	for <batman@archiver.kernel.org>; Sun, 01 Nov 2026 16:27:19 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793485049;
- b=eCcB0zFlK/x+ljId4b7OqQQQ49z247vitEC+N9T2ZUGKLOmW65fn1kPigsxZD7XY/LqR0
- t8G+nu16K663A+fe2nuxeGOpInVHOa4gh7m3+gUw5EH/In7uyTZV51aboezixPlJwYsqv8j
- 4URYwkAeMUUZ42kFFjjoU//+g1vJzuU=
+ t=1793546839;
+ b=EzH59AYauYZlSTrwy8m6NPa9dF/nBLN9piH1o07ldr9vwJigwB8Uxrlk8UpzCkXEBQI2m
+ xIRwLp3+3nJTjv06Ml4TmsHHBg+pKFQuIXT2B92xxJ1yvavinMQkumQITtwL4aYTg8zhnMv
+ kifvLFZ0b0WFKjjf8X3gEfhQajPW4EY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793485049; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793546839; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=KBbXs44h18eJYbObuXcfTmbwLeVgAjmwr7mXT/atFpA=;
- b=TzjEL61sK+IiPBP4poXh0G6Jh6PgRSiOcrE9Q9o8JL/SFPnrU3owLFAvldIoOMY1Mg1SY
- 5Hv7wYKCwdCDPzwIU37b5Spu1PVkMEJ0A6+rKuvg3rE7BVuaJHjotqYWIhKfS1VdQQh0EpK
- uC/pJSlZLrBxKgRFRrZ+A5Bow/DmHJM=
+ list-archive; bh=EWk1o24hNVLI6fMDx2Ljuovu3/zKSyHGHALwckQZDtU=;
+ b=M5FteMc14v1AXl/32VbUCsfBdTlrxPGnIbsPfgzD0AzcRMz9kRCQxv1FBTD8tVUjvKvsU
+ YdcNMWQE2SKzET2VUs9P+O7iOBWmD7H+CJo7PHwGerOp86R6GRNyNWjjVbZfgTebn2Sk+uq
+ TkI5Pv6nys9WpOZalXYooVicRUqxTBA=
 ARC-Authentication-Results: i=2; open-mesh.org;
- dkim=pass header.d=narfation.org;
+ dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass header.from=narfation.org policy.dmarc=none
-Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
+ dmarc=pass header.from=kernel.org policy.dmarc=quarantine
+Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
- dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id A8DC181CDC
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 31 Oct 2026 23:15:00 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793484910;
-	b=oO5vW1sJrpfgSLz5zTsIRIm8HUxaKgRW27l/vM7HxVIh+uNjZWCD73d/Gyo5bLLLQwXk6a
-	CvzuZcbxwmzu+LZ9TzcK0CXEOdpiyaNlKTiQeh/4ZVWq3Hrcjwu5qhJUJPw3V47dFKorBe
-	qdDaWDj/5GEtnfW/aNCbZQWYWm7x42Y=
+ dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id F13758072E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 01 Nov 2026 14:52:30 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793541151;
+	b=mlKAKMEBQ+5tvUvUaV7FIT5vEQoOKEKCZsc5pMVrohHem+vaKcn4XynmiHP4uBsYJlFjkT
+	VsbozJ/XOw79AkW1MovhQsBGf0ob4bPYiIB2DxVLvWYeZAv8RY8JNbbUcfAyLn56g3hepB
+	x/esWF4ip6HgdVIZYD99BQhApGcCZg4=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793484910;
+	s=20121; t=1793541151;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=KBbXs44h18eJYbObuXcfTmbwLeVgAjmwr7mXT/atFpA=;
-	b=lciNi8/kZCOHF67xnY/5ZxGzWy8zFQyWDGKd2iOpqGza1VC47Qcoy7CxC1rrTQ2mf1WvIj
-	q6kH+3lfxcwwvdDMYiguMl8akwzVNsm1tPa2VOTfgSqtZltcyaOXyLWnwgq/VegNAFXVk4
-	iqs+eGLwvrLeS97zkxvm+5pTztw14jo=
+	bh=EWk1o24hNVLI6fMDx2Ljuovu3/zKSyHGHALwckQZDtU=;
+	b=0nKqku2ai+zGuEgauObvsV9qF/z0hT5CinRIgl55UDISUMVZcY5YMBWw6CabA0m7j5ik5D
+	nq20ffAnbgh9W1bbPnLZJzx86ZmHGekK2L3PHSwU3ogOyarnfwdeKgdsgVYhOPilhIHIjf
+	CXoJvaQ3v5/+qg13bkJXaapnSaD+oKQ=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=OFGariA9;
-	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
-	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 405D8210BE;
-	Sat, 31 Oct 2026 22:15:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1793484900;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=KBbXs44h18eJYbObuXcfTmbwLeVgAjmwr7mXT/atFpA=;
-	b=OFGariA9PBXr2CkJonRq1zjSkBsC1ovjDq7M6qv31mBadfcy/hlaofoGdCK6O+S4u1YpxH
-	lSzBfBntSNrwQXwlwvX3iokk4qbwD18YEuplqFVpUFldjAi70oyFftXUgtOc6ZOBCN4R7f
-	p6hgjZCqJsLBC0YpK/9ZodA5zBwkII4=
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 31 Oct 2026 23:14:49 +0100
-Subject: [PATCH batadv v2 4/4] batman-adv: mcast: document the value stored
- in is_routable
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=FeFpMrWz;
+	spf=pass (diktynna.open-mesh.org: domain of netdev-bot+sashiko@kernel.org
+ designates 2600:3c0a:e001:78e:0:1991:8:25 as permitted sender)
+ smtp.mailfrom=netdev-bot+sashiko@kernel.org;
+	dmarc=pass (policy=quarantine) header.from=kernel.org
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E1ED143B95;
+	Sun,  1 Nov 2026 13:52:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35C751F000C1;
+	Sun,  1 Nov 2026 13:52:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793541148;
+	bh=EWk1o24hNVLI6fMDx2Ljuovu3/zKSyHGHALwckQZDtU=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=FeFpMrWzZwvt7lYtODCQjif7PfV4/ocTOlCv2ATVqb5hVXeXIxNCqvLtoe/h2RlZy
+	 sxUauEJAxCs8NraEvaYQKbZM4jtL0g6jfb21uL4+mI+JUniUq1Sxf93ILV9HUMJ1zd
+	 BZuRzYyoCb2S5Ok7dK7K6bmB8rDrBLBf5FFpM0y/aLSV9IA3GciRYlK0zeTwZg/59q
+	 SeFdmtW+luPNJFUfkL2tghCMn87wVVWsatVBKBIwZntVyOc6XQ4S0ozy7KRhq0v000
+	 XNwsi4ikbRcynoDeV7/g75RdVVh9D0VsOkD9wEqaNRI/V1CHg9YmX5Ctbaizc8ICRB
+	 LF4XQAeyzBoQQ==
+Subject: Re: [PATCH net v2 12/14] batman-adv: tt: only update flags for TT
+ events
+From: netdev-bot+sashiko@kernel.org
+To: sw@simonwunderlich.de
+Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org, stable@vger.kernel.org,
+ sashiko-bot@kernel.org
+Date: Sun, 01 Nov 2026 13:52:27 +0000
+Message-ID: <179354114771.3131.18425781657657497381@kernel.org>
+In-Reply-To: <20261030135105.2555887-13-sw@simonwunderlich.de>
+References: <20261030135105.2555887-13-sw@simonwunderlich.de>
+X-sashiko-severity: Medium
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261031-simple-type-cleanup-v2-4-2c8f42edbc90@narfation.org>
-References: <20261031-simple-type-cleanup-v2-0-2c8f42edbc90@narfation.org>
-In-Reply-To: <20261031-simple-type-cleanup-v2-0-2c8f42edbc90@narfation.org>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5889; i=sven@narfation.org;
- h=from:subject:message-id; bh=e5QKXNXRaPMKz6vf0drVWddUBKROZNk74jQoYr+PJtg=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFnPMsL59781ORJ42S24asX91u1uH/adkmMLSolN3nhCi
- CVs+k29jlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEAmQYGbZ8qzZ5JTpXw8gx
- ucc3/HaITbGoeqiJad+KxA9nf89T7WJk2GtjZHxo15XpB182OzUXLWLVYEkvDo86qez2um5RwL4
- pzAA=
-X-Developer-Key: i=sven@narfation.org; a=openpgp;
- fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: J4ODY2JGVX5ODBTC4GXIPECAEQDIAMO5
-X-Message-ID-Hash: J4ODY2JGVX5ODBTC4GXIPECAEQDIAMO5
-X-MailFrom: sven@narfation.org
+X-MailFrom: netdev-bot+sashiko@kernel.org
+X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
- header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation;
- nonmember-moderation; administrivia; implicit-dest; max-recipients; max-size;
- news-moderation; no-subject; digests; suspicious-header
+ header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
+Message-ID-Hash: D7U7KCR2OFPHPEQMZGECJMQCOYBHL6SZ
+X-Message-ID-Hash: D7U7KCR2OFPHPEQMZGECJMQCOYBHL6SZ
+X-Mailman-Approved-At: Sun, 01 Nov 2026 16:27:06 +0100
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/J4ODY2JGVX5ODBTC4GXIPECAEQDIAMO5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/D7U7KCR2OFPHPEQMZGECJMQCOYBHL6SZ/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_NONE,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The kerneldoc of is_routable says it indicates whether the destination is
-routable, which reads like a boolean. But it actually holds the
-protocol of the routable destination (ETH_P_IP or ETH_P_IPV6) or 0.
+Thank you for your contribution! Sashiko AI review found 2 potential
+issue(s) to consider.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/multicast.c      | 16 ++++++++++------
- net/batman-adv/multicast_forw.c |  9 ++++++---
- 2 files changed, 16 insertions(+), 9 deletions(-)
+Critical: 0 · High: 0 · Medium: 1 · Low: 1
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 0446324c..1e086a63 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -984,7 +984,7 @@ static bool batadv_mcast_is_report_ipv4(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the IPv4 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores ETH_P_IP when destination is routable
-  *
-  * Checks whether the given IPv4 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -1052,7 +1052,7 @@ static bool batadv_mcast_is_report_ipv6(struct sk_buff *skb)
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the IPv6 packet to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores ETH_P_IPV6 when destination is routable
-  *
-  * Checks whether the given IPv6 packet has the potential to be forwarded with a
-  * mode more optimal than classic flooding.
-@@ -1094,7 +1094,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast frame to check
-  * @is_unsnoopable: stores whether the destination is snoopable
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores the protocol (ETH_P_IP or ETH_P_IPV6) if the destination
-+ *  is routable
-  *
-  * Checks whether the given multicast ethernet frame has the potential to be
-  * forwarded with a mode more optimal than classic flooding.
-@@ -1180,7 +1181,8 @@ static int batadv_mcast_forw_rtr_count(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to check
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet need to be sent to
-  *
-  * For a multicast packet with multiple destination originators, checks which
-@@ -1224,7 +1226,8 @@ batadv_mcast_forw_mode_by_count(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to check
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: stores the protocol (ETH_P_IP or ETH_P_IPV6) if the destination
-+ *  is routable
-  *
-  * Return: The forwarding mode as enum batadv_forw_mode.
-  */
-@@ -1554,7 +1557,8 @@ batadv_mcast_forw_want_rtr(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to transmit
-  * @vid: the vlan identifier
-- * @is_routable: stores whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  *
-  * Sends copies of a frame with multicast destination to any node that signaled
-  * interest in it, that is either via the translation table or the according
-diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
-index 8700f92b..0120d1ea 100644
---- a/net/batman-adv/multicast_forw.c
-+++ b/net/batman-adv/multicast_forw.c
-@@ -477,7 +477,8 @@ batadv_mcast_forw_push_adjust_padding(struct sk_buff *skb, int *count,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the skb to push the destination addresses onto
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  * @tvlv_len: stores the amount of currently pushed TVLV bytes
-  *
-@@ -569,7 +570,8 @@ static int batadv_mcast_forw_push_tracker(struct sk_buff *skb, int num_dests,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the skb to push the tracker TVLV onto
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  * @tvlv_len: stores the amount of currently pushed TVLV bytes
-  *
-@@ -1123,7 +1125,8 @@ static int batadv_mcast_forw_expand_head(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @skb: the multicast packet to encapsulate and send
-  * @vid: the vlan identifier
-- * @is_routable: indicates whether the destination is routable
-+ * @is_routable: 0 if the destination is not routable, otherwise the protocol
-+ *  (ETH_P_IP or ETH_P_IPV6) of the routable destination
-  * @count: the number of originators the multicast packet needs to be sent to
-  *
-  * Encapsulates the given multicast packet in a batman-adv multicast packet.
+If you believe none of the issues are legitimate, please reply to each
+issue of Medium severity or higher and explain why the AI is wrong.
+If any of them are legitimate and you plan to respin, please let patchwork
+know by including "pw-bot: cr" as a separate line at the end of your reply
+(one such reply per series is enough).
+
+- [Medium] The patch now treats each new TT event as the client's latest
+  state and writes its flags over any queued change for the same…
+- [Low] Claimed mismatch between the kernel-doc and the new behaviour for
+  NEW clients.
+
+--
+
+batman-adv: tt: only update flags for TT events
+
+This commit changes __batadv_tt_local_event(). DEL+ADD and ADD+DEL pairs
+for the same client no longer cancel each other. Instead, a new event
+overwrites the flags of the change that is already queued. This keeps a
+DEL that follows a flag-update ADD, and it keeps an ADD with new flags
+that follows a DEL.
+
+> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+> index 247cce95c09f4..fa5ead248f192 100644
+> --- a/net/batman-adv/translation-table.c
+> +++ b/net/batman-adv/translation-table.c
+
+[ ... ]
+
+> @@ -665,25 +667,12 @@ static void __batadv_tt_local_event(struct batadv_priv *bat_priv,
+>  		if (entry->change.vid != tt_change_node->change.vid)
+>  			continue;
+>  
+> -		del_op_entry = entry->change.flags & BATADV_TT_CLIENT_DEL;
+> -		if (del_op_requested != del_op_entry) {
+> -			/* DEL+ADD in the same orig interval have no effect and
+> -			 * can be removed to avoid silly behaviour on the
+> -			 * receiver side. The  other way around (ADD+DEL) can
+> -			 * happen in case of roaming of  a client still in the
+> -			 * NEW state. Roaming of NEW clients is now possible due
+> -			 * to automatically recognition of "temporary" clients
+> -			 */
+> -			list_del(&entry->list);
+> -			kmem_cache_free(batadv_tt_change_cache, entry);
+> -			changes--;
+
+[Severity: Low]
+
+This isn't a bug, but for a client still in the NEW state, the ADD+DEL
+pair used to cancel. It is now kept as an announced DEL:
+
+batadv_tt_local_remove()
+  batadv_tt_local_mark_removed()   <- breaks out for BATADV_TT_CLIENT_NEW
+  batadv_tt_local_remove_now()
+    batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
+
+When a NEW client is added and removed within one OGM interval, this
+causes an extra TTVN increment. It also puts a DEL entry in the TT diff
+for a client that was never announced.
+
+Receivers seem to treat that DEL as a no-op, because batadv_tt_global_del()
+bails out when batadv_tt_global_hash_find() finds nothing. The commit
+message also says the extra event is accepted for now ("The first and the
+last type of event could in theory still be removed together ...").
+
+Is the extra announcement intended for the NEW-client case, or would it be
+worth keeping the cancellation there?
+
+> -		} else {
+> -			/* this is a second add or del in the same originator
+> -			 * interval. It could mean that flags have been changed
+> -			 * (e.g. double add): update them
+> -			 */
+> -			entry->change.flags = flags;
+> -		}
+> +		/* the other nodes may know the client with different
+> +		 * flags. A DEL+ADD must therefore still announce the
+> +		 * current flags and an ADD+DEL must still remove the
+> +		 * client. ADD+ADD and DEL+DEL only update the flags
+> +		 */
+> +		entry->change.flags = flags;
+
+[Severity: Medium]
+
+Does this overwrite rely on events reaching changes_list_lock in the same
+order as the state changes they describe?
+
+batadv_tt_local_event() takes its flags snapshot under flags_lock. It
+releases that lock before __batadv_tt_local_event() takes
+changes_list_lock:
+
+net/batman-adv/translation-table.c:batadv_tt_local_event() {
+	...
+	flags = batadv_tt_flags_get(common) | event_flags;
+	__batadv_tt_local_event(bat_priv, common, flags);
+}
+
+The ADD callers in batadv_tt_local_add() hold neither the bucket list_lock
+nor flags_lock here. The DEL paths queue their event either under those
+locks (batadv_tt_local_set_pending()) or after removing the entry from the
+hash (batadv_tt_local_remove_now()). Nothing orders either DEL path against
+a concurrent ADD.
+
+Here is the sequence for a new client:
+
+CPU A (TX path)
+batadv_interface_tx()
+  batadv_tt_local_add()
+    batadv_tt_local_create()
+    batadv_hash_add()             <- entry is now visible
+    batadv_tt_local_event(ADD)
+      batadv_tt_flags_get()
+                                  CPU B (RX path)
+                                  batadv_tt_global_add()
+                                    batadv_tt_global_purge_local()
+                                      batadv_tt_local_remove()
+                                        batadv_tt_local_mark_removed()
+                                          <- NEW, not set pending
+                                        batadv_tt_local_remove_now()
+                                          batadv_hash_remove()
+                                          batadv_tt_local_event(DEL)
+      __batadv_tt_local_event()
+        entry->change.flags = flags;  <- queued DEL becomes ADD
+
+Before this patch the DEL+ADD pair cancelled. That gave the right result
+in this case, because the client was never announced and is no longer in
+the local hash.
+
+With this change, can an ADD be announced for a client that is no longer
+in the local table?
+
+The same window exists for an existing client. batadv_tt_local_add() can
+take the ADD snapshot after batadv_tt_local_update_flags(), and
+batadv_tt_local_set_pending() can then queue DEL|... before the ADD gets
+changes_list_lock. The DEL was also lost in this ordering before the
+patch. Now the stale ADD replaces it as the latest state.
+
+In both cases, remote global tables would keep a client that the local
+node removes, through batadv_tt_local_purge_pending_clients() at the next
+commit in the second case. This lasts until a CRC mismatch triggers a full
+table request.
+
+As far as I can tell, the later patches in this series don't change
+batadv_tt_local_event() or __batadv_tt_local_event(), so the window is
+still there at the end of the series.
+
+[ ... ]
 
 -- 
-2.47.3
-
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261030135105.2555887-2-sw%40simonwunderlich.de
