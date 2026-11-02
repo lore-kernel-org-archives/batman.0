@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD586606A324
-	for <batman@archiver.kernel.org>; Mon,  2 Nov 2026 18:22:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1918C606A324
+	for <batman@archiver.kernel.org>; Mon,  2 Nov 2026 18:47:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=iBPrbcD2
+	dkim=pass (1024-bit key, unprotected) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=s+S1LMZ1
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 614AD842C1
-	for <batman@archiver.kernel.org>; Mon, 02 Nov 2026 19:22:37 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id B181584260
+	for <batman@archiver.kernel.org>; Mon, 02 Nov 2026 19:46:58 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1793643757;
- b=YY4tIBKq2Uw4hCj5H0oL9q0Cp18auH5dT/5ph3brQ8bXFBQJ3jqGc7GDakzffYxeUjfIv
- AMdcNO9GQ6LwlRQrUM7CRzA3KyBdTmK9VAIOks6CxFTBlv5dlYNzwIvtt2T/HyihLpU0zo8
- voGHD13PzPCVhtvgauIzy/MRnxjH9XM=
+ t=1793645218;
+ b=IBTh+Mjm8Hc+gMBHOmE020yiLIQLsnNB5KAmT1U0MoymZGT+FYWtrY6HJUMk0V+WNgxJh
+ 2zZFIvGaZbMg+7a+3/0pqfNxLVnpmOPyWeY8Txf8xPOELy7xXDpVYAKM2fxcqBz1un5WJmH
+ 8HZAuS+/aS1DRPA3ggb+Zii/ydN1/xY=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1793643757; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1793645218; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=82OnINR+mZmmlUPY/g8uMPePi7qryrUH7aN62aaDi2Q=;
- b=EoRWKtNt4BnFCC0BLNYwk9aDonbT+p+w/2fETy5Zt8+CA7o7CT8MCH8Xz1xlrJVynvFNM
- LqG79fskwwpfRQP7dhF1a+FA3x6ebGvzAAMgmLNp7zxEKZU6OXGypTbcz8wxFzYQN6MYUqw
- sj/hRbqfryMK2Ut4apLg9VH0dZzD5Xs=
+ list-archive; bh=mk9E4FPEAd0Yl9pPUwxZTWF7HxWQtF8VsV+809ojBD4=;
+ b=cMH8fa112i6wOnmaBM+b5JEzlYqJxxUZ6ErTRPZPXuD198NCQpS8gxMqjl4psnV3pd9fe
+ IXBACNWR2UDMLXP1wJE8SwKM7nAC0EDfpyPVnosBddCBUbYfuL8456aY5IjNTZ8A5gbgl/Y
+ jkX/2lmzKtrGYMzHVAmNWXxP1OsE/mU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,63 +33,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 622A6802BD
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 02 Nov 2026 19:22:11 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793643742;
-	b=1MkdRPLBh6Kl4shyG/pnpSEvwyAaMHXUdmqcPM9rC96a1bi/CfI5QPz4zGs0kA5WWgmgJF
-	mNBi9zuxrFQ3ta/AvfYxeGmlHz2/PNHeaSIt2cySrfB9LPFNsGlQyeM3D3h1vi3AH6412l
-	FbUgL0a7rj9cqJht7GQVN4c2oGUmJG8=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 14A24803A4
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 02 Nov 2026 19:46:32 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1793645203;
+	b=Rnrn8r/MfX+EgnsN9s5X4Bvji9oFMWvS8s5WL346LixHLAitqwVI2qT0RUTnPu1BNixlcy
+	8+kjVLDOSagg3KZDAB1m9ZXccd9N/8q0YKkYkF+TV5jLf0eQGXmUvs+nMxUbc2Q3F+rMsI
+	B+Yo1fLUgbh7WaXZTGwfbU6/Gt/Vi5A=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1793643742;
+	s=20121; t=1793645203;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=82OnINR+mZmmlUPY/g8uMPePi7qryrUH7aN62aaDi2Q=;
-	b=PMmyzsMzV3AHlodaI8U+IBxONkUNixkLVggjJDsgSwx5/QNTyK2tvUe6tRgYzJelqNPTOx
-	C7yLYNEjHSQv7BU1a0pnSWdhzyPkPKW7uCm0gypxSNfSm7gFcI79KAy2l7GNbVrXIReXoB
-	OckyY16YB+f+zkQ+hd3k21VTwnL1L84=
+	bh=mk9E4FPEAd0Yl9pPUwxZTWF7HxWQtF8VsV+809ojBD4=;
+	b=DrNoXq3m6K2/L5F7VQ/Ho/cUG5RIUXWaSHI00WW9Tv3003VdD42hUqQY339mAWxyQpmVGM
+	pKxS2S11NlFgVeQT2HEHNo7j7te3lTWMhopbWQvzOt7t3BT8oMLGey+fGErHiVYShh5GlU
+	pXzaMPU30Rih5ChHpfRhoU+5QBCBaQ8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=iBPrbcD2;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=s+S1LMZ1;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id AEAB81FF75;
-	Mon, 02 Nov 2026 18:22:10 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 3B0661FF75;
+	Mon, 02 Nov 2026 18:46:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1793643730;
+	s=20121; t=1793645190;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=82OnINR+mZmmlUPY/g8uMPePi7qryrUH7aN62aaDi2Q=;
-	b=iBPrbcD2PYU8UhQaMRi/laiCL38zQnPASpoyWmBfvSAJE0BQ1jdleZlANZhjKSQcM56J7V
-	HEppfUg+dcEgYYkemeInEthhdga/P+LL05b8pmqmxkLa518YxOc9sJIX9FGlXZjJv/1+cg
-	h99p2G1jB9fYBMdlglDzsTRyOMpAfVU=
+	bh=mk9E4FPEAd0Yl9pPUwxZTWF7HxWQtF8VsV+809ojBD4=;
+	b=s+S1LMZ1heON5O8ej0Go9qT5dO3lgNOen8hl1dwO+AVtWbffPp8DTUrJ3aAuiOqQFgza3d
+	U/8OB04NfShuhmY8ZzaK3eiEBNPJ4HHkqy+jXtRJuGdqjTqN5nXo9/BeljBBtfYIYc58Fr
+	RH35F80uAPJDzq7rgst5Fpd0OBOED50=
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 02 Nov 2026 19:22:05 +0100
-Subject: [PATCH batadv] batman-adv: clear skbuff timestamp on send
+Date: Mon, 02 Nov 2026 19:45:51 +0100
+Subject: [PATCH batadv] batman-adv: scrub skb state on mesh interface
+ encap/decap
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261102-clear-tstamp-v1-1-f64a8ac9af80@narfation.org>
-X-B4-Tracking: v=1; b=H4sIAMzU6GoC/yWMwQ6CMBAFf4W8s01oDRr8FeNh2S66RJF0KzEh/
- LtFjjPJzAKTpGK4VAuSzGr6Hgv4QwV+0HgXp7EwQh1O3tfB8VMouWyZXpNrj03ozw1Hz4ySTEl
- 6/f53V3SUKc647d4+3SCctxfW9Qc+nQPNeAAAAA==
-X-Change-ID: 20261102-clear-tstamp-9352f75cd1cc
+Message-Id: <20261102-skb_scrub_packet-v1-1-36bc5df5b2f0@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAF7a6GoC/yWM0QrCMAwAf2Xk2ULaQVF/RWSkWaZxMEfTDWHs3
+ 63z8Q7uNjDJKgbXZoMsq5q+pwr+1AA/aXqI074yBAzRewzOxtQZ5yV1M/EoxWEbA0U+46VFqNm
+ cZdDPsbxBokL9Cve/tyW9hMvvB/v+BaCUcuJ8AAAA
+X-Change-ID: 20261102-skb_scrub_packet-0362a6c80930
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: David Lutz <kpanic@ff3l.net>, Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1336; i=sven@narfation.org;
- h=from:subject:message-id; bh=6SaXf4NFkN3G8xNu2syp/onSXYqeUPeN0FVEtQzyvig=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkvrpwLC8hfLv8ydO6PyrzXcr7TncX/v218JB7NfVSmr
- +hUM09ARykLgxgXg6yYIsueK/nnN7O/lf887eNRmDmsTCBDGLg4BWAi0aWMDI+1W49nsKYZ1npO
- Oc764Av/z+pFO+8u+LbcYb7pq31/jjswMnys1ZiYrXp9yu/1N3bfXvI81KQ3I/UBi+3D0O+lCjd
- ZT7MDAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2219; i=sven@narfation.org;
+ h=from:subject:message-id; bh=CQY6OifshoNwRghYw4qM0YLRu8pwIFHqZ7T6iE0XhPk=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFkvbjWJveE7qdYZZrjmT9wk8XvPomNN0nZ5JhYvljp45
+ /QEl9+FHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJXE9l+CsRxM+SGV178qux
+ wbZey/XzOo/lG/977vHyw5PT/66dstdgZDgbnn6z2vxcpfrb6axvSs/wbpAJ5+6uT2WZcPhF3qc
+ OHi4A
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: JE47F56KAIC6JW7PNJO3C7ZL4EOOC3YG
-X-Message-ID-Hash: JE47F56KAIC6JW7PNJO3C7ZL4EOOC3YG
+Message-ID-Hash: GVBNPLQSX3CZ4MD5P7RHFOKNAAURBYSI
+X-Message-ID-Hash: GVBNPLQSX3CZ4MD5P7RHFOKNAAURBYSI
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -103,7 +104,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/JE47F56KAIC6JW7PNJO3C7ZL4EOOC3YG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/GVBNPLQSX3CZ4MD5P7RHFOKNAAURBYSI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -117,38 +118,60 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When a packet is forwarded, it can contain a tstamp in CLOCK_REALTIME. But
-fq's scheduler expects a the CLOCK_MONOTONIC timestamp. If the timestamp
-wasn't reset, it will simply drop the packet (horizon_drops).
+The mesh interface acts like an L2 tunnel: frames from the mesh interface
+are encapsulated in a batman-adv header and transmitted via the hard
+interfaces, and received batman-adv frames are decapsulated and injected
+into the mesh interface again.
 
-commit 8203e2d844d3 ("net: clear skb->tstamp in forwarding paths") already
-fixed this problem for the IPv(4|6) code base. A similar approach is taken
-here with the more skb_clear_tstamp() helper function.
+On decap, only the conntrack state of the outer packet was cleaned up via
+nf_reset_ct(). But other state of the outer packet (dst, skb extensions, nf
+trace, switchdev offload marks, ipvs state, ...) was still passed on to the
+inner packet. And on encap, the complete state of the inner packet was kept
+for the outer batman-adv packet - even while it is queued for a long time
+(e.g. for rebroadcasts).
 
-Fixes: fb420d5d91c1 ("tcp/fq: move back to CLOCK_MONOTONIC")
-Reported-by: David Lutz <kpanic@ff3l.net>
-Closes: https://www.open-mesh.org/issues/489
+Other tunnel implementations (vxlan, geneve, ip_tunnel, ...) use
+skb_scrub_packet() for this purpose. Do the same on both sides.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/send.c | 1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/mesh-interface.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 929b6dd3..97d5e72a 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -92,6 +92,7 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- 	skb->protocol = htons(ETH_P_BATMAN);
+diff --git a/net/batman-adv/mesh-interface.c b/net/batman-adv/mesh-interface.c
+index d1263c77..497a8879 100644
+--- a/net/batman-adv/mesh-interface.c
++++ b/net/batman-adv/mesh-interface.c
+@@ -309,6 +309,11 @@ static netdev_tx_t batadv_interface_tx(struct sk_buff *skb,
+ 	if (batadv_compare_eth(ethhdr->h_dest, ectp_addr))
+ 		goto dropped;
  
- 	skb->dev = hard_iface->net_dev;
-+	skb_clear_tstamp(skb);
++	/* the state of the inner packet (dst, netfilter, skb extensions, ...)
++	 * must not leak into the batman-adv packet.
++	 */
++	skb_scrub_packet(skb, false);
++
+ 	batadv_skb_set_priority(skb, 0);
  
- 	/* dev_queue_xmit() returns a negative result on error.	 However on
- 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
+ 	gw_mode = READ_ONCE(bat_priv->gw.mode);
+@@ -473,10 +478,10 @@ void batadv_interface_rx(struct net_device *mesh_iface,
+ 	skb_pull_rcsum(skb, hdr_size);
+ 	skb_reset_mac_header(skb);
+ 
+-	/* clean the netfilter state now that the batman-adv header has been
+-	 * removed
++	/* clean the state of the outer packet (dst, netfilter, skb extensions,
++	 * ...) now that the batman-adv header has been removed
+ 	 */
+-	nf_reset_ct(skb);
++	skb_scrub_packet(skb, false);
+ 
+ 	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
+ 		goto dropped;
 
 ---
 base-commit: 04071c46a5cb4fe3078ac44b48d11268ba275438
-change-id: 20261102-clear-tstamp-9352f75cd1cc
+change-id: 20261102-skb_scrub_packet-0362a6c80930
 
 Best regards,
 --  
