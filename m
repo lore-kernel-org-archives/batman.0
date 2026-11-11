@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B860B606A327
-	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 10:33:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36B43606A324
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 10:34:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=XWOXunOD
+	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=FeD/m8YU
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 5F5FE8592A
-	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 11:33:31 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id D412B859BC
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 11:34:01 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1794393211;
- b=PZ+WrLh4fE0VMLOgLWT10Cnu2YMX91d+XsZ9szMH9XaleKh0ecQOq6xs02p59qCif+/US
- jacNCLE9KmrMvSzR6T7QaLIXIkcV1/7nUi1/2MCiNkue/Rrst8x5JBWulFmpJllMRqtlr80
- 650YxgI7k2KmbTzVsMX9SwQxC/1HC6Q=
+ t=1794393241;
+ b=RdwqsPxDTUfqnIoWtcT69GTY7SuRyOv/2dXmB0reF1D2N+wAD6DOFkhaRehlavoY4asdV
+ BXUGLqGH17ofkzdZ2j4hfjd0bnMz3HxbvmjSz1OWkH8lqFPCTgVC+om/57reoxV1e7mFk5y
+ pKjQJDeyibtRdslEKVcuXF+LmPAU5aQ=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1794393211; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1794393241; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=lOIbN1WC9f3tYk8ODaLG/icVZKFBVBuOQ0N3217s/zM=;
- b=eRhQ5U2f++j7LipcUCY4xcUWtnSj/EphA0uFvqwurEnmeGv2xfWTmXkJnr4R8xkTsKUIt
- q7pU+xO6tI6sS1nCCYMSsOThjgBr60SAjL3PBEU4MHolNu/WGNe6dhGJC98W2xrePQDjCl1
- u9h0A6XwK1wbyMvwHBePFupGH7Gk5xA=
+ list-archive; bh=8izr6JBjAAVusJ1VnVGQY41b0QUV+OE5YoCdMUYPcvI=;
+ b=zCqGqgnGnwdpJu8jC7mwnmzBk4JdiZ+0ORv8w+pkxKHaA9rd2YpaYsHSh/KXPIS+dofSl
+ roFJZTi7EFAenvD8qrT9kTXeTSSq+0/i7PEDdJqwccC2HO0TGNcEcpI2fmbhx8nYawDN43Z
+ n9J+zCX2CLJFO+WHniFW5Uk700Jf1M8=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -33,49 +33,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 0393781D11
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Nov 2026 11:27:43 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 5938C80F54
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Nov 2026 11:27:44 +0100 (CET)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794392874;
-	b=U55uv+8bXhgYVSYWYP9fBdbuDqpwDXBT9tVbRU4/bsGWL260yOWa3OMKOSK959BpCg6t0G
-	+qf7rj4f2kk58j087S7dugFjGDYQFRumCpa6jx10f0US/TrvzRsEOC7YN1fH0rgKGjPMpj
-	cLL7dX20X5NjgRratvGq3CbBxrvz0HQ=
+	b=UcvK+sKfmAsup1HLJ1dC2M104m97uEyTyttwSHYbNgeWLcAJ3xUHZpDHLoANy/VE1hcfe6
+	pwPsUhDfJBDqvb9KWe8ij8i6E43Z7twUNs8QfYrMA1Jp53Ixz0UsjOnI7ScfuLxyRe+9Ax
+	l/4tMeUtJXjY8boR2riIpXtL+gDWp1A=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1794392874;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=lOIbN1WC9f3tYk8ODaLG/icVZKFBVBuOQ0N3217s/zM=;
-	b=gfWgg+yWF7mWJkMrXfgJjDV6v4kGYLRIgXwQ7C3nlT1bfc/y4rQmwo8IFqQVdFC4UmCXMk
-	sx4d8Fr3/1s1WBSNlm7BUVK8ucnuGSwbKlkfpORth3GdGc2ulSqN+Vfkv0I8KGIh8uq0hb
-	jLDh4Filv2FSBySx+JUBJu7ruHTrEZ8=
+	bh=8izr6JBjAAVusJ1VnVGQY41b0QUV+OE5YoCdMUYPcvI=;
+	b=j+EUu07aqupXZbK2UfTTi5bWJwWv4gGOL7bRBbXtWOhA6gCSsVbEpdFPrufjl/GxgndAGR
+	u76PyzTWExQL8bDw1SgaC1E92jmyWQaTWfyZrxmMVH3qekAfs8SC5ZrsAoAJ0irVnCWljE
+	J/gQitRkbee3gHCt3vNYQQW3b0n+Pd0=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=XWOXunOD;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b="FeD/m8YU";
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300c59740DeD843BE7E4A980e9C65.dip0.t-ipconnect.de
+ (p200300c59740DED843bE7e4a980e9C65.dip0.t-ipconnect.de
  [IPv6:2003:c5:9740:ded8:43be:7e4a:980e:9c65])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 7EAECFA272;
-	Wed, 11 Nov 2026 11:27:37 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 3E17CFA273;
+	Wed, 11 Nov 2026 11:27:38 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1794392857;
+	s=09092022; t=1794392858;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=lOIbN1WC9f3tYk8ODaLG/icVZKFBVBuOQ0N3217s/zM=;
-	b=XWOXunODgWFI2kPC8eaN/q4DOJQzKG3IhUVsS23aG4TBCz151GkJ2Qa6RMoDVkKvkZXDDs
-	HA0QKzAcb7SLzUO8D0o/GjHkPZz0IoD5hzMFOLaTw4l22XwqG8D2EQ7P0K3TkjEBO7KPww
-	5VPzaYW3C/Rx6G3YlJULZfAJ1GQHKYov6u5bM+zMtS5wBzzU9m1gFM0cmlYEkKFfnhZIlb
-	7RBMjv4cNRYallN6FxxcOakSyGGrJbbow4JZq0LbWNAq7v+O/A4Vk0ll5gM8qGNH1iYuEL
-	irxwqHKSm1EqKQTxiMkS2K7GN2sRUbAnTY3oI90Kr3ippVDvXqK5/dPkPeTuHQ==
+	bh=8izr6JBjAAVusJ1VnVGQY41b0QUV+OE5YoCdMUYPcvI=;
+	b=FeD/m8YUH6MxOjiTcF3amNRUMNhe/l78SKBDDEknsh4Lgg0qElsq4vuLIyIR7et2FOteHb
+	qnX+5oF8HCv2N2zGBBddAjP67C188nRQYUp2xK+P6k2+qLdyqyP+NL+FKF2wibIZXYyah+
+	5Sez9ijKcO7dmWZlvp0SqFu2YTErcmi/QiPQ/i57QH8Rt3s47MtAfGGVJq++4TBom2f8oU
+	FdWO0xErsUqO81fdXQ8DhLMYi63rPdesCC8uk0Zp3vzh5l1ubHXTqDzhmP6IhrM+5NFqyY
+	AYt253eIVYBqiSwVmYl4ARjcFvWQFTsOLKHslrqpxjz/V2X9T6uE9j/kjW3FYg==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,18 +86,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 08/15] batman-adv: tt: annotate last_seen with
+Subject: [PATCH net-next 09/15] batman-adv: annotate originator last_seen with
  READ/WRITE_ONCE
-Date: Wed, 11 Nov 2026 11:27:22 +0100
-Message-ID: <20261111102729.2096241-9-sw@simonwunderlich.de>
+Date: Wed, 11 Nov 2026 11:27:23 +0100
+Message-ID: <20261111102729.2096241-10-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261111102729.2096241-1-sw@simonwunderlich.de>
 References: <20261111102729.2096241-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: CT53B5AK4CYD2VUAZ2YHQKGPUQITL23H
-X-Message-ID-Hash: CT53B5AK4CYD2VUAZ2YHQKGPUQITL23H
+Message-ID-Hash: 5LFMT2TR6FQD3PCSIEC27GPXLCRKHXFG
+X-Message-ID-Hash: 5LFMT2TR6FQD3PCSIEC27GPXLCRKHXFG
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -111,7 +111,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CT53B5AK4CYD2VUAZ2YHQKGPUQITL23H/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5LFMT2TR6FQD3PCSIEC27GPXLCRKHXFG/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -128,10 +128,10 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The last_seen field for batadv_tt_local_entry tracks the jiffies value of
-the most recent activity and is used to detect timeouts. These accesses are
-not consistently protected by a lock, so READ_ONCE/WRITE_ONCE must be used
-to prevent data races caused by compiler optimizations.
+The last_seen field for batadv_orig_node tracks the jiffies value of the
+most recent activity and is used to detect timeouts. These accesses are not
+consistently protected by a lock, so READ_ONCE/WRITE_ONCE must be used to
+prevent data races caused by compiler optimizations.
 
 To avoid an underflow due to an non-strict order read of jiffies vs
 last_seen, use jiffies_delta_to_msecs instead of jiffies_to_msecs to
@@ -140,68 +140,120 @@ evaluate the delta.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 6 ++++--
+ net/batman-adv/bat_v.c      | 4 +++-
+ net/batman-adv/bat_v_ogm.c  | 7 ++++---
+ net/batman-adv/originator.c | 8 +++++---
+ 4 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 46304069b3b75..76635ae82c84b 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -917,7 +917,7 @@ static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
- 	struct batadv_tt_common_entry *common = &tt_local->common;
- 	bool readded = false;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 85e99506a53f5..ee3a5ac465012 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1291,7 +1291,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
+ 	if (orig_node == orig_neigh_node)
+ 		neigh_node->last_seen = jiffies;
  
--	tt_local->last_seen = jiffies;
-+	WRITE_ONCE(tt_local->last_seen, jiffies);
+-	orig_node->last_seen = jiffies;
++	WRITE_ONCE(orig_node->last_seen, jiffies);
  
- 	scoped_guard(spinlock_bh, &common->flags_lock) {
- 		if (common->flags & BATADV_TT_CLIENT_PENDING) {
-@@ -971,6 +971,7 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
- 	struct batadv_priv *bat_priv = netdev_priv(mesh_iface);
- 	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_meshif_vlan *vlan;
-+	unsigned long last_seen;
- 
- 	if (!batadv_tt_local_reserve_entry(bat_priv, addr))
- 		return NULL;
-@@ -1000,8 +1001,9 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
- 	ether_addr_copy(tt_local->common.addr, addr);
- 	tt_local->common.vid = vid;
- 	kref_init(&tt_local->common.refcount);
--	tt_local->last_seen = jiffies;
--	tt_local->common.added_at = tt_local->last_seen;
-+	last_seen = jiffies;
-+	WRITE_ONCE(tt_local->last_seen, last_seen);
-+	tt_local->common.added_at = last_seen;
- 	tt_local->vlan = vlan;
- 	spin_lock_init(&tt_local->common.flags_lock);
- 
-@@ -1477,12 +1479,14 @@ batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid,
- 	struct batadv_tt_local_entry *local;
- 	struct batadv_meshif_vlan *vlan;
+ 	/* find packet count of corresponding one hop neighbor */
+ 	orig_eq_count = batadv_iv_orig_ifinfo_sum(orig_neigh_node, if_incoming);
+@@ -2045,10 +2045,12 @@ batadv_iv_ogm_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ 				 bool best)
+ {
  	unsigned int last_seen_msecs;
 +	unsigned long last_seen;
  	void *hdr;
- 	u16 flags;
- 	u32 crc;
+ 	u8 tq_avg;
  
- 	local = container_of(common, struct batadv_tt_local_entry, common);
--	last_seen_msecs = jiffies_to_msecs(jiffies - local->last_seen);
-+	last_seen = READ_ONCE(local->last_seen);
+-	last_seen_msecs = jiffies_to_msecs(jiffies - orig_node->last_seen);
++	last_seen = READ_ONCE(orig_node->last_seen);
 +	last_seen_msecs = jiffies_delta_to_msecs(jiffies - last_seen);
  
- 	vlan = batadv_meshif_vlan_get(bat_priv, common->vid);
- 	if (!vlan)
-@@ -1815,7 +1819,8 @@ static void batadv_tt_local_purge_list(struct batadv_priv *bat_priv,
- 			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING)
- 				break;
+ 	if (!batadv_iv_ogm_neigh_get_tq_avg(neigh_node, if_outgoing, &tq_avg))
+ 		return 0;
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 4a25e513864ca..2679090c3368b 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -302,6 +302,7 @@ batadv_v_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ {
+ 	struct batadv_neigh_ifinfo *n_ifinfo;
+ 	unsigned int last_seen_msecs;
++	unsigned long last_seen;
+ 	u32 throughput;
+ 	void *hdr;
  
--			if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout))
-+			if (!batadv_has_timed_out(READ_ONCE(tt_local_entry->last_seen),
-+						  timeout))
- 				break;
+@@ -313,7 +314,8 @@ batadv_v_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
  
- 			batadv_tt_local_set_pending(bat_priv, tt_local_entry,
+ 	batadv_neigh_ifinfo_put(n_ifinfo);
+ 
+-	last_seen_msecs = jiffies_to_msecs(jiffies - orig_node->last_seen);
++	last_seen = READ_ONCE(orig_node->last_seen);
++	last_seen_msecs = jiffies_delta_to_msecs(jiffies - last_seen);
+ 
+ 	if (if_outgoing != BATADV_IF_DEFAULT &&
+ 	    if_outgoing != neigh_node->if_incoming)
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 70846c997410d..03c70d91e64d1 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -626,6 +626,7 @@ static int batadv_v_ogm_metric_update(struct batadv_priv *bat_priv,
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL;
+ 	struct batadv_orig_ifinfo *orig_ifinfo;
+ 	bool protection_started = false;
++	unsigned long last_seen;
+ 	u32 path_throughput;
+ 	int ret = -EINVAL;
+ 	s32 seq_diff;
+@@ -656,9 +657,9 @@ static int batadv_v_ogm_metric_update(struct batadv_priv *bat_priv,
+ 	if (seq_diff < 0 && !protection_started)
+ 		goto out;
+ 
+-	neigh_node->last_seen = jiffies;
+-
+-	orig_node->last_seen = jiffies;
++	last_seen = jiffies;
++	neigh_node->last_seen = last_seen;
++	WRITE_ONCE(orig_node->last_seen, last_seen);
+ 
+ 	orig_ifinfo->last_real_seqno = ntohl(ogm2->seqno);
+ 	orig_ifinfo->last_ttl = ogm2->ttl;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index f06583ef9b3f5..3b925ba9c9723 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -977,7 +977,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	WRITE_ONCE(orig_node->last_ttvn, 0);
+ 	orig_node->tt_buff = NULL;
+ 	orig_node->tt_buff_len = 0;
+-	orig_node->last_seen = jiffies;
++	WRITE_ONCE(orig_node->last_seen, jiffies);
+ 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+ 	orig_node->bcast_seqno_reset = reset_time;
+ 
+@@ -1210,16 +1210,18 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_neigh_node *best_neigh_node;
+ 	struct batadv_hard_iface *hard_iface;
++	unsigned long last_seen;
+ 	struct list_head *iter;
+ 	bool changed_ifinfo;
+ 	bool changed_neigh;
+ 
+-	if (batadv_has_timed_out(orig_node->last_seen,
++	last_seen = READ_ONCE(orig_node->last_seen);
++	if (batadv_has_timed_out(last_seen,
+ 				 2 * BATADV_PURGE_TIMEOUT)) {
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "Originator timeout: originator %pM, last_seen %u\n",
+ 			   orig_node->orig,
+-			   jiffies_to_msecs(orig_node->last_seen));
++			   jiffies_to_msecs(last_seen));
+ 		return true;
+ 	}
+ 	changed_ifinfo = batadv_purge_orig_ifinfo(bat_priv, orig_node);
 -- 
 2.47.3
 
