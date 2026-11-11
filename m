@@ -2,27 +2,27 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9ED27606A31C
-	for <batman@archiver.kernel.org>; Sun,  8 Nov 2026 08:06:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 834EB606A31C
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 07:31:33 +0000 (UTC)
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 41627847F9
-	for <batman@archiver.kernel.org>; Sun, 08 Nov 2026 09:06:19 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 28E4C846EF
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 08:31:32 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1794125179;
- b=S81PRjtnhDxHnLbIfDh81r/mL1IgGMvCe6NSRqxR2F9tAdhRP97EJY2dUZ1LJmjzcWL+Y
- LvqhRgmKAS2rKMqTxB9U0JvA7T7sbf1GMKAnnTxRgKQVSCym7JL8KFaeEaDpnanz5T8ZGRM
- w9HNuS1Xtj6voVmjEdRbLGOs7K+fIB8=
+ t=1794382292;
+ b=rWm97rEp142Y6wBTxpN1aePwMrjlr4Olqb042n+3lg57/XPisyH0HfK0onv1jUgmX7BB1
+ KshCy0vMb6ZNc0N2UphDZ0LgEPQUXnkW1K8E3oDUaMoGofV7/DaxZ5mzrAQskXFPpPsdRHj
+ aFTizk3hN55+CqjQqqQuUuqXnMGAZTE=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1794125179; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1794382292; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=J88EOnTp6DDyQWMN+uJw6KY8yryRm72G2AQk7g82/uM=;
- b=3w9GEPofK4CTuRuKPhPonpgGlAPGjddTyqbExrJPp1vOyph0ermH+m6CHZK4NaqORIBx3
- qVxljYmlxIUDLRjYfNZVUZgSq7SG4bsXNV8bsJdC9+vZx5zP9nKT5/yLs6EhYn8XnNIM3pU
- hM1k6SKw4SsVTVn+luo69rKSgHBpb70=
+ list-archive; bh=bqAQthlYWXd2wB1UC1Kq1+fP5T/K7rstim8fmGmQbZY=;
+ b=NgeIt5azv4vg5FbSxldHJDKFKTqCZtjKGZobFgW+Pi8rWZnqEYRiPrOplAPuDK9vIaoGo
+ dzIiBcXx26LI1ZFzrhtZxMywpo3FPxCwXS49sSZLjajtdSS4uvCzdR6pofyBoX8HPYgARLL
+ RscTV9etazHEyXnY4lmIPIIv4hw0dFg=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=fail;
  arc=pass;
@@ -30,313 +30,179 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=fail; arc=pass;
  dmarc=fail (Used Org Domain Record) header.from=syzkaller.appspotmail.com
  policy.dmarc=none
-Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com
- [209.85.167.200])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 9A568814E7
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 08 Nov 2026 09:01:04 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794124875;
-	b=VDxsZhbLg7T7Q0IMy3EyvKKFS9A8B7E+c+zrXBYfFtB3Fh2kDnbvw/+wpfks273Y61MO4t
-	lrkffCg+5FwK9u2z8PVAzZIL71ZgzzCn/QrBWgNISeT5qJbfUhznTXoUWxaI0xZum3EYn8
-	6Amuvt3B14tt4vuWnR3LiOQc9d1sugY=
+Received: from mail-ot1-f69.google.com (mail-ot1-f69.google.com
+ [209.85.210.69])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 35A78820CC
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Nov 2026 03:26:37 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794363997;
+	b=Ex3kkjW/OdqO0av+yiXp5NDEA9mkc7XnVyJykIBAhyS9shOX1KWaML1ttMCZG1OOSnxJOr
+	3maXgFsmQpdQohxRD5sGRVZeb39sC4UdpJZgHh9qR8bclMlCuu2FcUEnjKYcsbHC/N6VD3
+	oUj5MHfjYXCU8ntA8qTGADE98SMUc44=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1794124875;
+	s=20121; t=1794363997;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to; bh=J88EOnTp6DDyQWMN+uJw6KY8yryRm72G2AQk7g82/uM=;
-	b=b0tHnkfhQuRCcgpP/20y5QiAnuxgxAf3ywLCLOjR/2EQkIgmPrSUV0lKNVLv7y60e4uLwB
-	DyxoBlPoLdKNuxAdbFZL9tAASr3qdhaO2JaWkf2xbML02qzm/UIxnGVN/BZlRdpdLmjcg1
-	+UUaPPDHHAwKBBzwys327nk3lKlPYc0=
+	 to:to:cc:mime-version:mime-version:content-type:content-type;
+	bh=bqAQthlYWXd2wB1UC1Kq1+fP5T/K7rstim8fmGmQbZY=;
+	b=OFyaQ7xh/a3P0eiAawASLIi6LMsMkYKKaCLIUL9RKmj3zc4323hpVp6AdgLKxAgGyK0OFI
+	9yvE6A32UKHFBsiVruzUcsL+q7J3rlQYafkBJM2f+g3x9Cv5smgUWasgKSMKSTVrvDMHmF
+	Q6NDxy9SCE1AzJbaoGF8YbCJSt7l1tE=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
 	dkim=none;
 	dmarc=fail reason="SPF not aligned (relaxed),
  No valid DKIM" header.from=appspotmail.com (policy=none);
 	spf=pass (diktynna.open-mesh.org: domain of
- 3PizwagkbALUntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
- designates 209.85.167.200 as permitted sender)
- smtp.mailfrom=3PizwagkbALUntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oi1-f200.google.com with SMTP id
- 5614622812f47-5640a2d9708so384290b6e.1
+ 3W9LzagkbAC4cijUKVVObKZZSN.QYYQVOecObMYXdOXd.MYW@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+ designates 209.85.210.69 as permitted sender)
+ smtp.mailfrom=3W9LzagkbAC4cijUKVVObKZZSN.QYYQVOecObMYXdOXd.MYW@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-ot1-f69.google.com with SMTP id
+ 46e09a7af769-81b20bea169so1868677a34.1
         for <b.a.t.m.a.n@lists.open-mesh.org>;
- Sun, 08 Nov 2026 00:01:04 -0800 (PST)
+ Tue, 10 Nov 2026 18:26:36 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794124863; x=1794729663;
-        h=content-transfer-encoding:content-type:to:from:subject:message-id
-         :in-reply-to:date:mime-version:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=J88EOnTp6DDyQWMN+uJw6KY8yryRm72G2AQk7g82/uM=;
-        b=C4GyEyS4jYFv0Z+n/984PlokEPVhCtnMeZ86y7G9KxMzS+A1eGTmcomE384ssm5lDE
-         pvxibi2mKRuJDh8Bq44mU8qFw7XbF++p7NsVxUfg2489xGFXdlDHBd1nRE+OI9P/k+kB
-         6MyMVtWXfc5Tl+/DECjHnll2GO9ck/5mMfvw3+Lt03PRZdwjuoseDB5JAlowDiAOng7v
-         cTFbXbIhdHY6pQKKrNksFykjVN2eXl0dfUvt5zarlhBF+c4TziwWc6EGX5+rLE2wQcTY
-         YNTdvx37PXbSKALpwPoHO4drzCb8JjpgjkTVUELqiGbyxfER2TlBj9hOnMy3lFSMF3Bi
-         oeHg==
+        d=1e100.net; s=20260707; t=1794363995; x=1794968795;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bqAQthlYWXd2wB1UC1Kq1+fP5T/K7rstim8fmGmQbZY=;
+        b=EVK1eD6Kcz2ttDghqxttEP48Pljm8XvRP83G5GsnTFvH9Q4knkJdmtwaJosXTId6er
+         O2nBUCGz2E4nJwOC+KzVXhdYkGdUxbBsoNv0rKhgJ6i0ZQ4xn/hq4/aN1/gWX8UeSZhf
+         2HFPjoO3SwD2z3kCztugQiDncUvH87k+laXe9e0VHb5K+B/D2sg6C+sTFiw3zYG3ntVA
+         MigDhhk/Sezos5z6RMv7+wIzj/684+KR6QL7rnWRn3q7J8UIj86NNY1c9g0/IUERBYnz
+         b2Tn6woAh7ecVBuu/0XTpAy5J0uAoKWPf2D+JcNGW6uuiEUicM1D+liC/1Aq6qUx4K7u
+         WMWg==
 X-Forwarded-Encrypted: i=1;
- AKwUvBz6iVgqPoCC3BEQDlVO4oG/DrzQr/1GdM/+YOkikEeq20cnD8N0MT1DWmwOwJpmWAHVBIapLHroBAbpBw==@lists.open-mesh.org
-X-Gm-Message-State: APuU4Z90+LT/9Rs/yrGULeQa2n0AkTYpB5ZigfeybWEhgLwQfng7qirJ
-	LvftJP0/2s1hQZDRc0ShBhEfQaaIlHWbdAc02Voabn3xlvb82456WICkXzLnj0/MUHowc9fZWpA
-	QgUQveTEuqsHLkgV5HyVvDwi14vUSbhVyBCP7AzbBKBDSybGvtqmBG7Nt9vg=
+ AL+hErGnf0/8vhjPHuzgnneGljnHUM0xUtMQ5NvbvWNN0uoUbmeKpUK7O5x3+beFm1UgjMueX7q93UEyrhVUww==@lists.open-mesh.org
+X-Gm-Message-State: APuU4Z/CaFJMkxBh4vOCBLa4e3vuMyhSij81pa6DhWqXLIdo27XzYVx7
+	FXoJW5LqwFwJxJd9eijQK3BNA0Q8sDHtPS/SuS4hDrM2BGvmjHsBXYtrtHraQM38pywmMNrjfmv
+	4RsdEDNu5tZnIONmizK0bAy/d/0JMlxR7N0WiCdPzVdWVrgJMrrxfh5ppsJc=
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:2389:b0:4e0:1d24:cec1 with SMTP id
- 5614622812f47-568143748bfmr467480b6e.5.1794124862848; Sun, 08 Nov 2026
- 00:01:02 -0800 (PST)
-Date: Sun, 08 Nov 2026 00:01:02 -0800
-In-Reply-To: <2056587.PYKUYFuaPT@sven-l14>
+X-Received: by 2002:a05:6808:4442:b0:53e:3b0b:fc1f with SMTP id
+ 5614622812f47-56b961950b9mr845236b6e.22.1794363995259; Tue, 10 Nov 2026
+ 18:26:35 -0800 (PST)
+Date: Tue, 10 Nov 2026 18:26:35 -0800
 X-Google-Appengine-App-Id: s~syzkaller
 X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6af02c3e.4dd4714a.f8d02.000e.GAE@google.com>
-Subject: Re: [syzbot] [arm?] BUG: workqueue lockup in batadv_tt_purge
-From: syzbot <syzbot+61b202fdc410840f0198@syzkaller.appspotmail.com>
+Message-ID: <6af3d25b.17ff5aea.1b027f.01a2.GAE@google.com>
+Subject: [syzbot] [batman?] WARNING in __batadv_dat_purge
+From: syzbot <syzbot+89f07b62d8237346ecab@syzkaller.appspotmail.com>
 To: antonio@mandelbit.com, b.a.t.m.a.n@lists.open-mesh.org,
-	davem@davemloft.net, linux-kernel@vger.kernel.org, marek.lindner@mailbox.org,
-	netdev@vger.kernel.org, omermetekaya0@gmail.com, sven@narfation.org,
+	linux-kernel@vger.kernel.org, marek.lindner@mailbox.org, sven@narfation.org,
 	sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 X-MailFrom: 
- 3PizwagkbALUntufVggZmVkkdY.bjjbgZpnZmXjioZio.Xjh@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+ 3W9LzagkbAC4cijUKVVObKZZSN.QYYQVOecObMYXdOXd.MYW@M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
 X-Mailman-Rule-Hits: nonmember-moderation
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: FRQ27M4EBDJSK65FEYOSXG2N7POQUUXV
-X-Message-ID-Hash: FRQ27M4EBDJSK65FEYOSXG2N7POQUUXV
-X-Mailman-Approved-At: Sun, 08 Nov 2026 09:05:56 +0100
+Message-ID-Hash: HSA3D3TABH3V3Q3BPYET65HP45KAQX4U
+X-Message-ID-Hash: HSA3D3TABH3V3Q3BPYET65HP45KAQX4U
+X-Mailman-Approved-At: Wed, 11 Nov 2026 08:31:08 +0100
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/FRQ27M4EBDJSK65FEYOSXG2N7POQUUXV/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HSA3D3TABH3V3Q3BPYET65HP45KAQX4U/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_NONE autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Hello,
 
-syzbot has tested the proposed patch but the reproducer is still triggering=
- an issue:
-BUG: workqueue lockup in nsim_fib_event_work
+syzbot found the following issue on:
 
-bridge0: received packet on bridge_slave_1 with own address as source addre=
-ss (addr:aa:aa:aa:aa:aa:0c, vlan:0)
-bridge0: received packet on veth1_to_bridge with own address as source addr=
-ess (addr:aa:aa:aa:aa:aa:0c, vlan:0)
-BUG: workqueue lockup - pool cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 stuck f=
-or 34s!
-Showing busy workqueues and worker pools:
-workqueue events: flags=3D0x100
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D4 refcnt=3D5
-    pending: nsim_dev_hwstats_traffic_work, vmstat_shepherd, 2*ovs_dp_masks=
-_rebalance
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D33 refcnt=3D34
-    in-flight: 26:nsim_fib_event_work for 35s nsim_fib_event_work ,4951:nsi=
-m_fib_event_work for 31s ,1503:nsim_fib_event_work for 22s ,1091:nsim_fib_e=
-vent_work for 15s
-    pending: 3*nsim_dev_hwstats_traffic_work, 2*ovs_dp_masks_rebalance, psi=
-_avgs_work, 3*ovs_dp_masks_rebalance, psi_avgs_work, drm_fb_helper_damage_w=
-ork, 2*l2cap_info_timeout, psi_avgs_work, 2*l2cap_info_timeout, 4*ovs_dp_ma=
-sks_rebalance, 3*rht_deferred_worker, psi_avgs_work, reg_todo, 3*nsim_fib_e=
-vent_work
-workqueue events_unbound: flags=3D0x2
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D5 refcnt=3D6
-    in-flight: 14:nsim_dev_trap_report_work for 5s
-    pending: 2*nsim_dev_trap_report_work, toggle_allocation_gate, flush_mem=
-cg_stats_dwork
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D15 refcnt=3D16
-    in-flight: 5376:cfg80211_wiphy_work for 25s cfg80211_wiphy_work ,1178:c=
-fg80211_wiphy_work for 32s cfg80211_wiphy_work ,1372:cfg80211_wiphy_work fo=
-r 35s cfg80211_wiphy_work ,5377:nsim_dev_trap_report_work for 7s ,58:cfg802=
-11_wiphy_work for 33s cfg80211_wiphy_work ,49:cfg80211_wiphy_work for 23s c=
-fg80211_wiphy_work ,40:cfg80211_wiphy_work for 31s cfg80211_wiphy_work
-    pending: 2*macvlan_process_broadcast
-workqueue events_power_efficient: flags=3D0x82
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D4 refcnt=3D5
-    pending: fb_flashcursor, wg_ratelimiter_gc_entries, 2*neigh_managed_wor=
-k
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D3 refcnt=3D4
-    in-flight: 1350:gc_worker for 16s ,144:neigh_periodic_work for 20s
-    pending: do_cache_clean
-workqueue events_dfl_long: flags=3D0x2
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D11 refcnt=3D12
-    pending: 11*defense_work_handler
-workqueue netns: flags=3D0x6000a
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D4
-    in-flight: 12:cleanup_net for 36s
-workqueue mm_percpu_wq: flags=3D0x108
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: vmstat_update
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: vmstat_update
-workqueue writeback: flags=3D0x4a
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D4 MAYDAY
-    in-flight: 33(RESCUER):wb_workfn for 31s
-workqueue mld: flags=3D0x40108
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D4
-    pending: mld_dad_work
-    inactive: 2*mld_dad_work
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D108
-    pending: mld_dad_work
-    inactive: mld_dad_work, 8*mld_ifc_work, 4*mld_dad_work, mld_ifc_work, m=
-ld_dad_work, 10*mld_ifc_work, mld_dad_work, 3*mld_ifc_work, mld_dad_work, 1=
-1*mld_ifc_work, mld_dad_work, mld_ifc_work, mld_dad_work, mld_ifc_work, 3*m=
-ld_dad_work, 10*mld_ifc_work, 3*mld_dad_work, 7*mld_ifc_work, 2*mld_dad_wor=
-k, 3*mld_ifc_work, mld_dad_work, mld_ifc_work, mld_dad_work, mld_ifc_work, =
-mld_dad_work, mld_ifc_work, mld_dad_work, 17*mld_ifc_work, mld_dad_work, 3*=
-mld_ifc_work, 5*mld_dad_work
-workqueue ipv6_addrconf: flags=3D0x6000a
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D248 MAYDAY
-    in-flight: 2822(RESCUER):addrconf_dad_work for 0s
-    pending: mayday_cursor_func
-    inactive: 242*addrconf_dad_work
-workqueue bat_events: flags=3D0x6000a
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D50 MAYDAY
-    in-flight: 2854(RESCUER):batadv_dat_purge for 7s
-    inactive: batadv_bla_periodic_work, batadv_dat_purge, batadv_bla_period=
-ic_work, batadv_dat_purge, batadv_bla_periodic_work, batadv_dat_purge, bata=
-dv_bla_periodic_work, batadv_dat_purge, batadv_bla_periodic_work, batadv_iv=
-_send_outstanding_bat_ogm_packet, batadv_mcast_mla_update, 4*batadv_iv_send=
-_outstanding_bat_ogm_packet, batadv_purge_orig, 2*batadv_iv_send_outstandin=
-g_bat_ogm_packet, 4*batadv_purge_orig, 4*batadv_iv_send_outstanding_bat_ogm=
-_packet, 2*batadv_tt_purge, 4*batadv_iv_send_outstanding_bat_ogm_packet, 3*=
-batadv_tt_purge, batadv_mcast_mla_update, batadv_purge_orig, batadv_iv_send=
-_outstanding_bat_ogm_packet, batadv_tt_purge, 4*batadv_mcast_mla_update, ba=
-tadv_dat_purge
-workqueue wg-kex-wg0: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg0: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_encrypt_worker, wg_packet_tx_worker
-workqueue wg-kex-wg1: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg1: flags=3D0x128
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_decrypt_worker, wg_packet_encrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-kex-wg2: flags=3D0x124
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    in-flight: 4767:wg_packet_handshake_receive_worker for 21s
-    pending: wg_packet_handshake_receive_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_receive_worker
-workqueue wg-crypt-wg2: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_decrypt_worker, wg_packet_encrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-kex-wg0: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg0: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_tx_worker, wg_packet_encrypt_worker
-workqueue wg-crypt-wg1: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    in-flight: 932:wg_packet_decrypt_worker for 22s
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_encrypt_worker, wg_packet_decrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-kex-wg2: flags=3D0x124
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_receive_worker
-workqueue wg-kex-wg2: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg2: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_encrypt_worker, wg_packet_decrypt_worker
-workqueue wg-crypt-wg0: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    in-flight: 4813:wg_packet_encrypt_worker for 14s
-    pending: wg_packet_tx_worker, wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_tx_worker, wg_packet_encrypt_worker
-workqueue wg-kex-wg0: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg0: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_tx_worker, wg_packet_encrypt_worker
-workqueue wg-kex-wg1: flags=3D0x6
-  pwq 8: cpus=3D0-1 flags=3D0x6 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_send_worker
-workqueue wg-crypt-wg1: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_decrypt_worker, wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_encrypt_worker, wg_packet_decrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-kex-wg2: flags=3D0x124
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_receive_worker
-workqueue wg-crypt-wg2: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_encrypt_worker, wg_packet_decrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-crypt-wg1: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D3 refcnt=3D4
-    pending: wg_packet_encrypt_worker, wg_packet_decrypt_worker, wg_packet_=
-tx_worker
-workqueue wg-kex-wg2: flags=3D0x124
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_handshake_receive_worker
-workqueue wg-crypt-wg2: flags=3D0x128
-  pwq 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 active=3D1 refcnt=3D2
-    pending: wg_packet_encrypt_worker
-  pwq 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 active=3D2 refcnt=3D3
-    pending: wg_packet_decrypt_worker, wg_packet_encrypt_worker
-pool 2: cpus=3D0 node=3D0 flags=3D0x0 nice=3D0 hung=3D14s workers=3D6 idle:=
- 4847 9 10
-pool 6: cpus=3D1 node=3D0 flags=3D0x0 nice=3D0 hung=3D34s workers=3D9 idle:=
- 24 4738 5269 5303 4950
-pool 8: cpus=3D0-1 flags=3D0x6 nice=3D0 hung=3D0s workers=3D12 manager: 537=
-8
-Showing backtraces of busy workers in stalled worker pools:
-pool 6:
-task:kworker/1:1     state:R  running task     stack:0     pid:26    tgid:2=
-6    ppid:2      task_flags:0x4208060 flags:0x00000010
-Workqueue: events nsim_fib_event_work
-Call trace:
-
-
-Tested on:
-
-commit:         532df11b batman-adv: tt: batch BH re-enable during TT ..
-git tree:       https://git.open-mesh.org/batadv.git disable-bh
-console output: https://syzkaller.appspot.com/x/log.txt?x=3D137967a5580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=3Da3c0ea8c3fd7635=
-3
-dashboard link: https://syzkaller.appspot.com/bug?extid=3D61b202fdc410840f0=
-198
+HEAD commit:    b3dfbde62cf1 Merge tag 'linux_kselftest-fixes-7.4-rc3' of ..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=17356f35580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=d16c0eae9c338e3c
+dashboard link: https://syzkaller.appspot.com/bug?extid=89f07b62d8237346ecab
 compiler:       Debian clang version 22.1.8 (1~deb13u4), Debian LLD 22.1.8
-userspace arch: arm64
 
-Note: no patches were applied.
+Unfortunately, I don't have any reproducer for this issue yet.
+
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/403baefe34aa/disk-b3dfbde6.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/e7f58e7003b8/vmlinux-b3dfbde6.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/83e039a928f8/bzImage-b3dfbde6.xz
+
+AI-generated root cause summary:
+Under PREEMPT_RT kernels, `__local_bh_enable_ip()` enforces that hard IRQs are
+enabled using `lockdep_assert_irqs_enabled()`. When `batadv_dat_purge()` invokes
+`__batadv_dat_purge()`, `spin_unlock_bh()` calls `local_bh_enable()`, which
+trips `kernel/softirq.c:289` because lockdep's per-CPU `hardirqs_enabled`
+tracker was 0 despite CPU hardware interrupts being enabled (`EFLAGS.IF == 1`).
+The lock and bottom-half operations in `__batadv_dat_purge()` and its callee
+`batadv_dat_entry_put()` are properly balanced, indicating lockdep's per-CPU IRQ
+tracking state became desynchronized from the CPU's hardware interrupt state.
+
+full analysis:  https://syzkaller.appspot.com/x/ai_root_cause?x=89f07b62d8237346ecab
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+89f07b62d8237346ecab@syzkaller.appspotmail.com
+
+------------[ cut here ]------------
+__lockdep_enabled && !this_cpu_read(hardirqs_enabled)
+WARNING: kernel/softirq.c:289 at __local_bh_enable_ip+0x1ea/0x2b0 kernel/softirq.c:289, CPU#1: kworker/u8:12/1182
+Modules linked in:
+CPU: 1 UID: 0 PID: 1182 Comm: kworker/u8:12 Not tainted syzkaller #0 PREEMPT_{RT,(full)} 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 11/06/2026
+Workqueue: bat_events batadv_dat_purge
+RIP: 0010:__local_bh_enable_ip+0x1ea/0x2b0 kernel/softirq.c:289
+Code: 5b 41 5c 41 5d 41 5e 41 5f 5d c3 cc cc cc cc cc 90 0f 0b 90 e9 66 fe ff ff e8 02 78 ec 09 41 f7 c4 00 02 00 00 75 d8 eb d7 90 <0f> 0b 90 e9 92 fe ff ff 90 0f 0b 90 e9 6f ff ff ff e8 e0 77 ec 09
+RSP: 0018:ffffc9000694fa30 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000000000200 RCX: 0000000000000046
+RDX: 0000000000000001 RSI: 0000000000000200 RDI: ffffffff8b3e742e
+RBP: 0000000000000400 R08: ffffffff90d5a8bf R09: 1ffffffff21ab517
+R10: dffffc0000000000 R11: fffffbfff21ab518 R12: ffffffff8b3e7790
+R13: dffffc0000000000 R14: ffff888061f74b90 R15: 0000000000000001
+FS:  0000000000000000(0000) GS:ffff88812480e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fe1171a6000 CR3: 0000000034222000 CR4: 00000000003526f0
+Call Trace:
+ <TASK>
+ local_bh_enable include/linux/bottom_half.h:33 [inline]
+ spin_unlock_bh include/linux/spinlock_rt.h:122 [inline]
+ __batadv_dat_purge+0x343/0x400 net/batman-adv/distributed-arp-table.c:252
+ batadv_dat_purge+0x20/0x70 net/batman-adv/distributed-arp-table.c:271
+ process_one_work kernel/workqueue.c:3495 [inline]
+ process_scheduled_works+0xc3d/0x1630 kernel/workqueue.c:3578
+ worker_thread+0xa47/0xfb0 kernel/workqueue.c:3659
+ kthread+0x38b/0x470 kernel/kthread.c:436
+ ret_from_fork+0x514/0xb70 arch/x86/kernel/process.c:158
+ ret_from_fork_asm+0x1a/0x30 arch/x86/entry/entry_64.S:245
+ </TASK>
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
