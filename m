@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86436606A327
-	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 10:35:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A46C860A262C
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 10:36:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=MZWbUqqY
+	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=rP54EsoB
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 0BCFC85B45
-	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 11:35:39 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4831885BE7
+	for <batman@archiver.kernel.org>; Wed, 11 Nov 2026 11:36:09 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1794393339;
- b=N9qMUbdhAnfuBEAKNCL0vJGzUZewQMh3BCfL1rhGWyXMNH0T6bpWENYAlL0PkvBMXG3yd
- iDDPHGfTxetCt2BJXa62ZtOEMOEISEEt/YsCKe9ikJz42Vv53OrFYpFwuguoYe14mT8ZXFj
- M+9F349f537bk1+LUVdhmDIre9mCvcw=
+ t=1794393369;
+ b=Ttidt2lya2ya2+t64xVLkf57c+I3iOABAG5+CmSLZMcUzAny5sy7vnzxDy0SXTeJ1CVM3
+ shF+jeQ59fOQOHs/FBHqjZEfT/8I+XBLiKUar2qp9GDAwJPV6uojRUPqDSzu9hS5HFQfbtB
+ vbLY01Se3GM/7bpL5sCEch9BHZ2ID6o=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1794393339; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1794393369; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=ZXY9RMei14Qa6qZcMDBzjNkR+zAn7SgX5Be6ZFMOjm8=;
- b=jjPXBwJSrAoURxD/Pm23QtfCX+5ytVchkp8+xeI/IbsKWAmRq0LriBNRQ2d28B3NHwODU
- a+wY5dopYACUI8eLa31u9Lm0UaCSMXCP/0w70hB9nHdBj/O6rTTM7HLHp8aCDhEeegVLk9f
- z5TOAx1a15gEtYUV9v/dusZyGIG5WaY=
+ list-archive; bh=k0B3UfgQB/D8vYRdJmCukT9HrfQad+gn9eBgWfJ7V6I=;
+ b=0pBsCFpqocfF9quCbnqgpWzhScJvCl0cROcLMtAGtSOXad9o/99x4naovfHTowSKRcVI2
+ ADqKdGndajXyHxuGxTorHYt9btlPAsvszqaKOj8JPfL7jn/uIDyNPgqU2HXgMGt4SLCKw7T
+ jXKaOYzokBdrLh7E+3CtlFsGQaltgrU=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,50 +34,50 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 87B828456E
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Nov 2026 11:27:44 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794392874;
-	b=MEzke+ACZkOZAhUfCjyKujUr5hPItvnSqnPFDQVmMHcxtJmFyILHyoj1tG41/pT711kxb9
-	0YkQ3lFGEfVYj2RoicjAAgS+nr0wBc+dssv5auS+fs6YngW5enXhUWbGAGz5EnnUMvLRoc
-	ikSFyubEm40pTp+ygU/QY5QKE7ISDX8=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 3670F80725
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 11 Nov 2026 11:27:45 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794392875;
+	b=YlmsA6q6aAQNanca+ewvLij2F36Pvi9abRKt7A7Jt5eaeOMe4gLkVM7v2wEkj3rCwxgLtV
+	QjKvO1cZrG+UK/T7ikOt/jYB1V5l4R68dCOMVx0HeWvF4mfuzYJ0pRrFKP5/LgqlOKtIE/
+	xsFKw+ghtdeJmn/CQLWYkSYZdQYkOJM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1794392874;
+	s=20121; t=1794392875;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=ZXY9RMei14Qa6qZcMDBzjNkR+zAn7SgX5Be6ZFMOjm8=;
-	b=k0rCudnLiB4+teGw924pw9trFjGw4IoUsLQF9QeBBce0XGCsYqux+9mA6qO9anr4TArhpa
-	Gpz5+c8SwVGkDw/BCVWOFKIBEAigjDfI1Zt0bosEBHbSl0GE8Nv9uL3KmhoQkxUn+JyOuC
-	GXdcy+airb9+MVLVShMdlwFyB8+2Zys=
+	bh=k0B3UfgQB/D8vYRdJmCukT9HrfQad+gn9eBgWfJ7V6I=;
+	b=ZoQbMyVT58LBSdabFUtPRxresXcBwi10Uo+YIeDrHSVv0jYvRYNainkeYOBzg02FbEnp8G
+	7Ut3ulL1iWkyPvdbTQk4e+40yYvr5NaqeoHf+eVNyk4g2tQyXW/LobYcNvWQmhCd9hwDR1
+	ufFFnH66Ddq9zAqc9tHaWN9R8hcVeSo=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=MZWbUqqY;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=rP54EsoB;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C59740dEd843be7E4A980E9C65.dip0.t-ipconnect.de
+ (p200300c59740deD843bE7e4A980e9c65.dip0.t-ipconnect.de
  [IPv6:2003:c5:9740:ded8:43be:7e4a:980e:9c65])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 4612BFA2EF;
-	Wed, 11 Nov 2026 11:27:40 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 9241BFA2F1;
+	Wed, 11 Nov 2026 11:27:41 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1794392860;
+	s=09092022; t=1794392861;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ZXY9RMei14Qa6qZcMDBzjNkR+zAn7SgX5Be6ZFMOjm8=;
-	b=MZWbUqqYR13QiKezBgP2r+m2jHP6XRE97evVzFSrx5IZlIkH10fDt01cZ6UcKUnQkg5Gv1
-	ExcFwKRlpPsBdgGIfgreWdMWPA9Zj+0p1aUrL6p18YFrvZMIlWtJOmL1R56LNZTFux3vXX
-	4xXog+NlCrLa68hbaAliL0mfpTMSicqLCOR12Vol8XY9DYI3b6vSEr5lKJzrAYvX0NZCDm
-	dPmha3Cr7GcczHd5666ClwF6G6EMDqKIZzsAbO2vTXmdqxkUDcSbOEWd+rO+umZTQFUSkQ
-	KPzBS9L4Kl5BZePIDAU4tlohUw3ECTC6TqUYFEi0/G3cA1F+lXSUmw20a0lmcg==
+	bh=k0B3UfgQB/D8vYRdJmCukT9HrfQad+gn9eBgWfJ7V6I=;
+	b=rP54EsoBoKySbRouSkdQwtz/NnxKTDKb/tdp3ZVF5VMUkxro3oiGoLu5ToDuLpzgOi1vwM
+	CFP7KJSLqboDYHsmZl8IYXYRNi4uk5np5zQHLQZl09r4PGf/7id0DFIqoE9v3ztvtvy48C
+	yMzRhWMXn+tu3X6w28boyPK50vU++4qLlaMjGhvJYOVdq2RJ4wCESjKv/S+QPFM7zL/9xQ
+	1flOBQs/POKUEurdN4UjbvuZhwvQE6lYvBtWyeYYQ7+9ZCXpN4rk5bmnwhS1kjvxCmxvzy
+	NbD9vcVfx6vZjA/NYgxneHDWKcyPJhMfLqn2QJp53MDyh016ouFaKYnKnfBsng==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -88,18 +88,17 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 12/15] batman-adv: use matching return types for bool
- and void functions
-Date: Wed, 11 Nov 2026 11:27:26 +0100
-Message-ID: <20261111102729.2096241-13-sw@simonwunderlich.de>
+Subject: [PATCH net-next 14/15] batman-adv: use bool for boolean flags
+Date: Wed, 11 Nov 2026 11:27:28 +0100
+Message-ID: <20261111102729.2096241-15-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261111102729.2096241-1-sw@simonwunderlich.de>
 References: <20261111102729.2096241-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: VXSHACZCMIAU4UC2BXNWDHFVV2KGAL7C
-X-Message-ID-Hash: VXSHACZCMIAU4UC2BXNWDHFVV2KGAL7C
+Message-ID-Hash: 5N3RD7KPQJW7ZOWVC4GUBVIRQ37E5YFO
+X-Message-ID-Hash: 5N3RD7KPQJW7ZOWVC4GUBVIRQ37E5YFO
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/VXSHACZCMIAU4UC2BXNWDHFVV2KGAL7C/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/5N3RD7KPQJW7ZOWVC4GUBVIRQ37E5YFO/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -130,101 +129,99 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Some functions declare a different return type than the values they
-actually return:
+A few flags are stored in int or u8 although they only ever hold true or
+false:
 
-* batadv_mcast_forw_push_dests_list() is documented as returning
-  true/false and only returns true/false, but was declared to return int
-* the !CONFIG_BATMAN_ADV_DAT stub of batadv_dat_snoop_outgoing_arp_reply()
-  returned bool, while the real function returns void
-* the !CONFIG_BATMAN_ADV_MCAST stub of batadv_mcast_init() returned int,
-  while the real function returns void
+* the own_packet parameter of the B.A.T.M.A.N. IV OGM queueing functions
+* batadv_forw_packet::own, whose kerneldoc already calls it a bool
+* is_old_ttvn in batadv_check_unicast_ttvn(), which stores the result of
+  batadv_seq_before()
 
-Make the declarations match.
+Use bool for them, and pass true/false instead of 1/0.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/distributed-arp-table.h |  3 +--
- net/batman-adv/multicast.h             |  3 +--
- net/batman-adv/multicast_forw.c        | 18 +++++++++---------
- 3 files changed, 11 insertions(+), 13 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 10 +++++-----
+ net/batman-adv/routing.c    |  2 +-
+ net/batman-adv/types.h      |  2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
-index e7b75e82eb1d8..807178fd28c57 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -117,11 +117,10 @@ batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	return false;
- }
- 
--static inline bool
-+static inline void
- batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 9e529215a7908..0b2134a8f963a 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -623,7 +623,7 @@ static bool batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 					bool direct_link,
+ 					struct batadv_hard_iface *if_incoming,
+ 					struct batadv_hard_iface *if_outgoing,
+-					int own_packet)
++					bool own_packet)
  {
--	return false;
- }
- 
- static inline bool
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index d97ee51d26f2e..d46f3a25ba5f2 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -88,9 +88,8 @@ batadv_mcast_forw_send(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	return NET_XMIT_DROP;
- }
- 
--static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
-+static inline void batadv_mcast_init(struct batadv_priv *bat_priv)
+ 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->mesh_iface);
+ 	struct batadv_forw_packet *forw_packet_aggr;
+@@ -716,7 +716,7 @@ static bool batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
+ 				    int packet_len,
+ 				    struct batadv_hard_iface *if_incoming,
+ 				    struct batadv_hard_iface *if_outgoing,
+-				    int own_packet, unsigned long send_time)
++				    bool own_packet, unsigned long send_time)
  {
--	return 0;
+ 	/* _aggr -> pointer to the packet we want to aggregate with
+ 	 * _pos -> pointer to the position in the queue
+@@ -843,7 +843,7 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
+ 
+ 	batadv_iv_ogm_queue_add(bat_priv, (unsigned char *)batadv_ogm_packet,
+ 				BATADV_OGM_HLEN + tvlv_len,
+-				if_incoming, if_outgoing, 0,
++				if_incoming, if_outgoing, false,
+ 				batadv_iv_ogm_fwd_send_time());
  }
  
- static inline int
-diff --git a/net/batman-adv/multicast_forw.c b/net/batman-adv/multicast_forw.c
-index 9ffed1f237b6b..8700f92b9bb0f 100644
---- a/net/batman-adv/multicast_forw.c
-+++ b/net/batman-adv/multicast_forw.c
-@@ -187,13 +187,13 @@ static bool batadv_mcast_forw_push_dest(struct batadv_priv *bat_priv,
-  *
-  * Return: true on success, false otherwise.
-  */
--static int batadv_mcast_forw_push_dests_list(struct batadv_priv *bat_priv,
--					     struct sk_buff *skb,
--					     unsigned short vid,
--					     struct hlist_head *head,
--					     size_t entry_offset,
--					     unsigned short *num_dests,
--					     unsigned short *tvlv_len)
-+static bool batadv_mcast_forw_push_dests_list(struct batadv_priv *bat_priv,
-+					      struct sk_buff *skb,
-+					      unsigned short vid,
-+					      struct hlist_head *head,
-+					      size_t entry_offset,
-+					      unsigned short *num_dests,
-+					      unsigned short *tvlv_len)
- {
+@@ -955,7 +955,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 		 * respective interfaces.
+ 		 */
+ 		scheduled = batadv_iv_ogm_queue_add(bat_priv, ogm_buff->buf, ogm_buff->len,
+-						    hard_iface, hard_iface, 1, send_time);
++						    hard_iface, hard_iface, true, send_time);
+ 		if (!scheduled)
+ 			reschedule = true;
+ 
+@@ -972,7 +972,7 @@ static void batadv_iv_ogm_schedule_buff(struct batadv_hard_iface *hard_iface)
+ 
+ 		scheduled = batadv_iv_ogm_queue_add(bat_priv, ogm_buff->buf,
+ 						    ogm_buff->len, hard_iface,
+-						    tmp_hard_iface, 1, send_time);
++						    tmp_hard_iface, true, send_time);
+ 		batadv_hardif_put(tmp_hard_iface);
+ 
+ 		if (!scheduled && tmp_hard_iface == hard_iface)
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 79fad88cd039c..e2951bf047024 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -891,7 +891,7 @@ static bool batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
  	struct batadv_orig_node *orig_node;
- 	struct hlist_node *node;
-@@ -278,7 +278,7 @@ static bool batadv_mcast_forw_push_want_all(struct batadv_priv *bat_priv,
- {
- 	struct hlist_head *head = NULL;
- 	size_t offset;
--	int ret;
-+	bool ret;
+ 	struct ethhdr *ethhdr;
+ 	unsigned short vid;
+-	int is_old_ttvn;
++	bool is_old_ttvn;
+ 	u8 curr_ttvn;
+ 	u8 old_ttvn;
  
- 	switch (eth_hdr(skb)->h_proto) {
- 	case htons(ETH_P_IP):
-@@ -324,7 +324,7 @@ static bool batadv_mcast_forw_push_want_rtr(struct batadv_priv *bat_priv,
- {
- 	struct hlist_head *head = NULL;
- 	size_t offset;
--	int ret;
-+	bool ret;
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 0fece14c7e7f8..b3edfc71af4a7 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -2047,7 +2047,7 @@ struct batadv_forw_packet {
+ 	 * @own: bool for locally generated packets (local OGMs are re-scheduled
+ 	 * after sending)
+ 	 */
+-	u8 own;
++	bool own:1;
  
- 	switch (eth_hdr(skb)->h_proto) {
- 	case htons(ETH_P_IP):
+ 	/** @skb: bcast packet's skb buffer */
+ 	struct sk_buff *skb;
 -- 
 2.47.3
 
