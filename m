@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15C6E606A32D
-	for <batman@archiver.kernel.org>; Sat, 14 Nov 2026 09:21:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B3C7606A329
+	for <batman@archiver.kernel.org>; Sat, 14 Nov 2026 09:21:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=LjkpjWGo
+	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=xDcF1+s3
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 96E28859EE
-	for <batman@archiver.kernel.org>; Sat, 14 Nov 2026 10:21:01 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id A1E5A85A81
+	for <batman@archiver.kernel.org>; Sat, 14 Nov 2026 10:21:31 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1794648061;
- b=lJdu5Y0GTBEXDXTh7wlijZ5V+grMwakDyp0mCH8sdLAykmXERCB1jh6WOF6rb5YCSsq2u
- BMfjlcFroSzznnbncs+NbWtt7zN0ItgGpq6KI6cJDHoYd5lI+3oJ8L2TokLJCewYqcIkfz9
- 6IFLdqh2pIWjaKdLAq4kVxjfIr7e4HI=
+ t=1794648091;
+ b=MqIs+RlQcmHc4miNAusQRdDdIfgcATJ7Zvqj8bGdK0P6evPEs5GQEvGY8JQDyLkPlmz6c
+ 7cWMAv/3g0HyQz85Gn9JpDRzwKvDoSntnzt9Q+gx0tY60ZljjhBgjUifDea8f4NOWTLtMCy
+ dnhEelRSgUpg3eZMATcUAHPK8n+QQUM=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1794648061; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1794648091; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=rMO8X19lP9V1R2hK/QJuYzFCrlgW/VHC0tz8dhP2jr4=;
- b=rBVKTimqqeGGhObcdFkm1qpBWYmnCq2Ar879+ZPfWCQsR2XQg+arrz5rivRYZ1NZjJqvo
- M4uM4+0Ty62MdoQm1j925xsuSvr7XIn8Mu7G6lS/V7MWuvMHN3QzbiTIlIkCvekBa6dzPCm
- Uk8buKBVKV8D1ZyhzfZw0m78JrjoAMA=
+ list-archive; bh=I1AmFeLV+vRIYLKijEb73ZThGt5Z4q1iPlXzgCCWvak=;
+ b=hMigTsGnUTYrDdzEeFYiwGHQOaa5FPC1XHeP0+vp4O8YneyEFLz9bYQekqLzuxL8oND7I
+ stwG7rQwTO5Nk2sZ95sdpCwpnpvCviSL9U19npnlYt8XJiImdgWczggj8wfynA+6Ui8Bbgr
+ n5hLysgKPucKenfrHM1Lk8Mn8hp7H9E=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,25 +34,25 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 74FC184741
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 5F56F84725
 	for <b.a.t.m.a.n@lists.open-mesh.org>; Sat, 14 Nov 2026 10:16:11 +0100 (CET)
 ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794647781;
-	b=IhFv1FdwMaezC4edGQbipLJiA3RztTETMFgId1tE7RpxIVv+vrFyEbzp2PI8b4dIlP1ABD
-	W1mXFFvDEggCLRFl84+dbpqH4uFrzn4GUZMZtgPRDg0qtrzpZW9nLSgyv/Ui+DQsnbNwpe
-	QPnDn/UkpQjF/w/xEQhxus/oXVDUPow=
+	b=jJD9uUEhCW5BlTBLezvYeC0t154uDzJkOTMh4NwZIJ/7qiLJuGfobV72uidnmC7OWjcDkY
+	D8nDMoe3lKjp4UU6U203rrtrazDf33g1SfowqaG4WFacYE3nsGqtBUpt93f1vCWlTLVskK
+	SOf5/U6UB5ZPr94W/jpfTNzuo8I1C74=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
 	s=20121; t=1794647781;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=rMO8X19lP9V1R2hK/QJuYzFCrlgW/VHC0tz8dhP2jr4=;
-	b=FT5zkDK4sUWrNNOr78ilRrx5rPIaD6ihIYLLw0MAZVCUVqkELVED4hLhID4/7pHseQP+g3
-	YlTULo2YHCRKHigSjxckZ9pdoCZHRr9yu5a8sE7RZKoLaifZ9YPWJT1CBz2fkwfL+Sq5mm
-	BsNKqsx7bjPet1w8KFojN725CVt0nlw=
+	bh=I1AmFeLV+vRIYLKijEb73ZThGt5Z4q1iPlXzgCCWvak=;
+	b=uqgPqRIV89kszFCeSYIXQ0/AncQcw3PhM9jibitDqgoHDBBEodBlECY+n2RPQ+zvuDSDRK
+	PhQW7ki/7ijWFrzKkQaareUjQmDRMTk/JrNddc0RxZzB4x4rUg7Cm8l/bff3ZtJEzW/JM+
+	cSt08FzEAZWkzb439gis93mF80m8ZlU=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=LjkpjWGo;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=xDcF1+s3;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender)
  smtp.mailfrom=sw@simonwunderlich.de;
@@ -63,20 +63,20 @@ Received: from kero.packetmixer.de (unknown
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 39807FA1B3;
-	Sat, 14 Nov 2026 10:16:04 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id D4770FA25D;
+	Sat, 14 Nov 2026 10:16:05 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1794647764;
+	s=09092022; t=1794647766;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rMO8X19lP9V1R2hK/QJuYzFCrlgW/VHC0tz8dhP2jr4=;
-	b=LjkpjWGoOT9WGV/rrK5ehsavf9HbI+v976bkh4Ig5YHLpvY2PZDTtbqvTlFzpJMu7tz8yn
-	NHwmj4qQlFWaTh5XBoNnmfBAfwPP6lnSRbwCot4QHNyzImbxJ/ltGhNO2p2pnxNl7zwkPx
-	ow8LFsRJQD10rf7E3qHfqPZQjKCqdmi+wsHNAkLehWe6baT7PMWtLYfOBZEdZsIP9muZqz
-	aKulfza1lN8mM7v2g0QlFohccpbQkzkSCt4UFGlHJHjeA2yVhST3cMD6jtIbd1CzUMZjeo
-	t0yg6odFQRBvQ9Gh0s8/ptq6gilqs2fmzWmn6OUZnaYgzAhhPljdxsj/VDsmbA==
+	bh=I1AmFeLV+vRIYLKijEb73ZThGt5Z4q1iPlXzgCCWvak=;
+	b=xDcF1+s3P2oLaMfM2p732UW1Nfi6BCW9Q+vAyUklNfDwMoZ50w6PUU397IlAL7tipjRYFL
+	+hF5uF6imTipVXOVcPT7mWmi5OEUPsKGe1tgZszhnlJQvWxgUqEfZws5aeWeWC5t8YeybW
+	uz/hn7CoYHCRNxuG3Seki9CMxP8eOcPofrZ5kvufveH8KLpGQTZHi3uo/+872yP0GUfMag
+	57XACPAIj+Wg0IrsKEoQnCjwJItpQOUMadq6ASqh4Q224W25usBmU5qRlvxHOhF+LxnmZT
+	itV42ij7N0t4d44QQ1AL7Pcq4P4Ub8L8kVixSMmVbzX7mNuuSo4uoFcGxgKP3w==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -87,18 +87,18 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 06/15] batman-adv: hash: document key argument of
- hash operations
-Date: Sat, 14 Nov 2026 10:15:47 +0100
-Message-ID: <20261114091556.3336038-7-sw@simonwunderlich.de>
+Subject: [PATCH net-next 08/15] batman-adv: always consume skb in
+ batadv_forw_packet_alloc()
+Date: Sat, 14 Nov 2026 10:15:49 +0100
+Message-ID: <20261114091556.3336038-9-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261114091556.3336038-1-sw@simonwunderlich.de>
 References: <20261114091556.3336038-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: CBHYXBSAPIUMT4A5IBFMAQPKMZ46YGSJ
-X-Message-ID-Hash: CBHYXBSAPIUMT4A5IBFMAQPKMZ46YGSJ
+Message-ID-Hash: S3E3IAK4KYRE6P5DTOKK2HEL7V366EAI
+X-Message-ID-Hash: S3E3IAK4KYRE6P5DTOKK2HEL7V366EAI
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -112,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/CBHYXBSAPIUMT4A5IBFMAQPKMZ46YGSJ/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/S3E3IAK4KYRE6P5DTOKK2HEL7V366EAI/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -129,65 +129,96 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-With all users converted, the data passed to batadv_hash_add(),
-batadv_hash_remove() and the compare/choose callbacks is always the key
-of the hash table, never a (partially initialized) element. The
-kernel-doc of batadv_hash_remove() even still suggested to pass "the
-structure you use with just the key filled".
+On success, batadv_forw_packet_alloc() stores the skb in the new
+forw_packet, and batadv_forw_packet_free() frees it later. On failure
+(queue full or out of memory), the skb was left for the caller to free.
+Whether the caller still owned the skb therefore depended on the return
+value.
 
-Document the actual key contract.
+Free the skb inside batadv_forw_packet_alloc() on failure, so the skb is
+always consumed, and drop the kfree_skb() calls from both callers.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/hash.h | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ net/batman-adv/bat_iv_ogm.c |  4 +---
+ net/batman-adv/send.c       | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index 45a432cc15789..fca426c5e3c58 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -21,7 +21,7 @@
- /**
-  * typedef batadv_hashdata_compare_cb - hash element comparison callback
-  * @node: hlist node of the element currently stored in the bucket
-- * @key: opaque payload to compare @node's key against
-+ * @key: key to compare @node's key against
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 376c0f80bcee9..5faac7419e43a 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -647,10 +647,8 @@ static bool batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
+ 	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
+ 						    queue_left, bat_priv, skb);
+-	if (!forw_packet_aggr) {
+-		kfree_skb(skb);
++	if (!forw_packet_aggr)
+ 		return false;
+-	}
+ 
+ 	forw_packet_aggr->skb->priority = TC_PRIO_CONTROL;
+ 	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 929b6dd34c107..6672f81798e91 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -481,6 +481,9 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
+  * (optional) if_incoming, if_outgoing and queue_left. If queue_left
+  * is NULL then bat_priv is optional, too.
   *
-  * Compare hash element by its keys.
-  *
-@@ -32,7 +32,7 @@ typedef bool (*batadv_hashdata_compare_cb)(const struct hlist_node *node,
++ * The skb is always consumed: on success, it is owned by the returned
++ * forwarding packet, on failure it is freed.
++ *
+  * Return: An allocated forwarding packet on success, NULL otherwise.
+  */
+ struct batadv_forw_packet *
+@@ -505,6 +508,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "%s queue is full\n", qname);
+ 
++		kfree_skb(skb);
+ 		return NULL;
+ 	}
+ 
+@@ -532,6 +536,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 	if (queue_left)
+ 		atomic_inc(queue_left);
+ 
++	kfree_skb(skb);
+ 	return NULL;
+ }
+ 
+@@ -753,13 +758,13 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 
+ 	newskb = skb_clone(skb, GFP_ATOMIC);
+ 	if (!newskb)
+-		goto err;
++		return NETDEV_TX_BUSY;
+ 
+ 	forw_packet = batadv_forw_packet_alloc(if_in, if_out,
+ 					       &bat_priv->bcast_queue_left,
+ 					       bat_priv, newskb);
+ 	if (!forw_packet)
+-		goto err_packet_free;
++		return NETDEV_TX_BUSY;
+ 
+ 	forw_packet->own = own_packet;
+ 
+@@ -770,11 +775,6 @@ static int batadv_forw_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 
+ 	batadv_forw_packet_bcast_queue(bat_priv, forw_packet, send_time);
+ 	return NETDEV_TX_OK;
+-
+-err_packet_free:
+-	kfree_skb(newskb);
+-err:
+-	return NETDEV_TX_BUSY;
+ }
  
  /**
-  * typedef batadv_hashdata_choose_cb - hash bucket selection callback
-- * @key: opaque payload whose key selects the bucket
-+ * @key: key which selects the bucket
-  * @size: number of buckets in the hash table
-  *
-  * Return: bucket index derived from the key in @key and the table @size.
-@@ -80,7 +80,8 @@ void batadv_hash_destroy(struct batadv_hashtable *hash);
-  *	@hash: storage hash table
-  *	@compare: callback to determine if 2 hash elements are identical
-  *	@choose: callback calculating the hash index
-- *	@data: data passed to the aforementioned callbacks as argument
-+ *	@data: key of the element to add (the key embedded in the element),
-+ *	 passed to the aforementioned callbacks as argument
-  *	@data_node: to be added element
-  *
-  *	Return: 0 on success, 1 if the element already is in the hash
-@@ -132,10 +133,8 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
-  * @hash: hash table
-  * @compare: callback to determine if 2 hash elements are identical
-  * @choose: callback calculating the hash index
-- * @data: data passed to the aforementioned callbacks as argument
-- *
-- * data could be the structure you use with just the key filled, we just need
-- * the key for comparing.
-+ * @data: key of the element to remove, passed to the aforementioned callbacks
-+ *  as argument
-  *
-  * Return: returns pointer to hlist_node on success, so you can remove the used
-  * structure yourself, or NULL on error
 -- 
 2.47.3
 
