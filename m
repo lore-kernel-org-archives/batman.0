@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C734606A31E
-	for <batman@archiver.kernel.org>; Sun, 15 Nov 2026 09:50:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0479F606A31E
+	for <batman@archiver.kernel.org>; Sun, 15 Nov 2026 10:37:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=BgryksRZ
+	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=fki98Gh1
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id C09E783E17
-	for <batman@archiver.kernel.org>; Sun, 15 Nov 2026 10:50:29 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 9DEB5802E6
+	for <batman@archiver.kernel.org>; Sun, 15 Nov 2026 11:37:07 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1794736229;
- b=dQmx3hDOsFo5nASHM2MU8mCOkv3U/MgBJMdxZRiouZE8Vudc0VLZ3SIx3zSZVmMDY+Cdp
- izRdmmZfGsWEtP6zFzV3iMw+iF5W++kExyvQPZaU3aD3i4zu33VPbahDJ3r07sW6dxOpiJl
- IX5ZHH1pQzNE0Y2j24OTEmajJIeJmyU=
+ t=1794739027;
+ b=tQqA73DX8w8LAmAwbgEgy+xrrNLmGAT86DRFQNBPR2r1gEuj2ta/rAqaX+VtT+mQfauWc
+ RbvQiHRiHzqKUjad5rNSe2RzCCfOU7C406vNUUDWXYjOgcySAkoa2NcYHSAfdlijziclEnl
+ 7406HDAnQQPUCrPd2dZm06aeunuIQNg=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1794736229; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1794739027; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=fZ05mL96e7xsv2qPwj5DbOYLveVjhQuS5JmkAfy2xHw=;
- b=bCjjlgfvq3erkEqoruKw01jGWgoiqBVDDRbt8Mk+1pQcs5KuG8KMW1N5Pu4HmZ+uMJfIg
- 0eLiuXQgXnP11HzHweb1QMxtyaItcqtXI0Yi3V3QJMdCV9HTir/DAXv+6q0T6jf6s3MhM3M
- Myq5dqyH0muUOyiIo6beaEXi95cMsvI=
+ list-archive; bh=JspNObAYmdUHZlTcfGGvB+tJ2laRO74OdREwRhO5WQw=;
+ b=dVlYz9ByoyxDhlai9n3wXh4wmj6113PtUe14XYctsgaTD6PhOuURdkNczG+A2I3JSwnc9
+ ppAgqK8FdaHP8O5bC8m9Eni3YWh9yNQMHHCzHKNKCo7g2poAGntQyAsMBfmNog74P6+l60w
+ +4KvdO4POaTITfktf4ylY6Zc4VBdQZQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -34,57 +34,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org
  [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 24C2780C5D
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 15 Nov 2026 10:50:06 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794736206;
-	b=Y6ZruuJiUoBLkj58Wyq6jonSg5QzsF68WXUd6uQQ8wHPJCoczJBZNWOdKEml1eczlVFXhD
-	Sr9v56jifjYAknuMBxm8NG/ZzXjMwLlkL6j5EjnpmeDR47hMZQgHylPna9FJL5Wyu/ooNv
-	3wN5xldYrUKr2gSZvc9l6kydWDCZfRo=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 6968D82759
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Sun, 15 Nov 2026 11:36:34 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1794739004;
+	b=E13frlQirHElDaWaYZk6CaP5OCODvjvPftgEVShw2zUHwVQLECu/6KfF/OFoRlk+z36r5h
+	apdeZTaG84Iqsz1xXo6XvcrMHi5GlmyQC7jRqkYu8/MDnoWlp8ZMwgWvoFAh+XrTSAJjDU
+	JN4GU/k1ej1rZuChX/jCG5dnhSCM4RI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1794736206;
+	s=20121; t=1794739004;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=fZ05mL96e7xsv2qPwj5DbOYLveVjhQuS5JmkAfy2xHw=;
-	b=nuq5c013aC+I04LhUsqx4U5OekVXmBzUc3jPrd425+OUm/DbHGL896mTu1juJmIyZAVWSY
-	L7da24MfzwrPS5Kw9bBKioQsgQhMU7s4NAfLHk91MhUasirL6RE8Sas0oH0nDo0osgxkBH
-	VK6QMGphi7xd3RxbWAsFQexwtjmFtYU=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=JspNObAYmdUHZlTcfGGvB+tJ2laRO74OdREwRhO5WQw=;
+	b=kJRSX9VOvXmkjc1J4ko0ccfmoDKl71W1xYheZLXA5vOebEhamqSBbKlziYrXlgjvTSkkwy
+	L4zgTx7zyTnXEPOERacw54erolslV6SKYPSOtUGV96CXlvMTSv9yoxIh4Q0ORCcKdpS7po
+	+h3FzNATJeHAWIKkDS5IOhzWesO50i8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=BgryksRZ;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=fki98Gh1;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id 3F5FA1FDCB;
-	Sun, 15 Nov 2026 09:50:05 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id ABCF1206AD;
+	Sun, 15 Nov 2026 10:36:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1794736205;
+	s=20121; t=1794738993;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fZ05mL96e7xsv2qPwj5DbOYLveVjhQuS5JmkAfy2xHw=;
-	b=BgryksRZW6STpubVR0e0SCKzXMREAfmttpEBSNtLlvMzcrtIPUpbliPlgvlUeHQSYNUfJz
-	ANQTP6msF6EiA6r38UIcGTiA9N64RZVrP0RiUGaa/8B1qu7x7EyOFKBuG9qlO0S534Shw/
-	m4j43/H8L/lDR2gJKHokRvmsTPd0Y70=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=JspNObAYmdUHZlTcfGGvB+tJ2laRO74OdREwRhO5WQw=;
+	b=fki98Gh1D7YfIDeTKbCljHWjd/cxBiz0fqybR0LOShl65X1Hug0olCElMmlWFlg/aG+5zV
+	mCitihhu3RBh2kIVR/ItsCDNqYjNOOgkZoVh+l35h61kVm2oZXe8HdfAtEkzqjMrkPgf2q
+	QuuXe6Omb2fCFzpDwbSmLHe2kPtuw2o=
 From: Sven Eckelmann <sven@narfation.org>
-To: Simon Wunderlich <sw@simonwunderlich.de>, sashiko-reviews@lists.linux.dev
-Cc: marek.lindner@mailbox.org, antonio@mandelbit.com,
- b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Subject: Re: [PATCH net-next 12/15] batman-adv: dat: increase hash generation
- when
- purging entries
-Date: Sun, 15 Nov 2026 10:50:02 +0100
-Message-ID: <8759436.T7Z3S40VBb@sven-desktop>
-In-Reply-To: <sashiko-outbox-215358@kernel.org>
-References: <20261114091556.3336038-1-sw@simonwunderlich.de>
- <20261114091556.3336038-13-sw@simonwunderlich.de>
- <sashiko-outbox-215358@kernel.org>
+Date: Sun, 15 Nov 2026 11:36:30 +0100
+Subject: [PATCH batadv] batman-adv: bla: register own backbone gw when
+ claiming for local node
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart10948139.nUPlyArG6x";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: HYGMOFE4WM3Z7ZSHBIQDRUOAE4ZVDEI5
-X-Message-ID-Hash: HYGMOFE4WM3Z7ZSHBIQDRUOAE4ZVDEI5
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261115-bla-late-claim-add-v1-1-74aa2359f0f5@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAC2L+WoC/yWMwQrCMBAFf6W8swtNwdD6K+Jhs1l1JVZJYhFK/
+ 92oxxmYWVE0mxYcuhVZFyv2mBu4XQe58nxRstgYQz9459yeQmJKXJUksd2JYyQZp0l6FvajRwu
+ fWc/2/k2PCFw5Ljj9fXmFm0r9HrFtH9JmIcl+AAAA
+X-Change-ID: 20261115-bla-late-claim-add-c899c0aca686
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2630; i=sven@narfation.org;
+ h=from:subject:message-id; bh=g2FbRWrqDHwI+F6Plh3wNnPwE4Fe7azuvnS3o/ww+3g=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFk/u/UD2hJ/rLiXLn56vQPLMvZIz2ZpQXVJTb6AnY9P/
+ nsZZ7a4o5SFQYyLQVZMkWXPlfzzm9nfyn+e9vEozBxWJpAhDFycAjCRO+cZGRrms577VBxydf+i
+ T+IfV/FeOcAoyGNdtDVGde9mw3MeT1cyMjRqffy3WfW35y4TC8EqJp7Uf1ZvI186lL27JNjxWlQ
+ lhwcA
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: RJOVWQ4QUXGMAKPJJH24TMJYCZSRU24Q
+X-Message-ID-Hash: RJOVWQ4QUXGMAKPJJH24TMJYCZSRU24Q
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -98,63 +105,84 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/HYGMOFE4WM3Z7ZSHBIQDRUOAE4ZVDEI5/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RJOVWQ4QUXGMAKPJJH24TMJYCZSRU24Q/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---nextPart10948139.nUPlyArG6x
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 Nov 2026 10:50:02 +0100
-Message-ID: <8759436.T7Z3S40VBb@sven-desktop>
-In-Reply-To: <sashiko-outbox-215358@kernel.org>
-MIME-Version: 1.0
+batadv_bla_rx() claims an unclaimed client (or a client which migrated to
+the local node) by calling batadv_handle_claim() with the address of the
+primary interface as backbone address. batadv_handle_claim() then registers
+the backbone gateway via batadv_bla_get_backbone_gw() - but always with
+own_backbone set to false.
 
-On Sunday, 15 November 2026 10:24:45 CET sashiko-bot@kernel.org wrote:
-[...]
-> 
-> [Severity: Low]
-> Inconsistent netlink dump detection for the DAT cache was introduced without
-> updating bat_priv->dat.hash->generation in __batadv_dat_purge().  Should this
-> include:
-> 
->   Fixes: 6f81652a4713 ("batman-adv: Add inconsistent dat netlink dump detection")
+When no backbone gateway entry for the local node exists yet on this VLAN
+(for example due to an earlier error), the entry is therefore created like
+a foreign backbone gateway. No initial announcement is sent and the entry
+doesn't enter the BATADV_BLA_BACKBONE_GW_UNSYNCED state with the startup
+grace period (wait_periods and bla.num_requests). The following call of
+batadv_bla_update_own_backbone_gw() finds the already existing entry and
+returns early without fixing this up.
 
-No, "Fixes" (for old kernels) should not be added without "Cc: stable@....". 
-And patches with these tags which should go through net-next.
+As a result, the first announcement is delayed by up to one BLA period and
+multicast traffic is not held back while the local claim table isn't
+synced yet.
 
-It was decided that this is so irrelevant for most situations and fixed 
-primarily for getting rid of these constant "This problem wasn't introduced by 
-this patch, but...." reports by Sashiko. No need to increase the load on the 
-stable-kernel team for such a change.
+Pass the correct own_backbone value to batadv_bla_get_backbone_gw() by
+checking whether the backbone address is the address of the primary
+interface.
 
-Regards,
-	Sven
---nextPart10948139.nUPlyArG6x
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://sashiko.dev/#/bug/linux-dba9d95d-5eeb-40fd-abf4-e054aee1f735
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
------BEGIN PGP SIGNATURE-----
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 68ff2f94..3da070a0 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -986,18 +986,22 @@ static bool batadv_handle_claim(struct batadv_priv *bat_priv,
+ 				unsigned short vid)
+ {
+ 	struct batadv_bla_backbone_gw *backbone_gw;
++	bool own_backbone;
++
++	own_backbone = batadv_compare_eth(backbone_addr,
++					  primary_if->net_dev->dev_addr);
+ 
+ 	/* register the gateway if not yet available, and add the claim. */
+ 
+ 	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid,
+-						 false);
++						 own_backbone);
+ 
+ 	if (unlikely(!backbone_gw))
+ 		return true;
+ 
+ 	/* this must be a CLAIM frame */
+ 	batadv_bla_add_claim(bat_priv, claim_addr, vid, backbone_gw);
+-	if (batadv_compare_eth(backbone_addr, primary_if->net_dev->dev_addr))
++	if (own_backbone)
+ 		batadv_bla_send_claim(bat_priv, claim_addr, vid,
+ 				      BATADV_CLAIM_TYPE_CLAIM);
+ 
 
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCavmASgAKCRBND3cr0xT1
-yxUHAP0SFX9XcPbQw/S7jXOHEiEHcuBlvb3h37+TT8raM6TsnAEAlZpJ7BLTmoer
-0QaxcP3q2bhGKie94xKiP7hPsq57wwE=
-=+9WZ
------END PGP SIGNATURE-----
+---
+base-commit: a793cf82308e57a0e21c97e889c143cdbba67e5f
+change-id: 20261115-bla-late-claim-add-c899c0aca686
 
---nextPart10948139.nUPlyArG6x--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
