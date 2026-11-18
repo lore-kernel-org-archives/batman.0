@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E05B4606A338
-	for <batman@archiver.kernel.org>; Wed, 18 Nov 2026 11:42:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96618606A320
+	for <batman@archiver.kernel.org>; Wed, 18 Nov 2026 11:43:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=mzBzd5+X
+	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=EiAEQRHn
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 76EEC84494
-	for <batman@archiver.kernel.org>; Wed, 18 Nov 2026 12:42:43 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2758C84265
+	for <batman@archiver.kernel.org>; Wed, 18 Nov 2026 12:43:14 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1795002163;
- b=CwSR9JBoCHHBT6rQA85C86ZeBKUrbTjzpa7vF3lvSByNIxMzF1RoTlacqjCWSNyozuuVF
- rmcMxpoD5lLXiJKExKY9wzs4U8UtvPynyY+8Dccw0p6Jw/STgvgWgbWGHfs0fhUltWxXTnH
- ctkMlb3f3UgBfBXOW74i+zB84p8xPuA=
+ t=1795002194;
+ b=rhzINq4RwHUfss17k9TWghuWCeBFFKpnETmxbWksa4jr4fObU2A0RdPeSHe7Jm34arcmT
+ uZz8Ql+jw+2I7UOpyXkBs5oOpRtD5F81A/7F8OTRPdVxNGic/KCUk57Dzrrqf9s62dF+gqt
+ Fe+wRhSp6M1uLWjlnkgHOTM4MGIvj3g=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1795002163; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1795002194; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=pVFqZu9FgrRhYp9C8h3S4YMrSMnBITSK03BKNO8XIm4=;
- b=YEZoWIn4d/wFXuqjQmDUunjy9ztriElx/3eNKhUk8hi/EUgSSmW7Gc41iXtnNf+AQYi4S
- xD+gfqwXd1wISFmuGrvHYC8ms0vWf/sjm83Snr+zwzzLgB5q2xXvPBCVveflLARkxSorGqn
- E4z5qWip7yinp2dGKxyxNFjRGKeJd3A=
+ list-archive; bh=dPOqFKQrOdzpC9VTIlPXCg9WzgfUr663xx1Q4AMpdfA=;
+ b=hfsf9AXYZHh5LACkt8z2dR5Eeg7KOONQagTwGMZ1Hm8l/X2P/8uohQRidEKWtgA3L/fMI
+ yy0ppRSlaO6cEXwNHELpHgXgtCg4KoKIu9jO7gz/10tkYj67k/OOoXVzavmGy3ULbn53N4c
+ mVgMRLiQFuFOM2xbiBym5RqQiksZmuQ=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -32,68 +32,66 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
-Received: from dvalin.narfation.org (dvalin.narfation.org
- [IPv6:2a00:17d8:100::8b1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id B39F1806CB
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 18 Nov 2026 12:42:02 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795002123;
-	b=Rs14gCoUkYDD/oLuuoTWWs0SPTrHn0b/byMurDWJ3PZOfh8kEr3ZDNOHPhn1P0Kp0Bh140
-	KCHGiqCwy/0FEB1izo0VvA/l5LGs4LsZFp4rTGhiI1UCXCID+zDuba8YQdNhAdHmzUiiXu
-	AhwJPcQx09sv9MUs3XUt5Hy+hSQvtSI=
+Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 6DFE68269F
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Wed, 18 Nov 2026 12:42:06 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795002126;
+	b=aYP3SvqGb6+hY+9OGrbblObAPkfw9WVppoyzz+zhTz5gBSpmWRBg/+ix4IgxVZBuPxYzyL
+	ZfqKTWt29hy79P0t1URiBMgXGzubzp+HzlPFhz0eEh92CessoiMkGEst5YdkDzyg8HFaXw
+	QLcUFkEQ/EEz9W7jH6G2x8AZ1W9nNVs=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1795002123;
+	s=20121; t=1795002126;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
-	bh=pVFqZu9FgrRhYp9C8h3S4YMrSMnBITSK03BKNO8XIm4=;
-	b=vLEvTt3t5vwMCpDBMCMBKfmOCy26mAn13nSu9EBNdPOERFBTBixa6wZr+18P669h562rXA
-	yd5CqIVtX/TD3u3kpKdbDmqhGPAm/tUMv9ac8zIevP/4ocC+W7jXfT3S/T9mfUThbhn4Lm
-	oP5VIZ1znMmgC5di8/lIu/bvs3xaEzw=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:dkim-signature;
+	bh=dPOqFKQrOdzpC9VTIlPXCg9WzgfUr663xx1Q4AMpdfA=;
+	b=2iS9taYdrmxt/LRZpbLKTRZL3XPauoozzT87BisdUzqeqSfyKdc1LVMsdOU848wAK9BCnD
+	F0PSW8aXTDC/krxabUQKmH94Mh+94Yi3mRYk1rDz2vnpfphGilztH9x4K6rdBC2VzbAqGS
+	INrTdGB4flSk6EBe0RZCLFWXRk6rtEI=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=mzBzd5+X;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=EiAEQRHn;
 	dmarc=pass (policy=none) header.from=narfation.org;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
- 2a00:17d8:100::8b1 as permitted sender) smtp.mailfrom=sven@narfation.org
-Received: by dvalin.narfation.org (Postfix) id 25CA21FE9A;
-	Wed, 18 Nov 2026 11:42:01 +0000 (UTC)
+ 213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org
+Received: by dvalin.narfation.org (Postfix) id 5B27420EAD;
+	Wed, 18 Nov 2026 11:42:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1795002121;
+	s=20121; t=1795002125;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=pVFqZu9FgrRhYp9C8h3S4YMrSMnBITSK03BKNO8XIm4=;
-	b=mzBzd5+XDg3RUgb1o0gf8X/YaMPta11qnzm2393ItLQvz+Njir2eiM2ROH70R/Bv0jCWA/
-	5djcXjqO4hj5KyvwYdv6TC2pdeRliNYjzZ68L0sTUhw5TI8W7Xb/fWUgiKPmrLhQ/v27qw
-	k+2jCmp3TXuvKR6m6LiLaLnshGDc8Qc=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dPOqFKQrOdzpC9VTIlPXCg9WzgfUr663xx1Q4AMpdfA=;
+	b=EiAEQRHnqm2Qc2N5HQ8pMAVOTdfDb+5+I1sX7JSSOpBykIMYG4UG2hyvvAigLchVyWhj+F
+	UthJf3g5h1Gjt+TmQLXiawARUGzx578ZQC/hMaNba641EASeVRJrvH6riO6NagIFGJ7Avc
+	BnbtqlhqdP+8DaW0rd6rU9EV+jKHur0=
 From: Sven Eckelmann <sven@narfation.org>
-Subject: [PATCH batadv v5 00/11] batman-adv: tt: shashiko 20260930 follow
- ups
-Date: Wed, 18 Nov 2026 12:41:50 +0100
-Message-Id: <20261118-tt-avoid-unhashed-event-v5-0-bce9ead803e6@narfation.org>
+Date: Wed, 18 Nov 2026 12:41:52 +0100
+Subject: [PATCH batadv v5 02/11] batman-adv: tt: refresh local entry in
+ single flags_lock section
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAP6O/WoC/3XQzW7DIAwH8FepOI8JQ4B0p73H1AMfpmEHUgFFq
- 6q8+0g2adXUHG3Zv7/lOymYIxbydriTjC2WOKdeyJcDcZNJZ6TR95pwxhUwpmit1LQ5enpNkyk
- TeooNU6VaWSuDUh5Akr59yRji1yZ/EGuq8Y2cfvrlaj/R1ZVdJ6dY6pxv2wkNtvnfNL2b1oAyy
- sBpJZTUR1DvyeRgar/+dc7nLanxR2vct3i3tBsQ/QiKKf/MEn8WML5viW4FoYM8upFZ9tQaHiz
- Y/2gbujVwtz4WRuDiv7UsyzdPrKB3wAEAAA==
-X-Change-ID: 20261006-tt-avoid-unhashed-event-76bb5f66d115
+Message-Id: <20261118-tt-avoid-unhashed-event-v5-2-bce9ead803e6@narfation.org>
+References: <20261118-tt-avoid-unhashed-event-v5-0-bce9ead803e6@narfation.org>
+In-Reply-To: 
+ <20261118-tt-avoid-unhashed-event-v5-0-bce9ead803e6@narfation.org>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Sashiko <sashiko-bot@kernel.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4752; i=sven@narfation.org;
- h=from:subject:message-id; bh=0f8aBjgPbnHHEybOnhGdlzA3uTQBKRxCv1INPFpi2ew=;
- b=owGbwMvMwCXmy1+ufVnk62nG02pJDFl/+xl+39W/WLuPXbLGX1J7a95fwat/Y3ZqzQ7fdaeh+
- uvV4krFjlIWBjEuBlkxRZY9V/LPb2Z/K/952sejMHNYmUCGMHBxCsBEtjky/C94Ed55W3bFjCVP
- n+Wcu+R3191AfsGBXQZpypdibr2NKlzHyLBKr8dv35/pqiLr3px5kyMmIvxuvY7vTd6dlrm6r88
- 8X88LAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8152; i=sven@narfation.org;
+ h=from:subject:message-id; bh=Nx4p+c2ipwPYLs7IoZ7rQwXd3L0MXNCCQtCwWxnysCI=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDFl/+5lfiS0+tp5f/LeIVXfxxCP6x4QnSH4vV9la98Rt5
+ +XO279TOkpZGMS4GGTFFFn2XMk/v5n9rfznaR+PwsxhZQIZwsDFKQATcdNi+J8kkSNbHm/CKGPS
+ /mnzsQ+7bmxXb/MI5967+Outq7W5a3Yy/OE5ftm3JmTbDRbnOvV/xw+4Orw5c/bFJr36Dz3Sv1m
+ dd/ICAA==
 X-Developer-Key: i=sven@narfation.org; a=openpgp;
  fpr=522D7163831C73A635D12FE5EC371482956781AF
-Message-ID-Hash: E4SDW6R5M7XVFIVGFHIVF22GYL5TMXS7
-X-Message-ID-Hash: E4SDW6R5M7XVFIVGFHIVF22GYL5TMXS7
+Message-ID-Hash: A3OQONKUBOOY7DWUS2UAV7URQW6N33OT
+X-Message-ID-Hash: A3OQONKUBOOY7DWUS2UAV7URQW6N33OT
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -107,7 +105,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/E4SDW6R5M7XVFIVGFHIVF22GYL5TMXS7/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/A3OQONKUBOOY7DWUS2UAV7URQW6N33OT/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -121,94 +119,214 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-There were various reports in the Sashiko report from
+batadv_tt_local_add() modifies the flags of a local entry in two steps.
+batadv_tt_local_add_existing() cancels a pending removal and
+batadv_tt_local_update_flags() updates the dynamic flags. Each of them has
+its own flags_lock section and the ADD events are queued by
+batadv_tt_local_add() with a snapshot of the flags which is taken after the
+lock was released.
 
-* https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%2540simonwunderlich.de
-* https://sashiko.dev/#/patchset/20260930094558.3723766-1-sw@simonwunderlich.de
+Merge both helpers into batadv_tt_local_refresh(). It modifies the flags
+and queues the (single) ADD event in the same flags_lock section. The
+announced flags are therefore always the ones which were just stored in the
+entry.
 
-Some of them are about the rather bad locking behavior in TT and addressed
-here. While looking at this, it was also noticed that the TT event handling
-seems to be broken since the introduction of dynamic flag changes.
+The initial ADD of a new entry is requested via the announce parameter
+after the entry was added to the hash.
 
-The source of truth is now the changes list. Only entries inside their are
-applied (NEW -> included, PENDING -> deleted) in the local table. This
-avoids a desync between the announced TT changes and the submitted local
-table. But it also means that an entry which was added and then gets
-directly removed cannot be dropped directly from the local table. It can be
-that it is in the process of being committed and therefore must be marked
-as pending and then be handled in the next commit phase. A situation which
-caused problems in the past because TTVN and change list were completely
-desynced.
-
-Of course, this also causes headaches when it comes to error handling. When
-a delete needs to be queued, and the allocation fails for this change list
-entry, we still need to get this somehow in the change list. Otherwise the
-entry would stay forever as PENDING in the local table. The entry is
-therefore marked as del_unqeued and the next purge run will reattempt the
-queuing of the deletion in the change list.
-
-This makes the transitions well defined but looking at the full graph for
-too long causes headaches. I will submit these graphs as reply and would
-recommend only to look at the "main" (normal cases) and specialized "rare"
-graph for the corner cases.
+This is a preparation for the validation of the entry under the hash bucket
+list_lock, which then only needs to cover a single region.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Changes in v5:
-- annotate functions with locking dependencies: batadv_tt_local_event(),
-  batadv_tt_local_unhash_pending(), batadv_tt_local_commit_change()
-- return false in case of an event allocation error in
-  batadv_tt_local_add() to avoid forwarding traffic for this client
-  https://sashiko.dev/#/patchset/20261116-tt-avoid-unhashed-event-v4-0-42c6bb518123%40narfation.org?part=6
-- a client which was PENDING -> DEL was in changelist and then reappears
-  between the changes list splice and the batadv_tt_local_commit_change()
-  must be marked again as NEW (in batadv_tt_local_commit_change()) to make
-  sure that an ADD is send again BUT it is not yet part of a full table sync
-  https://sashiko.dev/#/patchset/20261116-tt-avoid-unhashed-event-v4-0-42c6bb518123%40narfation.org?part=9
-- correctly explain the del_unqueue handling during a purge (which keeps
-  the entry in the table until the DEL was actually queued)
-- extract code to unhash local table entry table size adjustment
-- Link to v4: https://patch.msgid.link/20261116-tt-avoid-unhashed-event-v4-0-42c6bb518123@narfation.org
+ net/batman-adv/translation-table.c | 129 ++++++++++++++++---------------------
+ 1 file changed, 55 insertions(+), 74 deletions(-)
 
-Changes in v4:
-- only permanently modify the local TT table based on the "changeset" for
-  the TTN
-- Link to v3: https://patch.msgid.link/20261102-tt-avoid-unhashed-event-v3-0-f37f59c80b0d@narfation.org
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index fabc4879..a86a4d70 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -956,57 +956,6 @@ static bool batadv_tt_iif_is_wifi(struct net *net, int ifindex)
+ 	return batadv_is_wifi(wifi_flags);
+ }
+ 
+-/**
+- * batadv_tt_local_add_existing() - refresh an already known local TT entry
+- * @bat_priv: the bat priv with all the mesh interface information
+- * @tt_local: the local TT entry which was found in the local table
+- * @roamed_back: set to true when the client returned to its original location
+- *
+- * Return: true when the client has to be announced to the mesh again, false
+- * otherwise.
+- */
+-static bool batadv_tt_local_add_existing(struct batadv_priv *bat_priv,
+-					 struct batadv_tt_local_entry *tt_local,
+-					 bool *roamed_back)
+-{
+-	struct batadv_tt_common_entry *common = &tt_local->common;
+-	bool readded = false;
+-
+-	WRITE_ONCE(tt_local->last_seen, jiffies);
+-
+-	scoped_guard(spinlock_bh, &common->flags_lock) {
+-		if (common->flags & BATADV_TT_CLIENT_PENDING) {
+-			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "Re-adding pending client %pM (vid: %d)\n",
+-				   common->key.addr,
+-				   batadv_print_vid(common->key.vid));
+-			/* whatever the reason why the PENDING flag was set,
+-			 * this is a client which was enqueued to be removed in
+-			 * this orig_interval. Since it popped up again, the
+-			 * flag can be reset like it was never enqueued
+-			 */
+-			common->flags &= ~BATADV_TT_CLIENT_PENDING;
+-			readded = true;
+-		}
+-
+-		if (common->flags & BATADV_TT_CLIENT_ROAM) {
+-			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "Roaming client %pM (vid: %d) came back to its original location\n",
+-				   common->key.addr,
+-				   batadv_print_vid(common->key.vid));
+-			/* the ROAM flag is set because this client roamed away
+-			 * and the node got a roaming_advertisement message. Now
+-			 * that the client popped up again at its original
+-			 * location such flag can be unset
+-			 */
+-			common->flags &= ~BATADV_TT_CLIENT_ROAM;
+-			*roamed_back = true;
+-		}
+-	}
+-
+-	return readded;
+-}
+-
+ /**
+  * batadv_tt_local_create() - allocate and initialize a local TT entry
+  * @mesh_iface: netdev struct of the mesh interface
+@@ -1081,27 +1030,63 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
+ }
+ 
+ /**
+- * batadv_tt_local_update_flags() - update the dynamic flags of a local entry
++ * batadv_tt_local_refresh() - refresh a local TT entry of an active client
+  * @bat_priv: the bat priv with all the mesh interface information
+- * @tt_local: the local TT entry to update
++ * @tt_local: the local TT entry to refresh
+  * @iif_is_wifi: whether the client is connected via a wifi interface
+  * @mark: the value contained in the skb->mark field of the received packet (if
+  *  any)
++ * @announce: whether an ADD event has to be queued even when no announced
++ *  flag was modified
++ * @roamed_back: set to true when the client returned to its original location
+  *
+- * Return: true if a flag announced to the other nodes was modified, false
+- * otherwise.
++ * A pending removal of the entry is cancelled and its dynamic flags are
++ * updated. An ADD event is queued when @announce is set, the pending removal
++ * was cancelled or a flag announced to the other nodes was modified.
++ *
++ * All checks and modifications of the flags and the queueing of the ADD event
++ * happen in a single flags_lock section. The announced flags are therefore the
++ * ones which were just stored in the entry.
+  */
+-static bool
+-batadv_tt_local_update_flags(struct batadv_priv *bat_priv,
+-			     struct batadv_tt_local_entry *tt_local,
+-			     bool iif_is_wifi, u32 mark)
++static void
++batadv_tt_local_refresh(struct batadv_priv *bat_priv,
++			struct batadv_tt_local_entry *tt_local,
++			bool iif_is_wifi, u32 mark, bool announce,
++			bool *roamed_back)
+ {
+ 	struct batadv_tt_common_entry *common = &tt_local->common;
+ 	u8 remote_flags;
+ 	u32 match_mark;
+-	bool modified;
+ 
+ 	scoped_guard(spinlock_bh, &common->flags_lock) {
++		if (common->flags & BATADV_TT_CLIENT_PENDING) {
++			batadv_dbg(BATADV_DBG_TT, bat_priv,
++				   "Re-adding pending client %pM (vid: %d)\n",
++				   common->key.addr,
++				   batadv_print_vid(common->key.vid));
++			/* whatever the reason why the PENDING flag was set,
++			 * this is a client which was enqueued to be removed in
++			 * this orig_interval. Since it popped up again, the
++			 * flag can be reset like it was never enqueued
++			 */
++			common->flags &= ~BATADV_TT_CLIENT_PENDING;
++			announce = true;
++		}
++
++		if (common->flags & BATADV_TT_CLIENT_ROAM) {
++			batadv_dbg(BATADV_DBG_TT, bat_priv,
++				   "Roaming client %pM (vid: %d) came back to its original location\n",
++				   common->key.addr,
++				   batadv_print_vid(common->key.vid));
++			/* the ROAM flag is set because this client roamed away
++			 * and the node got a roaming_advertisement message. Now
++			 * that the client popped up again at its original
++			 * location such flag can be unset
++			 */
++			common->flags &= ~BATADV_TT_CLIENT_ROAM;
++			*roamed_back = true;
++		}
++
+ 		/* store the current remote flags before altering them. This
+ 		 * helps understanding is flags are changing or not
+ 		 */
+@@ -1123,10 +1108,13 @@ batadv_tt_local_update_flags(struct batadv_priv *bat_priv,
+ 		else
+ 			common->flags &= ~BATADV_TT_CLIENT_ISOLA;
+ 
+-		modified = remote_flags ^ (common->flags & BATADV_TT_REMOTE_MASK);
+-	}
++		if (remote_flags ^ (common->flags & BATADV_TT_REMOTE_MASK))
++			announce = true;
+ 
+-	return modified;
++		if (announce)
++			__batadv_tt_local_event(bat_priv, common,
++						common->flags);
++	}
+ }
+ 
+ /**
+@@ -1162,8 +1150,7 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 		tt_global = batadv_tt_global_hash_find(bat_priv, addr, vid);
+ 
+ 	if (tt_local) {
+-		added = batadv_tt_local_add_existing(bat_priv, tt_local,
+-						     &roamed_back);
++		WRITE_ONCE(tt_local->last_seen, jiffies);
+ 	} else {
+ 		tt_local = batadv_tt_local_create(mesh_iface, addr, vid, iif_is_wifi);
+ 		if (!tt_local)
+@@ -1183,18 +1170,12 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
+ 		added = true;
+ 	}
+ 
+-	/* announce the (re-)added client to the mesh */
+-	if (added)
+-		batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
++	/* announce the (re-)added client or its modified flags to the mesh */
++	batadv_tt_local_refresh(bat_priv, tt_local, iif_is_wifi, mark, added,
++				&roamed_back);
+ 
+ 	batadv_tt_local_add_roam(bat_priv, tt_global, roamed_back);
+ 
+-	/* if any "dynamic" flag has been modified, resend an ADD event for this
+-	 * entry so that all the nodes can get the new flags
+-	 */
+-	if (batadv_tt_local_update_flags(bat_priv, tt_local, iif_is_wifi, mark))
+-		batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
+-
+ 	ret = true;
+ out:
+ 	batadv_tt_local_entry_put(tt_local);
 
-Changes in v3:
-- rebase on post-2026.4 patches
-- disallow a removal of an ADD from the TT changes whenever this change
-  entry was at any point a DEL
-- Link to v2: https://patch.msgid.link/20261008-tt-avoid-unhashed-event-v2-0-7c4eed81606d@narfation.org
-
-Changes in v2:
-- add patches to handle ROAM flags differently
-- Link to v1: https://patch.msgid.link/20261007-tt-avoid-unhashed-event-v1-0-01c763657916@narfation.org
-
-To: b.a.t.m.a.n@lists.open-mesh.org
-
----
-Sven Eckelmann (11):
-      batman-adv: tt: unhash local entries with hlist_del_init_rcu()
-      batman-adv: tt: refresh local entry in single flags_lock section
-      batman-adv: tt: don't remove unhashed local entries
-      batman-adv: tt: don't queue local events for unhashed entries
-      batman-adv: tt: remove unannounced local entries via pending state
-      batman-adv: tt: keep local entry unchanged when ADD can't be queued
-      batman-adv: tt: requeue DEL of pending local entry after failed allocation
-      batman-adv: tt: extract removal of pending local entry
-      batman-adv: tt: commit only the announced local changes
-      batman-adv: tt: avoid list_lock for unchanged local clients
-      batman-adv: tt: drop ADD+DEL events of never announced clients
-
- net/batman-adv/translation-table.c | 910 ++++++++++++++++++++++++++-----------
- net/batman-adv/types.h             |  14 +
- 2 files changed, 667 insertions(+), 257 deletions(-)
----
-base-commit: a793cf82308e57a0e21c97e889c143cdbba67e5f
-change-id: 20261006-tt-avoid-unhashed-event-76bb5f66d115
-
-Best regards,
---  
-Sven Eckelmann <sven@narfation.org>
+-- 
+2.47.3
 
