@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34225606A31A
-	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 17:23:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8DCC606A31A
+	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 17:23:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=I94oO1lJ
+	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=FChvYkMm
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id B35DE855F6
-	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 18:23:05 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 2D10F85854
+	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 18:23:48 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1795454585;
- b=qPioHSFaR3Yg+ZO1vMWQOtUCpJsZGNtSRUTYobZdtsZ6skMO+sjqGwEkE/xKm7UyLnKhO
- nIX4KZ3ESh2lWTyw2Th2+Ad2bbcb94W17ADW1QTt911q5M+nEfEoR8U9CltOBbTPsyfvghq
- FLUlxol7pCrE7dB81gEaM/AnxGoYAVY=
+ t=1795454628;
+ b=m10IctkjTKjGbT+huiY2qvndRrOV6M/DdZyhUeYFXxhsAZL66/8G5ns7tRUoIteahx1Zh
+ GuUqUHPvdGDKZzlAfvySQhrUsiigJih92IJUMHzLQTbOIrJgUTosWz5EzCOKYzOxA689ETD
+ +elMxK8UCkpM4IVGl5YPrEDxYaBReSk=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1795454585; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1795454628; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=89BApgqYz11D87S6DGoBfXEeIp+QnnRQ5WgQc0ueIG8=;
- b=dD57Y7pc9C2aZ9OP2yOuxsdMktUq45m6w6ThnFdt+Hdh1U6fUFV9magwe+aBSP2wwx6XY
- wpHKgCke7bXn4G0CugDtMrbE7hrZo1s48G1nuSLvjiY57QPGkm+i58WTe+TJjZfuCUuH0Qd
- 07qUxUyWGcWfOa5IbzAkQBIHemfJhLY=
+ list-archive; bh=ux7RoI3q/q6IS/J7nuLk3xttccdt6yzu4InzHrHTg0Y=;
+ b=xbg+g28pl3rNLHtXJ5R6ul8zveohiXWAT6zTeR4BYZ2CRshCRVAtomABwX1Yz3iHLzyEP
+ 2+AXJwzpyqf4r86b5NqLUWb7TvF/pl3b3NoX/sdUg4hL2tnQWB/+BTM2roAGL5h78iwcJM2
+ YpzF8wkM6Op5B14xWiiSi+/HrBThPR4=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -32,51 +32,50 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
-Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
- [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 42DB484515
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 23 Nov 2026 18:18:36 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795454326;
-	b=iGb4ZlK40tafOEqbvhtvvN5WwNjT3kMaTSKeRPs2D8+9ROTR7Jr1jdEAk/VGmYoX7eZWbr
-	TDyEaqbzOruILx/kiQhkv8nGPiGsgcEFV31XCQOIGYimRvR/uUMQdPQlk3wcBWsZq8n9uv
-	/voYgdlLoM9/yE0V6SzfXT4+hgiWNtQ=
+Received: from mail.simonwunderlich.de (mail.simonwunderlich.de [23.88.38.48])
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id EC7A684660
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 23 Nov 2026 18:18:42 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795454333;
+	b=PgPFZNEZ7sofXhA1yxYzbZCHpQ6nSranZ/6+D9Tdo+xgKF9BZz8BjEhIEw77PURPb6cpN5
+	2vz4I3vPpATtZZ7bRaI+bCd2FBhjGeMXhohhwnCddiKrgF82tXub5V772U/1MGt9x5e7vc
+	DK394NRvrH+OqHfIDefKyaoWk770Wrs=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1795454326;
+	s=20121; t=1795454333;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=89BApgqYz11D87S6DGoBfXEeIp+QnnRQ5WgQc0ueIG8=;
-	b=bhDzgVZ/wILoH3nIQYRo8inoO6+EY9oMMi6KctvvIZYDVDF2ph1BeE2dqiIyW8B2NC3ziS
-	M0f3I5pXlZLUO4UUGS+yQqmAZRkmHHMbEYhOyduNHNdqmOQGYaCloUJgsGyMN87KvFIUm9
-	R60n0Z6xBdgS5nRzvv3IkWULTxadZIs=
+	bh=ux7RoI3q/q6IS/J7nuLk3xttccdt6yzu4InzHrHTg0Y=;
+	b=IArZuaRB/ziE9dOghi3MB+NmwJ3RctJEn1H9Q6ORG+d2CREgMOpEvaOIVqM3ii84u/lbYN
+	m6XIdPvbYszoXvGGe8Wypw92Y38CMTDSDkOb7YW5jDo7lagYlubfUw1ixQ/PMUTTXgTaji
+	Y5CklfBNwcBUInTglivvitz8veSkKJg=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=I94oO1lJ;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=FChvYkMm;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
- 2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
+ 23.88.38.48 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C59714c2E05a704819b6BA2db4.dip0.t-ipconnect.de
+ (p200300C59714C2E05A704819B6ba2dB4.dip0.t-ipconnect.de
  [IPv6:2003:c5:9714:c2e0:5a70:4819:b6ba:2db4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id B0D82FA384;
-	Mon, 23 Nov 2026 18:18:35 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 72826FA3DE;
+	Mon, 23 Nov 2026 18:18:36 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1795454315;
+	s=09092022; t=1795454316;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=89BApgqYz11D87S6DGoBfXEeIp+QnnRQ5WgQc0ueIG8=;
-	b=I94oO1lJGCg5mBC7Zh5cqSF9BEsjLdkYXz9GdFy6WWR6GnpBlezc8a0oERv7+Ur2NN9DF5
-	mEqXYaZ+VArgNRPz/xX0E5HVUPiOIqClSc9V6Qscux9b1x2WPyaKtACLvmOsA5ZwTunhLd
-	gnS96YKeCdl5aQXDHHnWJoITbMT+T909wH0n6g7M0w4l+bp1WknIuYN8XDb1yYMefOoLEt
-	ejrWV4GLryD/vQ9G0eXy9TdoTHpkL1GFpDico+iC3/lHLwl3aml9YLhsP/TVcyMw9al2kK
-	Kut1XzgN56CME7PKQHt5oa7WtBWuPYMV2TOE8yZ/9DuWWnxABeS9fVuV4FE9Hw==
+	bh=ux7RoI3q/q6IS/J7nuLk3xttccdt6yzu4InzHrHTg0Y=;
+	b=FChvYkMmWoxDrBiYh9wf1t1RdoKrAqrwPwMfTRtKWItX+tEkE6hvhaxkMlMV3gLiq/OeH6
+	hLAB2zMg+XXpFo9CAEySSj4ulI5wgXU2N01diWF6WjUnjWSTDIxtBjOx1ahHlobcETnCAl
+	wX2FtUOzVl/S7qR5akV51X/CDVC4xNvEKc6/oRbBKKBYd0OPTH8B8b+EP+0O+foctjcfO1
+	PBN9VhtsLDp7FiuKwp4NeRbCQd45WJf4YQkcTIgL8RBmjHGtdLb5MrGMmQcuIy6Sh16xSx
+	RGYQz4b75/DD5lC7ZxREaZJNrNbpMs9j7h7enBY7/15onbyCPPrAbP2C7IAbyw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,20 +85,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 04/15] batman-adv: bla: register own backbone gw when
- claiming for local node
-Date: Mon, 23 Nov 2026 18:18:16 +0100
-Message-ID: <20261123171827.3294525-5-sw@simonwunderlich.de>
+Subject: [PATCH net-next 05/15] batman-adv: tt: unhash local entries with
+ hlist_del_init_rcu()
+Date: Mon, 23 Nov 2026 18:18:17 +0100
+Message-ID: <20261123171827.3294525-6-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261123171827.3294525-1-sw@simonwunderlich.de>
 References: <20261123171827.3294525-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: ZIYU5OJ6OBX6RSW2SGCH5DUEO2GIAURG
-X-Message-ID-Hash: ZIYU5OJ6OBX6RSW2SGCH5DUEO2GIAURG
+Message-ID-Hash: RHXO5QOUJHDEYRZ7ZEXQWA4FG5IQNG27
+X-Message-ID-Hash: RHXO5QOUJHDEYRZ7ZEXQWA4FG5IQNG27
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +111,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/ZIYU5OJ6OBX6RSW2SGCH5DUEO2GIAURG/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/RHXO5QOUJHDEYRZ7ZEXQWA4FG5IQNG27/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -130,65 +128,47 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_bla_rx() claims an unclaimed client (or a client which migrated to
-the local node) by calling batadv_handle_claim() with the address of the
-primary interface as backbone address. batadv_handle_claim() then registers
-the backbone gateway via batadv_bla_get_backbone_gw() - but always with
-own_backbone set to false.
+A context which looked up a local TT entry via RCU has no way to find out
+whether the entry was removed from the local hash in the meantime.
+hlist_del_rcu() leaves the pprev pointer of the node untouched and
+hlist_unhashed() therefore still reports the entry as hashed.
 
-When no backbone gateway entry for the local node exists yet on this VLAN
-(for example due to an earlier error), the entry is therefore created like
-a foreign backbone gateway. No initial announcement is sent and the entry
-doesn't enter the BATADV_BLA_BACKBONE_GW_UNSYNCED state with the startup
-grace period (wait_periods and bla.num_requests). The following call of
-batadv_bla_update_own_backbone_gw() finds the already existing entry and
-returns early without fixing this up.
+Use hlist_del_init_rcu() when a local entry is unhashed by
+batadv_tt_local_purge_pending_clients() and batadv_tt_local_table_free().
+hlist_unhashed() can then be used under the hash bucket list_lock to check
+whether an entry is still part of the local table.
 
-As a result, the first announcement is delayed by up to one BLA period and
-multicast traffic is not held back while the local claim table isn't
-synced yet.
+batadv_tt_local_remove_now() still unhashes via batadv_hash_remove(). It is
+converted when it is merged into the locked removal path.
 
-Pass the correct own_backbone value to batadv_bla_get_backbone_gw() by
-checking whether the backbone address is the address of the primary
-interface.
-
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://sashiko.dev/#/bug/linux-dba9d95d-5eeb-40fd-abf4-e054aee1f735
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/batman-adv/translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 68ff2f94cf49..3da070a087da 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -986,18 +986,22 @@ static bool batadv_handle_claim(struct batadv_priv *bat_priv,
- 				unsigned short vid)
- {
- 	struct batadv_bla_backbone_gw *backbone_gw;
-+	bool own_backbone;
-+
-+	own_backbone = batadv_compare_eth(backbone_addr,
-+					  primary_if->net_dev->dev_addr);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 1807a498d694..1c784a0e8c9b 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1887,7 +1887,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 		spin_lock_bh(list_lock);
+ 		hlist_for_each_entry_safe(tt_common_entry, node_tmp,
+ 					  head, hash_entry) {
+-			hlist_del_rcu(&tt_common_entry->hash_entry);
++			hlist_del_init_rcu(&tt_common_entry->hash_entry);
+ 			tt_local = container_of(tt_common_entry,
+ 						struct batadv_tt_local_entry,
+ 						common);
+@@ -4464,7 +4464,7 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 					   tt_common->key.addr,
+ 					   batadv_print_vid(tt_common->key.vid));
  
- 	/* register the gateway if not yet available, and add the claim. */
+-				hlist_del_rcu(&tt_common->hash_entry);
++				hlist_del_init_rcu(&tt_common->hash_entry);
+ 				atomic_inc(&hash->generation);
  
- 	backbone_gw = batadv_bla_get_backbone_gw(bat_priv, backbone_addr, vid,
--						 false);
-+						 own_backbone);
- 
- 	if (unlikely(!backbone_gw))
- 		return true;
- 
- 	/* this must be a CLAIM frame */
- 	batadv_bla_add_claim(bat_priv, claim_addr, vid, backbone_gw);
--	if (batadv_compare_eth(backbone_addr, primary_if->net_dev->dev_addr))
-+	if (own_backbone)
- 		batadv_bla_send_claim(bat_priv, claim_addr, vid,
- 				      BATADV_CLAIM_TYPE_CLAIM);
- 
+ 				/* An entry which still carries BATADV_TT_CLIENT_NEW was
 -- 
 2.47.3
 
