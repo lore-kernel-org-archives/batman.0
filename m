@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F0D3606A31A
-	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 17:19:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA8A3606A31A
+	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 17:20:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=PjPs9Fhl
+	dkim=pass (2048-bit key) header.d=simonwunderlich.de header.i=@simonwunderlich.de header.a=rsa-sha256 header.s=09092022 header.b=aSXbZnpz
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 8C9DB8465F
-	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 18:19:54 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 66A6F84758
+	for <batman@archiver.kernel.org>; Mon, 23 Nov 2026 18:20:26 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1795454394;
- b=TI8tPu5f7wqNgEvkSCPhXS9y401y5ndfMVCfAsV+cCrtD6PlkrbJDWWo/CCiMaqjCPuyD
- eUPEWKkBwuTmOJU4mWPs58+fNjVfA6ul+SWV7uOwekZRe9kD0JTgn1EHj/zkHMbmVB76AHo
- tZRhU/F65ww6AjBv0f4clCU3inS8bSc=
+ t=1795454426;
+ b=bNgG97F4BcB0BFJ7BPpwq+j6hT5yrFHOS5PVZ3c+Y2cwSiFOR0R4BPH7X8olD22NQ7Zre
+ wPrJUvSq+NTBNWyKcDq2GBzYTH8+UCIg6Qj3KEJjKhttbQIuKf4/OOZkfUeLXAnzB8wHwHt
+ Tq7O3X+dYBcO6uWB7PKv61gebeDm66o=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1795454394; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1795454426; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=HTSxq5AdXzXnAkXTGC23vo77Fv+9+l048NGGD4ATRx0=;
- b=YkQhlNYI6nJGX3LOvAMpE96GgT1PRkPWL4iaKu0bPJSfARDWbSGLLY6lamPYx0XMswJV4
- PsztIGCPtPKDzqmVHGwqTcjYPai0D09xwga0dWmZg3S/lyKctcUiCxjInIyTF4+Y7EzqdNx
- CtN7cuxPGNvAj3S1g4gE6WXe9Hq/VcA=
+ list-archive; bh=oJvHQFMgooA7UahwimsOb3OkFjRJ0W83iVe8uaAwcJo=;
+ b=Mx4ylG5m61ST3As+UkgRpKYLx27ikMA7TkcNAlTjejeV+UNX6Aq1iRmKIAMOBkG9bjkcA
+ lP/rn3RUKrvxJnAyPwKCoyHkqxOnJb49+fLSds5liO9UEzub7Ta7quYfmfrr0ZfWLyN4XtA
+ C2f031o8/GUQ8KNVknu1RtjaNtL5lRo=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=simonwunderlich.de;
  arc=pass;
@@ -34,49 +34,49 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=simonwunderlich.de;
  dmarc=pass (Used From Domain Record) header.from=simonwunderlich.de policy.dmarc=none
 Received: from mail.simonwunderlich.de (mail.simonwunderlich.de
  [IPv6:2a01:4f8:c17:e8c0::1])
-	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id CF128830EF
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 23 Nov 2026 18:18:42 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795454322;
-	b=MVmpQ7I6x7f0uftSBvM7MZu/xlIyDsew8WZTKk8drn9PiD5hiC1Wsvo9pHFVZOpCt43CtH
-	MeMz5atnZnm/CblFKcBIPRifJsLhg9z0ULOcDpzoI8eZxL9vwlxolj0M2aGPQ/VPtpLf5k
-	Dw/iAwxXw7X7bgxWPC2ygayZYIDIWQg=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 567D4830EF
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Mon, 23 Nov 2026 18:18:43 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795454323;
+	b=jAB/8Fxxu8jyutirJBrG/JFFPUKZBzfIGgYkdKELe3LI9zQsJ3Kj0pQTcrk+WhXHcTAoCN
+	Gf9el4wQtP/XMAz6ylTw0GlDNdHDH6cASsTdDj0t+Xfpe5yVXBsftzYzYaaTZYNuw1Q7ze
+	Lz1lT1/BVKtSrKCiUKkRvHfpTLhfe8k=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1795454322;
+	s=20121; t=1795454323;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=HTSxq5AdXzXnAkXTGC23vo77Fv+9+l048NGGD4ATRx0=;
-	b=awq0xXVRRI7tPIezPE0FdPmdCTEIDgkCnHSAedlpOVkjKdgAmMbtbB1/5JduMvjQYoUYG+
-	TTCgmvgVHqjwNBMpw3hihK42+utB94Z7o4TR4gA6IV1YFhjHeSFgD4J6F03G05zYCOdTpA
-	mteIdNQXYq6sjecsOypbuw4fbI/Dsog=
+	bh=oJvHQFMgooA7UahwimsOb3OkFjRJ0W83iVe8uaAwcJo=;
+	b=Vr2cOOMzoyxTKGmnaWiyCLJ4vgckx/hCc6RINEnVymGaW1yHuJwH80QhCHWuau7g3XSKDk
+	ALly0ECy8f57HTdFrDKUlIZ8c4+5b8MJ2i8v/x8VPqtxwdzdOc8Kdva1IsTRhxe/uKkaUS
+	+JOesP1Hl4K9MA/z09T9DwhpPASjCq8=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=PjPs9Fhl;
+	dkim=pass header.d=simonwunderlich.de header.s=09092022 header.b=aSXbZnpz;
 	dmarc=pass (policy=none) header.from=simonwunderlich.de;
 	spf=pass (diktynna.open-mesh.org: domain of sw@simonwunderlich.de designates
  2a01:4f8:c17:e8c0::1 as permitted sender) smtp.mailfrom=sw@simonwunderlich.de
 Received: from kero.packetmixer.de
- (p200300C59714c2E05a704819b6BA2db4.dip0.t-ipconnect.de
+ (p200300C59714C2e05a704819B6ba2dB4.dip0.t-ipconnect.de
  [IPv6:2003:c5:9714:c2e0:5a70:4819:b6ba:2db4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest
  SHA256)
 	(No client certificate requested)
-	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id A0E14FA3E1;
-	Mon, 23 Nov 2026 18:18:39 +0100 (CET)
+	by mail.simonwunderlich.de (Postfix) with UTF8SMTPSA id 61A1BFA3E2;
+	Mon, 23 Nov 2026 18:18:41 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=simonwunderlich.de;
-	s=09092022; t=1795454319;
+	s=09092022; t=1795454321;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=HTSxq5AdXzXnAkXTGC23vo77Fv+9+l048NGGD4ATRx0=;
-	b=PjPs9FhlDvXPCiBzJ7gaAKLYxthPHgTeEg+8SL7fKk624ew3+ukufVL6YHj3UtjYvgMguv
-	e1fdaK5nyosLEcPspAwzuvPuJSFHZQupkvYDDrUhgJTYoG3lna/7jGTCxoNSgf4EPOEVLT
-	ZNt6NeZv0OvK5Tl9NaLbWaGb0aTnHT7tusec3K45MX29vL+QYDOL5gLUl31dPU/B4Zh0s0
-	1AZXSF0sZ6pBEb/4jPfZp5SL8Ld3RUV77Wcvl1AJHo1u+TaxjtU9wEuTFhoqvPgT6iURD5
-	8RaG2AnuKHV9pevoM2lHOwSgGAe7HakgGrRsBb/LMRUkFOzlfEtpoGFANecLIg==
+	bh=oJvHQFMgooA7UahwimsOb3OkFjRJ0W83iVe8uaAwcJo=;
+	b=aSXbZnpzBuOvGm4Ekc6962RsfPVSRVOMkKFf24ZO4q1PKDwcYOvS3+01CtwP+Lp8C8UoED
+	ZYfSRXARLYvs3+VlXrGZop48llPG22oU587wNC2iTE8VPJCkCnYacR26ZV0+B+RUvcnydh
+	sjYoI1lGJcevePFeCfPgGvsLXGTMe9qGxY+7mu/FAVNzG8/6+4kJoE/WHcbvlNuBTPyzpu
+	1DE93c+KzNlmptbMLNjHc6zz/B5qGsRVL9ydCj6RwQRkSedSCrAg6t05Cw/sFBCeRgDnGo
+	7/gaqJ4/JUshZa8lHCMhzdVJIFccT8r8PmSCjxlu17mIH6UEl/cHrR677xgtRw==
 From: Simon Wunderlich <sw@simonwunderlich.de>
 To: netdev@vger.kernel.org
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -86,20 +86,19 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Simon Horman <horms@kernel.org>,
 	b.a.t.m.a.n@lists.open-mesh.org,
 	Sven Eckelmann <sven@narfation.org>,
-	Sashiko <sashiko-bot@kernel.org>,
 	Simon Wunderlich <sw@simonwunderlich.de>
-Subject: [PATCH net-next 08/15] batman-adv: tt: don't queue local events for
- unhashed entries
-Date: Mon, 23 Nov 2026 18:18:20 +0100
-Message-ID: <20261123171827.3294525-9-sw@simonwunderlich.de>
+Subject: [PATCH net-next 09/15] batman-adv: tt: remove unannounced local
+ entries via pending state
+Date: Mon, 23 Nov 2026 18:18:21 +0100
+Message-ID: <20261123171827.3294525-10-sw@simonwunderlich.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261123171827.3294525-1-sw@simonwunderlich.de>
 References: <20261123171827.3294525-1-sw@simonwunderlich.de>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Message-ID-Hash: Y47RTPWXLDAAE2OB2QSBUXNYQR6W27EX
-X-Message-ID-Hash: Y47RTPWXLDAAE2OB2QSBUXNYQR6W27EX
+Message-ID-Hash: 2UI6XW32A7PLL6YDIFVW6Q25R5WEIK2U
+X-Message-ID-Hash: 2UI6XW32A7PLL6YDIFVW6Q25R5WEIK2U
 X-MailFrom: sw@simonwunderlich.de
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -113,7 +112,7 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/Y47RTPWXLDAAE2OB2QSBUXNYQR6W27EX/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/2UI6XW32A7PLL6YDIFVW6Q25R5WEIK2U/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -130,255 +129,95 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_tt_local_add() looks up the local entry via RCU only.
-batadv_tt_local_purge_pending_clients() or batadv_tt_local_remove() can
-unhash it before the entry is modified and an event is queued for it:
+batadv_tt_local_remove_entry() unhashes an entry which still carries
+BATADV_TT_CLIENT_NEW immediately because it was not yet announced to the
+other nodes. But the flag is only cleared at the end of the commit. The ADD
+of the entry might therefore already have been taken for the next TTVN when
+the flag is checked.
 
-  CPU0                          CPU1
-                                /* DEL#1 queued, PENDING set */
-  batadv_tt_local_hash_find()
-                                batadv_tt_local_commit_changes()
-                                  ..._purge_pending_clients()
-                                    hlist_del_rcu(&...->hash_entry);
-                                  /* DEL#1 announced */
-  batadv_tt_local_refresh()
-    flags &= ~..._PENDING;
-  /* ADD queued for unhashed entry */
+Handle such an entry like an already announced one: queue the DEL and mark
+the entry as BATADV_TT_CLIENT_PENDING. It is then removed from the local
+table when the pending entries are purged by the next commit.
+batadv_tt_local_purge_pending_clients() already takes care of not
+uncounting an entry which was never counted.
 
-The queued event will then be announced for a client which is not part
-anymore of the table (+ its CRC). A full table request in this and similar
-scenarios is required to fix the inconsistency.
+This also leaves the commit as the only place which finishes the removal of
+a local entry. A follow-up change relies on this to apply exactly the
+announced changes to the local table.
 
-Only the hash bucket list_lock can ensure that an entry is still part of
-the local table. batadv_tt_local_refresh() therefore checks with
-hlist_unhashed() under this lock whether the entry is still hashed. An
-entry which is no longer hashed is not refreshed and batadv_tt_local_add()
-creates a new entry instead. batadv_tt_local_insert() adds this entry to
-the hash and queues its initial ADD under the same list_lock. Otherwise
-batadv_tt_local_commit_changes() could count the entry in the CRC of a ttvn
-before its ADD was queued or batadv_tt_local_remove() could unhash it
-before the ADD was queued.
-
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260930094558.3723766-2-sw%40simonwunderlich.de?part=7
-Closes: https://sashiko.dev/#/bug/linux-557fd001-5041-4b0a-a2ea-cdf22526ee84
-Closes: https://sashiko.dev/#/bug/linux-c7f17a4b-620f-4307-a058-be6523cc6fa2
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 156 ++++++++++++++++++++++++-----
- 1 file changed, 129 insertions(+), 27 deletions(-)
+ net/batman-adv/translation-table.c | 35 +++++-------------------------
+ 1 file changed, 5 insertions(+), 30 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 7968931d5d3c..2828e362640a 100644
+index 2828e362640a..977f62c88da7 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -966,7 +966,7 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
- }
- 
- /**
-- * batadv_tt_local_refresh() - refresh a local TT entry of an active client
-+ * batadv_tt_local_refresh_locked() - refresh a hashed local TT entry
-  * @bat_priv: the bat priv with all the mesh interface information
-  * @tt_local: the local TT entry to refresh
-  * @iif_is_wifi: whether the client is connected via a wifi interface
-@@ -980,19 +980,23 @@ batadv_tt_local_create(struct net_device *mesh_iface, const u8 *addr,
-  * updated. An ADD event is queued when @announce is set, the pending removal
-  * was cancelled or a flag announced to the other nodes was modified.
+@@ -1745,13 +1745,11 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
+  * @roaming: true if the deletion is due to a roaming event
+  * @curr_flags: pointer to store the flags of the entry before it was removed
   *
-- * All checks and modifications of the flags and the queueing of the ADD event
-- * happen in a single flags_lock section. The announced flags are therefore the
-- * ones which were just stored in the entry.
-+ * The caller must hold the hash bucket list_lock of the entry and must have
-+ * checked that the entry is still part of the local table.
-  */
- static void
--batadv_tt_local_refresh(struct batadv_priv *bat_priv,
--			struct batadv_tt_local_entry *tt_local,
--			bool iif_is_wifi, u32 mark, bool announce,
--			bool *roamed_back)
-+batadv_tt_local_refresh_locked(struct batadv_priv *bat_priv,
-+			       struct batadv_tt_local_entry *tt_local,
-+			       bool iif_is_wifi, u32 mark, bool announce,
-+			       bool *roamed_back)
- {
- 	struct batadv_tt_common_entry *common = &tt_local->common;
-+	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	u8 remote_flags;
- 	u32 match_mark;
-+	u32 i;
-+
-+	i = batadv_choose_tt(&common->key, hash->size);
-+	lockdep_assert_held(&hash->list_locks[i]);
+- * For an already announced entry, the (roamed) DEL change is queued and the
+- * entry is marked as BATADV_TT_CLIENT_PENDING by batadv_tt_local_set_pending().
+- * It stays in the local table until the next ttvn increment.
+- *
+- * An entry which still carries BATADV_TT_CLIENT_NEW was added right after the
+- * last ttvn increment and was not (yet) announced. It is therefore removed
+- * from the local table immediately.
++ * The (roamed) DEL change is queued and the entry is marked as
++ * BATADV_TT_CLIENT_PENDING by batadv_tt_local_set_pending(). It stays in the
++ * local table until the DEL is committed with the next ttvn increment. This
++ * also applies to an entry which still carries BATADV_TT_CLIENT_NEW because its
++ * ADD might already have been taken for the next ttvn.
+  *
+  * An entry which was already removed from the local table after it was looked
+  * up is ignored and BATADV_NO_FLAGS is stored in @curr_flags.
+@@ -1770,7 +1768,6 @@ batadv_tt_local_remove_entry(struct batadv_priv *bat_priv,
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+ 	struct batadv_tt_common_entry *common = &tt_local_entry->common;
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+-	bool unhashed = false;
+ 	u16 flags;
+ 	u32 i;
  
- 	scoped_guard(spinlock_bh, &common->flags_lock) {
- 		if (common->flags & BATADV_TT_CLIENT_PENDING) {
-@@ -1053,6 +1057,109 @@ batadv_tt_local_refresh(struct batadv_priv *bat_priv,
- 	}
- }
+@@ -1795,24 +1792,6 @@ batadv_tt_local_remove_entry(struct batadv_priv *bat_priv,
+ 		if (roaming)
+ 			common->flags |= BATADV_TT_CLIENT_ROAM;
  
-+/**
-+ * batadv_tt_local_refresh() - refresh a local TT entry of an active client
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tt_local: the local TT entry to refresh
-+ * @iif_is_wifi: whether the client is connected via a wifi interface
-+ * @mark: the value contained in the skb->mark field of the received packet (if
-+ *  any)
-+ * @roamed_back: set to true when the client returned to its original location
-+ *
-+ * See batadv_tt_local_refresh_locked() for the actual refresh.
-+ *
-+ * Return: 0 if the entry was refreshed, -ENOENT if the entry is no longer part
-+ * of the local table.
-+ */
-+static int
-+batadv_tt_local_refresh(struct batadv_priv *bat_priv,
-+			struct batadv_tt_local_entry *tt_local,
-+			bool iif_is_wifi, u32 mark, bool *roamed_back)
-+{
-+	spinlock_t *list_lock; /* protects write access to the hash lists */
-+	struct batadv_tt_common_entry *common = &tt_local->common;
-+	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
-+	u32 i;
-+
-+	i = batadv_choose_tt(&common->key, hash->size);
-+	list_lock = &hash->list_locks[i];
-+
-+	WRITE_ONCE(tt_local->last_seen, jiffies);
-+
-+	spin_lock_bh(list_lock);
-+
-+	/* the entry was removed from the local table after it was looked up */
-+	if (hlist_unhashed(&common->hash_entry)) {
-+		spin_unlock_bh(list_lock);
-+		return -ENOENT;
-+	}
-+
-+	batadv_tt_local_refresh_locked(bat_priv, tt_local, iif_is_wifi, mark,
-+				       false, roamed_back);
-+
-+	spin_unlock_bh(list_lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * batadv_tt_local_insert() - add a new local TT entry to the local table
-+ * @bat_priv: the bat priv with all the mesh interface information
-+ * @tt_local: the new local TT entry (not yet hashed)
-+ * @iif_is_wifi: whether the client is connected via a wifi interface
-+ * @mark: the value contained in the skb->mark field of the received packet (if
-+ *  any)
-+ * @roamed_back: set to true when the client returned to its original location
-+ *
-+ * The entry is inserted into the local hash and its initial ADD event is
-+ * queued under the same hash bucket list_lock. A concurrent
-+ * batadv_tt_local_commit_changes() can therefore not count the entry in the
-+ * CRC of a ttvn before its ADD was queued and a concurrent
-+ * batadv_tt_local_remove() can not unhash it before the ADD was queued.
-+ *
-+ * Return: true if the entry was added, false if the client already has an
-+ * entry in the local table.
-+ */
-+static bool batadv_tt_local_insert(struct batadv_priv *bat_priv,
-+				   struct batadv_tt_local_entry *tt_local,
-+				   bool iif_is_wifi, u32 mark,
-+				   bool *roamed_back)
-+{
-+	spinlock_t *list_lock; /* protects write access to the hash lists */
-+	struct batadv_tt_common_entry *common = &tt_local->common;
-+	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	u32 i;
-+
-+	i = batadv_choose_tt(&common->key, hash->size);
-+	head = &hash->table[i];
-+	list_lock = &hash->list_locks[i];
-+
-+	spin_lock_bh(list_lock);
-+
-+	hlist_for_each(node, head) {
-+		if (!batadv_compare_tt(node, &common->key))
-+			continue;
-+
-+		spin_unlock_bh(list_lock);
-+		return false;
-+	}
-+
-+	/* reference for the hash */
-+	kref_get(&common->refcount);
-+	hlist_add_head_rcu(&common->hash_entry, head);
-+	atomic_inc(&hash->generation);
-+
-+	/* announce the added client to the mesh */
-+	batadv_tt_local_refresh_locked(bat_priv, tt_local, iif_is_wifi, mark,
-+				       true, roamed_back);
-+
-+	spin_unlock_bh(list_lock);
-+
-+	return true;
-+}
-+
- /**
-  * batadv_tt_local_add() - add a new client to the local table or update an
-  *  existing client
-@@ -1073,10 +1180,9 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 	struct batadv_tt_global_entry *tt_global = NULL;
- 	struct batadv_tt_local_entry *tt_local;
- 	bool roamed_back = false;
--	bool added = false;
- 	bool iif_is_wifi;
- 	bool ret = false;
--	int hash_added;
-+	int err;
- 
- 	iif_is_wifi = batadv_tt_iif_is_wifi(dev_net(mesh_iface), ifindex);
- 
-@@ -1086,30 +1192,26 @@ bool batadv_tt_local_add(struct net_device *mesh_iface, const u8 *addr,
- 		tt_global = batadv_tt_global_hash_find(bat_priv, addr, vid);
- 
- 	if (tt_local) {
--		WRITE_ONCE(tt_local->last_seen, jiffies);
--	} else {
-+		err = batadv_tt_local_refresh(bat_priv, tt_local, iif_is_wifi,
-+					      mark, &roamed_back);
-+		if (err == -ENOENT) {
-+			/* stale entry which has to be replaced by a new one */
-+			batadv_tt_local_entry_put(tt_local);
-+			tt_local = NULL;
-+		}
-+	}
-+
-+	if (!tt_local) {
- 		tt_local = batadv_tt_local_create(mesh_iface, addr, vid, iif_is_wifi);
- 		if (!tt_local)
- 			goto out;
- 
--		kref_get(&tt_local->common.refcount);
--		hash_added = batadv_hash_add(bat_priv->tt.local_hash, batadv_compare_tt,
--					     batadv_choose_tt, &tt_local->common.key,
--					     &tt_local->common.hash_entry);
+-		if (common->flags & BATADV_TT_CLIENT_NEW) {
+-			batadv_dbg(BATADV_DBG_TT, bat_priv,
+-				   "Deleting local tt entry (%pM, vid: %d): %s\n",
+-				   common->key.addr,
+-				   batadv_print_vid(common->key.vid), message);
 -
--		if (unlikely(hash_added != 0)) {
--			/* remove the reference for the hash */
--			batadv_tt_local_entry_put(tt_local);
-+		if (unlikely(!batadv_tt_local_insert(bat_priv, tt_local,
-+						     iif_is_wifi, mark,
-+						     &roamed_back)))
- 			goto out;
+-			hlist_del_init_rcu(&common->hash_entry);
+-			atomic_inc(&hash->generation);
+-
+-			/* The entry was never announced and was therefore
+-			 * never counted in the local table size.
+-			 */
+-			__batadv_tt_local_event(bat_priv, common,
+-						common->flags | BATADV_TT_CLIENT_DEL);
+-			unhashed = true;
+-			break;
 -		}
 -
--		added = true;
+ 		flags = BATADV_TT_CLIENT_DEL;
+ 		if (roaming)
+ 			flags |= BATADV_TT_CLIENT_ROAM;
+@@ -1822,10 +1801,6 @@ batadv_tt_local_remove_entry(struct batadv_priv *bat_priv,
  	}
  
--	/* announce the (re-)added client or its modified flags to the mesh */
--	batadv_tt_local_refresh(bat_priv, tt_local, iif_is_wifi, mark, added,
--				&roamed_back);
+ 	spin_unlock_bh(list_lock);
 -
- 	batadv_tt_local_add_roam(bat_priv, tt_global, roamed_back);
+-	/* drop reference of removed hash entry */
+-	if (unhashed)
+-		batadv_tt_local_entry_put(tt_local_entry);
+ }
  
- 	ret = true;
+ /**
 -- 
 2.47.3
 
