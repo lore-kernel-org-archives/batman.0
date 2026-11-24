@@ -2,29 +2,29 @@ Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2ACF606A31E
-	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 17:27:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B5BA606A32E
+	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 17:28:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QUTV5Osk
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cCa2s9rw
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 44E5E8439B
-	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 18:27:47 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 3079F807A3
+	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 18:28:17 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1795541267;
- b=ygWpITm4e4qO/N8pqvI+SQigbeEczk21rFRS6/MlQqZW2rBmnSMQmCFAewNWPGsV8F4/L
- tk55OmYGq6I8AR19VjGNVXb5FzOkzIC5FJzmfqVXeQZ/R4pEoN99mUY3J1vAMPb1E9duEZG
- dXRKMR5kJfiHjLrUv7jP7/cJzMtRzO0=
+ t=1795541297;
+ b=wzC5ShL5Qa5U6sEVUYOEuZHRCxzrArBGF6JJxFPMVdeGVTZa5Ja97Hk0NkrIJtoObZ9+j
+ BQp1gYPuN8sRiTm/sPZ8OwZWnYhQBNYOWN2wITArzuyttaH/cir3ssgQYpYE7fVL72jGqiW
+ mbHq2ruFcfSS10cK7kEycxmSritWn2I=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1795541267; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1795541297; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=qMX1K4LfI+C2lX6IEyz7++MGwrFPHDSNls5QRDDbrJc=;
- b=c345pbysEAP0uwFbNbL5WgusTNDB5gwLl8S2g4a983Oq9qnbg3LuMFb/QLA7s6mRUZhnQ
- 74wrBtrM39lZxfLGNzXM8UVGtISVnBg6m+WC3IH2Hy7bUgYSusDYYbdJ9RPYKKSeK/trLuM
- XBCihwm8B2SYfLdtFcrltff9/udB7PQ=
+ list-archive; bh=3AaHa7wUvfXbgjXKSaJH9L1BQGA+L/wa6rMO4rpmjeI=;
+ b=uQDw91u40eb38KL86iJzsoBznHFbI/A79d+juDD4sr7Q3GiPuGtP7r4zVqLxqFZRrOCtk
+ SAxPsc8C8nu0kam1vEBfuYobhaJUSig3d40+pFQqHkWqAUuGzRAAcnZncmPM9y/gLFpGroc
+ 0b9M9duRre9bp7Qj++V6ae8l2z11M20=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=kernel.org;
  arc=pass;
@@ -32,57 +32,57 @@ ARC-Authentication-Results: i=2; open-mesh.org;
 Authentication-Results: open-mesh.org; dkim=pass header.d=kernel.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=kernel.org policy.dmarc=quarantine
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id D26B082F0A
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 24 Nov 2026 18:20:46 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795540857;
-	b=kj+7NsHrskv9VsZukhmSC69m52wse7I369OW4jaVc5SaLjrB28AWnurSMNTZvYOoxDcQqe
-	MpND+do0LaE9uMAPn/BX0vme/C+sXANtxN5e6s60D8/neyOoDNjZCuGf/UV9nEns5s9TBc
-	NrNq4iFeB46awmS8yqyHB0r1HwQ02jw=
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	by diktynna.open-mesh.org (Postfix) with ESMTPS id 7C96880B6E
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 24 Nov 2026 18:20:48 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795540858;
+	b=LcjyLa+GAsGGEd2Bij+p0ATCkMCrlshVqfUKGOV5Xj+bcOozhfQB2/whLfnM1jbZU0yl6p
+	uAZsKNq75dNDp5nB9G9IO0FUJ+x7awi4NTvzQCsaEFoYV8eUp8TWxr3DwY7+OnbFy16tMS
+	zCPEIU5QQaZihm/GC6yFYGtarJQVUOs=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1795540857;
+	s=20121; t=1795540858;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=qMX1K4LfI+C2lX6IEyz7++MGwrFPHDSNls5QRDDbrJc=;
-	b=a41hh0zLpap5nowT8Vzh45a9UPXCd4LrWysIs9lAbKekYB8AA9F0SRDR5zmLlxCKEi8gAf
-	CmLgSiBdWzhddpRFLvSRKare8IhyhlG5nmUgiRrh7RA1jT+pobWYC6cU9bi+ptdUDMLlLo
-	sItQbphmyHKei2a61Hm1RyuXYhbOz+0=
+	bh=3AaHa7wUvfXbgjXKSaJH9L1BQGA+L/wa6rMO4rpmjeI=;
+	b=ncs/D5YSm46TCf92fRLtZGNSbWVwVe1YtQgQRbk6BP4KFF4H8AJ1lyctRV/zur/21gg6G9
+	FnQtXTaAmAEZqg59NhYHTVFmkC4QDeH4aJ5+r385FYOe5zWvcJwqZoIJB39zW1g9MnGyC3
+	yThvywItj2y+f2rKON0YygdWaRo0QjM=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=kernel.org header.s=k20260515 header.b=QUTV5Osk;
+	dkim=pass header.d=kernel.org header.s=k20260515 header.b=cCa2s9rw;
 	spf=pass (diktynna.open-mesh.org: domain of netdev-bot+sashiko@kernel.org
- designates 2600:3c04:e001:324:0:1991:8:25 as permitted sender)
+ designates 2600:3c0a:e001:78e:0:1991:8:25 as permitted sender)
  smtp.mailfrom=netdev-bot+sashiko@kernel.org;
 	dmarc=pass (policy=quarantine) header.from=kernel.org
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C35C4627EA;
-	Tue, 24 Nov 2026 17:20:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA3901F000D3;
-	Tue, 24 Nov 2026 17:20:44 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3F7C940407;
+	Tue, 24 Nov 2026 17:20:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 914811F000D3;
+	Tue, 24 Nov 2026 17:20:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795540845;
-	bh=qMX1K4LfI+C2lX6IEyz7++MGwrFPHDSNls5QRDDbrJc=;
+	s=k20260515; t=1795540847;
+	bh=3AaHa7wUvfXbgjXKSaJH9L1BQGA+L/wa6rMO4rpmjeI=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=QUTV5Oskr7VQxgwbHUbT74C9Utw+ExYIPPPWoZaEdl6bWIEsm0KX9+Vrc03wEV8TI
-	 PBWJsV9VRSEkBH1KCPpl/Om8N6dJrsmr41IYsf6ObwrewdwU4FL+hQaSPWoWgLMR6y
-	 CB9ERP+2O2lOfblLEzfx+HizX6o2qXB4FElGzd42sikYec0EC4qKzY7zL/lNSZq3te
-	 Hk3JtYfNmBDbqw3KIJ8ayfvgkYdxuNqP8JYzpLbPABp4HWmmsJFvQmSj5nLwQHsOZx
-	 h4Sh9MbHXgx3u2oCGLAS+89VHxCGcoPr9bR7EVPd01B0nY5b5aLBnV7qhzkAlABd4i
-	 24KAmrSlzqqsQ==
-Subject: Re: [PATCH net-next 11/15] batman-adv: tt: requeue DEL of pending
- local entry after failed allocation
+	b=cCa2s9rw9bd5FmH+j5Jo8eJUhcAvO3VZ/gLWj4PN10g6F1viGQS5VrgFfZxCGeRja
+	 6pnvQqn1alJ5mDRc6RX4vpFvJhwh1z6z5k2fgteCqh4S51YcR56PAditcDNzuhPjlS
+	 TWnICZ0EqpHAEgOboB3jHvVFBxuSup8J2oNDp3ySj7UXowz+KX7S2YT+743o+NV+q/
+	 k+54UBHgcRA2KtHptucm2UIFXkVEFQRH8EVqF2hVCc7Epii25iOBrQjunDvObCDQ3K
+	 U68ZeEBpmExuAWy7EGoqCdG2Plsqks0+ig8b2fr4wjb0Zvhuwzq9RE+Cf79LYrvsdF
+	 p66LMN3dWNmiQ==
+Subject: Re: [PATCH net-next 12/15] batman-adv: tt: extract removal of pending
+ local entry
 From: netdev-bot+sashiko@kernel.org
 To: sw@simonwunderlich.de
 Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
  b.a.t.m.a.n@lists.open-mesh.org, sven@narfation.org
-Date: Tue, 24 Nov 2026 17:20:44 +0000
-Message-ID: <179554084450.3135.11910035656981995724@kernel.org>
-In-Reply-To: <20261123171827.3294525-12-sw@simonwunderlich.de>
-References: <20261123171827.3294525-12-sw@simonwunderlich.de>
+Date: Tue, 24 Nov 2026 17:20:46 +0000
+Message-ID: <179554084613.3135.2138652598368843379@kernel.org>
+In-Reply-To: <20261123171827.3294525-13-sw@simonwunderlich.de>
+References: <20261123171827.3294525-13-sw@simonwunderlich.de>
 X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -95,15 +95,15 @@ X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-1;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-2;
  header-match-b.a.t.m.a.n.lists.open-mesh.org-3; emergency; member-moderation
-Message-ID-Hash: T5H2SOITIT757KSC4DK2FSQ4QDKTQ7YU
-X-Message-ID-Hash: T5H2SOITIT757KSC4DK2FSQ4QDKTQ7YU
-X-Mailman-Approved-At: Tue, 24 Nov 2026 18:25:24 +0100
+Message-ID-Hash: NGXSR4GIBO3MOI2R7ER36M5H5YHBK6PY
+X-Message-ID-Hash: NGXSR4GIBO3MOI2R7ER36M5H5YHBK6PY
+X-Mailman-Approved-At: Tue, 24 Nov 2026 18:25:25 +0100
 X-Mailman-Version: 3.3.10
 Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/T5H2SOITIT757KSC4DK2FSQ4QDKTQ7YU/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/NGXSR4GIBO3MOI2R7ER36M5H5YHBK6PY/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
@@ -123,177 +123,111 @@ you want to address the nit picks below when you respin.
 
 Low priority / nit picks for your consideration:
 
-- [Low] A failed DEL|ROAM for a local entry that is already
-  BATADV_TT_CLIENT_PENDING is never retried, and the new kernel-doc says…
-- [Low] The concern: the patch has no Fixes: tag and does not say that it
-  depends on the preceding commit "batman-adv: tt: keep local entry…
-
-Pre-existing issues:
-- [Low] The concern: the periodic batadv_tt_local_purge_list() requeue
-  runs without tt.commit_lock and can clear del_unqueued after…
+- [Low] The kernel-docs of batadv_tt_local_unhash() and
+  batadv_tt_local_unhash_pending() disagree about who checks that the…
 
 --
 
-batman-adv: tt: requeue DEL of pending local entry after failed allocation
+batman-adv: tt: extract removal of pending local entry
 
-Sometimes batadv_tt_local_set_pending() cannot queue the DEL for a local
-entry because the change allocation failed. This patch marks such an
-entry as del_unqueued. batadv_tt_local_purge_list() then retries the
-DEL, and batadv_tt_local_purge_pending_clients() keeps the entry in the
-local table until the DEL is queued. batadv_tt_local_refresh_locked()
-clears the mark when the client is added again.
+This moves the removal of a single pending entry out of
+batadv_tt_local_purge_pending_clients() into a new helper,
+batadv_tt_local_unhash_pending(). The helper calls a lower level
+batadv_tt_local_unhash(), which does the actual unhash steps. There is
+no functional change.
 
 > diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-> index c94b292a1c4a8..0c5e21f3ba756 100644
+> index 0c5e21f3ba756..2a7f50de70fc8 100644
 > --- a/net/batman-adv/translation-table.c
 > +++ b/net/batman-adv/translation-table.c
+> @@ -1760,6 +1760,44 @@ int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
+>  	return ret;
+>  }
+>  
+> +/**
+> + * batadv_tt_local_unhash() - remove an entry from the local table
+> + * @bat_priv: the bat priv with all the mesh interface information
+> + * @tt_local: the local TT entry to remove
+> + * @message: message to append to the log on deletion
+> + *
+> + * The caller must hold the hash bucket list_lock and the flags_lock of the
+> + * entry. It must have checked that the entry is still part of the local table
+> + * and has to drop the reference of the hash after it released the flags_lock.
+> + */
 
 [ ... ]
 
-> @@ -1779,13 +1793,24 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
->  {
->  	struct batadv_tt_common_entry *common = &tt_local_entry->common;
->  	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
-> +	bool queued;
->  	u32 i;
+> @@ -4550,6 +4588,43 @@ static void batadv_tt_local_transition_new(struct batadv_priv *bat_priv)
+>  	}
+>  }
 >  
->  	i = batadv_choose_tt(&common->key, hash->size);
->  	lockdep_assert_held(&hash->list_locks[i]);
->  	lockdep_assert_held(&common->flags_lock);
->  
-> -	__batadv_tt_local_event(bat_priv, common, common->flags | flags);
-> +	queued = __batadv_tt_local_event(bat_priv, common,
-> +					 common->flags | flags);
-
-[Severity: Low]
-This isn't a bug, but this code now relies on __batadv_tt_local_event()
-returning bool. That return value was added by the preceding patch,
-"batman-adv: tt: keep local entry unchanged when ADD can't be queued".
-
-The commit message doesn't mention this dependency, and there is no
-Fixes: tag. No patch in the series has a Fixes: tag, so this may be
-intentional. Is the series meant to stay out of stable?
-
+> +/**
+> + * batadv_tt_local_unhash_pending() - remove a pending entry from the local table
+> + * @bat_priv: the bat priv with all the mesh interface information
+> + * @tt_local: the local TT entry to remove
+> + *
+> + * Only an entry which is marked as BATADV_TT_CLIENT_PENDING and whose DEL was
+> + * queued is removed. An entry which still waits for its DEL (del_unqueued) must
+> + * stay in the local table until batadv_tt_local_purge_list() was able to queue
+> + * it.
+> + *
+> + * The caller must hold the hash bucket list_lock and the flags_lock of the
+> + * entry.
+> + *
+> + * Return: true if the entry was unhashed and the caller has to drop the
+> + * reference of the hash, false otherwise.
+> + */
+> +static bool
+> +batadv_tt_local_unhash_pending(struct batadv_priv *bat_priv,
+> +			       struct batadv_tt_local_entry *tt_local)
+> +	__must_hold(&tt_local->common.flags_lock)
+> +{
+> +	struct batadv_tt_common_entry *tt_common = &tt_local->common;
 > +
-> +	/* a failed attempt must not hide the still queued DEL of an already
-> +	 * pending entry
-> +	 */
-> +	if (queued)
-> +		tt_local_entry->del_unqueued = false;
-> +	else if (!(common->flags & BATADV_TT_CLIENT_PENDING))
-> +		tt_local_entry->del_unqueued = true;
-
-[Severity: Low]
-What happens here when the entry is already BATADV_TT_CLIENT_PENDING and
-the new event carries BATADV_TT_CLIENT_ROAM?
-
-batadv_tt_local_remove_entry() doesn't check for PENDING. With roaming
-set, it does this:
-
-	if (roaming)
-		common->flags |= BATADV_TT_CLIENT_ROAM;
-
-	flags = BATADV_TT_CLIENT_DEL;
-	if (roaming)
-		flags |= BATADV_TT_CLIENT_ROAM;
-
-	batadv_tt_local_set_pending(bat_priv, tt_local_entry, flags,
-				    message);
-
-A remote node can reach this path:
-
-batadv_handle_roam_adv()
-  batadv_tt_global_add(..., BATADV_TT_CLIENT_ROAM)
-    batadv_tt_global_purge_local()
-      batadv_tt_local_remove(..., roaming=true)
-        batadv_tt_local_set_pending(DEL | ROAM)
-
-Say a plain DEL was already queued earlier in the same OGM interval, for
-example by the timeout in batadv_tt_local_purge_list(). The DEL+DEL
-update can still fail, because __batadv_tt_local_event() allocates
-before it looks for the queued change to merge into:
-
-	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
-	if (!tt_change_node)
-		return false;
-
-In that case the else-if above leaves del_unqueued false. So
-batadv_tt_local_purge_list() never requeues the DEL with the ROAM flag.
-
-Only the plain DEL is announced. Receivers then call
-batadv_tt_global_del() with roaming=false. That removes the old
-originator right away instead of going through
-batadv_tt_global_del_roaming().
-
-Could unicast traffic to the client be lost until the ADD from the new
-originator arrives?
-
-The kernel-doc this patch adds to __batadv_tt_local_event() says:
-
-  The only exception is the DEL of batadv_tt_local_set_pending(). Its
-  entry is marked as del_unqueued to get the DEL requeued by
-  batadv_tt_local_purge_list().
-
-The new batadv_tt_local_set_pending() kernel-doc says the same: "Such an
-entry is marked as del_unqueued instead". Neither seems to hold for this
-case.
-
-The lost ROAM upgrade was already possible before this series. The
-kernel-doc claiming this case is covered is new, though, and this part
-looks the same at the end of the series.
-
-Could __batadv_tt_local_event() look up the existing change before
-allocating, so the in-place update can't fail? If not, the kernel-doc
-could say that an already pending entry only keeps its first DEL.
-
+> +	lockdep_assert_held(&tt_common->flags_lock);
 > +
->  	common->flags |= BATADV_TT_CLIENT_PENDING;
-
-[ ... ]
-
-> @@ -1911,11 +1936,18 @@ static void batadv_tt_local_purge_list(struct batadv_priv *bat_priv,
->  					      common);
->  
->  		scoped_guard(spinlock_bh, &tt_local_entry->common.flags_lock) {
-> -			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_NOPURGE)
-> +			/* entry already marked for deletion */
-> +			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) {
-> +				/* but its removal must still be announced */
-> +				if (tt_local_entry->del_unqueued)
-> +					batadv_tt_local_set_pending(bat_priv,
-> +								    tt_local_entry,
-> +								    BATADV_TT_CLIENT_DEL,
-> +								    "requeued");
+> +	if (!(tt_common->flags & BATADV_TT_CLIENT_PENDING))
+> +		return false;
+> +
+> +	/* the removal must be announced first */
+> +	if (tt_local->del_unqueued)
+> +		return false;
+> +
+> +	batadv_tt_local_unhash(bat_priv, tt_local, "pending");
+> +
+> +	return true;
+> +}
 
 [Severity: Low]
-This is a pre-existing issue and wasn't introduced by this patch. This
-requeue runs from the periodic work without tt.commit_lock.
+This isn't a bug, but the kernel-doc of batadv_tt_local_unhash_pending()
+seems to leave out a requirement it inherits from batadv_tt_local_unhash().
 
-Can it clear del_unqueued after the splice but before
-batadv_tt_local_purge_pending_clients() runs in
-batadv_tt_local_commit_changes_nolock()?
+The kernel-doc of batadv_tt_local_unhash() says the caller "must have
+checked that the entry is still part of the local table". That function
+does not check hlist_unhashed() itself. It always calls
+hlist_del_init_rcu(), increments hash->generation and calls
+batadv_tt_local_size_dec() for entries without BATADV_TT_CLIENT_NEW.
 
-	spin_lock_bh(&bat_priv->tt.changes_list_lock);
-	list_splice_init(&bat_priv->tt.changes_list, &changes_list);
-	...
-	batadv_tt_local_transition_new(bat_priv);
+batadv_tt_local_unhash_pending() checks only BATADV_TT_CLIENT_PENDING and
+del_unqueued before it calls batadv_tt_local_unhash(). Its kernel-doc asks
+callers only to hold the bucket list_lock and the flags_lock. It still
+says that a true return means the caller must drop the hash reference.
 
-	batadv_tt_local_purge_pending_clients(bat_priv);
+batadv_tt_local_unhash() does not clear the flags. So an entry that was
+already unhashed can still have BATADV_TT_CLIENT_PENDING set with
+del_unqueued false.
 
-If so, the entry is removed in the current TTVN, but its DEL is only
-announced in the next one. The same window already existed for any
-concurrent batadv_tt_local_set_pending() DEL. The worst case looks like
-a CRC mismatch for one TTVN, which a full table request repairs.
+A caller that relied only on the documented contract of the wrapper could
+pass such an entry and get true back. The per-VID size would then be
+decremented twice and the hash reference put twice.
 
-A later patch in this series, "batman-adv: tt: commit only the announced
-local changes", seems to close this. After it, only entries whose DEL is
-in the spliced changes_list are unhashed. The only remaining caller of
-batadv_tt_local_purge_pending_clients() is
-batadv_tt_local_resize_to_mtu(), which runs under commit_lock before the
-splice.
+There is no such caller now. Both batadv_tt_local_purge_pending_clients()
+and the batadv_tt_local_commit_change() caller added later in the series
+find the entry by walking the bucket under list_lock.
 
->  				break;
-> +			}
+Could the kernel-doc of batadv_tt_local_unhash_pending() state the same
+membership requirement as batadv_tt_local_unhash()? Another option would
+be an hlist_unhashed() check inside the wrapper.
 
 [ ... ]
 
