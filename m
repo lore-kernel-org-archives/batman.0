@@ -1,30 +1,30 @@
 Received: from diktynna.open-mesh.org (diktynna.open-mesh.org [136.243.236.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24E0F606A6A0
-	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 19:47:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB578606A31E
+	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 20:03:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=TUs1pWxp
+	dkim=pass (1024-bit key) header.d=narfation.org header.i=@narfation.org header.a=rsa-sha256 header.s=20121 header.b=xafMupmP
 Received: from diktynna.open-mesh.org (localhost [IPv6:::1])
-	by diktynna.open-mesh.org (Postfix) with ESMTP id 6FCA583099
-	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 20:47:19 +0100 (CET)
+	by diktynna.open-mesh.org (Postfix) with ESMTP id 4D10782F98
+	for <batman@archiver.kernel.org>; Tue, 24 Nov 2026 21:03:02 +0100 (CET)
 ARC-Seal: i=2; cv=pass; a=rsa-sha256; d=open-mesh.org; s=20121;
- t=1795549639;
- b=aTluUBYCDgOLlJuwe6Hqe9+NMK1SC2CNjRpKwiAZ/+0kP0jS/SXlrBddcsl3wrUmVyBq9
- E5dFh9zpHOTg9UYomiX8Ltv5IoMaeGRNXnrR7Myt7+S101taD/XYm09CzBOH1ALn3XmVMsl
- xxnwQ6fAmrw0KwBpVjHZERUFEEk3R4I=
+ t=1795550582;
+ b=b2i0wlVDFax2FtiCCdtkP0k8S/zMhJyK3wDiKtarp5fDTl4xnsT6epUucpO9UuwseAXpT
+ 4rUtTbPzszDQp5pIsIYB+NtK5XP+y0v59BBuWGKkkk4F00GAlk2wZFnRtj5F9PFx4Pf50tT
+ ZuM8/0Gep2Vrs1iNIlegLevkyr4JiOw=
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed;
- d=open-mesh.org; s=20121; t=1795549639; h=from : sender : reply-to :
+ d=open-mesh.org; s=20121; t=1795550582; h=from : sender : reply-to :
  subject : date : message-id : to : cc : mime-version : content-type :
  content-transfer-encoding : content-id : content-description :
  resent-date : resent-from : resent-sender : resent-to : resent-cc :
  resent-message-id : in-reply-to : references : list-id : list-help :
  list-unsubscribe : list-subscribe : list-post : list-owner :
- list-archive; bh=cJRVzTMJnlShHbcMCuLGWkT4v841qpZ2m9PE1z4Vr0s=;
- b=hJ7YdvooG/+pZumlynnWpbi8rMgXxSa3N6/QewfJi4DoE1RWBv6h0Sl8l7PDt779rjjKt
- T2s8oMdQo3S4g57Y50zvU1cN9tiOQRaTVZt6bv1dmMA+5VhihdRsVhhbzQDS7kDvtv3pllk
- FMKbL7KoDilWSaaPps6w3wdrNaMSTdA=
+ list-archive; bh=lylw3LyN3gv8iWZ/Dq3IRhRREidXbB+P35bwXfzQl8s=;
+ b=eNt4wYlGQv8GAO1w0Q5X6XRCG8CRK2570oT6o/Z2dGXTqMxZu74EYDNXj3qXJxQr9iKgn
+ H9FcAxRrzuGOFo6XTkc1X9QVy5bt5sYtEH9GCulUwa5WajpP83qkZjO0wDdikiDE4c/hSrX
+ lmxvCbXZkHVZ2K2iK9S/9xNOI2bQJyc=
 ARC-Authentication-Results: i=2; open-mesh.org;
  dkim=pass header.d=narfation.org;
  arc=pass;
@@ -33,57 +33,64 @@ Authentication-Results: open-mesh.org; dkim=pass header.d=narfation.org;
  arc=pass;
  dmarc=pass (Used From Domain Record) header.from=narfation.org policy.dmarc=none
 Received: from dvalin.narfation.org (dvalin.narfation.org [213.160.73.56])
-	by diktynna.open-mesh.org (Postfix) with ESMTPS id 15E6A82220
-	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 24 Nov 2026 20:47:00 +0100 (CET)
-ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795549631;
-	b=FRjv8OyMv65waoupPQ7uH9b3O+apPCyaShBB+y6gPSNQ+4GLX2ANvwAWRyh9o1e4/KF3lO
-	ltbidhja3xEXr6f4P9CCx4nmExulqkqvRWZJahnyCKdxX7ykA/FlhTDTe6y+BRuk9Qlu2F
-	NvwbqtcBRcLhm3Lvgjr5GYiu+uDx+rg=
+	by diktynna.open-mesh.org (Postfix) with UTF8SMTPS id 4AD98810CD
+	for <b.a.t.m.a.n@lists.open-mesh.org>; Tue, 24 Nov 2026 21:02:44 +0100 (CET)
+ARC-Seal: i=1; a=rsa-sha256; d=open-mesh.org; s=20121; cv=none; t=1795550574;
+	b=ZqmC1YPexCtZR3rczIQ0A4QXX8egKS8SBUbN3f7eX6Fma9DqSp2gVBBgWSE5Bo79T40C83
+	uf81dF+/akgH1Mnkxo9gU5XaaE603nD5FzNjmj06XSC/Q36W6O5uRpemoAUT1vlYi0UfEf
+	o4KxCs1PdXfMvpBu1cE3o2oNo0AmxCs=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=open-mesh.org;
-	s=20121; t=1795549631;
+	s=20121; t=1795550574;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=cJRVzTMJnlShHbcMCuLGWkT4v841qpZ2m9PE1z4Vr0s=;
-	b=z6nmhWAUyBM5ScxMVKiO3+NlBcSx+yZNYyNERI3KolF/sxWsqZWYH3vvnFyp22P4qpm3pe
-	bQukJWW0jNdmppHJwxdXaPD1bUAq0WOeWqu35QsZlQinVGNGbXbQGAnQmr71qczLdpWTUQ
-	u/m8QRpsPfGNWP2jEw53hsWZkyzjRUA=
+	 content-transfer-encoding:content-transfer-encoding:dkim-signature;
+	bh=lylw3LyN3gv8iWZ/Dq3IRhRREidXbB+P35bwXfzQl8s=;
+	b=Vcey+ivJT1BmK9k6MStRs2OpTYhE1tqNoqJyi1sfJx32rP5NhEPclxzZuyS/99f953W9/X
+	T+hXOXWS1lgYhP95yqKKdlpcBC5xf/v+0t1lRaLSbuN3LBBagLut5s7F6aRsZ7aHTw0c68
+	1oY3rrVH/iMNQVPrHbAtKhPOxtLl9I4=
 ARC-Authentication-Results: i=1;
 	diktynna.open-mesh.org;
-	dkim=pass header.d=narfation.org header.s=20121 header.b=TUs1pWxp;
+	dkim=pass header.d=narfation.org header.s=20121 header.b=xafMupmP;
 	spf=pass (diktynna.open-mesh.org: domain of sven@narfation.org designates
  213.160.73.56 as permitted sender) smtp.mailfrom=sven@narfation.org;
 	dmarc=pass (policy=none) header.from=narfation.org
-Received: by dvalin.narfation.org (Postfix) id B8B471FD15;
-	Tue, 24 Nov 2026 19:46:59 +0000 (UTC)
+Received: by dvalin.narfation.org (Postfix) id 86E3C2026D;
+	Tue, 24 Nov 2026 20:02:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=narfation.org;
-	s=20121; t=1795549619;
+	s=20121; t=1795550563;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cJRVzTMJnlShHbcMCuLGWkT4v841qpZ2m9PE1z4Vr0s=;
-	b=TUs1pWxpJHdUuzx3RVFfsGPmy/ifaaMFFO91p+PtzScMW9Xb3aaKBKHHyyKkH77LdmmpRW
-	RToYqifsfyP/z1YWTuFTmwzKIZgjKxSbuiKgmpvkwyeiaDhim2hjZ6ZH0po9g1JPauQdTM
-	EUSOmuBy5GNSgU1JvGNsaAF3j10jDck=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=lylw3LyN3gv8iWZ/Dq3IRhRREidXbB+P35bwXfzQl8s=;
+	b=xafMupmPI3TFWofGzA1NXL3Q2u3vG/MXhFpGR8XV3BAQU6IJoildkx/XrTrByrndoI5WsB
+	Wg9I/kG02aVY7Jxsqd4JC8MDdX19TltbFsd1iqQrOfVujs8+unZX0IyPJJ9fsNIVCkdEAh
+	wGYEzn7+Q6izhfomdztiCrNQEw6rOw8=
 From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- b.a.t.m.a.n@lists.open-mesh.org
-Subject: Re: [PATCH net-next 11/15] batman-adv: tt: requeue DEL of pending
- local entry
- after failed allocation
-Date: Tue, 24 Nov 2026 20:46:56 +0100
-Message-ID: <9710957.CDJkKcVGEf@sven-desktop>
-In-Reply-To: <179554084450.3135.11910035656981995724@kernel.org>
-References: <20261123171827.3294525-12-sw@simonwunderlich.de>
- <179554084450.3135.11910035656981995724@kernel.org>
+Date: Tue, 24 Nov 2026 21:02:29 +0100
+Subject: [PATCH batadv] batman-adv: tt: don't allocate for updates of
+ queued local changes
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3374045.5fSG56mABF";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Message-ID-Hash: KNRZ4ZQZCPU74UW6UU4YWBMFMVHUD6SH
-X-Message-ID-Hash: KNRZ4ZQZCPU74UW6UU4YWBMFMVHUD6SH
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261124-event-late-allocation-v1-1-756780b98c10@narfation.org>
+X-B4-Tracking: v=1; b=H4sIAFTtBWsC/yWMQQrCMBAAv1L27IIJTaF+RTxskm1dCakkaxBK/
+ 27U4wzM7FC5CFe4DDsUblJlyx3MaYBwp7wySuwM9mwnY+yI3DgrJlJGSmkLpL1A59w8+zFMNjL
+ 09ll4kffvewVPSrHB7e/ryz846HcKx/EBlVeLfYEAAAA=
+X-Change-ID: 20261124-event-late-allocation-55599b4c62de
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sashiko <sashiko-bot@kernel.org>, Sven Eckelmann <sven@narfation.org>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4114; i=sven@narfation.org;
+ h=from:subject:message-id; bh=hL/phIg6/MaC/GPSxiWvEcTqfNBih7knWwqCQLH28zk=;
+ b=owGbwMvMwCXmy1+ufVnk62nG02pJDNmsb0Nv7FCpniXIxFMyq3nGxcbvdQs/vPc/e9Jl1jcBM
+ /E3UsJlHaUsDGJcDLJiiix7ruSf38z+Vv7ztI9HYeawMoEMYeDiFICJ5F5g+GfK27/AIHBVxum+
+ ddM0Jkxust10Q3ZDv8Tpu0vWtLy5efsOwx/O3NBFM7ZwL7/cqfWz1TlWe3r8GebcdVcOy92+fjI
+ /7h4XAA==
+X-Developer-Key: i=sven@narfation.org; a=openpgp;
+ fpr=522D7163831C73A635D12FE5EC371482956781AF
+Message-ID-Hash: AOOFLO6NZWK42P22PXPNLVALYSMTISWX
+X-Message-ID-Hash: AOOFLO6NZWK42P22PXPNLVALYSMTISWX
 X-MailFrom: sven@narfation.org
 X-Mailman-Rule-Misses: dmarc-mitigation; no-senders; approved; loop;
  banned-address; header-match-b.a.t.m.a.n.lists.open-mesh.org-0;
@@ -97,153 +104,131 @@ Precedence: list
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 Archived-At: 
- <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/KNRZ4ZQZCPU74UW6UU4YWBMFMVHUD6SH/>
+ <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/message/AOOFLO6NZWK42P22PXPNLVALYSMTISWX/>
 List-Archive: 
  <https://lists.open-mesh.org/mailman3/hyperkitty/list/b.a.t.m.a.n@lists.open-mesh.org/>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Owner: <mailto:b.a.t.m.a.n-owner@lists.open-mesh.org>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Subscribe: <mailto:b.a.t.m.a.n-join@lists.open-mesh.org>
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_NONE,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---nextPart3374045.5fSG56mABF
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Sven Eckelmann <sven@narfation.org>
-To: sw@simonwunderlich.de, netdev-bot+sashiko@kernel.org
-Date: Tue, 24 Nov 2026 20:46:56 +0100
-Message-ID: <9710957.CDJkKcVGEf@sven-desktop>
-In-Reply-To: <179554084450.3135.11910035656981995724@kernel.org>
-MIME-Version: 1.0
+batadv_tt_local_event() allocates the new change before it searches for an
+already queued change of the same client. But the new change is only needed
+when no such change was found. For ADD+ADD, DEL+DEL, DEL+ADD and ADD+DEL,
+the flags of the queued change are updated (or the queued initial ADD is
+cancelled) and the just allocated change is freed again.
 
-On Tuesday, 24 November 2026 18:20:44 CET netdev-bot+sashiko@kernel.org wrote:
-[...]
-> > @@ -1779,13 +1793,24 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
-> >  {
-> >  	struct batadv_tt_common_entry *common = &tt_local_entry->common;
-> >  	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
-> > +	bool queued;
-> >  	u32 i;
-> >  
-> >  	i = batadv_choose_tt(&common->key, hash->size);
-> >  	lockdep_assert_held(&hash->list_locks[i]);
-> >  	lockdep_assert_held(&common->flags_lock);
-> >  
-> > -	__batadv_tt_local_event(bat_priv, common, common->flags | flags);
-> > +	queued = __batadv_tt_local_event(bat_priv, common,
-> > +					 common->flags | flags);
-> 
-> [Severity: Low]
-> This isn't a bug, but this code now relies on __batadv_tt_local_event()
-> returning bool. That return value was added by the preceding patch,
-> "batman-adv: tt: keep local entry unchanged when ADD can't be queued".
+Search for the queued change first and only allocate a new one when the
+client has no queued change. The update and the cancellation of a queued
+change can then no longer fail.
 
-What? I am now not even allowed to build on top of other patches in a patch 
-series? This is insane.
+Reported-by: Sashiko <sashiko-bot@kernel.org>
+Closes: https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261123171827.3294525-2-sw%40simonwunderlich.de?part=11
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/translation-table.c | 37 +++++++++++++++++++------------------
+ 1 file changed, 19 insertions(+), 18 deletions(-)
 
-> The commit message doesn't mention this dependency, and there is no
-> Fixes: tag. No patch in the series has a Fixes: tag, so this may be
-> intentional. Is the series meant to stay out of stable?
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e08bf88b..49364732 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -738,9 +738,10 @@ static bool batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 	__must_hold(&common->flags_lock)
+ {
+ 	struct batadv_tt_change_node *tt_change_node;
++	__be16 vid = htons(common->key.vid);
+ 	struct batadv_tt_change_node *entry;
+-	struct batadv_tt_change_node *safe;
+ 	bool del_op_requested;
++	bool queued = true;
+ 	size_t changes;
+ 
+ 	lockdep_assert_held(&common->flags_lock);
+@@ -748,15 +749,6 @@ static bool batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 	if (cancelled)
+ 		*cancelled = false;
+ 
+-	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
+-	if (!tt_change_node)
+-		return false;
+-
+-	memset(tt_change_node->change.reserved, 0,
+-	       sizeof(tt_change_node->change.reserved));
+-	ether_addr_copy(tt_change_node->change.addr, common->key.addr);
+-	tt_change_node->change.vid = htons(common->key.vid);
+-
+ 	del_op_requested = flags & BATADV_TT_CLIENT_DEL;
+ 
+ 	/* the ROAM flag is only meaningful for the receiver in combination
+@@ -766,18 +758,14 @@ static bool batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 	if (!del_op_requested)
+ 		flags &= ~BATADV_TT_CLIENT_ROAM;
+ 
+-	tt_change_node->change.flags = flags;
+-	tt_change_node->initial_add = initial_add && !del_op_requested;
+-
+ 	/* check for ADD+DEL, DEL+ADD, ADD+ADD or DEL+DEL events */
+ 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
+ 	changes = READ_ONCE(bat_priv->tt.local_changes);
+-	list_for_each_entry_safe(entry, safe, &bat_priv->tt.changes_list,
+-				 list) {
++	list_for_each_entry(entry, &bat_priv->tt.changes_list, list) {
+ 		if (!batadv_compare_eth(entry->change.addr, common->key.addr))
+ 			continue;
+ 
+-		if (entry->change.vid != tt_change_node->change.vid)
++		if (entry->change.vid != vid)
+ 			continue;
+ 
+ 		if (del_op_requested && entry->initial_add) {
+@@ -806,19 +794,32 @@ static bool batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 			entry->change.flags = flags;
+ 		}
+ 
+-		kmem_cache_free(batadv_tt_change_cache, tt_change_node);
+ 		goto update_changes;
+ 	}
+ 
++	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
++	if (!tt_change_node) {
++		queued = false;
++		goto unlock;
++	}
++
++	memset(tt_change_node->change.reserved, 0,
++	       sizeof(tt_change_node->change.reserved));
++	ether_addr_copy(tt_change_node->change.addr, common->key.addr);
++	tt_change_node->change.vid = vid;
++	tt_change_node->change.flags = flags;
++	tt_change_node->initial_add = initial_add && !del_op_requested;
++
+ 	/* track the change in the OGMinterval list */
+ 	list_add_tail(&tt_change_node->list, &bat_priv->tt.changes_list);
+ 	changes++;
+ 
+ update_changes:
+ 	WRITE_ONCE(bat_priv->tt.local_changes, changes);
++unlock:
+ 	spin_unlock_bh(&bat_priv->tt.changes_list_lock);
+ 
+-	return true;
++	return queued;
+ }
+ 
+ /**
 
-It is in the same patch series. Why should I add a Fixes: tag? This wouldn't 
-even be allowed in a submission for net-next. And when this would not be a 
-pull-request then I would not even have a commit ID to use here.
+---
+base-commit: b76921870912bf2543c1f4c7310fbf18da610acf
+change-id: 20261124-event-late-allocation-55599b4c62de
 
-> 
-> > +
-> > +	/* a failed attempt must not hide the still queued DEL of an already
-> > +	 * pending entry
-> > +	 */
-> > +	if (queued)
-> > +		tt_local_entry->del_unqueued = false;
-> > +	else if (!(common->flags & BATADV_TT_CLIENT_PENDING))
-> > +		tt_local_entry->del_unqueued = true;
-> 
-> [Severity: Low]
-> What happens here when the entry is already BATADV_TT_CLIENT_PENDING and
-> the new event carries BATADV_TT_CLIENT_ROAM?
-[...]
-> Say a plain DEL was already queued earlier in the same OGM interval, for
-> example by the timeout in batadv_tt_local_purge_list(). The DEL+DEL
-> update can still fail, because __batadv_tt_local_event() allocates
-> before it looks for the queued change to merge into:
-> 
-> 	tt_change_node = kmem_cache_alloc(batadv_tt_change_cache, GFP_ATOMIC);
-> 	if (!tt_change_node)
-> 		return false;
-> 
-> In that case the else-if above leaves del_unqueued false. So
-> batadv_tt_local_purge_list() never requeues the DEL with the ROAM flag.
-[...]
-> Could __batadv_tt_local_event() look up the existing change before
-> allocating, so the in-place update can't fail? If not, the kernel-doc
-> could say that an already pending entry only keeps its first DEL.
-
-This is a corner case (already existing in the current code) but I will make a 
-note to think about first searching the list before trying to allocate a new 
-entry. https://www.open-mesh.org/issues/491
-
-One case would remain: if the plain DEL has already been taken out of 
-changes_list for the next ttvn but not yet committed, the ROAM flag is lost. 
-That is unavoidable, because the DEL is already part of the announced change 
-set.
-
-
-> 
-> > +
-> >  	common->flags |= BATADV_TT_CLIENT_PENDING;
-> 
-> [ ... ]
-> 
-> > @@ -1911,11 +1936,18 @@ static void batadv_tt_local_purge_list(struct batadv_priv *bat_priv,
-> >  					      common);
-> >  
-> >  		scoped_guard(spinlock_bh, &tt_local_entry->common.flags_lock) {
-> > -			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_NOPURGE)
-> > +			/* entry already marked for deletion */
-> > +			if (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) {
-> > +				/* but its removal must still be announced */
-> > +				if (tt_local_entry->del_unqueued)
-> > +					batadv_tt_local_set_pending(bat_priv,
-> > +								    tt_local_entry,
-> > +								    BATADV_TT_CLIENT_DEL,
-> > +								    "requeued");
-> 
-> [Severity: Low]
-> This is a pre-existing issue and wasn't introduced by this patch. This
-> requeue runs from the periodic work without tt.commit_lock.
-> 
-> Can it clear del_unqueued after the splice but before
-> batadv_tt_local_purge_pending_clients() runs in
-> batadv_tt_local_commit_changes_nolock()?
-
-This is just a preparation for the "batman-adv: tt: commit only the announced 
-local changes". It is normal that a patch at the beginning of a patch series 
-doesn't have everything which is there after the patch series ended. This is 
-why it is a patch series and not a patch.
-
-Regards,
-	Sven
-
---nextPart3374045.5fSG56mABF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQS81G/PswftH/OW8cVND3cr0xT1ywUCawXpsAAKCRBND3cr0xT1
-y5YRAP985zfMTcYcJwkAHx7hlY9XIPohnKAfSpgMeUHOdhV9VQD/QTS3VslaZbD3
-qcEXTpVYJLENsr2HJOILjrfs6H47jAc=
-=Cd5q
------END PGP SIGNATURE-----
-
---nextPart3374045.5fSG56mABF--
-
-
+Best regards,
+--  
+Sven Eckelmann <sven@narfation.org>
 
